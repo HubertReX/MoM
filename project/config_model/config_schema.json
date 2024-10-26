@@ -46,6 +46,14 @@
                     "title": "Is Merchant",
                     "type": "boolean"
                 },
+                "tradeable_items_types": {
+                    "description": "Item's type that can be traded. Empty means all.",
+                    "items": {
+                        "$ref": "#/$defs/ItemTypeEnum"
+                    },
+                    "title": "Tradeable Items Types",
+                    "type": "array"
+                },
                 "allowed_zones": {
                     "description": "Zones where the character is allowed to move",
                     "items": {

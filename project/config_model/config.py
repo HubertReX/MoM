@@ -58,20 +58,21 @@ class MazeLevelProperties():
 
 @dataclass(slots=True)
 class Character():
-    name: str
-    sprite:          str = field(repr=False)
-    race:             RaceEnum
-    attitude:         AttitudeEnum
-    is_merchant:      Annotated[bool,      field(repr=False)]
-    allowed_zones:    Annotated[list[str], field(repr=False)]
-    health:           Annotated[int,       field(repr=False)]
-    max_health:       Annotated[int,       field(repr=False)]
-    items:            Annotated[list[str], field(repr=False)]
-    max_carry_weight: Annotated[float,     field(repr=False)]
-    money:            Annotated[int,       field(repr=False)]
-    damage:           Annotated[int,       field(repr=False)]
-    speed_walk:       Annotated[int,       field(repr=False)]
-    speed_run:        Annotated[int,       field(repr=False)]
+    name:                  str
+    sprite:                Annotated[str,                field(repr=False)]
+    race:                  Annotated[RaceEnum,           field(repr=False)]
+    attitude:              Annotated[AttitudeEnum,       field(repr=False)]
+    is_merchant:           Annotated[bool,               field(repr=False)]
+    tradeable_items_types: Annotated[list[ItemTypeEnum], field(repr=False)]
+    allowed_zones:         Annotated[list[str],          field(repr=False)]
+    health:                Annotated[int,                field(repr=False)]
+    max_health:            Annotated[int,                field(repr=False)]
+    items:                 Annotated[list[str],          field(repr=False)]
+    max_carry_weight:      Annotated[float,              field(repr=False)]
+    money:                 Annotated[int,                field(repr=False)]
+    damage:                Annotated[int,                field(repr=False)]
+    speed_walk:            Annotated[int,                field(repr=False)]
+    speed_run:             Annotated[int,                field(repr=False)]
 
     @classmethod
     def from_dict(cls: type["Character"], data: dict[str, Any]) -> "Character":
@@ -81,6 +82,7 @@ class Character():
             race = RaceEnum(data.get("race", "")),
             attitude = AttitudeEnum(data.get("attitude", "")),
             is_merchant = data.get("is_merchant", False),
+            tradeable_items_types = data.get("tradeable_items_types", []),
             allowed_zones = data.get("allowed_zones", []),
             health = data.get("health", 30),
             max_health = data.get("max_health", 30),

@@ -53,12 +53,14 @@ class Character(BaseModel):
     race:          Annotated[RaceEnum,     Field(description="Base character race (e.g. humanoid, animal)")]
     attitude:      Annotated[AttitudeEnum, Field(description="Attitude towards the player", repr=False)]
     is_merchant:   Annotated[bool,         Field(False, description="Flag if NPC can trade items", repr=False)]
+    tradeable_items_types: Annotated[list[ItemTypeEnum], Field(
+        description="Item's type that can be traded. Empty means all.", repr=False, default_factory=list)]
     allowed_zones: Annotated[list[str],    Field(
-        description="Zones where the character is allowed to move", repr=False, default_factory = list)]
+        description="Zones where the character is allowed to move", repr=False, default_factory=list)]
     health:        Annotated[int,          Field(30, ge=0, description="initial health value", repr=False)]
     max_health:    Annotated[int,          Field(30, ge=0, description="maximal health value", repr=False)]
     # items:        Annotated[list["Item"], Field(description="list of character's items", default_factory = list)]
-    items:         Annotated[list[str],    Field(description="list of character's items", default_factory = list)]
+    items:         Annotated[list[str],    Field(description="list of character's items", default_factory=list)]
     max_carry_weight: Annotated[float,     Field(15.0, ge=0, description="maximal carrying weight in kg", repr=False)]
     money:         Annotated[int,          Field(0,  ge=0, description="initial amount of possessed money", repr=False)]
     damage:        Annotated[int,          Field(10, ge=0, description="amount of damage delt to others", repr=False)]

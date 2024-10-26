@@ -254,8 +254,11 @@
             "items": [
                 "lance",
                 "stick",
+                "gem_small_green",
                 "shashlik",
-                "shashlik"
+                "shashlik",
+                "gem_crystal_blue",
+                "gem_big_orange"
             ],
             "money": 20
         },
@@ -265,13 +268,14 @@
             "race": "humanoid",
             "attitude": "friendly",
             "is_merchant": true,
+            "tradeable_items_types": [
+                "gem"
+            ],
             "items": [
                 "gem_small_green",
-                "gem_crystal_green",
-                "gem_big_green",
                 "gem_small_purple",
-                "gem_crystal_purple",
-                "gem_big_purple"
+                "gem_small_blue",
+                "gem_small_orange"
             ],
             "max_carry_weight": 100,
             "money": 3000

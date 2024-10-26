@@ -1,4 +1,5 @@
 # from dataclasses import dataclass
+from collections import Counter
 import math
 import os
 import random
@@ -206,18 +207,31 @@ class NPC(pygame.sprite.Sprite):
         self.load_items()
 
     #############################################################################################################
-    def select_next_item(self) -> None:
-        if len(self.items) > 0:
-            self.selected_item_idx += 1
-            if self.selected_item_idx >= len(self.items):
+    def select_next_item(self, filtered_items: list[ItemSprite] | None = None) -> None:
+        if not filtered_items:
+            filtered_items = self.items
+
+        if len(filtered_items) > 0:
+
+            selected_item = self.items[self.selected_item_idx]
+
+            self.selected_item_idx =  self.items.index(selected_item) + 1
+            if self.selected_item_idx >= len(filtered_items):
                 self.selected_item_idx = 0
 
     #############################################################################################################
-    def select_prev_item(self) -> None:
-        if len(self.items) > 0:
-            self.selected_item_idx -= 1
+    def select_prev_item(self, filtered_items: list[ItemSprite] | None = None) -> None:
+        if not filtered_items:
+            filtered_items = self.items
+
+        if len(filtered_items) > 0:
+
+            selected_item = self.items[self.selected_item_idx]
+
+            self.selected_item_idx =  self.items.index(selected_item) - 1
             if self.selected_item_idx < 0:
-                self.selected_item_idx = len(self.items) - 1
+                self.selected_item_idx = len(filtered_items) - 1
+
     #############################################################################################################
 
     def register_custom_event(self) -> None:
@@ -243,10 +257,32 @@ class NPC(pygame.sprite.Sprite):
         return hash(self.name)
 
     #############################################################################################################
+
     def load_items(self) -> None:
         for item_name in self.model.items:
             item = self.scene.create_item(item_name, 0, 0, show=False)
             self.pick_up(item)
+
+    #############################################################################################################
+
+    def sell_all_bought_items(self) -> None:
+        # turn items bought from player into money (and later remove)
+        # counted_curr_items = Counter([item.name for item in self.items])
+        counted_items = Counter(self.model.items)
+        for item in self.items:
+            if item.name not in counted_items:
+                self.model.money += item.model.value * item.model.count
+            else:
+                # trader has more particular items then at the beginning
+                if item.model.count > counted_items[item.name]:
+                    self.model.money += item.model.value * (item.model.count - counted_items[item.name])
+
+    #############################################################################################################
+
+    def restock_items(self) -> None:
+        self.sell_all_bought_items()
+        self.items = []
+        self.load_items()
 
     #############################################################################################################
 
@@ -1105,6 +1141,17 @@ class NPC(pygame.sprite.Sprite):
         return result
 
     #############################################################################################################
+    def get_tradable_items(self) -> list[ItemSprite]:
+        items = self.items
+
+        if self.npc_met:
+            tradeable_items_types = self.npc_met.model.tradeable_items_types
+            if tradeable_items_types:
+                items = [item for item in items if item.model.type in tradeable_items_types]
+
+        return items
+
+    #############################################################################################################
     def can_buy(self) -> bool:
         if (
             not self.npc_met or not self.npc_met.items or self.npc_met.selected_item_idx < 0
@@ -1288,13 +1335,73 @@ class Player(NPC):
             INPUTS["open"] = False
         elif INPUTS["talk"]:
             if self.npc_met and (self.npc_met.has_dialog or self.npc_met.model.is_merchant) and not self.is_talking:
+                # dialog or trading?
                 if self.npc_met.has_dialog:
                     self.scene.ui.activate_dialog_panel(self.npc_met.dialogs or "")
                 else:
+                    # since trader might accept only selected types of items
+                    # selected item index needs to be initiated again
+                    filtered_items = self.get_tradable_items()
+                    if len(filtered_items) > 0:
+
+                        selected_item = self.items[self.selected_item_idx]
+                        if selected_item not in filtered_items:
+                            self.selected_item_idx = 0
+                        else:
+                            self.selected_item_idx = filtered_items.index(selected_item)
+
                     self.scene.ui.activate_trade_panel()
                 self.is_talking = True
                 self.npc_met.is_talking = True
             INPUTS["talk"] = False
+
+        if INPUTS["end_trade"]:
+            if self.scene.ui.show_trade_panel_flag:
+                self.scene.ui.show_trade_panel_flag = False
+                # since trader might might accepted only selected types of items
+                # selected item index needs to be initiated again
+                filtered_items = self.get_tradable_items()
+                selected_item = filtered_items[self.selected_item_idx]
+                self.selected_item_idx = self.items.index(selected_item)
+
+                self.is_talking = False
+                if self.npc_met:
+                    self.npc_met.is_talking = False
+                INPUTS["quit"] = False
+            INPUTS["end_trade"] = False
+
+        if INPUTS["toggle"]:
+            if self.scene.ui.show_trade_panel_flag:
+                self.scene.ui.is_buying = not self.scene.ui.is_buying
+            INPUTS["toggle"] = False
+
+        if INPUTS["buy"]:
+            if self.scene.ui.show_trade_panel_flag and self.npc_met and self.scene.ui.is_buying:
+                if self.can_buy():
+                    item_to_buy = self.npc_met.drop_item(show=False)
+                    if item_to_buy:
+                        self.model.money -= item_to_buy.model.value
+                        self.npc_met.model.money += item_to_buy.model.value
+                        self.pick_up(item_to_buy)
+                        self.scene.add_notification(
+                            f"Bought '[item]{item_to_buy.model.name}[/item]'"
+                            f"for [num]{item_to_buy.model.value}[/num] :$_anim:",
+                            NotificationTypeEnum.info)
+            INPUTS["buy"] = False
+
+        if INPUTS["sell"]:
+            if self.scene.ui.show_trade_panel_flag and self.npc_met and not self.scene.ui.is_buying:
+                if self.can_sell():
+                    item_to_sell = self.drop_item(show=False)
+                    if item_to_sell:
+                        self.model.money += item_to_sell.model.value
+                        self.npc_met.model.money -= item_to_sell.model.value
+                        self.npc_met.pick_up(item_to_sell)
+                        self.scene.add_notification(
+                            f"Sold '[item]{item_to_sell.model.name}[/item]' "
+                            f"for [num]{item_to_sell.model.value}[/num] :$_anim:",
+                            NotificationTypeEnum.info)
+            INPUTS["sell"] = False
 
         # prevent player from moving and attacking while talking
         if self.is_talking:

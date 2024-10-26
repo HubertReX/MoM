@@ -61,6 +61,7 @@ from settings import (
     HEIGHT,
     HUD_SHEET_DEFINITION,
     HUD_SHEET_FILE,
+    INITIAL_DAY,
     INITIAL_HOUR,
     INPUTS,
     INVENTORY_ITEM_SCALE,
@@ -69,6 +70,7 @@ from settings import (
     ITEMS_SHEET_DEFINITION,
     ITEMS_SHEET_FILE,
     MAPS_DIR,
+    MAX_HOTBAR_ITEMS,
     MAZE_DIR,
     MONSTER_WAKE_DISTANCE,
     NIGHT_FILTER,
@@ -221,6 +223,7 @@ class Scene(State):
         # percentage of black bars shown during cutscene
         self.cutscene_framing: float = 0.0
         # it's high noon
+        self.day: int = INITIAL_DAY
         self.hour: int = INITIAL_HOUR
         self.minute: int = 0
         self.minute_f: float = 0.0
@@ -1136,6 +1139,12 @@ class Scene(State):
         self.transition.exiting = False
 
     #############################################################################################################
+    def update_next_day(self) -> None:
+        for npc in self.loaded_NPCs.values():
+            if npc.model.is_merchant:
+                npc.restock_items()
+
+    #############################################################################################################
     # @timeit
     def update(self, dt: float, events: list[pygame.event.EventType]) -> None:
         # MARK: update
@@ -1162,7 +1171,9 @@ class Scene(State):
             self.minute  = 0
             self.minute_f  -= 60.0
             if self.hour >= 24:
+                self.day += 1
                 self.hour = 0
+                self.update_next_day()
 
         # check if the Player's feet are colliding with wall
         # Player must have a rect called feet, slide and move_back methods,
@@ -1293,6 +1304,10 @@ class Scene(State):
             USE_ALPHA_FILTER = not USE_ALPHA_FILTER
             INPUTS["alpha"] = False
 
+        if INPUTS["next_day"]:
+            self.update_next_day()
+            INPUTS["next_day"] = False
+
         if INPUTS["intro"]:
             self.start_intro()
             INPUTS["intro"] = False
@@ -1310,10 +1325,26 @@ class Scene(State):
                 self.player.use_item()
             INPUTS["use_item"] = False
 
-        for idx in range(1, 7):
+        for idx in range(1, MAX_HOTBAR_ITEMS + 1):
             if INPUTS[f"item_{idx}"]:
-                if idx - 1 < len(self.player.items):
-                    self.player.selected_item_idx = idx - 1
+                # tradable_items: list[ItemSprite] = []
+                items: list[ItemSprite] = []
+                if not self.player.is_talking:
+                    npc = self.player
+                    items = npc.items
+                else:
+                    if self.player.npc_met and self.player.npc_met.model.is_merchant:
+                        if self.ui.is_buying:
+                            npc = self.player.npc_met
+                            items = npc.items
+                        else:
+                            npc = self.player
+                            items = self.player.get_tradable_items()
+
+                if idx - 1 < len(items):
+                    # selected_item = items[idx - 1]
+                    # npc.selected_item_idx = idx - 1
+                    npc.selected_item_idx = idx - 1  # npc.items.index(selected_item)
                 INPUTS[f"item_{idx}"] = False
 
         if INPUTS["next_item"]:
@@ -1324,7 +1355,8 @@ class Scene(State):
                     if self.ui.is_buying:
                         self.player.npc_met.select_next_item()
                     else:
-                        self.player.select_next_item()
+                        filtered_items = self.player.get_tradable_items()
+                        self.player.select_next_item(filtered_items)
             INPUTS["next_item"] = False
 
         if INPUTS["prev_item"]:
@@ -1335,7 +1367,8 @@ class Scene(State):
                     if self.ui.is_buying:
                         self.player.npc_met.select_prev_item()
                     else:
-                        self.player.select_prev_item()
+                        filtered_items = self.player.get_tradable_items()
+                        self.player.select_prev_item(filtered_items)
             INPUTS["prev_item"] = False
 
         if INPUTS["drop"]:
@@ -1357,7 +1390,7 @@ class Scene(State):
         if INPUTS["pick_up"]:
             if not self.player.is_flying and not self.player.is_attacking and not self.player.is_stunned and \
                     not self.player.is_talking:
-                items: list[ItemSprite] = self.item_sprites.sprites()
+                items = self.item_sprites.sprites()
                 collided_index = self.player.feet.collidelist(items)   # type: ignore[type-var]
                 if collided_index > -1:
                     item = items[collided_index]
@@ -1435,6 +1468,7 @@ class Scene(State):
     # TODO Rename this here and in `update`
     def reload_map(self) -> None:
         self.game.time_elapsed = 0.0
+        self.day = INITIAL_DAY
         self.hour = INITIAL_HOUR
         self.minute = 0
         self.minute_f = 0.0

@@ -132,6 +132,8 @@ STUNNED_TIME: int = 800
 # how long is NPC in pushed state [ms]
 PUSHED_TIME: int = 1000
 
+# initial game day numer
+INITIAL_DAY: int = 1
 # initial game time hour
 INITIAL_HOUR: int = 9
 # game time speed (N game hours / 1 real time second)
@@ -216,6 +218,7 @@ ACTIONS: dict[str, dict[str, Any]] = {
     "quit":      {"show": ["key_Esc", "key_Q"], "msg": "main menu", "keys": [pygame.K_ESCAPE,    pygame.K_q]},
     "debug":     {"show": ["key_`", "key_Z"],   "msg": "debug",     "keys": [pygame.K_BACKQUOTE, pygame.K_z]},
     "alpha":     {"show": ["key_B"],            "msg": "filter",    "keys": [pygame.K_b]},
+    "next_day":  {"show": ["key_N"],            "msg": "next day",  "keys": [pygame.K_n]},
     # "shaders_toggle": {"show": ["g"],        "msg": "shader 0/1",  "keys": [pygame.K_g]},
     # "next_shader":    {"show": [".", ">"],   "msg": "next shader", "keys": [pygame.K_PERIOD]},
     "run":       {"show": ["key_Shift"], "msg": "toggle run",  "keys": [pygame.K_LSHIFT, pygame.K_RSHIFT]},
