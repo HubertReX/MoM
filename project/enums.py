@@ -49,3 +49,12 @@ class NotificationTypeEnum(StrEnum):
     error = auto()
     success = auto()
     failure = auto()
+
+#################################################################################################################
+
+
+class TaskEnum(StrEnum):
+    load   = auto()
+    store  = auto()
+    update = auto()
+    run    = auto()

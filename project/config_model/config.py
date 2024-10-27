@@ -47,12 +47,12 @@ class MazeLevelProperties():
         return cls(
             monsters_list        = data.get("monsters_list",        []),
             boss_monster         = data.get("boss_monster",         ""),
-            monsters_count       = data.get("monsters_count",       4),
+            monsters_count       = data.get("monsters_count",       1),
             small_chest_count    = data.get("chest_count",          1),
             small_chest_template = data.get("small_chest_template", ""),
             big_chest_template   = data.get("big_chest_template",   ""),
-            maze_cols            = data.get("maze_cols",            10),
-            maze_rows            = data.get("maze_rows",            7)
+            maze_cols            = data.get("maze_cols",            5),
+            maze_rows            = data.get("maze_rows",            5)
         )
 
 
@@ -101,11 +101,11 @@ class Item():
     name:          str
     type:          ItemTypeEnum
     value:         Annotated[int,   field(repr=False)]
-    health_impact: Annotated[int,   field(repr=False)]
     in_use:        Annotated[bool,  field(repr=False)]
-    damage:        Annotated[int,   field(repr=False)]
     count:         Annotated[int,   field(repr=False)]
     weight:        Annotated[float, field(repr=False)]
+    health_impact: Annotated[int,   field(repr=False)]
+    damage:        Annotated[int,   field(repr=False)]
     cooldown_time: Annotated[float, field(repr=False)]
 
     @classmethod
@@ -115,11 +115,11 @@ class Item():
             name          = data.get("name", ""),
             type          = ItemTypeEnum(data.get("type", "")),
             value         = data.get("value", 50),
-            health_impact = data.get("health_impact", 0),
             in_use        = data.get("in_use", False),
-            damage        = data.get("damage", 10),
             count         = data.get("count", 1),
             weight        = data.get("weight", 1.0),
+            health_impact = data.get("health_impact", 0),
+            damage        = data.get("damage", 10),
             cooldown_time = data.get("cooldown_time", 1.0),
         )
 
@@ -157,8 +157,8 @@ class Chest():
 @dataclass
 class Config():
     characters:   dict[str, Character]
-    items:        dict[str, Item]
     chests:       dict[str, Chest]
+    items:        dict[str, Item]
     maze_configs: dict[int, MazeLevelProperties]
 
     @classmethod
@@ -168,22 +168,22 @@ class Config():
             character = Character.from_dict(character_dict)
             chars[name] = character
 
-        items = {}
-        for name, item_dict in data["items"].items():
-            item = Item.from_dict(item_dict)
-            items[name] = item
-
         chests = {}
         for name, chest_dict in data["chests"].items():
             chest = Chest.from_dict(chest_dict)
             chests[name] = chest
+        items = {}
+
+        for name, item_dict in data["items"].items():
+            item = Item.from_dict(item_dict)
+            items[name] = item
 
         maze_configs = {}
         for name, maze_config_dict in data["maze_configs"].items():
             maze_config = MazeLevelProperties.from_dict(maze_config_dict)
             maze_configs[int(name)] = maze_config
 
-        return cls(chars, items, chests, maze_configs)
+        return cls(chars, chests, items, maze_configs)
 ###################################################################################################################
 
 

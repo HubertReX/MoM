@@ -408,7 +408,9 @@ JOY_COOLDOWN: float = 0.15
 
 # define configuration variables here
 CURRENT_DIR = Path(__file__).parent
-CONFIG_FILE = CURRENT_DIR / "config_model" / "config.json"
+CONFIG_DIR = CURRENT_DIR / "config_model"
+CONFIG_FILE = CONFIG_DIR / "config.json"
+SCHEMA_FILE = CONFIG_DIR / "config_schema.json"
 SCREENSHOTS_DIR = CURRENT_DIR if IS_WEB else CURRENT_DIR / ".." / "screenshots"
 ASSETS_DIR = CURRENT_DIR / "assets"
 # font_name = "font"
@@ -469,6 +471,14 @@ import particles  # noqa: E402
 PARTICLES = {
     "leafs": particles.ParticleLeafs,
     "rain": particles.ParticleRain,
+}
+
+CONF_ENTITIES_TO_STORE: dict[str, list[str]] = {
+    "characters":   ["name", "attitude", "race", "health", "damage", "speed_walk", "speed_run"],
+    "chests":       ["name", "is_small", "total_items_count"],
+    "items":        ["name", "type", "value", "weight", "health_impact", "damage", "cooldown_time"],
+    "maze_configs": ["boss_monster", "monsters_count",
+                     "small_chest_count", "small_chest_template", "big_chest_template", "maze_cols", "maze_rows"],
 }
 
 SPRITE_SHEET_DEFINITION_4x7: dict[str, list[tuple[int, int]]] = {

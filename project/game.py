@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import random
 from datetime import datetime
-from os import environ
 from typing import TYPE_CHECKING, Any, Callable, cast
 
 import pygame
@@ -11,10 +10,13 @@ from PIL import Image
 from rich import print, traceback
 from objects import NotificationTypeEnum
 from maze_generator.maze_utils import timeit
+from enums import TaskEnum
 from settings import (
     ACTIONS,
     BG_COLOR,
     BLACK_COLOR,
+    CONF_ENTITIES_TO_STORE,
+    CONFIG_DIR,
     CONFIG_FILE,
     CUTSCENE_BG_COLOR,
     DEFAULT_SHADER,
@@ -73,18 +75,14 @@ if USE_WEB_SIMULATOR:
 else:
     import asyncio
 
-if USE_SHADERS:
-    from opengl_shader import OpenGL_shader
+# if USE_SHADERS:
+#     from opengl_shader import OpenGL_shader
 
 if IS_WEB:
     from config_model.config import load_config
 else:
     import ffmpeg
-    from config_model.config_pydantic import load_config  # type: ignore[assignment]
-
-environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
-# https://www.reddit.com/r/pygame/comments/12twl0e/cannot_rumble_dualshock_4_via_bluetooth_in_pygame/
-environ["SDL_JOYSTICK_HIDAPI_PS4_RUMBLE"] = "1"
+    from config_model.config_pydantic import load_config, update_config_schema, save_config  # type: ignore[assignment]
 
 if USE_SOD:
     from second_order_dynamics import SecondOrderDynamics
@@ -102,13 +100,25 @@ traceback.install(show_locals=True, width=150)
 
 class Game:
     # MARK: Game
-    def __init__(self) -> None:  # 1_004_511
+    def __init__(self, task: str, entities: list[str]) -> None:  # 1_004_511
         import platform
         if IS_WEB and not USE_WEB_SIMULATOR:
             self.log = platform.console.log  # type: ignore[attr-defined]
         else:
             self.log = print
         self.conf = load_config(CONFIG_FILE)
+
+        # print(task, entities)
+        if task == TaskEnum.store:
+            self.store_config_to_csv(entities)
+        elif task == TaskEnum.load:
+            self.load_config_from_csv(entities)
+        elif task == TaskEnum.update:
+            update_config_schema()
+
+        if task != TaskEnum.run:
+            exit()
+
         pygame.init()
 
         # initialise the joystick module
@@ -164,7 +174,6 @@ class Game:
             # self.HUD    = self.screen
             self.HUD    = self.canvas
 
-        size = self.screen.get_size()
         self.rec_process: Any | None = None
         self.save_frame: bool = False
 
@@ -175,19 +184,20 @@ class Game:
             self.fonts[font_size] = pygame.font.Font(MAIN_FONT, font_size)
             self.thin_fonts[font_size] = pygame.font.Font(MENU_FONT, font_size)
 
-        self.font = self.fonts[FONT_SIZE_DEFAULT]
+        self.font: pygame.Font = self.fonts[FONT_SIZE_DEFAULT]
 
-        self.is_running = True
-        self.is_paused = False
+        self.is_running: bool = True
+        self.is_paused: bool = False
 
         # self.show_loading_screen()
-        if USE_SHADERS:
-            self.shader = OpenGL_shader(size, DEFAULT_SHADER)
-            self.shader.create_pipeline()
+        # if USE_SHADERS:
+        #     size = self.screen.get_size()
+        #     self.shader = OpenGL_shader(size, DEFAULT_SHADER)
+        #     self.shader.create_pipeline()
         # self.loading_screen()
 
         if USE_CUSTOM_MOUSE_CURSOR:
-            self.cursor_img = pygame.image.load(MOUSE_CURSOR_IMG)
+            self.cursor_img: pygame.Surface = pygame.image.load(MOUSE_CURSOR_IMG)
             # scale_x = self.cursor_img.get_width() // TILE_SIZE
             # scale_y = self.cursor_img.get_height() // TILE_SIZE
             # self.cursor_img = pygame.transform.scale(cursor_img, (scale_x, scale_y)).convert_alpha()
@@ -221,6 +231,63 @@ class Game:
         if USE_SOD:
             self.init_SOD()
 
+    # #############################################################################################################
+    # def update_config_schema(self) -> None:
+    #     update_schema()
+
+    #############################################################################################################
+    def store_config_to_csv(self, entities: list[str]) -> None:
+        if "all" in entities:
+            entities = list(CONF_ENTITIES_TO_STORE.keys())
+
+        for entity_name in CONF_ENTITIES_TO_STORE:
+            if entity_name in entities:
+                file_name = CONFIG_DIR / f"{entity_name}.csv"
+                print(f"[yellow]Storing[/] '{entity_name}' [yellow]to[/] '{file_name}'")
+                entity_fields = CONF_ENTITIES_TO_STORE[entity_name]
+                with open(file_name, "w") as f:
+                    f.write(";".join(["key"] + entity_fields))
+                    f.write("\n")
+                    objects = getattr(self.conf, entity_name)
+                    for key, object in objects.items():
+                        values = [str(key)] + [str(getattr(object, field)) for field in entity_fields]
+                        f.write(";".join(values))
+                        f.write("\n")
+
+    #############################################################################################################
+    def load_config_from_csv(self, entities: list[str]) -> None:
+        if "all" in entities:
+            entities = list(CONF_ENTITIES_TO_STORE.keys())
+
+        for entity_name in CONF_ENTITIES_TO_STORE:
+            if entity_name in entities:
+                file_name = CONFIG_DIR / f"{entity_name}.csv"
+                print(f"[yellow]Loading[/] '{entity_name}' [yellow]from[/] '{file_name}'")
+                # entity_fields = CONF_ENTITIES_TO_STORE[entity_name]
+                with open(file_name, "r") as f:
+                    data = f.readlines()
+                objects = getattr(self.conf, entity_name)
+                # skip "\n" at the end
+                fields = data[0][:-1].split(";")
+                for line in data[1:]:
+                    # skip "\n" at the end
+                    values = line[:-1].split(";")
+                    key = values[0]
+                    if entity_name == "maze_configs":
+                        key = int(key)  # type: ignore[assignment]
+
+                    if key in objects:
+                        object = objects[key]
+                        for i, value in enumerate(values[1:]):
+                            # +1 to skip 'key' field
+                            field: Any = getattr(object, fields[i + 1])
+                            if type(field) is int:
+                                setattr(object, fields[i + 1], int(value))
+                            elif type(field) is float:
+                                setattr(object, fields[i + 1], float(value))
+
+        save_config(self.conf, CONFIG_DIR / "autogenerated_config.json")  # type: ignore[arg-type]
+
     #############################################################################################################
     def show_loading_screen(self) -> None:
         self.screen.fill(BG_COLOR)
@@ -231,11 +298,11 @@ class Game:
             centred=True,
             bg_color=PANEL_BG_COLOR,
         )
-        if USE_SHADERS:
-            self.shader.render(
-                self.screen, self.HUD, [], 1.0, -1.0, 0.01,
-                use_shaders=USE_SHADERS, save_frame=self.save_frame
-            )
+        # if USE_SHADERS:
+        #     self.shader.render(
+        #         self.screen, self.HUD, [], 1.0, -1.0, 0.01,
+        #         use_shaders=USE_SHADERS, save_frame=self.save_frame
+        #     )
         pygame.display.flip()
 
     #############################################################################################################
@@ -662,13 +729,13 @@ class Game:
         )
 
         # positions = [vec3(0, 0, 0)]
-        if USE_SHADERS:
-            ratio: float = -1.0
-            dt: float = self.clock.tick(FPS_CAP) / 1000.0
-            self.shader.render(
-                self.screen, self.HUD, [], 1.0, ratio, dt,
-                use_shaders=USE_SHADERS, save_frame=self.save_frame
-            )
+        # if USE_SHADERS:
+        #     ratio: float = -1.0
+        #     dt: float = self.clock.tick(FPS_CAP) / 1000.0
+        #     self.shader.render(
+        #         self.screen, self.HUD, [], 1.0, ratio, dt,
+        #         use_shaders=USE_SHADERS, save_frame=self.save_frame
+        #     )
         pygame.display.flip()
         self.rec_process.wait()
 
@@ -710,6 +777,8 @@ class Game:
     def postprocessing(self, dt: float) -> None:
         # shaders are used for postprocessing special effects
         # the whole Surface is used as texture on rect that fills to a full screen
+        return
+
         ratio: float = 0.0
         if hasattr(self.states[-1], "player"):
             # if TYPE_CHECKING:
@@ -740,6 +809,7 @@ class Game:
         # when save_frame is True, the final image is returned as byte buffer
         # to be saved to a file (for screenshot or video recording)
         # returned image is not converted to Surface since it's a very slow process
+
         if USE_SHADERS:
             res = self.shader.render(
                 self.screen, self.HUD, positions, scale, ratio, dt,
@@ -753,6 +823,9 @@ class Game:
                 else:
                     if self.rec_process:
                         self.rec_process.stdin.write(res)
+
+        return
+
     #############################################################################################################
 
     # @timeit

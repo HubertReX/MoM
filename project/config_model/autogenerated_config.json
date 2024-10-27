@@ -1,0 +1,669 @@
+{
+    "$schema": "./config_schema.json",
+    "characters": {
+        "Player": {
+            "name": "Player",
+            "sprite": "GreenNinja",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "health": 80,
+            "max_health": 80,
+            "items": [
+                "lance",
+                "stick",
+                "gem_small_green",
+                "shashlik",
+                "shashlik",
+                "gem_crystal_blue",
+                "gem_big_orange"
+            ],
+            "money": 20
+        },
+        "Johny": {
+            "name": "Johny",
+            "sprite": "Villager1",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "is_merchant": true,
+            "tradeable_items_types": [
+                "gem"
+            ],
+            "items": [
+                "gem_small_green",
+                "gem_small_purple",
+                "gem_small_blue",
+                "gem_small_orange"
+            ],
+            "max_carry_weight": 100.0,
+            "money": 3000
+        },
+        "Fred": {
+            "name": "Fred",
+            "sprite": "Villager2",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "money": 20
+        },
+        "Bart": {
+            "name": "Bart",
+            "sprite": "Villager3",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "is_merchant": true,
+            "items": [
+                "life_pot",
+                "life_pot",
+                "life_pot",
+                "shashlik",
+                "fish",
+                "shrimp",
+                "shrimp"
+            ],
+            "max_carry_weight": 30.0,
+            "money": 200
+        },
+        "Rob": {
+            "name": "Rob",
+            "sprite": "Villager4",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "money": 20
+        },
+        "Marry": {
+            "name": "Marry",
+            "sprite": "Woman",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "health": 120,
+            "max_health": 120,
+            "money": 25
+        },
+        "FishRed": {
+            "name": "FishRed",
+            "sprite": "FishRed",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "water"
+            ],
+            "speed_walk": 10
+        },
+        "Cat": {
+            "name": "Cat",
+            "sprite": "Cat",
+            "race": "animal",
+            "attitude": "friendly",
+            "speed_walk": 15
+        },
+        "Dog_orange": {
+            "name": "Dog",
+            "sprite": "Dog1",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "backyard"
+            ],
+            "speed_walk": 15
+        },
+        "Dog_purple": {
+            "name": "Dog",
+            "sprite": "Dog2",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "backyard"
+            ],
+            "speed_walk": 15
+        },
+        "ChickenBlack": {
+            "name": "Chicken",
+            "sprite": "ChickenBlack",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "plains"
+            ],
+            "speed_walk": 15
+        },
+        "ChickenBrown": {
+            "name": "Chicken",
+            "sprite": "ChickenBrown",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "plains"
+            ],
+            "speed_walk": 15
+        },
+        "ChickenCute": {
+            "name": "Chicken",
+            "sprite": "ChickenCute",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "plains"
+            ],
+            "speed_walk": 15
+        },
+        "ChickenWhite": {
+            "name": "Chicken",
+            "sprite": "ChickenWhite",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "plains"
+            ],
+            "speed_walk": 15
+        },
+        "Pig": {
+            "name": "Pig",
+            "sprite": "Pig",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "plains"
+            ],
+            "speed_walk": 20
+        },
+        "Cow": {
+            "name": "Cow",
+            "sprite": "Cow",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "plains"
+            ]
+        },
+        "Horse": {
+            "name": "Horse",
+            "sprite": "Horse",
+            "race": "animal",
+            "attitude": "friendly",
+            "allowed_zones": [
+                "plains"
+            ]
+        },
+        "Frog": {
+            "name": "Frog",
+            "sprite": "Frog",
+            "race": "animal",
+            "attitude": "afraid",
+            "allowed_zones": [
+                "shore"
+            ],
+            "speed_walk": 10
+        },
+        "Racoon": {
+            "name": "Racoon",
+            "sprite": "Racoon",
+            "race": "animal",
+            "attitude": "afraid",
+            "speed_walk": 10
+        },
+        "Boar": {
+            "name": "Boar",
+            "sprite": "Boar",
+            "race": "animal",
+            "attitude": "afraid",
+            "speed_walk": 20
+        },
+        "Snake_01": {
+            "name": "Snake",
+            "sprite": "Snake",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 50,
+            "max_health": 50,
+            "items": [
+                "life_pot"
+            ],
+            "damage": 20,
+            "speed_run": 75
+        },
+        "Spirit_01": {
+            "name": "Spirit",
+            "sprite": "Spirit",
+            "race": "monster",
+            "attitude": "enemy"
+        },
+        "Slime_01": {
+            "name": "Slime",
+            "sprite": "Slime",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 40,
+            "max_health": 40
+        },
+        "Spider_01": {
+            "name": "Spider",
+            "sprite": "SpiderRed",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 60,
+            "max_health": 60,
+            "damage": 20
+        },
+        "CaveLion": {
+            "name": "CaveLion",
+            "sprite": "CaveLion",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 60,
+            "max_health": 60,
+            "damage": 20
+        },
+        "CaveLion2": {
+            "name": "CaveLion",
+            "sprite": "CaveLion2",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 60,
+            "max_health": 60,
+            "damage": 20
+        },
+        "LionYellow": {
+            "name": "LionYellow",
+            "sprite": "LionYellow",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 60,
+            "max_health": 60,
+            "damage": 20
+        },
+        "Flam": {
+            "name": "Flam",
+            "sprite": "Flam",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 60,
+            "max_health": 60,
+            "damage": 20
+        }
+    },
+    "chests": {
+        "SmallChest_Maze_01": {
+            "name": "SmallChest_Maze_01",
+            "total_items_count": 1,
+            "random_items": [
+                "gem_small_green",
+                "gem_crystal_green",
+                "shrimp"
+            ]
+        },
+        "BigChest_Maze_01": {
+            "name": "BigChest_Maze_01",
+            "is_small": false,
+            "items": [
+                "gem_big_green"
+            ],
+            "total_items_count": 3,
+            "random_items": [
+                "golden_coin",
+                "life_pot",
+                "fish"
+            ]
+        },
+        "SmallChest_Maze_02": {
+            "name": "SmallChest_Maze_02",
+            "total_items_count": 1,
+            "random_items": [
+                "gem_small_purple",
+                "gem_crystal_purple",
+                "shrimp"
+            ]
+        },
+        "BigChest_Maze_02": {
+            "name": "BigChest_Maze_02",
+            "is_small": false,
+            "items": [
+                "gem_big_purple"
+            ],
+            "total_items_count": 3,
+            "random_items": [
+                "golden_coin",
+                "life_pot",
+                "fish"
+            ]
+        },
+        "SmallChest_Maze_03": {
+            "name": "SmallChest_Maze_03",
+            "total_items_count": 1,
+            "random_items": [
+                "gem_small_blue",
+                "gem_crystal_blue",
+                "shrimp"
+            ]
+        },
+        "BigChest_Maze_03": {
+            "name": "BigChest_Maze_03",
+            "is_small": false,
+            "items": [
+                "gem_big_blue"
+            ],
+            "total_items_count": 3,
+            "random_items": [
+                "golden_coin",
+                "life_pot",
+                "fish"
+            ]
+        },
+        "SmallChest_Maze_04": {
+            "name": "SmallChest_Maze_04",
+            "total_items_count": 1,
+            "random_items": [
+                "gem_small_orange",
+                "gem_crystal_orange",
+                "shrimp"
+            ]
+        },
+        "BigChest_Maze_04": {
+            "name": "BigChest_Maze_04",
+            "is_small": false,
+            "items": [
+                "gem_big_orange"
+            ],
+            "total_items_count": 3,
+            "random_items": [
+                "golden_coin",
+                "life_pot",
+                "fish"
+            ]
+        },
+        "SmallChest_VillageHouse": {
+            "name": "SmallChest_VillageHouse",
+            "items": [
+                "golden_coin"
+            ]
+        },
+        "BigChest_Village": {
+            "name": "BigChest_Village",
+            "is_small": false,
+            "items": [
+                "sai",
+                "beef",
+                "shrimp"
+            ]
+        }
+    },
+    "items": {
+        "hammer": {
+            "name": "War hammer",
+            "type": "weapon",
+            "value": 70,
+            "weight": 5.0,
+            "damage": 25,
+            "cooldown_time": 0.5
+        },
+        "club": {
+            "name": "War hammer",
+            "type": "weapon",
+            "weight": 7.0,
+            "damage": 30,
+            "cooldown_time": 0.6
+        },
+        "axe": {
+            "name": "War Axe",
+            "type": "weapon",
+            "value": 170,
+            "weight": 5.0,
+            "damage": 35,
+            "cooldown_time": 0.5
+        },
+        "stick": {
+            "name": "Stick",
+            "type": "weapon",
+            "value": 20,
+            "damage": 5,
+            "cooldown_time": 0.2
+        },
+        "pitchfork": {
+            "name": "Pitchfork",
+            "type": "weapon",
+            "weight": 2.5,
+            "cooldown_time": 0.4
+        },
+        "lance": {
+            "name": "Lance",
+            "type": "weapon",
+            "value": 150,
+            "weight": 2.5,
+            "damage": 15,
+            "cooldown_time": 0.4
+        },
+        "katana": {
+            "name": "Katana",
+            "type": "weapon",
+            "value": 250,
+            "weight": 2.5,
+            "damage": 20,
+            "cooldown_time": 0.3
+        },
+        "sword_long": {
+            "name": "Long sword",
+            "type": "weapon",
+            "value": 250,
+            "weight": 3.0,
+            "damage": 30,
+            "cooldown_time": 0.5
+        },
+        "rapier": {
+            "name": "Rapier",
+            "type": "weapon",
+            "cooldown_time": 0.1
+        },
+        "sword_short": {
+            "name": "Short sword",
+            "type": "weapon",
+            "damage": 15,
+            "cooldown_time": 0.1
+        },
+        "sai": {
+            "name": "Sai",
+            "type": "weapon",
+            "value": 20,
+            "cooldown_time": 0.1
+        },
+        "golden_coin": {
+            "name": "Golden coin",
+            "type": "money",
+            "value": 1000,
+            "weight": 0.02
+        },
+        "gem_small_green": {
+            "name": "Green small gem",
+            "type": "gem",
+            "value": 10
+        },
+        "gem_crystal_green": {
+            "name": "Green crystal gem",
+            "type": "gem",
+            "value": 20,
+            "weight": 2.0
+        },
+        "gem_big_green": {
+            "name": "Green big gem",
+            "type": "gem",
+            "value": 30,
+            "weight": 3.0
+        },
+        "gem_small_purple": {
+            "name": "Purple small gem",
+            "type": "gem",
+            "value": 20
+        },
+        "gem_crystal_purple": {
+            "name": "Purple crystal gem",
+            "type": "gem",
+            "value": 40,
+            "weight": 2.0
+        },
+        "gem_big_purple": {
+            "name": "Purple big gem",
+            "type": "gem",
+            "value": 60,
+            "weight": 3.0
+        },
+        "gem_small_blue": {
+            "name": "Blue small gem",
+            "type": "gem",
+            "value": 40
+        },
+        "gem_crystal_blue": {
+            "name": "Blue crystal gem",
+            "type": "gem",
+            "value": 60,
+            "weight": 2.0
+        },
+        "gem_big_blue": {
+            "name": "Blue big gem",
+            "type": "gem",
+            "value": 80,
+            "weight": 3.0
+        },
+        "gem_small_orange": {
+            "name": "Orange small gem",
+            "type": "gem",
+            "value": 60
+        },
+        "gem_crystal_orange": {
+            "name": "Orange crystal gem",
+            "type": "gem",
+            "value": 80,
+            "weight": 2.0
+        },
+        "gem_big_orange": {
+            "name": "Orange big gem",
+            "type": "gem",
+            "value": 90,
+            "weight": 3.0
+        },
+        "silver_key": {
+            "name": "Silver key",
+            "type": "key",
+            "value": 500,
+            "weight": 0.01
+        },
+        "golden_key": {
+            "name": "Golden key",
+            "type": "key",
+            "value": 500,
+            "weight": 0.01
+        },
+        "beef": {
+            "name": "Baked beef",
+            "type": "consumable",
+            "value": 30,
+            "weight": 2.0,
+            "health_impact": 50
+        },
+        "honey": {
+            "name": "Bee honey",
+            "type": "consumable",
+            "value": 20,
+            "health_impact": 40
+        },
+        "empty_pot": {
+            "name": "Empty pot",
+            "type": "consumable",
+            "value": 10,
+            "weight": 0.1
+        },
+        "water_pot": {
+            "name": "Water pot",
+            "type": "consumable",
+            "value": 20,
+            "weight": 0.15,
+            "health_impact": 5
+        },
+        "life_pot": {
+            "name": "Life potion",
+            "type": "consumable",
+            "value": 300,
+            "weight": 0.15,
+            "health_impact": 100
+        },
+        "shashlik": {
+            "name": "Shashlik",
+            "type": "consumable",
+            "value": 20,
+            "health_impact": 30
+        },
+        "leaf": {
+            "name": "Tea leaf",
+            "type": "consumable",
+            "value": 5,
+            "weight": 0.01,
+            "health_impact": 3
+        },
+        "shrimp": {
+            "name": "Tiger shrimp",
+            "type": "consumable",
+            "value": 15,
+            "weight": 0.1,
+            "health_impact": 5
+        },
+        "fish": {
+            "name": "Fresh fish",
+            "type": "consumable",
+            "value": 15,
+            "weight": 0.5,
+            "health_impact": 15
+        }
+    },
+    "maze_configs": {
+        "1": {
+            "monsters_list": [
+                "Spirit_01"
+            ],
+            "boss_monster": "CaveLion",
+            "monsters_count": 4,
+            "small_chest_count": 2,
+            "small_chest_template": "SmallChest_Maze_01",
+            "big_chest_template": "BigChest_Maze_01",
+            "maze_cols": 9,
+            "maze_rows": 6
+        },
+        "2": {
+            "monsters_list": [
+                "Spirit_01",
+                "Slime_01"
+            ],
+            "boss_monster": "CaveLion2",
+            "monsters_count": 5,
+            "small_chest_count": 3,
+            "small_chest_template": "SmallChest_Maze_02",
+            "big_chest_template": "BigChest_Maze_02",
+            "maze_cols": 10,
+            "maze_rows": 7
+        },
+        "3": {
+            "monsters_list": [
+                "Spirit_01",
+                "Slime_01",
+                "Spider_01"
+            ],
+            "boss_monster": "LionYellow",
+            "monsters_count": 6,
+            "small_chest_count": 4,
+            "small_chest_template": "SmallChest_Maze_03",
+            "big_chest_template": "BigChest_Maze_03",
+            "maze_cols": 11,
+            "maze_rows": 8
+        },
+        "4": {
+            "monsters_list": [
+                "Spirit_01",
+                "Slime_01",
+                "Spider_01",
+                "Snake_01"
+            ],
+            "boss_monster": "Flam",
+            "monsters_count": 7,
+            "small_chest_count": 5,
+            "small_chest_template": "SmallChest_Maze_04",
+            "big_chest_template": "BigChest_Maze_04",
+            "maze_cols": 12,
+            "maze_rows": 9
+        }
+    }
+}
