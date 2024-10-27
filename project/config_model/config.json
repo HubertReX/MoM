@@ -34,7 +34,7 @@
                 "gem_small_blue",
                 "gem_small_orange"
             ],
-            "max_carry_weight": 100,
+            "max_carry_weight": 100.0,
             "money": 3000
         },
         "Fred": {
@@ -59,7 +59,7 @@
                 "shrimp",
                 "shrimp"
             ],
-            "max_carry_weight": 30,
+            "max_carry_weight": 30.0,
             "money": 200
         },
         "Rob": {
@@ -82,11 +82,10 @@
             "name": "FishRed",
             "sprite": "FishRed",
             "race": "animal",
+            "attitude": "friendly",
             "allowed_zones": [
                 "water"
             ],
-            "attitude": "friendly",
-            "money": 0,
             "speed_walk": 10
         },
         "Cat": {
@@ -94,7 +93,6 @@
             "sprite": "Cat",
             "race": "animal",
             "attitude": "friendly",
-            "money": 0,
             "speed_walk": 15
         },
         "Dog_orange": {
@@ -105,7 +103,6 @@
             "allowed_zones": [
                 "backyard"
             ],
-            "money": 0,
             "speed_walk": 15
         },
         "Dog_purple": {
@@ -116,7 +113,6 @@
             "allowed_zones": [
                 "backyard"
             ],
-            "money": 0,
             "speed_walk": 15
         },
         "ChickenBlack": {
@@ -127,7 +123,6 @@
             "allowed_zones": [
                 "plains"
             ],
-            "money": 0,
             "speed_walk": 15
         },
         "ChickenBrown": {
@@ -138,7 +133,6 @@
             "allowed_zones": [
                 "plains"
             ],
-            "money": 0,
             "speed_walk": 15
         },
         "ChickenCute": {
@@ -149,7 +143,6 @@
             "allowed_zones": [
                 "plains"
             ],
-            "money": 0,
             "speed_walk": 15
         },
         "ChickenWhite": {
@@ -160,7 +153,6 @@
             "allowed_zones": [
                 "plains"
             ],
-            "money": 0,
             "speed_walk": 15
         },
         "Pig": {
@@ -171,7 +163,6 @@
             "allowed_zones": [
                 "plains"
             ],
-            "money": 0,
             "speed_walk": 20
         },
         "Cow": {
@@ -181,9 +172,7 @@
             "attitude": "friendly",
             "allowed_zones": [
                 "plains"
-            ],
-            "money": 0,
-            "speed_walk": 30
+            ]
         },
         "Horse": {
             "name": "Horse",
@@ -192,9 +181,7 @@
             "attitude": "friendly",
             "allowed_zones": [
                 "plains"
-            ],
-            "money": 0,
-            "speed_walk": 30
+            ]
         },
         "Frog": {
             "name": "Frog",
@@ -204,7 +191,6 @@
             "allowed_zones": [
                 "shore"
             ],
-            "money": 0,
             "speed_walk": 10
         },
         "Racoon": {
@@ -212,8 +198,6 @@
             "sprite": "Racoon",
             "race": "animal",
             "attitude": "afraid",
-            "allowed_zones": [],
-            "money": 0,
             "speed_walk": 10
         },
         "Boar": {
@@ -221,8 +205,6 @@
             "sprite": "Boar",
             "race": "animal",
             "attitude": "afraid",
-            "allowed_zones": [],
-            "money": 0,
             "speed_walk": 20
         },
         "Snake_01": {
@@ -236,18 +218,13 @@
                 "life_pot"
             ],
             "damage": 20,
-            "money": 0,
             "speed_run": 75
         },
         "Spirit_01": {
             "name": "Spirit",
             "sprite": "Spirit",
             "race": "monster",
-            "attitude": "enemy",
-            "health": 30,
-            "max_health": 30,
-            "damage": 10,
-            "money": 0
+            "attitude": "enemy"
         },
         "Slime_01": {
             "name": "Slime",
@@ -255,9 +232,7 @@
             "race": "monster",
             "attitude": "enemy",
             "health": 40,
-            "max_health": 40,
-            "damage": 10,
-            "money": 0
+            "max_health": 40
         },
         "Spider_01": {
             "name": "Spider",
@@ -266,8 +241,7 @@
             "attitude": "enemy",
             "health": 60,
             "max_health": 60,
-            "damage": 20,
-            "money": 0
+            "damage": 20
         },
         "CaveLion": {
             "name": "CaveLion",
@@ -276,8 +250,7 @@
             "attitude": "enemy",
             "health": 60,
             "max_health": 60,
-            "damage": 20,
-            "money": 0
+            "damage": 20
         },
         "CaveLion2": {
             "name": "CaveLion",
@@ -286,8 +259,7 @@
             "attitude": "enemy",
             "health": 60,
             "max_health": 60,
-            "damage": 20,
-            "money": 0
+            "damage": 20
         },
         "LionYellow": {
             "name": "LionYellow",
@@ -296,8 +268,7 @@
             "attitude": "enemy",
             "health": 60,
             "max_health": 60,
-            "damage": 20,
-            "money": 0
+            "damage": 20
         },
         "Flam": {
             "name": "Flam",
@@ -306,8 +277,7 @@
             "attitude": "enemy",
             "health": 60,
             "max_health": 60,
-            "damage": 20,
-            "money": 0
+            "damage": 20
         }
     },
     "chests": {
@@ -419,243 +389,225 @@
         "hammer": {
             "name": "War hammer",
             "type": "weapon",
+            "value": 70,
             "weight": 5.0,
             "damage": 25,
-            "cooldown_time": 0.5,
-            "value": 70
+            "cooldown_time": 0.5
         },
         "club": {
             "name": "War hammer",
             "type": "weapon",
-            "weight": 7.00,
+            "weight": 7.0,
             "damage": 30,
-            "cooldown_time": 0.6,
-            "value": 50
+            "cooldown_time": 0.6
         },
         "axe": {
             "name": "War Axe",
             "type": "weapon",
+            "value": 170,
             "weight": 5.0,
             "damage": 35,
-            "cooldown_time": 0.5,
-            "value": 170
+            "cooldown_time": 0.5
         },
         "stick": {
             "name": "Stick",
             "type": "weapon",
-            "weight": 1,
+            "value": 20,
             "damage": 5,
-            "cooldown_time": 0.2,
-            "value": 20
+            "cooldown_time": 0.2
         },
         "pitchfork": {
             "name": "Pitchfork",
             "type": "weapon",
             "weight": 2.5,
-            "damage": 10,
-            "cooldown_time": 0.4,
-            "value": 50
+            "cooldown_time": 0.4
         },
         "lance": {
             "name": "Lance",
             "type": "weapon",
+            "value": 150,
             "weight": 2.5,
             "damage": 15,
-            "cooldown_time": 0.4,
-            "value": 150
+            "cooldown_time": 0.4
         },
         "katana": {
             "name": "Katana",
             "type": "weapon",
+            "value": 250,
             "weight": 2.5,
             "damage": 20,
-            "cooldown_time": 0.3,
-            "value": 250
+            "cooldown_time": 0.3
         },
         "sword_long": {
             "name": "Long sword",
             "type": "weapon",
+            "value": 250,
             "weight": 3.0,
             "damage": 30,
-            "cooldown_time": 0.5,
-            "value": 250
+            "cooldown_time": 0.5
         },
         "rapier": {
             "name": "Rapier",
             "type": "weapon",
-            "weight": 1.0,
-            "damage": 10,
-            "cooldown_time": 0.1,
-            "value": 50
+            "cooldown_time": 0.1
         },
         "sword_short": {
             "name": "Short sword",
             "type": "weapon",
-            "weight": 1.0,
             "damage": 15,
-            "cooldown_time": 0.1,
-            "value": 50
+            "cooldown_time": 0.1
         },
         "sai": {
             "name": "Sai",
             "type": "weapon",
-            "weight": 1.0,
-            "damage": 10,
-            "cooldown_time": 0.1,
-            "value": 20
+            "value": 20,
+            "cooldown_time": 0.1
         },
         "golden_coin": {
             "name": "Golden coin",
             "type": "money",
-            "weight": 0.02,
-            "value": 1000
+            "value": 1000,
+            "weight": 0.02
         },
         "gem_small_green": {
             "name": "Green small gem",
             "type": "gem",
-            "weight": 1,
             "value": 10
         },
         "gem_crystal_green": {
             "name": "Green crystal gem",
             "type": "gem",
-            "weight": 2,
-            "value": 20
+            "value": 20,
+            "weight": 2.0
         },
         "gem_big_green": {
             "name": "Green big gem",
             "type": "gem",
-            "weight": 3,
-            "value": 30
+            "value": 30,
+            "weight": 3.0
         },
         "gem_small_purple": {
             "name": "Purple small gem",
             "type": "gem",
-            "weight": 1,
             "value": 20
         },
         "gem_crystal_purple": {
             "name": "Purple crystal gem",
             "type": "gem",
-            "weight": 2,
-            "value": 40
+            "value": 40,
+            "weight": 2.0
         },
         "gem_big_purple": {
             "name": "Purple big gem",
             "type": "gem",
-            "weight": 3,
-            "value": 60
+            "value": 60,
+            "weight": 3.0
         },
         "gem_small_blue": {
             "name": "Blue small gem",
             "type": "gem",
-            "weight": 1,
             "value": 40
         },
         "gem_crystal_blue": {
             "name": "Blue crystal gem",
             "type": "gem",
-            "weight": 2,
-            "value": 60
+            "value": 60,
+            "weight": 2.0
         },
         "gem_big_blue": {
             "name": "Blue big gem",
             "type": "gem",
-            "weight": 3,
-            "value": 80
+            "value": 80,
+            "weight": 3.0
         },
         "gem_small_orange": {
             "name": "Orange small gem",
             "type": "gem",
-            "weight": 1,
             "value": 60
         },
         "gem_crystal_orange": {
             "name": "Orange crystal gem",
             "type": "gem",
-            "weight": 2,
-            "value": 80
+            "value": 80,
+            "weight": 2.0
         },
         "gem_big_orange": {
             "name": "Orange big gem",
             "type": "gem",
-            "weight": 3,
-            "value": 90
+            "value": 90,
+            "weight": 3.0
         },
         "silver_key": {
             "name": "Silver key",
             "type": "key",
-            "weight": 0.01,
-            "value": 500
+            "value": 500,
+            "weight": 0.01
         },
         "golden_key": {
             "name": "Golden key",
             "type": "key",
-            "weight": 0.01,
-            "value": 500
+            "value": 500,
+            "weight": 0.01
         },
         "beef": {
             "name": "Baked beef",
             "type": "consumable",
-            "health_impact": 50,
+            "value": 30,
             "weight": 2.0,
-            "value": 30
+            "health_impact": 50
         },
         "honey": {
             "name": "Bee honey",
             "type": "consumable",
-            "health_impact": 40,
-            "weight": 1.0,
-            "value": 20
+            "value": 20,
+            "health_impact": 40
         },
         "empty_pot": {
             "name": "Empty pot",
             "type": "consumable",
-            "health_impact": 0,
-            "weight": 0.1,
-            "value": 10
+            "value": 10,
+            "weight": 0.1
         },
         "water_pot": {
             "name": "Water pot",
             "type": "consumable",
-            "health_impact": 5,
+            "value": 20,
             "weight": 0.15,
-            "value": 20
+            "health_impact": 5
         },
         "life_pot": {
             "name": "Life potion",
             "type": "consumable",
-            "health_impact": 100,
+            "value": 300,
             "weight": 0.15,
-            "value": 300
+            "health_impact": 100
         },
         "shashlik": {
             "name": "Shashlik",
             "type": "consumable",
-            "health_impact": 30,
-            "weight": 1.0,
-            "value": 20
+            "value": 20,
+            "health_impact": 30
         },
         "leaf": {
             "name": "Tea leaf",
             "type": "consumable",
+            "value": 5,
             "weight": 0.01,
-            "health_impact": 3,
-            "value": 5
+            "health_impact": 3
         },
         "shrimp": {
             "name": "Tiger shrimp",
             "type": "consumable",
+            "value": 15,
             "weight": 0.1,
-            "health_impact": 5,
-            "value": 15
+            "health_impact": 5
         },
         "fish": {
             "name": "Fresh fish",
             "type": "consumable",
+            "value": 15,
             "weight": 0.5,
-            "health_impact": 15,
-            "value": 15
+            "health_impact": 15
         }
     },
     "maze_configs": {
