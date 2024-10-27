@@ -203,13 +203,6 @@
                     "title": "Value",
                     "type": "integer"
                 },
-                "health_impact": {
-                    "default": 0,
-                    "description": "The impact on health when consumed (e.g. apple => +30, poison => -10)",
-                    "minimum": 0,
-                    "title": "Health Impact",
-                    "type": "integer"
-                },
                 "in_use": {
                     "default": false,
                     "description": "Whether the item is currently in use",
@@ -229,6 +222,13 @@
                     "minimum": 0.0,
                     "title": "Weight",
                     "type": "number"
+                },
+                "health_impact": {
+                    "default": 0,
+                    "description": "The impact on health when consumed (e.g. apple => +30, poison => -10)",
+                    "minimum": 0,
+                    "title": "Health Impact",
+                    "type": "integer"
                 },
                 "damage": {
                     "default": 10,
@@ -281,7 +281,7 @@
                     "type": "string"
                 },
                 "monsters_count": {
-                    "default": 4,
+                    "default": 1,
                     "description": "Number of regular monster per level (without boss)",
                     "minimum": 0,
                     "title": "Monsters Count",
@@ -307,14 +307,14 @@
                     "type": "string"
                 },
                 "maze_cols": {
-                    "default": 10,
+                    "default": 5,
                     "description": "Number of columns in map grid",
                     "minimum": 0,
                     "title": "Maze Cols",
                     "type": "integer"
                 },
                 "maze_rows": {
-                    "default": 7,
+                    "default": 5,
                     "description": "Number of rows in map grid",
                     "minimum": 0,
                     "title": "Maze Rows",
@@ -348,18 +348,18 @@
             "title": "Characters",
             "type": "object"
         },
-        "items": {
-            "additionalProperties": {
-                "$ref": "#/$defs/Item"
-            },
-            "title": "Items",
-            "type": "object"
-        },
         "chests": {
             "additionalProperties": {
                 "$ref": "#/$defs/Chest"
             },
             "title": "Chests",
+            "type": "object"
+        },
+        "items": {
+            "additionalProperties": {
+                "$ref": "#/$defs/Item"
+            },
+            "title": "Items",
             "type": "object"
         },
         "maze_configs": {
@@ -373,8 +373,8 @@
     },
     "required": [
         "characters",
-        "items",
         "chests",
+        "items",
         "maze_configs"
     ],
     "title": "ConfigForSchemaGen",
