@@ -173,7 +173,7 @@ class NPC(pygame.sprite.Sprite):
         self.speed_walk: int = self.model.speed_walk
         self.speed_run: int = self.model.speed_run
         self.speed: int = random.choice([self.speed_walk, self.speed_run])
-        if self.model.attitude == AttitudeEnum.enemy or self.model.race == RaceEnum.animal:
+        if self.model.race in [RaceEnum.animal, RaceEnum.monster]:
             self.speed = self.speed_walk
 
         # movement inertia
@@ -928,7 +928,7 @@ class NPC(pygame.sprite.Sprite):
             # push the npc
             player_move = self.pos - oponent.pos
             if not player_move == vec(0, 0):
-                self.pos += player_move.normalize() * 8
+                # self.pos += player_move.normalize() * 8
                 oponent.pos -= player_move.normalize() * 8
 
             # oponent_move = oponent.pos - oponent.prev_pos
@@ -942,7 +942,7 @@ class NPC(pygame.sprite.Sprite):
             # push the npc
             player_move = self.pos - self.prev_pos
             if player_move != vec(0, 0):
-                oponent.pos += player_move.normalize() * TILE_SIZE
+                # oponent.pos += player_move.normalize() * TILE_SIZE
                 oponent.emote.set_temporary_emote("shocked_anim", 4.0)
             oponent.adjust_rect()
 

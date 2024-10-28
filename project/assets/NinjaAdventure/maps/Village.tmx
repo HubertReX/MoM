@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="70" height="70" tilewidth="16" tileheight="16" infinite="0" nextlayerid="13" nextobjectid="75">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="70" height="70" tilewidth="16" tileheight="16" infinite="0" nextlayerid="14" nextobjectid="103">
  <properties>
   <property name="outdoor" type="bool" value="true"/>
   <property name="particles" value="leafs,rain"/>
@@ -13,6 +13,7 @@
  <tileset firstgid="2627" source="FloorDetail.tsx"/>
  <tileset firstgid="2707" source="../items/items.tsx"/>
  <tileset firstgid="2817" source="tilesets/Maze.tsx"/>
+ <tileset firstgid="2949" source="tilesets/CharacterTileset.tsx"/>
  <layer id="1" name="ground" width="70" height="70">
   <data encoding="csv">
 745,744,742,745,742,745,745,722,742,741,745,741,745,741,722,745,741,722,741,721,721,722,742,745,742,721,745,745,721,744,741,745,741,742,742,745,743,721,742,722,742,745,744,745,744,722,742,745,744,722,722,721,742,743,742,744,721,745,745,745,721,744,743,742,721,197,40,40,68,68,
@@ -206,13 +207,13 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2779,2778,2773,2770,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2763,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2731,0,0,0,0,2768,2784,2772,2785,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2735,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2732,0,2732,0,2732,0,2732,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -220,7 +221,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2752,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2720,0,0,0,0,0,2728,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -383,7 +384,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="10" name="Over0" width="70" height="70" opacity="0.99">
+ <layer id="10" name="over" width="70" height="70" opacity="0.99">
   <data encoding="csv">
 1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1199,0,0,0,0,0,0,
 1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,1198,1197,0,0,0,0,0,0,0,
@@ -481,30 +482,27 @@
     <property name="maze_cols" type="int" value="10"/>
     <property name="maze_rows" type="int" value="7"/>
     <property name="obj_type" value="exit"/>
-    <property name="return_entry_point" value="Stairs"/>
+    <property name="return_entry_point" value="NextToMaze"/>
     <property name="to_map" value="Maze_01"/>
    </properties>
   </object>
-  <object id="31" name="BigChest_Village" x="880" y="720" width="16" height="16">
+  <object id="39" name="BigChest_Village" gid="2749" x="880" y="736" width="16" height="16">
    <properties>
     <property name="obj_type" value="chest"/>
    </properties>
   </object>
-  <object id="39" name="BigChest_Village_IMG" gid="2749" x="880" y="736" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="5" name="entry_points">
-  <object id="1" name="start" x="800" y="745.6">
-   <point/>
-  </object>
   <object id="14" name="VillageHouseDoor" x="680" y="752">
    <point/>
   </object>
   <object id="28" name="JacobsChamberDoor" x="376" y="896">
    <point/>
   </object>
-  <object id="20" name="Stairs" x="908" y="688">
+  <object id="20" name="NextToMaze" x="904" y="688">
    <point/>
   </object>
+  <object id="87" name="start" gid="2949" x="912" y="702.4" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="8" name="waypoints" visible="0">
   <object id="12" name="Rob" x="1032" y="904">
@@ -530,168 +528,45 @@
   </object>
  </objectgroup>
  <objectgroup id="9" name="spawn_points">
-  <object id="23" name="Rob" x="1032" y="912">
-   <properties>
-    <property name="model_name" value="Rob"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="29" name="Snake" x="1032" y="832">
+  <object id="76" name="Snake_01" gid="2955" x="1024" y="832" width="16" height="16">
    <properties>
     <property name="model_name" value="Snake_01"/>
    </properties>
-   <point/>
   </object>
-  <object id="22" name="Bart" x="760" y="744">
-   <properties>
-    <property name="model_name" value="Bart"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="24" name="Fred" x="648" y="832">
-   <properties>
-    <property name="model_name" value="Fred"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="25" name="Johny" x="696" y="752">
-   <properties>
-    <property name="model_name" value="Johny"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="21" name="Marry" x="800" y="800">
-   <properties>
-    <property name="model_name" value="Marry"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="34" name="Frog05" x="1056" y="816">
-   <properties>
-    <property name="model_name" value="Frog"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="37" name="Frog02" x="1056" y="784">
-   <properties>
-    <property name="model_name" value="Frog"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="38" name="Frog01" x="1065" y="912">
-   <properties>
-    <property name="model_name" value="Frog"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="35" name="Cat01" x="950" y="680">
-   <properties>
-    <property name="model_name" value="Cat"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="42" name="Cat02" x="934" y="758">
-   <properties>
-    <property name="model_name" value="Cat"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="43" name="Dog2" x="696" y="810">
-   <properties>
-    <property name="model_name" value="Dog_purple"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="44" name="Dog1" x="678" y="776">
+  <object id="77" name="FishRed05" gid="2956" x="1080" y="756.8" width="16" height="16"/>
+  <object id="78" name="FishRed04" gid="2956" x="1064" y="852.8" width="16" height="16"/>
+  <object id="79" name="FishRed03" gid="2956" x="1080" y="964.8" width="16" height="16"/>
+  <object id="80" name="FishRed02" gid="2956" x="968" y="980.8" width="16" height="16"/>
+  <object id="81" name="FishRed01" gid="2956" x="728" y="996.8" width="16" height="16"/>
+  <object id="82" name="Frog03" gid="2967" x="1057.6" y="912" width="16" height="16"/>
+  <object id="83" name="Frog02" gid="2967" x="1048" y="816" width="16" height="16"/>
+  <object id="84" name="Frog01" gid="2967" x="1048" y="784" width="16" height="16"/>
+  <object id="85" name="Cat01" gid="2957" x="942.4" y="680" width="16" height="16"/>
+  <object id="86" name="Cat02" gid="2957" x="926.4" y="758.4" width="16" height="16"/>
+  <object id="88" name="Horse" gid="2966" x="932.8" y="864" width="23" height="16"/>
+  <object id="93" name="Cow" gid="2965" x="817.6" y="864" width="23" height="16"/>
+  <object id="89" name="Pig" gid="2964" x="953.6" y="912" width="16" height="16"/>
+  <object id="90" name="ChickenWhite" gid="2963" x="912" y="843.2" width="16" height="16"/>
+  <object id="91" name="ChickenBrown" gid="2961" x="876.8" y="827.2" width="16" height="16"/>
+  <object id="92" name="ChickenBlack" gid="2960" x="814.4" y="840" width="16" height="16"/>
+  <object id="94" name="ChickenCute" gid="2962" x="862.4" y="852.8" width="16" height="16"/>
+  <object id="98" name="Dog_orange" type="Dog_orange" gid="2958" x="670.4" y="777.6" width="16" height="16">
    <properties>
     <property name="model_name" value="Dog_orange"/>
    </properties>
-   <point/>
   </object>
-  <object id="45" name="ChickenBlack" x="822" y="840">
+  <object id="99" name="Dog_purple" type="Dog_purple" gid="2959" x="688" y="811.2" width="16" height="16">
    <properties>
-    <property name="model_name" value="ChickenBlack"/>
+    <property name="model_name" value="Dog_purple"/>
    </properties>
-   <point/>
   </object>
-  <object id="46" name="ChickenBrown" x="884" y="826">
-   <properties>
-    <property name="model_name" value="ChickenBrown"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="47" name="ChickenWhite" x="920" y="842">
-   <properties>
-    <property name="model_name" value="ChickenWhite"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="48" name="ChickenCute" x="870" y="852">
-   <properties>
-    <property name="model_name" value="ChickenCute"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="49" name="Racoon" x="736" y="592">
-   <properties>
-    <property name="model_name" value="Racoon"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="50" name="Pig" x="960" y="912">
-   <properties>
-    <property name="model_name" value="Pig"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="51" name="Boar" x="768" y="432">
-   <properties>
-    <property name="model_name" value="Boar"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="52" name="Horse" x="944" y="864">
-   <properties>
-    <property name="model_name" value="Horse"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="54" name="Cow" x="828" y="864">
-   <properties>
-    <property name="model_name" value="Cow"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="55" name="FishRed1" x="736" y="992">
-   <properties>
-    <property name="model_name" value="FishRed"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="57" name="FishRed2" x="976" y="976">
-   <properties>
-    <property name="model_name" value="FishRed"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="70" name="FishRed3" x="1088" y="960">
-   <properties>
-    <property name="model_name" value="FishRed"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="71" name="FishRed4" x="1072" y="848">
-   <properties>
-    <property name="model_name" value="FishRed"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="72" name="FishRed5" x="1088" y="752">
-   <properties>
-    <property name="model_name" value="FishRed"/>
-   </properties>
-   <point/>
-  </object>
+  <object id="101" name="Racoon" gid="2968" x="728" y="592" width="16" height="16"/>
+  <object id="102" name="Boar" gid="2969" x="760" y="432" width="16" height="16"/>
+  <object id="95" name="Marry" gid="2954" x="792" y="800" width="16" height="16"/>
+  <object id="75" name="Rob" gid="2953" x="1024" y="912" width="16" height="16"/>
+  <object id="96" name="Bart" gid="2952" x="752" y="744" width="16" height="16"/>
+  <object id="97" name="Johny" gid="2950" x="686.4" y="753.6" width="16" height="16"/>
+  <object id="100" name="Fred" gid="2951" x="640" y="832" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="12" name="zones" visible="0">
   <object id="65" name="water" x="1056" y="720">

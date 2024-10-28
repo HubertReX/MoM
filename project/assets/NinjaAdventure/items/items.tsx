@@ -128,12 +128,12 @@
  </tile>
  <tile id="42">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="obj_type" value="chest"/>
   </properties>
  </tile>
  <tile id="43">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="obj_type" value="chest"/>
   </properties>
  </tile>
  <tile id="44">
@@ -180,12 +180,12 @@
  </tile>
  <tile id="52">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="obj_type" value="chest"/>
   </properties>
  </tile>
  <tile id="53">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="obj_type" value="chest"/>
   </properties>
  </tile>
  <tile id="54">

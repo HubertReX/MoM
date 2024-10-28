@@ -381,7 +381,8 @@ class Scene(State):
         # layer of invisible objects being single points on map where NPCs show up coming from linked map
         if "entry_points" in self.layers:
             for obj in cast(TiledObjectGroup, tileset_map.get_layer_by_name("entry_points")):
-                self.entry_points[obj.name] = vec(obj.x, obj.y)
+                rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                self.entry_points[obj.name] = vec(rect.midbottom)
 
         # load NPCs only once
         if self.current_map not in self.loaded_maps:
@@ -747,6 +748,7 @@ class Scene(State):
             from characters import NPC
             for obj in spawn_points:
                 if obj.name not in self.loaded_NPCs:
+                    rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
                     # list of waypoints attached by NPCs name
                     waypoint = self.waypoints.get(obj.name, ())
                     npc = NPC(
@@ -754,7 +756,8 @@ class Scene(State):
                         self,
                         self.shadow_sprites,
                         self.label_sprites,
-                        (obj.x, obj.y),
+                        # (obj.x, obj.y),
+                        rect.midbottom,
                         obj.name,
                         self.icons,
                         waypoint,
