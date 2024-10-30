@@ -12,6 +12,7 @@ pydantic>=2.7.1
 pillow==10.3.0
 ffmpeg-python==0.2.0
 thorpy==2.1.9
+vscodedebugvisualizer
 # only for utils
 # glcontext==2.5.0
 # tqdm==4.66.4

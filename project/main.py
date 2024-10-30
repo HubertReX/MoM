@@ -58,6 +58,15 @@ def main(task: str, entities: list[str]) -> None:
     asyncio.run(game.loop())
     print(rule.Rule(title="[bright_yellow]END[/]", characters="#"))
 
+#############################################################################################################
+
+
+def init() -> None:
+    if IS_WEB:
+        main(task=TaskEnum.run, entities=[])
+    else:
+        cli(max_content_width=120)
+
 
 #############################################################################################################
 
@@ -108,7 +117,4 @@ if not IS_WEB:
 #############################################################################################################
 
 if __name__ == "__main__":
-    if IS_WEB:
-        main(task="run", entities=[])
-    else:
-        cli(max_content_width=120)
+    init()
