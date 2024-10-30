@@ -32,6 +32,7 @@
 # ---------------------------------------------------------
 
 import re
+from typing import Any, cast
 
 DEFAULT_STYLE = {
     # At the moment only font filenames are supported. That means the font
@@ -60,9 +61,11 @@ DEFAULT_STYLE = {
 
 class Style:
     default_style = DEFAULT_STYLE
+    string: str
+    style: dict[str, Any]
 
     @classmethod
-    def set_default(cls, source):
+    def set_default(cls, source: str | dict) -> dict[str, Any]:
         if isinstance(source, str):
             cls.string = str(source)
             cls._get_style()
@@ -73,11 +76,11 @@ class Style:
         return cls.default_style
 
     @classmethod
-    def get_default(cls, string):
+    def get_default(cls, string: Any) -> dict[str, Any]:
         return cls.default_style
 
     @classmethod
-    def stylize(cls, string, style=None):
+    def stylize(cls, string: str, style: dict[str, Any] | None = None) -> str:
         if style is None:
             style = cls.default_style
         stylized = ""
@@ -91,25 +94,25 @@ class Style:
         return stylized
 
     @classmethod
-    def split(cls, string):
+    def split(cls, string: str) -> tuple[str, dict[str, Any]]:
         cls.string = str(string)
         cls._get_style()
         return cls.string, cls.style
 
-    @classmethod
-    def remove(cls, string):
+    @ classmethod
+    def remove(cls, string: str) -> str:
         cls.string = str(string)
         cls._get_style()
         return cls.string
 
-    @classmethod
-    def get(cls, string):
+    @ classmethod
+    def get(cls, string: str) -> dict[str, Any]:
         cls.string = str(string)
         cls._get_style()
         return cls.style
 
-    @classmethod
-    def _get_style(cls):
+    @ classmethod
+    def _get_style(cls) -> None:
         cls.style = {}
         cls.style["font"] = cls._get_font()
         cls.style["size"] = cls._get_size()
@@ -128,8 +131,8 @@ class Style:
         cls.style["separate_italic"] = cls._get_separate_italic()
         cls.style["separate_bolditalic"] = cls._get_separate_bolditalic()
 
-    @classmethod
-    def _get_font(cls):
+    @ classmethod
+    def _get_font(cls) -> str:
         pattern = (
             r"{font(_name)? ('|\")(?P<font>[A-Za-z0-9_ -]+"
             r"(?P<ext>.ttf))('|\")}")
@@ -150,8 +153,8 @@ class Style:
             cls.string)
         return font
 
-    @classmethod
-    def _get_separate_italic(cls):
+    @ classmethod
+    def _get_separate_italic(cls) -> str | None:
         pattern = (
             r"{separate_italic ('|\")(?P<separate_italic>[A-Za-z0-9_ -]+"
             r"(?P<ext>.ttf))('|\")}")
@@ -175,8 +178,8 @@ class Style:
             cls.string)
         return separate_italic
 
-    @classmethod
-    def _get_separate_bold(cls):
+    @ classmethod
+    def _get_separate_bold(cls) -> str | None:
         pattern = (
             r"{separate_bold ('|\")(?P<separate_bold>[A-Za-z0-9_ -]+"
             r"(?P<ext>.ttf))('|\")}")
@@ -200,8 +203,8 @@ class Style:
             cls.string)
         return separate_bold
 
-    @classmethod
-    def _get_separate_bolditalic(cls):
+    @ classmethod
+    def _get_separate_bolditalic(cls) -> str | None:
         pattern = (
             r"{separate_bolditalic ('|\")"
             r"(?P<separate_bolditalic>[A-Za-z0-9_ -]+"
@@ -227,8 +230,8 @@ class Style:
             cls.string)
         return separate_bolditalic
 
-    @classmethod
-    def _get_size(cls):
+    @ classmethod
+    def _get_size(cls) -> int:
         pattern = r"{(font_)?size (?P<size>\d+)}"
         search_group = re.search(pattern, cls.string)
         if search_group:
@@ -238,8 +241,8 @@ class Style:
         cls.string = re.sub(pattern, "", cls.string)
         return int(size)
 
-    @classmethod
-    def _get_font_bold(cls):
+    @ classmethod
+    def _get_font_bold(cls) -> bool:
         pattern = r"{bold ('|\"|)(?P<bold>True|False)('|\"|)}"
         search_group = re.search(pattern, cls.string, re.I)
         if search_group:
@@ -249,10 +252,10 @@ class Style:
         else:
             bold = cls.default_style["bold"]
             cls.string = re.sub(pattern, "", cls.string)
-            return bold
+            return bool(bold)
 
-    @classmethod
-    def _get_font_italic(cls):
+    @ classmethod
+    def _get_font_italic(cls) -> bool:
         pattern = r"{italic ('|\"|)(?P<italic>True|False)('|\"|)}"
         search_group = re.search(pattern, cls.string, re.I)
         if search_group:
@@ -262,10 +265,10 @@ class Style:
         else:
             italic = cls.default_style["italic"]
             cls.string = re.sub(pattern, "", cls.string)
-            return italic
+            return bool(italic)
 
-    @classmethod
-    def _get_font_underline(cls):
+    @ classmethod
+    def _get_font_underline(cls) -> bool:
         pattern = r"{underline ('|\"|)(?P<underline>True|False)('|\"|)}"
         search_group = re.search(pattern, cls.string, re.I)
         if search_group:
@@ -275,10 +278,10 @@ class Style:
         else:
             underline = cls.default_style["underline"]
             cls.string = re.sub(pattern, "", cls.string)
-            return underline
+            return bool(underline)
 
-    @classmethod
-    def _get_link(cls):
+    @ classmethod
+    def _get_link(cls) -> str:
         pattern = r"{link ('|\"|)(?P<link>[^\]]+)('|\"|)}"
         search_group = re.search(pattern, cls.string, re.I)
         if search_group:
@@ -288,10 +291,10 @@ class Style:
         else:
             link = cls.default_style["link"]
             cls.string = re.sub(pattern, "", cls.string)
-            return link
+            return str(link)
 
-    @classmethod
-    def _get_font_color(cls):
+    @ classmethod
+    def _get_font_color(cls) -> tuple[int, ...]:
         # pattern = r"{color \((?P<color>\d+\, *\d+\, *\d+)(?P<alpha>\, *\d+)?\)}"
         pattern = r"{color \((?P<color>\d+\, *\d+\, *\d+(\, *\d+)?)\)}"
         search_group = re.search(pattern, cls.string)
@@ -301,10 +304,10 @@ class Style:
         else:
             color = cls.default_style["color"]
         cls.string = re.sub(pattern, "", cls.string)
-        return color
+        return cast(tuple, color)
 
-    @classmethod
-    def _get_cast_shadow(cls):
+    @ classmethod
+    def _get_cast_shadow(cls) -> bool:
         pattern = r"{cast_shadow ('|\"|)(?P<cast_shadow>True|False)('|\"|)}"
         search_group = re.search(pattern, cls.string, re.I)
         if search_group:
@@ -314,10 +317,10 @@ class Style:
         else:
             cast_shadow = cls.default_style["cast_shadow"]
             cls.string = re.sub(pattern, "", cls.string)
-            return cast_shadow
+            return bool(cast_shadow)
 
-    @classmethod
-    def _get_shadow_color(cls):
+    @ classmethod
+    def _get_shadow_color(cls) -> tuple[int, ...]:
         # pattern = r"{shadow_color \((?P<shadow_color>\d+\, *\d+\, *\d+)(?P<alpha>\, *\d+)?\)}"
         pattern = r"{shadow_color \((?P<shadow_color>\d+\, *\d+\, *\d+(\, *\d+)?)\)}"
         search_group = re.search(pattern, cls.string)
@@ -327,10 +330,10 @@ class Style:
         else:
             shadow_color = cls.default_style["shadow_color"]
         cls.string = re.sub(pattern, "", cls.string)
-        return shadow_color
+        return cast(tuple, shadow_color)
 
-    @classmethod
-    def _get_shadow_offset(cls):
+    @ classmethod
+    def _get_shadow_offset(cls) -> tuple[int, int]:
         pattern = r"{shadow_offset \((?P<shadow_offset>\d+\, *\d+)\)}"
         search_group = re.search(pattern, cls.string)
         if search_group:
@@ -339,10 +342,10 @@ class Style:
         else:
             shadow_offset = cls.default_style["shadow_offset"]
         cls.string = re.sub(pattern, "", cls.string)
-        return shadow_offset
+        return cast(tuple, shadow_offset)
 
-    @classmethod
-    def _get_font_align(cls):
+    @ classmethod
+    def _get_font_align(cls) -> str:
         pattern = "{(.)?align ('|\"|)(?P<align>(left|center|right))('|\"|)}"
         search_group = re.search(pattern, cls.string)
         if search_group:
@@ -352,8 +355,8 @@ class Style:
         cls.string = re.sub(pattern, "", cls.string)
         return align
 
-    @classmethod
-    def _get_image(cls):
+    @ classmethod
+    def _get_image(cls) -> str:
         pattern = r"{(.)?image ('|\"|)(?P<image>([A-Za-z0-9_ -\.]+))('|\"|)}"
         search_group = re.search(pattern, cls.string)
         if search_group:
@@ -363,8 +366,8 @@ class Style:
         cls.string = re.sub(pattern, "", cls.string)
         return image
 
-    @classmethod
-    def _get_font_indent(cls):
+    @ classmethod
+    def _get_font_indent(cls) -> int:
         pattern = r"{indent (?P<indent>\d+)}"
         search_group = re.search(pattern, cls.string)
         if search_group:

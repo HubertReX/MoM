@@ -61,7 +61,7 @@ class Resources(object):
             img = cls.cache[name]
         except KeyError:
             if type(cls.loader) is Callable:
-                img = cls.loader(cls._names[name])
+                img = cls.loader(cls._names[name])  # type: ignore[operator]
                 cls.cache[name] = img
         return img
 
@@ -110,14 +110,14 @@ class Fonts(Resources):
             weak_ref=False)
 
     @classmethod
-    def __getattr__(cls, name: str, size: int) -> pygame.font.Font:
+    def __getattr__(cls, name: str, size: int) -> pygame.font.Font:  # type: ignore[misc, override]
         try:
-            font = cls.cache[name, size]
+            font = cls.cache[name, size]  # type: ignore[index]
         except KeyError:
-            font = cls.loader(cls._names[name], size)
-            cls.cache[name, size] = font
+            font = cls.loader(cls._names[name], size)  # type: ignore[operator]
+            cls.cache[name, size] = font  # type: ignore[index]
         return font
 
     @classmethod
-    def load(cls, name: str, size: int) -> pygame.font.Font:
+    def load(cls, name: str, size: int) -> pygame.font.Font:  # type: ignore[override]
         return cls.__getattr__(name, size)
