@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from rich import print
 import pygame
 from objects import ItemSprite, InventorySlot, Notification, NotificationTypeEnum
@@ -72,7 +72,7 @@ class UI:
         self.scene = scene
         self.game: Game = self.scene.game
         self.display_surface = self.game.HUD
-        self.font = self.game.fonts[FONT_SIZE_MEDIUM]
+        self.font: pygame.Font = self.game.fonts[FONT_SIZE_MEDIUM]
         self.tiny_font = self.game.fonts[FONT_SIZE_SMALL]
         self.inventory_slot: InventorySlot = InventorySlot(
             None,
@@ -269,7 +269,7 @@ class UI:
         text: str,
         pos: tuple[int, int],
         font: pygame.font.Font | None = None,
-        align: str = "left",
+        align: Literal["left", "centred", "right"] = "left",
         color: pygame._common.ColorValue | None = None,
         shadow: bool = True,
         border: pygame._common.ColorValue = PANEL_BG_COLOR
@@ -277,7 +277,7 @@ class UI:
         if not font:
             font = self.font
 
-        if not color:
+        if color is None:
             color = FONT_COLOR
 
         text_surf = font.render(str(text), False, color)
