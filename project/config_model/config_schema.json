@@ -19,25 +19,17 @@
                     "type": "string"
                 },
                 "sprite": {
-                    "description": "Must be valid asset folder name (assets/[ASSET_PACK]/characters/[sprite])",
+                    "description": "Must be valid file name from assets folder",
                     "minLength": 3,
                     "title": "Sprite",
                     "type": "string"
                 },
                 "race": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/RaceEnum"
-                        }
-                    ],
+                    "$ref": "#/$defs/RaceEnum",
                     "description": "Base character race (e.g. humanoid, animal)"
                 },
                 "attitude": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/AttitudeEnum"
-                        }
-                    ],
+                    "$ref": "#/$defs/AttitudeEnum",
                     "description": "Attitude towards the player"
                 },
                 "is_merchant": {
@@ -55,7 +47,7 @@
                     "type": "array"
                 },
                 "allowed_zones": {
-                    "description": "Zones where the character is allowed to move",
+                    "description": "Zones where the character is allowed to move. Empty means everywhere.",
                     "items": {
                         "type": "string"
                     },
@@ -189,11 +181,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/ItemTypeEnum"
-                        }
-                    ],
+                    "$ref": "#/$defs/ItemTypeEnum",
                     "description": "Item type (e.g. weapon, tool, consumable)"
                 },
                 "value": {
@@ -225,7 +213,7 @@
                 },
                 "health_impact": {
                     "default": 0,
-                    "description": "The impact on health when consumed (e.g. apple => +30, poison => -10)",
+                    "description": "The impact on health when consumed",
                     "minimum": 0,
                     "title": "Health Impact",
                     "type": "integer"

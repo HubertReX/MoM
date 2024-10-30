@@ -1,9 +1,9 @@
 import json
 from os import PathLike
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Self
 from rich import print
-from pydantic import BaseModel, ConfigDict, Field, PositiveInt, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt, ValidationError, field_validator, model_validator
 
 try:
     from settings import SCHEMA_FILE
@@ -21,7 +21,7 @@ except Exception:
 #     spanner = 1
 #     wrench = 2
 
-IS_FROZEN = False
+IS_FROZEN = True
 ##################################################################################################################
 # MARK: MazeLevelProperties
 
@@ -29,20 +29,21 @@ IS_FROZEN = False
 class MazeLevelProperties(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    monsters_list:  Annotated[list[str],    Field(
-        description="List of regular monster NPC models names", repr=False, default_factory=list)]
-
-    boss_monster:   str                   = Field(min_length=3, description="Boss monster NPC model name")
-    monsters_count: Annotated[int,          Field(1, description="Number of regular monster per level (without boss)",
-                                                  ge=0, repr=False)]
-    small_chest_count: Annotated[int,       Field(1, description="Number of small chests on the map",
-                                                  ge=0, repr=False)]
-    small_chest_template: Annotated[str,    Field(min_length=3, description="Small chest name from config", repr=False)]
-    big_chest_template: Annotated[str,      Field(min_length=3, description="Big chest name from config", repr=False)]
-    maze_cols: Annotated[int,               Field(5, description="Number of columns in map grid",
-                                                  ge=0, repr=False)]
-    maze_rows: Annotated[int,               Field(5, description="Number of rows in map grid",
-                                                  ge=0, repr=False)]
+    monsters_list:        Annotated[list[str], Field(repr=False, default_factory=list,
+                                                     description = "List of regular monster NPC models names")]
+    boss_monster:         Annotated[str,       Field(min_length=3, description="Boss monster NPC model name")]
+    monsters_count:       Annotated[int,       Field(1, ge=0, repr=False,
+                                                     description="Number of regular monster per level (without boss)",)]
+    small_chest_count:    Annotated[int,       Field(1, ge=0, repr=False,
+                                                     description="Number of small chests on the map",)]
+    small_chest_template: Annotated[str,       Field(min_length=3, repr=False,
+                                                     description="Small chest name from config")]
+    big_chest_template:   Annotated[str,       Field(min_length=3, repr=False,
+                                                     description="Big chest name from config",)]
+    maze_cols:            Annotated[int,       Field(5, ge=0, repr=False,
+                                                     description="Number of columns in map grid",)]
+    maze_rows:            Annotated[int,       Field(5, ge=0, repr=False,
+                                                     description="Number of rows in map grid",)]
 
 
 ##################################################################################################################
@@ -50,19 +51,16 @@ class MazeLevelProperties(BaseModel):
 class Character(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    name: str   = Field(min_length=3, frozen=IS_FROZEN, description="Unique character name")
-    sprite: str = Field(
-        min_length=3,
-        description="Must be valid asset folder name (assets/[ASSET_PACK]/characters/[sprite])",
-        repr=False
-    )
+    name:          Annotated[str,          Field(min_length=3, frozen=IS_FROZEN, description="Unique character name")]
+    sprite:        Annotated[str,          Field(min_length=3, repr=False,
+                                                 description="Must be valid file name from assets folder")]
     race:          Annotated[RaceEnum,     Field(description="Base character race (e.g. humanoid, animal)")]
     attitude:      Annotated[AttitudeEnum, Field(description="Attitude towards the player", repr=False)]
     is_merchant:   Annotated[bool,         Field(False, description="Flag if NPC can trade items", repr=False)]
-    tradeable_items_types: Annotated[list[ItemTypeEnum], Field(
-        description="Item's type that can be traded. Empty means all.", repr=False, default_factory=list)]
-    allowed_zones: Annotated[list[str],    Field(
-        description="Zones where the character is allowed to move", repr=False, default_factory=list)]
+    tradeable_items_types: Annotated[list[ItemTypeEnum], Field(repr=False, default_factory=list,
+                                                               description="Item's type that can be traded. Empty means all.",)]  # noqa E501
+    allowed_zones: Annotated[list[str],    Field(repr=False, default_factory=list,
+                                                 description="Zones where the character is allowed to move. Empty means everywhere.",)]  # noqa E501
     health:        Annotated[int,          Field(30, ge=0, description="initial health value", repr=False)]
     max_health:    Annotated[int,          Field(30, ge=0, description="maximal health value", repr=False)]
     # items:        Annotated[list["Item"], Field(description="list of character's items", default_factory = list)]
@@ -83,26 +81,19 @@ class Item(BaseModel):
 
     # id: str   = Field(
     #     min_length=3, frozen=IS_FROZEN, description="Unique string identifier")
-    name: str   = Field(
-        min_length=3, frozen=IS_FROZEN, description="Item display name")
+    name:          Annotated[str,          Field(min_length=3, frozen=IS_FROZEN, description="Item display name")]
     type:          Annotated[ItemTypeEnum, Field(description="Item type (e.g. weapon, tool, consumable)")]
     value:         Annotated[int,          Field(50, ge=0, description="Monetary value", repr=False)]
     in_use:        Annotated[bool,         Field(False, description="Whether the item is currently in use", repr=False)]
-    count:         Annotated[int,          Field(
-        1, ge=1, description="Number of items in the stack", repr=False)]
-    weight:        Annotated[float,        Field(
-        1.0, ge=0, description="Weight of single item in the stack in kg", repr=False)]
-    health_impact: Annotated[int,          Field(
-        0, ge=0,
-        description="The impact on health when consumed (e.g. apple => +30, poison => -10)",
-        repr=False)]
-    damage:        Annotated[int,          Field(
-        10, ge=0,
-        description="The amount of damage delt (weapon only)", repr=False)]
-    cooldown_time: Annotated[float,        Field(
-        1.0, ge=0.0,
-        description="The amount of time in seconds it takes to use the weapon again",
-        repr=False)]
+    count:         Annotated[int,          Field(1, ge=1, description="Number of items in the stack", repr=False)]
+    weight:        Annotated[float,        Field(1.0, ge=0, repr=False,
+                                                 description="Weight of single item in the stack in kg")]
+    health_impact: Annotated[int,          Field(0, ge=0, repr=False,
+                                                 description="The impact on health when consumed")]
+    damage:        Annotated[int,          Field(10, ge=0, repr=False,
+                                                 description="The amount of damage delt (weapon only)")]
+    cooldown_time: Annotated[float,        Field(1.0, ge=0.0, repr=False,
+                                                 description="The amount of time in seconds it takes to use the weapon again")]  # noqa E501
 
 
 ###################################################################################################################
@@ -112,25 +103,59 @@ class Chest(BaseModel):
 
     # id: str   = Field(
     #     min_length=3, frozen=IS_FROZEN, description="Unique string identifier")
-    name: str =                              Field(min_length=3, frozen=IS_FROZEN, description="Chest display name")
+    name:               Annotated[str,       Field(min_length=3, frozen=IS_FROZEN, description="Chest display name")]
     is_small:           Annotated[bool,      Field(True, description="Is it small or big", repr=False)]
     is_closed:          Annotated[bool,      Field(True, description="Is it closed or open", repr=False)]
-    items:              Annotated[list[str], Field(
-        description="list of persistent items in the chest", default_factory=list)]
-    total_items_count: Annotated[int,       Field(
-        0, description="total numer of items to generate (persistent + random)", repr=False)]
-    random_items:       Annotated[list[str], Field(
-        description="list of items to generate randomly", default_factory=list)]
+    items:              Annotated[list[str], Field(default_factory=list,
+                                                   description = "list of persistent items in the chest")]
+    total_items_count:  Annotated[int,       Field(0, repr=False,
+                                                   description="total numer of items to generate (persistent + random)")]  # noqa E501
+    random_items:       Annotated[list[str], Field(default_factory=list,
+                                                   description="list of items to generate randomly")]
 
 
 ###################################################################################################################
 # MARK: Config
 class Config(BaseModel):
     # this class is used only for crating instances of the config class
-    characters: dict[str, Character]
-    chests: dict[str, Chest]
-    items: dict[str, Item]
+    characters:   dict[str, Character]
+    chests:       dict[str, Chest]
+    items:        dict[str, Item]
     maze_configs: dict[int, MazeLevelProperties]
+
+    @model_validator(mode='after')
+    def check_character_items(self) -> Self:
+        for character in self.characters.values():
+            for item in character.items:
+                if item not in self.items:
+                    raise ValueError(f"item '{item}' from '{character.name}' character does not exist")
+
+        for chest in self.chests.values():
+            for item in chest.items:
+                if item not in self.items:
+                    raise ValueError(f"item '{item}' from '{chest.name}' chest does not exist")
+
+            for item in chest.random_items:
+                if item not in self.items:
+                    raise ValueError(f"random item '{item}' from '{chest.name}' chest does not exist")
+
+        for key, maze_config in self.maze_configs.items():
+            for monster in maze_config.monsters_list:
+                if monster not in self.characters:
+                    raise ValueError(f"monster '{monster}' from monsters_list of '{key}' maze_config does not exist")
+
+            if maze_config.boss_monster not in self.characters:
+                raise ValueError(f"boss_monster '{maze_config.boss_monster}' from '{key}' maze_config does not exist")
+
+            if maze_config.small_chest_template not in self.chests:
+                raise ValueError(f"small_chest_template '{maze_config.small_chest_template}' from '{
+                                 key}' maze_config does not exist")
+
+            if maze_config.big_chest_template not in self.chests:
+                raise ValueError(f"big_chest_template '{maze_config.big_chest_template}' from '{
+                                 key}' maze_config does not exist")
+
+        return self
 
 
 class ConfigForSchemaGen(Config):
