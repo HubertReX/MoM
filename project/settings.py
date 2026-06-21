@@ -90,6 +90,9 @@ USE_PARTICLES = False
 USE_CUSTOM_MOUSE_CURSOR = True
 USE_SOD = False
 USE_SHADERS = False
+# zewnętrzne sterowanie grą + screenshoty dla agentów AI (debug, desktop-only, opt-in)
+# włączane zmienną środowiskową: MOM_AGENT_CONTROL=1 ./run.sh
+USE_AGENT_CONTROL = __import__("os").environ.get("MOM_AGENT_CONTROL", "0") == "1"
 SHOW_DEBUG_INFO = False
 SHOW_HELP_INFO = False
 SHOW_UI = True
@@ -412,6 +415,9 @@ CONFIG_DIR = CURRENT_DIR / "config_model"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 SCHEMA_FILE = CONFIG_DIR / "config_schema.json"
 SCREENSHOTS_DIR = CURRENT_DIR if IS_WEB else CURRENT_DIR / ".." / "screenshots"
+# pliki/ katalog dla zewnętrznego sterowania agentów (patrz agent_ctrl.py, USE_AGENT_CONTROL)
+AGENT_INPUT_FILE = CURRENT_DIR / ".." / "agent_input.txt"
+AGENT_SCREENSHOT_DIR = CURRENT_DIR / ".." / "screenshots" / "agent"
 ASSETS_DIR = CURRENT_DIR / "assets"
 # font_name = "font"
 font_name = "font_pixel"

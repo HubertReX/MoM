@@ -53,6 +53,9 @@ from settings import (
     RECORDING_FPS,
     SCALE,
     SCREENSHOTS_DIR,
+    AGENT_INPUT_FILE,
+    AGENT_SCREENSHOT_DIR,
+    USE_AGENT_CONTROL,
     SHADERS_NAMES,
     TEXT_ROW_SPACING,
     TILE_SIZE,
@@ -208,6 +211,7 @@ class Game:
         # stacked game states (e.g. Scene, Menu)
         if TYPE_CHECKING:
             from state import State
+            from agent_ctrl import AgentController
         self.states: list[State] = []
         # dict of custom events with callable functions
         # (not used for now since pygame.time.set_timer is not implemented in pygbag)
@@ -223,6 +227,13 @@ class Game:
         # bg_image.blit(logo_image, (WIDTH // 2, 100))
         start_state = menus.MainMenuScreen(self, "MainMenu", bg_image)
         self.states.append(start_state)
+
+        # external control & screenshots for AI agents (debug, desktop-only, opt-in)
+        self.agent_ctrl: AgentController | None = None
+        if USE_AGENT_CONTROL and not IS_WEB:
+            from agent_ctrl import AgentController
+            self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log)
+            self.log("[agent_ctrl] external control ENABLED")
 
         # import scene
         # start_state = scene.Scene(self, "Village", "start")
@@ -843,6 +854,10 @@ class Game:
         # events = []
         events = self.get_inputs()
 
+        # post external agent key events / handle commands (no-op unless enabled)
+        if self.agent_ctrl:
+            self.agent_ctrl.apply(self)
+
         # first draw on separate Surface (game.canvas)
         if not self.is_paused:
             self.time_elapsed += dt
@@ -868,6 +883,11 @@ class Game:
         #     self.screen.blit(self.HUD, (0, 0))
 
         pygame.display.flip()
+
+        # save screenshot if an external agent requested one (no-op unless enabled)
+        if self.agent_ctrl:
+            self.agent_ctrl.capture(self.screen)
+
         await asyncio.sleep(0)
 
     def get_local_storage(self) -> None:

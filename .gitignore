@@ -157,6 +157,9 @@ utils/recording.mp4
 screenshots/recording_*.mp4
 screenshots/intro_*.mp4
 screenshots/intro_*.webm
+# external AI-agent control (agent_ctrl.py) — transient input + screenshots
+agent_input.txt
+screenshots/agent/
 profiling/
 _temp/**
 .aider*
