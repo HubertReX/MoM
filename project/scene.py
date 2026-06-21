@@ -4,7 +4,6 @@ import random
 from typing import Any, cast
 from rich import print
 import game
-import menus
 import pygame
 import pyscroll
 import pyscroll.data
@@ -35,8 +34,6 @@ from pyscroll.group import PyscrollGroup
 from pytmx import TiledMap, TiledObjectGroup, TiledTileLayer
 from pytmx.util_pygame import load_pygame
 from config_model.config import AttitudeEnum, RaceEnum
-from rich_text import RichPanel
-from sftext.style import Style
 from settings import (
     # ACTIONS,
     # BG_COLOR,
@@ -104,7 +101,9 @@ from settings import (
 )
 from state import State
 from transition import Transition, TransitionCircle
-from ui import NOTIFICATION_TYPE_ICONS, UI
+from ui.game_ui import GameUI
+from ui.panels.hud import NOTIFICATION_TYPE_ICONS
+from ui.panels.trade import TradePanel
 
 
 ################################################################################################################
@@ -245,7 +244,7 @@ class Scene(State):
         self.group: PyscrollGroup
         self.particles: list[ParticleSystem] = []
         # self.circle_gradient: pygame.Surface = (CIRCLE_GRADIENT).convert_alpha()
-        self.ui = UI(self)
+        self.ui = GameUI(self)
         self.display_ui_flag: bool = SHOW_UI
         # self.load_items_def()
         self.load_map()
@@ -299,14 +298,10 @@ class Scene(State):
     #############################################################################################################
 
     def add_notification(self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info) -> None:
+        # message is raw markup; the HUD renders and caches it via the new RichText engine
         icon = NOTIFICATION_TYPE_ICONS[type]
-        label = f":{icon}: {text}"
-        parsed_label = RichPanel._parse_text(label)
-        label_text, _ = Style.split(parsed_label)
-        label_text = label_text.replace("{style}", "")
-        # print(label_text)
-        label_w, label_h = self.ui.font.size(label_text)
-        notification = Notification(type, parsed_label, label_text, label_w, label_h, self.game.time_elapsed)
+        message = f":{icon}: {text}"
+        notification = Notification(type, message, "", 0, 0, self.game.time_elapsed)
         self.notifications.append(notification)
 
     #############################################################################################################
@@ -1286,7 +1281,7 @@ class Scene(State):
 
         # exit from current state and go back to previous
         if INPUTS["quit"]:
-            if not self.ui.show_trade_panel_flag:
+            if not self.ui.is_open(TradePanel):
                 # SplashScreen(self.game).enter_state()
                 # Scene(self.game, "grasslands", "start").enter_state()
                 # MainMenuScreen(self.game, next_scene).enter_state()
@@ -1446,7 +1441,8 @@ class Scene(State):
         if INPUTS["menu"]:
             # next_scene = None #  self # Scene(self.game, "grasslands", "start")
             # AboutMenuScreen(self.game, next_scene).enter_state()
-            menus.MainMenuScreen(self.game, "MainMenu").enter_state()
+            from ui.panels.main_menu import MainMenuScreen
+            MainMenuScreen(self.game, "MainMenu").enter_state()
             # self.game.reset_inputs()
             INPUTS["menu"] = False
 
@@ -1525,7 +1521,7 @@ class Scene(State):
             self.debug([f"FPS: {self.game.fps: 7.1f} M: {self.current_map}",])
 
         if self.display_ui_flag:
-            self.ui.display_ui(self.game.time_elapsed)
+            self.ui.draw(self.game.time_elapsed)
 
     #############################################################################################################
 

@@ -11,8 +11,9 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 - **Stos stanów: `game.states`** (lista). Bazowa klasa `State` w `state.py`:
   - `enter_state()` — wkłada stan na stos, `exit_state()` — zdejmuje.
   - **Tylko `states[-1]` (wierzch stosu) dostaje `update()` i `draw()`** w danej klatce.
-- **Stany:** `Scene` (`scene.py`, rozgrywka na mapie), `MenuScreen` i podklasy (`menus.py`),
-  `SplashScreen` (`splash_screen.py`). Przejścia ekranowe (fade/koło): `transition.py`.
+- **Stany:** `Scene` (`scene.py`, rozgrywka na mapie), `MenuScreen` i podklasy
+  (`ui/panels/main_menu.py`), `SplashScreen` (`splash_screen.py`). Przejścia ekranowe
+  (fade/koło): `transition.py`.
 
 ## Mapa plików rdzenia
 
@@ -20,13 +21,12 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 |---|---|---|
 | `scene.py` | Ładowanie mapy `.tmx` (pytmx), render pyscroll `BufferedRenderer`, kolizje, czas/dzień-noc, NPC | **73K — duży** |
 | `characters.py` | `NPC` i `Player`: animacja, A*, movement, walka, inventory | **66K — duży** |
-| `ui.py` | HUD, panele dialogów, inventory, notyfikacje (NinePatch + SFText) | **45K — duży** |
+| `ui/` | **Własny toolkit UI** (retained-mode, czysty pygame-ce). Patrz niżej. | zastąpił `ui.py`+`menus.py`+`rich_text.py` |
 | `settings.py` | **Wszystkie stałe** gry + definicje sprite-sheetów | **30K** |
 | `objects.py` | Sprite'y: `ItemSprite`, `ChestSprite`, `HealthBar`, `EmoteSprite`, `Collider`, `Notification` | |
 | `npc_state.py` | FSM NPC (Idle/Walk/Run/Jump/Fly/Stunned/Attacking/Talk/Dead) | |
 | `particles.py` | System cząstek (liście, deszcz, wiatr) | |
-| `rich_text.py` | `RichPanel` — sformatowany tekst z animowanymi emoji (tagi `[bold]`, `[link]`, `:emoji:`) | |
-| `nine_patch.py` | Skalowalne panele UI (9-patch) | |
+| `nine_patch.py` | Skalowalne panele UI (9-patch) — używany przez `ui/theme.py` | |
 | `opengl_shader.py` | Wrapper zengl do shaderów post-process | patrz [`shaders/AGENTS.md`](./shaders/AGENTS.md) |
 | `camera.py` | Viewport + zoom (steruje `map_view.zoom`) | |
 | `transition.py` | Efekty przejść (`Transition`, `TransitionCircle`) | |
@@ -34,13 +34,34 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 | `enums.py` | Typy wyliczeniowe (Race, Attitude, ItemType, …) | |
 | `main.py` | Entry point + CLI (Click na desktopie) | |
 
+## Toolkit UI (`ui/`)
+
+Własny, lekki system UI (retained-mode, **czysty pygame-ce**, kompatybilny z pygbag).
+Zastąpił sklejkę `pygame_menu` + `thorpy/sftext`. Widżety **cache'ują wyrenderowaną
+powierzchnię** (dirty-flag) — statyczne UI = jeden blit/klatkę, zero alokacji `Surface`.
+
+| Moduł | Rola |
+|---|---|
+| `ui/widget.py`, `ui/manager.py` | `Widget` (bazowa, cache) + `UIManager` (eventy/update/draw, z-order) |
+| `ui/theme.py` | Cache fontów `(rozmiar,bold,italic)`, palety, teł 9-patch |
+| `ui/text/` | `markup.py` (parser tagów z `STYLE_TAGS_DICT` + emoji), `style.py` (`Style`) |
+| `ui/widgets/` | `Label`, `Image`, `Button`, `RichText` (zawijanie, scroll, linki, animowane emoji) |
+| `ui/panels/` | `main_menu`, `hud`, `dialog`, `modal`, `inventory`, `trade` |
+| `ui/game_ui.py` | **`GameUI`** — kontroler HUD+paneli per-`Scene` |
+
+**Czyste API** (`Scene.ui` to `GameUI`): `ui.open(PanelType, **kw)`, `ui.close(PanelType)`,
+`ui.toggle(PanelType)`, `ui.is_open(PanelType)`, `ui.update(dt, events)`, `ui.draw()`,
+`ui.reset()`. Stan paneli jest wewnątrz nich (np. `TradePanel.is_buying`) — bez luźnych
+boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[link URL]`/`:emoji:`
+(tabela `STYLE_TAGS_DICT` w `settings.py`).
+
 ## 🔑 KRYTYCZNE: różnice desktop ↔ web
 
 `IS_WEB` zdefiniowane w `settings.py:84`. Najważniejsze rozgałęzienia:
 
 | Obszar | Desktop | Web | Lokalizacja |
 |---|---|---|---|
-| Config | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters.py:48`, `objects.py:19`, `ui.py:54` |
+| Config | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters.py:48`, `objects.py:19`, `ui/panels/hud.py` |
 | Shadery | dostępne (gdy `USE_SHADERS`) | wyłączone (wydajność) | `USE_SHADERS=False` `settings.py:92` |
 | Filtr dzień-noc (alpha) | tak | **nie** | `scene.py:1515` `if USE_ALPHA_FILTER and not IS_WEB:` |
 | Logowanie | `print` | `platform.console.log` | `game.py` |
@@ -62,8 +83,8 @@ ale loguje przez `print` (a nie `platform.console.log`, dostępne tylko w realne
 
 Mechanizm pozwalający agentowi **uruchomić grę, „naciskać" klawisze i robić zrzuty ekranu**
 (debug). Desktop-only, **opt-in**, domyślnie wyłączony — nie wpływa na normalną rozgrywkę.
-Wysyła **prawdziwe zdarzenia klawiszy** (`pygame.event.post`), więc działa i w menu
-(pygame_menu), i w scenie. Nie nadaje się do szybkich scen walki (rozdzielczość = klatki).
+Wysyła **prawdziwe zdarzenia klawiszy** (`pygame.event.post`), więc działa i w menu,
+i w scenie. Nie nadaje się do szybkich scen walki (rozdzielczość = klatki).
 
 **Włączenie** (zmienna środowiskowa): `MOM_AGENT_CONTROL=1 ./run.sh`
 (flaga `USE_AGENT_CONTROL` w `settings.py`, czyta `os.environ`).
@@ -99,7 +120,7 @@ finalny obraz idzie przez GL i `self.screen` może nie zawierać klatki — test
 ## Konwencje
 
 - Stałe → `settings.py`; typy wyliczeniowe → `enums.py`. Nie hardkoduj magic numbers w logice.
-- Type hints wymagane (mypy strict). Nie modyfikuj vendored libów (`pygame_menu`, `sftext`, `animation`).
+- Type hints wymagane (mypy strict). Nie modyfikuj vendored libów (`animation`).
 - Dane gry (postacie, przedmioty) **nie** w kodzie — w configu, patrz [`config_model/AGENTS.md`](./config_model/AGENTS.md).
 
 ## Animacja sprite'ów / dodanie postaci

@@ -217,7 +217,7 @@ class Game:
         # (not used for now since pygame.time.set_timer is not implemented in pygbag)
         self.custom_events: dict[int, Callable] = {}
         # moved imports here to avoid circular imports
-        import menus
+        from ui.panels.main_menu import MainMenuScreen
         # bg_image = load_image(HUD_DIR / "main_menu_bg.png").convert_alpha()
         # bg_image = load_image(HUD_DIR / "big_tree_1600x1024.png").convert_alpha()
         bg_image = load_image(HUD_DIR / "Main_menu_bg-0001.png").convert_alpha()
@@ -225,7 +225,7 @@ class Game:
         # logo_image = load_image(LOGO_IMG).convert_alpha()
         # logo_image = pygame.transform.scale_by(logo_image, 5)
         # bg_image.blit(logo_image, (WIDTH // 2, 100))
-        start_state = menus.MainMenuScreen(self, "MainMenu", bg_image)
+        start_state = MainMenuScreen(self, "MainMenu", bg_image)
         self.states.append(start_state)
 
         # external control & screenshots for AI agents (debug, desktop-only, opt-in)

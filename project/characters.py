@@ -56,6 +56,8 @@ import scene
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, HealthBarUI, ItemSprite, NotificationTypeEnum, Shadow
 from animation.transitions import AnimationTransition
+from ui.panels.dialog import DialogPanel
+from ui.panels.trade import TradePanel
 
 
 #################################################################################################################
@@ -695,8 +697,8 @@ class NPC(pygame.sprite.Sprite):
         self.acc.y += self.vel.y * self.friction
         self.vel.y += self.acc.y * dt
 
-        if self.tileset_coord.y < len(self.scene.path_finding_grid) and \
-                self.tileset_coord.x < len(self.scene.path_finding_grid[0]):
+        if 0 <= self.tileset_coord.y < len(self.scene.path_finding_grid) and \
+                0 <= self.tileset_coord.x < len(self.scene.path_finding_grid[0]):
             step_cost = abs(self.scene.path_finding_grid[self.tileset_coord.y][self.tileset_coord.x]) or 1
         else:
             step_cost = 1
@@ -1337,7 +1339,7 @@ class Player(NPC):
             if self.npc_met and (self.npc_met.has_dialog or self.npc_met.model.is_merchant) and not self.is_talking:
                 # dialog or trading?
                 if self.npc_met.has_dialog:
-                    self.scene.ui.activate_dialog_panel(self.npc_met.dialogs or "")
+                    self.scene.ui.open(DialogPanel, npc=self.npc_met, text=self.npc_met.dialogs or "")
                 else:
                     # since trader might accept only selected types of items
                     # selected item index needs to be initiated again
@@ -1350,14 +1352,14 @@ class Player(NPC):
                         else:
                             self.selected_item_idx = filtered_items.index(selected_item)
 
-                    self.scene.ui.activate_trade_panel()
+                    self.scene.ui.open(TradePanel)
                 self.is_talking = True
                 self.npc_met.is_talking = True
             INPUTS["talk"] = False
 
         if INPUTS["end_trade"]:
-            if self.scene.ui.show_trade_panel_flag:
-                self.scene.ui.show_trade_panel_flag = False
+            if self.scene.ui.is_open(TradePanel):
+                self.scene.ui.close(TradePanel)
                 # since trader might might accepted only selected types of items
                 # selected item index needs to be initiated again
                 filtered_items = self.get_tradable_items()
@@ -1371,12 +1373,12 @@ class Player(NPC):
             INPUTS["end_trade"] = False
 
         if INPUTS["toggle"]:
-            if self.scene.ui.show_trade_panel_flag:
-                self.scene.ui.is_buying = not self.scene.ui.is_buying
+            if self.scene.ui.is_open(TradePanel):
+                self.scene.ui.toggle_trade_side()
             INPUTS["toggle"] = False
 
         if INPUTS["buy"]:
-            if self.scene.ui.show_trade_panel_flag and self.npc_met and self.scene.ui.is_buying:
+            if self.scene.ui.is_open(TradePanel) and self.npc_met and self.scene.ui.is_buying:
                 if self.can_buy():
                     item_to_buy = self.npc_met.drop_item(show=False)
                     if item_to_buy:
@@ -1390,7 +1392,7 @@ class Player(NPC):
             INPUTS["buy"] = False
 
         if INPUTS["sell"]:
-            if self.scene.ui.show_trade_panel_flag and self.npc_met and not self.scene.ui.is_buying:
+            if self.scene.ui.is_open(TradePanel) and self.npc_met and not self.scene.ui.is_buying:
                 if self.can_sell():
                     item_to_sell = self.drop_item(show=False)
                     if item_to_sell:

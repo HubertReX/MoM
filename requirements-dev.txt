@@ -1,5 +1,4 @@
 pygame-ce==2.5.1
-# pygame-menu-ce==4.4.3
 pygbag==0.9.2
 pyperclip==1.8.2
 pyscroll==2.31
@@ -11,7 +10,6 @@ numpy>=1.26.4
 pydantic>=2.7.1
 pillow==10.3.0
 ffmpeg-python==0.2.0
-thorpy==2.1.9
 vscodedebugvisualizer
 # only for utils
 # glcontext==2.5.0
