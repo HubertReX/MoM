@@ -74,6 +74,7 @@ boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[lin
 `./serve_web.sh`.
 
 ### `USE_WEB_SIMULATOR` (`settings.py:83`)
+
 Flaga desktopowa do **testowania ścieżek web bez przeglądarki**. Ustawiona na `True` wymusza
 `IS_WEB=True` (`settings.py:84`) i przełącza asyncio na `pygbag.aio` (`main.py:35`, `game.py:73`),
 ale loguje przez `print` (a nie `platform.console.log`, dostępne tylko w realnej przeglądarce —
@@ -86,10 +87,11 @@ Mechanizm pozwalający agentowi **uruchomić grę, „naciskać" klawisze i robi
 Wysyła **prawdziwe zdarzenia klawiszy** (`pygame.event.post`), więc działa i w menu,
 i w scenie. Nie nadaje się do szybkich scen walki (rozdzielczość = klatki).
 
-**Włączenie** (zmienna środowiskowa): `MOM_AGENT_CONTROL=1 ./run.sh`
+**Włączenie** (zmienna środowiskowa): `MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy ./run.sh`
 (flaga `USE_AGENT_CONTROL` w `settings.py`, czyta `os.environ`).
 
 **Sterowanie** (z innego terminala, gdy gra działa):
+
 ```bash
 python project/agent_ctrl.py down accept            # w menu: zaznacz i uruchom (Play)
 python project/agent_ctrl.py up:30 right:15 attack  # ruch + atak (':N' = liczba klatek)
@@ -104,6 +106,24 @@ do `screenshots/agent/` (zapisywany `self.screen`).
 `agent_ctrl.apply(self)` po `get_inputs()` w `run()`, `agent_ctrl.capture(self.screen)`
 po `flip()`. Cała logika w `project/agent_ctrl.py`. Ograniczenie: przy `USE_SHADERS=True`
 finalny obraz idzie przez GL i `self.screen` może nie zawierać klatki — testuj z shaderami off.
+
+**Automatyczne testowanie (Scenario Framework):**
+Używamy struktury scenariuszy zdefiniowanych w `tests/scenarios.json`. Każdy scenariusz to
+lista `TestAction`, które wykonują komendy przez bezpośredni zapis do `agent_input.txt`.
+To pozwala na szybkie, powtarzalne testowanie przepływów UI i logiki gry bez narzutu
+procesów Pythonowych dla każdej akcji.
+
+```bash
+# Uruchom wszystkie scenariusze:
+python3 tests/automate_display_test.py
+
+# Uruchom konkretny scenariusz (np. Display Settings Flow):
+python3 tests/automate_display_test.py "Display Settings Flow"
+```
+
+Framework wysyła sekwencje klawiszy, wywołuje rutyny debugujące (np. `debug_settings`)
+oraz wykonuje zrzuty ekranu. Akcje są oddzielone pauzami (`TRANSITION_WAIT`), aby
+zapewnić stabilność przejść między stanami gry.
 
 ## Persystencja stanu (uwaga: brak zapisu na dysk)
 
