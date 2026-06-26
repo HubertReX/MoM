@@ -5,6 +5,11 @@ import random
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, cast
 
+if TYPE_CHECKING:
+    from second_order_dynamics import SecondOrderDynamics
+    import ffmpeg
+    from config_model.config_pydantic import update_config_schema
+
 import pygame
 from PIL import Image
 from rich import print, traceback
@@ -71,8 +76,10 @@ from settings import (
     load_image,
     # ColorValue,
     vec,
-    vec3
+    vec3,
 )
+import settings
+
 if USE_WEB_SIMULATOR:
     import pygbag.aio as asyncio
 else:
@@ -105,6 +112,7 @@ class Game:
     # MARK: Game
     def __init__(self, task: str, entities: list[str]) -> None:  # 1_004_511
         import platform
+
         if IS_WEB and not USE_WEB_SIMULATOR:
             self.log = platform.console.log  # type: ignore[attr-defined]
         else:
@@ -138,44 +146,7 @@ class Game:
         # time elapsed in seconds (milliseconds as fraction) without pause time
         self.time_elapsed: float = 0.0
 
-        pygame.display.set_caption(GAME_NAME)
-        program_icon = pygame.image.load(PROGRAM_ICON)
-        pygame.display.set_icon(program_icon)
-
-        # https://coderslegacy.com/python/pygame-rpg-improving-performance/
-        self.flags: int =  0
-
-        if IS_FULLSCREEN:
-            self.flags |= pygame.FULLSCREEN | pygame.DOUBLEBUF
-
-        if USE_SHADERS:
-            if IS_WEB:
-                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
-                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 0)
-                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_ES)
-            else:
-                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
-                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
-                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
-            pygame.display.gl_set_attribute(pygame.GL_CONTEXT_FORWARD_COMPATIBLE_FLAG, True)
-            # pygame.RESIZABLE , | pygame.SCALED
-            self.flags = self.flags | pygame.OPENGL | pygame.DOUBLEBUF
-        # final surface, afters scaling up
-        if IS_FULLSCREEN:
-            res = (0, 0)
-        else:
-            res = (WIDTH_SCALED, HEIGHT_SCALED)
-        self.screen: pygame.Surface = pygame.display.set_mode(res, self.flags, vsync=0)
-        # helper surface, before scaling up
-        # , 32 .convert_alpha() # pygame.SRCALPHA
-        self.canvas: pygame.Surface = pygame.Surface((WIDTH, HEIGHT))  # .convert_alpha()  # , self.flags)
-        # helper surface for HUD
-        self.HUD: pygame.Surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()  # | pygame.SRCALPHA
-
-        if not USE_SHADERS:
-            # self.canvas = self.screen
-            # self.HUD    = self.screen
-            self.HUD    = self.canvas
+        self.set_display()
 
         self.rec_process: Any | None = None
         self.save_frame: bool = False
@@ -218,6 +189,7 @@ class Game:
         self.custom_events: dict[int, Callable] = {}
         # moved imports here to avoid circular imports
         from ui.panels.main_menu import MainMenuScreen
+
         # bg_image = load_image(HUD_DIR / "main_menu_bg.png").convert_alpha()
         # bg_image = load_image(HUD_DIR / "big_tree_1600x1024.png").convert_alpha()
         bg_image = load_image(HUD_DIR / "Main_menu_bg-0001.png").convert_alpha()
@@ -232,6 +204,7 @@ class Game:
         self.agent_ctrl: AgentController | None = None
         if USE_AGENT_CONTROL and not IS_WEB:
             from agent_ctrl import AgentController
+
             self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log)
             self.log("[agent_ctrl] external control ENABLED")
 
@@ -241,6 +214,53 @@ class Game:
 
         if USE_SOD:
             self.init_SOD()
+
+    # #############################################################################################################
+    def set_display(self) -> None:
+        pygame.display.set_caption(GAME_NAME)
+        program_icon = pygame.image.load(PROGRAM_ICON)
+        pygame.display.set_icon(program_icon)
+
+        # https://coderslegacy.com/python/pygame-rpg-improving-performance/
+        self.flags: int = 0
+
+        if IS_FULLSCREEN or settings._IS_FULLSCREEN:
+            self.flags |= pygame.FULLSCREEN | pygame.DOUBLEBUF
+        else:
+            self.flags &= ~(pygame.FULLSCREEN | pygame.DOUBLEBUF)
+            # hide title bar (can fit 2 more tiles vertically)
+            # self.flags |= pygame.NOFRAME
+
+        if USE_SHADERS:
+            if IS_WEB:
+                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 0)
+                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_ES)
+            else:
+                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+                pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
+            pygame.display.gl_set_attribute(pygame.GL_CONTEXT_FORWARD_COMPATIBLE_FLAG, True)
+            # pygame.RESIZABLE , | pygame.SCALED
+            self.flags = self.flags | pygame.OPENGL | pygame.DOUBLEBUF
+
+        # final surface, afters scaling up
+        if IS_FULLSCREEN:
+            res = (0, 0)
+        else:
+            res = (settings.WIDTH_SCALED, settings.HEIGHT_SCALED)
+        print(res)
+        self.screen: pygame.Surface = pygame.display.set_mode(res, self.flags, vsync=0)
+        # helper surface, before scaling up
+        # , 32 .convert_alpha() # pygame.SRCALPHA
+        self.canvas: pygame.Surface = pygame.Surface((settings.WIDTH, settings.HEIGHT))  # .convert_alpha()  # , self.flags)
+        # helper surface for HUD
+        self.HUD: pygame.Surface = pygame.Surface((settings.WIDTH, settings.HEIGHT)).convert_alpha()  # | pygame.SRCALPHA
+
+        if not USE_SHADERS:
+            # self.canvas = self.screen
+            # self.HUD    = self.screen
+            self.HUD = self.canvas
 
     # #############################################################################################################
     # def update_config_schema(self) -> None:
@@ -331,12 +351,7 @@ class Game:
         self.SOD = SecondOrderDynamics(f, z, r, x0=pos)
 
     #############################################################################################################
-    def render_panel(
-        self,
-        rect: pygame.Rect,
-        color: pygame._common.ColorValue,
-        surface: pygame.Surface | None = None
-    ) -> None:
+    def render_panel(self, rect: pygame.Rect, color: Any, surface: pygame.Surface | None = None) -> None:
         # MARK: render
         """
         Renders semitransparent (if `alpha` provided) rect using provided color on `game.HUD`
@@ -356,16 +371,16 @@ class Game:
 
     #############################################################################################################
     def render_texts(
-            self,
-            texts:     list[str],
-            pos:       tuple[int, int],
-            color:     pygame._common.ColorValue = FONT_COLOR,
-            bg_color:  pygame._common.ColorValue = 0,
-            shadow:    pygame._common.ColorValue = CUTSCENE_BG_COLOR,
-            font_size: int = 0,
-            thin_fonts: bool = False,
-            centred:   bool = False,
-            surface:   pygame.Surface | None = None
+        self,
+        texts: list[str],
+        pos: tuple[int, int],
+        color: Any = FONT_COLOR,
+        bg_color: Any = 0,
+        shadow: Any = CUTSCENE_BG_COLOR,
+        font_size: int = 0,
+        thin_fonts: bool = False,
+        centred: bool = False,
+        surface: pygame.Surface | None = None,
     ) -> None:
         """
         Blit several lines of text on surface or on `game.HUD` if surface is not provided, one under other,
@@ -389,16 +404,16 @@ class Game:
 
     #############################################################################################################
     def render_text(
-            self,
-            text:       str,
-            pos:        tuple[int, int],
-            color:      pygame._common.ColorValue = FONT_COLOR,
-            bg_color:   pygame._common.ColorValue = 0,
-            shadow:     pygame._common.ColorValue = CUTSCENE_BG_COLOR,
-            font_size:  int = 0,
-            thin_fonts: bool = False,
-            centred:    bool = False,
-            surface:    pygame.Surface | None = None
+        self,
+        text: str,
+        pos: tuple[int, int],
+        color: Any = FONT_COLOR,
+        bg_color: Any = 0,
+        shadow: Any = CUTSCENE_BG_COLOR,
+        font_size: int = 0,
+        thin_fonts: bool = False,
+        centred: bool = False,
+        surface: pygame.Surface | None = None,
     ) -> None:
         """
         Blit line of text on `surface` or on `game.HUD` if `surface` is not provided
@@ -444,8 +459,8 @@ class Game:
             offset = 1
             surface.blit(surf_shadow, (rect.x - offset, rect.y))
             surface.blit(surf_shadow, (rect.x + offset, rect.y))
-            surface.blit(surf_shadow, (rect.x,          rect.y - offset))
-            surface.blit(surf_shadow, (rect.x,          rect.y + offset))
+            surface.blit(surf_shadow, (rect.x, rect.y - offset))
+            surface.blit(surf_shadow, (rect.x, rect.y + offset))
 
             surface.blit(surf_shadow, (rect.x + offset, rect.y + offset))
             surface.blit(surf_shadow, (rect.x - offset, rect.y - offset))
@@ -470,7 +485,10 @@ class Game:
                 self.sod_time = self.time_elapsed + 0.01
                 self.SOD.reset(pos)
 
-            res = self.SOD.update(self.time_elapsed - self.sod_time, pos,)
+            res = self.SOD.update(
+                self.time_elapsed - self.sod_time,
+                pos,
+            )
             res[0] = max(0, res[0])
             res[1] = max(0, res[1])
 
@@ -524,13 +542,18 @@ class Game:
             Image.frombuffer("RGBA", (WIDTH, HEIGHT), data, "raw", "RGBA", 0, -1).save(file_name)
             if IS_WEB:
                 import platform
+
                 platform.window.download_from_browser_fs(  # type: ignore[attr-defined]
-                    file_name.as_posix(), "image/png")
+                    file_name.as_posix(), "image/png"
+                )
             else:
                 self.log(f"screenshot saved to file '{file_name}'")
-                if ".." in str(file_name):
-                    short_name = str(file_name).split("..")[-1]
-                add_notification(f"screenshot saved to file '[u]{short_name}[/u]'", NotificationTypeEnum.info)
+            if ".." in str(file_name):
+                short_name = str(file_name).split("..")[-1]
+            else:
+                short_name = str(file_name)
+            add_notification(f"screenshot saved to file '[u]{short_name}[/u]'", NotificationTypeEnum.info)
+
             return True
         else:
             # next frame rendered by pipeline needs to be saved back to screen
@@ -577,7 +600,11 @@ class Game:
                 self.log(f"{self.is_paused=}")
 
             elif event.type in [
-                    pygame.WINDOWSHOWN, pygame.WINDOWMAXIMIZED, pygame.WINDOWRESTORED, pygame.WINDOWFOCUSGAINED]:
+                pygame.WINDOWSHOWN,
+                pygame.WINDOWMAXIMIZED,
+                pygame.WINDOWRESTORED,
+                pygame.WINDOWFOCUSGAINED,
+            ]:
                 self.is_paused = False
                 # print(f"{self.is_paused=}")
             elif event.type in self.custom_events:
@@ -767,9 +794,7 @@ class Game:
                 r=FPS_CAP,
             )
             .vflip()
-            .output(
-                str(file_name), pix_fmt="rgb24", loglevel="quiet", r=RECORDING_FPS
-            )
+            .output(str(file_name), pix_fmt="rgb24", loglevel="quiet", r=RECORDING_FPS)
             .overwrite_output()
             .run_async(pipe_stdin=True)
         )
@@ -794,6 +819,7 @@ class Game:
         if hasattr(self.states[-1], "player"):
             # if TYPE_CHECKING:
             from scene import Scene
+
             scene = cast(Scene, self.states[-1])
             # scene = self.states[-1]
             positions, ratio = scene.get_lights()
@@ -823,8 +849,14 @@ class Game:
 
         if USE_SHADERS:
             res = self.shader.render(
-                self.screen, self.HUD, positions, scale, ratio, dt,
-                USE_SHADERS, save_frame=self.save_frame
+                self.screen,
+                self.HUD,
+                positions,
+                scale,
+                ratio,
+                dt,
+                USE_SHADERS,
+                save_frame=self.save_frame,
                 # USE_SHADERS
             )  # self.save_frame)
 
@@ -888,13 +920,14 @@ class Game:
         if self.agent_ctrl:
             self.agent_ctrl.capture(self.screen)
 
-        await asyncio.sleep(0)
+        await asyncio.sleep(0)  # type: ignore
 
     def get_local_storage(self) -> None:
         if not IS_WEB or USE_WEB_SIMULATOR:
             return
 
         from platform import window  # type: ignore[attr-defined]
+
         window.localStorage.setItem("MoM.test", "test")
 
         result = window.localStorage.getItem("MoM.test")
@@ -916,6 +949,7 @@ class Game:
 
         if IS_WEB:
             import platform
+
             platform.window.show_canvas(True)  # type: ignore[attr-defined]
             self.get_local_storage()
 

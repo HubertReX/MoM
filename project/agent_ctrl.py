@@ -122,6 +122,15 @@ class AgentController:
         if action in ("exit", "quit_game"):
             self._exit_requested = True
             return
+        if action == "debug_settings":
+            import settings
+            self.log(
+                f"[DEBUG] Fullscreen: {settings._IS_FULLSCREEN}, "
+                f"Res Index: {settings._DISPLAY_RES_INDEX}, "
+                f"WIDTH={settings.WIDTH}, HEIGHT={settings.HEIGHT}, "
+                f"WIDTH_SCALED={settings.WIDTH_SCALED}, HEIGHT_SCALED={settings.HEIGHT_SCALED}"
+            )
+            return
 
         key = self._key_for(action)
         if key is None:

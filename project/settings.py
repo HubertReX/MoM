@@ -19,11 +19,7 @@ pretty.install()
 VERSION = 0.1
 GAME_NAME = "Misadventures of Malachi"
 LANG = "EN"
-ABOUT = [
-    f"Version: {VERSION}",
-    "Author: Hubert Nafalski",
-    "WWW: https://hubertnafalski.itch.io/"
-]
+ABOUT = [f"Version: {VERSION}", "Author: Hubert Nafalski", "WWW: https://hubertnafalski.itch.io/"]
 
 # custom type definition
 # Point = namedtuple("Point", ["x", "y"])
@@ -70,20 +66,61 @@ def lerp_vectors(v1: vec, v2: vec, t: float) -> vec:
 TILE_SIZE = 16
 X_TILES = 80  # 100
 Y_TILES = 45  # 64
-SCALE = 1
-WIDTH, HEIGHT = X_TILES * TILE_SIZE, Y_TILES * TILE_SIZE  # 80x45 => 1280x720 ; 100x64 => 1600x1024
-WIDTH_SCALED, HEIGHT_SCALED = WIDTH * SCALE, HEIGHT * SCALE
+
+# --- display resolution (mutable at runtime) ---
+# base resolutions (in tiles)
+_DISPLAY_RES_INDEX: int = 0
+_DISPLAY_SCALE: int = 1
+DISPLAY_RES_OPTIONS: list[tuple[int, int]] = [
+    (80, 45),  # 1280x720
+    (120, 64),  # 1920x1080
+    (100, 64),  # 1600x1024
+    (160, 90),  # 2560x1440
+]
+
+
+def _calc_resolution() -> tuple[int, int, int, int]:
+    """Return (width, height, width_scaled, height_scaled) for current settings."""
+    x_tiles, y_tiles = DISPLAY_RES_OPTIONS[_DISPLAY_RES_INDEX]
+    w, h = x_tiles * TILE_SIZE, y_tiles * TILE_SIZE
+    s = _DISPLAY_SCALE
+    return w, h, w * s, h * s
+
+
+# initial values
+_W, _H, WIDTH_SCALED_INIT, HEIGHT_SCALED_INIT = _calc_resolution()
+WIDTH, HEIGHT = _W, _H
+WIDTH_SCALED, HEIGHT_SCALED = WIDTH_SCALED_INIT, HEIGHT_SCALED_INIT
+SCALE = _DISPLAY_SCALE
+
+
+def set_display(index: int, scale: int = 1) -> None:
+    """Change resolution and scale at runtime.
+
+    Must be called before Game.__init__ (surfaces are created fresh there).
+    Returns the new (width, height, width_scaled, height_scaled).
+    """
+    global _DISPLAY_RES_INDEX, _DISPLAY_SCALE, WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED, SCALE
+    _DISPLAY_RES_INDEX = max(0, min(index, len(DISPLAY_RES_OPTIONS) - 1))
+    _DISPLAY_SCALE = max(1, scale)
+    WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED = _calc_resolution()
+    SCALE = _DISPLAY_SCALE
+    print(f"{WIDTH_SCALED=}")
+
+
 FILTER_SCALE = 8
 CIRCLE_RADIUS = 192 // FILTER_SCALE
 # default camera zoom
 ZOOM_LEVEL = 3.8
 # camera zoom for intro cutscene (zooms out)
-ZOOM_WIDE  = 3.10
+ZOOM_WIDE = 3.10
 
 USE_WEB_SIMULATOR = False
 IS_WEB = __import__("sys").platform == "emscripten" or USE_WEB_SIMULATOR
 IS_LINUX = __import__("sys").platform == "linux"
+# IS_FULLSCREEN = True
 IS_FULLSCREEN = False
+_IS_FULLSCREEN = False  # mutable runtime toggle
 IS_PAUSED = False
 USE_ALPHA_FILTER = True
 USE_PARTICLES = False
@@ -187,87 +224,86 @@ DAY_FILTER: tuple[int, int, int, int] = (152, 152, 0, 0)
 MAX_LIGHTS_COUNT: int = 32
 
 STYLE_TAGS_DICT: dict[str, str] = {
-    "h1":        "{align center}{size 42}{cast_shadow True}",
-    "h2":        "{align left}{size 36}{cast_shadow True}",
-    "h3":        "{align left}{size 28}{cast_shadow True}",
-    "shadow":    "{cast_shadow True}",
-    "dark":      "{shadow_color (30,30,30)}",
-    "light":     "{shadow_color (230,230,230)}",
-    "bold":      "{bold True}",
-    "b":         "{bold True}",
-    "italic":    "{italic True}",
-    "i":         "{italic True}",
+    "h1": "{align center}{size 42}{cast_shadow True}",
+    "h2": "{align left}{size 36}{cast_shadow True}",
+    "h3": "{align left}{size 28}{cast_shadow True}",
+    "shadow": "{cast_shadow True}",
+    "dark": "{shadow_color (30,30,30)}",
+    "light": "{shadow_color (230,230,230)}",
+    "bold": "{bold True}",
+    "b": "{bold True}",
+    "italic": "{italic True}",
+    "i": "{italic True}",
     "underline": "{underline True}",
-    "u":         "{underline True}",
+    "u": "{underline True}",
     "link( +[^\\]]+)?": "{underline True}{link LINK_URL}",
-    "big":       "{size 42}",
-    "small":     "{size 12}",
-    "left":      "{align left}",
-    "right":     "{align right}",
-    "center":    "{align center}",
-    "act":       "{color (255,110,104)}",
+    "big": "{size 42}",
+    "small": "{size 12}",
+    "left": "{align left}",
+    "right": "{align right}",
+    "center": "{align center}",
+    "act": "{color (255,110,104)}",
     # "char":      "{color (255,252,103,255)}",
-    "char":      "{color (255,252,103)}",
-    "item":      "{color (104,113,255)}",
-    "loc":       "{color (95,250,104)}",
-    "num":       "{color (255,119,255)}",
-    "quest":     "{color (96,253,255)}",
-    "text":      "{color (0,197,199)}",
-    "error":     "{color (223,57,76)}",
+    "char": "{color (255,252,103)}",
+    "item": "{color (104,113,255)}",
+    "loc": "{color (95,250,104)}",
+    "num": "{color (255,119,255)}",
+    "quest": "{color (96,253,255)}",
+    "text": "{color (0,197,199)}",
+    "error": "{color (223,57,76)}",
 }
 
 
 ACTIONS: dict[str, dict[str, Any]] = {
-    "quit":      {"show": ["key_Esc", "key_Q"], "msg": "main menu", "keys": [pygame.K_ESCAPE,    pygame.K_q]},
-    "debug":     {"show": ["key_`", "key_Z"],   "msg": "debug",     "keys": [pygame.K_BACKQUOTE, pygame.K_z]},
-    "alpha":     {"show": ["key_B"],            "msg": "filter",    "keys": [pygame.K_b]},
-    "next_day":  {"show": ["key_N"],            "msg": "next day",  "keys": [pygame.K_n]},
+    "quit": {"show": ["key_Esc", "key_Q"], "msg": "main menu", "keys": [pygame.K_ESCAPE, pygame.K_q]},
+    "debug": {"show": ["key_`", "key_Z"], "msg": "debug", "keys": [pygame.K_BACKQUOTE, pygame.K_z]},
+    "alpha": {"show": ["key_B"], "msg": "filter", "keys": [pygame.K_b]},
+    "next_day": {"show": ["key_N"], "msg": "next day", "keys": [pygame.K_n]},
     # "shaders_toggle": {"show": ["g"],        "msg": "shader 0/1",  "keys": [pygame.K_g]},
     # "next_shader":    {"show": [".", ">"],   "msg": "next shader", "keys": [pygame.K_PERIOD]},
-    "run":       {"show": ["key_Shift"], "msg": "toggle run",  "keys": [pygame.K_LSHIFT, pygame.K_RSHIFT]},
-    "jump":      {"show": None,          "msg": "jump",        "keys": [pygame.K_SPACE]},
-    "fly":       {"show": None,          "msg": "toggle fly",  "keys": [pygame.K_LALT, pygame.K_RALT]},
-    "open":      {"show": ["key_Space"], "msg": "open",        "keys": [pygame.K_SPACE]},
-    "attack":    {"show": ["key_Space"], "msg": "attack",      "keys": [pygame.K_SPACE]},
-    "trade":     {"show": ["key_Space"], "msg": "trade",       "keys": [pygame.K_SPACE]},
-    "end_trade": {"show": ["key_Esc", "key_Q"], "msg": "end trade", "keys": [pygame.K_ESCAPE,    pygame.K_q]},
-    "buy":       {"show": ["key_F"],     "msg": "buy",         "keys": [pygame.K_f]},
-    "sell":      {"show": ["key_F"],     "msg": "sell",        "keys": [pygame.K_f]},
-    "toggle":    {"show": ["key_E"],     "msg": "toggle",      "keys": [pygame.K_e]},
-    "talk":      {"show": ["key_Space"], "msg": "talk",        "keys": [pygame.K_SPACE]},
-    "pick_up":   {"show": ["key_E"],     "msg": "pick up",     "keys": [pygame.K_e]},
-    "drop":      {"show": ["key_X"],     "msg": "drop",        "keys": [pygame.K_x]},
-    "inventory": {"show": ["key_I"],     "msg": "inventory",   "keys": [pygame.K_i]},
-    "next_item": {"show": None,          "msg": "next item",   "keys": [pygame.K_PERIOD]},
-    "prev_item": {"show": None,          "msg": "prev item",   "keys": [pygame.K_COMMA]},
-    "item_1":    {"show": None,          "msg": "item 1",      "keys": [pygame.K_1]},
-    "item_2":    {"show": None,          "msg": "item 2",      "keys": [pygame.K_2]},
-    "item_3":    {"show": None,          "msg": "item 3",      "keys": [pygame.K_3]},
-    "item_4":    {"show": None,          "msg": "item 4",      "keys": [pygame.K_4]},
-    "item_5":    {"show": None,          "msg": "item 5",      "keys": [pygame.K_5]},
-    "item_6":    {"show": None,          "msg": "item 6",      "keys": [pygame.K_6]},
-    "use_item":  {"show": ["key_F"],     "msg": "use item",    "keys": [pygame.K_f]},
-    "select":    {"show": None,          "msg": "select",      "keys": [pygame.K_SPACE]},
-    "accept":    {"show": None,          "msg": "accept",      "keys": [pygame.K_RETURN, pygame.K_KP_ENTER]},
-    "help":      {"show": ["key_H"],     "msg": "show help",   "keys": [pygame.K_F1,     pygame.K_h]},
-    "menu":      {"show": ["key_F2"],    "msg": "menu",        "keys": [pygame.K_F2]},
-    "show_ui":   {"show": ["key_F3"],    "msg": "toggle UI",   "keys": [pygame.K_F3]},
+    "run": {"show": ["key_Shift"], "msg": "toggle run", "keys": [pygame.K_LSHIFT, pygame.K_RSHIFT]},
+    "jump": {"show": None, "msg": "jump", "keys": [pygame.K_SPACE]},
+    "fly": {"show": None, "msg": "toggle fly", "keys": [pygame.K_LALT, pygame.K_RALT]},
+    "open": {"show": ["key_Space"], "msg": "open", "keys": [pygame.K_SPACE]},
+    "attack": {"show": ["key_Space"], "msg": "attack", "keys": [pygame.K_SPACE]},
+    "trade": {"show": ["key_Space"], "msg": "trade", "keys": [pygame.K_SPACE]},
+    "end_trade": {"show": ["key_Esc", "key_Q"], "msg": "end trade", "keys": [pygame.K_ESCAPE, pygame.K_q]},
+    "buy": {"show": ["key_F"], "msg": "buy", "keys": [pygame.K_f]},
+    "sell": {"show": ["key_F"], "msg": "sell", "keys": [pygame.K_f]},
+    "toggle": {"show": ["key_E"], "msg": "toggle", "keys": [pygame.K_e]},
+    "talk": {"show": ["key_Space"], "msg": "talk", "keys": [pygame.K_SPACE]},
+    "pick_up": {"show": ["key_E"], "msg": "pick up", "keys": [pygame.K_e]},
+    "drop": {"show": ["key_X"], "msg": "drop", "keys": [pygame.K_x]},
+    "inventory": {"show": ["key_I"], "msg": "inventory", "keys": [pygame.K_i]},
+    "next_item": {"show": None, "msg": "next item", "keys": [pygame.K_PERIOD]},
+    "prev_item": {"show": None, "msg": "prev item", "keys": [pygame.K_COMMA]},
+    "item_1": {"show": None, "msg": "item 1", "keys": [pygame.K_1]},
+    "item_2": {"show": None, "msg": "item 2", "keys": [pygame.K_2]},
+    "item_3": {"show": None, "msg": "item 3", "keys": [pygame.K_3]},
+    "item_4": {"show": None, "msg": "item 4", "keys": [pygame.K_4]},
+    "item_5": {"show": None, "msg": "item 5", "keys": [pygame.K_5]},
+    "item_6": {"show": None, "msg": "item 6", "keys": [pygame.K_6]},
+    "use_item": {"show": ["key_F"], "msg": "use item", "keys": [pygame.K_f]},
+    "select": {"show": None, "msg": "select", "keys": [pygame.K_SPACE]},
+    "accept": {"show": None, "msg": "accept", "keys": [pygame.K_RETURN, pygame.K_KP_ENTER]},
+    "help": {"show": ["key_H"], "msg": "show help", "keys": [pygame.K_F1, pygame.K_h]},
+    "menu": {"show": ["key_F2"], "msg": "menu", "keys": [pygame.K_F2]},
+    "show_ui": {"show": ["key_F3"], "msg": "toggle UI", "keys": [pygame.K_F3]},
     # "screenshot":     {"show": ["key_F9"],       "msg": "screenshot",  "keys": [pygame.K_F9]},
-    "intro":     {"show": ["key_F4"],       "msg": "intro",       "keys": [pygame.K_F4]},
+    "intro": {"show": ["key_F4"], "msg": "intro", "keys": [pygame.K_F4]},
     # "record":         {"show": ([] if IS_WEB else ["key_F3"]), "msg":  "record mp4", "keys": [pygame.K_F3]},
-    "reload":    {"show": ([] if IS_WEB else ["key_R"]), "msg":   "reload map", "keys": [pygame.K_r]},
-    "zoom_in":   {"show": ["key_+"],     "msg": "zoom in",     "keys": [pygame.K_EQUALS, pygame.K_KP_PLUS]},
-    "zoom_out":  {"show": ["key_-"],     "msg": "zoom out",    "keys": [pygame.K_MINUS, pygame.K_KP_MINUS]},
-    "left":      {"show": None,          "msg": "",            "keys": [pygame.K_LEFT,  pygame.K_a]},
-    "right":     {"show": None,          "msg": "",            "keys": [pygame.K_RIGHT, pygame.K_d]},
-    "up":        {"show": None,          "msg": "",            "keys": [pygame.K_UP,    pygame.K_w]},
-    "down":      {"show": None,          "msg": "",            "keys": [pygame.K_DOWN,  pygame.K_s]},
-    "pause":     {"show": None,          "msg": "pause",       "keys": [pygame.K_F8]},
-
-    "scroll_up":   {"show": None,          "msg": "",         "keys": []},
-    "left_click":  {"show": ["mouse_LMB"], "msg": "go to",    "keys": []},
-    "right_click": {"show": ["mouse_RMB"], "msg": "stop",     "keys": []},
-    "scroll_click": {"show": None,          "msg": "",         "keys": []},
+    "reload": {"show": ([] if IS_WEB else ["key_R"]), "msg": "reload map", "keys": [pygame.K_r]},
+    "zoom_in": {"show": ["key_+"], "msg": "zoom in", "keys": [pygame.K_EQUALS, pygame.K_KP_PLUS]},
+    "zoom_out": {"show": ["key_-"], "msg": "zoom out", "keys": [pygame.K_MINUS, pygame.K_KP_MINUS]},
+    "left": {"show": None, "msg": "", "keys": [pygame.K_LEFT, pygame.K_a]},
+    "right": {"show": None, "msg": "", "keys": [pygame.K_RIGHT, pygame.K_d]},
+    "up": {"show": None, "msg": "", "keys": [pygame.K_UP, pygame.K_w]},
+    "down": {"show": None, "msg": "", "keys": [pygame.K_DOWN, pygame.K_s]},
+    "pause": {"show": None, "msg": "pause", "keys": [pygame.K_F8]},
+    "scroll_up": {"show": None, "msg": "", "keys": []},
+    "left_click": {"show": ["mouse_LMB"], "msg": "go to", "keys": []},
+    "right_click": {"show": ["mouse_RMB"], "msg": "stop", "keys": []},
+    "scroll_click": {"show": None, "msg": "", "keys": []},
 }
 
 INPUTS: dict[str, float | bool] = {key: False for key in ACTIONS}
@@ -275,91 +311,88 @@ JOY_DRIFT: float = 0.25
 JOY_MOVE_MULTIPLIER: float = 5
 GAMEPAD_XBOX_CONTROL_NAMES: dict[str, dict[str, int]] = {
     "buttons": {
-        "A":              0,
-        "B":              1,
-        "X":              2,
-        "Y":              3,
-        "context":        4,
-        "xbox":           5,
-        "settings":       6,
-        "leftjoy_click":  7,
+        "A": 0,
+        "B": 1,
+        "X": 2,
+        "Y": 3,
+        "context": 4,
+        "xbox": 5,
+        "settings": 6,
+        "leftjoy_click": 7,
         "rightjoy_click": 8,
-        "LB":             9,
-        "RB":             10,
-        "dpad_up":        11,
-        "dpad_down":      12,
-        "dpad_left":      13,
-        "dpad_right":     14,
-
+        "LB": 9,
+        "RB": 10,
+        "dpad_up": 11,
+        "dpad_down": 12,
+        "dpad_left": 13,
+        "dpad_right": 14,
     },
     "axis": {
-        "leftjoy_horizontal":  0,
-        "leftjoy_vertical":    1,
+        "leftjoy_horizontal": 0,
+        "leftjoy_vertical": 1,
         "rightjoy_horizontal": 2,
-        "rightjoy_vertical":   3,
-        "LT":                  4,
-        "RT":                  5,
-    }
+        "rightjoy_vertical": 3,
+        "LT": 4,
+        "RT": 5,
+    },
 }
 GAMEPAD_STEAM_DECK_CONTROL_NAMES: dict[str, dict[str, int]] = {
     "buttons": {
-        "A":               3,
-        "B":               4,
-        "X":               5,
-        "Y":               6,
-        "context":        11,
-        "xbox":           13,
-        "dots":            2,
-        "settings":       12,
-        "leftjoy_click":  14,
+        "A": 3,
+        "B": 4,
+        "X": 5,
+        "Y": 6,
+        "context": 11,
+        "xbox": 13,
+        "dots": 2,
+        "settings": 12,
+        "leftjoy_click": 14,
         "rightjoy_click": 15,
-        "LB":              9,
-        "RB":             10,
-        "dpad_up":        16,
-        "dpad_down":      17,
-        "dpad_left":      18,
-        "dpad_right":     19,
-
+        "LB": 9,
+        "RB": 10,
+        "dpad_up": 16,
+        "dpad_down": 17,
+        "dpad_left": 18,
+        "dpad_right": 19,
     },
     "axis": {
-        "leftjoy_horizontal":  0,
-        "leftjoy_vertical":    1,
+        "leftjoy_horizontal": 0,
+        "leftjoy_vertical": 1,
         "rightjoy_horizontal": 2,
-        "rightjoy_vertical":   3,
-        "LT":                  4,
-        "RT":                  5,
-    }
+        "rightjoy_vertical": 3,
+        "LT": 4,
+        "RT": 5,
+    },
 }
 
 GAMEPAD_WEB_CONTROL_NAMES: dict[str, dict[str, int]] = {
     "buttons": {
-        "A":              0,
-        "B":              1,
-        "X":              2,
-        "Y":              3,
-        "context":        8,
-        "xbox":           16,
-        "settings":       9,
-        "leftjoy_click":  10,
+        "A": 0,
+        "B": 1,
+        "X": 2,
+        "Y": 3,
+        "context": 8,
+        "xbox": 16,
+        "settings": 9,
+        "leftjoy_click": 10,
         "rightjoy_click": 11,
-        "LB":             4,
-        "RB":             5,
-        "LT":             6,
-        "RT":             7,
-        "dpad_up":        12,
-        "dpad_down":      13,
-        "dpad_left":      14,
-        "dpad_right":     15,
-
+        "LB": 4,
+        "RB": 5,
+        "LT": 6,
+        "RT": 7,
+        "dpad_up": 12,
+        "dpad_down": 13,
+        "dpad_left": 14,
+        "dpad_right": 15,
     },
     "axis": {
-        "leftjoy_horizontal":  0,
-        "leftjoy_vertical":    1,
+        "leftjoy_horizontal": 0,
+        "leftjoy_vertical": 1,
         "rightjoy_horizontal": 2,
-        "rightjoy_vertical":   3,
-        "LT":                  4,
-        "RT":                  5,
-    }
+        "rightjoy_vertical": 3,
+        "LT": 4,
+        "RT": 5,
+    },
 }
 # GAMEPAD_XBOX_CONTROL_NAMES_REV: dict[str, dict[int, str]] = {
 #     "buttons": {
@@ -390,22 +423,22 @@ GAMEPAD_WEB_CONTROL_NAMES: dict[str, dict[str, int]] = {
 #     }
 # }
 GAMEPAD_XBOX_BUTTON2ACTIONS: dict[str, str] = {
-    "A":          "attack",
-    "B":          "use_item",
-    "X":          "pick_up",
-    "Y":          "drop",
-    "context":    "run",
-    "settings":   "quit",
-    "LB":         "prev_item",
-    "RB":         "next_item",
-    "dpad_up":    "up",
-    "dpad_down":  "down",
-    "dpad_left":  "left",
+    "A": "attack",
+    "B": "use_item",
+    "X": "pick_up",
+    "Y": "drop",
+    "context": "run",
+    "settings": "quit",
+    "LB": "prev_item",
+    "RB": "next_item",
+    "dpad_up": "up",
+    "dpad_down": "down",
+    "dpad_left": "left",
     "dpad_right": "right",
 }
 GAMEPAD_XBOX_AXIS2ACTIONS: dict[str, tuple[str, str]] = {
     "leftjoy_horizontal": ("left", "right"),
-    "leftjoy_vertical":   ("up",   "down"),
+    "leftjoy_vertical": ("up", "down"),
 }
 JOY_COOLDOWN: float = 0.15
 
@@ -426,34 +459,34 @@ MAIN_FONT = FONTS_PATH / f"{font_name}.ttf"
 MENU_FONT = FONTS_PATH / "munro.ttf"
 
 FONT_SIZES_DICT = {
-    "font":       [8, 24, 38, 42, 55],
+    "font": [8, 24, 38, 42, 55],
     "font_pixel": [10, 14, 16, 24, 155],
 }
-FONT_SIZE_TINY   = FONT_SIZES_DICT[font_name][0]
-FONT_SIZE_SMALL  = FONT_SIZES_DICT[font_name][1]
+FONT_SIZE_TINY = FONT_SIZES_DICT[font_name][0]
+FONT_SIZE_SMALL = FONT_SIZES_DICT[font_name][1]
 FONT_SIZE_MEDIUM = FONT_SIZES_DICT[font_name][2]
-FONT_SIZE_LARGE  = FONT_SIZES_DICT[font_name][3]
-FONT_SIZE_HUGE   = FONT_SIZES_DICT[font_name][4]
+FONT_SIZE_LARGE = FONT_SIZES_DICT[font_name][3]
+FONT_SIZE_HUGE = FONT_SIZES_DICT[font_name][4]
 FONT_SIZE_DEFAULT = FONT_SIZE_MEDIUM
-TEXT_ROW_SPACING  = 1.4
+TEXT_ROW_SPACING = 1.4
 
-ASSET_PACK        = "NinjaAdventure"
-RESOURCES_DIR     = ASSETS_DIR / ASSET_PACK
-DIALOGS_DIR       = ASSETS_DIR / "dialogs" / LANG
-MAPS_DIR          = RESOURCES_DIR / "maps"
-ITEMS_DIR         = RESOURCES_DIR / "items"
-ITEMS_SHEET_FILE  = ITEMS_DIR / "items_trans_weapons.png"
-GEMS_SHEET_FILE   = MAPS_DIR / "tilesets" / "images" / "TilesetNature.png"
-MAZE_DIR          = ASSETS_DIR / "MazeTileset"
-CHARACTERS_DIR    = RESOURCES_DIR / "characters"
-PARTICLES_DIR     = RESOURCES_DIR / "particles"
-HUD_DIR           = RESOURCES_DIR / "HUD"
-HUD_SHEET_FILE    = HUD_DIR / "HUD.png"
-EMOJIS_PATH       = RESOURCES_DIR / "Emote"
-EMOTE_SHEET_FILE  = EMOJIS_PATH / "emote_all_anim.png"
-PROGRAM_ICON      = ASSETS_DIR / "icon.png"
+ASSET_PACK = "NinjaAdventure"
+RESOURCES_DIR = ASSETS_DIR / ASSET_PACK
+DIALOGS_DIR = ASSETS_DIR / "dialogs" / LANG
+MAPS_DIR = RESOURCES_DIR / "maps"
+ITEMS_DIR = RESOURCES_DIR / "items"
+ITEMS_SHEET_FILE = ITEMS_DIR / "items_trans_weapons.png"
+GEMS_SHEET_FILE = MAPS_DIR / "tilesets" / "images" / "TilesetNature.png"
+MAZE_DIR = ASSETS_DIR / "MazeTileset"
+CHARACTERS_DIR = RESOURCES_DIR / "characters"
+PARTICLES_DIR = RESOURCES_DIR / "particles"
+HUD_DIR = RESOURCES_DIR / "HUD"
+HUD_SHEET_FILE = HUD_DIR / "HUD.png"
+EMOJIS_PATH = RESOURCES_DIR / "Emote"
+EMOTE_SHEET_FILE = EMOJIS_PATH / "emote_all_anim.png"
+PROGRAM_ICON = ASSETS_DIR / "icon.png"
 # MOUSE_CURSOR_IMG  = ASSETS_DIR / "aim.png"
-MOUSE_CURSOR_IMG  = ASSETS_DIR / "pointer4.png"
+MOUSE_CURSOR_IMG = ASSETS_DIR / "pointer4.png"
 # CIRCLE_GRADIENT   = HUD_DIR / "circle_gradient_big.png"
 # LOGO_IMG          = HUD_DIR / "logo.png"
 SHADERS_DIR = CURRENT_DIR / "shaders"
@@ -480,135 +513,118 @@ PARTICLES = {
 }
 
 CONF_ENTITIES_TO_STORE: dict[str, list[str]] = {
-    "characters":   ["name", "attitude", "race", "health", "damage", "speed_walk", "speed_run"],
-    "chests":       ["name", "is_small", "total_items_count"],
-    "items":        ["name", "type", "value", "weight", "health_impact", "damage", "cooldown_time"],
-    "maze_configs": ["boss_monster", "monsters_count",
-                     "small_chest_count", "small_chest_template", "big_chest_template", "maze_cols", "maze_rows"],
+    "characters": ["name", "attitude", "race", "health", "damage", "speed_walk", "speed_run"],
+    "chests": ["name", "is_small", "total_items_count"],
+    "items": ["name", "type", "value", "weight", "health_impact", "damage", "cooldown_time"],
+    "maze_configs": [
+        "boss_monster",
+        "monsters_count",
+        "small_chest_count",
+        "small_chest_template",
+        "big_chest_template",
+        "maze_cols",
+        "maze_rows",
+    ],
 }
 
 SPRITE_SHEET_DEFINITION_4x7: dict[str, list[tuple[int, int]]] = {
-    "idle_down":    [(0, 0)],
-    "idle_up":      [(1, 0)],
-    "idle_left":    [(2, 0)],
-    "idle_right":   [(3, 0)],
-
-    "run_down":     [(0, 0), (0, 1), (0, 2), (0, 3)],
-    "run_up":       [(1, 0), (1, 1), (1, 2), (1, 3)],
-    "run_left":     [(2, 0), (2, 1), (2, 2), (2, 3)],
-    "run_right":    [(3, 0), (3, 1), (3, 2), (3, 3)],
-
-    "weapon_down":  [(0, 4)],
-    "weapon_up":    [(1, 4)],
-    "weapon_left":  [(2, 4)],
+    "idle_down": [(0, 0)],
+    "idle_up": [(1, 0)],
+    "idle_left": [(2, 0)],
+    "idle_right": [(3, 0)],
+    "run_down": [(0, 0), (0, 1), (0, 2), (0, 3)],
+    "run_up": [(1, 0), (1, 1), (1, 2), (1, 3)],
+    "run_left": [(2, 0), (2, 1), (2, 2), (2, 3)],
+    "run_right": [(3, 0), (3, 1), (3, 2), (3, 3)],
+    "weapon_down": [(0, 4)],
+    "weapon_up": [(1, 4)],
+    "weapon_left": [(2, 4)],
     "weapon_right": [(3, 4)],
-
-    "jump_down":    [(0, 5)],
-    "jump_up":      [(1, 5)],
-    "jump_left":    [(2, 5)],
-    "jump_right":   [(3, 5)],
-
-    "dead":         [(0, 6)],
-    "item":         [(1, 6)],
-    "special1":     [(2, 6)],
-    "special2":     [(3, 6)],
-
-    "bored":        [(4, 0), (4, 1), (4, 2), (4, 3), (4, 4), (4, 5)],
-
-    "talk_down":    [(0, 0)],
-    "talk_up":      [(1, 0)],
-    "talk_left":    [(2, 0)],
-    "talk_right":   [(3, 0)],
+    "jump_down": [(0, 5)],
+    "jump_up": [(1, 5)],
+    "jump_left": [(2, 5)],
+    "jump_right": [(3, 5)],
+    "dead": [(0, 6)],
+    "item": [(1, 6)],
+    "special1": [(2, 6)],
+    "special2": [(3, 6)],
+    "bored": [(4, 0), (4, 1), (4, 2), (4, 3), (4, 4), (4, 5)],
+    "talk_down": [(0, 0)],
+    "talk_up": [(1, 0)],
+    "talk_left": [(2, 0)],
+    "talk_right": [(3, 0)],
 }
 
 SPRITE_SHEET_DEFINITION_2x1: dict[str, list[tuple[int, int]]] = {
-    "idle_down":    [(0, 0)],
-    "idle_up":      [(0, 0)],
+    "idle_down": [(0, 0)],
+    "idle_up": [(0, 0)],
     # "idle_left":    [(0, 0)],
-    "idle_right":   [(0, 0)],
-
-    "run_down":     [(0, 0), (1, 0)],
-    "run_up":       [(0, 0), (1, 0)],
+    "idle_right": [(0, 0)],
+    "run_down": [(0, 0), (1, 0)],
+    "run_up": [(0, 0), (1, 0)],
     # "run_left":     [(2, 0), (2, 1), (2, 2), (2, 3)],
-    "run_right":    [(0, 0), (1, 0)],
-
-
-    "dead":         [(0, 0)],
-
-    "bored":        [(0, 0)],
-
-    "talk_down":    [(0, 0)],
-    "talk_up":      [(0, 0)],
+    "run_right": [(0, 0), (1, 0)],
+    "dead": [(0, 0)],
+    "bored": [(0, 0)],
+    "talk_down": [(0, 0)],
+    "talk_up": [(0, 0)],
     # "talk_left":    [(2, 0)],
-    "talk_right":   [(0, 0)],
+    "talk_right": [(0, 0)],
 }
 
 SPRITE_SHEET_DEFINITION_3x3: dict[str, list[tuple[int, int]]] = {
-    "idle_down":    [(1, 0)],
-    "idle_up":      [(2, 0)],
+    "idle_down": [(1, 0)],
+    "idle_up": [(2, 0)],
     # "idle_left":    [(0, 0)],
-    "idle_right":   [(0, 0)],
-
-    "run_down":     [(1, 0), (1, 1), (1, 0), (1, 2)],
-    "run_up":       [(2, 0), (2, 1), (2, 0), (2, 2)],
+    "idle_right": [(0, 0)],
+    "run_down": [(1, 0), (1, 1), (1, 0), (1, 2)],
+    "run_up": [(2, 0), (2, 1), (2, 0), (2, 2)],
     # "run_left":     [(2, 0), (2, 1), (2, 0), (2, 2)],
-    "run_right":    [(0, 0), (0, 1), (0, 0), (0, 2)],
-
-
-    "dead":         [(0, 0)],
-
-    "bored":        [(0, 0)],
-
-    "talk_down":    [(0, 0)],
-    "talk_up":      [(0, 0)],
+    "run_right": [(0, 0), (0, 1), (0, 0), (0, 2)],
+    "dead": [(0, 0)],
+    "bored": [(0, 0)],
+    "talk_down": [(0, 0)],
+    "talk_up": [(0, 0)],
     # "talk_left":    [(2, 0)],
-    "talk_right":   [(0, 0)],
+    "talk_right": [(0, 0)],
 }
 
 SPRITE_SHEET_DEFINITION_2x2: dict[str, list[tuple[int, int]]] = {
-    "idle_down":    [(0, 0)],
-    "idle_up":      [(0, 0)],
+    "idle_down": [(0, 0)],
+    "idle_up": [(0, 0)],
     # "idle_left":    [(0, 0)],
-    "idle_right":   [(0, 0)],
-
-    "run_down":     [(0, 0), (1, 0)],
-    "run_up":       [(0, 1), (1, 1)],
+    "idle_right": [(0, 0)],
+    "run_down": [(0, 0), (1, 0)],
+    "run_up": [(0, 1), (1, 1)],
     # "run_left":     [(2, 0), (2, 1), (2, 2), (2, 3)],
-    "run_right":    [(0, 1), (1, 1)],
-
-
-    "dead":         [(0, 0)],
-
-    "bored":        [(0, 0)],
-
-    "talk_down":    [(0, 0)],
-    "talk_up":      [(0, 0)],
+    "run_right": [(0, 1), (1, 1)],
+    "dead": [(0, 0)],
+    "bored": [(0, 0)],
+    "talk_down": [(0, 0)],
+    "talk_up": [(0, 0)],
     # "talk_left":    [(2, 0)],
-    "talk_right":   [(0, 0)],
+    "talk_right": [(0, 0)],
 }
 
-SPRITE_SHEET_DEFINITION_RAIN: dict[str, list[tuple[int, int]]]  = {
-    "rain":          [(0, 0), (1, 0), (2, 0)]
+SPRITE_SHEET_DEFINITION_RAIN: dict[str, list[tuple[int, int]]] = {"rain": [(0, 0), (1, 0), (2, 0)]}
+
+SPRITE_SHEET_DEFINITION_DESTRUCTIBLE_FOLIAGE: dict[str, list[tuple[int, int]]] = {
+    "foliage": [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0)],
+}
+SPRITE_SHEET_DEFINITION_DESTRUCTIBLE_ROCK: dict[str, list[tuple[int, int]]] = {
+    "rock": [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0)],
+}
+SPRITE_SHEET_DEFINITION_LEAF: dict[str, list[tuple[int, int]]] = {
+    "foliage_left": [(0, 0), (1, 0), (0, 0), (2, 0)],
+    "foliage_right": [(3, 0), (4, 0), (3, 0), (5, 0)],
 }
 
-SPRITE_SHEET_DEFINITION_DESTRUCTIBLE_FOLIAGE: dict[str, list[tuple[int, int]]]  = {
-    "foliage":          [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0)],
-}
-SPRITE_SHEET_DEFINITION_DESTRUCTIBLE_ROCK: dict[str, list[tuple[int, int]]]  = {
-    "rock":             [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0),
-                         (8, 0), (9, 0), (10, 0), (11, 0), (12, 0)],
-}
-SPRITE_SHEET_DEFINITION_LEAF: dict[str, list[tuple[int, int]]]  = {
-    "foliage_left":          [(0, 0), (1, 0), (0, 0), (2, 0)],
-    "foliage_right":         [(3, 0), (4, 0), (3, 0), (5, 0)],
+SPRITE_SHEET_DEFINITION_ROCK: dict[str, list[tuple[int, int]]] = {
+    "rock_left": [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
+    "rock_right": [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
 }
 
-SPRITE_SHEET_DEFINITION_ROCK: dict[str, list[tuple[int, int]]]  = {
-    "rock_left":          [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
-    "rock_right":         [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
-}
-
-SPRITE_SHEET_DEFINITIONS: dict[int, Any]  = {
+SPRITE_SHEET_DEFINITIONS: dict[int, Any] = {
     32: {
         "type": "2x1",
         "sheet": SPRITE_SHEET_DEFINITION_2x1,
@@ -638,161 +654,167 @@ SPRITE_SHEET_DEFINITIONS: dict[int, Any]  = {
 
 
 HUD_SHEET_DEFINITION: dict[str, list[tuple[int, int]]] = {
-    "key":       [(0, 0)],
-    "key_Esc":   [(1, 0)],
-    "key_Tab":   [(2, 0)],
-    "key_Ctl":   [(3, 0)],
-    "key_Alt":   [(0, 1)],
+    "key": [(0, 0)],
+    "key_Esc": [(1, 0)],
+    "key_Tab": [(2, 0)],
+    "key_Ctl": [(3, 0)],
+    "key_Alt": [(0, 1)],
     "key_Enter": [(1, 1)],
     "key_Shift": [(2, 1)],
     "key_Space": [(3, 1)],
-    "mouse":     [(0, 3)],
+    "mouse": [(0, 3)],
     "mouse_LMB": [(1, 3)],
     "mouse_RMB": [(2, 3)],
 }
 
 EMOTE_SHEET_DEFINITION = {
-    "clear":                [(7, 7)],
-    "empty":                [(0, 0)],
-    "shocked":              [(2, 0)],
-    "shocked_anim":         [(2, 0), (2, 0), (2, 0), (0, 2), (1, 0), ],
-    "blessed":              [(6, 0)],
-    "blessed_anim":         [(3, 0), (4, 0), (5, 0)],
-    "love":                 [(0, 1)],
-    "love_anim":            [(0, 1), (0, 1), (0, 1), (7, 0)],
-    "angry":                [(1, 1)],
-    "indifferent":          [(2, 1)],
-    "happy":                [(3, 1)],
-    "wondering":            [(4, 1)],
-    "blink":                [(5, 1)],
-    "blink_anim":           [(5, 1), (5, 1), (0, 2), (0, 2)],
-    "doubt":                [(6, 1)],
-    "frounce":              [(7, 1)],
-    "smile":                [(0, 2)],
-    "dreaming":             [(1, 2)],
-    "sad":                  [(2, 2)],
-    "neutral":              [(3, 2)],
-    "dead":                 [(4, 2)],
-    "miserable":            [(5, 2)],
-    "offended":             [(6, 2)],
-    "peaceful":             [(7, 2)],
-    "evil":                 [(0, 3)],
-    "dots":                 [(1, 3)],
-    "dots_anim":            [(1, 3), (1, 3), (1, 3), (2, 3), (3, 3), (4, 3)],
-    "exclamation":          [(5, 3)],
-    "red_exclamation":      [(6, 3)],
+    "clear": [(7, 7)],
+    "empty": [(0, 0)],
+    "shocked": [(2, 0)],
+    "shocked_anim": [
+        (2, 0),
+        (2, 0),
+        (2, 0),
+        (0, 2),
+        (1, 0),
+    ],
+    "blessed": [(6, 0)],
+    "blessed_anim": [(3, 0), (4, 0), (5, 0)],
+    "love": [(0, 1)],
+    "love_anim": [(0, 1), (0, 1), (0, 1), (7, 0)],
+    "angry": [(1, 1)],
+    "indifferent": [(2, 1)],
+    "happy": [(3, 1)],
+    "wondering": [(4, 1)],
+    "blink": [(5, 1)],
+    "blink_anim": [(5, 1), (5, 1), (0, 2), (0, 2)],
+    "doubt": [(6, 1)],
+    "frounce": [(7, 1)],
+    "smile": [(0, 2)],
+    "dreaming": [(1, 2)],
+    "sad": [(2, 2)],
+    "neutral": [(3, 2)],
+    "dead": [(4, 2)],
+    "miserable": [(5, 2)],
+    "offended": [(6, 2)],
+    "peaceful": [(7, 2)],
+    "evil": [(0, 3)],
+    "dots": [(1, 3)],
+    "dots_anim": [(1, 3), (1, 3), (1, 3), (2, 3), (3, 3), (4, 3)],
+    "exclamation": [(5, 3)],
+    "red_exclamation": [(6, 3)],
     "red_exclamation_anim": [(6, 3), (7, 3), (6, 3), (0, 4)],
-    "question":             [(1, 4)],
-    "human":                [(2, 4)],
-    "red_question":         [(3, 4)],
-    "red_question_anim":    [(3, 4), (4, 4), (3, 4), (5, 4)],
-    "broken_heart":         [(6, 4)],
-    "broken_heart_anim":    [(7, 4), (0, 5), (1, 5), (1, 5), (1, 5)],
-    "heart":                [(2, 5)],
-    "heart_anim":           [(2, 5), (3, 5)],
-    "zzz":                  [(4, 5)],
-    "zzz_anim":             [(4, 5), (5, 5), (6, 5)],
-    "star":                 [(7, 5)],
-    "star_anim":            [(7, 5), (7, 5), (0, 6), (0, 6)],
-    "cross":                [(1, 6)],
-    "fight":                [(2, 6)],
-    "fight_anim":           [(3, 6), (4, 6), (5, 6), (5, 6), (5, 6)],
-    "walk":                 [(6, 6)],
-    "A":                    [(7, 6)],
-    "B":                    [(0, 7)],
-    "X":                    [(1, 7)],
-    "Y":                    [(2, 7)],
-    "$":                    [(3, 7)],
-    "$_anim":               [(3, 7), (4, 7), (5, 7), (4, 7)],
+    "question": [(1, 4)],
+    "human": [(2, 4)],
+    "red_question": [(3, 4)],
+    "red_question_anim": [(3, 4), (4, 4), (3, 4), (5, 4)],
+    "broken_heart": [(6, 4)],
+    "broken_heart_anim": [(7, 4), (0, 5), (1, 5), (1, 5), (1, 5)],
+    "heart": [(2, 5)],
+    "heart_anim": [(2, 5), (3, 5)],
+    "zzz": [(4, 5)],
+    "zzz_anim": [(4, 5), (5, 5), (6, 5)],
+    "star": [(7, 5)],
+    "star_anim": [(7, 5), (7, 5), (0, 6), (0, 6)],
+    "cross": [(1, 6)],
+    "fight": [(2, 6)],
+    "fight_anim": [(3, 6), (4, 6), (5, 6), (5, 6), (5, 6)],
+    "walk": [(6, 6)],
+    "A": [(7, 6)],
+    "B": [(0, 7)],
+    "X": [(1, 7)],
+    "Y": [(2, 7)],
+    "$": [(3, 7)],
+    "$_anim": [(3, 7), (4, 7), (5, 7), (4, 7)],
 }
 
 ITEMS_SHEET_DEFINITION = {
-    "abacus":               [(1, 0)],
-    "abacus2":              [(2, 0)],
-    "name":                 [(3, 0)],
-    "beef":                 [(1, 1)],
-    "calamari":             [(2, 1)],
-    "fish":                 [(3, 1)],
-    "fortune_cookie":       [(4, 1)],
-    "honey":                [(5, 1)],
-    "noodle":               [(6, 1)],
-    "octopus":              [(7, 1)],
-    "onigiri":              [(8, 1)],
-    "shrimp":               [(1, 2)],
-    "sushi":                [(2, 2)],
-    "sushi2":               [(3, 2)],
-    "leaf":                 [(4, 2)],
-    "shashlik":             [(5, 2)],
-    "empty_pot":            [(6, 2)],
-    "heart":                [(7, 2)],
-    "life_pot":             [(8, 2)],
-    "medic_pack":           [(1, 3)],
-    "water_pot":            [(2, 3)],
-    "milk_pot":             [(3, 3)],
-    "scroll_empty":         [(4, 3)],
-    "scroll_fire":          [(5, 3)],
-    "scroll_ice":           [(6, 3)],
-    "scroll_plant":         [(7, 3)],
-    "scroll_rock":          [(8, 3)],
-    "scroll_thunder":       [(1, 4)],
-    "big_chest":            [(2, 4), (3, 4)],
-    "golden_coin":          [(4, 4)],
-    "golden_coin_anim":     [(4, 4),  (5, 4), (6, 4), (7, 4)],
-    "hourglass":            [(8, 4)],
-    "hourglass_2":          [(1, 5)],
-    "small_chest":          [(2, 5), (3, 5)],
-    "silver_coin":          [(4, 5)],
-    "silver_cup":           [(5, 5)],
-    "silver_key":           [(6, 5)],
-    "golden_key":           [(7, 5)],
-    "golden_cup":           [(8, 5)],
-    "axe":                  [(1, 6)],
-    "pitchfork":            [(2, 6)],
-    "sai":                  [(3, 6)],
-    "sword":                [(4, 6)],
-    "lance":                [(5, 6)],
-    "hammer":               [(6, 6)],
-    "katana":               [(7, 6)],
-    "rapier":               [(8, 6)],
-    "stick":                [(1, 7)],
-    "club":                 [(2, 7)],
-    "pan_balance":          [(3, 7)],
-    "pan_balance2":         [(4, 7)],
-    "pan_balance3":         [(5, 7)],
-    "big_heart":            [(6, 7)],
-    "sword_short":          [(7, 7)],
-    "sword_long":           [(8, 7)],
-    "bow":                  [(3, 9)],
-    "arrow":                [(4, 9)],
+    "abacus": [(1, 0)],
+    "abacus2": [(2, 0)],
+    "name": [(3, 0)],
+    "beef": [(1, 1)],
+    "calamari": [(2, 1)],
+    "fish": [(3, 1)],
+    "fortune_cookie": [(4, 1)],
+    "honey": [(5, 1)],
+    "noodle": [(6, 1)],
+    "octopus": [(7, 1)],
+    "onigiri": [(8, 1)],
+    "shrimp": [(1, 2)],
+    "sushi": [(2, 2)],
+    "sushi2": [(3, 2)],
+    "leaf": [(4, 2)],
+    "shashlik": [(5, 2)],
+    "empty_pot": [(6, 2)],
+    "heart": [(7, 2)],
+    "life_pot": [(8, 2)],
+    "medic_pack": [(1, 3)],
+    "water_pot": [(2, 3)],
+    "milk_pot": [(3, 3)],
+    "scroll_empty": [(4, 3)],
+    "scroll_fire": [(5, 3)],
+    "scroll_ice": [(6, 3)],
+    "scroll_plant": [(7, 3)],
+    "scroll_rock": [(8, 3)],
+    "scroll_thunder": [(1, 4)],
+    "big_chest": [(2, 4), (3, 4)],
+    "golden_coin": [(4, 4)],
+    "golden_coin_anim": [(4, 4), (5, 4), (6, 4), (7, 4)],
+    "hourglass": [(8, 4)],
+    "hourglass_2": [(1, 5)],
+    "small_chest": [(2, 5), (3, 5)],
+    "silver_coin": [(4, 5)],
+    "silver_cup": [(5, 5)],
+    "silver_key": [(6, 5)],
+    "golden_key": [(7, 5)],
+    "golden_cup": [(8, 5)],
+    "axe": [(1, 6)],
+    "pitchfork": [(2, 6)],
+    "sai": [(3, 6)],
+    "sword": [(4, 6)],
+    "lance": [(5, 6)],
+    "hammer": [(6, 6)],
+    "katana": [(7, 6)],
+    "rapier": [(8, 6)],
+    "stick": [(1, 7)],
+    "club": [(2, 7)],
+    "pan_balance": [(3, 7)],
+    "pan_balance2": [(4, 7)],
+    "pan_balance3": [(5, 7)],
+    "big_heart": [(6, 7)],
+    "sword_short": [(7, 7)],
+    "sword_long": [(8, 7)],
+    "bow": [(3, 9)],
+    "arrow": [(4, 9)],
 }
 
 GEMS_SHEET_DEFINITION = {
-    "gem_crystal_orange":   [(0, 14)],
-    "gem_small_orange":     [(0, 15)],
-    "gem_big_orange":       [(0, 16)],
-    "gem_crystal_blue":     [(1, 14)],
-    "gem_small_blue":       [(1, 15)],
-    "gem_big_blue":         [(1, 16)],
-    "gem_crystal_purple":   [(2, 14)],
-    "gem_small_purple":     [(2, 15)],
-    "gem_big_purple":       [(2, 16)],
-    "gem_crystal_green":    [(3, 14)],
-    "gem_small_green":      [(3, 15)],
-    "gem_big_green":        [(3, 16)],
+    "gem_crystal_orange": [(0, 14)],
+    "gem_small_orange": [(0, 15)],
+    "gem_big_orange": [(0, 16)],
+    "gem_crystal_blue": [(1, 14)],
+    "gem_small_blue": [(1, 15)],
+    "gem_big_blue": [(1, 16)],
+    "gem_crystal_purple": [(2, 14)],
+    "gem_small_purple": [(2, 15)],
+    "gem_big_purple": [(2, 16)],
+    "gem_crystal_green": [(3, 14)],
+    "gem_small_green": [(3, 15)],
+    "gem_big_green": [(3, 16)],
 }
 
 WEAPON_DIRECTION_OFFSET: dict[str, vec] = {
-    "up":    vec(-3,         -10 - TILE_SIZE),
-    "down":  vec(-2,          -2 + TILE_SIZE // 2),
-    "left":  vec(-TILE_SIZE,   0 - TILE_SIZE // 2),
-    "right": vec(TILE_SIZE,    1 - TILE_SIZE // 2)
+    "up": vec(-3, -10 - TILE_SIZE),
+    "down": vec(-2, -2 + TILE_SIZE // 2),
+    "left": vec(-TILE_SIZE, 0 - TILE_SIZE // 2),
+    "right": vec(TILE_SIZE, 1 - TILE_SIZE // 2),
 }
 
 WEAPON_DIRECTION_OFFSET_FROM: dict[str, vec] = {
-    "up":    vec(-3, -10),
-    "down":  vec(-2,  -2 - TILE_SIZE // 2),
-    "left":  vec(0,    0 - TILE_SIZE // 2),
-    "right": vec(0,    1 - TILE_SIZE // 2)
+    "up": vec(-3, -10),
+    "down": vec(-2, -2 - TILE_SIZE // 2),
+    "left": vec(0, 0 - TILE_SIZE // 2),
+    "right": vec(0, 1 - TILE_SIZE // 2),
 }
 
 DIRECTIONS = ["up", "down", "left", "right"]
@@ -808,7 +830,7 @@ def import_sprite_sheet(
     tile_width: int = TILE_SIZE,
     tile_height: int = TILE_SIZE,
     sprite_sheet_definition: dict[str, list[tuple[int, int]]] = SPRITE_SHEET_DEFINITION_4x7,
-    add_missing_directions: bool = True
+    add_missing_directions: bool = True,
 ) -> dict[str, list[pygame.surface.Surface]]:
     """
     Load sprite sheet and cut it into animation names and frames using `sprite_sheet_definition` dict.

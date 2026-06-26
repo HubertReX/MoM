@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Display Settings Flow",
+        "actions": [
+            { "label": "Screenshot 1", "commands": ["screenshot"] },
+            { "label": "Navigate to Settings", "commands": ["down", "accept"] },
+            { "label": "Screenshot 2", "commands": ["screenshot"] },
+            { "label": "Changing resolution", "commands": ["down", "accept"] },
+            { "label": "Screenshot 3", "commands": ["screenshot"] },
+            { "label": "Applying changes", "commands": ["accept"] },
+            { "label": "Screenshot 4", "commands": ["screenshot"] },
+            { "label": "Verifying settings", "commands": ["debug_settings"] },
+            { "label": "Final Screenshot", "commands": ["screenshot"] }
+        ]
+    }
+]
