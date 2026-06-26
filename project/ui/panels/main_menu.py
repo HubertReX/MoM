@@ -5,6 +5,7 @@ lines, and a vertical list of selectable buttons. :class:`MenuScreen` is the ``S
 that owns one panel and drives selection from the game's action inputs (so keyboard and
 gamepad both work via the same ``INPUTS`` abstraction).
 """
+
 from __future__ import annotations
 
 import pygame
@@ -48,23 +49,20 @@ class MenuPanel(Widget):
         self.index: int = 0
 
         self.buttons: list[Button] = [
-            Button(label, cb, size=button_size) for label, cb in options  # type: ignore[arg-type]
+            Button(label, cb, size=button_size)
+            for label, cb in options  # type: ignore[arg-type]
         ]
         self.line_labels: list[Label] = [
             Label(text, size=line_size, font_path=str(MENU_FONT)) for text in (lines or [])
         ]
 
-        self._title_surf = (
-            theme.menu_font(title_size).render(title, False, theme.NAME) if title else None
-        )
+        self._title_surf = theme.menu_font(title_size).render(title, False, theme.NAME) if title else None
 
         title_h = (self._title_surf.get_height() + _GAP) if self._title_surf else 0
         lines_h = sum(lbl.rect.height + 4 for lbl in self.line_labels)
         buttons_h = sum(b.rect.height + _GAP for b in self.buttons)
         content_w = max(
-            [b.rect.width for b in self.buttons]
-            + [lbl.rect.width for lbl in self.line_labels]
-            + [min_width]
+            [b.rect.width for b in self.buttons] + [lbl.rect.width for lbl in self.line_labels] + [min_width]
         )
         width = content_w + 2 * _PAD
         height = title_h + lines_h + buttons_h + 2 * _PAD
@@ -197,10 +195,11 @@ class MainMenuScreen(MenuScreen):
     def build_panel(self) -> MenuPanel:
         import scene
         import splash_screen
+        from ui.panels.display_settings import DisplaySettingsScreen
 
         options: list[tuple[str, object]] = [
             ("Play", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
-            ("Settings", lambda: splash_screen.SplashScreen(self.game, "Settings").enter_state()),
+            ("Settings", lambda: DisplaySettingsScreen(self.game, "DisplaySettings", self.bg_image).enter_state()),
             ("About", lambda: AboutMenuScreen(self.game, "AboutMenu", self.bg_image).enter_state()),
         ]
         if not IS_WEB:
