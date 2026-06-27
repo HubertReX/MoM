@@ -33,3 +33,4 @@ installer
 aiohttp
 asyncio_socks_server
 token_utils
+click==8.4.2
