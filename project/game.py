@@ -11,13 +11,16 @@ if TYPE_CHECKING:
     from config_model.config_pydantic import update_config_schema
 
 import pygame
+import settings
+from enums import TaskEnum
+from maze_generator.maze_utils import timeit
+from objects import NotificationTypeEnum
 from PIL import Image
 from rich import print, traceback
-from objects import NotificationTypeEnum
-from maze_generator.maze_utils import timeit
-from enums import TaskEnum
-from settings import (
+from settings import (  # LOGO_IMG,; ColorValue,
     ACTIONS,
+    AGENT_INPUT_FILE,
+    AGENT_SCREENSHOT_DIR,
     BG_COLOR,
     BLACK_COLOR,
     CONF_ENTITIES_TO_STORE,
@@ -50,34 +53,29 @@ from settings import (
     JOY_DRIFT,
     JOY_MOVE_MULTIPLIER,
     MAIN_FONT,
-    # LOGO_IMG,
     MENU_FONT,
     MOUSE_CURSOR_IMG,
     PANEL_BG_COLOR,
     PROGRAM_ICON,
     RECORDING_FPS,
     SCREENSHOTS_DIR,
-    AGENT_INPUT_FILE,
-    AGENT_SCREENSHOT_DIR,
-    USE_AGENT_CONTROL,
     SHADERS_NAMES,
     TEXT_ROW_SPACING,
     TILE_SIZE,
     TRANSPARENT_COLOR,
     UI_BORDER_COLOR,
     UI_BORDER_WIDTH,
+    USE_AGENT_CONTROL,
     USE_CUSTOM_MOUSE_CURSOR,
     USE_SHADERS,
-    USE_WEB_SIMULATOR,
     USE_SOD,
+    USE_WEB_SIMULATOR,
     WIDTH,
     WIDTH_SCALED,
     load_image,
-    # ColorValue,
     vec,
-    vec3,
-)
-import settings
+    vec3
+    )
 
 if USE_WEB_SIMULATOR:
     import pygbag.aio as asyncio
@@ -91,7 +89,11 @@ if IS_WEB:
     from config_model.config import load_config
 else:
     import ffmpeg
-    from config_model.config_pydantic import load_config, update_config_schema, save_config  # type: ignore[assignment]
+    from config_model.config_pydantic import (  # type: ignore[assignment]
+        load_config,
+        save_config,
+        update_config_schema
+        )
 
 if USE_SOD:
     from second_order_dynamics import SecondOrderDynamics
@@ -180,8 +182,8 @@ class Game:
 
         # stacked game states (e.g. Scene, Menu)
         if TYPE_CHECKING:
-            from state import State
             from agent_ctrl import AgentController
+            from state import State
         self.states: list[State] = []
         # dict of custom events with callable functions
         # (not used for now since pygame.time.set_timer is not implemented in pygbag)
@@ -256,6 +258,21 @@ class Game:
             settings.WIDTH_SCALED = actual_w
             settings.HEIGHT_SCALED = actual_h
             settings.SCALE = min(actual_w / settings.BASE_WIDTH, actual_h / settings.BASE_HEIGHT)
+        if not IS_WEB:
+            try:
+                from pygame._sdl2.video import Window as _SDL2Win
+                _sdl_win = _SDL2Win.from_display_module()
+                if _sdl_win:
+                    _ds = pygame.display.get_desktop_sizes()
+                    if _ds:
+                        _dw, _dh = _ds[0]
+                        _ww, _wh = _sdl_win.size
+                        if _ww <= _dw and _wh <= _dh:
+                            _sdl_win.position = ((_dw - _ww) // 2, (_dh - _wh) // 2)
+                        else:
+                            _sdl_win.position = (0, 0)
+            except Exception:
+                pass
         # helper surface, before scaling up
         # , 32 .convert_alpha() # pygame.SRCALPHA
         self.canvas: pygame.Surface = pygame.Surface((settings.WIDTH, settings.HEIGHT))  # .convert_alpha()  # , self.flags)
