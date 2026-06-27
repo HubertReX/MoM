@@ -1,7 +1,7 @@
 ---
 id: T-001
 title: T-001 UI nie skaluje się przy zmianie rozdzielczości
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: bug

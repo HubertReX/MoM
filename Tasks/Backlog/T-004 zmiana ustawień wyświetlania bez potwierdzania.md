@@ -1,8 +1,8 @@
 ---
 id: T-004
 title: zmiana ustawień wyświetlania bez potwierdzania
-status: in-progress
-owner: ai
+status: done
+owner: human
 priority: p1
 type: feature
 agent: opencode
