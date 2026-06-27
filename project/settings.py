@@ -68,9 +68,13 @@ X_TILES = 80  # 100
 Y_TILES = 45  # 64
 
 # --- display resolution (mutable at runtime) ---
-# base resolutions (in tiles)
+# Base logical resolution — stays fixed; the canvas is rendered at this size
+# and then scaled to the physical screen.
+BASE_WIDTH: int = X_TILES * TILE_SIZE
+BASE_HEIGHT: int = Y_TILES * TILE_SIZE
+
+# Display resolution options (in tiles)
 _DISPLAY_RES_INDEX: int = 0
-_DISPLAY_SCALE: int = 1
 DISPLAY_RES_OPTIONS: list[tuple[int, int]] = [
     (80, 45),  # 1280x720
     (120, 64),  # 1920x1080
@@ -80,32 +84,37 @@ DISPLAY_RES_OPTIONS: list[tuple[int, int]] = [
 
 
 def _calc_resolution() -> tuple[int, int, int, int]:
-    """Return (width, height, width_scaled, height_scaled) for current settings."""
+    """Return (width, height, width_scaled, height_scaled) for current settings.
+
+    ``width`` / ``height`` are always the **base logical** resolution.
+    ``width_scaled`` / ``height_scaled`` are the **physical** display resolution
+    for the currently selected option.
+    """
     x_tiles, y_tiles = DISPLAY_RES_OPTIONS[_DISPLAY_RES_INDEX]
-    w, h = x_tiles * TILE_SIZE, y_tiles * TILE_SIZE
-    s = _DISPLAY_SCALE
-    return w, h, w * s, h * s
+    w_phys, h_phys = x_tiles * TILE_SIZE, y_tiles * TILE_SIZE
+    return BASE_WIDTH, BASE_HEIGHT, w_phys, h_phys
 
 
 # initial values
 _W, _H, WIDTH_SCALED_INIT, HEIGHT_SCALED_INIT = _calc_resolution()
-WIDTH, HEIGHT = _W, _H
+WIDTH, HEIGHT = _W, _H  # logical resolution — fixed for the whole session
 WIDTH_SCALED, HEIGHT_SCALED = WIDTH_SCALED_INIT, HEIGHT_SCALED_INIT
-SCALE = _DISPLAY_SCALE
+SCALE: float = min(WIDTH_SCALED / BASE_WIDTH, HEIGHT_SCALED / BASE_HEIGHT)  # scale factor canvas → screen
 
 
 def set_display(index: int, scale: int = 1) -> None:
-    """Change resolution and scale at runtime.
+    """Change physical display resolution at runtime.
 
-    Must be called before Game.__init__ (surfaces are created fresh there).
-    Returns the new (width, height, width_scaled, height_scaled).
+    Only ``WIDTH_SCALED`` / ``HEIGHT_SCALED`` / ``SCALE`` change; the
+    logical resolution (``WIDTH`` / ``HEIGHT``) stays at the base value
+    so that the canvas, UI layout and pyscroll viewport all remain
+    consistent.
     """
-    global _DISPLAY_RES_INDEX, _DISPLAY_SCALE, WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED, SCALE
+    global _DISPLAY_RES_INDEX, WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED, SCALE
     _DISPLAY_RES_INDEX = max(0, min(index, len(DISPLAY_RES_OPTIONS) - 1))
-    _DISPLAY_SCALE = max(1, scale)
     WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED = _calc_resolution()
-    SCALE = _DISPLAY_SCALE
-    print(f"{WIDTH_SCALED=}")
+    SCALE = min(WIDTH_SCALED / BASE_WIDTH, HEIGHT_SCALED / BASE_HEIGHT)
+    print(f"{WIDTH_SCALED=} {SCALE=:.2f}")
 
 
 FILTER_SCALE = 8

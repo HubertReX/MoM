@@ -169,7 +169,7 @@ class DisplayPanel(Widget):
         bt = self._button_types[self.index]
         if bt == "resolution":
             idx = self.index
-            _settings.set_display(idx, 1)
+            _settings.set_display(idx)
             print(f"{idx=}")
             print(f"{_settings.WIDTH_SCALED=}")
             self._rebuild_buttons()

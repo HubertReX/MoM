@@ -1,0 +1,77 @@
+/* MOAB board polish — scoped to the Kanban view only.
+   Card titles are wikilinks; Obsidianite underlines them, which reads as
+   strikethrough ("done") at card size. Make titles clean bold text that
+   only underlines on hover. */
+
+.kanban-plugin__item-title a,
+.kanban-plugin__item-markdown a,
+.kanban-plugin a.internal-link {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  color: var(--text-normal) !important;
+  font-weight: 600;
+}
+
+.kanban-plugin a.internal-link:hover {
+  text-decoration: underline !important;
+  color: var(--text-accent) !important;
+}
+
+/* A touch more breathing room + readable tag chips */
+.kanban-plugin__item-title {
+  line-height: 1.35;
+}
+
+/* Vibrant solid-pill tags (match the web UI). tag-colors in board.md set the
+   --tag-color / --tag-background; here we drop the theme's border/extra bg so
+   the solid fill shows cleanly as a rounded pill. */
+.kanban-plugin__item-tags .tag {
+  font-weight: 600;
+  border: none !important;
+  padding: 1px 8px !important;
+  border-radius: 999px !important;
+  background-color: var(--tag-background) !important;
+  color: var(--tag-color) !important;
+}
+
+/* ── Help banner above the board ──
+   Hover directly over the banner to expand; hovering over tasks/cards won't trigger it.
+   Project name is set during `moab install`.
+   Edit the content strings below to customize. */
+.workspace-leaf-content[data-type="kanban"] .kanban-plugin::before {
+  content: "❓  Projekt: pygame ce web boilerplate  — najedź, by rozwinąć pomoc";
+  display: block;
+  white-space: pre-wrap;
+  flex: 0 0 auto;
+  margin: 6px 12px 12px;
+  padding: 8px 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-left: 3px solid var(--text-accent);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  font-size: 0.82em;
+  line-height: 1.5;
+  cursor: default;
+}
+
+.workspace-leaf-content[data-type="kanban"] .kanban-plugin:hover:not(:has(.kanban-plugin__board:hover))::before {
+  content: "ℹ️  Projekt: pygame ce web boilerplate — pomoc\A"
+    "    ➕  Dodaj kartę: „+ Add a card” na dole kolumny → Shift+Enter zatwierdza      \A"
+    "    🔝  Priorytet: #p1, #p2, #p3                   \A"
+    "    🗂️  Typ zadania: #feature, #bug, #chore, #spike, #docs\A"
+    "    📝  Status: #raw, #blocked, #review\A"
+    "    🏷️  Filtruj: kliknij tag (ponownie = wyczyść)\A"
+    "    📅  Termin: wpisz @ w karcie\A"
+    "    🔗  Karta = link do notatki w Backlog/\A"
+    "    ↕️  Sortuj: menu kolumny (⋮) → „Sort by tags” (p1 ▸ p2 ▸ p3)\A"
+    "    🤖  Agent bierze tylko z 🟢 Ready for AI; oddaje do 🙋 Needs You (#review / #blocked)";
+}
+
+/* the banner is a flex item above the board; let the board take the rest
+   (its default height:100% would otherwise overflow past the banner) */
+.workspace-leaf-content[data-type="kanban"] .kanban-plugin__board {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}

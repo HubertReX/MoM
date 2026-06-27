@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Board Designer — Tasks/board.md</title>
+<style>
+  :root {
+    --bg:#fbfbfa; --surface:#ffffff; --surface-2:#f4f4f2;
+    --text:#1c1c1a; --muted:#6b6b66; --border:#e6e6e2;
+    --accent:#3b5bdb; --accent-soft:#e7ecff;
+    --ok:#2f9e44; --warn:#e8920c; --err:#e03131; --info:#1c7ed6; --purple:#7048e8;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff; --purple-soft:#f3f0ff;
+    --radius:12px; --radius-sm:8px;
+    --shadow:0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f; --purple-soft:#241a47;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--sans);
+    line-height:1.55; font-size:15px; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1280px; margin:0 auto; padding:32px 24px 80px; }
+  h1 { font-size:1.7rem; margin:0 0 4px; letter-spacing:-.02em; }
+  h2 { font-size:1.15rem; margin:36px 0 12px; letter-spacing:-.01em; }
+  .eyebrow { text-transform:uppercase; letter-spacing:.08em; font-size:.72rem; font-weight:700; color:var(--muted); margin:0 0 6px; }
+  .lead { color:var(--muted); margin:0 0 8px; max-width:75ch; }
+  a { color:var(--accent); }
+  code { font-family:var(--mono); font-size:.85em; background:var(--surface-2); padding:1px 5px; border-radius:5px; }
+
+  /* toolbar */
+  .toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:18px 0; }
+  button.btn { font:inherit; font-weight:600; cursor:pointer; border-radius:var(--radius-sm);
+    padding:8px 14px; border:1px solid var(--border); background:var(--surface); color:var(--text); transition:background .12s; }
+  button.btn:hover { background:var(--surface-2); }
+  button.btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  input, select { font:inherit; padding:7px 10px; border:1px solid var(--border); border-radius:var(--radius-sm);
+    background:var(--surface); color:var(--text); }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* board */
+  .board { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-top:8px; }
+  @media (max-width:1000px){ .board{ grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); } }
+  .lane { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius);
+    padding:10px; min-height:160px; display:flex; flex-direction:column; gap:8px; transition:background .12s, outline .12s; }
+  .lane.drag-over { outline:2px dashed var(--accent); outline-offset:-2px; background:var(--accent-soft); }
+  .lane-head { display:flex; align-items:center; justify-content:space-between; font-weight:700; font-size:.9rem; padding:2px 4px; }
+  .lane-head .cnt { font-size:.72rem; color:var(--muted); background:var(--surface); border:1px solid var(--border);
+    border-radius:999px; padding:1px 8px; font-weight:600; }
+  .owner { font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; padding:0 4px 4px; }
+
+  /* card */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+    padding:9px 10px; box-shadow:var(--shadow); cursor:grab; font-size:.86rem; }
+  .card:active { cursor:grabbing; }
+  .card.dragging { opacity:.4; }
+  .card .title { font-weight:600; display:flex; justify-content:space-between; gap:6px; align-items:start; }
+  .card .title .x { cursor:pointer; color:var(--muted); font-weight:700; line-height:1; opacity:.6; }
+  .card .title .x:hover { opacity:1; color:var(--err); }
+  .chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+  .chip { font-size:.68rem; font-weight:600; padding:1px 7px; border-radius:999px; line-height:1.5; white-space:nowrap; }
+
+  /* legend */
+  table { width:100%; border-collapse:collapse; font-size:.86rem; }
+  th,td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  thead th { font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .grid2 { display:grid; grid-template-columns:1.3fr 1fr; gap:24px; align-items:start; }
+  @media (max-width:900px){ .grid2{ grid-template-columns:1fr; } }
+  .card-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow); }
+  .no { color:var(--err); font-weight:700; } .yes { color:var(--ok); font-weight:700; }
+
+  /* toast */
+  #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--text); color:var(--bg); padding:10px 18px; border-radius:999px;
+    font-size:.85rem; font-weight:600; opacity:0; transition:all .25s; pointer-events:none; z-index:50; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  details { margin-top:8px; } summary { cursor:pointer; font-weight:600; }
+  pre { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; overflow:auto; font-size:.8rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Custom editor · Tasks/board.md</p>
+  <h1>Board Designer</h1>
+  <p class="lead">Przeciągaj karty między kolumnami, dodawaj nowe, a potem kliknij
+    <strong>Kopiuj jako board.md</strong> — wygeneruje gotowy plik w formacie pluginu Obsidian Kanban,
+    który wklejasz do <code>Tasks/board.md</code>. Wszystko działa offline z <code>file://</code>.</p>
+
+  <div style="margin:12px 0;display:flex;gap:8px;align-items:center;font-size:.86rem">
+    <label for="projectNameInput" style="font-weight:600;white-space:nowrap">Projekt:</label>
+    <input id="projectNameInput" placeholder="Nazwa projektu" style="min-width:160px;max-width:280px">
+    <span style="color:var(--muted);font-size:.78rem">zapisuje się automatycznie</span>
+  </div>
+
+  <div class="toolbar">
+    <input id="newTitle" placeholder="Tytuł nowej karty (T-00X …)" style="min-width:240px">
+    <select id="newLane"></select>
+    <select id="newType">
+      <option value="feature">#feature</option><option value="bug">#bug</option>
+      <option value="chore">#chore</option><option value="spike">#spike</option><option value="docs">#docs</option>
+    </select>
+    <select id="newPrio"><option value="p1">#p1</option><option value="p2" selected>#p2</option><option value="p3">#p3</option></select>
+    <button class="btn" onclick="addCard()">+ Dodaj kartę</button>
+    <span style="flex:1"></span>
+    <button class="btn primary" onclick="copyBoard()">⧉ Kopiuj jako board.md</button>
+    <button class="btn" onclick="resetBoard()">↺ Reset</button>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <h2>Legenda — własność „piłki" i flagi</h2>
+  <div class="grid2">
+    <div class="card-box">
+      <table>
+        <thead><tr><th>Lane</th><th>Kto trzyma piłkę</th><th>AI bierze?</th><th>Znaczenie</th></tr></thead>
+        <tbody>
+          <tr><td>🧊 Backlog</td><td>człowiek</td><td class="no">✗</td><td>Pomysły, nie do wzięcia. <code>#raw</code> = niedoprecyzowane.</td></tr>
+          <tr><td>🟢 Ready for AI</td><td>AI (kolejka)</td><td class="yes">✓ auto</td><td>W pełni opisane. Agent bierze górną kartę.</td></tr>
+          <tr><td>🤖 In Progress</td><td>AI</td><td>w toku</td><td>Agent pracuje. WIP = 1/agent. Claim <code>@agent</code>.</td></tr>
+          <tr><td>🙋 Needs You</td><td>człowiek</td><td class="no">✗</td><td><code>#blocked</code> = utknął · <code>#review</code> = czeka na akcept.</td></tr>
+          <tr><td>🏁 Done</td><td>—</td><td>—</td><td>Zatwierdzone i ukończone.</td></tr>
+        </tbody>
+      </table>
+      <details><summary>Glosariusz flag</summary>
+        <p style="margin:8px 0 0; font-size:.85rem">
+          <strong>Priorytet:</strong> <code>#p1</code> <code>#p2</code> <code>#p3</code><br>
+          <strong>Typ:</strong> <code>#feature</code> <code>#bug</code> <code>#chore</code> <code>#spike</code> <code>#docs</code><br>
+          <strong>Stan w lane:</strong> <code>#raw</code> · <code>#blocked</code> · <code>#review</code><br>
+          <strong>Agent:</strong> <code>#cc</code> <code>#opencode</code> <code>#pi</code> <code>#hermes</code><br>
+          <strong>Termin:</strong> <code>@{2026-06-24}</code> (w GUI: wpisz <code>@</code>)
+        </p>
+      </details>
+    </div>
+
+    <div class="card-box">
+      <p class="eyebrow" style="margin-bottom:10px">Cykl życia karty</p>
+      <svg viewBox="0 0 260 230" style="width:100%; font-family:var(--sans); font-size:11px">
+        <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="var(--muted)"/></marker></defs>
+        <g>
+          <rect x="70" y="8" width="120" height="30" rx="7" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="130" y="27" text-anchor="middle" fill="var(--text)">🧊 Backlog (human)</text>
+          <line x1="130" y1="38" x2="130" y2="56" stroke="var(--muted)" marker-end="url(#arr)"/>
+          <rect x="62" y="56" width="136" height="30" rx="7" fill="var(--ok-soft)" stroke="var(--ok)"/>
+          <text x="130" y="75" text-anchor="middle" fill="var(--text)">🟢 Ready for AI</text>
+          <line x1="130" y1="86" x2="130" y2="104" stroke="var(--muted)" marker-end="url(#arr)"/>
+          <rect x="64" y="104" width="132" height="30" rx="7" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <text x="130" y="123" text-anchor="middle" fill="var(--text)">🤖 In Progress</text>
+          <line x1="130" y1="134" x2="130" y2="152" stroke="var(--muted)" marker-end="url(#arr)"/>
+          <rect x="62" y="152" width="136" height="30" rx="7" fill="var(--warn-soft)" stroke="var(--warn)"/>
+          <text x="130" y="171" text-anchor="middle" fill="var(--text)">🙋 Needs You</text>
+          <!-- review -> done -->
+          <line x1="130" y1="182" x2="130" y2="200" stroke="var(--muted)" marker-end="url(#arr)"/>
+          <rect x="78" y="200" width="104" height="26" rx="7" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="130" y="217" text-anchor="middle" fill="var(--text)">🏁 Done</text>
+          <!-- blocked loops back to in progress -->
+          <path d="M198,167 C238,167 238,119 200,119" fill="none" stroke="var(--err)" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+          <text x="243" y="145" text-anchor="middle" fill="var(--err)" font-size="9" transform="rotate(90 243 145)">#blocked</text>
+        </g>
+      </svg>
+      <p style="font-size:.78rem; color:var(--muted); margin:6px 0 0">
+        Skończone → 🙋 z <code>#review</code> (człowiek robi sign-off → 🏁).
+        Zablokowane → 🙋 z <code>#blocked</code>, wraca do 🤖 po odpowiedzi.</p>
+    </div>
+  </div>
+
+  <h2>Podgląd board.md</h2>
+  <pre id="preview"></pre>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const LANES = [
+  { key:"🧊 Backlog",      owner:"człowiek" },
+  { key:"🟢 Ready for AI", owner:"AI · kolejka" },
+  { key:"🤖 In Progress",  owner:"AI" },
+  { key:"🙋 Needs You",    owner:"człowiek" },
+  { key:"🏁 Done",         owner:"—" },
+];
+const SEED = [
+  { id:1, lane:0, title:"T-001 Pause menu overlay",            flags:["feature","p2"],        agent:"" },
+  { id:2, lane:0, title:"T-002 Investigate web shader fallback", flags:["spike","p3","raw"],  agent:"" },
+  { id:3, lane:1, title:"T-003 Add FPS counter toggle",        flags:["feature","p2"],        agent:"" },
+];
+let cards = structuredClone(SEED);
+let nextId = 4;
+
+const PRIO = new Set(["p1","p2","p3"]);
+const STATE = new Set(["raw","blocked","review"]);
+const TAG_COLORS={p1:["#04201c","#ffaa0c"],p2:["#04201c","#d1ac64"],p3:["#2a2620","#b0a494"],
+  bug:["#fff","#f46262"],feature:["#04261a","#56c480"],chore:["#1a1d22","#708ab4"],
+  spike:["#04122a","#5ea2f7"],docs:["#1a0f2e","#b086f0"],raw:["#2a2620","#669f8f"],
+  blocked:["#2a1206","#ff8048"],review:["#04241c","#c940ba"],cc:["#04241c","#fa6f2d"],
+  opencode:["#04241c","#838181"],pi:["#04241c","#ffffff"],hermes:["#04241c","#fff40c"],
+  example:["#222","#6c6c72"]};
+function chipStyle(f){const c=TAG_COLORS[f.toLowerCase()];return c?`color:${c[0]};background:${c[1]}`:'color:var(--muted);background:var(--surface-2);border:1px dashed var(--border)';}
+
+function render(){
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  LANES.forEach((lane, li) => {
+    const el = document.createElement("div");
+    el.className = "lane"; el.dataset.lane = li;
+    const inLane = cards.filter(c => c.lane === li);
+    el.innerHTML = `<div class="lane-head"><span>${lane.key}</span><span class="cnt">${inLane.length}</span></div>
+      <div class="owner">${lane.owner}</div>`;
+    inLane.forEach(c => el.appendChild(cardEl(c)));
+    el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("drag-over"); });
+    el.addEventListener("dragleave", () => el.classList.remove("drag-over"));
+    el.addEventListener("drop", e => {
+      e.preventDefault(); el.classList.remove("drag-over");
+      const id = +e.dataTransfer.getData("text/plain");
+      const card = cards.find(c => c.id === id);
+      if (card) { card.lane = li; render(); }
+    });
+    board.appendChild(el);
+  });
+  updatePreview();
+}
+function cardEl(c){
+  const el = document.createElement("div");
+  el.className = "card"; el.draggable = true;
+  const chips = [...c.flags.map(f=>`<span class="chip" style="${chipStyle(f)}">#${f}</span>`),
+    c.agent ? `<span class="chip" style="${chipStyle(c.agent)}">#${c.agent}</span>` : ""].join("");
+  el.innerHTML = `<div class="title"><span>${c.title}</span><span class="x" title="Usuń">×</span></div>
+    ${chips ? `<div class="chips">${chips}</div>`:""}`;
+  el.querySelector(".x").addEventListener("click", e => { e.stopPropagation();
+    cards = cards.filter(x => x.id !== c.id); render(); });
+  el.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", c.id); el.classList.add("dragging"); });
+  el.addEventListener("dragend", () => el.classList.remove("dragging"));
+  return el;
+}
+function addCard(){
+  const title = document.getElementById("newTitle").value.trim();
+  if (!title) { showToast("Podaj tytuł karty"); return; }
+  const flags = [document.getElementById("newType").value, document.getElementById("newPrio").value];
+  cards.push({ id:nextId++, lane:+document.getElementById("newLane").value, title, flags, agent:"" });
+  document.getElementById("newTitle").value = "";
+  render();
+}
+function resetBoard(){ cards = structuredClone(SEED); nextId = 4; render(); showToast("Przywrócono przykład"); }
+
+/* ---- project name ---- */
+function loadProjectName(){
+  const saved = localStorage.getItem('moab-project-name');
+  const inp = document.getElementById('projectNameInput');
+  if (saved) inp.value = saved;
+}
+document.getElementById('projectNameInput').addEventListener('input', function(){
+  localStorage.setItem('moab-project-name', this.value);
+});
+loadProjectName();
+
+/* ---- serialize to exact Kanban-plugin board.md ---- */
+function serialize(){
+  const pname = document.getElementById('projectNameInput').value.trim();
+  const fm = `---\n\nkanban-plugin: board\ntags:\n  - task\n  - board\n${pname ? `project_name: ${pname}\n` : ''}---\n`;
+  let body = "";
+  LANES.forEach((lane, li) => {
+    body += `\n## ${lane.key}\n\n`;
+    cards.filter(c => c.lane === li).forEach(c => {
+      const tags = c.flags.map(f => `#${f}`).join(" ");
+      const ag = c.agent ? ` #${c.agent}` : "";
+      body += `- [ ] [[${c.title}]]${tags ? " " + tags : ""}${ag}\n`;
+    });
+    if (lane.key.includes("Done")) body = body.replace(/(## 🏁 Done\n\n)/, "$1**Complete**\n\n");
+  });
+  const collapse = JSON.stringify(LANES.map(()=>false));
+  const settings = `\n***\n\n## Archive\n\n\n%% kanban:settings\n\`\`\`\n{"kanban-plugin":"board","list-collapse":${collapse},"lane-width":300,"show-checkboxes":true,"new-line-trigger":"enter"}\n\`\`\`\n%%\n`;
+  return fm + body + settings;
+}
+function updatePreview(){ document.getElementById("preview").textContent = serialize(); }
+function copyBoard(){ copyToClipboard(serialize(), "Skopiowano board.md"); }
+
+function copyToClipboard(text, msg){
+  navigator.clipboard.writeText(text).then(()=>showToast(msg)).catch(()=>{
+    const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove(); showToast(msg);
+  });
+}
+let toastTimer;
+function showToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),1800); }
+
+/* init */
+document.getElementById("newLane").innerHTML = LANES.map((l,i)=>`<option value="${i}">${l.key}</option>`).join("");
+render();
+</script>
+</body>
+</html>

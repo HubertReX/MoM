@@ -30,7 +30,6 @@ from settings import (
     MONSTER_WAKE_DISTANCE,
     PUSHED_TIME,
     RECALCULATE_PATH_DISTANCE,
-    SCALE,
     STEP_COST_WALL,
     SPRITE_SHEET_DEFINITION_4x7,
     STUNNED_COLOR,
@@ -780,7 +779,7 @@ class NPC(pygame.sprite.Sprite):
         x = -x_tiles + random.random() * 2.0 * x_tiles
         y = -y_tiles + random.random() * 2.0 * y_tiles
 
-        return vec(x * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE)
+        return vec(x * TILE_SIZE, y * TILE_SIZE)
 
     #############################################################################################################
     def die(self, drop_items: bool = True) -> None:

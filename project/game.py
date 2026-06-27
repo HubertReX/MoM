@@ -56,7 +56,6 @@ from settings import (
     PANEL_BG_COLOR,
     PROGRAM_ICON,
     RECORDING_FPS,
-    SCALE,
     SCREENSHOTS_DIR,
     AGENT_INPUT_FILE,
     AGENT_SCREENSHOT_DIR,
@@ -244,13 +243,19 @@ class Game:
             # pygame.RESIZABLE , | pygame.SCALED
             self.flags = self.flags | pygame.OPENGL | pygame.DOUBLEBUF
 
-        # final surface, afters scaling up
+        # final surface, after scaling up
         if IS_FULLSCREEN:
             res = (0, 0)
         else:
             res = (settings.WIDTH_SCALED, settings.HEIGHT_SCALED)
         print(res)
         self.screen: pygame.Surface = pygame.display.set_mode(res, self.flags, vsync=0)
+        # sync WIDTH_SCALED with actual screen size (important for fullscreen)
+        if self.screen.get_size() != (settings.WIDTH_SCALED, settings.HEIGHT_SCALED):
+            actual_w, actual_h = self.screen.get_size()
+            settings.WIDTH_SCALED = actual_w
+            settings.HEIGHT_SCALED = actual_h
+            settings.SCALE = min(actual_w / settings.BASE_WIDTH, actual_h / settings.BASE_HEIGHT)
         # helper surface, before scaling up
         # , 32 .convert_alpha() # pygame.SRCALPHA
         self.canvas: pygame.Surface = pygame.Surface((settings.WIDTH, settings.HEIGHT))  # .convert_alpha()  # , self.flags)
@@ -324,7 +329,7 @@ class Game:
         self.screen.fill(BG_COLOR)
         self.render_text(
             "Loading...",
-            (WIDTH * SCALE // 2, HEIGHT * SCALE // 2),
+            (WIDTH_SCALED // 2, HEIGHT_SCALED // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
             bg_color=PANEL_BG_COLOR,
@@ -760,7 +765,7 @@ class Game:
         self.log("saving recordings - this can take a while...")
         self.render_text(
             "SAVING...",
-            (WIDTH * SCALE // 2, HEIGHT * SCALE // 2),
+            (WIDTH_SCALED // 2, HEIGHT_SCALED // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
             bg_color=PANEL_BG_COLOR,
@@ -904,8 +909,14 @@ class Game:
             self.show_pause_message()
         # than scale and copy on final Surface (game.screen)
 
-        if SCALE != 1:
-            self.screen.blit(pygame.transform.scale_by(self.canvas, SCALE), (0, 0))
+        _scale = settings.SCALE
+        if _scale != 1:
+            scaled_w = int(WIDTH * _scale)
+            scaled_h = int(HEIGHT * _scale)
+            offset_x = (settings.WIDTH_SCALED - scaled_w) // 2
+            offset_y = (settings.HEIGHT_SCALED - scaled_h) // 2
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(pygame.transform.scale(self.canvas, (scaled_w, scaled_h)), (offset_x, offset_y))
         else:
             self.screen.blit(self.canvas, (0, 0))
 

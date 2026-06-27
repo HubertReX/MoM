@@ -1,0 +1,12 @@
+{
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Backlog",
+  "attachmentFolderPath": "_attachments",
+  "useMarkdownLinks": false,
+  "openBehavior": "file:board",
+  "userIgnoreFilters": [
+    "bin/",
+    "web/"
+  ]
+}

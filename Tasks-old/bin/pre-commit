@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# MOAB pre-commit hook — second line of defence: refuse a commit if the board and
+# the task-note frontmatter have drifted (someone changed the board without running
+# a `moab` command / `moab sync`). Install from the repo root with:
+#     ln -sf ../../Tasks/bin/pre-commit .git/hooks/pre-commit
+# Skip a one-off check with:  git commit --no-verify
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+MOAB="$ROOT/Tasks/bin/moab"
+
+if [ ! -x "$MOAB" ]; then
+  echo "moab pre-commit: $MOAB not found — skipping check" >&2
+  exit 0
+fi
+
+if ! python3 "$MOAB" sync --check; then
+  echo >&2
+  echo "✗ Board and task notes are out of sync. Run:  python3 Tasks/bin/moab sync" >&2
+  echo "  then stage the updated notes and commit again (or --no-verify to skip)." >&2
+  exit 1
+fi
