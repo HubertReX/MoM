@@ -96,9 +96,6 @@ class DisplayPanel(Widget):
             self._buttons.append(Button(label, None, size=_BUTTON_SIZE))
             self._button_types.append("fullscreen")
 
-        self._buttons.append(Button("Apply (restarts game)", None, size=_BUTTON_SIZE))
-        self._button_types.append("apply")
-
         self._buttons.append(Button("Back", None, size=_BUTTON_SIZE))
         self._button_types.append("back")
 
@@ -167,17 +164,14 @@ class DisplayPanel(Widget):
         if bt == "resolution":
             idx = self.index
             _settings.set_display(idx)
-            print(f"{idx=}")
-            print(f"{_settings.WIDTH_SCALED=}")
+            if self._apply_callback is not None:
+                self._apply_callback()
             self._rebuild_buttons()
         elif bt == "fullscreen":
             _settings._IS_FULLSCREEN = not _settings._IS_FULLSCREEN
-            self._rebuild_buttons()
-        elif bt == "apply":
             if self._apply_callback is not None:
                 self._apply_callback()
-            if self._back_callback is not None:
-                self._back_callback()
+            self._rebuild_buttons()
         elif bt == "back":
             if self._back_callback is not None:
                 self._back_callback()
