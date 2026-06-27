@@ -246,10 +246,25 @@ class Game:
             self.flags = self.flags | pygame.OPENGL | pygame.DOUBLEBUF
 
         # final surface, after scaling up
-        if IS_FULLSCREEN:
+        if IS_FULLSCREEN or settings._IS_FULLSCREEN:
             res = (0, 0)
         else:
-            res = (settings.WIDTH_SCALED, settings.HEIGHT_SCALED)
+            # Recalculate from saved display index — WIDTH_SCALED may have
+            # been overwritten by the fullscreen (0,0) path above.
+            _xt, _yt = settings.DISPLAY_RES_OPTIONS[settings._DISPLAY_RES_INDEX]
+            res = (_xt * settings.TILE_SIZE, _yt * settings.TILE_SIZE)
+            settings.WIDTH_SCALED, settings.HEIGHT_SCALED = res
+            settings.SCALE = min(res[0] / settings.BASE_WIDTH, res[1] / settings.BASE_HEIGHT)
+            # Clamp window size to desktop when returning from fullscreen
+            if not IS_WEB:
+                try:
+                    _ds = pygame.display.get_desktop_sizes()
+                    if _ds:
+                        _dw, _dh = _ds[0]
+                        if res[0] > _dw or res[1] > _dh:
+                            res = (min(res[0], _dw), min(res[1], _dh))
+                except Exception:
+                    pass
         print(res)
         self.screen: pygame.Surface = pygame.display.set_mode(res, self.flags, vsync=0)
         # sync WIDTH_SCALED with actual screen size (important for fullscreen)

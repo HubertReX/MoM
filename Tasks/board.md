@@ -9,21 +9,23 @@ tags:
 
 ## 🧊 Backlog
 
-- [ ] [[T-003 nie działa przycisk "full screen"]] #bug #p2 #raw
-
 
 ## 🟢 Ready for AI
 
+
 ## 🤖 In Progress
+
 
 ## 🙋 Needs You
 
 - [ ] [[T-001 UI nie skaluje się przy zmianie rozdzielczości]] #bug #p2 #opencode #review
 - [ ] [[T-002 ekran nie przesuwa się na środek po zmianie rozdzielczości]] #bug #p2 #opencode #review
 
+
 ## 🏁 Done
 
 **Complete**
+- [ ] [[T-003 nie działa przycisk "full screen"]] #bug #p2 #opencode
 
 
 ## Archive

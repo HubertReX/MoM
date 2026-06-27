@@ -4,11 +4,11 @@ Replaces the placeholder "Settings" splash screen in the main menu.
 """
 
 from __future__ import annotations
-import settings as _settings
 
 from typing import TYPE_CHECKING, Callable
 
 import pygame
+import settings as _settings
 from settings import HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH
 
 from .. import theme
@@ -160,9 +160,6 @@ class DisplayPanel(Widget):
                     self.set_index(i)
                     self.activate()
                     return True
-        if event.type in (pygame.KEYDOWN,) and event.key in (pygame.K_SPACE, pygame.K_RETURN):
-            self.activate()
-            return True
         return False
 
     def activate(self) -> None:
