@@ -27,14 +27,22 @@
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   select{-webkit-appearance:none;appearance:none}
 
-  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px;align-items:start}
-  @media(max-width:1050px){.board{grid-template-columns:1fr}}
-  .lane{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
-    padding:10px;display:flex;flex-direction:column;gap:8px}
+  .board{display:flex;gap:12px;padding:16px;align-items:start;overflow-x:auto;
+    transition:margin-right .2s}
+  .board.drawer-open{margin-right:min(520px,100vw)}
+  @media(max-width:1050px){.board{flex-wrap:wrap}}
+  .lane{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:8px}
   .lane.drag{outline:2px dashed var(--accent);outline-offset:-2px}
-  .lane h2{font-size:.92rem;margin:0;display:flex;justify-content:space-between;align-items:center}
+  .lane h2{font-size:.92rem;margin:0;display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;-webkit-user-select:none;user-select:none}
   .lane h2 .cnt{font-size:.7rem;color:var(--muted);background:var(--surface);border:1px solid var(--border);
     border-radius:999px;padding:1px 8px}
+  .lane.collapsed{flex:0 0 44px;min-width:44px;overflow:hidden;cursor:pointer;padding:10px 6px;
+    justify-content:center}
+  .lane.collapsed h2{writing-mode:vertical-rl;transform:rotate(180deg);margin:auto;font-size:.85rem;gap:0;
+    justify-content:center}
+  .lane.collapsed h2 .cnt,.lane.collapsed .card,.lane.collapsed .foot{display:none}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
     padding:10px 11px;box-shadow:var(--shadow);font-size:.86rem}
   .card.dragging{opacity:.4}
@@ -86,7 +94,32 @@
   #help .help-body{padding:2px 16px 12px;display:grid;gap:6px;color:var(--muted);line-height:1.5}
   #help .help-body b{color:var(--text);font-weight:600}
   #help .help-body code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:.92em}
+/* preview panel */
+#drawer .pv{flex:1;overflow-y:auto;padding:14px 16px;display:none;line-height:1.7;font-size:.9rem}
+#drawer .pv.show{display:block}
+#drawer .pv h1,#drawer .pv h2,#drawer .pv h3,#drawer .pv h4{margin:.5em 0 .2em;line-height:1.3}
+#drawer .pv h1{font-size:1.35rem;border-bottom:1px solid var(--border);padding-bottom:.25em}
+#drawer .pv h2{font-size:1.2rem}
+#drawer .pv h3{font-size:1.05rem}
+#drawer .pv p{margin:0 0 .6em}
+#drawer .pv ul,#drawer .pv ol{padding-left:1.5em;margin:.4em 0}
+#drawer .pv li{margin:.2em 0}
+#drawer .pv code{background:var(--surface-2);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:.88em}
+#drawer .pv pre{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;overflow-x:auto;margin:.6em 0}
+#drawer .pv pre code{background:none;padding:0;border-radius:0}
+#drawer .pv blockquote{border-left:3px solid var(--accent);margin:.6em 0;padding:4px 12px;color:var(--muted)}
+#drawer .pv table{border-collapse:collapse;width:100%;margin:.6em 0}
+#drawer .pv th,#drawer .pv td{border:1px solid var(--border);padding:6px 10px;text-align:left}
+#drawer .pv th{background:var(--surface-2);font-weight:600}
+#drawer .pv hr{border:none;border-top:1px solid var(--border);margin:1em 0}
+#drawer .pv input[type=checkbox]{margin-right:6px}
+#drawer .pv a{color:var(--accent)}
+#drawer .pv img{max-width:100%;border-radius:var(--radius-sm);margin:.4em 0}
+#drawer .pv strong{font-weight:700}
+#toggleView{font-size:.76rem;padding:5px 10px;background:var(--surface-2);border-color:var(--border)}
+#toggleView.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 <header>
@@ -120,7 +153,7 @@
 <div class="board" id="board"></div>
 
 <div id="drawer">
-  <div class="dh"><h3 id="dTitle"></h3><button class="btn" onclick="closeDrawer()">✕</button></div>
+  <div class="dh"><h3 id="dTitle"></h3><button class="btn" id="toggleView" onclick="togglePreview()">👁️ Podgląd</button><button class="btn" onclick="closeDrawer()">✕</button></div>
   <div class="ed">
     <div class="row"><label>Kolumna</label><select id="eLane" onchange="setLane()"></select></div>
     <div class="row"><label>Priorytet</label><select id="ePrio" onchange="setTag('prio',this.value)"></select>
@@ -128,6 +161,7 @@
     <div class="row"><label>Stan</label><div class="states" id="eStates"></div></div>
   </div>
   <textarea id="dBody" spellcheck="false" placeholder="Treść notatki…"></textarea>
+  <div id="dPreview" class="pv"></div>
   <div class="df">
     <button class="btn primary" onclick="saveNote()">💾 Zapisz treść</button>
     <span class="sp" style="flex:1"></span>
@@ -148,6 +182,7 @@ function chip(t){const c=CHIP[t.toLowerCase()]||["#fff","#888"];
   return `<span class="chip" style="color:${c[0]};background:${c[1]}">#${t}</span>`;}
 let DATA={lanes:[],agents:[],types:[],prios:[],states:[],laneOrder:[]};
 let CUR=null;                      // currently open card id
+let PREVIEW=false;                 // preview mode
 
 async function load(keepDrawer){
   const r=await fetch('/api/board'); DATA=await r.json();
@@ -158,7 +193,7 @@ async function load(keepDrawer){
   const b=document.getElementById('board'); b.innerHTML='';
   for(const lane of DATA.lanes){
     const el=document.createElement('div'); el.className='lane'; el.dataset.lane=lane.key;
-    el.innerHTML=`<h2>${lane.label}<span class="cnt">${lane.cards.length}</span></h2>`;
+    el.innerHTML=`<h2 onclick="toggleLane(this.parentElement)">${lane.label}<span class="cnt">${lane.cards.length}</span></h2>`;
     for(const c of lane.cards) el.appendChild(cardEl(c,lane.key));
     el.ondragover=e=>{e.preventDefault();el.classList.add('drag')};
     el.ondragleave=()=>el.classList.remove('drag');
@@ -212,10 +247,13 @@ function createCard(e){e.preventDefault();
   act('/api/new',{title:nTitle.value.trim(),type:nType.value,prio:nPrio.value,lane:nLane.value});
   nTitle.value=''; toggleNew();}
 function toggleNew(){document.getElementById('newForm').classList.toggle('show');}
+function toggleLane(el){el.classList.toggle('collapsed');}
 
 /* ---- card editor drawer ---- */
 function openCard(id){CUR=id;populateDrawer(id);fetchBody(id);
-  document.getElementById('drawer').classList.add('open');}
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('board').classList.add('drawer-open');
+  if(PREVIEW)applyPreviewMode();}
 function populateDrawer(id){
   const f=findCard(id); if(!f){closeDrawer();return;}
   const c=f.c;
@@ -239,8 +277,26 @@ async function saveNote(){const ta=document.getElementById('dBody');
   toast(r.ok?'zapisano':'błąd zapisu',!r.ok);}
 function delCard(){if(!confirm('Usunąć '+CUR+' (karta + notatka)?'))return;
   act('/api/rm',{id:CUR}).then(()=>closeDrawer());}
-function closeDrawer(){CUR=null;document.getElementById('drawer').classList.remove('open');}
+function closeDrawer(){CUR=null;document.getElementById('drawer').classList.remove('open');
+  document.getElementById('board').classList.remove('drawer-open');}
 addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+function applyPreviewMode(){
+  const ta=document.getElementById('dBody'),pv=document.getElementById('dPreview'),
+    btn=document.getElementById('toggleView');
+  renderPreview();ta.style.display='none';pv.classList.add('show');
+  btn.textContent='✏️ Edytuj';btn.classList.add('active');}
+function applyEditMode(){
+  const ta=document.getElementById('dBody'),pv=document.getElementById('dPreview'),
+    btn=document.getElementById('toggleView');
+  pv.classList.remove('show');ta.style.display='';
+  btn.textContent='👁️ Podgląd';btn.classList.remove('active');}
+function togglePreview(){PREVIEW=!PREVIEW;
+  if(PREVIEW)applyPreviewMode();else applyEditMode();}
+function renderPreview(){const ta=document.getElementById('dBody'),
+    pv=document.getElementById('dPreview');
+  try{pv.innerHTML=marked.parse(ta.value||'',{gfm:true,breaks:true});}
+  catch(e){pv.innerHTML='<p style="color:var(--err)">Błąd renderowania markdown.</p>';}}
 
 let tt;function toast(m,err){const t=document.getElementById('toast');t.textContent=m;
   t.className='show'+(err?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='',2200);}
