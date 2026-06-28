@@ -34,23 +34,24 @@ tags:
 
 <!-- Ścieżki w kodzie, powiązane pliki, assety, linki. Agent zaczyna tutaj. -->
 
-- `project/...`
+- brak
 
 ## ⛓️ Constraints
 
 <!-- Twarde ograniczenia projektu (dostosuj do swojego repo; patrz jego AGENTS.md). -->
 <!-- np.: działa na X i Y; styl/lint; czego NIE ruszać -->
 
--
+- brak
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Krok 1
-- [ ] Krok 2
+- brak
 
 ## ✅ Definition of Done
 
 - [ ] Kryteria z Goal spełnione
+- [ ] zmiany udokumentowa w tasku (`moab log`)
+- [ ] commit zmian wykonany
 - [ ] Testy / lint przechodzą (jeśli dotyczy)
 
 ## 📓 Agent Log
