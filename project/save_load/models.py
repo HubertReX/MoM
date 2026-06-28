@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import asdict, dataclass, field
-from typing import Any
+from typing import Any, cast
 
 from enums import AttitudeEnum, ItemTypeEnum
 from settings import VERSION
@@ -32,7 +32,7 @@ def _to_dict(obj: Any) -> dict[str, Any]:
     - enum members → their ``.value`` string
     - ``tuple`` → ``list``
     """
-    return _json_safe(asdict(obj, dict_factory=_enum_dict_factory))
+    return cast("dict[str, Any]", _json_safe(asdict(obj, dict_factory=_enum_dict_factory)))
 
 
 def _enum_dict_factory(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -58,7 +58,7 @@ def _json_safe(obj: Any) -> Any:
 def _enum_val(v: str | None, enum_cls: Any) -> Any:
     """Convert a string back to an enum member, or return a default."""
     if v is None:
-        return next(iter(enum_cls))  # type: ignore[arg-type]
+        return next(iter(enum_cls))
     return enum_cls(v)
 
 
@@ -292,6 +292,7 @@ class MapState:
     name: str = ""
     chests: dict[str, ChestState] = field(default_factory=dict)
     ground_items: list[GroundItemState] = field(default_factory=list)
+    npc_states: dict[str, NPCState] = field(default_factory=dict)
     destroyed_walls: list[tuple[int, int]] = field(default_factory=list)
     maze_seed: int | None = None
     maze_level: int | None = None
@@ -304,10 +305,12 @@ class MapState:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> MapState:
+        raw_npc = data.get("npc_states", {})
         return cls(
             name=str(data.get("name", "")),
             chests={k: ChestState.from_dict(v) for k, v in data.get("chests", {}).items()},
             ground_items=[GroundItemState.from_dict(i) for i in data.get("ground_items", [])],
+            npc_states={k: NPCState.from_dict(v) for k, v in raw_npc.items()},
             destroyed_walls=[tuple(w) for w in data.get("destroyed_walls", [])],
             maze_seed=int(data["maze_seed"]) if data.get("maze_seed") is not None else None,
             maze_level=int(data["maze_level"]) if data.get("maze_level") is not None else None,

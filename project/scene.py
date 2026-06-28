@@ -1134,6 +1134,10 @@ class Scene(State):
 
         if USE_PARTICLES:
             self.start_particles()
+
+        if hasattr(self.game, "save_manager"):
+            self.game.save_manager.save(0)
+
         self.transition.exiting = False
 
     #############################################################################################################

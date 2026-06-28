@@ -124,6 +124,9 @@ ZOOM_LEVEL = 3.8
 # camera zoom for intro cutscene (zooms out)
 ZOOM_WIDE = 3.10
 
+MAX_SAVE_SLOTS = 10
+SAVE_FILE_EXT = ".mom"
+
 USE_WEB_SIMULATOR = False
 IS_WEB = __import__("sys").platform == "emscripten" or USE_WEB_SIMULATOR
 IS_LINUX = __import__("sys").platform == "linux"
@@ -308,6 +311,8 @@ ACTIONS: dict[str, dict[str, Any]] = {
     "right": {"show": None, "msg": "", "keys": [pygame.K_RIGHT, pygame.K_d]},
     "up": {"show": None, "msg": "", "keys": [pygame.K_UP, pygame.K_w]},
     "down": {"show": None, "msg": "", "keys": [pygame.K_DOWN, pygame.K_s]},
+    "quick_save": {"show": ([] if IS_WEB else ["key_F5"]), "msg": "quick save", "keys": [pygame.K_F5]},
+    "quick_load": {"show": ([] if IS_WEB else ["key_F9"]), "msg": "quick load", "keys": [pygame.K_F9]},
     "pause": {"show": None, "msg": "pause", "keys": [pygame.K_F8]},
     "scroll_up": {"show": None, "msg": "", "keys": []},
     "left_click": {"show": ["mouse_LMB"], "msg": "go to", "keys": []},

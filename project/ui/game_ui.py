@@ -24,6 +24,7 @@ from .panels.dialog import DialogPanel
 from .panels.hud import HUD
 from .panels.inventory import InventoryPanel
 from .panels.modal import ModalPanel
+from .panels.save_load import LoadPanel, SavePanel
 from .panels.trade import TradePanel
 
 if TYPE_CHECKING:

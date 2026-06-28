@@ -1,15 +1,16 @@
 ---
 id: T-007
 title: Save-Load UI panels and game integration — SavePanel, LoadPanel, hotkeys F5-F9, auto-save, death screen load
-status: ready
-owner: ai
+status: done
+owner: human
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-06-28
 updated: 2026-06-28
 tags:
   - task
+state: review
 ---
 
 # T-007 — Save-Load UI panels and game integration — SavePanel, LoadPanel, hotkeys F5-F9, auto-save, death screen load
@@ -76,27 +77,26 @@ UI i integracja systemu save/load z grą:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Dodaj `PanelType.SAVE` i `PanelType.LOAD` do enuma w `project/enums.py`
-- [ ] Dodaj akcje klawiszy do `settings.py`: `ACTION_QUICK_SAVE`, `ACTION_QUICK_LOAD` z domyślnymi F5/F9 (ew. alternatywa na web)
-- [ ] Stwórz `project/ui/panels/save_load.py`:
-  - [ ] `SavePanel` — lista slotów, wybór, overwrite confirmation modal
-  - [ ] `LoadPanel` — lista zajętych slotów, load confirmation modal
-  - [ ] `render_slot_widget(slot_idx, slot_info: SaveSlotInfo | None) -> Widget` — komponent slotu z timestampem, mapą, numerem
-- [ ] Dodaj "Save / Load" do GameUI: `game_ui.py` obsługa nowych paneli
-- [ ] Dodaj opcje do Pause menu i Main Menu:
-  - [ ] Main Menu: "Continue" (jeśli jest save) + "Load"
-  - [ ] Pause/Inventory: "Save" + "Load" przyciski
-- [ ] Auto-save w `Scene.transition_to_map()` → `game.save_manager.save(auto_save_slot_idx)`
-- [ ] Quick save/load hotkeys w `game.py` (`get_inputs()` lub `run()`):
-  - [ ] F5 → `save_manager.save(last_used_slot or 0)` + notyfikacja "Game saved"
-  - [ ] F9 → otwiera LoadPanel (lub jeśli przytrzymany → load ostatniego slota)
-- [ ] Death screen integracja (`characters.py:811` lub `game.py`):
-  - [ ] Po śmierci: zamiast immediate respawn, pokaż modal z opcjami "Load last save" / "Restart"
-  - [ ] "Restart" = obecne zachowanie (respawn w wiosce)
-  - [ ] "Load last save" = wczytaj ostatni ręczny zapis
-- [ ] Notyfikacja "Game saved" po udanym zapisie (przez istniejący system Notification/Toast)
-- [ ] Testy manualne: save na różnych mapach, load, quick save/load, auto-save, death → load
-- [ ] mypy
+- [x] Dodaj `PanelType.SAVE` i `PanelType.LOAD` do enuma — **pominięte (panels używa class references, nie enum)**
+- [x] Dodaj akcje klawiszy do `settings.py`: `quick_save` (F5), `quick_load` (F9)
+- [x] Stwórz `project/ui/panels/save_load.py`:
+  - [x] `SaveLoadPanel` — bazowy panel slotów (wszystkie sloty, klik = zapis; zajęty = overwrite confirm)
+  - [x] `SavePanel(SaveLoadPanel)` — zapis
+  - [x] `LoadPanel(SaveLoadPanel)` — tylko zajęte sloty, klik = load confirm
+  - [x] `DeathScreen(Widget)` + `DeadState(State)` — ekran śmierci z opcjami
+- [x] Dodaj panele do GameUI: import w `game_ui.py`
+- [x] Dodaj opcje do Main Menu:
+  - [x] "Continue" (wczytuje ostatni save)
+  - [x] "Load" (otwiera LoadPanel w nowej scenie)
+  - [ ] Pause/Inventory: "Save" + "Load" — **pominięte (brak pause menu, hotkeys wystarczą)**
+- [x] Auto-save w `Scene.go_to_map()` → `save_manager.save(0)`
+- [x] Quick save/load hotkeys w `game.py`:
+  - [x] F5 → `save_manager.save(0)` + notyfikacja "Game saved"
+  - [x] F9 → toggle LoadPanel
+- [x] Death screen integracja — `DeadState` z opcjami "Load Last Save" / "Restart"
+- [x] Notyfikacja "Game saved" po quick save
+- [ ] Testy manualne
+- [x] mypy — tylko pre-existing errors (identyczne jak w innych panelach)
 
 ## ✅ Definition of Done
 
@@ -113,5 +113,9 @@ UI i integracja systemu save/load z grą:
 - [ ] mypy nie zgłasza błędów
 
 ## 📓 Agent Log
+
+- 2026-06-28 opencode: claimed, starting
+- 2026-06-28 opencode: Zaimplementowano UI save/load: SavePanel+LoadPanel (save_load.py), DeadState na śmierć, hotkeys F5/F9 w game.py, auto-save w go_to_map(), Continue/Load w Main Menu. Importy działają, 28/28 testów pass. Czeka na review.
+- 2026-06-28 opencode: Gotowe do review: SavePanel/LoadPanel, quick save/load F5/F9, auto-save przy zmianie mapy, death screen z Load/Restart, Continue/Load w Main Menu. 28/28 testów pass, importy działają. Do zrobienia tylko testy manualne.
 
 ## 🙋 Needs-You / Questions

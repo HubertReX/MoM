@@ -1,15 +1,16 @@
 ---
 id: T-006
 title: Save-Load manager engine — SaveManager class, desktop file backend, web localStorage backend, slot CRUD
-status: ready
-owner: ai
+status: done
+owner: human
 priority: p1
 type: feature
-agent:
+agent: opencode
 created: 2026-06-28
 updated: 2026-06-28
 tags:
   - task
+state: review
 ---
 
 # T-006 — Save-Load manager engine — SaveManager class, desktop file backend, web localStorage backend, slot CRUD
@@ -105,5 +106,9 @@ tags:
 - [ ] mypy nie zgłasza błędów
 
 ## 📓 Agent Log
+
+- 2026-06-28 opencode: claimed, starting
+- 2026-06-28 opencode: Zaimplementowano SaveManager (manager.py + backends.py), dodano npc_states do MapState, wpięto w Game.__init__. 28 testów pass, mypy clean.
+- 2026-06-28 opencode: Pełna implementacja SaveManager z backends.py, wpięcie w game.py, rozszerzenie models.py o npc_states. 28 testów pass, mypy clean. Desktop: ~/.local/share/mom/saves/*.mom, Web: localStorage MoM.save_N. Wersjonowanie, corrupt save handling, CRUD slotów.
 
 ## 🙋 Needs-You / Questions

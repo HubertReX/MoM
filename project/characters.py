@@ -812,9 +812,8 @@ class NPC(pygame.sprite.Sprite):
         if self.model.name == "Player" and self.model.health <= 0:
             self.is_dead = True
             self.scene.exit_state()
-            self.scene.player.reset()
-            scene.Scene(self.game, "Village", "start").enter_state()
-            splash_screen.SplashScreen(self.game, "GAME OVER").enter_state()
+            from ui.panels.save_load import DeadState
+            DeadState(self.game).enter_state()
 
         self.kill()
 

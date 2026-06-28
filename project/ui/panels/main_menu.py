@@ -195,16 +195,45 @@ class MainMenuScreen(MenuScreen):
     def build_panel(self) -> MenuPanel:
         import scene
         import splash_screen
+        from save_load.backends import FileSaveBackend
         from ui.panels.display_settings import DisplaySettingsScreen
 
-        options: list[tuple[str, object]] = [
-            ("Play", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
+        options: list[tuple[str, object]] = []
+
+        sm = self.game.save_manager
+        has_saves = any(
+            s is not None and s.is_occupied
+            for s in sm.list_slots()
+        )
+        if has_saves:
+            def _continue() -> None:
+                slots = sm.list_slots()
+                last_idx = -1
+                for i, s in enumerate(slots):
+                    if s is not None and s.is_occupied:
+                        last_idx = i
+                if last_idx >= 0:
+                    sm.load(last_idx)
+            options.append(("Continue", _continue))
+            options.append(("Load", lambda: self._open_load_panel()))
+
+        options.extend([
+            ("New Game", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
             ("Settings", lambda: DisplaySettingsScreen(self.game, "DisplaySettings", self.bg_image).enter_state()),
             ("About", lambda: AboutMenuScreen(self.game, "AboutMenu", self.bg_image).enter_state()),
-        ]
+        ])
         if not IS_WEB:
             options.append(("Quit", self._quit_game))
         return MenuPanel(options, bg_file="nine_patch_06b.png", anchor="midleft", pos=(60, HEIGHT // 2))
+
+    def _open_load_panel(self) -> None:
+        import scene
+        from ui.panels.save_load import LoadPanel
+
+        new_scene = scene.Scene(self.game, "Village", "start")
+        new_scene.enter_state()
+        new_scene.ui.open(LoadPanel)
+        self.exit_state()
 
     def _quit_game(self) -> None:
         self.game.is_running = False

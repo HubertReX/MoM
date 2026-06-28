@@ -216,6 +216,10 @@ class Game:
         if USE_SOD:
             self.init_SOD()
 
+        from save_load.manager import SaveManager
+
+        self.save_manager: SaveManager = SaveManager(self)
+
     # #############################################################################################################
     def set_display(self) -> None:
         pygame.display.set_caption(GAME_NAME)
@@ -926,6 +930,20 @@ class Game:
         # post external agent key events / handle commands (no-op unless enabled)
         if self.agent_ctrl:
             self.agent_ctrl.apply(self)
+
+        # handle save/load hotkeys (works even when paused)
+        if INPUTS.get("quick_save"):
+            self.save_manager.save(0)
+            state = self.states[-1]
+            if hasattr(state, "add_notification"):
+                state.add_notification("Game saved")  # type: ignore[attr-defined]
+            INPUTS["quick_save"] = False
+        if INPUTS.get("quick_load"):
+            state = self.states[-1]
+            if hasattr(state, "ui"):
+                from ui.panels.save_load import LoadPanel as _LP
+                state.ui.toggle(_LP)
+            INPUTS["quick_load"] = False
 
         # first draw on separate Surface (game.canvas)
         if not self.is_paused:
