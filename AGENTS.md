@@ -19,19 +19,18 @@ dzień-noc). Szczegóły rozgałęzień: [`project/AGENTS.md`](./project/AGENTS.
 
 ## Co gdzie jest
 
-| Katalog | Zawartość | Edytować? |
-|---|---|---|
-| `project/` | Rdzeń kodu gry (source) | ✅ tak — patrz [`project/AGENTS.md`](./project/AGENTS.md) |
-| `art/` | Assety menu + pomocnicze grafiki NinjaAdventure | ✅ ostrożnie |
-| `doc/` | Scenariusz intro (cutscene, odpalany **F4**) | ✅ |
-| `.github/workflows/` | CI: `pygbag.yml` (GitHub Pages), `itch_io.yml` (itch.io) | ✅ ostrożnie |
-| `tests` | Zestawy scenariuszy testów automatycznych | ✅ tak - patrz sekcja
-„Testowanie gry przez agentów AI" w [`project/AGENTS.md`](./project/AGENTS.md) |
-| `Tasks` | Zadania dla Ciebie do wykonania | ✅ tak, ale zgodnie ze ściśle określonymi zasadami |
-| `utils/` | Śmietnik skryptów/eksperymentów | ⛔ **pomijać** |
-| `references/` | Screenshoty z innych gier (referencje) | ⛔ **pomijać** |
-| `screenshots/` | Migawki z rozwoju gry | ⛔ **pomijać** |
-| `.venv/` | Wirtualne środowisko | ⛔ **pomijać** |
+| Katalog              | Zawartość                                                | Edytować?                                                                     |
+| -------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `project/`           | Rdzeń kodu gry (source)                                  | ✅ tak — patrz [`project/AGENTS.md`](./project/AGENTS.md)                     |
+| `art/`               | Assety menu + pomocnicze grafiki NinjaAdventure          | ✅ ostrożnie                                                                  |
+| `doc/`               | Scenariusz intro (cutscene, odpalany **F4**)             | ✅                                                                            |
+| `.github/workflows/` | CI: `pygbag.yml` (GitHub Pages), `itch_io.yml` (itch.io) | ✅ ostrożnie                                                                  |
+| `tests`              | Zestawy scenariuszy testów automatycznych                | ✅ tak - patrz [`project/AGENTS.md`](./project/AGENTS.md)                     |
+| `Tasks`              | Zadania dla Ciebie do wykonania                          | ✅ tak, ale zgodnie ze ściśle określonymi zasadami                            |
+| `utils/`             | Śmietnik skryptów/eksperymentów                          | ⛔ **pomijać**                                                                |
+| `references/`        | Screenshoty z innych gier (referencje)                   | ⛔ **pomijać**                                                                |
+| `screenshots/`       | Migawki z rozwoju gry                                    | ⛔ **pomijać**                                                                |
+| `.venv/`             | Wirtualne środowisko                                     | ⛔ **pomijać**                                                                |
 
 ## Uruchamianie i build
 
