@@ -11,6 +11,11 @@ tags:
 
 ## 🟢 Ready for AI
 
+- [ ] [[T-005 Core save data model — SaveGame, SaveSlot, per-state dataclasses]] #feature #p1
+- [ ] [[T-006 Save-Load manager engine — SaveManager class, desktop file backend, web localStorage backend, slot CRUD]] #feature #p1
+- [ ] [[T-007 Save-Load UI panels and game integration — SavePanel, LoadPanel, hotkeys F5-F9, auto-save, death screen load]] #feature #p2
+- [ ] [[T-008 Save-load test scenarios — agent tests for save, load, corrupt data, edge cases]] #feature #p2
+
 ## 🤖 In Progress
 
 ## 🙋 Needs You
