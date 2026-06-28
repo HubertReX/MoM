@@ -1,15 +1,16 @@
 ---
 id: T-005
 title: Core save data model — SaveGame, SaveSlot, per-state dataclasses
-status: ready
-owner: ai
+status: done
+owner: human
 priority: p1
 type: feature
-agent:
+agent: opencode
 created: 2026-06-28
 updated: 2026-06-28
 tags:
   - task
+state: review
 ---
 
 # T-005 — Core save data model — SaveGame, SaveSlot, per-state dataclasses
@@ -61,12 +62,12 @@ Walidacja wersji (zgodność `VERSION` z `settings.py`). Wszystkie dataclass →
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Stwórz `project/save_load/models.py` — wszystkie dataclass modele (SaveMetadata, PlayerState, ItemState, NPCState, ChestState, MapState, GameClockState, SaveGame, SaveSlot, SaveSlotInfo)
-- [ ] Zaimplementuj konwersję `to_dict()` / `from_dict()` dla każdej dataclass (albo użyj `dataclasses.asdict` + własny `from_dict` z walidacją typów)
-- [ ] Obsługa enumów: serializacja `ItemTypeEnum` ↔ str, `AttitudeEnum` ↔ str
-- [ ] Wersjonowanie: `SaveMetadata.version` + `migrate_v0_to_v1()` placeholder
-- [ ] Testy jednostkowe: round-trip serializacji (dataclass → dict → JSON → dict → dataclass) dla każdego modelu
-- [ ] Sprawdź typy z mypy
+- [x] Stwórz `project/save_load/models.py` — wszystkie dataclass modele (SaveMetadata, PlayerState, ItemState, NPCState, ChestState, MapState, GameClockState, SaveGame, SaveSlot, SaveSlotInfo)
+- [x] Zaimplementuj konwersję `to_dict()` / `from_dict()` dla każdej dataclass (użyto `dataclasses.asdict` + własny dict_factory + `from_dict` classmethod)
+- [x] Obsługa enumów: serializacja `ItemTypeEnum` ↔ str, `AttitudeEnum` ↔ str
+- [x] Wersjonowanie: `SaveMetadata.version` + `migrate_v0_to_v1()` placeholder
+- [x] Testy jednostkowe: round-trip serializacji (20/20 passed)
+- [x] Sprawdź typy z mypy (clean)
 
 ## ✅ Definition of Done
 
@@ -79,5 +80,9 @@ Walidacja wersji (zgodność `VERSION` z `settings.py`). Wszystkie dataclass →
 - [ ] Kompatybilność web: import działa w pygbag (brak Pydantic, brak zależności zewnętrznych)
 
 ## 📓 Agent Log
+
+- 2026-06-28 opencode: claimed, starting
+- 2026-06-28 opencode: Implemented all dataclass models in project/save_load/models.py with to_dict()/from_dict() round-trip. Tests: 20/20 passed. mypy: clean. Includes: SaveMetadata, ItemState, GroundItemState, PlayerState, NPCState, ChestState, GameClockState, MapState, SaveGame, SaveSlot, SaveSlotInfo. Enum serialization (ItemTypeEnum, AttitudeEnum) as strings. Version checking + migrate_save() with migrate_v0_to_v1 placeholder.
+- 2026-06-28 opencode: ✅ Wszystkie modele zdefiniowane w project/save_load/models.py z to_dict()/from_dict(). Testy: 20/20 round-trip (JSON, enums, puste konstrukcje, głęboka kopia, wersjonowanie). mypy: clean. Status: Ready to review.
 
 ## 🙋 Needs-You / Questions
