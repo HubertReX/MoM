@@ -198,6 +198,10 @@ class Game:
         # logo_image = load_image(LOGO_IMG).convert_alpha()
         # logo_image = pygame.transform.scale_by(logo_image, 5)
         # bg_image.blit(logo_image, (WIDTH // 2, 100))
+        from save_load.manager import SaveManager
+
+        self.save_manager: SaveManager = SaveManager(self)
+
         start_state = MainMenuScreen(self, "MainMenu", bg_image)
         self.states.append(start_state)
 
@@ -215,10 +219,6 @@ class Game:
 
         if USE_SOD:
             self.init_SOD()
-
-        from save_load.manager import SaveManager
-
-        self.save_manager: SaveManager = SaveManager(self)
 
     # #############################################################################################################
     def set_display(self) -> None:

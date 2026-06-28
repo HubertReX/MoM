@@ -12,7 +12,7 @@ TEST_CONFIG = {
     "INIT_WAIT": 5.0,
     "TRANSITION_WAIT": 0.2,
     "SCREENSHOT_BUFFER": 0.1,
-    "GAME_CMD": "MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy ./run.sh",
+    "GAME_CMD": "MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 project/main.py",
     "INPUT_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "agent_input.txt"),
     "SCENARIOS_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "scenarios.json")
 }

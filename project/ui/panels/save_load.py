@@ -62,9 +62,11 @@ class SaveLoadPanel(Widget):
         self.hud = hud
 
         self._slots: list[_SlotButton] = []
+        self._selected_idx: int = 0
         self._confirm_action: str | None = None
         self._confirm_slot_idx: int = -1
         self._confirm_buttons: list[Button] = []
+        self._confirm_selected: int = 0
 
         self._build_background()
         self._refresh_slots()
@@ -115,18 +117,46 @@ class SaveLoadPanel(Widget):
     def open(self) -> None:
         self._confirm_action = None
         self._confirm_slot_idx = -1
+        self._confirm_selected = 0
+        self._selected_idx = 0
         self._refresh_slots()
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         if self._confirm_action:
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    self._confirm_selected = 1 - self._confirm_selected
+                    return True
+                if event.key == pygame.K_RETURN:
+                    self._confirm_buttons[self._confirm_selected].activate()
+                    return True
+                if event.key == pygame.K_ESCAPE:
+                    self._confirm_no()
+                    return True
             for btn in self._confirm_buttons:
                 if btn.handle_event(event):
                     return True
             return False
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP and self._slots:
+                self._selected_idx = (self._selected_idx - 1) % len(self._slots)
+                return True
+            if event.key == pygame.K_DOWN and self._slots:
+                self._selected_idx = (self._selected_idx + 1) % len(self._slots)
+                return True
+            if event.key == pygame.K_RETURN and self._slots:
+                self._on_slot_click(self._slots[self._selected_idx])
+                return True
+            if event.key == pygame.K_ESCAPE:
+                self.scene.ui.close(type(self))
+                return True
+            return False
+
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            for slot in self._slots:
+            for i, slot in enumerate(self._slots):
                 if slot.rect.collidepoint(event.pos):
+                    self._selected_idx = i
                     self._on_slot_click(slot)
                     return True
         return False
@@ -142,6 +172,7 @@ class SaveLoadPanel(Widget):
         msg = f"Overwrite save in slot {slot.idx + 1}?" if action == "overwrite" else f"Load slot {slot.idx + 1}?"
         self._confirm_action = "save" if action == "overwrite" else "load"
         self._confirm_slot_idx = slot.idx
+        self._confirm_selected = 0
         cx = self.rect.centerx
         cy = self.rect.centery + 40
         self._confirm_buttons = [
@@ -164,9 +195,12 @@ class SaveLoadPanel(Widget):
             tr = self._title_surf.get_rect(midtop=(self.rect.centerx, self.rect.top + 10))
             surface.blit(self._title_surf, tr)
 
-        for slot in self._slots:
+        for i, slot in enumerate(self._slots):
             color = (200, 180, 140) if slot.occupied else (120, 110, 90)
-            pygame.draw.rect(surface, (30, 28, 22), slot.rect, border_radius=4)
+            bg_color = (50, 48, 42) if i == self._selected_idx else (30, 28, 22)
+            pygame.draw.rect(surface, bg_color, slot.rect, border_radius=4)
+            if i == self._selected_idx:
+                pygame.draw.rect(surface, (120, 100, 60), slot.rect, border_radius=4, width=2)
             sf = theme.menu_font(18).render(slot.label, False, color)
             surface.blit(sf, (slot.rect.left + 8, slot.rect.top + 6))
 
@@ -176,7 +210,8 @@ class SaveLoadPanel(Widget):
             surface.blit(overlay, self.rect.topleft)
             cf = theme.menu_font(24).render(self._confirm_text, False, (255, 230, 180))
             surface.blit(cf, cf.get_rect(center=(self.rect.centerx, self.rect.centery)))
-            for btn in self._confirm_buttons:
+            for i, btn in enumerate(self._confirm_buttons):
+                btn.selected = i == self._confirm_selected
                 btn.draw(surface)
 
 
@@ -214,6 +249,7 @@ class DeathScreen(Widget):
         self.rect = self.bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         self._title_surf = theme.menu_font(48).render("You Died!", False, (200, 40, 40))
         self._buttons: list[Button] = []
+        self._selected_idx: int = 0
         self._build_buttons()
 
     def _close_state(self) -> None:
@@ -251,6 +287,14 @@ class DeathScreen(Widget):
             btn.rect.center = (cx - 80 + i * 160, cy)
 
     def handle_event(self, event: pygame.event.Event) -> bool:
+        if event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                self._selected_idx = 1 - self._selected_idx
+                return True
+            if event.key == pygame.K_RETURN:
+                self._buttons[self._selected_idx].activate()
+                return True
+            return False
         for btn in self._buttons:
             if btn.handle_event(event):
                 return True
@@ -266,7 +310,8 @@ class DeathScreen(Widget):
         surface.blit(self.bg, self.rect.topleft)
         tr = self._title_surf.get_rect(midtop=(self.rect.centerx, self.rect.top + 30))
         surface.blit(self._title_surf, tr)
-        for btn in self._buttons:
+        for i, btn in enumerate(self._buttons):
+            btn.selected = i == self._selected_idx
             btn.draw(surface)
 
 
@@ -278,6 +323,7 @@ class DeadState(_State):
         self.name = "DeadState"
         self._close_me = False
         self._buttons: list[Button] = []
+        self._selected_idx: int = 0
         self._title_surf = theme.menu_font(48).render("You Died!", False, (200, 40, 40))
         bg_w, bg_h = 500, 300
         self._bg = theme.nine_patch("nine_patch_12b.png", bg_w, bg_h)
@@ -315,8 +361,16 @@ class DeadState(_State):
         for btn in self._buttons:
             btn.update(dt)
         for event in events:
-            for btn in self._buttons:
-                btn.handle_event(event)
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    self._selected_idx = 1 - self._selected_idx
+                elif event.key == pygame.K_RETURN:
+                    self._buttons[self._selected_idx].activate()
+            else:
+                for btn in self._buttons:
+                    btn.handle_event(event)
+        for i, btn in enumerate(self._buttons):
+            btn.selected = i == self._selected_idx
 
     def draw(self, screen: pygame.Surface, dt: float) -> None:
         screen.fill((0, 0, 0))

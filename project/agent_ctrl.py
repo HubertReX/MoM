@@ -74,6 +74,8 @@ class AgentController:
         self._screenshot_pending = False
         self._counter = 0
         self._exit_requested = False
+        self._death_pending = False
+        self._load_last_pending = False
         self._write_file("")               # wyczyść stary plik na starcie
 
     # ---------------------------------------------------------------- wysyłanie
@@ -132,6 +134,14 @@ class AgentController:
             )
             return
 
+        if action == "debug_death_screen":
+            self._death_pending = True
+            return
+
+        if action == "debug_load_last_save":
+            self._load_last_pending = True
+            return
+
         key = self._key_for(action)
         if key is None:
             self.log(f"[agent_ctrl] unknown action: {action!r} (ignored)")
@@ -166,6 +176,21 @@ class AgentController:
         if self._exit_requested:
             game.is_running = False
             self._exit_requested = False
+
+        if self._death_pending and game.states:
+            self._death_pending = False
+            from ui.panels.save_load import DeadState as _DS
+            _DS(game).enter_state()
+
+        if self._load_last_pending and game.save_manager:
+            self._load_last_pending = False
+            slots = game.save_manager.list_slots()
+            last_idx = -1
+            for i, s in enumerate(slots):
+                if s is not None and s.is_occupied:
+                    last_idx = i
+            if last_idx >= 0:
+                game.save_manager.load(last_idx)
 
     # ------------------------------------------------------------- screenshot
     def capture(self, surface) -> "str | None":

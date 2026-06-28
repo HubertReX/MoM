@@ -11,9 +11,9 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-008 Save-load test scenarios — agent tests for save, load, corrupt data, edge cases]] #feature #p2
-
 ## 🤖 In Progress
+
+- [ ] [[T-008 Save-load test scenarios — agent tests for save, load, corrupt data, edge cases]] #feature #p2 #opencode
 
 ## 🙋 Needs You
 
