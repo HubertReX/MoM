@@ -17,22 +17,22 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 
 ## Mapa plików rdzenia
 
-| Plik | Rola | Uwaga |
-|---|---|---|
-| `scene.py` | Ładowanie mapy `.tmx` (pytmx), render pyscroll `BufferedRenderer`, kolizje, czas/dzień-noc, NPC | **73K — duży** |
-| `characters.py` | `NPC` i `Player`: animacja, A*, movement, walka, inventory | **66K — duży** |
-| `ui/` | **Własny toolkit UI** (retained-mode, czysty pygame-ce). Patrz niżej. | zastąpił `ui.py`+`menus.py`+`rich_text.py` |
-| `settings.py` | **Wszystkie stałe** gry + definicje sprite-sheetów | **30K** |
-| `objects.py` | Sprite'y: `ItemSprite`, `ChestSprite`, `HealthBar`, `EmoteSprite`, `Collider`, `Notification` | |
-| `npc_state.py` | FSM NPC (Idle/Walk/Run/Jump/Fly/Stunned/Attacking/Talk/Dead) | |
-| `particles.py` | System cząstek (liście, deszcz, wiatr) | |
-| `nine_patch.py` | Skalowalne panele UI (9-patch) — używany przez `ui/theme.py` | |
-| `opengl_shader.py` | Wrapper zengl do shaderów post-process | patrz [`shaders/AGENTS.md`](./shaders/AGENTS.md) |
-| `camera.py` | Viewport + zoom (steruje `map_view.zoom`) | |
-| `transition.py` | Efekty przejść (`Transition`, `TransitionCircle`) | |
-| `second_order_dynamics.py` | Gładkie animacje (Second Order Dynamics) — POC | |
-| `enums.py` | Typy wyliczeniowe (Race, Attitude, ItemType, …) | |
-| `main.py` | Entry point + CLI (Click na desktopie) | |
+| Plik                       | Rola                                                                                            | Uwaga                                            |
+| -------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `scene.py`                 | Ładowanie mapy `.tmx` (pytmx), render pyscroll `BufferedRenderer`, kolizje, czas/dzień-noc, NPC | **73K — duży**                                   |
+| `characters.py`            | `NPC` i `Player`: animacja, A*, movement, walka, inventory                                      | **66K — duży**                                   |
+| `ui/`                      | **Własny toolkit UI** (retained-mode, czysty pygame-ce). Patrz niżej.                           | zastąpił `ui.py`+`menus.py`+`rich_text.py`       |
+| `settings.py`              | **Wszystkie stałe** gry + definicje sprite-sheetów                                              | **30K**                                          |
+| `objects.py`               | Sprite'y: `ItemSprite`, `ChestSprite`, `HealthBar`, `EmoteSprite`, `Collider`, `Notification`   |                                                  |
+| `npc_state.py`             | FSM NPC (Idle/Walk/Run/Jump/Fly/Stunned/Attacking/Talk/Dead)                                    |                                                  |
+| `particles.py`             | System cząstek (liście, deszcz, wiatr)                                                          |                                                  |
+| `nine_patch.py`            | Skalowalne panele UI (9-patch) — używany przez `ui/theme.py`                                    |                                                  |
+| `opengl_shader.py`         | Wrapper zengl do shaderów post-process                                                          | patrz [`shaders/AGENTS.md`](./shaders/AGENTS.md) |
+| `camera.py`                | Viewport + zoom (steruje `map_view.zoom`)                                                       |                                                  |
+| `transition.py`            | Efekty przejść (`Transition`, `TransitionCircle`)                                               |                                                  |
+| `second_order_dynamics.py` | Gładkie animacje (Second Order Dynamics) — POC                                                  |                                                  |
+| `enums.py`                 | Typy wyliczeniowe (Race, Attitude, ItemType, …)                                                 |                                                  |
+| `main.py`                  | Entry point + CLI (Click na desktopie)                                                          |                                                  |
 
 ## Toolkit UI (`ui/`)
 
@@ -40,14 +40,14 @@ Własny, lekki system UI (retained-mode, **czysty pygame-ce**, kompatybilny z py
 Zastąpił sklejkę `pygame_menu` + `thorpy/sftext`. Widżety **cache'ują wyrenderowaną
 powierzchnię** (dirty-flag) — statyczne UI = jeden blit/klatkę, zero alokacji `Surface`.
 
-| Moduł | Rola |
-|---|---|
-| `ui/widget.py`, `ui/manager.py` | `Widget` (bazowa, cache) + `UIManager` (eventy/update/draw, z-order) |
-| `ui/theme.py` | Cache fontów `(rozmiar,bold,italic)`, palety, teł 9-patch |
-| `ui/text/` | `markup.py` (parser tagów z `STYLE_TAGS_DICT` + emoji), `style.py` (`Style`) |
-| `ui/widgets/` | `Label`, `Image`, `Button`, `RichText` (zawijanie, scroll, linki, animowane emoji) |
-| `ui/panels/` | `main_menu`, `hud`, `dialog`, `modal`, `inventory`, `trade` |
-| `ui/game_ui.py` | **`GameUI`** — kontroler HUD+paneli per-`Scene` |
+| Moduł                           | Rola                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| `ui/widget.py`, `ui/manager.py` | `Widget` (bazowa, cache) + `UIManager` (eventy/update/draw, z-order)               |
+| `ui/theme.py`                   | Cache fontów `(rozmiar,bold,italic)`, palety, teł 9-patch                          |
+| `ui/text/`                      | `markup.py` (parser tagów z `STYLE_TAGS_DICT` + emoji), `style.py` (`Style`)       |
+| `ui/widgets/`                   | `Label`, `Image`, `Button`, `RichText` (zawijanie, scroll, linki, animowane emoji) |
+| `ui/panels/`                    | `main_menu`, `hud`, `dialog`, `modal`, `inventory`, `trade`                        |
+| `ui/game_ui.py`                 | **`GameUI`** — kontroler HUD+paneli per-`Scene`                                    |
 
 **Czyste API** (`Scene.ui` to `GameUI`): `ui.open(PanelType, **kw)`, `ui.close(PanelType)`,
 `ui.toggle(PanelType)`, `ui.is_open(PanelType)`, `ui.update(dt, events)`, `ui.draw()`,
@@ -59,16 +59,16 @@ boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[lin
 
 `IS_WEB` zdefiniowane w `settings.py:84`. Najważniejsze rozgałęzienia:
 
-| Obszar | Desktop | Web | Lokalizacja |
-|---|---|---|---|
-| Config | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters.py:48`, `objects.py:19`, `ui/panels/hud.py` |
-| Shadery | dostępne (gdy `USE_SHADERS`) | wyłączone (wydajność) | `USE_SHADERS=False` `settings.py:92` |
-| Filtr dzień-noc (alpha) | tak | **nie** | `scene.py:1515` `if USE_ALPHA_FILTER and not IS_WEB:` |
-| Logowanie | `print` | `platform.console.log` | `game.py` |
-| Asyncio | stdlib | `pygbag.aio` | `main.py` |
-| Wyjście z gry | zamyka okno | zostaje w przeglądarce | `state.py` |
-| Screenshoty | zapis na dysk | download w przeglądarce | `game.py` |
-| Gamepad | XBOX/Steam Deck | `WEB_CONTROL_NAMES` | `settings.py`, `game.py` |
+| Obszar                  | Desktop                         | Web                     | Lokalizacja                                                            |
+| ----------------------- | ------------------------------- | ----------------------- | ---------------------------------------------------------------------- |
+| Config                  | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters.py:48`, `objects.py:19`, `ui/panels/hud.py` |
+| Shadery                 | dostępne (gdy `USE_SHADERS`)    | wyłączone (wydajność)   | `USE_SHADERS=False` `settings.py:92`                                   |
+| Filtr dzień-noc (alpha) | tak                             | **nie**                 | `scene.py:1515` `if USE_ALPHA_FILTER and not IS_WEB:`                  |
+| Logowanie               | `print`                         | `platform.console.log`  | `game.py`                                                              |
+| Asyncio                 | stdlib                          | `pygbag.aio`            | `main.py`                                                              |
+| Wyjście z gry           | zamyka okno                     | zostaje w przeglądarce  | `state.py`                                                             |
+| Screenshoty             | zapis na dysk                   | download w przeglądarce | `game.py`                                                              |
+| Gamepad                 | XBOX/Steam Deck                 | `WEB_CONTROL_NAMES`     | `settings.py`, `game.py`                                               |
 
 **Reguła:** nowy kod zależny od platformy chowaj za `if IS_WEB:`; testuj `./run.sh` **oraz**
 `./serve_web.sh`.
