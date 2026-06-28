@@ -1,8 +1,8 @@
 ---
 id: T-008
 title: Save-load test scenarios — agent tests for save, load, corrupt data, edge cases
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-06-28
 updated: 2026-06-28
 tags:
   - task
+state: review
 ---
 
 # T-008 — Save-load test scenarios — agent tests for save, load, corrupt data, edge cases
@@ -85,5 +86,6 @@ Wykorzystaj istniejący `agent_ctrl.py` do symulacji klawiszy i `screenshot` do 
 
 - 2026-06-28 opencode: claimed, starting
 - 2026-06-28 opencode: Zrealizowano: (1) dodano keyboard nav do SaveLoadPanel/DeathScreen/DeadState (up/down/enter/escape/left/right), (2) dodano debug_death_screen + debug_load_last_save do agent_ctrl.py, (3) stworzono tests/test_save_load_corrupt.py helper, (4) 7 scenariuszy save/load w scenarios.json, (5) naprawiono init order save_manager w game.py, (6) naprawiono GAME_CMD na .venv/bin/python3 w automate_display_test.py. Wszystkie 8 scenariuszy (7 nowych + 1 stary) przechodza bez crashy. Screenshoty w screenshots/agent/
+- 2026-06-28 opencode: Wszystkie 7 scenariuszy save/load + 1 istniejący Display Settings przechodzą bez crashy. Nowe: keyboard nav w SaveLoadPanel/DeathScreen, debug_death_screen w agent_ctrl, test_save_load_corrupt.py helper. Committed jako 0edffef. Do weryfikacji: odpalić dowolny scenariusz przez python3 tests/automate_display_test.py 'Nazwa Scenariusza'
 
 ## 🙋 Needs-You / Questions
