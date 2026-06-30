@@ -87,8 +87,15 @@ Mechanizm pozwalający agentowi **uruchomić grę, „naciskać" klawisze i robi
 Wysyła **prawdziwe zdarzenia klawiszy** (`pygame.event.post`), więc działa i w menu,
 i w scenie. Nie nadaje się do szybkich scen walki (rozdzielczość = klatki).
 
-**Włączenie** (zmienna środowiskowa): `MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy ./run.sh`
-(flaga `USE_AGENT_CONTROL` w `settings.py`, czyta `os.environ`).
+**Włączenie** (zmienna środowiskowa):
+
+```bash
+MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 project/main.py
+```
+
+`SDL_VIDEODRIVER=dummy` i `SDL_AUDIODRIVER=dummy` pozwalają uruchomić grę bez okna
+i bez dźwięku — wymagane w środowisku agenta. Flaga `USE_AGENT_CONTROL` w `settings.py`
+czyta `os.environ`.
 
 **Sterowanie** (z innego terminala, gdy gra działa):
 
@@ -99,13 +106,29 @@ python project/agent_ctrl.py screenshot             # zrzut → screenshots/agen
 python project/agent_ctrl.py exit                   # zamknij grę
 # albo bezpośrednio: echo "up:30 screenshot" > agent_input.txt
 ```
-Komendy = klucze z `ACTIONS` (`settings.py`) + specjalne `screenshot`/`exit`. Zrzuty trafiają
-do `screenshots/agent/` (zapisywany `self.screen`).
+
+Format komendy: `<akcja>[:klatek]`. `klatek` określa, ile klatek klawisz jest
+przytrzymywany. Dla ruchu sensowne wartości to 10–60; w menu wystarczy 1.
+
+**Komendy:**
+
+- Zwykłe akcje z `ACTIONS` w `settings.py`: `left`, `right`, `up`, `down`, `run`,
+  `jump`, `attack`, `talk`, `open`, `pick_up`, `drop`, `inventory`, `menu`, `accept`,
+  `quit`, `zoom_in`, `zoom_out`, `reload`, `next_day`, `quick_save` (F5), `quick_load` (F9),
+  itd.
+- Specjalne komendy interpretera (`project/agent_ctrl.py`):
+  - `screenshot` / `shot` - zapisuje bieżącą klatkę do `screenshots/agent/`.
+  - `exit` / `quit_game` - zamyka grę.
+  - `debug_settings` - loguje aktualne ustawienia wyświetlania.
+  - `debug_death_screen` - wymusza ekran śmierci.
+  - `debug_load_last_save` - wczytuje ostatni zajęty slot.
+
+Zrzuty trafiają do `screenshots/agent/` (zapisywany `self.screen`). Przy `USE_SHADERS=True`
+finalny obraz idzie przez GL i `self.screen` może nie zawierać klatki — testuj z shaderami off.
 
 **Wpięcie w kod (minimalne, 4 miejsca w `game.py`):** instancja w `__init__` (gdy flaga),
 `agent_ctrl.apply(self)` po `get_inputs()` w `run()`, `agent_ctrl.capture(self.screen)`
-po `flip()`. Cała logika w `project/agent_ctrl.py`. Ograniczenie: przy `USE_SHADERS=True`
-finalny obraz idzie przez GL i `self.screen` może nie zawierać klatki — testuj z shaderami off.
+po `flip()`. Cała logika w `project/agent_ctrl.py`.
 
 **Automatyczne testowanie (Scenario Framework):**
 Używamy struktury scenariuszy zdefiniowanych w `tests/scenarios.json`. Każdy scenariusz to
@@ -114,16 +137,36 @@ To pozwala na szybkie, powtarzalne testowanie przepływów UI i logiki gry bez n
 procesów Pythonowych dla każdej akcji.
 
 ```bash
-# Uruchom wszystkie scenariusze:
-python3 tests/automate_display_test.py
+# Pojedynczy scenariusz - zalecany do weryfikacji:
+MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py "Save and Load Basic"
 
-# Uruchom konkretny scenariusz (np. Display Settings Flow):
-python3 tests/automate_display_test.py "Display Settings Flow"
+# Wszystkie scenariusze naraz:
+MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py
 ```
 
-Framework wysyła sekwencje klawiszy, wywołuje rutyny debugujące (np. `debug_settings`)
-oraz wykonuje zrzuty ekranu. Akcje są oddzielone pauzami (`TRANSITION_WAIT`), aby
-zapewnić stabilność przejść między stanami gry.
+Akcje są oddzielone pauzami (`TRANSITION_WAIT`), aby zapewnić stabilność przejść
+między stanami gry. Każda akcja może mieć własne `wait`.
+
+**Ograniczenie runnera:** `tests/automate_display_test.py` uruchamia grę raz na
+początku i zabija proces po każdym scenariuszu. Kolejne scenariusze w pełnym
+przebiegu wykonują się na martwym procesie, więc ich wyniki są bezwartościowe.
+Do weryfikacji zawsze używaj uruchamiania pojedynczych scenariuszy.
+
+**Persystencja w testach:**
+
+Pliki save na desktopie:
+
+- macOS: `~/Library/Application Support/mom/saves/save_N.mom`
+- Linux: `~/.local/share/mom/saves/save_N.mom`
+
+Helper do manipulowania zapisami: `tests/test_save_load_corrupt.py`:
+
+```bash
+.venv/bin/python3 tests/test_save_load_corrupt.py clear     # usuń wszystkie save'y
+.venv/bin/python3 tests/test_save_load_corrupt.py corrupt 0 # zepsuj slot 0
+.venv/bin/python3 tests/test_save_load_corrupt.py create 0  # utwórz minimalny save
+.venv/bin/python3 tests/test_save_load_corrupt.py delete 0  # usuń slot 0
+```
 
 ## Persystencja stanu (uwaga: brak zapisu na dysk)
 
