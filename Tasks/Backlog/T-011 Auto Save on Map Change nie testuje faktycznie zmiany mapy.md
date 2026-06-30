@@ -1,11 +1,11 @@
 ---
 id: T-011
 title: Auto Save on Map Change nie testuje faktycznie zmiany mapy
-status: ready
+status: in-progress
 owner: ai
 priority: p2
 type: bug
-agent:
+agent: opencode
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -54,6 +54,8 @@ Uzupełnić scenariusz `Auto Save on Map Change` w `tests/scenarios.json` tak, a
 - [ ] Commit zmian wykonany.
 
 ## 📓 Agent Log
+
+- 2026-06-30 opencode: claimed, starting
 
 
 ## 🙋 Needs-You / Questions

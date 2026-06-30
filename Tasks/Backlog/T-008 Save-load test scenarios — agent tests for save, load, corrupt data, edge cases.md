@@ -1,7 +1,7 @@
 ---
 id: T-008
 title: Save-load test scenarios — agent tests for save, load, corrupt data, edge cases
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: feature

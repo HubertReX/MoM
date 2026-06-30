@@ -1,11 +1,11 @@
 ---
 id: T-010
 title: Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu
-status: ready
+status: in-progress
 owner: ai
 priority: p1
 type: bug
-agent:
+agent: opencode
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -55,6 +55,8 @@ Naprawić błąd w systemie save/load, polegający na tym, że po nadpisaniu zap
 - [ ] Commit zmian wykonany.
 
 ## 📓 Agent Log
+
+- 2026-06-30 opencode: claimed, starting
 
 
 ## 🙋 Needs-You / Questions

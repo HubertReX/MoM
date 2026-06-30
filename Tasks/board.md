@@ -11,18 +11,16 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1
-- [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2
 - [ ] [[T-012 quick_load nie zamyka otwartego LoadPanel w testach]] #bug #p2
 - [ ] [[T-013 Po wczytaniu gry nie wyświetlają się ikony w inventory]] #bug #p1
+- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1 #opencode
 
 ## 🤖 In Progress
 
-- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1 #opencode
+- [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1 #opencode
+- [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2 #opencode
 
 ## 🙋 Needs You
-
-- [ ] [[T-008 Save-load test scenarios — agent tests for save, load, corrupt data, edge cases]] #feature #p2 #opencode #review
 
 ## 🏁 Done
 
@@ -34,6 +32,7 @@ tags:
 - [ ] [[T-005 Core save data model — SaveGame, SaveSlot, per-state dataclasses]] #feature #p1 #opencode #review
 - [ ] [[T-006 Save-Load manager engine — SaveManager class, desktop file backend, web localStorage backend, slot CRUD]] #feature #p1 #opencode #review
 - [ ] [[T-007 Save-Load UI panels and game integration — SavePanel, LoadPanel, hotkeys F5-F9, auto-save, death screen load]] #feature #p2 #opencode #review
+- [ ] [[T-008 Save-load test scenarios — agent tests for save, load, corrupt data, edge cases]] #feature #p2 #opencode
 
 
 ## Archive
