@@ -82,7 +82,6 @@ class SaveManager:
             return False
 
         save = slot.save_data
-
         if save.metadata.version != SAVE_VERSION:
             print(f"[save] version mismatch: save={save.metadata.version}, current={SAVE_VERSION}")
             return False
@@ -461,4 +460,5 @@ class SaveManager:
         scene.day = clock.day
         scene.hour = clock.hour
         scene.minute = clock.minute
-        scene.minute_f = 0.0
+        scene.minute_f = float(clock.minute)
+        scene.game.time_elapsed = clock.time_elapsed
