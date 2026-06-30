@@ -1,15 +1,16 @@
 ---
 id: T-009
 title: TestRunner nie restartuje gry między scenariuszami w automate_display_test.py
-status: ready
-owner: ai
+status: needs-you
+owner: human
 priority: p1
 type: bug
-agent:
+agent: opencode
 created: 2026-06-30
 updated: 2026-06-30
 tags:
   - task
+state: review
 ---
 
 # T-009 — TestRunner nie restartuje gry między scenariuszami w automate_display_test.py
@@ -19,9 +20,9 @@ tags:
 
 Naprawić `tests/automate_display_test.py` tak, aby każdy scenariusz był wykonywany na żywej instancji gry. Obecnie `TestRunner.start_game()` uruchamia grę tylko raz, a `cleanup()` zabija proces po każdym scenariuszu. Kolejne scenariusze wysyłają komendy do martwego procesu, co powoduje, że pełny przebieg (`python3 tests/automate_display_test.py` bez argumentu) daje fałszywe wyniki.
 
-- [ ] `TestRunner` restartuje grę przed każdym scenariuszem (lub nie zabija jej między scenariuszami w sposób, który uniemożliwia kontynuację).
-- [ ] Pełny przebieg wszystkich scenariuszy generuje zrzuty ekranu dla każdej akcji `screenshot`.
-- [ ] Po każdym scenariuszu stan gry jest resetowany (brak wpływu kolejnych scenariuszy na poprzednie).
+- [x] `TestRunner` restartuje grę przed każdym scenariuszem (lub nie zabija jej między scenariuszami w sposób, który uniemożliwia kontynuację).
+- [x] Pełny przebieg wszystkich scenariuszy generuje zrzuty ekranu dla każdej akcji `screenshot`.
+- [x] Po każdym scenariuszu stan gry jest resetowany (brak wpływu kolejnych scenariuszy na poprzednie).
 
 ## 🧭 Context
 
@@ -38,21 +39,22 @@ Naprawić `tests/automate_display_test.py` tak, aby każdy scenariusz był wykon
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Zmienić `TestRunner.run_scenario()` tak, aby uruchamiało grę przed scenariuszem (lub przenieść `start_game()` do wewnątrz pętli scenariuszy).
-- [ ] Upewnić się, że `cleanup()` czeka na zakończenie procesu przed uruchomieniem nowej instancji.
-- [ ] Zweryfikować, że pełny przebieg generuje wszystkie screenshoty i żadna gra nie zostaje w tle.
+- [x] Zmienić `TestRunner.run_scenario()` tak, aby uruchamiało grę przed scenariuszem (lub przenieść `start_game()` do wewnątrz pętli scenariuszy).
+- [x] Upewnić się, że `cleanup()` czeka na zakończenie procesu przed uruchomieniem nowej instancji.
+- [x] Zweryfikować, że pełny przebieg generuje wszystkie screenshoty i żadna gra nie zostaje w tle.
 
 ## ✅ Definition of Done
 
-- [ ] Pełny przebieg `python3 tests/automate_display_test.py` wykonuje każdy scenariusz na żywej grze.
-- [ ] Liczba plików w `screenshots/agent/` odpowiada liczbie akcji `screenshot` we wszystkich scenariuszach.
-- [ ] Brak wiszących procesów Python/pygame po zakończeniu testu.
-- [ ] Zmiany udokumentowane w tasku (`moab log`).
-- [ ] Commit zmian wykonany.
+- [x] Pełny przebieg `python3 tests/automate_display_test.py` wykonuje każdy scenariusz na żywej grze.
+- [x] Liczba plików w `screenshots/agent/` odpowiada liczbie akcji `screenshot` we wszystkich scenariuszach.
+- [x] Brak wiszących procesów Python/pygame po zakończeniu testu.
+- [x] Zmiany udokumentowane w tasku (`moab log`).
+- [x] Commit zmian wykonany.
 
 ## 📓 Agent Log
 
 - 2026-06-30 opencode: claimed, starting
+- 2026-06-30 opencode: moved `start_game()` into `run_scenario()`; added `cleanup()` wait for process termination and input-file clear; verified single + full run (28 screenshots, no hanging processes)
 
 
 ## 🙋 Needs-You / Questions

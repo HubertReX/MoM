@@ -49,25 +49,40 @@ class TestScenario:
 
 class TestRunner:
     def __init__(self):
-        self.game_proc = None
+        self.game_proc: subprocess.Popen | None = None
 
-    def start_game(self):
+    def _clear_input_file(self) -> None:
+        """Wyczyść plik wejściowy, aby stara gra nie wykonała poprzednich komend."""
+        try:
+            with open(TEST_CONFIG["INPUT_FILE"], "w") as f:
+                f.write("")
+        except FileNotFoundError:
+            pass
+
+    def start_game(self) -> None:
         print(f"[{get_timestamp()}] Starting game...")
         start_time = time.perf_counter()
+        self._clear_input_file()
         self.game_proc = subprocess.Popen(
             TEST_CONFIG["GAME_CMD"], shell=True, preexec_fn=os.setsid
         )
         time.sleep(TEST_CONFIG["INIT_WAIT"])
         print(f"[{get_timestamp()}] Game Init Delta: {time.perf_counter() - start_time:.4f}s")
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         if self.game_proc:
             print(f"[{get_timestamp()}] Cleaning up...")
             try:
                 os.killpg(os.getpgid(self.game_proc.pid), 15)
+                try:
+                    self.game_proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    os.killpg(os.getpgid(self.game_proc.pid), 9)
+                    self.game_proc.wait(timeout=5)
             except Exception:
                 pass
             print(f"[{get_timestamp()}] Game stopped.")
+            self.game_proc = None
 
     def load_scenarios(self) -> List[TestScenario]:
         with open(TEST_CONFIG["SCENARIOS_FILE"], "r") as f:
@@ -79,7 +94,8 @@ class TestRunner:
             scenarios.append(TestScenario(s["name"], actions))
         return scenarios
 
-    def run_scenario(self, scenario: TestScenario):
+    def run_scenario(self, scenario: TestScenario) -> None:
+        self.start_game()
         try:
             scenario.run()
         except Exception as e:
@@ -89,10 +105,8 @@ class TestRunner:
 
 if __name__ == "__main__":
     runner = TestRunner()
-    runner.start_game()
-    
     scenarios = runner.load_scenarios()
-    
+
     if len(sys.argv) > 1:
         target_name = sys.argv[1]
         selected = [s for s in scenarios if s.name == target_name]

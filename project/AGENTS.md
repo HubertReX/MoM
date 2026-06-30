@@ -147,10 +147,10 @@ MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python
 Akcje są oddzielone pauzami (`TRANSITION_WAIT`), aby zapewnić stabilność przejść
 między stanami gry. Każda akcja może mieć własne `wait`.
 
-**Ograniczenie runnera:** `tests/automate_display_test.py` uruchamia grę raz na
-początku i zabija proces po każdym scenariuszu. Kolejne scenariusze w pełnym
-przebiegu wykonują się na martwym procesie, więc ich wyniki są bezwartościowe.
-Do weryfikacji zawsze używaj uruchamiania pojedynczych scenariuszy.
+Runner uruchamia **osobną instancję gry przed każdym scenariuszem** i zabija
+proces po jego zakończeniu, więc pełny przebieg wykonuje się na żywych
+procesach. `cleanup()` czeka na zakończenie procesu (z fallbackiem na SIGKILL),
+aby uniknąć wiszących instancji między scenariuszami.
 
 **Persystencja w testach:**
 

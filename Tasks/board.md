@@ -11,16 +11,17 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1
-- [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1
 - [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2
 - [ ] [[T-012 quick_load nie zamyka otwartego LoadPanel w testach]] #bug #p2
 
 ## 🤖 In Progress
 
-- [ ] [[T-013 Po wczytaniu gry nie wyświetlają się ikony w inventory]] #bug #p1 #opencode
+- [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1 #opencode
 
 ## 🙋 Needs You
+
+- [ ] [[T-013 Po wczytaniu gry nie wyświetlają się ikony w inventory]] #bug #p1 #opencode #review
+- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1 #opencode #review
 
 ## 🏁 Done
 
