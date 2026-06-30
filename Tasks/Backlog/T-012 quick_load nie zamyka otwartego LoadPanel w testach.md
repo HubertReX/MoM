@@ -1,11 +1,11 @@
 ---
 id: T-012
 title: quick_load nie zamyka otwartego LoadPanel w testach
-status: in-progress
+status: ready
 owner: ai
 priority: p2
 type: bug
-agent: opencode
+agent:
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -55,6 +55,7 @@ Umożliwić zamknięcie `LoadPanel` z poziomu scenariuszy testowych. W scenarius
 ## 📓 Agent Log
 
 - 2026-06-30 opencode: claimed, starting
+- 2026-06-30 opencode: Zatrzymano wiszącą sesję T-012 i cofnięto do Ready
 
 
 ## 🙋 Needs-You / Questions
