@@ -726,8 +726,11 @@ def cmd_assign(base, opts):
         die(f"assign: --agent must be one of {sorted(AGENT)}")
     note = note_for_id(base, tid)
     prompt = (
-        f"Jesteś agentem '{agent}'. "
-        f"Zclaimuj zadanie: python3 Tasks/bin/moab claim {tid} --agent {agent}. "
+        f"Jesteś agentem '{agent}' pracującym nad projektem {pname}. "
+        f"Twoje zadanie to {tid}. "
+        f"Przeczytaj najpierw AGENTS.md głównego projektu oraz notatkę zadania Tasks/Backlog/{note.name}, "
+        f"a następnie zclaimuj zadanie komendą: python3 Tasks/bin/moab claim {tid} --agent {agent}. "
+        f"Zrealizuj je zgodnie z sekcjami Goal, Plan, Definition of Done i Constraints. "
     )
     if opts.get("long"):
         prompt += (

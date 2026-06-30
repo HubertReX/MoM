@@ -1,11 +1,11 @@
 ---
 id: T-010
 title: Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu
-status: in-progress
+status: ready
 owner: ai
 priority: p1
 type: bug
-agent: opencode
+agent:
 created: 2026-06-30
 updated: 2026-06-30
 tags:
