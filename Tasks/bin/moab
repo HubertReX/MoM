@@ -727,10 +727,11 @@ def cmd_assign(base, opts):
         die(f"assign: --agent must be one of {sorted(AGENT)}")
     note = note_for_id(base, tid)
     pname = get_project_name(base, None)
+    project_root = str(base.parent)
     prompt = (
         f"Jesteś agentem '{agent}' pracującym nad projektem {pname}. "
         f"Twoje zadanie to {tid}. "
-        f"Przeczytaj najpierw AGENTS.md głównego projektu oraz notatkę zadania Tasks/Backlog/{note.name}, "
+        f"Przeczytaj najpierw: @AGENTS.md, @project/AGENTS.md, @Tasks/AGENTS.md oraz notatkę zadania Tasks/Backlog/{note.name}. "
         f"a następnie zclaimuj zadanie komendą: python3 Tasks/bin/moab claim {tid} --agent {agent}. "
         f"Zrealizuj je zgodnie z sekcjami Goal, Plan, Definition of Done i Constraints. "
     )
@@ -741,12 +742,12 @@ def cmd_assign(base, opts):
             f"Jeśli zablokowany: python3 Tasks/bin/moab block {tid} --agent {agent} --note '<pytanie>'."
         )
     mflag = ["-m", opts["model"]] if opts.get("model") else []
+    file_flags = ["--file", "AGENTS.md", "--file", "project/AGENTS.md", "--file", "Tasks/AGENTS.md"]
     if agent == "opencode":
-        cmd = ["opencode", "run", "--dangerously-skip-permissions", "--title", f"{pname}: {tid}", *mflag, prompt]
+        cmd = ["opencode", "run", "--dangerously-skip-permissions", "--title", f"{pname}: {tid}", *file_flags, *mflag, prompt]
     else:
-        cmd = ["opencode", "run", *mflag, prompt]
+        cmd = ["opencode", "run", *file_flags, *mflag, prompt]
     if opts.get("run"):
-        project_root = str(base.parent)
         env = os.environ.copy()
         env["PWD"] = project_root
         return subprocess.call(cmd, cwd=project_root, env=env)  # run from project root
@@ -754,6 +755,7 @@ def cmd_assign(base, opts):
     extra = f'-m "{opts["model"]}" ' if opts.get("model") else ""
     if agent == "opencode":
         extra += f'--dangerously-skip-permissions --title "{pname}: {tid}" '
+    extra += "--file AGENTS.md --file project/AGENTS.md --file Tasks/AGENTS.md "
     printable = f"opencode run {extra}" + f'"{prompt}"'
     print(printable)
     return 0
