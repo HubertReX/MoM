@@ -1,11 +1,11 @@
 ---
 id: T-011
 title: Auto Save on Map Change nie testuje faktycznie zmiany mapy
-status: in-progress
+status: ready
 owner: ai
 priority: p2
 type: bug
-agent: opencode
+agent:
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -60,6 +60,9 @@ Uzupełnić scenariusz `Auto Save on Map Change` w `tests/scenarios.json` tak, a
 - 2026-06-30 20:41 opencode: claimed, starting
 - 2026-06-30 20:42 user: moved to ready
 - 2026-06-30 20:43 opencode: claimed, starting
+- 2026-06-30 20:52 user: moved to ready
+- 2026-06-30 21:20 opencode: claimed, starting
+- 2026-06-30 21:23 user: watcher ze starej sesji zclaimował, cofnięte do Ready
 
 
 ## 🙋 Needs-You / Questions
