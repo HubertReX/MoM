@@ -344,8 +344,8 @@ function cardEl(c,lane){
   if(lane==='needs-you') foot.appendChild(qbtn('done',()=>act('/api/done',{id:c.id},true)));
   el.appendChild(foot);
   el.querySelector('.t').onclick=()=>openCard(c.id);
-  el.ondragstart=e=>{e.dataTransfer.setData('id',c.id);el.classList.add('dragging')};
-  el.ondragend=()=>el.classList.remove('dragging');
+  el.ondragstart=e=>{draggingCard=true;e.dataTransfer.setData('id',c.id);el.classList.add('dragging')};
+  el.ondragend=()=>{draggingCard=false;el.classList.remove('dragging');};
   return el;
 }
 function qbtn(label,fn){const b=document.createElement('button');b.textContent=label;
@@ -503,6 +503,24 @@ async function updateWatcherStatus(){
 
 if(watcherPoll) clearInterval(watcherPoll);
 watcherPoll=setInterval(updateWatcherStatus,5000);
+
+let boardPoll;
+function startBoardPoll(){
+  if(boardPoll) clearInterval(boardPoll);
+  boardPoll=setInterval(()=>{
+    if(!CUR && !draggingCard) load(true);
+  },10000);
+}
+startBoardPoll();
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){
+    updateWatcherStatus();
+    if(!CUR) load(true);
+  }
+});
+
+let draggingCard=false;
 
 async function act(url,body,keep){
   try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
