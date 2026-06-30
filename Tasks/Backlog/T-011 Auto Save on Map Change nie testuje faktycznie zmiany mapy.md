@@ -57,6 +57,8 @@ Uzupełnić scenariusz `Auto Save on Map Change` w `tests/scenarios.json` tak, a
 
 - 2026-06-30 opencode: claimed, starting
 - 2026-06-30 opencode: claimed, starting
+- 2026-06-30 20:41 opencode: claimed, starting
+- 2026-06-30 20:42 user: moved to ready
 
 
 ## 🙋 Needs-You / Questions

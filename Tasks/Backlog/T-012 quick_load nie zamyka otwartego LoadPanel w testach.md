@@ -10,6 +10,7 @@ created: 2026-06-30
 updated: 2026-06-30
 tags:
   - task
+state: review
 ---
 
 # T-012 — quick_load nie zamyka otwartego LoadPanel w testach
@@ -56,6 +57,10 @@ Umożliwić zamknięcie `LoadPanel` z poziomu scenariuszy testowych. W scenarius
 
 - 2026-06-30 opencode: claimed, starting
 - 2026-06-30 opencode: Zatrzymano wiszącą sesję T-012 i cofnięto do Ready
+- 2026-06-30 19:25 opencode: claimed, starting
+- 2026-06-30 20:17 user: moved to ready
+- 2026-06-30 20:40 user: moved to needs-you
+- 2026-06-30 20:42 user: moved to ready
 
 
 ## 🙋 Needs-You / Questions

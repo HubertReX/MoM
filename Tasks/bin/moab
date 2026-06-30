@@ -535,7 +535,7 @@ def cmd_new(base, opts):
     return cmd_sync(base)
 
 
-def _move(base, task_id, to_lane, add=(), strip=(), agent=None, log=None):
+def _move(base, task_id, to_lane, add=(), strip=(), agent=None, log=None, tag_agent=True):
     board = base / "board.md"
     lines = board.read_text(encoding="utf-8").splitlines(keepends=True)
     idx = find_card(lines, task_id)
@@ -545,7 +545,7 @@ def _move(base, task_id, to_lane, add=(), strip=(), agent=None, log=None):
     # clean up orphaned blank line left by the removed card
     if idx < len(lines) and lines[idx].strip() == "":
         lines.pop(idx)
-    addt = list(add) + ([agent] if agent else [])
+    addt = list(add) + ([agent] if agent and tag_agent else [])
     line = edit_tags(line, add=addt, strip=strip)
     insert_card(lines, to_lane, line)
     board.write_text("".join(lines), encoding="utf-8")
@@ -774,7 +774,22 @@ def cmd_move(base, opts):
     if to not in LANE_HEADING:
         die(f"move: --to must be one of {list(LANE_HEADING)}")
     add = [t for t in ("review", "blocked", "raw") if opts.get(t)]
-    return _move(base, opts.get("_pos"), to, add=add, agent=opts.get("agent"))
+    agent = opts.get("agent")
+    note = opts.get("note")
+    strip = list(STATE)
+    if to == "in-progress":
+        if not agent:
+            die("move: in-progress requires --agent <name>")
+        strip = list(STATE)
+    elif to == "needs-you":
+        if not add:
+            add = ["review"]
+        strip = list(STATE)
+    else:
+        # ready, done, backlog: clean up state and agent tags, but do not tag the moving user
+        strip = list(STATE) + list(AGENT)
+        return _move(base, opts.get("_pos"), to, add=add, strip=strip, agent=agent, log=note, tag_agent=False)
+    return _move(base, opts.get("_pos"), to, add=add, strip=strip, agent=agent, log=note)
 
 
 def cmd_watch(base, opts):

@@ -216,7 +216,7 @@ class Move(BaseModel):
 
 @app.post("/api/move")
 def api_move(m: Move):
-    return {"output": run_moab(["move", m.id, "--to", m.to])}
+    return {"output": run_moab(["move", m.id, "--to", m.to, "--agent", "user", "--note", f"moved to {m.to}"])}
 
 
 class Claim(BaseModel):
