@@ -11,8 +11,8 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-012 quick_load nie zamyka otwartego LoadPanel w testach]] #bug #p2 #user
 - [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1
+- [ ] [[T-012 quick_load nie zamyka otwartego LoadPanel w testach]] #bug #p2 #user
 
 ## 🤖 In Progress
 

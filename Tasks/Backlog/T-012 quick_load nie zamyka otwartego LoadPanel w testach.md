@@ -61,6 +61,8 @@ Umożliwić zamknięcie `LoadPanel` z poziomu scenariuszy testowych. W scenarius
 - 2026-06-30 20:17 user: moved to ready
 - 2026-06-30 20:40 user: moved to needs-you
 - 2026-06-30 20:42 user: moved to ready
+- 2026-06-30 20:44 user: moved to needs-you
+- 2026-06-30 20:44 user: moved to ready
 
 
 ## 🙋 Needs-You / Questions
