@@ -10,12 +10,12 @@ Run:  ./run.sh [PORT]  (sets up a uv venv, serves on 0.0.0.0 on [PORT] default =
 """
 
 from __future__ import annotations
-import importlib.util, importlib.machinery, subprocess, sys, re
+import importlib.util, importlib.machinery, subprocess, sys, re, os, signal, threading
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 WEB = Path(__file__).resolve().parent
 BASE = WEB.parent  # the Tasks/ vault
@@ -28,6 +28,95 @@ moab = importlib.util.module_from_spec(_spec)
 _loader.exec_module(moab)
 
 app = FastAPI(title="MOAB web")
+
+# ---- model discovery (lazy, cached) ----
+_MODELS_LOCK = threading.Lock()
+_MODELS: list[str] | None = None
+_MODELS_ERROR: str | None = None
+
+
+def _discover_models() -> list[str]:
+    """Ask opencode for the full provider/model list. Falls back to opencode-go defaults."""
+    try:
+        p = subprocess.run(
+            ["opencode", "models"],
+            capture_output=True,
+            text=True,
+            timeout=45,
+            check=False,
+        )
+        lines = (p.stdout + "\n" + p.stderr).splitlines()
+        models = [ln.strip() for ln in lines if "/" in ln.strip() and not ln.strip().startswith("[")]
+        if models:
+            return sorted(set(models))
+    except subprocess.TimeoutExpired:
+        return _fallback_models()
+    except Exception:
+        pass
+    return _fallback_models()
+
+
+def _fallback_models() -> list[str]:
+    return sorted({
+        "opencode-go/deepseek-v4-flash",
+        "opencode-go/deepseek-v4-pro",
+        "opencode-go/glm-5.1",
+        "opencode-go/glm-5.2",
+        "opencode-go/kimi-k2.6",
+        "opencode-go/kimi-k2.7-code",
+        "opencode-go/mimo-v2.5",
+        "opencode-go/mimo-v2.5-pro",
+        "opencode-go/minimax-m2.7",
+        "opencode-go/minimax-m3",
+        "opencode-go/qwen3.6-plus",
+        "opencode-go/qwen3.7-max",
+        "opencode-go/qwen3.7-plus",
+    })
+
+
+def get_models() -> list[str]:
+    global _MODELS, _MODELS_ERROR
+    if _MODELS is None:
+        with _MODELS_LOCK:
+            if _MODELS is None:
+                try:
+                    _MODELS = _discover_models()
+                except Exception as e:
+                    _MODELS_ERROR = str(e)
+                    _MODELS = _fallback_models()
+    return _MODELS
+
+
+# ---- watcher state ----
+class WatcherState:
+    def __init__(self):
+        self.proc: subprocess.Popen | None = None
+        self.agent: str | None = None
+        self.model: str | None = None
+        self.interval: int = 10
+        self.limit: int = 1
+
+    def is_running(self) -> bool:
+        return self.proc is not None and self.proc.poll() is None
+
+    def stop(self) -> None:
+        if self.proc is None:
+            return
+        try:
+            if self.proc.poll() is None:
+                os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
+                try:
+                    self.proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        finally:
+            self.proc = None
+
+
+WATCHER = WatcherState()
+
 
 def get_project_name():
     try:
@@ -99,6 +188,11 @@ def api_board():
     }
 
 
+@app.get("/api/models")
+def api_models():
+    return {"models": get_models()}
+
+
 class NewCard(BaseModel):
     title: str
     type: str = "chore"
@@ -128,11 +222,15 @@ def api_move(m: Move):
 class Claim(BaseModel):
     id: str
     agent: str
+    model: str | None = None
 
 
 @app.post("/api/claim")
 def api_claim(c: Claim):
-    return {"output": run_moab(["claim", c.id, "--agent", c.agent])}
+    args = ["claim", c.id, "--agent", c.agent]
+    if c.model:
+        args += ["--model", c.model]
+    return {"output": run_moab(args)}
 
 
 class Hand(BaseModel):
@@ -198,6 +296,64 @@ class Rm(BaseModel):
 @app.post("/api/rm")
 def api_rm(d: Rm):
     return {"output": run_moab(["rm", d.id])}
+
+
+# ---- watcher control ----
+class WatchStart(BaseModel):
+    agent: str
+    model: str | None = None
+    interval: int = Field(default=10, ge=1)
+    limit: int = Field(default=1, ge=1)
+
+
+@app.post("/api/watch/start")
+def api_watch_start(s: WatchStart):
+    if WATCHER.is_running():
+        raise HTTPException(409, "watcher already running")
+    if s.agent not in moab.AGENT:
+        raise HTTPException(400, f"unknown agent '{s.agent}'")
+    cmd = [
+        sys.executable, str(MOAB), "watch",
+        "--agent", s.agent,
+        "--interval", str(s.interval),
+        "--limit", str(s.limit),
+        "--dir", str(BASE),
+    ]
+    if s.model:
+        cmd += ["--model", s.model]
+    try:
+        WATCHER.proc = subprocess.Popen(
+            cmd,
+            cwd=str(BASE.parent),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            start_new_session=True,
+        )
+        WATCHER.agent = s.agent
+        WATCHER.model = s.model
+        WATCHER.interval = s.interval
+        WATCHER.limit = s.limit
+        return {"ok": True, "pid": WATCHER.proc.pid}
+    except Exception as e:
+        raise HTTPException(500, f"failed to start watcher: {e}")
+
+
+@app.post("/api/watch/stop")
+def api_watch_stop():
+    WATCHER.stop()
+    return {"ok": True}
+
+
+@app.get("/api/watch/status")
+def api_watch_status():
+    return {
+        "running": WATCHER.is_running(),
+        "agent": WATCHER.agent,
+        "model": WATCHER.model,
+        "interval": WATCHER.interval,
+        "limit": WATCHER.limit,
+    }
 
 
 # ---- note body editing (frontmatter stays managed by sync) ----

@@ -137,6 +137,46 @@
   .lane.collapsed h2{margin:0;writing-mode:horizontal-tb;transform:none;flex-direction:row;gap:8px;
     justify-content:space-between;width:100%}
   .lane.collapsed h2 .cnt{display:inline}}
+
+/* model fuzzy input */
+.model-box{position:relative;display:flex;flex-direction:row;align-items:center;gap:6px;
+  min-width:160px;max-width:260px;flex:1 1 auto}
+.model-box label{white-space:nowrap;color:var(--muted);font-size:.8rem;font-weight:700}
+.model-box input{flex:1;min-width:0}
+.suggestions{position:absolute;top:100%;left:0;right:0;max-height:220px;overflow-y:auto;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow);z-index:100;display:none;margin-top:2px}
+.suggestions.show{display:block}
+.suggestion-item{padding:7px 10px;font-size:.8rem;cursor:pointer;border-bottom:1px solid var(--border)}
+.suggestion-item:last-child{border-bottom:none}
+.suggestion-item:hover,.suggestion-item.active{background:var(--accent-soft)}
+.model-box.hidden{display:none !important}
+
+/* watcher panel */
+#watcherPanel{width:100%;background:var(--surface-2);border-bottom:1px solid var(--border);
+  display:none}
+#watcherPanel.open{display:block}
+#watcherPanel>.watcher-grid{padding:10px 16px}
+.watcher-grid{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.watcher-grid .field{display:flex;flex-direction:row;align-items:center;gap:6px}
+.watcher-grid label{font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;white-space:nowrap}
+.watcher-grid input,.watcher-grid select{padding:7px 10px;font:inherit;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--text)}
+.watcher-grid .field.agent{flex:1 1 140px}
+.watcher-grid .field.model{flex:2 1 220px;position:relative}
+.watcher-grid .field.shrink{flex:0 0 100px}
+.watcher-grid .actions{display:flex;gap:8px;align-items:center;flex:0 0 auto}
+#watcherStatus{font-size:.82rem;color:var(--muted);white-space:nowrap}
+#watcherStatus.running{color:var(--ok);font-weight:600}
+
+/* header mobile */
+@media(max-width:700px){
+  header{gap:8px;padding:10px 12px}
+  header h1{font-size:1rem}
+  .model-box{max-width:200px}
+  .watcher-grid .field.model{flex:1 1 220px}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -146,8 +186,15 @@
   <button class="btn" onclick="toggleNew()">+ Nowa</button>
   <span class="sp"></span>
   <label style="color:var(--muted);font-size:.8rem">agent</label>
-  <select id="agent"></select>
+  <select id="agent" onchange="onAgentChange()"></select>
+  <div id="modelBox" class="model-box hidden">
+    <label style="color:var(--muted);font-size:.8rem">model</label>
+    <input id="model" type="text" placeholder="opencode-go/..." autocomplete="off"
+      oninput="onModelInput()" onfocus="onModelFocus()" onkeydown="onModelKey(event)" onblur="hideSuggestionsSoon()">
+    <div id="modelSuggestions" class="suggestions"></div>
+  </div>
   <button class="btn" onclick="load()">↻</button>
+  <button class="btn" id="watcherBtn" onclick="toggleWatcherPanel()" title="Watcher">⚙️</button>
   <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Przełącz motyw">🌙</button>
   <form id="newForm" onsubmit="createCard(event)">
     <input id="nTitle" placeholder="Tytuł zadania" required>
@@ -157,6 +204,34 @@
     <button class="btn primary" type="submit">Dodaj</button>
   </form>
 </header>
+
+<div id="watcherPanel">
+  <div class="watcher-grid">
+    <div class="field agent">
+      <label>agent</label>
+      <select id="wAgent" onchange="onWAgentChange()"></select>
+    </div>
+    <div id="wModelBox" class="field model">
+      <label>model</label>
+      <input id="wModel" type="text" placeholder="opencode-go/..." autocomplete="off"
+        oninput="onWModelInput()" onfocus="onWModelFocus()" onkeydown="onWModelKey(event)" onblur="hideWSuggestionsSoon()">
+      <div id="wModelSuggestions" class="suggestions"></div>
+    </div>
+    <div class="field shrink">
+      <label>interval (s)</label>
+      <input id="wInterval" type="number" min="1" value="10">
+    </div>
+    <div class="field shrink">
+      <label>limit</label>
+      <input id="wLimit" type="number" min="1" value="1">
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="wStartBtn" onclick="startWatcher()">▶ Start</button>
+      <button class="btn danger" id="wStopBtn" onclick="stopWatcher()">⏹ Stop</button>
+      <span id="watcherStatus"></span>
+    </div>
+  </div>
+</div>
 
 <details id="help" open>
   <summary>ℹ️ Jak używać tablicy</summary>
@@ -202,16 +277,34 @@ const CHIP={p1:["#04201c","#ffaa0c"],p2:["#04201c","#d1ac64"],p3:["#2a2620","#b0
   example:["#222","#6c6c72"]};
 function chip(t){const c=CHIP[t.toLowerCase()]||["#fff","#888"];
   return `<span class="chip" style="color:${c[0]};background:${c[1]}">#${t}</span>`;}
-let DATA={lanes:[],agents:[],types:[],prios:[],states:[],laneOrder:[]};
+let DATA={lanes:[],agents:[],types:[],prios:[],states:[],laneOrder:[],models:[]};
 let CUR=null;                      // currently open card id
 let PREVIEW=false;                 // preview mode
+let ALL_MODELS=[];                 // full list from /api/models
+let MODEL_SEL=-1;                  // keyboard selection index for header model
+let WMODEL_SEL=-1;                 // keyboard selection index for watcher model
 
 async function load(keepDrawer){
   const r=await fetch('/api/board'); DATA=await r.json();
   document.getElementById('projectName').textContent = '📋 ' + (DATA.projectName || 'MOAB');
-  fillSel('agent',DATA.agents); fillSel('nType',DATA.types); fillSel('nPrio',DATA.prios,'p2');
+  fillSel('agent',DATA.agents,'opencode'); fillSel('wAgent',DATA.agents,'opencode');
+  fillSel('nType',DATA.types); fillSel('nPrio',DATA.prios,'p2');
   fillLanes('nLane'); fillLanes('eLane');
   fillSel('ePrio',DATA.prios); fillSel('eType',DATA.types);
+  // restore saved watcher/agent/model values after selects are populated
+  const saved=localStorage.getItem('moab-watcher');
+  if(saved){
+    try{
+      const w=JSON.parse(saved);
+      if(w.agent) document.getElementById('wAgent').value=w.agent;
+      if(w.model) document.getElementById('wModel').value=w.model;
+      if(w.interval) document.getElementById('wInterval').value=w.interval;
+      if(w.limit) document.getElementById('wLimit').value=w.limit;
+    }catch(e){}
+  }
+  const savedModel=localStorage.getItem('moab-model');
+  if(savedModel && !document.getElementById('model').value) document.getElementById('model').value=savedModel;
+  onAgentChange(); onWAgentChange();
   const b=document.getElementById('board'); b.innerHTML='';
   for(const lane of DATA.lanes){
     const el=document.createElement('div'); el.className='lane'; el.dataset.lane=lane.key;
@@ -224,7 +317,17 @@ async function load(keepDrawer){
     b.appendChild(el);
   }
   if(keepDrawer&&CUR) populateDrawer(CUR);
+  updateWatcherStatus();
 }
+
+async function loadModels(){
+  try{
+    const r=await fetch('/api/models');
+    const j=await r.json();
+    ALL_MODELS=j.models||[];
+  }catch(e){ALL_MODELS=[];}
+}
+loadModels();
 function fillSel(id,arr,def){const s=document.getElementById(id); if(s.dataset.f)return; s.dataset.f=1;
   s.innerHTML=arr.map(x=>`<option ${x===def?'selected':''}>${x}</option>`).join('');}
 function fillLanes(id){const s=document.getElementById(id); if(s.dataset.f)return; s.dataset.f=1;
@@ -243,7 +346,7 @@ function cardEl(c,lane){
   sel.onchange=e=>{e.stopPropagation();act('/api/move',{id:c.id,to:sel.value},true);};
   sel.onclick=e=>e.stopPropagation();
   foot.appendChild(sel);
-  if(lane==='ready') foot.appendChild(qbtn('claim',()=>act('/api/claim',{id:c.id,agent:agentVal()},true)));
+  if(lane==='ready') foot.appendChild(qbtn('claim',()=>act('/api/claim',{id:c.id,agent:agentVal(),model:modelVal()},true)));
   if(lane==='in-progress'){foot.appendChild(qbtn('review',()=>handoff('/api/review',c.id)));
     foot.appendChild(qbtn('block',()=>handoff('/api/block',c.id)));}
   if(lane==='needs-you') foot.appendChild(qbtn('done',()=>act('/api/done',{id:c.id},true)));
@@ -256,6 +359,153 @@ function cardEl(c,lane){
 function qbtn(label,fn){const b=document.createElement('button');b.textContent=label;
   b.onclick=e=>{e.stopPropagation();fn()};return b;}
 function agentVal(){return document.getElementById('agent').value;}
+function modelVal(){return document.getElementById('model').value.trim();}
+function wAgentVal(){return document.getElementById('wAgent').value;}
+function wModelVal(){return document.getElementById('wModel').value.trim();}
+
+function onAgentChange(){
+  const box=document.getElementById('modelBox');
+  const isOpencode=agentVal()==='opencode';
+  box.classList.toggle('hidden',!isOpencode);
+  if(isOpencode){
+    const saved=localStorage.getItem('moab-model');
+    const inp=document.getElementById('model');
+    if(saved && !inp.value) inp.value=saved;
+  }
+}
+
+function onWAgentChange(){
+  const box=document.getElementById('wModelBox');
+  const isOpencode=wAgentVal()==='opencode';
+  box.classList.toggle('hidden',!isOpencode);
+}
+
+/* ---- fuzzy model inputs ---- */
+function fuzzyFilter(q,list){
+  const qlow=q.toLowerCase().replace(/\s+/g,'');
+  if(!qlow) return list.slice(0,30);
+  return list.map(id=>{
+    const low=id.toLowerCase();
+    let score=0;
+    if(low===qlow) score+=100;
+    if(low.startsWith(qlow)) score+=50;
+    if(low.includes(qlow)) score+=30;
+    const parts=qlow.split('/').filter(Boolean);
+    for(const p of parts) if(low.includes(p)) score+=20;
+    return {id,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,30).map(x=>x.id);
+}
+
+function renderSuggestions(inpId,sugId,list,selIdx){
+  const box=document.getElementById(sugId);
+  if(!list.length){box.classList.remove('show'); return;}
+  box.innerHTML=list.map((id,i)=>`<div class="suggestion-item ${i===selIdx?'active':''}" data-i="${i}">${escapeHtml(id)}</div>`).join('');
+  box.querySelectorAll('.suggestion-item').forEach(el=>{
+    el.onmousedown=e=>{
+      e.preventDefault();
+      const inp=document.getElementById(inpId);
+      inp.value=el.textContent;
+      box.classList.remove('show');
+      if(inpId==='model') localStorage.setItem('moab-model',inp.value);
+    };
+  });
+  box.classList.add('show');
+}
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function onModelInput(){
+  MODEL_SEL=-1;
+  const q=document.getElementById('model').value;
+  renderSuggestions('model','modelSuggestions',fuzzyFilter(q,ALL_MODELS),MODEL_SEL);
+  localStorage.setItem('moab-model',q);
+}
+function onModelFocus(){
+  const q=document.getElementById('model').value;
+  renderSuggestions('model','modelSuggestions',fuzzyFilter(q,ALL_MODELS),MODEL_SEL);
+}
+function onModelKey(e){
+  const sug=document.getElementById('modelSuggestions');
+  if(!sug.classList.contains('show')) return;
+  const items=sug.querySelectorAll('.suggestion-item');
+  if(e.key==='ArrowDown'){e.preventDefault(); MODEL_SEL=Math.min(MODEL_SEL+1,items.length-1); renderSuggestions('model','modelSuggestions',fuzzyFilter(document.getElementById('model').value,ALL_MODELS),MODEL_SEL);}
+  else if(e.key==='ArrowUp'){e.preventDefault(); MODEL_SEL=Math.max(MODEL_SEL-1,-1); renderSuggestions('model','modelSuggestions',fuzzyFilter(document.getElementById('model').value,ALL_MODELS),MODEL_SEL);}
+  else if(e.key==='Enter' && MODEL_SEL>=0){e.preventDefault(); const val=items[MODEL_SEL].textContent; document.getElementById('model').value=val; localStorage.setItem('moab-model',val); sug.classList.remove('show');}
+  else if(e.key==='Escape'){sug.classList.remove('show');}
+}
+function hideSuggestionsSoon(){setTimeout(()=>document.getElementById('modelSuggestions').classList.remove('show'),150);}
+
+function onWModelInput(){
+  WMODEL_SEL=-1;
+  const q=document.getElementById('wModel').value;
+  renderSuggestions('wModel','wModelSuggestions',fuzzyFilter(q,ALL_MODELS),WMODEL_SEL);
+}
+function onWModelFocus(){
+  const q=document.getElementById('wModel').value;
+  renderSuggestions('wModel','wModelSuggestions',fuzzyFilter(q,ALL_MODELS),WMODEL_SEL);
+}
+function onWModelKey(e){
+  const sug=document.getElementById('wModelSuggestions');
+  if(!sug.classList.contains('show')) return;
+  const items=sug.querySelectorAll('.suggestion-item');
+  if(e.key==='ArrowDown'){e.preventDefault(); WMODEL_SEL=Math.min(WMODEL_SEL+1,items.length-1); renderSuggestions('wModel','wModelSuggestions',fuzzyFilter(document.getElementById('wModel').value,ALL_MODELS),WMODEL_SEL);}
+  else if(e.key==='ArrowUp'){e.preventDefault(); WMODEL_SEL=Math.max(WMODEL_SEL-1,-1); renderSuggestions('wModel','wModelSuggestions',fuzzyFilter(document.getElementById('wModel').value,ALL_MODELS),WMODEL_SEL);}
+  else if(e.key==='Enter' && WMODEL_SEL>=0){e.preventDefault(); document.getElementById('wModel').value=items[WMODEL_SEL].textContent; sug.classList.remove('show');}
+  else if(e.key==='Escape'){sug.classList.remove('show');}
+}
+function hideWSuggestionsSoon(){setTimeout(()=>document.getElementById('wModelSuggestions').classList.remove('show'),150);}
+
+/* ---- watcher UI ---- */
+function toggleWatcherPanel(){
+  document.getElementById('watcherPanel').classList.toggle('open');
+}
+
+async function startWatcher(){
+  const agent=wAgentVal();
+  const model=wModelVal();
+  const interval=parseInt(document.getElementById('wInterval').value,10)||10;
+  const limit=parseInt(document.getElementById('wLimit').value,10)||1;
+  localStorage.setItem('moab-watcher',JSON.stringify({agent,model,interval,limit}));
+  try{
+    const r=await fetch('/api/watch/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent,model,interval,limit})});
+    const j=await r.json();
+    if(!r.ok){toast(j.detail||'błąd startu watchera',true); return;}
+    toast('watcher started');
+    updateWatcherStatus();
+  }catch(e){toast(e.message,true);}
+}
+
+async function stopWatcher(){
+  try{
+    const r=await fetch('/api/watch/stop',{method:'POST'});
+    if(!r.ok){toast('błąd zatrzymania',true); return;}
+    toast('watcher stopped');
+    updateWatcherStatus();
+  }catch(e){toast(e.message,true);}
+}
+
+let watcherPoll;
+async function updateWatcherStatus(){
+  try{
+    const r=await fetch('/api/watch/status');
+    const s=await r.json();
+    const el=document.getElementById('watcherStatus');
+    if(s.running){
+      el.classList.add('running');
+      el.textContent=`▶️ running ${s.agent}`+(s.model?` / ${s.model}`:'')+` / ${s.interval}s / limit ${s.limit}`;
+      document.getElementById('wStartBtn').disabled=true;
+      document.getElementById('wStopBtn').disabled=false;
+    }else{
+      el.classList.remove('running');
+      el.textContent='🛑 watcher stopped';
+      document.getElementById('wStartBtn').disabled=false;
+      document.getElementById('wStopBtn').disabled=true;
+    }
+  }catch(e){}
+}
+
+if(watcherPoll) clearInterval(watcherPoll);
+watcherPoll=setInterval(updateWatcherStatus,5000);
 
 async function act(url,body,keep){
   try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -366,6 +616,7 @@ function toggleTheme(){
       applyTheme(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
   });
 })();
+
 load();
 </script>
 </body>
