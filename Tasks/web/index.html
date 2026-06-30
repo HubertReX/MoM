@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>MOAB</title>
 <style>
   :root{--bg:#fbfbfa;--surface:#fff;--surface-2:#f4f4f2;--text:#1c1c1a;--muted:#6b6b66;
@@ -291,17 +294,6 @@ async function load(keepDrawer){
   fillSel('nType',DATA.types); fillSel('nPrio',DATA.prios,'p2');
   fillLanes('nLane'); fillLanes('eLane');
   fillSel('ePrio',DATA.prios); fillSel('eType',DATA.types);
-  // restore saved watcher/agent/model values after selects are populated
-  const saved=localStorage.getItem('moab-watcher');
-  if(saved){
-    try{
-      const w=JSON.parse(saved);
-      if(w.agent) document.getElementById('wAgent').value=w.agent;
-      if(w.model) document.getElementById('wModel').value=w.model;
-      if(w.interval) document.getElementById('wInterval').value=w.interval;
-      if(w.limit) document.getElementById('wLimit').value=w.limit;
-    }catch(e){}
-  }
   const savedModel=localStorage.getItem('moab-model');
   if(savedModel && !document.getElementById('model').value) document.getElementById('model').value=savedModel;
   onAgentChange(); onWAgentChange();
@@ -490,6 +482,11 @@ async function updateWatcherStatus(){
     const r=await fetch('/api/watch/status');
     const s=await r.json();
     const el=document.getElementById('watcherStatus');
+    if(s.agent!==undefined) document.getElementById('wAgent').value=s.agent;
+    if(s.model!==undefined) document.getElementById('wModel').value=s.model;
+    if(s.interval!==undefined) document.getElementById('wInterval').value=s.interval;
+    if(s.limit!==undefined) document.getElementById('wLimit').value=s.limit;
+    onWAgentChange();
     if(s.running){
       el.classList.add('running');
       el.textContent=`▶️ running ${s.agent}`+(s.model?` / ${s.model}`:'')+` / ${s.interval}s / limit ${s.limit}`;

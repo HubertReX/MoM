@@ -383,7 +383,8 @@ def append_agent_log(note: Path, agent: str, msg: str):
             ip = j
             while ip - 1 > i and lines[ip - 1].strip() == "":
                 ip -= 1
-            lines.insert(ip, f"- {TODAY} {agent}: {msg}\n")
+            ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            lines.insert(ip, f"- {ts} {agent}: {msg}\n")
             note.write_text("".join(lines), encoding="utf-8")
             return True
     return False
