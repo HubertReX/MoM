@@ -725,6 +725,7 @@ def cmd_assign(base, opts):
     if agent not in AGENT:
         die(f"assign: --agent must be one of {sorted(AGENT)}")
     note = note_for_id(base, tid)
+    pname = get_project_name(base, None)
     prompt = (
         f"Jesteś agentem '{agent}' pracującym nad projektem {pname}. "
         f"Twoje zadanie to {tid}. "
@@ -739,7 +740,6 @@ def cmd_assign(base, opts):
             f"Jeśli zablokowany: python3 Tasks/bin/moab block {tid} --agent {agent} --note '<pytanie>'."
         )
     mflag = ["-m", opts["model"]] if opts.get("model") else []
-    pname = get_project_name(base, None)
     if agent == "opencode":
         cmd = ["opencode", "run", "--dangerously-skip-permissions", "--title", f"{pname}: {tid}", *mflag, prompt]
     else:
