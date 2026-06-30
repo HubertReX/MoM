@@ -10,9 +10,12 @@
     --radius:12px;--radius-sm:8px;--shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.06);
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;}
-  @media (prefers-color-scheme:dark){:root{--bg:#16161a;--surface:#1e1e24;--surface-2:#26262e;
+  @media (prefers-color-scheme:dark){:root:not(.light):not(.dark){--bg:#16161a;--surface:#1e1e24;--surface-2:#26262e;
     --text:#e8e8e6;--muted:#9a9a96;--border:#33333c;--accent:#2dd4bf;--accent-soft:#1a3d38;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.4);}}
+  :root.dark{--bg:#16161a;--surface:#1e1e24;--surface-2:#26262e;
+    --text:#e8e8e6;--muted:#9a9a96;--border:#33333c;--accent:#2dd4bf;--accent-soft:#1a3d38;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.4);}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5}
   header{display:flex;gap:10px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);
@@ -30,7 +33,6 @@
   .board{display:flex;gap:12px;padding:16px;align-items:start;overflow-x:auto;
     transition:margin-right .2s}
   .board.drawer-open{margin-right:min(520px,100vw)}
-  @media(max-width:1050px){.board{flex-wrap:wrap}}
   .lane{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border);
     border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:8px}
   .lane.drag{outline:2px dashed var(--accent);outline-offset:-2px}
@@ -57,6 +59,16 @@
     border-radius:var(--radius-sm);background:var(--surface);color:var(--accent);cursor:pointer}
   .foot button:hover{background:var(--surface-2)}
 
+  .dh .nav-btn{font-size:.82rem;padding:4px 7px;min-width:0}
+  .ed{position:relative}
+  .ed .row .ed-toggle{margin-left:auto;font-size:.7rem;cursor:pointer;color:var(--muted);padding:2px 5px;
+    line-height:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;
+    flex-shrink:0}
+  .ed.collapsed{padding:3px 16px;gap:0;min-height:28px;display:flex;align-items:center;cursor:pointer}
+  .ed.collapsed .row{display:none}
+  .ed.collapsed::after{content:"▾";position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.7rem;
+    color:var(--muted);padding:2px 5px;line-height:1;background:var(--surface);border:1px solid var(--border);
+    border-radius:4px;pointer-events:none}
   /* drawer = full card editor */
   #drawer{position:fixed;top:0;right:0;height:100%;width:min(520px,100vw);background:var(--surface);
     border-left:1px solid var(--border);box-shadow:-8px 0 24px rgba(0,0,0,.2);transform:translateX(100%);
@@ -97,7 +109,7 @@
 /* preview panel */
 #drawer .pv{flex:1;overflow-y:auto;padding:14px 16px;display:none;line-height:1.7;font-size:.9rem}
 #drawer .pv.show{display:block}
-#drawer .pv h1,#drawer .pv h2,#drawer .pv h3,#drawer .pv h4{margin:.5em 0 .2em;line-height:1.3}
+#drawer .pv h1,#drawer .pv h2,#drawer .pv h3,#drawer .pv h4{margin:.8em 0 .35em;line-height:1.4}
 #drawer .pv h1{font-size:1.35rem;border-bottom:1px solid var(--border);padding-bottom:.25em}
 #drawer .pv h2{font-size:1.2rem}
 #drawer .pv h3{font-size:1.05rem}
@@ -114,10 +126,17 @@
 #drawer .pv hr{border:none;border-top:1px solid var(--border);margin:1em 0}
 #drawer .pv input[type=checkbox]{margin-right:6px}
 #drawer .pv a{color:var(--accent)}
+#drawer .pv a.task-link{font-weight:600;text-decoration:underline;text-underline-offset:2px}
 #drawer .pv img{max-width:100%;border-radius:var(--radius-sm);margin:.4em 0}
 #drawer .pv strong{font-weight:700}
 #toggleView{font-size:.76rem;padding:5px 10px;background:var(--surface-2);border-color:var(--border)}
 #toggleView.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+@media(max-width:1050px){.board{flex-direction:column;overflow-x:visible}
+  .lane{min-width:0}
+  .lane.collapsed{flex:0 0 auto;min-width:0;width:100%;padding:6px 10px;justify-content:flex-start}
+  .lane.collapsed h2{margin:0;writing-mode:horizontal-tb;transform:none;flex-direction:row;gap:8px;
+    justify-content:space-between;width:100%}
+  .lane.collapsed h2 .cnt{display:inline}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -129,6 +148,7 @@
   <label style="color:var(--muted);font-size:.8rem">agent</label>
   <select id="agent"></select>
   <button class="btn" onclick="load()">↻</button>
+  <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Przełącz motyw">🌙</button>
   <form id="newForm" onsubmit="createCard(event)">
     <input id="nTitle" placeholder="Tytuł zadania" required>
     <select id="nType"></select>
@@ -154,17 +174,19 @@
 
 <div id="drawer">
   <div class="dh"><h3 id="dTitle"></h3><button class="btn" id="toggleView" onclick="togglePreview()">👁️ Podgląd</button><button class="btn" onclick="closeDrawer()">✕</button></div>
-  <div class="ed">
-    <div class="row"><label>Kolumna</label><select id="eLane" onchange="setLane()"></select></div>
-    <div class="row"><label>Priorytet</label><select id="ePrio" onchange="setTag('prio',this.value)"></select>
-      <label style="min-width:auto">Typ</label><select id="eType" onchange="setTag('type',this.value)"></select></div>
-    <div class="row"><label>Stan</label><div class="states" id="eStates"></div></div>
+  <div class="ed" id="edSection" onclick="toggleEd(event)">
+    <div class="row" onclick="event.stopPropagation()"><label onclick="toggleEd(event)">Kolumna</label><select id="eLane" onchange="setLane()"></select></div>
+    <div class="row" onclick="event.stopPropagation()"><label onclick="toggleEd(event)">Priorytet</label><select id="ePrio" onchange="setTag('prio',this.value)"></select>
+      <label style="min-width:auto" onclick="toggleEd(event)">Typ</label><select id="eType" onchange="setTag('type',this.value)"></select></div>
+    <div class="row" onclick="event.stopPropagation()"><label onclick="toggleEd(event)">Stan</label><div class="states" id="eStates"></div><span class="ed-toggle" onclick="toggleEd(event)">▾</span></div>
   </div>
   <textarea id="dBody" spellcheck="false" placeholder="Treść notatki…"></textarea>
   <div id="dPreview" class="pv"></div>
   <div class="df">
-    <button class="btn primary" onclick="saveNote()">💾 Zapisz treść</button>
+    <button class="btn nav-btn" onclick="navTask(-1)" title="Poprzednie">◀</button>
+    <button class="btn nav-btn" onclick="navTask(1)" title="Następne">▶</button>
     <span class="sp" style="flex:1"></span>
+    <button class="btn primary" onclick="saveNote()">💾 Zapisz treść</button>
     <button class="btn danger" onclick="delCard()">🗑 Usuń</button>
   </div>
 </div>
@@ -253,7 +275,10 @@ function toggleLane(el){el.classList.toggle('collapsed');}
 function openCard(id){CUR=id;populateDrawer(id);fetchBody(id);
   document.getElementById('drawer').classList.add('open');
   document.getElementById('board').classList.add('drawer-open');
-  if(PREVIEW)applyPreviewMode();}
+  if(PREVIEW)applyPreviewMode();
+  const ed=document.getElementById('edSection');
+  if(window.innerWidth<=1050)ed.classList.add('collapsed');
+  else ed.classList.remove('collapsed');}
 function populateDrawer(id){
   const f=findCard(id); if(!f){closeDrawer();return;}
   const c=f.c;
@@ -295,11 +320,52 @@ function togglePreview(){PREVIEW=!PREVIEW;
   if(PREVIEW)applyPreviewMode();else applyEditMode();}
 function renderPreview(){const ta=document.getElementById('dBody'),
     pv=document.getElementById('dPreview');
-  try{pv.innerHTML=marked.parse(ta.value||'',{gfm:true,breaks:true});}
+  try{let txt=ta.value||'';
+    txt=txt.replace(/\b(T-\d{3,})\b/g,'<a href="#" onclick="openCard(\'$1\');return false;" class="task-link">$1</a>');
+    pv.innerHTML=marked.parse(txt,{gfm:true,breaks:true});}
   catch(e){pv.innerHTML='<p style="color:var(--err)">Błąd renderowania markdown.</p>';}}
 
 let tt;function toast(m,err){const t=document.getElementById('toast');t.textContent=m;
   t.className='show'+(err?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='',2200);}
+/* ---- nav prev/next ---- */
+async function saveNoteSilent(){const ta=document.getElementById('dBody');
+  if(!CUR||!ta.value)return;
+  await fetch('/api/note/'+encodeURIComponent(CUR),
+    {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({body:ta.value})});}
+function navTask(dir){
+  const all=[];
+  for(const lane of DATA.lanes)for(const c of lane.cards)all.push(c.id);
+  all.sort((a,b)=>{const ma=a.match(/T-(\d+)/),mb=b.match(/T-(\d+)/);
+    if(ma&&mb)return parseInt(ma[1])-parseInt(mb[1]);return a.localeCompare(b);});
+  const idx=all.indexOf(CUR);if(idx===-1)return;
+  const next=idx+dir;if(next<0||next>=all.length)return;
+  saveNoteSilent().then(()=>openCard(all[next]));}
+/* ---- collapsible editor section ---- */
+function toggleEd(e){if(e)e.stopPropagation();document.getElementById('edSection').classList.toggle('collapsed');}
+/* ---- theme toggle ---- */
+function applyTheme(mode){
+  document.documentElement.classList.toggle('dark',mode==='dark');
+  document.documentElement.classList.toggle('light',mode==='light');
+  document.getElementById('themeBtn').textContent=mode==='dark'?'☀️':'🌙';
+}
+function toggleTheme(){
+  const saved=localStorage.getItem('moab-theme');
+  if(!saved){const dark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+    localStorage.setItem('moab-theme',dark?'light':'dark');
+    applyTheme(dark?'light':'dark');}
+  else{const next=saved==='light'?'dark':'light';
+    localStorage.setItem('moab-theme',next);
+    applyTheme(next);}
+}
+(function initTheme(){
+  const saved=localStorage.getItem('moab-theme');
+  if(saved) applyTheme(saved);
+  else applyTheme(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{
+    if(!localStorage.getItem('moab-theme'))
+      applyTheme(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  });
+})();
 load();
 </script>
 </body>
