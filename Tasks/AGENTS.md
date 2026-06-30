@@ -12,7 +12,7 @@ tekst — agent edytuje pliki, nawet bez Obsidiana.
 | `Backlog/` | Po jednej notatce na zadanie (`T-00X <tytuł>.md`) — pełny kontrakt. |
 | `_templates/_Template.md` | Szablon nowego zadania (folder szablonów Obsidiana). |
 | `_attachments/` | Folder na obrazki i inne załączniki do zadań (domyślny w Obsidian). |
-| `bin/moab` | **CLI, którym sterujesz tablicą**: `new`/`claim`/`review`/`block`/`done`/`move`/`retag`/`rm`/`log`/`status`/`sync`/`assign`/`web`. |
+| `bin/moab` | **CLI, którym sterujesz tablicą**: `new`/`claim`/`review`/`block`/`done`/`move`/`retag`/`rm`/`log`/`status`/`sync`/`assign`/`web`. Przy `new` można od razu trafić do `Ready for AI` przez `--lane ready`. |
 
 **Źródło prawdy = `board.md`.** Kolumna karty = `status`, tagi karty = `agent`/`priority`/
 `type`, `@{data}` = `due`. **Nie edytuj boardu ani frontmatteru ręcznie** — mały model
@@ -66,7 +66,19 @@ Przykład karty: `- [ ] [[T-003 Add FPS counter toggle]] #feature #p2 #cc`
 1. `python3 bin/moab new "<tytuł>" --type <feature|bug|chore|spike|docs> --prio <p1|p2|p3>`
    `[--lane ready] [--raw] [--due RRRR-MM-DD]` → tworzy notatkę (nadaje `T-00X`),
    dodaje kartę na board, synchronizuje frontmatter, drukuje id.
+   - Domyślnie nowa karta trafia do 🧊 **Backlog**.
+   - Jeśli zadanie jest już w pełni opisane (np. bug znaleziony podczas testów),
+     użyj `--lane ready`, aby trafiło od razu do 🟢 **Ready for AI**.
 2. Uzupełnij w notatce sekcje **Goal / Context / Plan / Definition of Done** (jedyne ręczne pisanie).
+
+### Przykład: zakładanie buga znalezionego podczas testowania
+
+```bash
+python3 bin/moab new "Opis błędu" --type bug --prio p1 --lane ready
+```
+
+Następnie otwórz `Backlog/T-00X Opis błędu.md`, wypełnij sekcje Goal/Context/Plan/DoD,
+wykonaj `python3 bin/moab sync` i commit.
 
 ## Pozostałe komendy
 
@@ -98,6 +110,14 @@ pre-commit hook) blokuje commit gdy są do naprawy.
 - **Brak końcowych spacji** — żadna linia nie może kończyć się spacją/tabem.
 - **Maks. 2 puste linie z rzędu** — 3+ puste linie są zwijane do 2.
 - **Frontmatter tylko przez `moab sync`** — nie edytuj pól `status/owner/agent/priority/type/state/due/updated` ręcznie.
+
+## Wskazówki operacyjne
+
+- `moab rm <id>` wymaga **id** (np. `T-014`), a nie tytułu zadania.
+- Po ręcznej edycji notatki (Goal/Context/Plan/DoD) wykonaj `python3 bin/moab sync`,
+  aby frontmatter był spójny z boardem.
+- `moab new` bez `--lane ready` trafia do Backlogu — wtedy trzeba przenieść zadanie
+  ręcznie: `python3 bin/moab move <id> --to ready`.
 
 ## Zasady
 
