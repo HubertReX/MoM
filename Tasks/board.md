@@ -11,11 +11,12 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2
 - [ ] [[T-012 quick_load nie zamyka otwartego LoadPanel w testach]] #bug #p2 #user
 - [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1
 
 ## 🤖 In Progress
+
+- [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2 #opencode
 
 ## 🙋 Needs You
 
