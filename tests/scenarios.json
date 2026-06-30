@@ -75,15 +75,18 @@
             { "label": "Start game with corrupt save", "commands": ["accept"], "wait": 3.0 },
             { "label": "Open LoadPanel", "commands": ["quick_load"] },
             { "label": "Corrupt save silently ignored - panel shown", "commands": ["screenshot"] },
-            { "label": "Close panel", "commands": ["quick_load", "screenshot"] }
+            { "label": "Close panel", "commands": ["quick_load"] },
+            { "label": "Panel closed", "commands": ["screenshot"] }
         ]
     },
     {
         "name": "Empty Slot Load",
         "actions": [
             { "label": "Start New Game (no saves)", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Open LoadPanel (should be empty)", "commands": ["quick_load", "screenshot"] },
-            { "label": "Close panel", "commands": ["quick_load", "screenshot"] }
+            { "label": "Open LoadPanel (should be empty)", "commands": ["quick_load"] },
+            { "label": "Panel open", "commands": ["screenshot"] },
+            { "label": "Close panel", "commands": ["quick_load"] },
+            { "label": "Panel closed", "commands": ["screenshot"] }
         ]
     },
     {
