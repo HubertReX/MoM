@@ -309,7 +309,6 @@ async function load(keepDrawer){
     b.appendChild(el);
   }
   if(keepDrawer&&CUR) populateDrawer(CUR);
-  updateWatcherStatus();
 }
 
 async function loadModels(){
@@ -482,14 +481,9 @@ async function updateWatcherStatus(){
     const r=await fetch('/api/watch/status');
     const s=await r.json();
     const el=document.getElementById('watcherStatus');
-    if(s.agent!==undefined) document.getElementById('wAgent').value=s.agent;
-    if(s.model!==undefined) document.getElementById('wModel').value=s.model;
-    if(s.interval!==undefined) document.getElementById('wInterval').value=s.interval;
-    if(s.limit!==undefined) document.getElementById('wLimit').value=s.limit;
-    onWAgentChange();
     if(s.running){
       el.classList.add('running');
-      el.textContent=`▶️ running ${s.agent}`+(s.model?` / ${s.model}`:'')+` / ${s.interval}s / limit ${s.limit}`;
+      el.textContent=`▶️ running ${s.agent||''}`+(s.model?` / ${s.model}`:'')+` / ${s.interval||10}s / limit ${s.limit||1}`;
       document.getElementById('wStartBtn').disabled=true;
       document.getElementById('wStopBtn').disabled=false;
     }else{
@@ -501,22 +495,60 @@ async function updateWatcherStatus(){
   }catch(e){}
 }
 
+async function initWatcherForm(){
+  let s={};
+  try{
+    const r=await fetch('/api/watch/status');
+    s=await r.json();
+  }catch(e){}
+  const saved=localStorage.getItem('moab-watcher');
+  const local=saved?JSON.parse(saved):{};
+  if(s.agent!==undefined && s.agent!==null) document.getElementById('wAgent').value=s.agent;
+  else if(local.agent) document.getElementById('wAgent').value=local.agent;
+  if(s.model!==undefined && s.model!==null) document.getElementById('wModel').value=s.model;
+  else if(local.model) document.getElementById('wModel').value=local.model;
+  if(s.interval!==undefined && s.interval!==null) document.getElementById('wInterval').value=s.interval;
+  else if(local.interval) document.getElementById('wInterval').value=local.interval;
+  if(s.limit!==undefined && s.limit!==null) document.getElementById('wLimit').value=s.limit;
+  else if(local.limit) document.getElementById('wLimit').value=local.limit;
+  onWAgentChange();
+}
+
 if(watcherPoll) clearInterval(watcherPoll);
 watcherPoll=setInterval(updateWatcherStatus,5000);
+
+async function refreshBoard(){
+  if(CUR || draggingCard) return;
+  try{
+    const r=await fetch('/api/board');
+    const data=await r.json();
+    DATA.lanes=data.lanes;
+    DATA.laneOrder=data.laneOrder;
+    const b=document.getElementById('board'); b.innerHTML='';
+    for(const lane of DATA.lanes){
+      const el=document.createElement('div'); el.className='lane'; el.dataset.lane=lane.key;
+      el.innerHTML=`<h2 onclick="toggleLane(this.parentElement)">${lane.label}<span class="cnt">${lane.cards.length}</span></h2>`;
+      for(const c of lane.cards) el.appendChild(cardEl(c,lane.key));
+      el.ondragover=e=>{e.preventDefault();el.classList.add('drag')};
+      el.ondragleave=()=>el.classList.remove('drag');
+      el.ondrop=e=>{e.preventDefault();el.classList.remove('drag');
+        const id=e.dataTransfer.getData('id'); if(id) act('/api/move',{id,to:lane.key},true);};
+      b.appendChild(el);
+    }
+  }catch(e){}
+}
 
 let boardPoll;
 function startBoardPoll(){
   if(boardPoll) clearInterval(boardPoll);
-  boardPoll=setInterval(()=>{
-    if(!CUR && !draggingCard) load(true);
-  },10000);
+  boardPoll=setInterval(refreshBoard,10000);
 }
 startBoardPoll();
 
 document.addEventListener('visibilitychange',()=>{
   if(!document.hidden){
     updateWatcherStatus();
-    if(!CUR) load(true);
+    refreshBoard();
   }
 });
 
@@ -632,7 +664,7 @@ function toggleTheme(){
   });
 })();
 
-load();
+load(); initWatcherForm(); updateWatcherStatus();
 </script>
 </body>
 </html>
