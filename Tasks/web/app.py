@@ -321,10 +321,14 @@ def api_watch_start(s: WatchStart):
     ]
     if s.model:
         cmd += ["--model", s.model]
+    project_root = str(BASE.parent)
+    env = os.environ.copy()
+    env["PWD"] = project_root
     try:
         WATCHER.proc = subprocess.Popen(
             cmd,
-            cwd=str(BASE.parent),
+            cwd=project_root,
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

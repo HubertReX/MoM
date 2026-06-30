@@ -742,7 +742,10 @@ def cmd_assign(base, opts):
     else:
         cmd = ["opencode", "run", *mflag, prompt]
     if opts.get("run"):
-        return subprocess.call(cmd, cwd=str(base.parent))  # run from project root
+        project_root = str(base.parent)
+        env = os.environ.copy()
+        env["PWD"] = project_root
+        return subprocess.call(cmd, cwd=project_root, env=env)  # run from project root
     # default: print a copy-pasteable command (run from the project root)
     extra = f'-m "{opts["model"]}" ' if opts.get("model") else ""
     if agent == "opencode":
