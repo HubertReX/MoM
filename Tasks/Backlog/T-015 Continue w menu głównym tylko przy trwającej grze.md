@@ -1,7 +1,7 @@
 ---
 id: T-015
 title: Continue w menu głównym tylko przy trwającej grze
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: feature
@@ -57,6 +57,7 @@ state: review
 - 2026-07-01 16:56 opencode: claimed, starting
 - 2026-07-01 17:03 opencode: Zmieniono logikę Continue: widoczne tylko gdy gra trwa, wraca do sceny przez exit_state(). Lint/isort/mypy OK, testy automatyczne PASS.
 - 2026-07-01 17:05 opencode: Zrealizowano T-015. Zmiany: project/ui/panels/main_menu.py - Continue widoczne tylko gdy na stosie stanów jest Scene, akcja wraca do gry przez exit_state(). Load zawsze widoczne. Dodano type hints. Testy: mypy/isort/py_compile PASS, 'Save and Load Basic' PASS, ręczny test wizualny z agent_ctrl PASS (3 screenshoty: menu bez Continue, menu z Continue, powrót do gry).
+- 2026-07-01 18:44 opencode: REVIEW OK (human): mypy clean; _is_game_in_progress (Scene on stack) + _continue_game=exit_state; kod spojny z main_menu. Uwaga bookkeeping: zmiany zostaly commitowane w ramieniu commita T-016 (efd6d94) - DoD 'commit wykonany' odznaczony omylkowo, faktycznie commit jest. Przeniesione do Done.
 
 
 ## 🙋 Needs-You / Questions

@@ -1,7 +1,7 @@
 ---
 id: T-016
 title: Load w menu głównym pokazuje wybór slotu i wczytuje grę
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: feature
@@ -58,6 +58,7 @@ state: review
 - 2026-07-01 17:06 opencode: claimed, starting
 - 2026-07-01 17:34 opencode: Zaimplementowano Load z menu głównego: dodano LoadMenuScreen, który hostuje istniejący LoadPanel bez tworzenia pustej sceny Village; LoadPanel rozszerzony o opcjonalny on_load callback; menu główne znika po wczytaniu; puste sloty niewybieralne (LoadPanel filtruje); opcja Load ukryta gdy brak zapisów. Testy: 'Load from Main Menu' PASS, 'Save and Load Basic' PASS, 'UI Flow - Full Save Load' PASS, mypy/isort/py_compile clean.
 - 2026-07-01 17:36 opencode: Gotowe do review. Zmiany w project/ui/panels/main_menu.py i save_load.py. Przetestowano scenariuszami 'Load from Main Menu', 'Save and Load Basic' i 'UI Flow - Full Save Load'. mypy/isort/py_compile clean.
+- 2026-07-01 18:44 opencode: REVIEW OK (human): mypy clean; feature dziala - 'Load from Main Menu' PASS przy czystych savach (save_0 tworzy sie przez quick_save, load z menu, menu znika). Uwaga MINOR: scenariusz 'Load from Main Menu' ma kruche cleanup_saves:[0] - przy pozostawionych savach w slotach 1+ (np. po 'Multiple Quick Saves') asercja file_exists save_0.mom moze nie przejsc w pelnym suite. Do naprawy gdy T-009 (runner restart) bedzie gotowy - rozszerzyc cleanup_saves na wszystkie sloty. Nie bloka feature. Przeniesione do Done.
 
 
 ## 🙋 Needs-You / Questions
