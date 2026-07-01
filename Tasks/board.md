@@ -15,8 +15,6 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-016 Load w menu głównym pokazuje wybór slotu i wczytuje grę]] #feature #p2 #opencode
-
 ## 🙋 Needs You
 
 - [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1 #opencode #review
@@ -25,6 +23,7 @@ tags:
 - [ ] [[T-013 Po wczytaniu gry nie wyświetlają się ikony w inventory]] #bug #p1 #opencode #review
 - [ ] [[T-014 F5 quick save zapisuje w nowym slocie]] #feature #p2 #opencode #review
 - [ ] [[T-015 Continue w menu głównym tylko przy trwającej grze]] #feature #p2 #opencode #review
+- [ ] [[T-016 Load w menu głównym pokazuje wybór slotu i wczytuje grę]] #feature #p2 #opencode #review
 
 ## 🏁 Done
 

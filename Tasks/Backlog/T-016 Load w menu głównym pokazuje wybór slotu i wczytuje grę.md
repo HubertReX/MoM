@@ -1,8 +1,8 @@
 ---
 id: T-016
 title: Load w menu głównym pokazuje wybór slotu i wczytuje grę
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-01
 updated: 2026-07-01
 tags:
   - task
+state: review
 ---
 
 # T-016 — Load w menu głównym pokazuje wybór slotu i wczytuje grę
@@ -56,6 +57,7 @@ tags:
 - 2026-07-01 16:56 user: moved to ready
 - 2026-07-01 17:06 opencode: claimed, starting
 - 2026-07-01 17:34 opencode: Zaimplementowano Load z menu głównego: dodano LoadMenuScreen, który hostuje istniejący LoadPanel bez tworzenia pustej sceny Village; LoadPanel rozszerzony o opcjonalny on_load callback; menu główne znika po wczytaniu; puste sloty niewybieralne (LoadPanel filtruje); opcja Load ukryta gdy brak zapisów. Testy: 'Load from Main Menu' PASS, 'Save and Load Basic' PASS, 'UI Flow - Full Save Load' PASS, mypy/isort/py_compile clean.
+- 2026-07-01 17:36 opencode: Gotowe do review. Zmiany w project/ui/panels/main_menu.py i save_load.py. Przetestowano scenariuszami 'Load from Main Menu', 'Save and Load Basic' i 'UI Flow - Full Save Load'. mypy/isort/py_compile clean.
 
 
 ## 🙋 Needs-You / Questions
