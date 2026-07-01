@@ -356,14 +356,16 @@ class SaveManager:
 
         item_conf = scene.game.conf.items
 
+        sheet = scene.items_sheet
         for item_s in state.inventory:
             if item_s.name not in item_conf:
                 continue
             model = _copy_item_model(item_conf[item_s.name])
             model.count = item_s.count
+            image = sheet[item_s.name] if item_s.name in sheet else [pygame.Surface((1, 1))]
             sprite = ItemSprite(
                 None, (0, 0), item_s.name, model,
-                image=[pygame.Surface((1, 1))],
+                image=image,
             )
             player.items.append(sprite)
 
