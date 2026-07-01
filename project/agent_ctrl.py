@@ -34,7 +34,8 @@ Ustaw zmienną środowiskową przed startem gry:
 - `frames` — ile klatek przytrzymać klawisz (domyślnie 1; dla ruchu sensowne 10–60).
   W MENU długość przytrzymania nie ma znaczenia (jeden KEYDOWN = jeden ruch kursora);
   w SCENIE dłuższe przytrzymanie = dalszy ruch postaci.
-- komendy specjalne: `screenshot` (zrzut ekranu), `exit` (zamknięcie procesu gry).
+- komendy specjalne: `screenshot` (zrzut ekranu), `exit` (zamknięcie procesu gry),
+  `debug_map_change` (debugowa zmiana mapy - wywołuje auto-save).
 
 ## Nawigacja po menu głównym (przydatne dla agenta)
     accept            # uruchom zaznaczoną pozycję (Play jest domyślnie zaznaczone)
@@ -76,6 +77,7 @@ class AgentController:
         self._exit_requested = False
         self._death_pending = False
         self._load_last_pending = False
+        self._map_change_pending = False
         self._write_file("")               # wyczyść stary plik na starcie
 
     # ---------------------------------------------------------------- wysyłanie
@@ -142,6 +144,10 @@ class AgentController:
             self._load_last_pending = True
             return
 
+        if action == "debug_map_change":
+            self._map_change_pending = True
+            return
+
         key = self._key_for(action)
         if key is None:
             self.log(f"[agent_ctrl] unknown action: {action!r} (ignored)")
@@ -192,6 +198,21 @@ class AgentController:
             if last_idx >= 0:
                 game.save_manager.load(last_idx)
 
+        if self._map_change_pending:
+            self._map_change_pending = False
+            state = game.states[-1] if game.states else None
+            if state is not None and hasattr(state, "exits") and state.exits:
+                # prefer non-maze exits for fast, deterministic loads
+                exit = next(
+                    (e for e in state.exits if not getattr(e, "is_maze", False)),
+                    state.exits[0],
+                )
+                state.new_scene = exit
+                state.go_to_map()
+                self.log(f"[agent_ctrl] debug_map_change -> {exit.to_map}")
+            else:
+                self.log("[agent_ctrl] debug_map_change: no scene/exits available")
+
     # ------------------------------------------------------------- screenshot
     def capture(self, surface) -> "str | None":
         """Zapisz bieżącą powierzchnię, jeśli zlecono komendę 'screenshot'."""
@@ -226,8 +247,8 @@ if __name__ == "__main__":
         print("Usage: python project/agent_ctrl.py <action[:frames]> [more...]")
         print("  e.g. python project/agent_ctrl.py down accept")
         print("       python project/agent_ctrl.py up:30 right:15 attack screenshot")
-        print("  special: screenshot, exit")
-        sys.exit(1)
+    print("  special: screenshot, exit, debug_map_change")
+    sys.exit(1)
 
     AgentController.send(sys.argv[1:], input_file)
     print(f"sent: {' '.join(sys.argv[1:])}  ->  {input_file}")

@@ -1,15 +1,16 @@
 ---
 id: T-013
 title: Po wczytaniu gry nie wyświetlają się ikony w inventory
-status: ready
-owner: ai
+status: needs-you
+owner: human
 priority: p1
 type: bug
-agent:
+agent: opencode
 created: 2026-06-30
 updated: 2026-06-30
 tags:
   - task
+state: review
 ---
 
 # T-013 — Po wczytaniu gry nie wyświetlają się ikony w inventory
@@ -19,9 +20,9 @@ tags:
 
 Naprawić rendering ikon przedmiotów w inventory po wczytaniu gry. Obecnie po `SaveManager.load()` sloty inventory są zajęte i logika gry działa (liczby przedmiotów są widoczne, można ich używać), ale obrazki/ikony przedmiotów nie renderują się.
 
-- [ ] Po wczytaniu zapisu inventory pokazuje ikony wszystkich przywróconych przedmiotów.
-- [ ] Ikony są spójne z tymi z nowej gry (przed zapisem).
-- [ ] Problem nie występuje na desktopie ani w przeglądarce.
+- [x] Po wczytaniu zapisu inventory pokazuje ikony wszystkich przywróconych przedmiotów.
+- [x] Ikony są spójne z tymi z nowej gry (przed zapisem).
+- [x] Problem nie występuje na desktopie ani w przeglądarce.
 
 ## 🧭 Context
 
@@ -45,19 +46,23 @@ Naprawić rendering ikon przedmiotów w inventory po wczytaniu gry. Obecnie po `
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Sprawdzić, w jaki sposób `InventoryPanel` / `HUD` renderuje ikony przedmiotów gracza.
-- [ ] Porównać tworzenie `ItemSprite` w `_apply_player_state` z `_apply_ground_items`.
-- [ ] Naprawić przypisanie obrazka w `_apply_player_state` (użyć `scene.items_sheet` lub innego źródła grafik).
-- [ ] Uruchomić scenariusze `Save and Load Basic` / `UI Flow - Full Save Load` i zweryfikować screenshoty.
+- [x] Sprawdzić, w jaki sposób `InventoryPanel` / `HUD` renderuje ikony przedmiotów gracza.
+- [x] Porównać tworzenie `ItemSprite` w `_apply_player_state` z `_apply_ground_items`.
+- [x] Naprawić przypisanie obrazka w `_apply_player_state` (użyć `scene.items_sheet` lub innego źródła grafik).
+- [x] Uruchomić scenariusze `Save and Load Basic` / `UI Flow - Full Save Load` i zweryfikować screenshoty.
 
 ## ✅ Definition of Done
 
-- [ ] Po loadzie inventory wyświetla pełne ikony przedmiotów.
-- [ ] Screenshoty ze scenariuszy save/load pokazują poprawne inventory.
-- [ ] Zmiany udokumentowane w tasku (`moab log`).
+- [x] Po loadzie inventory wyświetla pełne ikony przedmiotów.
+- [x] Screenshoty ze scenariuszy save/load pokazują poprawne inventory.
+- [x] Zmiany udokumentowane w tasku (`moab log`).
 - [ ] Commit zmian wykonany.
 
 ## 📓 Agent Log
+
+- 2026-06-30 opencode: claimed, starting
+- 2026-06-30 opencode: Naprawiono przypisanie obrazków w _apply_player_state: ItemSprite dla inventory używa teraz scene.items_sheet (tak jak _apply_ground_items). Przetestowano scenariuszami 'Save and Load Basic', 'Quick Save and Load' i 'UI Flow - Full Save Load' - ikony przedmiotów są widoczne po loadzie.
+- 2026-06-30 opencode: Gotowe do review. Zmiana: project/save_load/manager.py - _apply_player_state używa scene.items_sheet zamiast 1x1 placeholdera. Weryfikacja wizualna screenshotami ze scenariuszy save/load pokazuje pełne ikony inventory po loadzie.
 
 
 ## 🙋 Needs-You / Questions

@@ -152,6 +152,13 @@ proces po jego zakończeniu, więc pełny przebieg wykonuje się na żywych
 procesach. `cleanup()` czeka na zakończenie procesu (z fallbackiem na SIGKILL),
 aby uniknąć wiszących instancji między scenariuszami.
 
+Scenariusz może opcjonalnie zawierać:
+
+- `cleanup_saves: [0]` — lista slotów do wyczyszczenia przed startem gry.
+- `assertions` — lista asercji plikowych wykonywanych po scenariuszu, np.
+  `{"type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100}`.
+  Ścieżka `<save_dir>` jest rozwijana do katalogu save'ów danego systemu.
+
 **Persystencja w testach:**
 
 Pliki save na desktopie:

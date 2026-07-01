@@ -64,9 +64,19 @@
     },
     {
         "name": "Auto Save on Map Change",
+        "cleanup_saves": [0],
         "actions": [
             { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Scene loaded - auto-save triggered", "commands": ["screenshot"] }
+            { "label": "Starting position", "commands": ["screenshot"] },
+            { "label": "Change map (triggers auto-save)", "commands": ["debug_map_change"], "wait": 2.0 },
+            { "label": "New map loaded", "commands": ["screenshot"] },
+            { "label": "Open LoadPanel to verify auto-save", "commands": ["quick_load"] },
+            { "label": "Auto-save slot visible", "commands": ["screenshot"] },
+            { "label": "Close LoadPanel", "commands": ["quick_load"] },
+            { "label": "Panel closed", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 }
         ]
     },
     {
