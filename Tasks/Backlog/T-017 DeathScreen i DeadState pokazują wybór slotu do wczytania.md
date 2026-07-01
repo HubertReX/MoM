@@ -1,11 +1,11 @@
 ---
 id: T-017
 title: DeathScreen i DeadState pokazują wybór slotu do wczytania
-status: ready
+status: in-progress
 owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-01
 updated: 2026-07-01
 tags:
@@ -18,9 +18,9 @@ tags:
 ## 🎯 Goal / Outcome
 
 
-- [ ] Ekran śmierci (`DeathScreen`) pokazuje menu wyboru slotu do wczytania zamiast przycisku "Load Last Save".
-- [ ] Stan śmierci (`DeadState`) pokazuje to samo menu wyboru slotu.
-- [ ] Wybranie slotu wczytuje grę i zamyka ekran śmierci.
+- [x] Ekran śmierci (`DeathScreen`) pokazuje menu wyboru slotu do wczytania zamiast przycisku "Load Last Save".
+- [x] Stan śmierci (`DeadState`) pokazuje to samo menu wyboru slotu.
+- [x] Wybranie slotu wczytuje grę i zamyka ekran śmierci.
 
 ## 🧭 Context
 
@@ -38,21 +38,23 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Sprawdzić, który ekran śmierci jest faktycznie używany (`DeathScreen` czy `DeadState`).
-- [ ] Zastąpić przycisk "Load Last Save" w obu ekranach śmierci panelem wyboru slotu (można wykorzystać istniejący `LoadPanel` lub dedykowany widżet).
-- [ ] Upewnić się, że po wczytaniu ekran śmierci znika poprawnie.
-- [ ] Przetestować: śmierć, wybór slotu, wczytanie gry.
+- [x] Sprawdzić, który ekran śmierci jest faktycznie używany (`DeathScreen` czy `DeadState`).
+- [x] Zastąpić przycisk "Load Last Save" w obu ekranach śmierci panelem wyboru slotu (można wykorzystać istniejący `LoadPanel` lub dedykowany widżet).
+- [x] Upewnić się, że po wczytaniu ekran śmierci znika poprawnie.
+- [x] Przetestować: śmierć, wybór slotu, wczytanie gry.
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
-- [ ] commit zmian wykonany
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
+- [x] commit zmian wykonany
+- [x] Testy / lint przechodzą (jeśli dotyczy)
 
 ## 📓 Agent Log
 
 - 2026-07-01 16:56 user: moved to ready
+- 2026-07-01 17:37 opencode: claimed, starting
+- 2026-07-01 17:47 opencode: Implemented slot selection in DeathScreen and DeadState using reusable _LoadSlotSelector. Updated 'Death then Load' scenario to use double accept for load confirmation. Tests pass: Death then Load, Save and Load Basic; mypy/isort clean.
 
 
 ## 🙋 Needs-You / Questions

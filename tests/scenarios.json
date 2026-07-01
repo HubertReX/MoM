@@ -45,7 +45,7 @@
             { "label": "Save before death", "commands": ["quick_save", "screenshot"] },
             { "label": "Trigger death screen", "commands": ["debug_death_screen"], "wait": 1.0 },
             { "label": "Death screen visible", "commands": ["screenshot"] },
-            { "label": "Select Load Last Save", "commands": ["accept"], "wait": 2.0 },
+            { "label": "Select slot and confirm load", "commands": ["accept", "accept"], "wait": 2.0 },
             { "label": "Back in game after load", "commands": ["screenshot"] }
         ]
     },

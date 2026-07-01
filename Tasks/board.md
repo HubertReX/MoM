@@ -11,9 +11,9 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-017 DeathScreen i DeadState pokazują wybór slotu do wczytania]] #feature #p2
-
 ## 🤖 In Progress
+
+- [ ] [[T-017 DeathScreen i DeadState pokazują wybór slotu do wczytania]] #feature #p2 #opencode
 
 ## 🙋 Needs You
 
