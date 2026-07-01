@@ -1,11 +1,11 @@
 ---
 id: T-010
 title: Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu
-status: needs-you
+status: done
 owner: human
 priority: p1
 type: bug
-agent: opencode
+agent:
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -66,6 +66,7 @@ Naprawić błąd w systemie save/load, polegający na tym, że po nadpisaniu zap
 - 2026-06-30 20:52 opencode: claimed, starting
 - 2026-06-30 21:07 opencode: Znaleziono przyczynę: _apply_game_clock resetował scene.minute_f do 0.0, więc kolejna klatka Scene.update nadpisywała scene.minute wartością int(minute_f) zamiast zapisanego czasu. Dodatkowo game.time_elapsed nie był przywracany z zapisu. Naprawiono: minute_f = float(clock.minute) oraz game.time_elapsed = clock.time_elapsed. Przetestowano scenariusze Save Overwrite, Save and Load Basic, Quick Save and Load, Death then Load, UI Flow - Full Save Load oraz testy jednostkowe save_load.
 - 2026-06-30 21:12 opencode: Naprawiono błąd w SaveManager._apply_game_clock: scene.minute_f jest teraz ustawiane na zapisaną minutę (zamiast 0.0), a game.time_elapsed jest przywracane z zapisu. Dzięki temu po overwrite + load gra pokazuje czas i pozycję z momentu nadpisania. Przetestowano scenariusze Save Overwrite, Save and Load Basic, Quick Save and Load, Death then Load, UI Flow - Full Save Load oraz testy jednostkowe save_load (28/28 passed). Zmiany gotowe do commita.
+- 2026-07-01 19:01 user: moved to done
 
 
 ## 🙋 Needs-You / Questions

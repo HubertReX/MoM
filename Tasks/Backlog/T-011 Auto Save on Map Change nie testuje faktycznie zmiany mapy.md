@@ -1,11 +1,11 @@
 ---
 id: T-011
 title: Auto Save on Map Change nie testuje faktycznie zmiany mapy
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: bug
-agent: opencode
+agent:
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -69,6 +69,7 @@ Uzupełnić scenariusz `Auto Save on Map Change` w `tests/scenarios.json` tak, a
 - 2026-06-30 21:37 opencode: claimed, starting
 - 2026-06-30 21:41 opencode: Rozszerzono runnera testów o opcjonalne asercje plikowe oraz cleanup slotów save. Scenariusz Auto Save on Map Change czyści slot 0, zmienia mapę przez debug_map_change i aseryuje obecność <save_dir>/save_0.mom. Test przechodzi pojedynczo.
 - 2026-06-30 21:42 opencode: Scenariusz Auto Save on Map Change rozszerzony o cleanup slotu 0, zmianę mapy (debug_map_change) oraz asercję plikową <save_dir>/save_0.mom. Runner testów obsługuje teraz opcjonalne assertions i cleanup_saves. Test przechodzi pojedynczo. Pozostałe scenariusze (Save and Load Basic, Empty Slot Load) nie uległy regresji.
+- 2026-07-01 19:01 user: moved to done
 
 
 ## 🙋 Needs-You / Questions

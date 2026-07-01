@@ -70,9 +70,9 @@ sposób weryfikacji UI i systemu save/load.
 # Pojedynczy scenariusz - ZAWSZE uruchamiaj tak do weryfikacji:
 MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py "Save and Load Basic"
 
-# Wszystkie scenariusze naraz - UWAGA: runner obecnie zabija grę po pierwszym
-# scenariuszu i nie restartuje jej, więc wynik pełnego przebiegu jest
-# bezwartościowy. Naprawia to task T-009.
+# Wszystkie scenariusze naraz - runner restartuje grę przed każdym scenariuszem
+# i czyści wszystkie sloty save na dysku, więc scenariusze są izolowane.
+MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py
 ```
 
 Zrzuty ekranu lądują w `screenshots/agent/` jako `agent_YYYYMMDD_HHMMSS_NNNN.png`.

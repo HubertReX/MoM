@@ -13,12 +13,8 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1 #opencode
-
 ## 🙋 Needs You
 
-- [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1 #opencode #review
-- [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2 #opencode #review
 - [ ] [[T-012 quick_load nie zamyka otwartego LoadPanel w testach]] #bug #p2 #user #opencode #review
 - [ ] [[T-013 Po wczytaniu gry nie wyświetlają się ikony w inventory]] #bug #p1 #opencode #review
 ## 🏁 Done
@@ -36,6 +32,9 @@ tags:
 - [ ] [[T-015 Continue w menu głównym tylko przy trwającej grze]] #feature #p2 #opencode
 - [ ] [[T-016 Load w menu głównym pokazuje wybór slotu i wczytuje grę]] #feature #p2 #opencode
 - [ ] [[T-017 DeathScreen i DeadState pokazują wybór slotu do wczytania]] #feature #p2 #opencode
+- [ ] [[T-010 Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu]] #bug #p1
+- [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2
+- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1 #opencode
 
 
 ## Archive
