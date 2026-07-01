@@ -1,8 +1,8 @@
 ---
 id: T-014
 title: F5 quick save zapisuje w nowym slocie
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-01
 updated: 2026-07-01
 tags:
   - task
+state: review
 ---
 
 # T-014 — F5 quick save zapisuje w nowym slocie
@@ -47,7 +48,7 @@ tags:
 
 - [x] Kryteria z Goal spełnione
 - [x] zmiany udokumentowa w tasku (`moab log`)
-- [ ] commit zmian wykonany
+- [x] commit zmian wykonany
 - [x] Testy / lint przechodzą (jeśli dotyczy)
 
 ## 📓 Agent Log
@@ -55,6 +56,7 @@ tags:
 - 2026-07-01 08:14 user: moved to ready
 - 2026-07-01 08:14 opencode: claimed, starting
 - 2026-07-01 08:19 opencode: Zaimplementowano quick_save w pierwszym wolnym slocie (fallback na najstarszy zajęty). Dodano powiadomienie z numerem slotu. Zaktualizowano scenariusz testowy Save Overwrite -> Multiple Quick Saves. Przeprowadzono testy: Save and Load Basic, Multiple Quick Saves, UI Flow - Full Save Load, Quick Save and Load, Death then Load, Auto Save on Map Change. mypy przechodzi.
+- 2026-07-01 08:23 opencode: Zaimplementowano T-014. F5 zapisuje w pierwszym wolnym slocie, a gdy wszystkie zajęte - nadpisuje najstarszy. Powiadomienie pokazuje numer slotu (np. 'Game saved in slot 1'). Zaktualizowano scenariusz 'Save Overwrite' na 'Multiple Quick Saves'. Testy: Save and Load Basic, Multiple Quick Saves, UI Flow - Full Save Load, Quick Save and Load, Death then Load, Auto Save on Map Change. mypy clean. Commit: 66e71d6.
 
 
 ## 🙋 Needs-You / Questions

@@ -1,11 +1,11 @@
 ---
 id: T-009
 title: TestRunner nie restartuje gry między scenariuszami w automate_display_test.py
-status: needs-you
+status: done
 owner: human
 priority: p1
 type: bug
-agent: opencode
+agent:
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -55,6 +55,7 @@ Naprawić `tests/automate_display_test.py` tak, aby każdy scenariusz był wykon
 
 - 2026-06-30 opencode: claimed, starting
 - 2026-06-30 opencode: moved `start_game()` into `run_scenario()`; added `cleanup()` wait for process termination and input-file clear; verified single + full run (28 screenshots, no hanging processes)
+- 2026-07-01 09:49 user: moved to done
 
 
 ## 🙋 Needs-You / Questions

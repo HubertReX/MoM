@@ -105,6 +105,24 @@
         ]
     },
     {
+        "name": "Load from Main Menu",
+        "cleanup_saves": [0],
+        "actions": [
+            { "label": "Create save via new game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Quick save", "commands": ["quick_save"] },
+            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
+            { "label": "Menu visible", "commands": ["screenshot"] },
+            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "label": "Load panel visible", "commands": ["screenshot"] },
+            { "label": "Confirm load", "commands": ["accept"] },
+            { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
+            { "label": "Back in game", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 }
+        ]
+    },
+    {
         "name": "UI Flow - Full Save Load",
         "actions": [
             { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import pygame
-
 from enums import NotificationTypeEnum
 from save_load.models import SaveSlotInfo
 from settings import HEIGHT, MAX_SAVE_SLOTS, WIDTH
@@ -55,7 +54,7 @@ class _SlotButton:
 class SaveLoadPanel(Widget):
     _TITLE = ""
 
-    def __init__(self, scene: Scene, hud: HUD) -> None:
+    def __init__(self, scene: Scene, hud: HUD | None = None) -> None:
         super().__init__()
         self.scene = scene
         self.game = scene.game
@@ -92,7 +91,9 @@ class SaveLoadPanel(Widget):
         if self._confirm_action == "save":
             self._do_save(self._confirm_slot_idx)
         elif self._confirm_action == "load":
-            self._do_load(self._confirm_slot_idx)
+            do_load = getattr(self, "_do_load", None)
+            if do_load is not None:
+                do_load(self._confirm_slot_idx)
         self._confirm_action = None
         self._confirm_slot_idx = -1
         self._refresh_slots()
@@ -107,12 +108,6 @@ class SaveLoadPanel(Widget):
             self.scene.add_notification("Game saved", NotificationTypeEnum.success)
         self._confirm_action = None
         self._refresh_slots()
-
-    def _do_load(self, slot_idx: int) -> None:
-        success = self.game.save_manager.load(slot_idx)
-        if success:
-            self.scene.add_notification("Game loaded", NotificationTypeEnum.info)
-        self._confirm_action = None
 
     def open(self) -> None:
         self._confirm_action = None
@@ -222,6 +217,18 @@ class SavePanel(SaveLoadPanel):
 class LoadPanel(SaveLoadPanel):
     _TITLE = "Load Game"
 
+    def __init__(self, scene: Scene, hud: HUD | None = None, on_load: Callable[[int], None] | None = None) -> None:
+        super().__init__(scene, hud)
+        self.on_load = on_load
+
+    def _do_load(self, slot_idx: int) -> None:
+        success = self.game.save_manager.load(slot_idx)
+        if success:
+            self.scene.add_notification("Game loaded", NotificationTypeEnum.info)
+            if self.on_load is not None:
+                self.on_load(slot_idx)
+        self._confirm_action = None
+
     def _refresh_slots(self) -> None:
         infos = self.game.save_manager.list_slots()
         self._slots.clear()
@@ -316,6 +323,7 @@ class DeathScreen(Widget):
 
 
 from state import State as _State
+
 
 class DeadState(_State):
     def __init__(self, game: Game) -> None:

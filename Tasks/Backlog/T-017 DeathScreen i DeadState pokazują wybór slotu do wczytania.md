@@ -1,8 +1,8 @@
 ---
 id: T-017
 title: DeathScreen i DeadState pokazują wybór slotu do wczytania
-status: backlog
-owner: human
+status: ready
+owner: ai
 priority: p2
 type: feature
 agent:
@@ -51,6 +51,8 @@ tags:
 - [ ] Testy / lint przechodzą (jeśli dotyczy)
 
 ## 📓 Agent Log
+
+- 2026-07-01 16:56 user: moved to ready
 
 
 ## 🙋 Needs-You / Questions

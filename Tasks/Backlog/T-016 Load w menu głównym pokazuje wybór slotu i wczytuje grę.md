@@ -1,11 +1,11 @@
 ---
 id: T-016
 title: Load w menu głównym pokazuje wybór slotu i wczytuje grę
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-01
 updated: 2026-07-01
 tags:
@@ -18,9 +18,9 @@ tags:
 ## 🎯 Goal / Outcome
 
 
-- [ ] Przycisk "Load" w menu głównym otwiera menu wyboru slotu zapisu (tak jak obecny LoadPanel).
-- [ ] Wybranie slotu wczytuje stan gry z tego slotu.
-- [ ] Po wczytaniu menu główne znika i gracz od razu gra (bez tworzenia pośredniej pustej sceny w tle).
+- [x] Przycisk "Load" w menu głównym otwiera menu wyboru slotu zapisu (tak jak obecny LoadPanel).
+- [x] Wybranie slotu wczytuje stan gry z tego slotu.
+- [x] Po wczytaniu menu główne znika i gracz od razu gra (bez tworzenia pośredniej pustej sceny w tle).
 
 ## 🧭 Context
 
@@ -39,19 +39,23 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Zmienić `_open_load_panel` w `project/ui/panels/main_menu.py` tak, aby nie tworzyć uprzednio nowej sceny Village.
-- [ ] Upewnić się, że po wczytaniu stanu z save menu główne jest zdejmowane ze stosu (`exit_state()`).
-- [ ] Obsłużyć sytuację, gdy nie ma żadnych zapisów (np. nie pokazywać "Load" w menu lub pokazać panel z informacją o braku zapisów).
-- [ ] Przetestować ręcznie: zapis, wyjście do menu, Load, powrót do gry.
+- [x] Zmienić `_open_load_panel` w `project/ui/panels/main_menu.py` tak, aby nie tworzyć uprzednio nowej sceny Village.
+- [x] Upewnić się, że po wczytaniu stanu z save menu główne jest zdejmowane ze stosu (`exit_state()`).
+- [x] Obsłużyć sytuację, gdy nie ma żadnych zapisów (np. nie pokazywać "Load" w menu lub pokazać panel z informacją o braku zapisów).
+- [x] Przetestować ręcznie: zapis, wyjście do menu, Load, powrót do gry.
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
 - [ ] commit zmian wykonany
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
+- [x] Testy / lint przechodzą (jeśli dotyczy)
 
 ## 📓 Agent Log
+
+- 2026-07-01 16:56 user: moved to ready
+- 2026-07-01 17:06 opencode: claimed, starting
+- 2026-07-01 17:34 opencode: Zaimplementowano Load z menu głównego: dodano LoadMenuScreen, który hostuje istniejący LoadPanel bez tworzenia pustej sceny Village; LoadPanel rozszerzony o opcjonalny on_load callback; menu główne znika po wczytaniu; puste sloty niewybieralne (LoadPanel filtruje); opcja Load ukryta gdy brak zapisów. Testy: 'Load from Main Menu' PASS, 'Save and Load Basic' PASS, 'UI Flow - Full Save Load' PASS, mypy/isort/py_compile clean.
 
 
 ## 🙋 Needs-You / Questions

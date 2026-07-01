@@ -8,8 +8,10 @@ gamepad both work via the same ``INPUTS`` abstraction).
 
 from __future__ import annotations
 
-import pygame
+from typing import TYPE_CHECKING, Callable
 
+import pygame
+from objects import NotificationTypeEnum
 from settings import HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH
 from state import State
 
@@ -17,6 +19,9 @@ from .. import theme
 from ..manager import UIManager
 from ..widget import Widget
 from ..widgets import Button, Label
+
+if TYPE_CHECKING:
+    import game
 
 _PAD = 28
 _GAP = 14
@@ -138,7 +143,7 @@ class MenuPanel(Widget):
 
 
 class MenuScreen(State):
-    def __init__(self, game, name: str, bg_image: pygame.Surface | None = None) -> None:  # noqa: ANN001
+    def __init__(self, game: game.Game, name: str, bg_image: pygame.Surface | None = None) -> None:
         super().__init__(game)
         self.name = name
         self.bg_image = bg_image
@@ -188,35 +193,94 @@ class MenuScreen(State):
 
 
 #######################################################################################################################
+# MARK: LoadMenuScreen helpers
+
+
+class _LoadUIManagerProxy:
+    """Minimal ``scene.ui`` stand-in so :class:`LoadPanel` can close itself in a menu."""
+
+    def __init__(self, manager: UIManager) -> None:
+        self._manager = manager
+
+    def close(self, panel_type: type) -> None:
+        for widget in list(self._manager.widgets):
+            if isinstance(widget, panel_type):
+                assert isinstance(widget, Widget)
+                self._manager.remove(widget)
+                widget.visible = False
+                break
+
+
+class _LoadSceneProxy:
+    """Minimal ``scene`` stand-in for :class:`LoadPanel` when no real Scene exists yet."""
+
+    def __init__(self, game: game.Game, manager: UIManager) -> None:
+        self.game = game
+        self.ui = _LoadUIManagerProxy(manager)
+
+    def add_notification(self, text: str, notification_type: NotificationTypeEnum) -> None:
+        # Notifications are not shown over the main menu; loading will switch to the game.
+        pass
+
+
+class LoadMenuScreen(State):
+    """Menu state that hosts the existing LoadPanel without creating a Scene first."""
+
+    def __init__(self, game: game.Game, bg_image: pygame.Surface | None = None) -> None:
+        super().__init__(game)
+        self.bg_image = bg_image
+        self.manager = UIManager(game.HUD)
+        self._scene_proxy = _LoadSceneProxy(game, self.manager)
+        from ui.panels.save_load import LoadPanel
+
+        self._load_panel = LoadPanel(self._scene_proxy, None, on_load=self._on_load)  # type: ignore[arg-type]
+        self.manager.add(self._load_panel)
+        self._load_panel.open()
+
+    def _on_load(self, slot_idx: int) -> None:
+        # SaveManager.load pushed a new Scene on top; discard any older Scene/menu states below it.
+        if self.game.states:
+            self.game.states[:] = [self.game.states[-1]]
+
+    def _on_cancel(self) -> None:
+        self.exit_state()
+        MainMenuScreen(self.game, "MainMenu", self.bg_image).enter_state()
+
+    def update(self, dt: float, events: list[pygame.event.Event]) -> None:
+        self.manager.handle_events(events)
+        self.manager.update(dt)
+        if self._load_panel not in self.manager.widgets:
+            self._on_cancel()
+
+    def draw(self, screen: pygame.Surface, dt: float) -> None:
+        screen.fill((85, 99, 77))
+        if self.bg_image:
+            screen.blit(self.bg_image, (0, 0))
+        self.manager.draw(screen)
+
+
+#######################################################################################################################
 # MARK: MainMenuScreen
 
 
 class MainMenuScreen(MenuScreen):
+    def _is_game_in_progress(self) -> bool:
+        import scene
+
+        return any(isinstance(state, scene.Scene) for state in self.game.states)
+
     def build_panel(self) -> MenuPanel:
         import scene
         import splash_screen
-        from save_load.backends import FileSaveBackend
         from ui.panels.display_settings import DisplaySettingsScreen
 
         options: list[tuple[str, object]] = []
 
-        sm = self.game.save_manager
-        has_saves = any(
-            s is not None and s.is_occupied
-            for s in sm.list_slots()
-        )
-        if has_saves:
-            def _continue() -> None:
-                slots = sm.list_slots()
-                last_idx = -1
-                for i, s in enumerate(slots):
-                    if s is not None and s.is_occupied:
-                        last_idx = i
-                if last_idx >= 0:
-                    sm.load(last_idx)
-            options.append(("Continue", _continue))
-            options.append(("Load", lambda: self._open_load_panel()))
+        if self._is_game_in_progress():
+            options.append(("Continue", self._continue_game))
 
+        if self._has_saved_games():
+            options.append(("Load", lambda: self._open_load_panel()))
         options.extend([
             ("New Game", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
             ("Settings", lambda: DisplaySettingsScreen(self.game, "DisplaySettings", self.bg_image).enter_state()),
@@ -226,14 +290,16 @@ class MainMenuScreen(MenuScreen):
             options.append(("Quit", self._quit_game))
         return MenuPanel(options, bg_file="nine_patch_06b.png", anchor="midleft", pos=(60, HEIGHT // 2))
 
-    def _open_load_panel(self) -> None:
-        import scene
-        from ui.panels.save_load import LoadPanel
+    def _has_saved_games(self) -> bool:
+        slots = self.game.save_manager.list_slots()
+        return any(slot is not None and slot.is_occupied for slot in slots)
 
-        new_scene = scene.Scene(self.game, "Village", "start")
-        new_scene.enter_state()
-        new_scene.ui.open(LoadPanel)
+    def _continue_game(self) -> None:
         self.exit_state()
+
+    def _open_load_panel(self) -> None:
+        self.exit_state()
+        LoadMenuScreen(self.game, self.bg_image).enter_state()
 
     def _quit_game(self) -> None:
         self.game.is_running = False
