@@ -154,7 +154,9 @@ aby uniknąć wiszących instancji między scenariuszami.
 
 Scenariusz może opcjonalnie zawierać:
 
-- `cleanup_saves: [0]` — lista slotów do wyczyszczenia przed startem gry.
+- `cleanup_saves: [0]` — lista slotów do wyczyszczenia przed startem gry
+  (redundantna, ponieważ runner domyślnie czyści **wszystkie** sloty przed
+  każdym scenariuszem; pozostawiona dla jawnej dokumentacji scenariusza).
 - `assertions` — lista asercji plikowych wykonywanych po scenariuszu, np.
   `{"type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100}`.
   Ścieżka `<save_dir>` jest rozwijana do katalogu save'ów danego systemu.

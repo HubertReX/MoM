@@ -11,9 +11,9 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1
-
 ## 🤖 In Progress
+
+- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1 #opencode
 
 ## 🙋 Needs You
 

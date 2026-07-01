@@ -1,11 +1,11 @@
 ---
 id: T-009
 title: TestRunner nie restartuje gry między scenariuszami w automate_display_test.py
-status: ready
+status: in-progress
 owner: ai
 priority: p1
 type: bug
-agent:
+agent: opencode
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -64,6 +64,9 @@ CO POPRAWIC:
 3. Uwaga: cleanup_saves obecnie per-scenariusz - docelowo rozszerzyc na 'cleanup_all' albo domyslnie czyscic wszystko w runnerze przed startem.
 
 Priorytet: blokuje wiarygodność pełnego suite (wszystkie QA agentów). Scope: tests/automate_display_test.py + tests/scenarios.json. Constraints z taska nadal aktualne.
+- 2026-07-01 18:49 opencode: claimed, starting
+- 2026-07-01 18:50 opencode: reopened: runner restarts game but save files leak between scenarios; will clear all saves before each scenario
+- 2026-07-01 18:55 opencode: fixed filesystem isolation: runner now calls clear_all_saves() before each scenario; verified full suite passes (34 screenshots, 10 scenarios, no hanging processes)
 
 
 ## 🙋 Needs-You / Questions

@@ -49,6 +49,22 @@ def delete_save_slot(slot_idx: int) -> None:
     except OSError as e:
         print(f"[warn] could not delete {path}: {e}")
 
+
+def clear_all_saves() -> None:
+    """Delete every save slot file so each scenario starts from a clean state."""
+    save_dir = get_save_dir()
+    try:
+        save_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(f"[warn] could not create save dir {save_dir}: {e}")
+        return
+    for path in save_dir.glob("save_*.mom"):
+        try:
+            path.unlink()
+            print(f"[cleanup] deleted {path}")
+        except OSError as e:
+            print(f"[warn] could not delete {path}: {e}")
+
 class TestAction:
     def __init__(self, label: str, commands: List[str], wait: float = TEST_CONFIG["TRANSITION_WAIT"]):
         self.label = label
@@ -168,6 +184,10 @@ class TestRunner:
         return scenarios
 
     def run_scenario(self, scenario: TestScenario) -> None:
+        # Reset filesystem state so saves from earlier scenarios cannot leak
+        # into later assertions. Per-scenario cleanup_saves remains supported
+        # for explicit documentation but is now redundant.
+        clear_all_saves()
         for slot_idx in scenario.cleanup_saves:
             delete_save_slot(slot_idx)
         self.start_game()
