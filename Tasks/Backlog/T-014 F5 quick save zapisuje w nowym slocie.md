@@ -1,11 +1,11 @@
 ---
 id: T-014
 title: F5 quick save zapisuje w nowym slocie
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-01
 updated: 2026-07-01
 tags:
@@ -18,9 +18,9 @@ tags:
 ## 🎯 Goal / Outcome
 
 
-- [ ] Klawisz F5 (quick save) zapisuje grę w pierwszym wolnym slocie zamiast zawsze nadpisywać slot 0.
-- [ ] Wielokrotne naciśnięcia F5 tworzą kolejne, niezależne zapisy.
-- [ ] Gracz dostaje powiadomienie z numerem użytego slotu (np. "Game saved in slot 3").
+- [x] Klawisz F5 (quick save) zapisuje grę w pierwszym wolnym slocie zamiast zawsze nadpisywać slot 0.
+- [x] Wielokrotne naciśnięcia F5 tworzą kolejne, niezależne zapisy.
+- [x] Gracz dostaje powiadomienie z numerem użytego slotu (np. "Game saved in slot 3").
 
 ## 🧭 Context
 
@@ -38,19 +38,23 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Zmienić obsługę `quick_save` w `project/game.py`, aby szukała pierwszego wolnego slotu (lub najstarszego, jeśli wszystkie zajęte - do ustalenia).
-- [ ] Zaktualizować tekst powiadomienia "Game saved" o numer slotu.
-- [ ] Przejrzeć i ewentualnie zaktualizować scenariusze testowe save/load.
-- [ ] Przetestować ręcznie: kilka F5, potem F9 + wybranie różnych slotów.
+- [x] Zmienić obsługę `quick_save` w `project/game.py`, aby szukała pierwszego wolnego slotu (lub najstarszego, jeśli wszystkie zajęte - do ustalenia).
+- [x] Zaktualizować tekst powiadomienia "Game saved" o numer slotu.
+- [x] Przejrzeć i ewentualnie zaktualizować scenariusze testowe save/load.
+- [x] Przetestować ręcznie: kilka F5, potem F9 + wybranie różnych slotów.
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
 - [ ] commit zmian wykonany
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
+- [x] Testy / lint przechodzą (jeśli dotyczy)
 
 ## 📓 Agent Log
+
+- 2026-07-01 08:14 user: moved to ready
+- 2026-07-01 08:14 opencode: claimed, starting
+- 2026-07-01 08:19 opencode: Zaimplementowano quick_save w pierwszym wolnym slocie (fallback na najstarszy zajęty). Dodano powiadomienie z numerem slotu. Zaktualizowano scenariusz testowy Save Overwrite -> Multiple Quick Saves. Przeprowadzono testy: Save and Load Basic, Multiple Quick Saves, UI Flow - Full Save Load, Quick Save and Load, Death then Load, Auto Save on Map Change. mypy przechodzi.
 
 
 ## 🙋 Needs-You / Questions

@@ -95,6 +95,37 @@ class SaveManager:
     def delete_slot(self, slot_idx: int) -> bool:
         return self.backend.delete_slot(slot_idx)
 
+    def find_first_free_slot(self) -> int | None:
+        """Return the first unoccupied save slot index, or None if all are full."""
+        slots = self.list_slots()
+        for i in range(MAX_SAVE_SLOTS):
+            info = slots[i]
+            if info is None or not info.is_occupied:
+                return i
+        return None
+
+    def find_oldest_occupied_slot(self) -> int | None:
+        """Return the occupied slot index with the oldest timestamp, or None if all empty."""
+        slots = self.list_slots()
+        oldest_idx: int | None = None
+        oldest_ts: float | None = None
+        for i in range(MAX_SAVE_SLOTS):
+            info = slots[i]
+            if info is None or not info.is_occupied or info.metadata is None:
+                continue
+            ts = info.metadata.timestamp
+            if oldest_ts is None or ts < oldest_ts:
+                oldest_ts = ts
+                oldest_idx = i
+        return oldest_idx
+
+    def pick_quick_save_slot(self) -> int | None:
+        """Pick a slot for quick save: first free, falling back to oldest occupied."""
+        free = self.find_first_free_slot()
+        if free is not None:
+            return free
+        return self.find_oldest_occupied_slot()
+
     # ------------------------------------------------------------------
     # Build save game from live state
     # ------------------------------------------------------------------

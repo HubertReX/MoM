@@ -933,10 +933,17 @@ class Game:
 
         # handle save/load hotkeys (works even when paused)
         if INPUTS.get("quick_save"):
-            self.save_manager.save(0)
+            slot_idx = self.save_manager.pick_quick_save_slot()
             state = self.states[-1]
-            if hasattr(state, "add_notification"):
-                state.add_notification("Game saved")  # type: ignore[attr-defined]
+            if slot_idx is None:
+                if hasattr(state, "add_notification"):
+                    state.add_notification("No free save slots", NotificationTypeEnum.error)  # type: ignore[attr-defined]
+            elif self.save_manager.save(slot_idx):
+                if hasattr(state, "add_notification"):
+                    state.add_notification(f"Game saved in slot {slot_idx + 1}", NotificationTypeEnum.success)  # type: ignore[attr-defined]
+            else:
+                if hasattr(state, "add_notification"):
+                    state.add_notification("Failed to save game", NotificationTypeEnum.error)  # type: ignore[attr-defined]
             INPUTS["quick_save"] = False
         if INPUTS.get("quick_load"):
             state = self.states[-1]

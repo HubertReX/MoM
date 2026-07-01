@@ -50,16 +50,21 @@
         ]
     },
     {
-        "name": "Save Overwrite",
+        "name": "Multiple Quick Saves",
+        "cleanup_saves": [0, 1, 2],
         "actions": [
             { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
             { "label": "First quick save", "commands": ["quick_save", "screenshot"] },
             { "label": "Change game state", "commands": ["right:30"] },
-            { "label": "Overwrite save", "commands": ["quick_save", "screenshot"] },
+            { "label": "Second quick save", "commands": ["quick_save", "screenshot"] },
             { "label": "Open LoadPanel", "commands": ["quick_load"] },
-            { "label": "Load latest save", "commands": ["accept"] },
+            { "label": "Select second slot", "commands": ["down", "accept"] },
             { "label": "Confirm", "commands": ["accept"], "wait": 2.0 },
-            { "label": "After overwrite load", "commands": ["screenshot"] }
+            { "label": "After loading second save", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
+            { "type": "file_exists", "path": "<save_dir>/save_1.mom", "min_size": 100 }
         ]
     },
     {
@@ -103,7 +108,7 @@
         "name": "UI Flow - Full Save Load",
         "actions": [
             { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick Save to slot 0", "commands": ["quick_save"] },
+            { "label": "Quick Save", "commands": ["quick_save"] },
             { "label": "Game saved notification", "commands": ["screenshot"] },
             { "label": "Open LoadPanel", "commands": ["quick_load", "screenshot"] },
             { "label": "Select save and confirm", "commands": ["accept"] },
