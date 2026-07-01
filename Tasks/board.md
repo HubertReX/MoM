@@ -11,6 +11,8 @@ tags:
 
 ## 🟢 Ready for AI
 
+- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1
+
 ## 🤖 In Progress
 
 ## 🙋 Needs You
@@ -30,7 +32,6 @@ tags:
 - [ ] [[T-006 Save-Load manager engine — SaveManager class, desktop file backend, web localStorage backend, slot CRUD]] #feature #p1 #opencode #review
 - [ ] [[T-007 Save-Load UI panels and game integration — SavePanel, LoadPanel, hotkeys F5-F9, auto-save, death screen load]] #feature #p2 #opencode #review
 - [ ] [[T-008 Save-load test scenarios — agent tests for save, load, corrupt data, edge cases]] #feature #p2 #opencode
-- [ ] [[T-009 TestRunner nie restartuje gry między scenariuszami w automate_display_test.py]] #bug #p1
 - [ ] [[T-014 F5 quick save zapisuje w nowym slocie]] #feature #p2 #opencode
 - [ ] [[T-015 Continue w menu głównym tylko przy trwającej grze]] #feature #p2 #opencode
 - [ ] [[T-016 Load w menu głównym pokazuje wybór slotu i wczytuje grę]] #feature #p2 #opencode

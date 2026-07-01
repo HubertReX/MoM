@@ -1,8 +1,8 @@
 ---
 id: T-009
 title: TestRunner nie restartuje gry między scenariuszami w automate_display_test.py
-status: done
-owner: human
+status: ready
+owner: ai
 priority: p1
 type: bug
 agent:
@@ -56,6 +56,14 @@ Naprawić `tests/automate_display_test.py` tak, aby każdy scenariusz był wykon
 - 2026-06-30 opencode: claimed, starting
 - 2026-06-30 opencode: moved `start_game()` into `run_scenario()`; added `cleanup()` wait for process termination and input-file clear; verified single + full run (28 screenshots, no hanging processes)
 - 2026-07-01 09:49 user: moved to done
+- 2026-07-01 18:49 opencode: REOPEN (human wprowadzatko OK): runner faktycznie RESTARTUJE grę między scenariuszami (106 screenshotów, 6x 'Game stopped'). ALE poprawny scope był za wąski - zrestartowanie gry != reset filesystem. Savvy z wcześniejszych scenariuszy zostają na dysku i psują późniejsze asercje. DOWÓD: pełny suite failuje na 'Load from Main Menu' z 'file_exists save_0.mom' gdy w slocie 1+ leżą save'y z 'Multiple Quick Saves' (single-run czysty przechodzi). DoD punkt 2 (count screenshotów) spełniony - ale DoD punkt 'brak wpływu kolejnych scenariuszy na poprzednie' NIEspełniony.
+
+CO POPRAWIC:
+1. Runner: przed każdym scenariuszem domyślnie czyść wszystkie sloty (lub scenariusze, które wymagaja istniejących save'ów, niech wyłącznie tworzą je w setupie - a nie polegają na leftover).
+2. ALBO scenariusze: każdy, który zapisuje na dysk, musi czyscić wszystkie sloty w cleanup_saves (nie tylko [0]).
+3. Uwaga: cleanup_saves obecnie per-scenariusz - docelowo rozszerzyc na 'cleanup_all' albo domyslnie czyscic wszystko w runnerze przed startem.
+
+Priorytet: blokuje wiarygodność pełnego suite (wszystkie QA agentów). Scope: tests/automate_display_test.py + tests/scenarios.json. Constraints z taska nadal aktualne.
 
 
 ## 🙋 Needs-You / Questions
