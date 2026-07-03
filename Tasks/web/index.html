@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>MOAB</title>
 <style>
   :root{--bg:#fbfbfa;--surface:#fff;--surface-2:#f4f4f2;--text:#1c1c1a;--muted:#6b6b66;
@@ -91,6 +88,11 @@
   #drawer textarea{flex:1;margin:0;border:none;font-family:var(--mono);font-size:.82rem;
     padding:14px 16px;resize:none;background:var(--bg);color:var(--text)}
   #drawer .df{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+  #dMeta{display:flex;flex-wrap:wrap;gap:1px 10px;align-items:center;flex-basis:100%;font-size:.70rem;color:var(--muted)}
+  #dMeta .mi{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;line-height:1.7}
+  #dMeta .mi .mk{font-weight:700;text-transform:uppercase;letter-spacing:.02em;opacity:.5}
+  #dMeta .mi .mv{color:var(--text);font-weight:500}
+  #dMeta .mi .chip{font-size:.65rem;padding:0 6px;line-height:1.5}
 
   #newForm{display:none;gap:6px;align-items:center;flex-wrap:wrap;width:100%;margin-top:8px}
   #newForm.show{display:flex}
@@ -236,7 +238,7 @@
   </div>
 </div>
 
-<details id="help" open>
+<details id="help">
   <summary>ℹ️ Jak używać tablicy</summary>
   <div class="help-body">
     <span><b>➕ Dodaj kartę</b> — przycisk „+ Nowa” (w Obsidianie: „+ Add a card”, Shift+Enter zatwierdza)</span>
@@ -257,6 +259,7 @@
     <div class="row" onclick="event.stopPropagation()"><label onclick="toggleEd(event)">Priorytet</label><select id="ePrio" onchange="setTag('prio',this.value)"></select>
       <label style="min-width:auto" onclick="toggleEd(event)">Typ</label><select id="eType" onchange="setTag('type',this.value)"></select></div>
     <div class="row" onclick="event.stopPropagation()"><label onclick="toggleEd(event)">Stan</label><div class="states" id="eStates"></div><span class="ed-toggle" onclick="toggleEd(event)">▾</span></div>
+    <div class="row" onclick="event.stopPropagation()" id="metaRow"><span id="dMeta"></span></div>
   </div>
   <textarea id="dBody" spellcheck="false" placeholder="Treść notatki…"></textarea>
   <div id="dPreview" class="pv"></div>
@@ -288,18 +291,33 @@ let MODEL_SEL=-1;                  // keyboard selection index for header model
 let WMODEL_SEL=-1;                 // keyboard selection index for watcher model
 
 async function load(keepDrawer){
+  // save collapsed state before reload
+  const collapsed={};
+  document.querySelectorAll('.lane.collapsed').forEach(el=>{collapsed[el.dataset.lane]=true});
   const r=await fetch('/api/board'); DATA=await r.json();
   document.getElementById('projectName').textContent = '📋 ' + (DATA.projectName || 'MOAB');
   fillSel('agent',DATA.agents,'opencode'); fillSel('wAgent',DATA.agents,'opencode');
   fillSel('nType',DATA.types); fillSel('nPrio',DATA.prios,'p2');
   fillLanes('nLane'); fillLanes('eLane');
   fillSel('ePrio',DATA.prios); fillSel('eType',DATA.types);
+  // restore saved watcher/agent/model values after selects are populated
+  const saved=localStorage.getItem('moab-watcher');
+  if(saved){
+    try{
+      const w=JSON.parse(saved);
+      if(w.agent) document.getElementById('wAgent').value=w.agent;
+      if(w.model) document.getElementById('wModel').value=w.model;
+      if(w.interval) document.getElementById('wInterval').value=w.interval;
+      if(w.limit) document.getElementById('wLimit').value=w.limit;
+    }catch(e){}
+  }
   const savedModel=localStorage.getItem('moab-model');
   if(savedModel && !document.getElementById('model').value) document.getElementById('model').value=savedModel;
   onAgentChange(); onWAgentChange();
   const b=document.getElementById('board'); b.innerHTML='';
   for(const lane of DATA.lanes){
     const el=document.createElement('div'); el.className='lane'; el.dataset.lane=lane.key;
+    if(collapsed[lane.key]) el.classList.add('collapsed');
     el.innerHTML=`<h2 onclick="toggleLane(this.parentElement)">${lane.label}<span class="cnt">${lane.cards.length}</span></h2>`;
     for(const c of lane.cards) el.appendChild(cardEl(c,lane.key));
     el.ondragover=e=>{e.preventDefault();el.classList.add('drag')};
@@ -309,6 +327,7 @@ async function load(keepDrawer){
     b.appendChild(el);
   }
   if(keepDrawer&&CUR) populateDrawer(CUR);
+  updateWatcherStatus();
 }
 
 async function loadModels(){
@@ -343,8 +362,8 @@ function cardEl(c,lane){
   if(lane==='needs-you') foot.appendChild(qbtn('done',()=>act('/api/done',{id:c.id},true)));
   el.appendChild(foot);
   el.querySelector('.t').onclick=()=>openCard(c.id);
-  el.ondragstart=e=>{draggingCard=true;e.dataTransfer.setData('id',c.id);el.classList.add('dragging')};
-  el.ondragend=()=>{draggingCard=false;el.classList.remove('dragging');};
+  el.ondragstart=e=>{e.dataTransfer.setData('id',c.id);el.classList.add('dragging')};
+  el.ondragend=()=>el.classList.remove('dragging');
   return el;
 }
 function qbtn(label,fn){const b=document.createElement('button');b.textContent=label;
@@ -483,7 +502,7 @@ async function updateWatcherStatus(){
     const el=document.getElementById('watcherStatus');
     if(s.running){
       el.classList.add('running');
-      el.textContent=`▶️ running ${s.agent||''}`+(s.model?` / ${s.model}`:'')+` / ${s.interval||10}s / limit ${s.limit||1}`;
+      el.textContent=`▶️ running ${s.agent}`+(s.model?` / ${s.model}`:'')+` / ${s.interval}s / limit ${s.limit}`;
       document.getElementById('wStartBtn').disabled=true;
       document.getElementById('wStopBtn').disabled=false;
     }else{
@@ -495,64 +514,8 @@ async function updateWatcherStatus(){
   }catch(e){}
 }
 
-async function initWatcherForm(){
-  let s={};
-  try{
-    const r=await fetch('/api/watch/status');
-    s=await r.json();
-  }catch(e){}
-  const saved=localStorage.getItem('moab-watcher');
-  const local=saved?JSON.parse(saved):{};
-  if(s.agent!==undefined && s.agent!==null) document.getElementById('wAgent').value=s.agent;
-  else if(local.agent) document.getElementById('wAgent').value=local.agent;
-  if(s.model!==undefined && s.model!==null) document.getElementById('wModel').value=s.model;
-  else if(local.model) document.getElementById('wModel').value=local.model;
-  if(s.interval!==undefined && s.interval!==null) document.getElementById('wInterval').value=s.interval;
-  else if(local.interval) document.getElementById('wInterval').value=local.interval;
-  if(s.limit!==undefined && s.limit!==null) document.getElementById('wLimit').value=s.limit;
-  else if(local.limit) document.getElementById('wLimit').value=local.limit;
-  onWAgentChange();
-}
-
 if(watcherPoll) clearInterval(watcherPoll);
 watcherPoll=setInterval(updateWatcherStatus,5000);
-
-async function refreshBoard(){
-  if(CUR || draggingCard) return;
-  try{
-    const r=await fetch('/api/board');
-    const data=await r.json();
-    DATA.lanes=data.lanes;
-    DATA.laneOrder=data.laneOrder;
-    const b=document.getElementById('board'); b.innerHTML='';
-    for(const lane of DATA.lanes){
-      const el=document.createElement('div'); el.className='lane'; el.dataset.lane=lane.key;
-      el.innerHTML=`<h2 onclick="toggleLane(this.parentElement)">${lane.label}<span class="cnt">${lane.cards.length}</span></h2>`;
-      for(const c of lane.cards) el.appendChild(cardEl(c,lane.key));
-      el.ondragover=e=>{e.preventDefault();el.classList.add('drag')};
-      el.ondragleave=()=>el.classList.remove('drag');
-      el.ondrop=e=>{e.preventDefault();el.classList.remove('drag');
-        const id=e.dataTransfer.getData('id'); if(id) act('/api/move',{id,to:lane.key},true);};
-      b.appendChild(el);
-    }
-  }catch(e){}
-}
-
-let boardPoll;
-function startBoardPoll(){
-  if(boardPoll) clearInterval(boardPoll);
-  boardPoll=setInterval(refreshBoard,10000);
-}
-startBoardPoll();
-
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden){
-    updateWatcherStatus();
-    refreshBoard();
-  }
-});
-
-let draggingCard=false;
 
 async function act(url,body,keep){
   try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -588,8 +551,35 @@ function populateDrawer(id){
   document.getElementById('eStates').innerHTML=DATA.states.map(s=>
     `<label><input type="checkbox" ${have.has(s)?'checked':''} onchange="toggleState('${s}',this.checked)">#${s}</label>`).join('');
 }
+function parseFrontmatter(s){
+  if(!s)return{};
+  const lines=s.split('\n');let key=null,o={};
+  for(const l of lines){
+    if(l==='---')continue;
+    const m=l.match(/^(\w+):\s*(.*)$/);
+    if(m){key=m[1];o[key]=m[2].trim();continue;}
+    const li=l.match(/^\s*-\s+(.*)$/);
+    if(li&&key){if(!Array.isArray(o[key]))o[key]=o[key]?[o[key]]:[];o[key].push(li[1].trim());}
+  }
+  return o;
+}
+function populateMeta(fm){
+  const el=document.getElementById('dMeta');const row=document.getElementById('metaRow');
+  if(!fm||!Object.keys(fm).length){row.style.display='none';return;}
+  const parts=[];
+  const show=[[fm.owner,'owner'],[fm.agent,'agent'],[fm.created,'created'],[fm.updated,'updated']];
+  for(const[v,k]of show)if(v&&v!=='')parts.push(`<span class="mi"><span class="mk">${k}</span><span class="mv">${v}</span></span>`);
+  if(Array.isArray(fm.tags)){
+    const t=fm.tags.filter(t=>t.toLowerCase()!=='task');
+    if(t.length)parts.push(`<span class="mi"><span class="mk">tags</span>${t.map(x=>chip(x)).join(' ')}</span>`);
+  }
+  el.innerHTML=parts.join('');row.style.display='';}
 async function fetchBody(id){const r=await fetch('/api/note/'+encodeURIComponent(id));
-  document.getElementById('dBody').value=r.ok?(await r.json()).body:'(brak notatki)';}
+  const j=r.ok?await r.json():{body:'(brak notatki)',frontmatter:''};
+  if(CUR!==id)return;
+  document.getElementById('dBody').value=j.body;
+  populateMeta(parseFrontmatter(j.frontmatter||''));
+  if(PREVIEW)renderPreview();}
 function setLane(){act('/api/move',{id:CUR,to:document.getElementById('eLane').value},true);}
 function setTag(kind,val){const b={id:CUR};b[kind]=val;act('/api/retag',b,true);}
 function toggleState(s,on){act('/api/retag',on?{id:CUR,add:s}:{id:CUR,remove:s},true);}
@@ -615,9 +605,24 @@ function applyEditMode(){
   btn.textContent='👁️ Podgląd';btn.classList.remove('active');}
 function togglePreview(){PREVIEW=!PREVIEW;
   if(PREVIEW)applyPreviewMode();else applyEditMode();}
+function preprocessObsidianLinks(txt){
+  const imgExt='png|jpg|jpeg|gif|svg|webp|bmp|ico';
+  const reExclaim=new RegExp(`!\\[\\[([^\\]]+\\.(${imgExt}))(?:\\|([^\\]]*))?\\]\\]`,'gi');
+  txt=txt.replace(reExclaim,(m,file,ext,alt)=>{
+    const url='/attachments/'+encodeURIComponent(file);
+    return `<img src="${url}" alt="${alt||file}">`;
+  });
+  const rePlain=new RegExp(`\\[\\[([^\\]]+\\.(${imgExt}))(?:\\|([^\\]]*))?\\]\\]`,'gi');
+  txt=txt.replace(rePlain,(m,file,ext,alt)=>{
+    const url='/attachments/'+encodeURIComponent(file);
+    return `<a href="${url}" target="_blank" class="attachment-link">${alt||file}</a>`;
+  });
+  return txt;
+}
 function renderPreview(){const ta=document.getElementById('dBody'),
     pv=document.getElementById('dPreview');
   try{let txt=ta.value||'';
+    txt=preprocessObsidianLinks(txt);
     txt=txt.replace(/\b(T-\d{3,})\b/g,'<a href="#" onclick="openCard(\'$1\');return false;" class="task-link">$1</a>');
     pv.innerHTML=marked.parse(txt,{gfm:true,breaks:true});}
   catch(e){pv.innerHTML='<p style="color:var(--err)">Błąd renderowania markdown.</p>';}}
@@ -664,7 +669,7 @@ function toggleTheme(){
   });
 })();
 
-load(); initWatcherForm(); updateWatcherStatus();
+load();
 </script>
 </body>
 </html>

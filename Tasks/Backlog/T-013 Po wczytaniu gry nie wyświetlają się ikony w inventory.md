@@ -1,11 +1,11 @@
 ---
 id: T-013
 title: Po wczytaniu gry nie wyświetlają się ikony w inventory
-status: needs-you
+status: done
 owner: human
 priority: p1
 type: bug
-agent: opencode
+agent:
 created: 2026-06-30
 updated: 2026-06-30
 tags:
@@ -68,6 +68,7 @@ Naprawić rendering ikon przedmiotów w inventory po wczytaniu gry. Obecnie po `
 - 2026-07-01 07:43 opencode: claimed, starting
 - 2026-07-01 07:45 opencode: Naprawiono: _apply_player_state w project/save_load/manager.py używa teraz scene.items_sheet dla ItemSprite w inventory gracza (zamiast 1x1 placeholdera). Przetestowano scenariuszami Save and Load Basic, Quick Save and Load oraz UI Flow - Full Save Load - screenshoty pokazują pełne ikony w hotbarze po loadzie.
 - 2026-07-01 07:46 opencode: Naprawiono rendering ikon w inventory po wczytaniu gry. Zmiana: project/save_load/manager.py _apply_player_state używa scene.items_sheet zamiast placeholdera 1x1. Przetestowano scenariuszami Save and Load Basic, Quick Save and Load, UI Flow - Full Save Load - wszystkie screenshoty pokazują pełne ikony w hotbarze po loadzie. Commit: 8d09831.
+- 2026-07-01 19:14 user: moved to done
 
 ## 🙋 Needs-You / Questions
 

@@ -10,7 +10,7 @@ Run:  ./run.sh [PORT]  (sets up a uv venv, serves on 0.0.0.0 on [PORT] default =
 """
 
 from __future__ import annotations
-import importlib.util, importlib.machinery, subprocess, sys, re, os, signal, threading, json, tempfile
+import importlib.util, importlib.machinery, subprocess, sys, re, os, signal, threading
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -28,6 +28,9 @@ moab = importlib.util.module_from_spec(_spec)
 _loader.exec_module(moab)
 
 app = FastAPI(title="MOAB web")
+
+# serve attachments (images, etc.) referenced in task notes
+app.mount("/attachments", StaticFiles(directory=str(BASE / "_attachments")), name="attachments")
 
 # ---- model discovery (lazy, cached) ----
 _MODELS_LOCK = threading.Lock()
@@ -88,121 +91,34 @@ def get_models() -> list[str]:
 
 
 # ---- watcher state ----
-WATCHER_STATE_FILE = Path(tempfile.gettempdir()) / "moab-watcher.json"
-
-
 class WatcherState:
     def __init__(self):
-        self._pid: int | None = None
         self.proc: subprocess.Popen | None = None
         self.agent: str | None = None
         self.model: str | None = None
         self.interval: int = 10
         self.limit: int = 1
 
-    def _save(self):
-        data = {
-            "pid": self._pid if self.is_running() else None,
-            "agent": self.agent,
-            "model": self.model,
-            "interval": self.interval,
-            "limit": self.limit,
-        }
-        try:
-            WATCHER_STATE_FILE.write_text(json.dumps(data), encoding="utf-8")
-        except Exception:
-            pass
-
-    def _load(self):
-        if not WATCHER_STATE_FILE.exists():
-            return
-        try:
-            data = json.loads(WATCHER_STATE_FILE.read_text(encoding="utf-8"))
-            pid = data.get("pid")
-            if pid and self._pid_alive(pid):
-                self._pid = pid
-                self.agent = data.get("agent")
-                self.model = data.get("model")
-                self.interval = data.get("interval", 10)
-                self.limit = data.get("limit", 1)
-            else:
-                self._clear()
-        except Exception:
-            self._clear()
-
-    def _pid_alive(self, pid: int) -> bool:
-        try:
-            os.kill(pid, 0)
-            return True
-        except (ProcessLookupError, PermissionError, OSError):
-            return False
-
-    def _clear(self):
-        self._pid = None
-        self.proc = None
-        self.agent = None
-        self.model = None
-        self.interval = 10
-        self.limit = 1
-        try:
-            WATCHER_STATE_FILE.unlink(missing_ok=True)
-        except Exception:
-            pass
-
     def is_running(self) -> bool:
-        if self.proc is not None:
-            return self.proc.poll() is None
-        if self._pid is not None:
-            if self._pid_alive(self._pid):
-                return True
-            self._pid = None
-            self._save()
-        return False
-
-    def mark_running(self, proc: subprocess.Popen, agent: str, model: str | None, interval: int, limit: int):
-        self.proc = proc
-        self._pid = proc.pid
-        self.agent = agent
-        self.model = model
-        self.interval = interval
-        self.limit = limit
-        self._save()
+        return self.proc is not None and self.proc.poll() is None
 
     def stop(self) -> None:
-        # stop tracked process
-        if self.proc is not None and self.proc.poll() is None:
-            try:
+        if self.proc is None:
+            return
+        try:
+            if self.proc.poll() is None:
                 os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
                 try:
                     self.proc.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        elif self._pid is not None and self._pid_alive(self._pid):
-            try:
-                os.killpg(os.getpgid(self._pid), signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-        # also kill any leftover moab watch process started before server restart
-        self._kill_leftover()
-        self._clear()
-
-    def _kill_leftover(self):
-        try:
-            pattern = f"{sys.executable}.*{MOAB}.*watch"
-            result = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True)
-            for line in result.stdout.strip().splitlines():
-                try:
-                    os.kill(int(line), signal.SIGTERM)
-                except Exception:
-                    pass
-        except Exception:
+        except ProcessLookupError:
             pass
+        finally:
+            self.proc = None
 
 
 WATCHER = WatcherState()
-WATCHER._load()
 
 
 def get_project_name():
@@ -303,7 +219,7 @@ class Move(BaseModel):
 
 @app.post("/api/move")
 def api_move(m: Move):
-    return {"output": run_moab(["move", m.id, "--to", m.to, "--agent", "user", "--note", f"moved to {m.to}"])}
+    return {"output": run_moab(["move", m.id, "--to", m.to])}
 
 
 class Claim(BaseModel):
@@ -408,21 +324,20 @@ def api_watch_start(s: WatchStart):
     ]
     if s.model:
         cmd += ["--model", s.model]
-    project_root = str(BASE.parent)
-    env = os.environ.copy()
-    env["PWD"] = project_root
     try:
-        proc = subprocess.Popen(
+        WATCHER.proc = subprocess.Popen(
             cmd,
-            cwd=project_root,
-            env=env,
+            cwd=str(BASE.parent),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             start_new_session=True,
         )
-        WATCHER.mark_running(proc, s.agent, s.model, s.interval, s.limit)
-        return {"ok": True, "pid": proc.pid}
+        WATCHER.agent = s.agent
+        WATCHER.model = s.model
+        WATCHER.interval = s.interval
+        WATCHER.limit = s.limit
+        return {"ok": True, "pid": WATCHER.proc.pid}
     except Exception as e:
         raise HTTPException(500, f"failed to start watcher: {e}")
 
