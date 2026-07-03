@@ -270,6 +270,15 @@ def api_done(d: Done):
     return {"output": run_moab(["done", d.id])}
 
 
+class Archive(BaseModel):
+    id: str
+
+
+@app.post("/api/archive")
+def api_archive(a: Archive):
+    return {"output": run_moab(["archive", a.id])}
+
+
 class Retag(BaseModel):
     id: str
     prio: str | None = None

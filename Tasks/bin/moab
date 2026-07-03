@@ -18,6 +18,8 @@ Commands:
               Generic move + sync.
   moab done   <id>
               Move card to Done, sync.
+  moab archive   <id>
+              Move card to Archive (hidden from web UI), sync.
   moab retag  <id> [--prio pX] [--type T] [--add tag] [--remove tag]
               Edit a card's tags + sync.
   moab rm     <id>
@@ -51,7 +53,7 @@ Allowed values:
   --type          feature | bug | chore | spike | docs
   --prio          p1 | p2 | p3
   --agent         cc | opencode | pi | hermes
-  --lane / --to   backlog | ready | in-progress | needs-you | done
+  --lane / --to   backlog | ready | in-progress | needs-you | done | archive
 """
 
 from __future__ import annotations
@@ -71,6 +73,8 @@ def lane_of(heading: str):
         return ("backlog", "human")
     if "done" in h:
         return ("done", "human")
+    if "archive" in h:
+        return ("archive", None)
     return (None, None)
 
 
@@ -81,6 +85,7 @@ LANE_HEADING = {
     "in-progress": "In Progress",
     "needs-you": "Needs You",
     "done": "Done",
+    "archive": "Archive",
 }
 PRIO = {"p1", "p2", "p3"}
 TYPE = {"feature", "bug", "chore", "spike", "docs"}
@@ -646,6 +651,10 @@ def cmd_done(base, opts):
     return _move(base, opts.get("_pos"), "done", strip=STATE)
 
 
+def cmd_archive(base, opts):
+    return _move(base, opts.get("_pos"), "archive", strip=STATE)
+
+
 def _set_project_name(dst: Path, name: str):
     dash = dst / "Dashboard.md"
     if dash.exists():
@@ -787,6 +796,10 @@ def cmd_move(base, opts):
         if not add:
             add = ["review"]
         strip = list(STATE)
+    elif to == "archive":
+        # archive: preserve agent tags for history, just strip state
+        strip = list(STATE)
+        return _move(base, opts.get("_pos"), to, add=add, strip=strip, agent=agent, log=note, tag_agent=False)
     else:
         # ready, done, backlog: clean up state and agent tags, but do not tag the moving user
         strip = list(STATE) + list(AGENT)
@@ -881,6 +894,7 @@ def main(argv):
         "review": lambda: cmd_review(base, opts),
         "block": lambda: cmd_block(base, opts),
         "done": lambda: cmd_done(base, opts),
+        "archive": lambda: cmd_archive(base, opts),
         "log": lambda: cmd_log(base, opts),
         "move": lambda: cmd_move(base, opts),
         "retag": lambda: cmd_retag(base, opts),

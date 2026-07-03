@@ -360,6 +360,7 @@ function cardEl(c,lane){
   if(lane==='in-progress'){foot.appendChild(qbtn('review',()=>handoff('/api/review',c.id)));
     foot.appendChild(qbtn('block',()=>handoff('/api/block',c.id)));}
   if(lane==='needs-you') foot.appendChild(qbtn('done',()=>act('/api/done',{id:c.id},true)));
+  if(lane==='done') foot.appendChild(qbtn('archive',()=>act('/api/archive',{id:c.id},true)));
   el.appendChild(foot);
   el.querySelector('.t').onclick=()=>openCard(c.id);
   el.ondragstart=e=>{e.dataTransfer.setData('id',c.id);el.classList.add('dragging')};
