@@ -539,7 +539,9 @@ function openCard(id){CUR=id;populateDrawer(id);fetchBody(id);
   if(PREVIEW)applyPreviewMode();
   const ed=document.getElementById('edSection');
   if(window.innerWidth<=1050)ed.classList.add('collapsed');
-  else ed.classList.remove('collapsed');}
+  else ed.classList.remove('collapsed');
+  const u=new URL(window.location);u.searchParams.set('task',id);
+  history.replaceState({},'',u);}
 function populateDrawer(id){
   const f=findCard(id); if(!f){closeDrawer();return;}
   const c=f.c;
@@ -591,7 +593,9 @@ async function saveNote(){const ta=document.getElementById('dBody');
 function delCard(){if(!confirm('Usunąć '+CUR+' (karta + notatka)?'))return;
   act('/api/rm',{id:CUR}).then(()=>closeDrawer());}
 function closeDrawer(){CUR=null;document.getElementById('drawer').classList.remove('open');
-  document.getElementById('board').classList.remove('drawer-open');}
+  document.getElementById('board').classList.remove('drawer-open');
+  const u=new URL(window.location);u.searchParams.delete('task');
+  history.replaceState({},'',u);}
 addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 
 function applyPreviewMode(){
@@ -670,7 +674,9 @@ function toggleTheme(){
   });
 })();
 
-load();
+const _params=new URLSearchParams(window.location.search);
+const _taskId=_params.get('task');
+load().then(()=>{if(_taskId)openCard(_taskId);});
 </script>
 </body>
 </html>
