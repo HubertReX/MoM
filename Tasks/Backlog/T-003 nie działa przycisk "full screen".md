@@ -1,7 +1,7 @@
 ---
 id: T-003
 title: nie działa przycisk "full screen"
-status: done
+status: archive
 owner: human
 priority: p2
 type: bug

@@ -1,7 +1,7 @@
 ---
 id: T-010
 title: Save Overwrite wczytuje stary stan zamiast nadpisanego zapisu
-status: done
+status: archive
 owner: human
 priority: p1
 type: bug

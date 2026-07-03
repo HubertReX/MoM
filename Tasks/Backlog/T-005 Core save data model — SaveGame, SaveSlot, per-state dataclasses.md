@@ -1,7 +1,7 @@
 ---
 id: T-005
 title: Core save data model — SaveGame, SaveSlot, per-state dataclasses
-status: done
+status: archive
 owner: human
 priority: p1
 type: feature

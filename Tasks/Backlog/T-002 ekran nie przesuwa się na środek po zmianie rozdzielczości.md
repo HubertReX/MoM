@@ -1,7 +1,7 @@
 ---
 id: T-002
 title: ekran nie przesuwa się na środek po zmianie rozdzielczości
-status: done
+status: archive
 owner: human
 priority: p2
 type: bug

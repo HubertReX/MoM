@@ -1,7 +1,7 @@
 ---
 id: T-004
 title: zmiana ustawień wyświetlania bez potwierdzania
-status: done
+status: archive
 owner: human
 priority: p1
 type: feature

@@ -1,7 +1,7 @@
 ---
 id: T-012
 title: quick_load nie zamyka otwartego LoadPanel w testach
-status: done
+status: archive
 owner: human
 priority: p2
 type: bug

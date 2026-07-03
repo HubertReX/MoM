@@ -1,7 +1,7 @@
 ---
 id: T-011
 title: Auto Save on Map Change nie testuje faktycznie zmiany mapy
-status: done
+status: archive
 owner: human
 priority: p2
 type: bug

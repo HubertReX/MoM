@@ -1,7 +1,7 @@
 ---
 id: T-009
 title: TestRunner nie restartuje gry między scenariuszami w automate_display_test.py
-status: done
+status: archive
 owner: human
 priority: p1
 type: bug

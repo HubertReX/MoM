@@ -1,7 +1,7 @@
 ---
 id: T-006
 title: Save-Load manager engine — SaveManager class, desktop file backend, web localStorage backend, slot CRUD
-status: done
+status: archive
 owner: human
 priority: p1
 type: feature

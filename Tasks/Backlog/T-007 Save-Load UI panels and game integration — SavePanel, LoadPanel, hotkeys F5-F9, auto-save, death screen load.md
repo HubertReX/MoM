@@ -1,7 +1,7 @@
 ---
 id: T-007
 title: Save-Load UI panels and game integration — SavePanel, LoadPanel, hotkeys F5-F9, auto-save, death screen load
-status: done
+status: archive
 owner: human
 priority: p2
 type: feature

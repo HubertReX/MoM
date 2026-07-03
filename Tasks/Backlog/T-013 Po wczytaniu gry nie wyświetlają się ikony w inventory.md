@@ -1,7 +1,7 @@
 ---
 id: T-013
 title: Po wczytaniu gry nie wyświetlają się ikony w inventory
-status: done
+status: archive
 owner: human
 priority: p1
 type: bug
