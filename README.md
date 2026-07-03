@@ -5,6 +5,8 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/hubertrex/pygame-ce-web-boilerplate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+> **Forked from** [`HubertReX/pygame-ce-web-boilerplate`](https://github.com/HubertReX/pygame-ce-web-boilerplate) — branch [`NinjaAdventure`](https://github.com/HubertReX/pygame-ce-web-boilerplate/tree/NinjaAdventure).
+
 This is a template for a game using [Pygame-CE](https://pyga.me/) that can run both on **desktop** and int the **Web** browser
 
 ![screenshot](./screenshots/screenshot_20240919_223615.png)
