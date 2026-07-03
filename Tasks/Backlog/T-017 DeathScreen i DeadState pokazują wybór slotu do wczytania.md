@@ -61,7 +61,7 @@ Confirmation:
 
 - 2026-07-01 16:56 user: moved to ready
 - 2026-07-01 17:37 opencode: claimed, starting
-- 2026-07-01 17:47 opencode: Implemented slot selection in DeathScreen and DeadState using reusable _LoadSlotSelector. Updated 'Death then Load' scenario to use double accept for load confirmation. Tests pass: Death then Load, Save and Load Basic; mypy/isort clean. Evidence: [[agent_20260701_193144_0003.png]]
+- 2026-07-01 17:47 opencode: Implemented slot selection in DeathScreen and DeadState using reusable _LoadSlotSelector. Updated 'Death then Load' scenario to use double accept for load confirmation. Tests pass: Death then Load, Save and Load Basic; mypy/isort clean as it can be seen on [[agent_20260701_193144_0004.png|confirmation screen]]
 - 2026-07-01 17:48 opencode: DeathScreen and DeadState now display an occupied-slot selector instead of 'Load Last Save'. Keyboard/mouse navigation with confirmation dialog, restart button retained. Tests: Death then Load, Save and Load Basic pass; mypy/isort clean. Commit c4ef51f.
 - 2026-07-01 18:44 opencode: REVIEW OK (human): mypy clean; 'Death then Load' PASS clean; _LoadSlotSelector reused w DeathScreen i DeadState, confirmation dialog + restart retained. Przeniesione do Done.
 
