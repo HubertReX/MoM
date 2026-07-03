@@ -86,6 +86,8 @@
     },
     {
         "name": "Corrupt Save Handling",
+        "platform": ["desktop", "web"],
+        "setup_saves": [ { "slot": 0, "type": "corrupt" } ],
         "actions": [
             { "label": "Start game with corrupt save", "commands": ["accept"], "wait": 3.0 },
             { "label": "Open LoadPanel", "commands": ["quick_load"] },

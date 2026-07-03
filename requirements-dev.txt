@@ -34,3 +34,6 @@ aiohttp
 asyncio_socks_server
 token_utils
 click==8.4.2
+# Testowanie trybu web (automate_display_test.py --web). Po instalacji uruchom jednorazowo:
+#   rtk .venv/bin/playwright install chromium
+playwright>=1.50

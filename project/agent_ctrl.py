@@ -2,29 +2,49 @@
 """
 agent_ctrl — zewnętrzne sterowanie grą + screenshoty dla agentów AI (tryb debug).
 
-Mechanizm plikowy: gra (gdy włączona flaga) raz na klatkę czyta komendy z pliku
-`agent_input.txt` i **wysyła prawdziwe zdarzenia klawiszy** (`pygame.event.post`) tak,
-jakby ktoś naciskał klawiaturę. Na żądanie zapisuje zrzut ekranu. Dzięki temu agent może
-uruchomić grę, "naciskać" klawisze i oglądać stan gry na screenshotach.
+Mechanizm: gra (gdy włączona flaga) raz na klatkę czyta komendy i **wysyła prawdziwe
+zdarzenia klawiszy** (`pygame.event.post`) tak, jakby ktoś naciskał klawiaturę.
+Na żądanie zapisuje zrzut ekranu. Dzięki temu agent może uruchomić grę, "naciskać"
+klawisze i oglądać stan gry na screenshotach.
 
 Ponieważ wysyłane są realne zdarzenia klawiszy, działa to **zarówno w menu**
 (pygame_menu czyta zdarzenia) **jak i w scenie** (gra buduje z nich słownik INPUTS).
 
-Tryb wyłącznie **desktop** (operacje na plikach) i **opt-in** — domyślnie nieaktywny,
-więc normalna rozgrywka pozostaje nietknięta. Nie nadaje się do szybkich scen walki
-(rozdzielczość czasowa = pojedyncze klatki/komendy), ale wystarcza do debugowania.
+Dwa backendy transportu komend:
+
+- **Desktop**: komendy czytane z pliku `agent_input.txt` na dysku (echo > file).
+- **Web** (pygbag/WASM): komendy czytane z `window.localStorage` pod kluczem
+  `MoM.agent_input` — runner Playwright wrzuca je przez `page.evaluate(...)`.
+  W trybie web zrzuty ekranu są delegowane do runnera (`page.screenshot()`),
+  bo `pygame.image.save` w pygbag bufuje do bucket-fs niewidocznego dla hosta.
+
+Tryb **opt-in** — domyślnie nieaktywny, więc normalna rozgrywka pozostaje nietknięta.
+Nie nadaje się do szybkich scen walki (rozdzielczość czasowa = pojedyncze klatki/komendy),
+ale wystarcza do debugowania.
 
 ## Włączenie
+### Desktop
 Ustaw zmienną środowiskową przed startem gry:
 
     MOM_AGENT_CONTROL=1 ./run.sh
 
+### Web (pygbag)
+Runner (`tests/automate_display_test.py --web`) ustawia flagę w `window.localStorage`
+przed przeładowaniem strony:
+
+    window.localStorage.setItem("MoM.agent_control", "1")
+
 ## Wysyłanie komend (z innego terminala / procesu, gdy gra działa)
 
+### Desktop (plik)
     python project/agent_ctrl.py down accept          # w menu: zejdź i zatwierdź
     python project/agent_ctrl.py up:30 right:15 attack screenshot
     # lub bezpośrednio do pliku:
     echo "up:30 right:15 attack screenshot" > agent_input.txt
+
+### Web (localStorage, robione przez runner Playwright)
+    page.evaluate("localStorage.setItem('MoM.agent_input', 'down accept')")
+    # screenshoty: page.screenshot(path=...) — runner, NIE gra
 
 ## Format komendy
 `<action>[:frames]` rozdzielone spacją lub nową linią:
@@ -57,18 +77,28 @@ DEFAULT_HOLD_FRAMES = 12
 # akcje "ciągłe" (przytrzymywane), reszta traktowana jako jednorazowy impuls
 CONTINUOUS_ACTIONS = {"left", "right", "up", "down", "run", "fly"}
 
+# klucz localStorage dla komend agenta w trybie web
+WEB_INPUT_KEY = "MoM.agent_input"
+
 
 class AgentController:
-    """Czyta komendy z pliku i wysyła odpowiadające im zdarzenia klawiszy do gry."""
+    """Czyta komendy (z pliku lub localStorage) i wysyła zdarzenia klawiszy do gry.
 
-    def __init__(self, input_file, screenshot_dir, log=print):
+    ``web_mode=True`` => komendy czytane z ``window.localStorage[WEB_INPUT_KEY]``;
+    w tym trybie ``capture()`` jest no-opem, bo zrzuty ekranu wykonuje runner
+    Playwright przez ``page.screenshot()`` (zapis po stronie hosta).
+    """
+
+    def __init__(self, input_file, screenshot_dir, log=print, web_mode: bool = False):
         self.input_file = str(input_file)
         self.screenshot_dir = str(screenshot_dir)
         self.log = log
-        try:
-            os.makedirs(self.screenshot_dir, exist_ok=True)
-        except OSError as e:
-            self.log(f"[agent_ctrl] cannot create screenshot dir: {e}")
+        self.web_mode = web_mode
+        if not web_mode:
+            try:
+                os.makedirs(self.screenshot_dir, exist_ok=True)
+            except OSError as e:
+                self.log(f"[agent_ctrl] cannot create screenshot dir: {e}")
 
         self._held: dict[str, int] = {}    # akcja -> pozostała liczba klatek przytrzymania
         self._keys: dict[str, int] = {}    # akcja -> kod klawisza pygame (do KEYUP)
@@ -78,7 +108,8 @@ class AgentController:
         self._death_pending = False
         self._load_last_pending = False
         self._map_change_pending = False
-        self._write_file("")               # wyczyść stary plik na starcie
+        if not web_mode:
+            self._write_file("")           # wyczyść stary plik na starcie
 
     # ---------------------------------------------------------------- wysyłanie
     @staticmethod
@@ -103,7 +134,13 @@ class AgentController:
 
     # ----------------------------------------------------------------- odczyt
     def poll(self) -> None:
-        """Odczytaj plik wejściowy, wyczyść go i zakolejkuj komendy."""
+        """Odczytaj komendy (plik na desktop, localStorage na web) i zakolejkuj je."""
+        if self.web_mode:
+            self._poll_localstorage()
+        else:
+            self._poll_file()
+
+    def _poll_file(self) -> None:
         try:
             with open(self.input_file, "r") as f:
                 raw = f.read().strip()
@@ -112,6 +149,24 @@ class AgentController:
         if not raw:
             return
         self._write_file("")  # konsumuj zawartość
+        for token in raw.split():
+            self._enqueue(token)
+
+    def _poll_localstorage(self) -> None:
+        try:
+            from platform import window  # type: ignore[attr-defined]
+        except ImportError:
+            return
+        try:
+            raw = window.localStorage.getItem(WEB_INPUT_KEY)
+        except Exception:
+            return
+        if not raw:
+            return
+        try:
+            window.localStorage.removeItem(WEB_INPUT_KEY)  # konsumuj
+        except Exception:
+            pass
         for token in raw.split():
             self._enqueue(token)
 
@@ -215,11 +270,20 @@ class AgentController:
 
     # ------------------------------------------------------------- screenshot
     def capture(self, surface) -> "str | None":
-        """Zapisz bieżącą powierzchnię, jeśli zlecono komendę 'screenshot'."""
+        """Zapisz bieżącą powierzchnię, jeśli zlecono komendę 'screenshot'.
+
+        W ``web_mode`` to jest no-op: zrzuty ekranu robi runner Playwright po
+        stronie hosta (``page.screenshot()``), ponieważ pygbag bucket-fs nie jest
+        widoczny dla procesu testowego. Flaga ``_screenshot_pending`` jest jednak
+        konsumowana, żeby runner mógł wysłać komendę 'screenshot' bez skutków.
+        """
         if not self._screenshot_pending or surface is None:
             return None
         self._screenshot_pending = False
         self._counter += 1
+        if self.web_mode:
+            self.log(f"[agent_ctrl] screenshot #{self._counter} (delegated to web runner)")
+            return None
         time_str = time.strftime("%Y%m%d_%H%M%S")
         path = os.path.join(self.screenshot_dir, f"agent_{time_str}_{self._counter:04d}.png")
         try:

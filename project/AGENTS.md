@@ -57,12 +57,12 @@ boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[lin
 
 ## 🔑 KRYTYCZNE: różnice desktop ↔ web
 
-`IS_WEB` zdefiniowane w `settings.py:84`. Najważniejsze rozgałęzienia:
+`IS_WEB` zdefiniowane w `settings.py:130-131`. Najważniejsze rozgałęzienia:
 
 | Obszar                  | Desktop                         | Web                     | Lokalizacja                                                            |
 | ----------------------- | ------------------------------- | ----------------------- | ---------------------------------------------------------------------- |
 | Config                  | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters.py:48`, `objects.py:19`, `ui/panels/hud.py` |
-| Shadery                 | dostępne (gdy `USE_SHADERS`)    | wyłączone (wydajność)   | `USE_SHADERS=False` `settings.py:92`                                   |
+| Shadery                 | dostępne (gdy `USE_SHADERS`)    | wyłączone (wydajność)   | `USE_SHADERS=False` `settings.py:141`                                  |
 | Filtr dzień-noc (alpha) | tak                             | **nie**                 | `scene.py:1515` `if USE_ALPHA_FILTER and not IS_WEB:`                  |
 | Logowanie               | `print`                         | `platform.console.log`  | `game.py`                                                              |
 | Asyncio                 | stdlib                          | `pygbag.aio`            | `main.py`                                                              |
@@ -73,17 +73,18 @@ boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[lin
 **Reguła:** nowy kod zależny od platformy chowaj za `if IS_WEB:`; testuj `./run.sh` **oraz**
 `./serve_web.sh`.
 
-### `USE_WEB_SIMULATOR` (`settings.py:83`)
+### `USE_WEB_SIMULATOR` (`settings.py:130`)
 
 Flaga desktopowa do **testowania ścieżek web bez przeglądarki**. Ustawiona na `True` wymusza
-`IS_WEB=True` (`settings.py:84`) i przełącza asyncio na `pygbag.aio` (`main.py:35`, `game.py:73`),
+`IS_WEB=True` (`settings.py:131`) i przełącza asyncio na `pygbag.aio` (`main.py:35`, `game.py:73`),
 ale loguje przez `print` (a nie `platform.console.log`, dostępne tylko w realnej przeglądarce —
 `game.py:105` `if IS_WEB and not USE_WEB_SIMULATOR`). Domyślnie `False`.
 
 ## Testowanie gry przez agentów AI (`agent_ctrl.py`)
 
 Mechanizm pozwalający agentowi **uruchomić grę, „naciskać" klawisze i robić zrzuty ekranu**
-(debug). Desktop-only, **opt-in**, domyślnie wyłączony — nie wpływa na normalną rozgrywkę.
+(debug). Działa na desktopie (plikowy kanał komend) i w web (localStorage + Playwright).
+**Opt-in**, domyślnie wyłączony — nie wpływa na normalną rozgrywkę.
 Wysyła **prawdziwe zdarzenia klawiszy** (`pygame.event.post`), więc działa i w menu,
 i w scenie. Nie nadaje się do szybkich scen walki (rozdzielczość = klatki).
 
@@ -175,7 +176,44 @@ Helper do manipulowania zapisami: `tests/test_save_load_corrupt.py`:
 .venv/bin/python3 tests/test_save_load_corrupt.py corrupt 0 # zepsuj slot 0
 .venv/bin/python3 tests/test_save_load_corrupt.py create 0  # utwórz minimalny save
 .venv/bin/python3 tests/test_save_load_corrupt.py delete 0  # usuń slot 0
+
+### Web (pygbag + Playwright)
+
+Runner wspiera również testowanie przez przeglądarkę — uruchamia pygbag, otwiera
+stronę w headless Chromium i steruje grą przez `window.localStorage`.
+
+**Wymagania:** `requirements-dev.txt` zawiera `playwright>=1.50`. Po instalacji:
+
+```bash
+# instalacja pakietu + binary chromium (jednorazowo)
+rtk uv pip install playwright
+rtk .venv/bin/playwright install chromium
 ```
+
+**Uruchamianie:**
+
+```bash
+# Pojedynczy scenariusz:
+.venv/bin/python3 tests/automate_display_test.py --web "Save and Load Basic"
+
+# Wszystkie web-kompatybilne scenariusze:
+.venv/bin/python3 tests/automate_display_test.py --web
+```
+
+**Różnice w stosunku do desktop runnera:**
+
+1. Komendy są wstrzykiwane przez `page.evaluate("localStorage.setItem('MoM.agent_input', ...)")`
+   zamiast `echo > agent_input.txt`.
+2. Zrzuty ekranu wykonuje Playwright (`page.screenshot()`) zamiast `pygame.image.save`.
+3. Asercje `file_exists` są tłumaczone na sprawdzanie kluczy `MoM.save_<N>` w localStorage.
+4. Setup saves (corrupt/minimal) wstrzykiwane przed reloadem strony przez localStorage.
+
+**Ograniczenia:**
+
+- pygbag potrzebuje ~40-60s na boot (assets packaging + WASM compile) przed rozpoczęciem
+  scenariusza — testy są wolniejsze niż desktop.
+- Port 8001 jest używany domyślnie (konfigurowalny przez `--url`).
+- Nie wspiera `USE_WEB_SIMULATOR` — web runner uruchamia prawdziwy pygbag.
 
 ## Persystencja stanu (uwaga: brak zapisu na dysk)
 

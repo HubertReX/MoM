@@ -205,13 +205,28 @@ class Game:
         start_state = MainMenuScreen(self, "MainMenu", bg_image)
         self.states.append(start_state)
 
-        # external control & screenshots for AI agents (debug, desktop-only, opt-in)
+        # external control & screenshots for AI agents (debug, opt-in)
+        # - desktop: czytane z pliku (MOM_AGENT_CONTROL=1 env)
+        # - web: czytane z window.localStorage['MoM.agent_control'] (runner Playwright)
         self.agent_ctrl: AgentController | None = None
         if USE_AGENT_CONTROL and not IS_WEB:
             from agent_ctrl import AgentController
 
-            self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log)
-            self.log("[agent_ctrl] external control ENABLED")
+            self.agent_ctrl = AgentController(
+                AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=False)
+            self.log("[agent_ctrl] external control ENABLED (desktop)")
+        elif IS_WEB and not USE_WEB_SIMULATOR:
+            web_agent_enabled = False
+            try:
+                from platform import window  # type: ignore[attr-defined]
+                web_agent_enabled = window.localStorage.getItem("MoM.agent_control") == "1"
+            except Exception:
+                pass
+            if web_agent_enabled:
+                from agent_ctrl import AgentController
+                self.agent_ctrl = AgentController(
+                    AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=True)
+                self.log("[agent_ctrl] external control ENABLED (web)")
 
         # import scene
         # start_state = scene.Scene(self, "Village", "start")

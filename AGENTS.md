@@ -61,33 +61,16 @@ Pełny protokół i opis: `Tasks/AGENTS.md`.
 
 ## Testy wizualne i save/load - szybki start dla agenta
 
-Testowanie przez agenta AI opiera się na trzech plikach: `tests/scenarios.json`
-(lista scenariuszy), `tests/automate_display_test.py` (runner) oraz
-`project/agent_ctrl.py` (interpreter komend w grze). Jest to obecnie główny
-sposób weryfikacji UI i systemu save/load.
+Testowanie przez agenta AI: `tests/scenarios.json` + `tests/automate_display_test.py` (runner)
++ `project/agent_ctrl.py` (interpreter komend w grze). Główny sposób weryfikacji UI i save/load.
 
 ```bash
 # Pojedynczy scenariusz - ZAWSZE uruchamiaj tak do weryfikacji:
 MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py "Save and Load Basic"
-
-# Wszystkie scenariusze naraz - runner restartuje grę przed każdym scenariuszem
-# i czyści wszystkie sloty save na dysku, więc scenariusze są izolowane.
-MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py
 ```
 
-Zrzuty ekranu lądują w `screenshots/agent/` jako `agent_YYYYMMDD_HHMMSS_NNNN.png`.
-Przeglądaj je narzędziem do odczytu obrazków, żeby zweryfikować stan gry.
-
-Pliki save na desktopie:
-
-- macOS: `~/Library/Application Support/mom/saves/save_N.mom`
-- Linux: `~/.local/share/mom/saves/save_N.mom`
-
-Do manipulowania zapisami w testach służy helper `tests/test_save_load_corrupt.py`
-(`clear`, `corrupt <N>`, `create <N>`, `delete <N>`).
-
-Szczegóły komend agenta, struktura scenariuszy i znane ograniczenia runnera:
-[`project/AGENTS.md`](./project/AGENTS.md) - sekcja „Testowanie gry przez agentów AI".
+**Pełny protokół, komendy agenta, struktura scenariuszy, izolacja, ścieżki save'ów,
+znane ograniczenia:** [`project/AGENTS.md`](./project/AGENTS.md) - sekcja „Testowanie gry przez agentów AI".
 
 ## Praca z agentami AI
 
