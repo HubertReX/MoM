@@ -6,13 +6,13 @@ tekst — agent edytuje pliki, nawet bez Obsidiana.
 
 ## Co gdzie jest
 
-| Plik / katalog | Rola |
-|---|---|
-| `board.md` | Tablica Kanban: 5 kolumn roboczych + `Archive`. **Cienkie** karty = wikilinki + flagi. |
-| `Backlog/` | Po jednej notatce na zadanie (`T-00X <tytuł>.md`) — pełny kontrakt. |
-| `_templates/_Template.md` | Szablon nowego zadania (folder szablonów Obsidiana). |
-| `_attachments/` | Folder na obrazki i inne załączniki do zadań (domyślny w Obsidian). |
-| `bin/moab` | **CLI, którym sterujesz tablicą**: `new`/`claim`/`review`/`block`/`done`/`move`/`retag`/`rm`/`log`/`status`/`sync`/`assign`/`web`. Przy `new` można od razu trafić do `Ready for AI` przez `--lane ready`. |
+| Plik / katalog            | Rola                                                                                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `board.md`                | Tablica Kanban: 5 kolumn roboczych + `Archive`. **Cienkie** karty = wikilinki + flagi.                                                                                                                     |
+| `Backlog/`                | Po jednej notatce na zadanie (`T-00X <tytuł>.md`) — pełny kontrakt.                                                                                                                                        |
+| `_templates/_Template.md` | Szablon nowego zadania (folder szablonów Obsidiana).                                                                                                                                                       |
+| `_attachments/`           | Folder na obrazki i inne załączniki do zadań (domyślny w Obsidian).                                                                                                                                        |
+| `bin/moab`                | **CLI, którym sterujesz tablicą**: `new`/`claim`/`review`/`block`/`done`/`move`/`retag`/`rm`/`log`/`status`/`sync`/`assign`/`web`. Przy `new` można od razu trafić do `Ready for AI` przez `--lane ready`. |
 
 **Źródło prawdy = `board.md`.** Kolumna karty = `status`, tagi karty = `agent`/`priority`/
 `type`, `@{data}` = `due`. **Nie edytuj boardu ani frontmatteru ręcznie** — mały model
@@ -22,13 +22,14 @@ pisanie to **treść notatki** (Goal/Context/Plan w świeżo utworzonym pliku).
 
 ## Kolumny i własność piłki
 
-| Lane | Kto trzyma piłkę | AI może brać? | Znaczenie |
-|---|---|---|---|
-| 🧊 **Backlog** | człowiek | ❌ nie | Pomysły, jeszcze nie do wzięcia. Niedoprecyzowane mają `#raw`. **Nigdy** stąd nie startuj. |
-| 🟢 **Ready for AI** | AI (kolejka) | ✅ **auto** | W pełni opisane, kryteria akceptacji jasne. Bierz **górną** kartę. |
-| 🤖 **In Progress** | AI | w toku | Pracujesz; oznaczone `#<agent>`. **WIP = 1 karta na agenta**. |
-| 🙋 **Needs You** | człowiek | ❌ nie | Oddałeś piłkę. `#blocked` = utknąłeś (potrzebna decyzja); `#review` = skończone, czeka na akcept. |
-| 🏁 **Done** | — | — | Zatwierdzone i ukończone. |
+| Lane                | Kto trzyma piłkę | AI może brać? | Znaczenie                                                                                         |
+| ------------------- | ---------------- | ------------- | ------------------------------------------------------------------------------------------------- |
+| 🧊 **Backlog**      | człowiek         | ❌ nie        | Pomysły, jeszcze nie do wzięcia. Niedoprecyzowane mają `#raw`. **Nigdy** stąd nie startuj.        |
+| 🟢 **Ready for AI** | AI (kolejka)     | ✅ **auto**   | W pełni opisane, kryteria akceptacji jasne. Bierz **górną** kartę.                                |
+| 🤖 **In Progress**  | AI               | w toku        | Pracujesz; oznaczone `#<agent>`. **WIP = 1 karta na agenta**.                                     |
+| 🙋 **Needs You**    | człowiek         | ❌ nie        | Oddałeś piłkę. `#blocked` = utknąłeś (potrzebna decyzja); `#review` = skończone, czeka na akcept. |
+| 🏁 **Done**         | —                | —             | Zatwierdzone i ukończone.                                                                         |
+| 📦 **Archive**      | —                | —             | Niewidoczna w web UI. Ręczne przenoszenie: `moab archive <id>`.                                   |
 
 ## Flagi na karcie (`#tagi` → kolorowe chipy w Kanbanie)
 
@@ -82,15 +83,16 @@ wykonaj `python3 bin/moab sync` i commit.
 
 ## Pozostałe komendy
 
-| Komenda | Do czego |
-|---|---|
-| `python3 bin/moab move <id> --to <lane>` | Przenosi kartę do dowolnej kolumny (opcjonalnie `--review`/`--blocked`/`--raw`). |
-| `python3 bin/moab retag <id> [--prio pX] [--type T] [--add tag] [--remove tag]` | Edytuje tagi karty i synchronizuje. |
-| `python3 bin/moab rm <id>` | Usuwa kartę z boardu i notatkę z Backlog/. |
-| `python3 bin/moab assign <id> --agent <name> [--model <m>] [--long] [--run]` | Generuje (lub wykonuje) komendę `opencode run`. Bez `--long`: tylko claim. Z `--long`: pełne instrukcje implementacji + review + block. `--model` ustawia model opencode. |
-| `python3 bin/moab install <dir> [--project-name <name>]` | Instaluje MOAB z opcjonalną nazwą projektu (auto: git remote > folder). |
-| `python3 bin/moab web [--port PORT]` | Uruchamia webowy edytor FastAPI (domyślny port: 8770). |
-| `python3 bin/moab watch --agent <name> [--model <m>] [--interval 10] [--limit 1]` | Monitoruje board i automatycznie przypisuje zadania Ready for AI do agenta. |
+| Komenda                                                                           | Do czego                                                                                                                                                                  |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `python3 bin/moab move <id> --to <lane>`                                          | Przenosi kartę do dowolnej kolumny (opcjonalnie `--review`/`--blocked`/`--raw`).                                                                                          |
+| `python3 bin/moab retag <id> [--prio pX] [--type T] [--add tag] [--remove tag]`   | Edytuje tagi karty i synchronizuje.                                                                                                                                       |
+| `python3 bin/moab rm <id>`                                                        | Usuwa kartę z boardu i notatkę z Backlog/.                                                                                                                                |
+| `python3 bin/moab assign <id> --agent <name> [--model <m>] [--long] [--run]`      | Generuje (lub wykonuje) komendę `opencode run`. Bez `--long`: tylko claim. Z `--long`: pełne instrukcje implementacji + review + block. `--model` ustawia model opencode. |
+| `python3 bin/moab install <dir> [--project-name <name>]`                          | Instaluje MOAB z opcjonalną nazwą projektu (auto: git remote > folder).                                                                                                   |
+| `python3 bin/moab web [--port PORT]`                                              | Uruchamia webowy edytor FastAPI (domyślny port: 8770).                                                                                                                    |
+| `python3 bin/moab watch --agent <name> [--model <m>] [--interval 10] [--limit 1]` | Monitoruje board i automatycznie przypisuje zadania Ready for AI do agenta.                                                                                               |
+| `python3 bin/moab archive <id>`                                                   | Przenosi kartę z Done do Archive (niewidoczna w web UI).                                                                                                                  |
 
 ## Sync i status
 
@@ -110,6 +112,38 @@ pre-commit hook) blokuje commit gdy są do naprawy.
 - **Brak końcowych spacji** — żadna linia nie może kończyć się spacją/tabem.
 - **Maks. 2 puste linie z rzędu** — 3+ puste linie są zwijane do 2.
 - **Frontmatter tylko przez `moab sync`** — nie edytuj pól `status/owner/agent/priority/type/state/due/updated` ręcznie.
+
+## Screenshoty i obrazki
+
+Obrazki/zdjęcia do notatek trzymaj w `_attachments/`. Są tam widoczne dla Obsidiana
+i webowego przeglądarki MOAB. Web app serwuje je pod `/attachments/`.
+
+- **Linki zewnętrzne:** `[opis](url)` lub `![opis](url)` — standardowy Markdown.
+- **Linki wewnętrzne (Obsidian wikilinki):** `[[plik.png]]` (popup/click-to-open)
+  lub `![[plik.png]]` (inline, osadza obrazek w treści).
+
+### Kiedy używać jakiego formatu
+
+| Użycie                                       | Format          | Efekt                                                              |
+| -------------------------------------------- | --------------- | ------------------------------------------------------------------ |
+| Definicja Done — dowód działania             | `![[plik.png]]` | Obrazek widoczny od razu w treści                                  |
+| Log / Agent Log — wzmianka o screenie        | `[[plik.png]]`  | Klikalny link popup, z alt textem: `[[plik.png\|zrozumiały opis]]` |
+| Pytanie do człowieka (Needs-You / Questions) | `![[plik.png]]` | Obrazek widoczny od razu — użytkownik widzi problem bez klikania   |
+
+Dla linku popup w logu dodaj zrozumiały **alt text** separatorem `|`:
+`[[agent_data.png|opis co widać na screenie]]`.
+
+### Workflow
+
+1. Po zakończeniu testów (lub gdy potrzebujesz pokazać coś użytkownikowi) wybierz
+   **jeden, istotny screenshot** który najlepiej potwierdza działanie / pokazuje problem.
+2. Skopiuj plik do `_attachments/` z nazwą zawierającą datę, id taska i cel, np.
+   `agent_20260701_T-014_load_slot.png`.
+3. Wstaw go w odpowiedniej sekcji notatki:
+   - **Definition of Done** — `![[agent_2026...png]]` (inline, dowód działania).
+   - **Needs-You / Questions** — `![[agent_2026...png]]` (inline, pokazuje problem).
+   - **Agent Log** — `[[agent_2026...png\|opis]]` (popup link z alt textem, nie zaśmieca loga).
+4. Nie wrzucaj kilkunastu screenshotów — wybierz maks. 2-3 najbardziej reprezentatywne.
 
 ## Wskazówki operacyjne
 
