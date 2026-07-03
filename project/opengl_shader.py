@@ -219,7 +219,7 @@ class OpenGL_shader():
         # Python runtime state: initialized
 
         # Current thread 0x00000001e9c18c00 (most recent call first):
-        #   File "/Users/hubertnafalski/Documents/Projects/pygame-ce-web-boilerplate/project/opengl_shader.py",
+        #   File "/Users/hubertnafalski/Documents/Projects/Mom/project/opengl_shader.py",
         # line 172 in render
         # self.lights_pos_buffer.write(data, offset= (i * 16))
         self.timestamp += dt

@@ -1,6 +1,6 @@
 This page is in Quirks Mode. Page layout may be impacted. For Standards Mode use “<!DOCTYPE html>”.
 NinjaAdventure
-AUTOSTART https://pygame-web.github.io/archives/0.9/pythons.js https://hubertrex.github.io/pygame-ce-web-boilerplate/NinjaAdventure/ undefined pythons.js:2296:13
+AUTOSTART https://pygame-web.github.io/archives/0.9/pythons.js https://hubertrex.github.io/MoM/NinjaAdventure/ undefined pythons.js:2296:13
 Location of pythons.js overrides script https://pygame-web.github.io/archives/0.9/pythons.js => https://pygame-web.github.io/archives/0.9/pythons.js?# pythons.js:2318:17
 {"xtermjs":"1","_sdl2":"canvas","user_canvas":0,"user_canvas_managed":0,"ume_block":0,"can_close":0,"archive":"project","gui_debug":3,"cdn":"https://pygame-web.github.io/archives/0.9/","autorun":0,"PYBUILD":"3.12","pydigits":"312","executable":"https://pygame-web.github.io/archives/0.9/cpython312/main.js","debug":false,"interactive":false,"columns":132,"lines":"57","console":"25","fbdev":false,"quiet":false,"features":["vtx","fs","snd","gui"]} pythons.js:2427:13
 config.xtermjs = 1 pythons.js:2479:17
@@ -23,17 +23,17 @@ config.lines = 57 pythons.js:2479:17
 config.console = 25 pythons.js:2479:17
 config.fbdev = false pythons.js:2479:17
 config.quiet = false pythons.js:2479:17
-config.features = 
+config.features =
 Array(4) [ "vtx", "fs", "snd", "gui" ]
 pythons.js:2479:17
 interpreter= cpython pythons.js:2481:13
-orig_argv 
+orig_argv
 Array [ "" ]
 pythons.js:2482:13
-sys.argv:  
+sys.argv:
 Array [ "" ]
 pythons.js:2483:13
-docurl= https://hubertrex.github.io/pygame-ce-web-boilerplate/NinjaAdventure/ pythons.js:2484:13
+docurl= https://hubertrex.github.io/MoM/NinjaAdventure/ pythons.js:2484:13
 srcurl= https://pygame-web.github.io/archives/0.9/pythons.js pythons.js:2485:13
 data-os= vtx,fs,snd,gui pythons.js:2487:17
 data-python= python3.12 pythons.js:2488:17
@@ -86,7 +86,7 @@ https://pygame-web.github.io/archives/0.9/pythonrc.py
 
 Terminal+ImageAddon importing from CDN : https://pygame-web.github.io/archives/0.9/vt/ vtx.js:19:17
 fnt: 602 / 82 = 6  Cols: 132 Cons: 25 pythons.js:1056:13
-terminal 132 82 
+terminal 132 82
 Object { url: "https://pygame-web.github.io/archives/0.9/xtermjsixel/xterm-addon-image-worker.js", sixelSupport: true }
 vtx.js:87:25
 NO ume unlocker, safari == false pythons.js:1197:17

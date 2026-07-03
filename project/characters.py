@@ -335,27 +335,6 @@ class NPC(pygame.sprite.Sprite):
         return Point(int(pos.x // TILE_SIZE), int((pos.y + offset_y) // TILE_SIZE))
 
     #############################################################################################################
-
-    # def import_image(self, path: str) -> None:
-    #     """
-    #     old implementation used with separate img per frame (e.g. monochrome_ninja)
-    #     """
-    #     # self.animations = self.game.get_animations(path)
-    #     animations_keys: list[str] = []  # list(self.animations.keys())
-    #     for animation in animations_keys:
-    #         full_path = os.path.join(path, animation)
-    #         self.animations[animation] = self.game.get_images(full_path)
-    #         if animation in ["idle", "run"]:
-    #             self.animations[f"{animation}_right"] = []
-    #             self.animations[f"{animation}_left"] = []
-    #             for frame in self.animations[animation]:
-    #                 converted = frame
-    #                 # converted = frame.convert_alpha()
-    #                 # converted.set_colorkey(COLORS["yellow"])
-    #                 self.animations[f"{animation}_right"].append(converted)
-    #                 self.animations[f"{animation}_left"].append(pygame.transform.flip(converted, True, False))
-
-    #############################################################################################################
     # MARK: animate
     def animate(self, state: str, dt: float, loop: bool = True) -> None:
         self.frame_index += dt

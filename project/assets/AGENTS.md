@@ -5,12 +5,13 @@ Autor edytuje/tworzy assety w **Aseprite** (baza = paczki licencjonowane + włas
 
 ## Aktywne paczki (✅ używać)
 
-| Folder | Zawartość |
-|---|---|
+| Folder            | Zawartość                                                                         |
+|-------------------|-----------------------------------------------------------------------------------|
 | `NinjaAdventure/` | **Główny pack:** `characters/`, `items/`, `Emote/`, `HUD/`, `particles/`, `maps/` |
-| `MazeTileset/` | Kafelki do proceduralnych labiryntów (`MazeTileset_clean.tmx` jako szablon) |
+| `MazeTileset/`.   | Kafelki do proceduralnych labiryntów (`MazeTileset_clean.tmx` jako szablon)       |
 
 ### ⛔ Legacy / eksperymenty — pomijać
+
 `kenney_tinyDungeon/`, `monochrome_ninja/` — nieużywane w grze, nie modyfikować ani nie
 ładować.
 
