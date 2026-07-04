@@ -6,6 +6,31 @@ default:
     @just --list
 
 [unix]
+setup:
+    @if [ ! -d ".venv" ]; then \
+        echo "Creating virtual environment using uv..."; \
+        uv venv; \
+    fi
+    .venv/bin/uv pip install -r requirements.txt -r requirements-dev.txt
+
+[windows]
+setup:
+    #!powershell
+    if (!(Test-Path .venv)) {
+        Write-Host "Creating virtual environment..."
+        if (Get-Command uv -ErrorAction SilentlyContinue) {
+            uv venv
+        } else {
+            python -m venv .venv
+        }
+    }
+    if (Test-Path .venv\Scripts\uv.exe) {
+        .venv\Scripts\uv.exe pip install -r requirements.txt -r requirements-dev.txt
+    } else {
+        .venv\Scripts\pip.exe install -r requirements.txt -r requirements-dev.txt
+    }
+
+[unix]
 run *args:
     export PYGAME_HIDE_SUPPORT_PROMPT=1
     cd project && ../.venv/bin/python ./main.py {{args}}
@@ -35,6 +60,39 @@ update-config-schema:
     #!powershell
     cd project/config_model
     ..\..\.venv\Scripts\python.exe config_pydantic.py
+
+[unix]
+mypy:
+    .venv/bin/mypy --config-file pyproject.toml project
+
+[windows]
+mypy:
+    #!powershell
+    .venv\Scripts\mypy.exe --config-file pyproject.toml project
+
+[unix]
+sourcery:
+    @if [ -f .venv/bin/sourcery ]; then \
+        .venv/bin/sourcery review project; \
+    elif command -v sourcery >/dev/null 2>&1; then \
+        sourcery review project; \
+    else \
+        echo "Sourcery is not installed. Uncomment it in requirements-dev.txt and run 'just setup'."; \
+    fi
+
+[windows]
+sourcery:
+    #!powershell
+    if (Test-Path .venv\Scripts\sourcery.exe) {
+        .venv\Scripts\sourcery.exe review project
+    } elseif (Get-Command sourcery -ErrorAction SilentlyContinue) {
+        sourcery review project
+    } else {
+        Write-Host "Sourcery is not installed. Uncomment it in requirements-dev.txt and run 'just setup'."
+    }
+
+# Run all static analysis and code checks
+check: sourcery mypy
 
 [unix]
 fix-bad-png:
