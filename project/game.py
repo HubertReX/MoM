@@ -804,7 +804,7 @@ class Game:
         #             self.save_recording()
         #     INPUTS["record"] = False
 
-        if INPUTS["screenshot"]:
+        if INPUTS["screenshot"] and USE_SHADERS:
             state = self.states[-1]
             add_notification = (
                 state.add_notification
@@ -1035,6 +1035,15 @@ class Game:
         #     self.screen.blit(self.HUD, (0, 0))
 
         pygame.display.flip()
+
+        if INPUTS["screenshot"] and not USE_SHADERS:
+            state = self.states[-1]
+            add_notification = (
+                state.add_notification
+                if hasattr(state, "add_notification")
+                else self.add_notification_dummy
+            )
+            self.save_screenshot(add_notification)
 
         # save screenshot if an external agent requested one (no-op unless enabled)
         if self.agent_ctrl:
