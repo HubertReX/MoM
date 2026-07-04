@@ -35,9 +35,9 @@ dzień-noc). Szczegóły rozgałęzień: [`project/AGENTS.md`](./project/AGENTS.
 ## Uruchamianie i build
 
 ```bash
-./run.sh          # desktop
-./serve_web.sh    # web lokalnie → http://localhost:8000 (REPL debug: http://localhost:8000#debug)
-./build_itchio.sh # build paczki web.zip dla itch.io
+just run          # desktop
+just serve-web    # web lokalnie → http://localhost:8000 (REPL debug: http://localhost:8000#debug)
+just build-itchio # build paczki web.zip dla itch.io
 ```
 
 CI: ręczne `workflow_dispatch` → GitHub Pages (`pygbag.yml`) oraz itch.io (`itch_io.yml`).

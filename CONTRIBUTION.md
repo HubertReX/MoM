@@ -238,7 +238,7 @@ pip install -r requirements-dev.txt
 Desktop mode:
 
 ```bash
-./run.sh
+just run
 ```
 
 ***
@@ -246,7 +246,7 @@ Desktop mode:
 Browser mode:
 
 ```bash
-./serve_web.sh
+just serve-web
 ```
 
 open [http://localhost:8000/](http://localhost:8000/) in browser
@@ -262,7 +262,7 @@ full instruction [here](https://pygame-web.github.io/wiki/pygbag/itch.io/)
 in short:
 
 ```bash
-./build_itchio.sh
+just build-itchio
 ```
 
 upload `'build/web.zip'` to [itch.io] or any other hosting service.

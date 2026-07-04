@@ -140,7 +140,7 @@ USE_CUSTOM_MOUSE_CURSOR = True
 USE_SOD = False
 USE_SHADERS = False
 # zewnętrzne sterowanie grą + screenshoty dla agentów AI (debug, desktop-only, opt-in)
-# włączane zmienną środowiskową: MOM_AGENT_CONTROL=1 ./run.sh
+# włączane zmienną środowiskową: MOM_AGENT_CONTROL=1 just run
 USE_AGENT_CONTROL = __import__("os").environ.get("MOM_AGENT_CONTROL", "0") == "1"
 SHOW_DEBUG_INFO = False
 SHOW_HELP_INFO = False

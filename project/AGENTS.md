@@ -70,8 +70,8 @@ boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[lin
 | Screenshoty             | zapis na dysk                   | download w przeglądarce | `game.py`                                                              |
 | Gamepad                 | XBOX/Steam Deck                 | `WEB_CONTROL_NAMES`     | `settings.py`, `game.py`                                               |
 
-**Reguła:** nowy kod zależny od platformy chowaj za `if IS_WEB:`; testuj `./run.sh` **oraz**
-`./serve_web.sh`.
+**Reguła:** nowy kod zależny od platformy chowaj za `if IS_WEB:`; testuj `just run` **oraz**
+`just serve-web`.
 
 ### `USE_WEB_SIMULATOR` (`settings.py:130`)
 

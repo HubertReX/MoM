@@ -26,7 +26,7 @@ ale wystarcza do debugowania.
 ### Desktop
 Ustaw zmienną środowiskową przed startem gry:
 
-    MOM_AGENT_CONTROL=1 ./run.sh
+    MOM_AGENT_CONTROL=1 just run
 
 ### Web (pygbag)
 Runner (`tests/automate_display_test.py --web`) ustawia flagę w `window.localStorage`
