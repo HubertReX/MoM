@@ -74,8 +74,8 @@ from settings import (  # LOGO_IMG,; ColorValue,
     WIDTH_SCALED,
     load_image,
     vec,
-    vec3
-    )
+    vec3,
+)
 
 if USE_WEB_SIMULATOR:
     import pygbag.aio as asyncio
@@ -92,8 +92,8 @@ else:
     from config_model.config_pydantic import (  # type: ignore[assignment]
         load_config,
         save_config,
-        update_config_schema
-        )
+        update_config_schema,
+    )
 
 if USE_SOD:
     from second_order_dynamics import SecondOrderDynamics
@@ -212,20 +212,20 @@ class Game:
         if USE_AGENT_CONTROL and not IS_WEB:
             from agent_ctrl import AgentController
 
-            self.agent_ctrl = AgentController(
-                AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=False)
+            self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=False)
             self.log("[agent_ctrl] external control ENABLED (desktop)")
         elif IS_WEB and not USE_WEB_SIMULATOR:
             web_agent_enabled = False
             try:
                 from platform import window  # type: ignore[attr-defined]
+
                 web_agent_enabled = window.localStorage.getItem("MoM.agent_control") == "1"
             except Exception:
                 pass
             if web_agent_enabled:
                 from agent_ctrl import AgentController
-                self.agent_ctrl = AgentController(
-                    AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=True)
+
+                self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=True)
                 self.log("[agent_ctrl] external control ENABLED (web)")
 
         # import scene
@@ -295,6 +295,7 @@ class Game:
         if not IS_WEB:
             try:
                 from pygame._sdl2.video import Window as _SDL2Win
+
                 _sdl_win = _SDL2Win.from_display_module()
                 if _sdl_win:
                     _ds = pygame.display.get_desktop_sizes()
@@ -309,9 +310,13 @@ class Game:
                 pass
         # helper surface, before scaling up
         # , 32 .convert_alpha() # pygame.SRCALPHA
-        self.canvas: pygame.Surface = pygame.Surface((settings.WIDTH, settings.HEIGHT))  # .convert_alpha()  # , self.flags)
+        self.canvas: pygame.Surface = pygame.Surface(
+            (settings.WIDTH, settings.HEIGHT)
+        )  # .convert_alpha()  # , self.flags)
         # helper surface for HUD
-        self.HUD: pygame.Surface = pygame.Surface((settings.WIDTH, settings.HEIGHT)).convert_alpha()  # | pygame.SRCALPHA
+        self.HUD: pygame.Surface = pygame.Surface(
+            (settings.WIDTH, settings.HEIGHT)
+        ).convert_alpha()  # | pygame.SRCALPHA
 
         if not USE_SHADERS:
             # self.canvas = self.screen
@@ -774,8 +779,8 @@ class Game:
         #             self.save_recording()
         #     INPUTS["record"] = False
 
-        # if INPUTS["screenshot"]:
-        #     INPUTS["screenshot"] = not self.save_screenshot(self.add_notification_dummy)
+        if INPUTS["screenshot"]:
+            INPUTS["screenshot"] = not self.save_screenshot(self.add_notification_dummy)
 
         if INPUTS["run"]:
             for joystick in self.joysticks.values():
@@ -964,6 +969,7 @@ class Game:
             state = self.states[-1]
             if hasattr(state, "ui"):
                 from ui.panels.save_load import LoadPanel as _LP
+
                 state.ui.toggle(_LP)
             INPUTS["quick_load"] = False
 

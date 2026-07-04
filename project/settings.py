@@ -301,7 +301,7 @@ ACTIONS: dict[str, dict[str, Any]] = {
     "help": {"show": ["key_H"], "msg": "show help", "keys": [pygame.K_F1, pygame.K_h]},
     "menu": {"show": ["key_F2"], "msg": "menu", "keys": [pygame.K_F2]},
     "show_ui": {"show": ["key_F3"], "msg": "toggle UI", "keys": [pygame.K_F3]},
-    # "screenshot":     {"show": ["key_F9"],       "msg": "screenshot",  "keys": [pygame.K_F9]},
+    "screenshot": {"show": ["key_F6"], "msg": "screenshot", "keys": [pygame.K_F6]},
     "intro": {"show": ["key_F4"], "msg": "intro", "keys": [pygame.K_F4]},
     # "record":         {"show": ([] if IS_WEB else ["key_F3"]), "msg":  "record mp4", "keys": [pygame.K_F3]},
     "reload": {"show": ([] if IS_WEB else ["key_R"]), "msg": "reload map", "keys": [pygame.K_r]},
