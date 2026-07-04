@@ -51,8 +51,10 @@ tags:
 
 - [ ] Kryteria z Goal spełnione
 - [ ] zmiany udokumentowa w tasku (`moab log`)
-- [ ] commit zmian wykonany
+- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
 - [ ] Testy / lint przechodzą (jeśli dotyczy)
+- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
+- [ ] commit zmian wykonany
 
 ## 📓 Agent Log
 
