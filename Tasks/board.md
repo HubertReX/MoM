@@ -9,9 +9,9 @@ tags:
 
 ## 🧊 Backlog
 
-## 🟢 Ready for AI
-
 - [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2
+
+## 🟢 Ready for AI
 
 ## 🤖 In Progress
 

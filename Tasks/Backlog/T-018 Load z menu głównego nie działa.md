@@ -19,8 +19,8 @@ Zaraz po uruchomieniu gry i wybraniu "Load" z menu głównego, na ułamek sekund
 ## 🎯 Goal / Outcome
 
 
-- [ ] po wybraniu "Load" pojawia się ekran wyboru slotu do wczytania i czeka
-- [ ] Po wybraniu slotu gra się wczytuje i można grać dalej
+- [x] po wybraniu "Load" pojawia się ekran wyboru slotu do wczytania i czeka
+- [x] Po wybraniu slotu gra się wczytuje i można grać dalej
 
 ## 🧭 Context
 
@@ -38,16 +38,19 @@ Zaraz po uruchomieniu gry i wybraniu "Load" z menu głównego, na ułamek sekund
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
-- [ ] commit zmian wykonany
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
+- [x] Testy / lint przechodzą (jeśli dotyczy)
+- [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
+- [x] commit zmian wykonany
+
+![[agent_20260704_T-018_load_menu.png]]
 
 ## 📓 Agent Log
 
 - 2026-07-04 22:41 opencode: claimed, starting
+- 2026-07-04 23:08 opencode: Zaimplementowano poprawkę dla błędu zamykania gry po wybraniu opcji Load z Menu Głównego. Przyczyną było wywołanie self.exit_state() przy zamykaniu menu, co gdy menu było jedynym stanem na stosie, powodowało ustawienie self.game.is_running = False i zamknięcie gry. Dodatkowo zsynchronizowano zachowanie get_save_dir w automate_display_test.py ze stanem faktycznym (uwzględniając XDG_DATA_HOME).
 
 
 ## 🙋 Needs-You / Questions

@@ -244,7 +244,6 @@ class LoadMenuScreen(State):
 
     def _on_cancel(self) -> None:
         self.exit_state()
-        MainMenuScreen(self.game, "MainMenu", self.bg_image).enter_state()
 
     def update(self, dt: float, events: list[pygame.event.Event]) -> None:
         self.manager.handle_events(events)
@@ -298,7 +297,6 @@ class MainMenuScreen(MenuScreen):
         self.exit_state()
 
     def _open_load_panel(self) -> None:
-        self.exit_state()
         LoadMenuScreen(self.game, self.bg_image).enter_state()
 
     def _quit_game(self) -> None:

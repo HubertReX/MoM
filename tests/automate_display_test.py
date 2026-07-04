@@ -74,6 +74,9 @@ def get_timestamp() -> str:
 
 def get_save_dir() -> Path:
     """Return the same save directory used by FileSaveBackend."""
+    xdg_data_home = os.environ.get("XDG_DATA_HOME")
+    if xdg_data_home:
+        return Path(xdg_data_home) / "mom" / "saves"
     system = platform.system()
     home = Path.home()
     if system == "Darwin":
