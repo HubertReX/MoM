@@ -164,10 +164,10 @@ Scenariusz może opcjonalnie zawierać:
 
 **Persystencja w testach:**
 
-Pliki save na desktopie:
+Pliki save na desktopie (jeśli zdefiniowano zmienną środowiskową `XDG_DATA_HOME`, zapisy trafiają do `<XDG_DATA_HOME>/mom/saves/`, w przeciwnym razie stosowane są domyślne ścieżki systemowe):
 
-- macOS: `~/Library/Application Support/mom/saves/save_N.mom`
-- Linux: `~/.local/share/mom/saves/save_N.mom`
+- macOS: `~/Library/Application Support/mom/saves/save_N.mom` (lub `<XDG_DATA_HOME>/mom/saves/save_N.mom`)
+- Linux: `~/.local/share/mom/saves/save_N.mom` (domyślny fallback dla XDG)
 
 Helper do manipulowania zapisami: `tests/test_save_load_corrupt.py`:
 

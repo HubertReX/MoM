@@ -29,14 +29,19 @@ class SaveBackend(ABC):
 
 class FileSaveBackend(SaveBackend):
     def __init__(self) -> None:
+        import os
         import platform as _platform
-        system = _platform.system()
-        if system == "Darwin":
-            base = Path.home() / "Library" / "Application Support" / "mom" / "saves"
-        elif system == "Linux":
-            base = Path.home() / ".local" / "share" / "mom" / "saves"
+        xdg_data_home = os.environ.get("XDG_DATA_HOME")
+        if xdg_data_home:
+            base = Path(xdg_data_home) / "mom" / "saves"
         else:
-            base = Path.home() / "AppData" / "Local" / "mom" / "saves"
+            system = _platform.system()
+            if system == "Darwin":
+                base = Path.home() / "Library" / "Application Support" / "mom" / "saves"
+            elif system == "Linux":
+                base = Path.home() / ".local" / "share" / "mom" / "saves"
+            else:
+                base = Path.home() / "AppData" / "Local" / "mom" / "saves"
         self.save_dir: Path = base
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
@@ -55,8 +60,8 @@ class FileSaveBackend(SaveBackend):
             return None
 
     def write_slot(self, slot: SaveSlot) -> bool:
+        path = self._slot_path(int(slot.slot_id))
         try:
-            path = self._slot_path(int(slot.slot_id))
             path.write_text(json.dumps(slot.to_dict(), indent=2), encoding="utf-8")
             return True
         except OSError as e:
