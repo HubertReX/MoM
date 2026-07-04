@@ -591,6 +591,30 @@ class Game:
         """
         save current screen to SCREENSHOT_FOLDER as PNG with timestamp in name
         """
+        if not USE_SHADERS:
+            INPUTS["screenshot"] = False
+            self.save_frame = False
+
+            time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+            file_name = SCREENSHOTS_DIR / f"screenshot_{time_str}.png"
+            os.makedirs(file_name.parent, exist_ok=True)
+            pygame.image.save(self.screen, file_name)
+            if IS_WEB:
+                import platform
+
+                platform.window.download_from_browser_fs(  # type: ignore[attr-defined]
+                    file_name.as_posix(), "image/png"
+                )
+            else:
+                self.log(f"screenshot saved to file '{file_name}'")
+            if ".." in str(file_name):
+                short_name = str(file_name).split("..")[-1]
+            else:
+                short_name = str(file_name)
+            add_notification(f"screenshot saved to file '[u]{short_name}[/u]'", NotificationTypeEnum.info)
+
+            return True
+
         if self.save_frame and data:
             # in previous loop, frame was saved back to screen
             # so now we can store it and disable frame saving
@@ -599,6 +623,7 @@ class Game:
 
             time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
             file_name = SCREENSHOTS_DIR / f"screenshot_{time_str}.png"
+            os.makedirs(file_name.parent, exist_ok=True)
             # pygame.image.save(self.screen, file_name)
             Image.frombuffer("RGBA", (WIDTH, HEIGHT), data, "raw", "RGBA", 0, -1).save(file_name)
             if IS_WEB:
@@ -780,7 +805,13 @@ class Game:
         #     INPUTS["record"] = False
 
         if INPUTS["screenshot"]:
-            INPUTS["screenshot"] = not self.save_screenshot(self.add_notification_dummy)
+            state = self.states[-1]
+            add_notification = (
+                state.add_notification
+                if hasattr(state, "add_notification")
+                else self.add_notification_dummy
+            )
+            INPUTS["screenshot"] = not self.save_screenshot(add_notification)
 
         if INPUTS["run"]:
             for joystick in self.joysticks.values():

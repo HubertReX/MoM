@@ -9,15 +9,14 @@ tags:
 
 ## 🧊 Backlog
 
-- [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2
-
 ## 🟢 Ready for AI
 
 ## 🤖 In Progress
 
-- [ ] [[T-018 Load z menu głównego nie działa]] #bug #p1 #opencode
-
 ## 🙋 Needs You
+
+- [ ] [[T-018 Load z menu głównego nie działa]] #bug #p1 #opencode #review
+- [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2 #opencode #review
 
 ## 🏁 Done
 
