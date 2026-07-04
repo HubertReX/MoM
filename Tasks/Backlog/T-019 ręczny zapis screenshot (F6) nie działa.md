@@ -53,7 +53,7 @@ klawisz F6 powinien uruchomić logikę ręcznego zapisu zdjęcia gry (screenshot
 - 2026-07-04 23:21 opencode: Naprawiono blad z niepoprawnym zapisem zrzutu ekranu (F6) przy wylaczonych shaderach (USE_SHADERS = False). Logika save_screenshot polegala wylacznie na buforze OpenGL z postprocessingu, przez co w trybie bez shaderow wchodzila w nieskonczona petle i nie zapisywala pliku. Teraz dla trybu bez shaderow zapisuje self.screen bezposrednio na dysk przy uzyciu pygame.image.save i od razu resetuje stan INPUTS['screenshot'].
 - 2026-07-04 23:21 opencode: Zaimplementowano obsluge zapisu zrzutu ekranu w trybie z wylaczonymi shaderami (USE_SHADERS = False). Zrzut ekranu jest teraz zapisywany przy uzyciu pygame.image.save, co rozwiazuje blad nieskonczonej petli. Aby przetestować, wystarczy uruchomic gre i nacisnac klawisz F6.
 - 2026-07-04 23:21 opencode: Naprawiono manualny zapis zrzutu ekranu (F6) w trybie bez shaderow. Zrzut ekranu jest teraz zapisywany przy uzyciu pygame.image.save, a powiadomienie wyswietla sie poprawnie przy uzyciu aktywnego managera powiadomien stanu gry.
-
+- 2026-07-04 23:21 user: załączony obrazek nie przedstawia screenshotu gry tylko jest jednolicie czerwony 
 
 ## 🙋 Needs-You / Questions
 
