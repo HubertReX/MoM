@@ -20,6 +20,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Świadomie odłożone (backlog / później) z decyzji **D10** - `../doc/dialog-migration-plan.html`. Podgląd skutku pokazujemy dopiero PO wyborze (jak w RPG).
 - Element "miło mieć" - nie blokuje MVP dialogów.
 - Zależy od: [[T-035 DS: Sentyment w rozgrywce - odkrywanie, bramkowanie opcji, mnoznik cen]].

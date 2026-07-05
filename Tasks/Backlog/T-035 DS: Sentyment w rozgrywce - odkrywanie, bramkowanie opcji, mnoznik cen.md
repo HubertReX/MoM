@@ -24,6 +24,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Decyzja **D10** (pełny sentyment, zakres v1) - `../doc/dialog-migration-plan.html`.
 - MoM: `project/ui/panels/trade.py` (ceny, `trade_spread`), `disposition` per postać.
 - Zależy od: [[T-032 DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)]] (predykat `sentiment`), [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]], [[T-033 DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)]], [[T-034 DS: Efekty wezlow - adapter ResultSink (zloto, itemy, HP, sentyment)]].

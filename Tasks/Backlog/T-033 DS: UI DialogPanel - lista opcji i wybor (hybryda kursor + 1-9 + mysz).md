@@ -23,6 +23,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - MoM: `project/ui/panels/dialog.py` (dziś tylko statyczny tekst), `project/ui/widgets/rich_text.py`, `project/npc_state.py` (stan `Talk`), `project/characters.py:1316` (otwarcie panelu).
 - Decyzja **D4** (hybryda sterowania) - `../doc/dialog-migration-plan.html`. Render znaczników po konwersji z D3.
 - Zależy od: [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]], [[T-024 DS: Pipeline importu Markdown do config (parser + walidacja + konwersja znacznikow)]].

@@ -23,6 +23,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Decyzja **D9** (opcje DEBUG gated) - `../doc/dialog-migration-plan.html`.
 - MoM: `tests/automate_display_test.py`, `tests/scenarios.json`, `doc/test-scenarios-list.md`.
 - Źródło dialogów: `RPG/dialogs/PL`, `RPG/dialogs/EN`.

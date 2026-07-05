@@ -23,6 +23,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Decyzja **D8** (cienki adapter) - `../doc/dialog-migration-plan.html`. Źródło: RPG `main.py:process_result`.
 - MoM: `Inventory`, hero/health, klucze itemów z `project/config_model/items.csv`.
 - Zależy od: [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]], [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]], [[T-033 DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)]].

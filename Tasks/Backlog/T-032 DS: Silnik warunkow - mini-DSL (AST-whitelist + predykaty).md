@@ -22,6 +22,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Decyzja **D1** (mini-DSL AST-whitelist zamiast `eval`) - `../doc/dialog-migration-plan.html`.
 - Źródło warunków do przetestowania: RPG `import_dialog_from_md.py:parse_condition`, `dialog_loc.py:check_condition`.
 - Zależy od: [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]].

@@ -24,6 +24,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Źródło: RPG `import_dialog_from_md.py`, dialogi `RPG/dialogs/PL` i `RPG/dialogs/EN`.
 - Decyzje **D6** (porządny parser + walidacja), **D3** (konwersja znaczników/emoji), **D7** (i18n messages), **D11** (Markdown źródłem prawdy) - `../doc/dialog-migration-plan.html`.
 - Walidacja nazw itemów względem `project/config_model/items.csv`.

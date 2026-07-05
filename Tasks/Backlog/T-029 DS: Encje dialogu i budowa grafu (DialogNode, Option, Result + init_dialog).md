@@ -22,6 +22,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Fundament epica **Dialog System** - brak zależności wejściowych.
 - Źródło: RPG `dialog_node.py` (wersja kanoniczna, 7 kategorii, `slots=True`), `RPG main.py:1157-1224` (budowa grafu).
 - Decyzja **D2** (dataclassy `slots`) - `../doc/dialog-migration-plan.html`.

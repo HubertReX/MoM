@@ -21,6 +21,7 @@ tags:
 
 ## 🧭 Context
 
+- **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Źródło: RPG `character.py` (pola dopięte do postaci).
 - MoM: `project/characters.py` (klasa `NPC`, `load_dialogs:290`), `project/config_model/`.
 - Decyzje **D2** (dataclassy) i **D10** (zakres pól sentymentu) - `../doc/dialog-migration-plan.html`.
