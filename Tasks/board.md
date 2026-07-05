@@ -15,11 +15,11 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-020 Widget pola tekstowego (TextInput) w module UI]] #feature #p2 #cc
-
 ## 🙋 Needs You
 
 - [ ] [[T-018 Load z menu głównego nie działa]] #bug #p1 #opencode #review
+- [ ] [[T-020 Widget pola tekstowego (TextInput) w module UI]] #feature #p2 #cc #review
+
 ## 🏁 Done
 
 **Complete**

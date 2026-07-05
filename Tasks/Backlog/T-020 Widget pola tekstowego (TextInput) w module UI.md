@@ -1,8 +1,8 @@
 ---
 id: T-020
 title: Widget pola tekstowego (TextInput) w module UI
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: cc
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-020 — Widget pola tekstowego (TextInput) w module UI
@@ -95,6 +96,7 @@ To samo w przeglądarce (pygbag/web) - `TEXTINPUT` działa identycznie:
 - 2026-07-05 07:10 cc: claimed, starting
 - 2026-07-05 07:29 cc: Zaimplementowano TextInput(Widget) + CharSet (ANY/ALPHANUMERIC/ALPHA/LATIN/DIGITS), password mask, max_length, placeholder, migajacy caret, TEXTINPUT+KEYDOWN (backspace/delete/strzalki/home/end/enter/ctrl+v). LATIN = jawna whitelist A-Z a-z (font_pixel.ttf renderuje tez glify spoza laciny, wiec probing czcionki niewiarygodny). Eksport w widgets/__init__.py.
 - 2026-07-05 07:29 cc: Testy agentowe: dodano komendy type:<tekst> (post TEXTINPUT), backspace, debug_text_input w agent_ctrl.py + stan demo ui/panels/text_input_demo.py + scenariusz 'TextInput Basic' w scenarios.json. Przeszedł desktop i web (pygbag+Playwright), po 6 screenshotow kazdy - filtry/limit/maska potwierdzone wizualnie. mypy: 0 nowych bledow. AGENTS.md zaktualizowane.
+- 2026-07-05 07:30 cc: TextInput widget gotowy i zweryfikowany. Test: 'TextInput Basic' przechodzi na desktop (SDL dummy) i web (pygbag+Playwright), po 6 screenshotow. Manualnie: uruchom gre, wcisnij nic - z menu wywolaj demo komenda agenta debug_text_input, albo dodaj TextInput do panelu. mypy: 0 nowych bledow. Prosze o akcept.
 
 ## 🙋 Needs-You / Questions
 
