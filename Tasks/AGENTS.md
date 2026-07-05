@@ -152,6 +152,11 @@ Dla linku popup w logu dodaj zrozumiały **alt text** separatorem `|`:
   aby frontmatter był spójny z boardem.
 - `moab new` bez `--lane ready` trafia do Backlogu — wtedy trzeba przenieść zadanie
   ręcznie: `python3 bin/moab move <id> --to ready`.
+- **Znaki zakazane w tytule zadania** (`moab new "<tytuł>"` tworzy z tytułu zarówno plik notatki, jak i kartę-wikilink na boardzie):
+  - `/` (ukośnik) - traktowany jak separator ścieżki; tworzenie notatki się wywala, karta w ogóle nie powstaje. Zamiast `A/B` pisz `A, B` lub `A-B`.
+  - `[` `]` (nawiasy kwadratowe) - zagnieżdżają się w `[[wikilink]]` karty i czynią ją nieparsowalną; zostaje wtedy sierota w `board.md`, której `moab sync`/`rm` nie widzą. Zamiast `[later]` pisz `(later)`.
+  - `—` / `–` (em-dash / en-dash) - używaj zwykłego myślnika ` - ` (preferencja projektu).
+  - Gdy sierota już powstała: usuń jej linię z `board.md` ręcznie (jedyny dozwolony wyjątek od zasady "nie edytuj boardu"), potem sprawdź `python3 bin/moab sync --check`.
 
 ## Zasady
 
