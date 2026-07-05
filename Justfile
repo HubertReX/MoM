@@ -89,6 +89,17 @@ update-config-schema:
     cd project/config_model
     ..\..\.venv\Scripts\python.exe config_pydantic.py
 
+# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/img/ from real MoM modules
+[unix]
+gen-dialog-docs:
+    .venv/bin/python doc/gen_dialog_doc_assets.py
+
+# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/img/ from real MoM modules
+[windows]
+gen-dialog-docs:
+    #!powershell
+    .venv\Scripts\python.exe doc\gen_dialog_doc_assets.py
+
 # Run mypy static type checker on the project directory
 [unix]
 mypy:
