@@ -598,7 +598,7 @@ class Game:
             time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
             file_name = SCREENSHOTS_DIR / f"screenshot_{time_str}.png"
             os.makedirs(file_name.parent, exist_ok=True)
-            pygame.image.save(self.screen, file_name)
+            pygame.image.save(self.canvas, file_name)
             if IS_WEB:
                 import platform
 
@@ -1016,6 +1016,16 @@ class Game:
 
         if self.is_paused:
             self.show_pause_message()
+
+        if INPUTS["screenshot"] and not USE_SHADERS:
+            state = self.states[-1]
+            add_notification = (
+                state.add_notification
+                if hasattr(state, "add_notification")
+                else self.add_notification_dummy
+            )
+            self.save_screenshot(add_notification)
+
         # than scale and copy on final Surface (game.screen)
 
         _scale = settings.SCALE
@@ -1035,15 +1045,6 @@ class Game:
         #     self.screen.blit(self.HUD, (0, 0))
 
         pygame.display.flip()
-
-        if INPUTS["screenshot"] and not USE_SHADERS:
-            state = self.states[-1]
-            add_notification = (
-                state.add_notification
-                if hasattr(state, "add_notification")
-                else self.add_notification_dummy
-            )
-            self.save_screenshot(add_notification)
 
         # save screenshot if an external agent requested one (no-op unless enabled)
         if self.agent_ctrl:
