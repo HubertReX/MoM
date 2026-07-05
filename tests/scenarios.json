@@ -1,109 +1,143 @@
 [
     {
         "name": "Display Settings Flow",
+        "slug": "display_settings_flow",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Screenshot 1", "commands": ["screenshot"] },
-            { "label": "Navigate to Settings", "commands": ["down", "accept"] },
-            { "label": "Screenshot 2", "commands": ["screenshot"] },
-            { "label": "Changing resolution", "commands": ["down", "accept"] },
-            { "label": "Screenshot 3", "commands": ["screenshot"] },
-            { "label": "Applying changes", "commands": ["accept"] },
-            { "label": "Screenshot 4", "commands": ["screenshot"] },
-            { "label": "Verifying settings", "commands": ["debug_settings"] },
-            { "label": "Final Screenshot", "commands": ["screenshot"] }
+            { "slug": "main_menu_before_settings", "commands": ["screenshot"] },
+            { "slug": "nav_to_settings", "commands": ["down", "accept"] },
+            { "slug": "settings_menu_open", "commands": ["screenshot"] },
+            { "slug": "change_resolution", "commands": ["down", "accept"] },
+            { "slug": "resolution_selected", "commands": ["screenshot"] },
+            { "slug": "apply_changes", "commands": ["accept"] },
+            { "slug": "settings_applied", "commands": ["screenshot"] },
+            { "slug": "verify_settings", "commands": ["debug_settings"] },
+            { "slug": "final_settings_state", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "main_menu_before_settings", "expected_state": "MENU_MAIN", "expect": "The game main menu is visible with menu options (e.g. Continue/New Game/Settings/Quit)." },
+            { "type": "screenshot_review", "target": "settings_menu_open", "expected_state": "MENU_SETTINGS", "expect": "The settings/options menu is visible showing display settings such as resolution or fullscreen." }
         ]
     },
     {
         "name": "Save and Load Basic",
+        "slug": "save_load_basic",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Scene loaded", "commands": ["screenshot"] },
-            { "label": "Quick Save (F5)", "commands": ["quick_save", "screenshot"] },
-            { "label": "Open LoadPanel (F9)", "commands": ["quick_load", "screenshot"] },
-            { "label": "Confirm load", "commands": ["accept", "screenshot"] },
-            { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
-            { "label": "After load", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "scene_loaded", "commands": ["screenshot"] },
+            { "slug": "quick_save", "commands": ["quick_save", "screenshot"] },
+            { "slug": "open_loadpanel", "commands": ["quick_load", "screenshot"] },
+            { "slug": "confirm_load", "commands": ["accept", "screenshot"] },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "after_load", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "after_load", "expected_state": "GAMEPLAY", "expect": "The game is back in active gameplay (a level/scene with the player character visible), NOT a menu or load panel." }
         ]
     },
     {
         "name": "Quick Save and Load",
+        "slug": "quick_save_and_load",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Starting position", "commands": ["screenshot"] },
-            { "label": "Quick Save (F5)", "commands": ["quick_save"] },
-            { "label": "Move right", "commands": ["right:30", "screenshot"] },
-            { "label": "Open LoadPanel", "commands": ["quick_load"] },
-            { "label": "Select slot + confirm", "commands": ["accept"] },
-            { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
-            { "label": "Back at start position", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "starting_position", "commands": ["screenshot"] },
+            { "slug": "quick_save", "commands": ["quick_save"] },
+            { "slug": "move_right", "commands": ["right:30", "screenshot"] },
+            { "slug": "open_loadpanel", "commands": ["quick_load"] },
+            { "slug": "select_slot_confirm", "commands": ["accept"] },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "back_at_start_position", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "back_at_start_position", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown (level/scene with the player), consistent with returning to the saved starting position." }
         ]
     },
     {
         "name": "Death then Load",
+        "slug": "death_then_load",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Save before death", "commands": ["quick_save", "screenshot"] },
-            { "label": "Trigger death screen", "commands": ["debug_death_screen"], "wait": 1.0 },
-            { "label": "Death screen visible", "commands": ["screenshot"] },
-            { "label": "Select slot and confirm load", "commands": ["accept", "accept"], "wait": 2.0 },
-            { "label": "Back in game after load", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "save_before_death", "commands": ["quick_save", "screenshot"] },
+            { "slug": "trigger_death_screen", "commands": ["debug_death_screen"], "wait": 1.0 },
+            { "slug": "death_screen_visible", "commands": ["screenshot"] },
+            { "slug": "select_slot_confirm_load", "commands": ["accept", "accept"], "wait": 2.0 },
+            { "slug": "back_in_game_after_load", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "death_screen_visible", "expected_state": "GAME_OVER", "expect": "A death / game over screen is shown (e.g. 'You died' or a death overlay)." },
+            { "type": "screenshot_review", "target": "back_in_game_after_load", "expected_state": "GAMEPLAY", "expect": "Active gameplay after loading the save (the death screen is gone, the game world is visible)." }
         ]
     },
     {
         "name": "Multiple Quick Saves",
+        "slug": "multiple_quick_saves",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0, 1, 2],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "First quick save", "commands": ["quick_save", "screenshot"] },
-            { "label": "Change game state", "commands": ["right:30"] },
-            { "label": "Second quick save", "commands": ["quick_save", "screenshot"] },
-            { "label": "Open LoadPanel", "commands": ["quick_load"] },
-            { "label": "Select second slot", "commands": ["down", "accept"] },
-            { "label": "Confirm", "commands": ["accept"], "wait": 2.0 },
-            { "label": "After loading second save", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "first_quick_save", "commands": ["quick_save", "screenshot"] },
+            { "slug": "change_game_state", "commands": ["right:30"] },
+            { "slug": "second_quick_save", "commands": ["quick_save", "screenshot"] },
+            { "slug": "open_loadpanel", "commands": ["quick_load"] },
+            { "slug": "select_second_slot", "commands": ["down", "accept"] },
+            { "slug": "confirm", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "after_loading_second_save", "commands": ["screenshot"] }
         ],
         "assertions": [
             { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
-            { "type": "file_exists", "path": "<save_dir>/save_1.mom", "min_size": 100 }
+            { "type": "file_exists", "path": "<save_dir>/save_1.mom", "min_size": 100 },
+            { "type": "screenshot_review", "target": "after_loading_second_save", "expected_state": "GAMEPLAY", "expect": "Active gameplay after loading the second save (game world visible, not a menu)." }
         ]
     },
     {
         "name": "Auto Save on Map Change",
+        "slug": "auto_save_on_map_change",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Starting position", "commands": ["screenshot"] },
-            { "label": "Change map (triggers auto-save)", "commands": ["debug_map_change"], "wait": 2.0 },
-            { "label": "New map loaded", "commands": ["screenshot"] },
-            { "label": "Open LoadPanel to verify auto-save", "commands": ["quick_load"] },
-            { "label": "Auto-save slot visible", "commands": ["screenshot"] },
-            { "label": "Close LoadPanel", "commands": ["quick_load"] },
-            { "label": "Panel closed", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "starting_position", "commands": ["screenshot"] },
+            { "slug": "change_map", "commands": ["debug_map_change"], "wait": 2.0 },
+            { "slug": "new_map_loaded", "commands": ["screenshot"] },
+            { "slug": "open_loadpanel", "commands": ["quick_load"] },
+            { "slug": "auto_save_slot_visible", "commands": ["screenshot"] },
+            { "slug": "close_loadpanel", "commands": ["quick_load"] },
+            { "slug": "panel_closed", "commands": ["screenshot"] }
         ],
         "assertions": [
-            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 }
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
+            { "type": "screenshot_review", "target": "auto_save_slot_visible", "expect": "A save/load panel is open showing at least one occupied save slot (the auto-save)." }
         ]
     },
     {
         "name": "Corrupt Save Handling",
+        "slug": "corrupt_save_handling",
         "platform": ["desktop", "web"],
         "setup_saves": [ { "slot": 0, "type": "corrupt" } ],
         "actions": [
-            { "label": "Start game with corrupt save", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Open LoadPanel", "commands": ["quick_load"] },
-            { "label": "Corrupt save silently ignored - panel shown", "commands": ["screenshot"] },
-            { "label": "Close panel", "commands": ["quick_load"] },
-            { "label": "Panel closed", "commands": ["screenshot"] }
+            { "slug": "start_with_corrupt_save", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "open_loadpanel", "commands": ["quick_load"] },
+            { "slug": "corrupt_save_ignored_panel_shown", "commands": ["screenshot"] },
+            { "slug": "close_panel", "commands": ["quick_load"] },
+            { "slug": "panel_closed", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "corrupt_save_ignored_panel_shown", "expect": "A load panel is shown and the game has NOT crashed (no error dialog / traceback); the corrupt save is simply ignored or shown as empty." },
+            { "type": "process_alive" }
         ]
     },
     {
         "name": "Web Save in localStorage",
-        "platform": "web",
+        "slug": "web_save_localstorage",
+        "platform": ["web"],
         "cleanup_saves": [0],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick save (F5)", "commands": ["quick_save"], "wait": 0.5 },
-            { "label": "Save written to localStorage", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
+            { "slug": "save_written_to_localstorage", "commands": ["screenshot"] }
         ],
         "assertions": [
             { "type": "localstorage_exists", "key": "MoM.save_0", "min_size": 50 }
@@ -111,166 +145,233 @@
     },
     {
         "name": "Empty Slot Load",
+        "slug": "empty_slot_load",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Start New Game (no saves)", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Open LoadPanel (should be empty)", "commands": ["quick_load"] },
-            { "label": "Panel open", "commands": ["screenshot"] },
-            { "label": "Close panel", "commands": ["quick_load"] },
-            { "label": "Panel closed", "commands": ["screenshot"] }
+            { "slug": "start_new_game_no_saves", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "open_loadpanel_empty", "commands": ["quick_load"] },
+            { "slug": "panel_open", "commands": ["screenshot"] },
+            { "slug": "close_panel", "commands": ["quick_load"] },
+            { "slug": "panel_closed", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "panel_open", "expect": "A load panel is open showing NO occupied save slots (an empty save list / all slots empty)." }
         ]
     },
     {
         "name": "Load from Main Menu",
+        "slug": "load_from_main_menu",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0],
         "actions": [
-            { "label": "Create save via new game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick save", "commands": ["quick_save"] },
-            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
-            { "label": "Menu visible", "commands": ["screenshot"] },
-            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
-            { "label": "Load panel visible", "commands": ["screenshot"] },
-            { "label": "Confirm load", "commands": ["accept"] },
-            { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
-            { "label": "Back in game", "commands": ["screenshot"] }
+            { "slug": "create_save_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"] },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "menu_visible", "commands": ["screenshot"] },
+            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "load_panel_visible", "commands": ["screenshot"] },
+            { "slug": "confirm_load", "commands": ["accept"] },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "back_in_game", "commands": ["screenshot"] }
         ],
         "assertions": [
-            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 }
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
+            { "type": "screenshot_review", "target": "back_in_game", "expected_state": "GAMEPLAY", "expect": "Active gameplay after loading a save from the main menu (game world visible, no menu)." }
         ]
     },
     {
         "name": "UI Flow - Full Save Load",
+        "slug": "ui_flow_full_save_load",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick Save", "commands": ["quick_save"] },
-            { "label": "Game saved notification", "commands": ["screenshot"] },
-            { "label": "Open LoadPanel", "commands": ["quick_load", "screenshot"] },
-            { "label": "Select save and confirm", "commands": ["accept"] },
-            { "label": "Confirm dialog", "commands": ["screenshot"] },
-            { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
-            { "label": "Game loaded", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"] },
+            { "slug": "game_saved_notification", "commands": ["screenshot"] },
+            { "slug": "open_loadpanel", "commands": ["quick_load", "screenshot"] },
+            { "slug": "select_save_confirm", "commands": ["accept"] },
+            { "slug": "confirm_dialog", "commands": ["screenshot"] },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "game_loaded", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "game_loaded", "expected_state": "GAMEPLAY", "expect": "Active gameplay after completing the full save/load flow (game world visible)." }
         ]
     },
     {
         "name": "TextInput Basic",
+        "slug": "textinput_basic",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Open TextInput demo", "commands": ["debug_text_input"], "wait": 1.0 },
-            { "label": "Empty fields, first focused", "commands": ["screenshot"] },
-            { "label": "Type into free-text field", "commands": ["type:Hello123"], "wait": 0.4 },
-            { "label": "Free-text field shows Hello123", "commands": ["screenshot"] },
-            { "label": "Focus digits field", "commands": ["down"], "wait": 0.3 },
-            { "label": "Type digits + letters over the limit", "commands": ["type:12ab3456"], "wait": 0.4 },
-            { "label": "Digits filter + max_length keep 123456", "commands": ["screenshot"] },
-            { "label": "Focus password field", "commands": ["down"], "wait": 0.3 },
-            { "label": "Type a secret", "commands": ["type:secret"], "wait": 0.4 },
-            { "label": "Password masks display (value=secret)", "commands": ["screenshot"] },
-            { "label": "Focus latin field", "commands": ["down"], "wait": 0.3 },
-            { "label": "Type latin letters and a digit", "commands": ["type:Kate9"], "wait": 0.4 },
-            { "label": "Latin filter rejects digit 9 (keeps Kate)", "commands": ["screenshot"] },
-            { "label": "Backspace removes last char (keeps Kat)", "commands": ["backspace"], "wait": 0.4 },
-            { "label": "Final state", "commands": ["screenshot"] }
+            { "slug": "open_textinput_demo", "commands": ["debug_text_input"], "wait": 1.0 },
+            { "slug": "empty_fields_first_focused", "commands": ["screenshot"] },
+            { "slug": "type_free_text", "commands": ["type:Hello123"], "wait": 0.4 },
+            { "slug": "free_text_shows_hello123", "commands": ["screenshot"] },
+            { "slug": "focus_digits_field", "commands": ["down"], "wait": 0.3 },
+            { "slug": "type_digits_over_limit", "commands": ["type:12ab3456"], "wait": 0.4 },
+            { "slug": "digits_filter_keeps_123456", "commands": ["screenshot"] },
+            { "slug": "focus_password_field", "commands": ["down"], "wait": 0.3 },
+            { "slug": "type_secret", "commands": ["type:secret"], "wait": 0.4 },
+            { "slug": "password_masks_display", "commands": ["screenshot"] },
+            { "slug": "focus_latin_field", "commands": ["down"], "wait": 0.3 },
+            { "slug": "type_latin_and_digit", "commands": ["type:Kate9"], "wait": 0.4 },
+            { "slug": "latin_rejects_digit9", "commands": ["screenshot"] },
+            { "slug": "backspace_keeps_kat", "commands": ["backspace"], "wait": 0.4 },
+            { "slug": "final_state", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "final_state", "expect": "A text-input demo screen is shown with several labelled text fields (free text, digits, password, latin)." }
         ]
     },
     {
         "name": "Manage Saves",
+        "slug": "manage_saves",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0, 1, 2],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
-            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
-            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
-            { "label": "LoadPanel with one slot (hint shows Rename/Delete)", "commands": ["screenshot"] },
-            { "label": "Open rename editor (R)", "commands": ["slot_rename"], "wait": 0.5 },
-            { "label": "Rename editor prefilled with current name", "commands": ["screenshot"] },
-            { "label": "Clear current name", "commands": ["backspace", "backspace", "backspace", "backspace", "backspace", "backspace"], "wait": 0.4 },
-            { "label": "Type new name", "commands": ["type:Hero123"], "wait": 0.5 },
-            { "label": "New name typed in editor", "commands": ["screenshot"] },
-            { "label": "Commit rename (Enter)", "commands": ["accept"], "wait": 0.5 },
-            { "label": "Slot renamed in list", "commands": ["screenshot"] },
-            { "label": "Open delete confirm (D)", "commands": ["slot_delete"], "wait": 0.5 },
-            { "label": "Delete confirmation modal (Yes/No)", "commands": ["screenshot"] },
-            { "label": "Confirm delete (Yes)", "commands": ["accept"], "wait": 0.5 },
-            { "label": "Slot removed - empty list", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "loadpanel_one_slot", "commands": ["screenshot"] },
+            { "slug": "open_rename_editor", "commands": ["slot_rename"], "wait": 0.5 },
+            { "slug": "rename_editor_prefilled", "commands": ["screenshot"] },
+            { "slug": "clear_current_name", "commands": ["backspace", "backspace", "backspace", "backspace", "backspace", "backspace"], "wait": 0.4 },
+            { "slug": "type_new_name", "commands": ["type:Hero123"], "wait": 0.5 },
+            { "slug": "new_name_typed", "commands": ["screenshot"] },
+            { "slug": "commit_rename", "commands": ["accept"], "wait": 0.5 },
+            { "slug": "slot_renamed", "commands": ["screenshot"] },
+            { "slug": "open_delete_confirm", "commands": ["slot_delete"], "wait": 0.5 },
+            { "slug": "delete_confirmation_modal", "commands": ["screenshot"] },
+            { "slug": "confirm_delete", "commands": ["accept"], "wait": 0.5 },
+            { "slug": "slot_removed_empty_list", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "delete_confirmation_modal", "expect": "A delete-confirmation modal/dialog is shown with Yes/No (or confirm/cancel) options." },
+            { "type": "screenshot_review", "target": "slot_removed_empty_list", "expect": "The load panel shows an empty save list (the slot was deleted, no occupied slots remain)." }
         ]
     },
     {
         "name": "In-Game LoadPanel Paused",
+        "slug": "ingame_loadpanel_paused",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0, 1, 2],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
-            { "label": "Open LoadPanel in-game (F9)", "commands": ["quick_load"], "wait": 0.5 },
-            { "label": "LoadPanel over the frozen game", "commands": ["screenshot"] },
-            { "label": "Press R - opens Rename, does NOT reload the map", "commands": ["slot_rename"], "wait": 0.5 },
-            { "label": "Rename editor over the game", "commands": ["screenshot"] },
-            { "label": "Cancel rename (Esc)", "commands": ["quit"], "wait": 0.3 },
-            { "label": "Close LoadPanel (Esc)", "commands": ["quit"], "wait": 0.5 },
-            { "label": "Back in game, not main menu", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
+            { "slug": "open_loadpanel_ingame", "commands": ["quick_load"], "wait": 0.5 },
+            { "slug": "loadpanel_over_frozen_game", "commands": ["screenshot"] },
+            { "slug": "press_r_opens_rename", "commands": ["slot_rename"], "wait": 0.5 },
+            { "slug": "rename_editor_over_game", "commands": ["screenshot"] },
+            { "slug": "cancel_rename", "commands": ["quit"], "wait": 0.3 },
+            { "slug": "close_loadpanel", "commands": ["quit"], "wait": 0.5 },
+            { "slug": "back_in_game_not_main_menu", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "back_in_game_not_main_menu", "expected_state": "GAMEPLAY", "expect": "Active gameplay (the game world) is shown, NOT the main menu and NOT a load panel." },
+            { "type": "process_alive" }
         ]
     },
     {
         "name": "Maze Save Blocked",
+        "slug": "maze_save_blocked",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0, 1, 2],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Force dungeon/maze mode", "commands": ["debug_set_maze"], "wait": 0.3 },
-            { "label": "Try to quick save (F5)", "commands": ["quick_save"], "wait": 0.5 },
-            { "label": "Notification: cannot save in the dungeon", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "force_maze_mode", "commands": ["debug_set_maze"], "wait": 0.3 },
+            { "slug": "try_quick_save", "commands": ["quick_save"], "wait": 0.5 },
+            { "slug": "notification_cannot_save_dungeon", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "save_absent", "path": "<save_dir>/save_0.mom" },
+            { "type": "screenshot_review", "target": "notification_cannot_save_dungeon", "expect": "A notification/message indicating that saving is not allowed while in the dungeon/maze is shown." }
         ]
     },
     {
         "name": "In-Game Reload Confirm",
+        "slug": "ingame_reload_confirm",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Press R (reload map)", "commands": ["reload"], "wait": 0.5 },
-            { "label": "Reload confirmation dialog (default No)", "commands": ["screenshot"] },
-            { "label": "Cancel (Esc)", "commands": ["quit"], "wait": 0.5 },
-            { "label": "Back in game, map not reloaded", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "press_r_reload", "commands": ["reload"], "wait": 0.5 },
+            { "slug": "reload_confirmation_dialog", "commands": ["screenshot"] },
+            { "slug": "cancel_esc", "commands": ["quit"], "wait": 0.5 },
+            { "slug": "back_in_game_map_not_reloaded", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "reload_confirmation_dialog", "expect": "A reload confirmation dialog/prompt is shown (asking to confirm reloading the map, with a default No)." },
+            { "type": "process_alive" }
         ]
     },
     {
         "name": "In-Game Esc Shows Continue",
+        "slug": "ingame_esc_shows_continue",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Press Esc in game", "commands": ["quit"], "wait": 0.5 },
-            { "label": "Main menu on top with Continue", "commands": ["screenshot"] },
-            { "label": "Select Continue (top option)", "commands": ["accept"], "wait": 1.0 },
-            { "label": "Resumed the same game", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "press_esc_in_game", "commands": ["quit"], "wait": 0.5 },
+            { "slug": "main_menu_with_continue", "commands": ["screenshot"] },
+            { "slug": "select_continue", "commands": ["accept"], "wait": 1.0 },
+            { "slug": "resumed_same_game", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "main_menu_with_continue", "expected_state": "MENU_MAIN", "expect": "The main menu overlay is shown on top of the game and includes a 'Continue' option." },
+            { "type": "screenshot_review", "target": "resumed_same_game", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown again (the game resumed, no menu overlay)." },
+            { "type": "process_alive" }
         ]
     },
     {
         "name": "Load from Menu then Esc",
+        "slug": "load_from_menu_then_esc",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0],
         "actions": [
-            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
-            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
-            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
-            { "label": "Confirm load", "commands": ["accept"] },
-            { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
-            { "label": "Back in game after load", "commands": ["screenshot"] },
-            { "label": "Press Esc (should show main menu, not quit)", "commands": ["quit"], "wait": 1.0 },
-            { "label": "Main menu visible again (game did not quit)", "commands": ["screenshot"] }
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "confirm_load", "commands": ["accept"] },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "back_in_game_after_load", "commands": ["screenshot"] },
+            { "slug": "press_esc", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "main_menu_visible_again", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "main_menu_visible_again", "expected_state": "MENU_MAIN", "expect": "The main menu is visible again after pressing Esc; the game did NOT quit to desktop." },
+            { "type": "process_alive" }
         ]
     },
     {
         "name": "Menu Load Cancel Returns to Menu",
+        "slug": "menu_load_cancel_returns",
+        "platform": ["desktop", "web"],
         "cleanup_saves": [0],
         "actions": [
-            { "label": "Create save via new game", "commands": ["accept"], "wait": 3.0 },
-            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
-            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
-            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
-            { "label": "Load panel open", "commands": ["screenshot"] },
-            { "label": "Press Esc to cancel Load", "commands": ["quit"], "wait": 1.0 },
-            { "label": "Back at main menu, game NOT closed", "commands": ["screenshot"] }
+            { "slug": "create_save_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "load_panel_open", "commands": ["screenshot"] },
+            { "slug": "press_esc_cancel_load", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "back_at_main_menu", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "back_at_main_menu", "expected_state": "MENU_MAIN", "expect": "The main menu is visible after cancelling the load panel with Esc; the game did NOT quit." },
+            { "type": "process_alive" }
         ]
     },
     {
         "name": "TextInput Demo Hotkey",
+        "slug": "textinput_demo_hotkey",
+        "platform": ["desktop", "web"],
         "actions": [
-            { "label": "At main menu", "commands": ["screenshot"] },
-            { "label": "Press F7 (text_demo hotkey)", "commands": ["text_demo"], "wait": 1.0 },
-            { "label": "TextInput demo screen shown", "commands": ["screenshot"] }
+            { "slug": "at_main_menu", "commands": ["screenshot"] },
+            { "slug": "press_f7_text_demo", "commands": ["text_demo"], "wait": 1.0 },
+            { "slug": "textinput_demo_screen_shown", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "at_main_menu", "expected_state": "MENU_MAIN", "expect": "The game main menu is visible." },
+            { "type": "screenshot_review", "target": "textinput_demo_screen_shown", "expect": "A text-input demo screen with input fields is shown (the F7 hotkey opened the TextInput demo)." }
         ]
     }
 ]

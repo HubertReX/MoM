@@ -74,8 +74,16 @@ description: >-
   </commentary>
 
   </example>
-mode: subagent
+mode: all
 model: opencode-go/mimo-v2.5
+# Fallback model (vision-capable): google/gemini-3.1-flash-lite.
+# opencode agent frontmatter has no native fallback field, so the test runner
+# (tests/automate_display_test.py, SS_REVIEW_MODELS) retries with this model when the
+# primary (opencode-go/mimo-v2.5) is unavailable / its quota is exhausted.
+# Override for a single run: MOM_SS_REVIEW_MODEL=google/gemini-3.1-flash-lite
+# NOTE: mode MUST be 'all' (not 'subagent') so `opencode run --agent ss-reviewer`
+# applies THIS agent's system prompt; a 'subagent'-only agent is silently ignored
+# by `opencode run --agent` (falls back to the default primary agent).
 permission:
   bash: deny
   edit: deny

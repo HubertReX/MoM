@@ -108,6 +108,7 @@ class AgentController:
         self._held: dict[str, int] = {}    # akcja -> pozostała liczba klatek przytrzymania
         self._keys: dict[str, int] = {}    # akcja -> kod klawisza pygame (do KEYUP)
         self._screenshot_pending = False
+        self._screenshot_label = ""     # slug etykiety akcji z komendy `screenshot:<slug>`
         self._counter = 0
         self._exit_requested = False
         self._death_pending = False
@@ -185,6 +186,8 @@ class AgentController:
             return
         if action in ("screenshot", "shot"):
             self._screenshot_pending = True
+            # `screenshot:<slug>` — slug etykiety akcji (po ':') trafia do nazwy pliku.
+            self._screenshot_label = frames_str.strip()
             return
         if action in ("exit", "quit_game"):
             self._exit_requested = True
@@ -328,12 +331,23 @@ class AgentController:
         if not self._screenshot_pending or surface is None:
             return None
         self._screenshot_pending = False
+        label = self._screenshot_label
+        self._screenshot_label = ""
         self._counter += 1
         if self.web_mode:
             self.log(f"[agent_ctrl] screenshot #{self._counter} (delegated to web runner)")
             return None
-        time_str = time.strftime("%Y%m%d_%H%M%S")
-        path = os.path.join(self.screenshot_dir, f"agent_{time_str}_{self._counter:04d}.png")
+        # Nazwa spójna z runnerem: agent_{run_ts}_{scenario_slug}_{NN}_{action_slug}.png
+        # Prefix "{run_ts}_{scenario_slug}" przychodzi z runnera przez env MOM_AGENT_SS_PREFIX.
+        # Bez prefixu (ręczne uruchomienie) — stary format wstecznie kompatybilny.
+        prefix = os.environ.get("MOM_AGENT_SS_PREFIX")
+        if prefix:
+            slug = label or "shot"
+            filename = f"agent_{prefix}_{self._counter:02d}_{slug}.png"
+        else:
+            time_str = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"agent_{time_str}_{self._counter:04d}.png"
+        path = os.path.join(self.screenshot_dir, filename)
         try:
             pygame.image.save(surface, path)
             self.log(f"[agent_ctrl] screenshot -> {path}")

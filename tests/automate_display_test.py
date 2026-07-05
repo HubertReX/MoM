@@ -83,9 +83,97 @@ WEB_SAVE_KEY_PREFIX = "MoM.save_"
 WEB_INPUT_KEY = "MoM.agent_input"
 WEB_AGENT_FLAG = "MoM.agent_control"
 
+# Nazewnictwo screenshotów: agent_{run_ts}_{scenario_slug}_{NN}_{action_slug}.png
+#   - run_ts        : jeden znacznik czasu na cały przebieg jednego scenariusza (grupuje pliki)
+#   - scenario_slug : krótki slug scenariusza z pola "slug" w scenarios.json
+#   - NN            : licznik screenshotów w obrębie scenariusza (2 cyfry)
+#   - action_slug   : slug etykiety akcji, która zleciła screenshot
+# Desktop generuje tę nazwę w grze (project/agent_ctrl.py); web — w runnerze. Oba MUSZĄ
+# produkować identyczny format, żeby runner mógł przewidzieć ścieżkę na potrzeby asercji.
+SS_PREFIX_ENV = "MOM_AGENT_SS_PREFIX"  # desktop: prefix "{run_ts}_{scenario_slug}" przekazany do gry
+
+# --- ss-reviewer (analiza screenshotów przez subagenta z vision) ---
+# Kolejność prób: None = domyślny model agenta (opencode-go/mimo-v2.5); potem fallback Gemini.
+# Fallback wybrany przez usera: google/gemini-3.1-flash-lite (ma vision). Gdy żaden model nie
+# zwróci werdyktu -> asercja twardo pada (decyzja usera: hard-fail).
+SS_REVIEW_AGENT = "ss-reviewer"
+SS_REVIEW_MODELS: list[str | None] = [None, "google/gemini-3.1-flash-lite"]
+SS_REVIEW_TIMEOUT = 150.0
+SS_REVIEW_SKIP_ENV = "MOM_SKIP_SS_REVIEW"  # ustaw =1, by pominąć (szybka iteracja)
+
 
 def get_timestamp() -> str:
     return datetime.now().strftime("%H:%M:%S.%f")
+
+
+def slugify(text: str, max_len: int = 48) -> str:
+    """Zamień etykietę na bezpieczny slug do nazwy pliku (snake_case, [a-z0-9_])."""
+    text = (text or "").strip().lower()
+    text = re.sub(r"[^a-z0-9]+", "_", text)
+    text = re.sub(r"_+", "_", text).strip("_")
+    return text[:max_len] or "shot"
+
+
+def parse_review_verdict(text: str) -> str | None:
+    """Wyciągnij PASS/FAIL z odpowiedzi ss-reviewera (kilka wariantów formatu)."""
+    for pattern in (
+        r"RESULT:\s*(PASS|FAIL)",
+        r"\*\*Result\*\*:\s*(PASS|FAIL)",
+        r"\bResult\b[:\s]+(PASS|FAIL)",
+    ):
+        m = re.search(pattern, text, re.IGNORECASE)
+        if m:
+            return m.group(1).upper()
+    return None
+
+
+def review_screenshot(path: Path, expect: str, expected_state: str | None) -> tuple[str | None, str]:
+    """Poproś subagenta ss-reviewer o werdykt PASS/FAIL dla screenshotu.
+
+    Zwraca ``(verdict, detail)`` gdzie verdict to 'PASS'/'FAIL'/None (żaden model nie dał werdyktu).
+    Próbuje kolejno modeli z ``SS_REVIEW_MODELS``; pierwszy zwracający czytelny werdykt wygrywa.
+    """
+    prompt = (
+        "You are validating an automated test screenshot from the game "
+        '"Misadventures of Malachi" (MoM). '
+        f"Expected game state: {expected_state or 'described below'}. "
+        f"Expectation to verify: {expect} "
+        "Analyze the attached screenshot and produce your structured report. "
+        "Then, on the FINAL line, output exactly 'RESULT: PASS' if the screenshot "
+        "matches the expectation, or 'RESULT: FAIL' if it does not."
+    )
+    # MOM_SS_REVIEW_MODEL wymusza jeden konkretny model (pomija dead primary).
+    forced = os.environ.get("MOM_SS_REVIEW_MODEL")
+    models: list[str | None] = [forced] if forced else SS_REVIEW_MODELS
+    last_detail = "no model attempted"
+    for model in models:
+        label = model or "agent-default"
+        cmd = ["opencode", "run", prompt, "--agent", SS_REVIEW_AGENT, "-f", str(path)]
+        if model:
+            cmd += ["--model", model]
+        try:
+            proc = subprocess.run(
+                cmd, capture_output=True, text=True,
+                timeout=SS_REVIEW_TIMEOUT, cwd=str(REPO_ROOT),
+            )
+        except subprocess.TimeoutExpired:
+            last_detail = f"{label}: timed out after {SS_REVIEW_TIMEOUT:.0f}s"
+            print(f"[ss-review] {last_detail}")
+            continue
+        except FileNotFoundError:
+            return None, "opencode CLI not found on PATH"
+        out = (proc.stdout or "") + "\n" + (proc.stderr or "")
+        verdict = parse_review_verdict(out)
+        if verdict:
+            # dołącz krótki kontekst z raportu (ostatnie niepuste linie) do detalu
+            tail = " ".join(
+                ln.strip() for ln in out.strip().splitlines()[-4:] if ln.strip()
+            )
+            print(f"[ss-review] {label} -> {verdict}")
+            return verdict, f"[{label}] {tail}"
+        last_detail = f"{label}: no verdict (rc={proc.returncode})"
+        print(f"[ss-review] {last_detail}")
+    return None, last_detail
 
 
 def get_save_dir() -> Path:
@@ -136,8 +224,10 @@ def clear_all_saves() -> None:
 # Scenarios
 # ============================================================================
 class TestAction:
-    def __init__(self, label: str, commands: List[str], wait: float = TEST_CONFIG["TRANSITION_WAIT"]):
-        self.label = label
+    def __init__(self, slug: str, commands: List[str], wait: float = TEST_CONFIG["TRANSITION_WAIT"]):
+        # slug: krótka nazwa snake_case akcji - używana w logach, w nazwie pliku
+        # screenshotu (action_slug) oraz jako `target` asercji screenshot_review.
+        self.slug = slugify(slug)
         self.commands = commands
         self.wait = wait
 
@@ -157,6 +247,7 @@ class TestScenario:
         cleanup_saves: List[int] | None = None,
         platform_spec: str | List[str] | None = None,
         setup_saves: List[dict[str, Any]] | None = None,
+        slug: str | None = None,
     ):
         self.name = name
         self.actions = actions
@@ -164,6 +255,8 @@ class TestScenario:
         self.cleanup_saves = cleanup_saves or []
         self.platform_spec = platform_spec
         self.setup_saves = setup_saves or []
+        # slug do nazw plików screenshotów; fallback = slug z nazwy scenariusza
+        self.slug = slug or slugify(name)
 
     def supports(self, backend: str) -> bool:
         if not self.platform_spec:
@@ -198,6 +291,9 @@ class RunnerBase:
 
     def __init__(self) -> None:
         self.counter = 0
+        self.run_ts = ""            # jeden znacznik czasu na przebieg jednego scenariusza
+        self.scenario_slug = ""
+        self.screenshots: List[dict[str, Any]] = []  # {slug, label, path} w kolejności zrobienia
 
     def start_game(self) -> None: ...
     def execute_action(self, action: TestAction) -> None: ...
@@ -205,19 +301,104 @@ class RunnerBase:
     def cleanup_saves_before(self, scenario: TestScenario) -> None: ...
     def setup_saves(self, saves: List[dict[str, Any]]) -> None: ...
     def cleanup(self) -> None: ...
-    def next_screenshot_counter(self) -> int:
-        self.counter += 1
-        return self.counter
 
-    def take_screenshot(self, label: str) -> None:
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        path = AGENT_SCREENSHOT_DIR / f"agent_{ts}_{self.next_screenshot_counter():04d}.png"
+    # ---------------------------------------------------------------- scenariusz
+    def begin_scenario(self, scenario: TestScenario) -> None:
+        """Zamroź jeden znacznik czasu + slug scenariusza; wyzeruj licznik i historię."""
+        self.counter = 0
+        self.run_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.scenario_slug = scenario.slug
+        self.screenshots = []
+
+    def screenshot_prefix(self) -> str:
+        return f"{self.run_ts}_{self.scenario_slug}"
+
+    def record_screenshot(self, action_slug: str) -> Path:
+        """Policz przewidywaną ścieżkę screenshotu i zapamiętaj ją (dla asercji).
+
+        Nazwa MUSI być identyczna z tą, którą generuje gra na desktopie
+        (project/agent_ctrl.py) — patrz komentarz przy SS_PREFIX_ENV.
+        """
+        self.counter += 1
+        slug = slugify(action_slug)
+        name = f"agent_{self.run_ts}_{self.scenario_slug}_{self.counter:02d}_{slug}.png"
+        path = AGENT_SCREENSHOT_DIR / name
         AGENT_SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        self.screenshots.append({"slug": slug, "path": path})
+        return path
+
+    def take_screenshot(self, action_slug: str) -> None:
+        """Web: policz ścieżkę i zapisz zrzut (desktop zapisuje gra, nie runner)."""
+        path = self.record_screenshot(action_slug)
         self._save_screenshot(path)
         print(f"[{get_timestamp()}] screenshot -> {path}")
 
     def _save_screenshot(self, path: Path) -> None:
         raise NotImplementedError
+
+    # ---------------------------------------------------------------- asercje wspólne
+    def find_screenshot(self, target: str | None) -> dict[str, Any] | None:
+        """Znajdź zapamiętany screenshot po slugu akcji; brak target => ostatni."""
+        if not self.screenshots:
+            return None
+        if not target:
+            return self.screenshots[-1]
+        wanted = slugify(target)
+        for shot in reversed(self.screenshots):
+            if shot["slug"] == wanted:
+                return shot
+        return None
+
+    def check_common_assertion(self, assertion: dict[str, Any]) -> List[str] | None:
+        """Asercje wspólne dla obu backendów. Zwraca None gdy typ nieobsługiwany tutaj."""
+        a_type = assertion.get("type")
+        if a_type == "screenshot_review":
+            return self._assert_screenshot_review(assertion)
+        if a_type == "screenshot_min_size":
+            return self._assert_screenshot_min_size(assertion)
+        if a_type == "process_alive":
+            return self._assert_process_alive(assertion)
+        return None
+
+    def _assert_screenshot_review(self, assertion: dict[str, Any]) -> List[str]:
+        if os.environ.get(SS_REVIEW_SKIP_ENV):
+            print(f"[ss-review] skipped ({SS_REVIEW_SKIP_ENV} set)")
+            return []
+        target = assertion.get("target")
+        shot = self.find_screenshot(target)
+        if shot is None:
+            avail = [s["slug"] for s in self.screenshots]
+            return [f"screenshot_review: no screenshot for target={target!r} (have: {avail})"]
+        path = Path(shot["path"])
+        if not path.exists():
+            return [f"screenshot_review: screenshot file missing: {path}"]
+        expect = assertion.get("expect", "")
+        expected_state = assertion.get("expected_state")
+        verdict, detail = review_screenshot(path, expect, expected_state)
+        if verdict == "PASS":
+            return []
+        if verdict == "FAIL":
+            return [f"screenshot_review[{shot['slug']}] FAIL: {detail}"]
+        # hard-fail (decyzja usera): żaden model nie dał werdyktu
+        return [f"screenshot_review[{shot['slug']}] no verdict from any model: {detail}"]
+
+    def _assert_screenshot_min_size(self, assertion: dict[str, Any]) -> List[str]:
+        target = assertion.get("target")
+        shot = self.find_screenshot(target)
+        if shot is None:
+            return [f"screenshot_min_size: no screenshot for target={target!r}"]
+        path = Path(shot["path"])
+        if not path.exists():
+            return [f"screenshot_min_size: file missing: {path}"]
+        min_size = int(assertion.get("min_size", 1000))
+        size = path.stat().st_size
+        if size < min_size:
+            return [f"screenshot_min_size[{shot['slug']}]: {size} bytes < {min_size} (blank frame?)"]
+        return []
+
+    def _assert_process_alive(self, assertion: dict[str, Any]) -> List[str]:
+        """Domyślnie no-op; DesktopRunner nadpisuje realną kontrolą procesu."""
+        return []
 
 
 class DesktopRunner(RunnerBase):
@@ -238,32 +419,56 @@ class DesktopRunner(RunnerBase):
         print(f"[{get_timestamp()}] Starting game (desktop)...")
         start_time = time.perf_counter()
         self._clear_input_file()
+        # Prefix nazw screenshotów przekazany do gry — patrz SS_PREFIX_ENV.
+        env = dict(os.environ)
+        env[SS_PREFIX_ENV] = self.screenshot_prefix()
         self.game_proc = subprocess.Popen(
-            TEST_CONFIG["GAME_CMD"], shell=True, preexec_fn=os.setsid
+            TEST_CONFIG["GAME_CMD"], shell=True, preexec_fn=os.setsid, env=env
         )
         time.sleep(TEST_CONFIG["INIT_WAIT"])
         print(f"[{get_timestamp()}] Game Init Delta: {time.perf_counter() - start_time:.4f}s")
 
     def execute_action(self, action: TestAction) -> None:
-        print(f"[{get_timestamp()}] {action.label}")
+        print(f"[{get_timestamp()}] {action.slug}")
         start = time.perf_counter()
-        cmd = f'echo "{" ".join(action.commands)}" > {TEST_CONFIG["INPUT_FILE"]}'
+        ctrl, wants_shot = action.split_screenshot()
+        tokens = list(ctrl)
+        if wants_shot:
+            # Osadź slug akcji w komendzie: gra użyje go w nazwie pliku.
+            tokens.append(f"screenshot:{action.slug}")
+        cmd = f'echo "{" ".join(tokens)}" > {TEST_CONFIG["INPUT_FILE"]}'
         subprocess.run(cmd, shell=True)
+        if wants_shot:
+            # Przewidź ścieżkę, którą zapisze gra (ten sam format nazwy), na potrzeby asercji.
+            self.record_screenshot(action.slug)
         end = time.perf_counter()
         print(f"[{get_timestamp()}] Done. Delta: {end - start:.4f}s")
         if action.wait > 0:
             time.sleep(action.wait)
 
     def check_assertion(self, assertion: dict[str, Any]) -> List[str]:
+        common = self.check_common_assertion(assertion)
+        if common is not None:
+            return common
         a_type = assertion.get("type")
-        if a_type != "file_exists":
-            return [f"unknown assertion type: {a_type}"]
-        path = resolve_assertion_path(assertion["path"])
-        if not path.exists():
-            return [f"{path} does not exist"]
-        min_size = assertion.get("min_size")
-        if min_size is not None and path.stat().st_size < min_size:
-            return [f"{path} size {path.stat().st_size} < {min_size}"]
+        if a_type == "file_exists":
+            path = resolve_assertion_path(assertion["path"])
+            if not path.exists():
+                return [f"{path} does not exist"]
+            min_size = assertion.get("min_size")
+            if min_size is not None and path.stat().st_size < min_size:
+                return [f"{path} size {path.stat().st_size} < {min_size}"]
+            return []
+        if a_type == "save_absent":
+            path = resolve_assertion_path(assertion["path"])
+            if path.exists():
+                return [f"{path} exists but should be absent"]
+            return []
+        return [f"unknown assertion type: {a_type}"]
+
+    def _assert_process_alive(self, assertion: dict[str, Any]) -> List[str]:
+        if self.game_proc is None or self.game_proc.poll() is not None:
+            return ["process_alive: game process exited unexpectedly (crash or unwanted quit)"]
         return []
 
     def cleanup_saves_before(self, scenario: TestScenario) -> None:
@@ -435,7 +640,7 @@ class WebRunner(RunnerBase):
         )
 
     def execute_action(self, action: TestAction) -> None:
-        print(f"[{get_timestamp()}] {action.label}")
+        print(f"[{get_timestamp()}] {action.slug}")
         start = time.perf_counter()
         ctrl, wants_shot = action.split_screenshot()
         self._send_commands(ctrl)
@@ -444,9 +649,12 @@ class WebRunner(RunnerBase):
         if action.wait > 0:
             time.sleep(action.wait)
         if wants_shot:
-            self.take_screenshot(action.label)
+            self.take_screenshot(action.slug)
 
     def check_assertion(self, assertion: dict[str, Any]) -> List[str]:
+        common = self.check_common_assertion(assertion)
+        if common is not None:
+            return common
         a_type = assertion.get("type")
         if a_type == "file_exists":
             # Translator: assertion z desktopa -> sprawdź localStorage zamiast pliku.
@@ -465,7 +673,27 @@ class WebRunner(RunnerBase):
                 slot = int(m.group(1))
                 return self._check_localstorage_slot(slot, assertion.get("min_size"))
             return [f"localstorage_exists: brak slotu w 'key' ({assertion.get('key')})"]
+        elif a_type == "save_absent":
+            m = re.search(r"save_(\d+)", assertion.get("path", ""))
+            if not m:
+                return [f"save_absent: brak slotu w 'path' ({assertion.get('path')})"]
+            slot = int(m.group(1))
+            key = f"{WEB_SAVE_KEY_PREFIX}{slot}"
+            raw = self.page.evaluate("([k]) => localStorage.getItem(k)", [key])
+            if raw:
+                return [f"{key} present in localStorage but should be absent"]
+            return []
         return [f"unknown assertion type: {a_type}"]
+
+    def _assert_process_alive(self, assertion: dict[str, Any]) -> List[str]:
+        # web: gra żyje, jeśli strona nadal odpowiada na evaluate (nie ma crashu WASM)
+        if self.page is None:
+            return ["process_alive: no page (web game not running)"]
+        try:
+            self.page.evaluate("() => 1")
+        except Exception as e:
+            return [f"process_alive: web page unresponsive ({e})"]
+        return []
 
     def _check_localstorage_slot(self, slot: int, min_size: Any) -> List[str]:
         key = f"{WEB_SAVE_KEY_PREFIX}{slot}"
@@ -572,7 +800,7 @@ def load_scenarios(path: str) -> List[TestScenario]:
     for s in data:
         actions = [
             TestAction(
-                a["label"],
+                a.get("slug") or a.get("label", ""),
                 a["commands"],
                 a.get("wait", TEST_CONFIG["TRANSITION_WAIT"]),
             )
@@ -585,6 +813,7 @@ def load_scenarios(path: str) -> List[TestScenario]:
             cleanup_saves=s.get("cleanup_saves"),
             platform_spec=s.get("platform"),
             setup_saves=s.get("setup_saves"),
+            slug=s.get("slug"),
         ))
     return scenarios
 
@@ -592,6 +821,7 @@ def load_scenarios(path: str) -> List[TestScenario]:
 def run_scenarios(scenarios: List[TestScenario], runner: RunnerBase) -> int:
     failures = 0
     for scenario in scenarios:
+        runner.begin_scenario(scenario)
         runner.cleanup_saves_before(scenario)
         if scenario.setup_saves:
             runner.setup_saves(scenario.setup_saves)
