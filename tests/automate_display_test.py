@@ -12,15 +12,30 @@ Two backends share one scenarios schema:
 Usage:
     # desktop (default) - jak dotychczas
     .venv/bin/python3 tests/automate_display_test.py "Save and Load Basic"
-    .venv/bin/python3 tests/automate_display_test.py
+    .venv/bin/python3 tests/automate_display_test.py            # wszystkie desktop-owe
+    # lub przez Just:  just test "Save and Load Basic"  |  just test
 
     # web (wymaga Playwright + chromium: patrz requirements-dev)
     .venv/bin/python3 tests/automate_display_test.py --web "Save and Load Basic"
-    .venv/bin/python3 tests/automate_display_test.py --web
+    .venv/bin/python3 tests/automate_display_test.py --web      # wszystkie web-owe
+    # lub przez Just:  just test-web "Save and Load Basic"  |  just test-web
+
+Opcje CLI (patrz też ``--help``):
+    scenario            nazwa scenariusza; pomiń, by uruchomić wszystkie dla backendu
+    --web               użyj backendu web (pygbag + Playwright) zamiast desktop
+    --url URL           web: nadpisz URL pygbag (domyślnie http://127.0.0.1:8001/)
+    --timeout S         web: ile sekund czekać na boot gry po pojawieniu się canvasu
+                        (domyślnie INIT_WAIT_WEB=12s); podbij na wolnym CI/sprzęcie
+    --pygbag-timeout S  web: ile sekund czekać na build + serve pygbag (domyślnie 90s)
 
 Scenarios selection:
     Scenariusze z polem ``platform`` w ``scenarios.json`` są filtrowane per backend:
     ``"desktop"``, ``"web"`` lub lista ``["desktop", "web"]``. Brak pola = dotyczy obu.
+
+Assertions (per scenario, opcjonalne):
+    file_exists          desktop: plik ``<save_dir>/save_N.mom`` istnieje (min_size opcjonalny);
+                         web: tłumaczone na obecność klucza ``MoM.save_N`` w localStorage.
+    localstorage_exists  web: klucz ``key`` (np. ``MoM.save_0``) obecny w localStorage.
 """
 from __future__ import annotations
 
@@ -41,6 +56,7 @@ from typing import Any, List
 TEST_CONFIG = {
     "INIT_WAIT": 5.0,
     "INIT_WAIT_WEB": 12.0,  # pygbag boot + WASM load są wolniejsze
+    "PYGBAG_BOOT_TIMEOUT": 90.0,  # ile czekać na wystartowanie serwera pygbag (build + serve)
     "TRANSITION_WAIT": 0.2,
     "SCREENSHOT_BUFFER": 0.1,
     "GAME_CMD": "MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 project/main.py",
@@ -295,7 +311,12 @@ class DesktopRunner(RunnerBase):
 class WebRunner(RunnerBase):
     backend = "web"
 
-    def __init__(self, url: str | None = None) -> None:
+    def __init__(
+        self,
+        url: str | None = None,
+        init_wait: float | None = None,
+        pygbag_timeout: float | None = None,
+    ) -> None:
         super().__init__()
         try:
             from playwright.sync_api import sync_playwright
@@ -307,13 +328,18 @@ class WebRunner(RunnerBase):
         self._sync_playwright = sync_playwright
         self.pygbag_proc: subprocess.Popen | None = None
         self.url = url or TEST_CONFIG["WEB_URL"]
+        # boot wait po pojawieniu się canvasu (asset load + MainMenuScreen); konfigurowalne przez --timeout
+        self.init_wait = init_wait if init_wait is not None else TEST_CONFIG["INIT_WAIT_WEB"]
+        self.pygbag_timeout = pygbag_timeout if pygbag_timeout is not None else TEST_CONFIG["PYGBAG_BOOT_TIMEOUT"]
         self.pw = None
         self.browser = None
         self.page = None
         # saves do wstrzyknięcia po pierwszym goto(), przed reloadem ze stroną z grą
         self._pending_setup_saves: List[dict[str, Any]] = []
 
-    def _wait_for_pygbag_url(self, proc: subprocess.Popen, timeout: float = 90.0) -> str:
+    def _wait_for_pygbag_url(self, proc: subprocess.Popen, timeout: float | None = None) -> str:
+        if timeout is None:
+            timeout = self.pygbag_timeout
         """Sprawdź gotowość pygbag: (a) szukaj URL w stdout, (b) HTTP poll na self.url."""
         url_re = re.compile(r"http://[\w\.-]+:\d+/?")
         deadline = time.perf_counter() + timeout
@@ -356,6 +382,9 @@ class WebRunner(RunnerBase):
             env=env,
             text=True,
             bufsize=1,
+            # własna sesja/grupa procesów: cleanup() robi os.killpg na tej grupie,
+            # bez tego SIGTERM trafiłby też w sam runner (współdzielona grupa) -> exit 143/144
+            start_new_session=True,
         )
         try:
             url = self._wait_for_pygbag_url(self.pygbag_proc)
@@ -391,7 +420,7 @@ class WebRunner(RunnerBase):
         except Exception as e:
             print(f"[warn] canvas not found within 30s: {e}")
         # daj grze czas na pełny boot (asset load, MainMenuScreen)
-        time.sleep(TEST_CONFIG["INIT_WAIT_WEB"])
+        time.sleep(self.init_wait)
         print(f"[{get_timestamp()}] Web game ready")
 
     def _send_commands(self, commands: List[str]) -> None:
@@ -584,6 +613,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Agent-driven UI test runner")
     parser.add_argument("--web", action="store_true", help="use pygbag + Playwright web backend")
     parser.add_argument("--url", default=None, help="override pygbag URL (web mode)")
+    parser.add_argument(
+        "--timeout", type=float, default=None,
+        help="web mode: seconds to wait for the game to boot after the canvas appears "
+             f"(default {TEST_CONFIG['INIT_WAIT_WEB']}); bump on slow CI/hardware",
+    )
+    parser.add_argument(
+        "--pygbag-timeout", type=float, default=None,
+        help="web mode: seconds to wait for the pygbag server to build + serve "
+             f"(default {TEST_CONFIG['PYGBAG_BOOT_TIMEOUT']})",
+    )
     parser.add_argument("scenario", nargs="?", default=None, help="scenario name; omit to run all")
     args = parser.parse_args()
 
@@ -601,7 +640,11 @@ def main() -> int:
 
     runner: RunnerBase
     if args.web:
-        runner = WebRunner(url=args.url)
+        runner = WebRunner(
+            url=args.url,
+            init_wait=args.timeout,
+            pygbag_timeout=args.pygbag_timeout,
+        )
     else:
         runner = DesktopRunner()
 

@@ -97,6 +97,19 @@
         ]
     },
     {
+        "name": "Web Save in localStorage",
+        "platform": "web",
+        "cleanup_saves": [0],
+        "actions": [
+            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Quick save (F5)", "commands": ["quick_save"], "wait": 0.5 },
+            { "label": "Save written to localStorage", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "localstorage_exists", "key": "MoM.save_0", "min_size": 50 }
+        ]
+    },
+    {
         "name": "Empty Slot Load",
         "actions": [
             { "label": "Start New Game (no saves)", "commands": ["accept"], "wait": 3.0 },

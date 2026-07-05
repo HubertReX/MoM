@@ -984,17 +984,22 @@ class Game:
 
         # handle save/load hotkeys (works even when paused)
         if INPUTS.get("quick_save"):
-            slot_idx = self.save_manager.pick_quick_save_slot()
             state = self.states[-1]
-            if slot_idx is None:
+            if getattr(state, "is_maze", False):
+                # saving is not allowed inside dungeons/mazes (procedural, non-persistable)
                 if hasattr(state, "add_notification"):
-                    state.add_notification("No free save slots", NotificationTypeEnum.error)  # type: ignore[attr-defined]
-            elif self.save_manager.save(slot_idx):
-                if hasattr(state, "add_notification"):
-                    state.add_notification(f"Game saved in slot {slot_idx + 1}", NotificationTypeEnum.success)  # type: ignore[attr-defined]
+                    state.add_notification("Cannot save in the dungeon", NotificationTypeEnum.error)  # type: ignore[attr-defined]
             else:
-                if hasattr(state, "add_notification"):
-                    state.add_notification("Failed to save game", NotificationTypeEnum.error)  # type: ignore[attr-defined]
+                slot_idx = self.save_manager.pick_quick_save_slot()
+                if slot_idx is None:
+                    if hasattr(state, "add_notification"):
+                        state.add_notification("No free save slots", NotificationTypeEnum.error)  # type: ignore[attr-defined]
+                elif self.save_manager.save(slot_idx):
+                    if hasattr(state, "add_notification"):
+                        state.add_notification(f"Game saved in slot {slot_idx + 1}", NotificationTypeEnum.success)  # type: ignore[attr-defined]
+                else:
+                    if hasattr(state, "add_notification"):
+                        state.add_notification("Failed to save game", NotificationTypeEnum.error)  # type: ignore[attr-defined]
             INPUTS["quick_save"] = False
         if INPUTS.get("quick_load"):
             state = self.states[-1]

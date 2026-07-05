@@ -1154,8 +1154,19 @@ class Scene(State):
 
         self.remove_old_notifications()
 
+        # sample this before ui.update() so that on the frame a modal panel closes
+        # itself (e.g. Esc in LoadPanel) we still freeze this frame - that keeps the
+        # closing keypress from also leaking to the scene (Esc would open the menu).
+        modal_open = self.ui.is_modal_open()
+
         if self.display_ui_flag:
             self.ui.update(self.game.time_elapsed, events)
+
+        # while a Save/Load panel is open the world is frozen and input goes only to
+        # the panel; clear INPUTS so nothing queued fires when the panel closes.
+        if modal_open:
+            self.game.reset_inputs()
+            return
 
         self.group.update(dt)
         self.animations.update(dt)
@@ -1283,16 +1294,16 @@ class Scene(State):
                 else:
                     npc.health_bar.hide()
 
-        # exit from current state and go back to previous
+        # Esc opens the main menu *on top of* the running scene (not exit_state, which
+        # would discard the game). The menu offers Continue (resume unchanged), so the
+        # player can return to the exact game state.
         if INPUTS["quit"]:
             if not self.ui.is_open(TradePanel):
-                # SplashScreen(self.game).enter_state()
-                # Scene(self.game, "grasslands", "start").enter_state()
-                # MainMenuScreen(self.game, next_scene).enter_state()
                 for fun, val in _TIMEIT_CACHE.items():
                     cnt, time = val
                     print(f"{fun};{cnt};{time:.10f};{time / cnt:.10f}")
-                self.exit_state()
+                from ui.panels.main_menu import MainMenuScreen
+                MainMenuScreen(self.game, "MainMenu").enter_state()
                 self.game.reset_inputs()
             INPUTS["quit"] = False
 
@@ -1450,10 +1461,15 @@ class Scene(State):
             # self.game.reset_inputs()
             INPUTS["menu"] = False
 
-        # live reload map
+        # live reload map (R) - irreversible reset of the current map, so confirm first
         if INPUTS["reload"]:
-            self.reload_map()
-            self.ui.reset()
+            from ui.panels.main_menu import ConfirmMenuScreen
+            ConfirmMenuScreen(
+                self.game,
+                "Reload map? Unsaved progress on this map will be lost.",
+                self._confirm_reload_map,
+            ).enter_state()
+            self.game.reset_inputs()
             INPUTS["reload"] = False
 
         # camera zoom in/out
@@ -1469,6 +1485,11 @@ class Scene(State):
             INPUTS["zoom_out"] = False
 
     # TODO Rename this here and in `update`
+    def _confirm_reload_map(self) -> None:
+        """Called from the reload confirmation dialog (Yes) - actually reset the map."""
+        self.reload_map()
+        self.ui.reset()
+
     def reload_map(self) -> None:
         self.game.time_elapsed = 0.0
         self.day = INITIAL_DAY

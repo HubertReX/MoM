@@ -318,6 +318,52 @@ class MainMenuScreen(MenuScreen):
 
 
 #######################################################################################################################
+# MARK: ConfirmMenuScreen
+
+
+class ConfirmMenuScreen(MenuScreen):
+    """Generic Yes/No confirmation shown on top of the current state.
+
+    Pushed as a state, so the state underneath is frozen while it is up. ``Yes`` pops
+    the dialog and runs ``on_confirm``; ``No``/Esc just pops it. Used e.g. for the
+    irreversible in-game map reload (R).
+    """
+
+    def __init__(
+        self,
+        game: game.Game,
+        message: str,
+        on_confirm: Callable[[], None],
+        bg_image: pygame.Surface | None = None,
+    ) -> None:
+        self._message = message
+        self._on_confirm = on_confirm
+        super().__init__(game, "Confirm", bg_image)
+        # default the selection to "No" - this guards destructive actions from a stray Enter
+        self.panel.set_index(1)
+
+    def build_panel(self) -> MenuPanel:
+        # message goes in `lines` (not `title`) because MenuPanel sizes its width to the
+        # lines/buttons - a long title would overflow the panel background.
+        return MenuPanel(
+            [("Yes", self._on_yes), ("No", self._on_no)],
+            title="Confirm",
+            lines=[self._message],
+            bg_file="nine_patch_12b.png",
+            anchor="center",
+            pos=(WIDTH // 2, HEIGHT // 2),
+            line_size=20,
+        )
+
+    def _on_yes(self) -> None:
+        self.exit_state()
+        self._on_confirm()
+
+    def _on_no(self) -> None:
+        self.exit_state()
+
+
+#######################################################################################################################
 # MARK: AboutMenuScreen
 
 

@@ -57,6 +57,26 @@ serve-web *args:
     #!powershell
     .venv\Scripts\python.exe -m pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
 
+# Run agent-driven UI smoke tests on the DESKTOP build. Quote a scenario name to run one (`just test "Save and Load Basic"`); omit to run all desktop scenarios. Run `.venv/bin/python3 tests/automate_display_test.py -h` for full flags.
+[unix]
+test scenario="":
+    #!/usr/bin/env bash
+    if [ -z "{{scenario}}" ]; then
+        .venv/bin/python3 tests/automate_display_test.py
+    else
+        .venv/bin/python3 tests/automate_display_test.py "{{scenario}}"
+    fi
+
+# Run the same agent-driven UI smoke tests on the WEB build (pygbag + Playwright Chromium). Scenario name FIRST (quoted), then optional flags: `just test-web "Corrupt Save Handling"`, `just test-web "Save and Load Basic" --timeout 25`, or `just test-web` for all web scenarios. Requires `playwright install chromium` (see requirements-dev.txt).
+[unix]
+test-web scenario="" *flags:
+    #!/usr/bin/env bash
+    if [ -z "{{scenario}}" ]; then
+        .venv/bin/python3 tests/automate_display_test.py --web {{flags}}
+    else
+        .venv/bin/python3 tests/automate_display_test.py --web {{flags}} "{{scenario}}"
+    fi
+
 # Regenerate config JSON schema from the Pydantic models (desktop only)
 [unix]
 update-config-schema:

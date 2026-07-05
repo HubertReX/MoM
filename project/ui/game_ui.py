@@ -34,6 +34,9 @@ if TYPE_CHECKING:
 
 # panels that hide the gameplay HUD overlay (weapon/hotbar/help) while open
 _BLOCKING = (DialogPanel, TradePanel)
+# panels that fully freeze the world while open: input must go to the panel only,
+# not to the scene underneath (otherwise e.g. R renames a slot *and* reloads the map)
+_MODAL = (LoadPanel, SavePanel)
 
 
 class GameUI:
@@ -79,6 +82,10 @@ class GameUI:
     def is_open(self, panel_type: type) -> bool:
         panel = self._panels.get(panel_type)
         return panel is not None and panel in self._open
+
+    def is_modal_open(self) -> bool:
+        """True if a panel that should freeze the scene (Save/Load) is open."""
+        return any(isinstance(p, _MODAL) for p in self._open)
 
     def reset(self) -> None:
         for panel in self._open:

@@ -218,6 +218,9 @@ class SaveLoadPanel(Widget):
         # inline rename editor (TextInput) — active only while renaming a slot
         self._editor: TextInput | None = None
         self._editing_slot_idx: int = -1
+        # the same physical key that opens the editor (R) also emits a TEXTINPUT "r";
+        # swallow that one stray character so it doesn't land in the field
+        self._swallow_next_textinput: bool = False
 
         self._build_background()
         self._refresh_slots()
@@ -229,10 +232,17 @@ class SaveLoadPanel(Widget):
         self._title_surf = theme.menu_font(32).render(self._TITLE, False, theme.NAME)
         self._close_btn = Label("[X]", size=24)
 
+    # header/footer sit inside the 9-patch border; keep the slot list clear of both
+    _HEADER_Y = 18
+    _FOOTER_Y = 30
+
+    def _list_top(self) -> int:
+        return self.rect.top + self._HEADER_Y + self._title_surf.get_height() + 12
+
     def _refresh_slots(self) -> None:
         infos = self.game.save_manager.list_slots()
         self._slots.clear()
-        y = self.rect.top + 60
+        y = self._list_top()
         for i in range(MAX_SAVE_SLOTS):
             slot_rect = pygame.Rect(self.rect.left + _PAD, y, self.rect.width - 2 * _PAD, 30)
             info = infos[i] if i < len(infos) else None
@@ -280,6 +290,10 @@ class SaveLoadPanel(Widget):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self._close_editor()  # cancel: leaves the saved name unchanged
                 return True
+            if event.type == pygame.TEXTINPUT and self._swallow_next_textinput:
+                # drop the stray "r" produced by the same keypress that opened the editor
+                self._swallow_next_textinput = False
+                return True
             return self._editor.handle_event(event)
 
         if self._confirm_action:
@@ -308,7 +322,7 @@ class SaveLoadPanel(Widget):
             if event.key == pygame.K_r and self._slots:
                 self._begin_rename(self._slots[self._selected_idx])
                 return True
-            if event.key == pygame.K_DELETE and self._slots:
+            if event.key in (pygame.K_d, pygame.K_DELETE) and self._slots:
                 self._begin_delete(self._slots[self._selected_idx])
                 return True
             if event.key == pygame.K_RETURN and self._slots:
@@ -345,6 +359,7 @@ class SaveLoadPanel(Widget):
         editor.set_focus(True)
         self._editor = editor
         self._editing_slot_idx = slot.idx
+        self._swallow_next_textinput = True
 
     def _commit_rename(self, text: str) -> None:
         if self._editing_slot_idx >= 0:
@@ -357,6 +372,7 @@ class SaveLoadPanel(Widget):
             self._editor.set_focus(False)
         self._editor = None
         self._editing_slot_idx = -1
+        self._swallow_next_textinput = False
 
     def _begin_delete(self, slot: _SlotButton) -> None:
         """Ask for confirmation before deleting an occupied slot (no-op for empty slots)."""
@@ -398,6 +414,10 @@ class SaveLoadPanel(Widget):
             btn.update(dt)
         if self._editor is not None:
             self._editor.update(dt)
+            # the stray char from the opening keypress (if any) arrives in the same frame
+            # as the KEYDOWN, i.e. before this update(); after one frame stop swallowing so
+            # the player's real first keystroke is kept.
+            self._swallow_next_textinput = False
 
     def _selected_is_occupied(self) -> bool:
         return bool(self._slots) and self._slots[self._selected_idx].occupied
@@ -407,7 +427,7 @@ class SaveLoadPanel(Widget):
             return
         surface.blit(self.bg, self.rect.topleft)
         if self._title_surf:
-            tr = self._title_surf.get_rect(midtop=(self.rect.centerx, self.rect.top + 10))
+            tr = self._title_surf.get_rect(midtop=(self.rect.centerx, self.rect.top + self._HEADER_Y))
             surface.blit(self._title_surf, tr)
 
         for i, slot in enumerate(self._slots):
@@ -421,8 +441,8 @@ class SaveLoadPanel(Widget):
 
         # hint for the per-slot actions, shown whenever an occupied slot is selected
         if self._selected_is_occupied() and not self._confirm_action and self._editor is None:
-            hint = theme.menu_font(16).render("[R] Rename   [Del] Delete", False, (150, 140, 110))
-            surface.blit(hint, hint.get_rect(midbottom=(self.rect.centerx, self.rect.bottom - 16)))
+            hint = theme.menu_font(16).render("[R] Rename   [D] Delete", False, (150, 140, 110))
+            surface.blit(hint, hint.get_rect(midbottom=(self.rect.centerx, self.rect.bottom - self._FOOTER_Y)))
 
         if self._editor is not None:
             self._draw_rename_editor(surface)
@@ -470,7 +490,7 @@ class LoadPanel(SaveLoadPanel):
     def _refresh_slots(self) -> None:
         infos = self.game.save_manager.list_slots()
         self._slots.clear()
-        y = self.rect.top + 60
+        y = self._list_top()
         for i in range(MAX_SAVE_SLOTS):
             slot_rect = pygame.Rect(self.rect.left + _PAD, y, self.rect.width - 2 * _PAD, 30)
             info = infos[i] if i < len(infos) else None

@@ -57,6 +57,7 @@ przed przeładowaniem strony:
 - komendy specjalne: `screenshot` (zrzut ekranu), `exit` (zamknięcie procesu gry),
   `debug_map_change` (debugowa zmiana mapy - wywołuje auto-save),
   `debug_text_input` (pokaż panel demo widgetu TextInput),
+  `debug_set_maze` (wymuś is_maze=True na bieżącej scenie - test zakazu zapisu w lochu),
   `type:<tekst>` (wpisz tekst do pola z fokusem - jedno słowo, bez spacji; wysyła
   realne zdarzenia TEXTINPUT, np. `type:Abc123`),
   `backspace` (skasuj znak przed kursorem w polu tekstowym - wysyła KEYDOWN Backspace).
@@ -114,6 +115,7 @@ class AgentController:
         self._map_change_pending = False
         self._type_pending: str = ""          # tekst do "wpisania" (posted TEXTINPUT)
         self._text_demo_pending = False       # żądanie pokazania panelu demo TextInput
+        self._set_maze_pending = False        # wymuś tryb maze na bieżącej scenie (test zakazu zapisu)
         if not web_mode:
             self._write_file("")           # wyczyść stary plik na starcie
 
@@ -213,6 +215,11 @@ class AgentController:
             self._text_demo_pending = True
             return
 
+        if action == "debug_set_maze":
+            # wymuś is_maze=True na bieżącej scenie, żeby przetestować zakaz zapisu (F5) w lochu
+            self._set_maze_pending = True
+            return
+
         if action == "type":
             # `type:<tekst>` — wpisz tekst do pola z fokusem (bez spacji; jedno słowo).
             # frames_str zawiera wszystko po pierwszym ':' (patrz partition wyżej).
@@ -267,6 +274,13 @@ class AgentController:
             self._text_demo_pending = False
             from ui.panels.text_input_demo import TextInputDemoState
             TextInputDemoState(game).enter_state()
+
+        if self._set_maze_pending and game.states:
+            self._set_maze_pending = False
+            state = game.states[-1]
+            if hasattr(state, "is_maze"):
+                state.is_maze = True
+                self.log("[agent_ctrl] debug_set_maze -> current scene is_maze=True")
 
         if self._exit_requested:
             game.is_running = False

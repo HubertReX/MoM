@@ -1,8 +1,8 @@
 ---
 id: T-021
 title: Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)
-status: needs-you
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
 agent: cc
@@ -100,6 +100,46 @@ Delete (modal potwierdzenia Yes/No):
 - 2026-07-05 08:20 cc: zaimplementowane. `sanitize_slot_name`+`MAX_SLOT_NAME_LEN` (models.py), `SaveManager.rename_slot` + sanityzacja w `save()` (manager.py), akcje Rename(R)/Delete(Del) w `SaveLoadPanel` z inline `TextInput` i confirm usuwania (save_load.py), ACTIONS `slot_rename`/`slot_delete` (settings.py). Bonus: fix Esc-po-load w `main_menu.py`. Testy: +4 sanityzacja (test_save_load_models), +3 rename (test_save_load_backends) - wszystkie zielone. Scenariusze agentowe „Manage Saves" i „Load from Menu then Esc" (scenarios.json) przechodzą na desktop, screenshoty potwierdzają. mypy: brak nowych błędów. Web odłożony na życzenie użytkownika.
 - 2026-07-05 08:20 cc: Implemented: sanitize_slot_name + rename_slot, Rename(R)/Delete(Del) actions in SaveLoadPanel with inline TextInput and delete confirm; Esc-after-load fix. 7 new unit tests green, Manage Saves agent scenario passes on desktop; web deferred.
 - 2026-07-05 08:22 cc: Rename(R)/Delete(Del) w Save/Load panelu + sanityzacja nazw + rename_slot; bonus fix Esc-po-load. 7 testów jednostkowych zielone, scenariusz agentowy Manage Saves przechodzi na desktop (screenshoty w DoD). Web odłożony na życzenie. Test: just mypy; .venv/bin/python tests/test_save_load_models.py; .venv/bin/python tests/test_save_load_backends.py; .venv/bin/python3 tests/automate_display_test.py 'Manage Saves'.
+- 2026-07-05 08:40 user: odkryte błędy:
+- na LoadPanel, po naciśnięciu 'r' pojawia się panel Rename, ale dodaje się na końcu nazwy slotu litera 'r'
+- na LoadPanel, etykieta Load Game jest za wysoko i zachodzi na ramkę, a dolna etykieta (Rename i Delete) jest za nisko i też zachodzi
+- jeżeli LoadPanel zostanie otworzony w trakcie gry przez F9, to naciśnięcie klawiszy obsługuje panel ale jednocześnie dalej jest przetwarzane przez grę, a przycisk R zamiast rename slot robi reset gry. Gra powinna być zatrzymana w trakcie wyświetlania panelu Load
+- przy okazji, niech przycisk r w trakcie gry wyświetla panel z prośbą o potwierdzenie resetu, bo jest to nieodwracalne
+- jeżeli gracz w trakcie gry naciśnie Esc to w menu głównym ma jedynie Save i Load - a powinien mieć jeszcze Continue aby wznowić trwającą grę bez zmian. Continue ma się nie pokazywać póki nie będzie rozpoczęta jakąkolwiek gra.
+- na LoadPanel, trzeba nacisnąć przycisk Delete aby usunąć slot, ale takiego przycisku nie na małych laptopowych klawiaturach - niech to będzie litera 'd'
+- zapis gry powinien być zabroniony w lochach/labiryncie (maze). Jeśli gracz naciśnie tam FT powinno pojawić się powiadomienie po lewej, że zapis w tej lokalizacji jest niemożliwy
+- 2026-07-05 12:09 cc: claimed, starting
+- 2026-07-05 12:30 cc: naprawione wszystkie 7 uwag (desktop, screenshoty poniżej):
+  1. **Stray 'r'** - klawisz R otwiera edytor i wysyła też `TEXTINPUT "r"`; dodany `_swallow_next_textinput` w `save_load.py` pochłania ten jeden znak (czyszczony po klatce, żeby nie zjeść realnego wpisywania). Slot renamuje się na czyste „Hero123".
+  2. **Layout** - tytuł i podpowiedź zachodziły na ramkę 9-patch; lista slotów liczona od `_list_top()` (pod tytułem), tytuł na `top+_HEADER_Y`, podpowiedź na `bottom-_FOOTER_Y`.
+  3. **Pauza przy panelu w grze** - `GameUI.is_modal_open()` (LoadPanel/SavePanel); `Scene.update` zamraża świat i `reset_inputs()` gdy panel otwarty (próbkowane PRZED `ui.update`, więc Esc zamykający panel nie wycieka do menu). R w panelu robi rename, nie reset mapy.
+  4. **Potwierdzenie reload (R w grze)** - nowy `ConfirmMenuScreen` (Yes/No, domyślnie **No**); `Scene` woła go przed `reload_map`.
+  5. **Continue w menu z gry** - Esc w scenie **wypycha** świeży `MainMenuScreen` na stos (zamiast `exit_state`, który niszczył grę); menu pokazuje Continue (bo gra trwa), Continue = `exit_state` wraca do tej samej gry. Continue tylko gdy `_is_game_in_progress()`.
+  6. **Delete → 'd'** - `slot_delete` teraz `K_d` (panel obsługuje `K_d` i `K_DELETE`), podpowiedź „[D] Delete".
+  7. **Zakaz zapisu w maze** - F5 w scenie z `is_maze=True` pokazuje powiadomienie „Cannot save in the dungeon" (blok w `game.py`); nowa komenda agenta `debug_set_maze` do testu.
+  Scenariusze agentowe: „In-Game LoadPanel Paused", „In-Game Reload Confirm", „In-Game Esc Shows Continue", „Maze Save Blocked" - wszystkie przechodzą na desktop. mypy: brak nowych błędów; testy jednostkowe zielone.
+
+### Dowód działania (poprawki)
+
+LoadPanel - poprawiony layout (tytuł/podpowiedź nie zachodzą na ramkę, „[D] Delete"):
+
+![LoadPanel layout](../_attachments/T-021-loadpanel-layout.png)
+
+W grze (F9): panel zamraża świat, R otwiera Rename zamiast resetować mapę:
+
+![In-game rename paused](../_attachments/T-021-ingame-rename-paused.png)
+
+R w grze - potwierdzenie resetu mapy (domyślnie No):
+
+![Reload confirm](../_attachments/T-021-reload-confirm.png)
+
+Esc w grze - menu z Continue (wznawia bez zmian):
+
+![Esc shows Continue](../_attachments/T-021-esc-continue.png)
+
+F5 w lochu/maze - zapis zablokowany z powiadomieniem:
+
+![Maze save blocked](../_attachments/T-021-maze-save-blocked.png)
 
 ## 🙋 Needs-You / Questions
 

@@ -116,9 +116,9 @@ przytrzymywany. Dla ruchu sensowne wartości to 10–60; w menu wystarczy 1.
 - Zwykłe akcje z `ACTIONS` w `settings.py`: `left`, `right`, `up`, `down`, `run`,
   `jump`, `attack`, `talk`, `open`, `pick_up`, `drop`, `inventory`, `menu`, `accept`,
   `quit`, `zoom_in`, `zoom_out`, `reload`, `next_day`, `quick_save` (F5), `quick_load` (F9),
-  `slot_rename` (R) / `slot_delete` (Del) - akcje na zaznaczonym slocie w panelu Save/Load
+  `slot_rename` (R) / `slot_delete` (D) - akcje na zaznaczonym slocie w panelu Save/Load
   (`ui/panels/save_load.py`: `LoadPanel`/`SavePanel` - zmiana nazwy przez `TextInput` i
-  usunięcie z potwierdzeniem), itd.
+  usunięcie z potwierdzeniem; panel otwarty w grze przez F9 zamraża scenę), itd.
 - Specjalne komendy interpretera (`project/agent_ctrl.py`):
   - `screenshot` / `shot` - zapisuje bieżącą klatkę do `screenshots/agent/`.
   - `exit` / `quit_game` - zamyka grę.
@@ -126,6 +126,7 @@ przytrzymywany. Dla ruchu sensowne wartości to 10–60; w menu wystarczy 1.
   - `debug_death_screen` - wymusza ekran śmierci.
   - `debug_load_last_save` - wczytuje ostatni zajęty slot.
   - `debug_text_input` - pokazuje stan demo widgetu `TextInput` (`ui/panels/text_input_demo.py`).
+  - `debug_set_maze` - wymusza `is_maze=True` na bieżącej scenie (test zakazu zapisu w lochu).
   - `type:<tekst>` - wpisuje tekst do pola z fokusem (jedno słowo, bez spacji); wysyła
     realne zdarzenia `TEXTINPUT` (syntetyczne `KEYDOWN` ich nie generują). Np. `type:Abc123`.
   - `backspace` - kasuje znak przed kursorem w polu tekstowym (wysyła `KEYDOWN` Backspace).
@@ -204,7 +205,16 @@ rtk .venv/bin/playwright install chromium
 
 # Wszystkie web-kompatybilne scenariusze:
 .venv/bin/python3 tests/automate_display_test.py --web
+
+# Wolniejszy sprzęt / CI: wydłuż boot gry i okno startu pygbag
+.venv/bin/python3 tests/automate_display_test.py --web --timeout 25 --pygbag-timeout 180 "Save and Load Basic"
 ```
+
+**Flagi (tylko web):**
+
+- `--timeout <s>` — ile czekać na boot gry po pojawieniu się canvasu (domyślnie 12s).
+- `--pygbag-timeout <s>` — ile czekać na zbudowanie + serwowanie przez pygbag (domyślnie 90s).
+- `--url <url>` — nadpisz URL pygbag (domyślnie `http://127.0.0.1:8001/`).
 
 **Różnice w stosunku do desktop runnera:**
 
@@ -212,7 +222,13 @@ rtk .venv/bin/playwright install chromium
    zamiast `echo > agent_input.txt`.
 2. Zrzuty ekranu wykonuje Playwright (`page.screenshot()`) zamiast `pygame.image.save`.
 3. Asercje `file_exists` są tłumaczone na sprawdzanie kluczy `MoM.save_<N>` w localStorage.
+   Można też użyć jawnego typu `localstorage_exists` (`{"type": "localstorage_exists",
+   "key": "MoM.save_0", "min_size": 50}`) w scenariuszu oznaczonym `"platform": "web"`.
 4. Setup saves (corrupt/minimal) wstrzykiwane przed reloadem strony przez localStorage.
+
+**CI:** `.github/workflows/web_agent_tests.yml` (trigger ręczny — `workflow_dispatch`)
+instaluje `pygbag` + `playwright`, pobiera Chromium i uruchamia wybrane scenariusze web,
+publikując `screenshots/agent/` jako artifact.
 
 **Ograniczenia:**
 
