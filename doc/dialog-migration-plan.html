@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Przeniesienie dialogów RPG → MoM — projekt, ryzyka, plan</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --purple:#7048e8; --purple-soft:#f3f0ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --purple:#9775fa; --purple-soft:#241a3d;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --purple:#9775fa; --purple-soft:#241a3d;
+  }
+  :root[data-theme="light"] {
+      --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+      --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+      --accent: #3b5bdb; --accent-soft: #e7ecff;
+      --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+      --purple:#7048e8; --purple-soft:#f3f0ff;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6;
+    font-size: 16px; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: var(--s7) var(--s5); }
+  .prose { max-width: 74ch; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.4rem; line-height: 1.25; margin: var(--s7) 0 var(--s3); letter-spacing: -.01em;
+       padding-top: var(--s3); border-top: 1px solid var(--border); }
+  h3 { font-size: 1.1rem; margin: var(--s5) 0 var(--s2); }
+  p { margin: 0 0 var(--s4); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.1rem; color: var(--muted); }
+  .grid { display: grid; gap: var(--s4); }
+  .cols-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .cols-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .cols-4 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .row { display: flex; gap: var(--s3); align-items: center; flex-wrap: wrap; }
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: var(--s5); box-shadow: var(--shadow); }
+  .card h3:first-child { margin-top: 0; }
+  .metric .num { font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; }
+  .metric .label { color: var(--muted); font-size: .85rem; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem;
+    font-weight: 600; padding: 2px 9px; border-radius: 999px; line-height: 1.6; }
+  .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .badge.err{background:var(--err-soft);color:var(--err)}
+  .badge.info{background:var(--info-soft);color:var(--info)}
+  .badge.purple{background:var(--purple-soft);color:var(--purple)}
+  .badge.mono{font-family:var(--mono);background:var(--surface-2);color:var(--muted)}
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  .tablescroll { overflow-x: auto; }
+  th, td { text-align: left; padding: var(--s2) var(--s3); border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { position: sticky; top: 0; background: var(--surface);
+    font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  tbody tr:hover { background: var(--surface-2); }
+  code { font-family: var(--mono); font-size: .86em; background: var(--surface-2);
+    padding: 1px 5px; border-radius: 5px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: var(--s4); overflow-x: auto; font-size: .84rem; }
+  pre code { background: none; padding: 0; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: var(--s3) var(--s4); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: var(--s4) 0; }
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .callout.err{border-color:var(--err);background:var(--err-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .tabs { display: flex; gap: var(--s1); border-bottom: 1px solid var(--border); margin-bottom: var(--s4); flex-wrap: wrap; }
+  .tab { padding: var(--s2) var(--s4); cursor: pointer; border: none; background: none;
+    color: var(--muted); font: inherit; font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab[aria-selected="true"] { color: var(--accent); border-color: var(--accent); }
+  .tabpanel[hidden] { display: none; }
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s3) var(--s4); margin-bottom: var(--s2); background: var(--surface); }
+  details[open] { box-shadow: var(--shadow); }
+  summary { cursor: pointer; font-weight: 600; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; display: inline-block; margin-right: var(--s2);
+    transition: transform .15s; color: var(--muted); }
+  details[open] summary::before { transform: rotate(90deg); }
+  button.btn { font: inherit; font-weight: 600; cursor: pointer; border-radius: var(--radius-sm);
+    padding: var(--s2) var(--s4); border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+  button.btn:hover { background: var(--surface-2); }
+  button.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+    font-size: .85rem; font-weight: 600; opacity: 0; transition: all .25s; pointer-events: none; z-index: 50; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toc { font-size: .9rem; }
+  .toc a { display: inline-block; padding: 2px 0; }
+  .step { display: flex; gap: var(--s4); margin-bottom: var(--s3); }
+  .step .n { flex: 0 0 34px; height: 34px; border-radius: 999px; background: var(--accent);
+    color:#fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: .9rem; }
+  .step .n.done { background: var(--ok); }
+  .step .n.opt { background: var(--muted); }
+  svg text { font-family: var(--sans); }
+  .legend { font-size:.8rem; color:var(--muted); display:flex; gap:var(--s4); flex-wrap:wrap; margin-top:var(--s2);}
+  .legend span { display:inline-flex; align-items:center; gap:6px;}
+  .sw { width:12px; height:12px; border-radius:3px; display:inline-block;}
+  .arrow-note { font-size:.8rem; color:var(--muted); }
+  .kbd { font-family:var(--mono); font-size:.8em; border:1px solid var(--border); border-bottom-width:2px;
+    border-radius:5px; padding:1px 6px; background:var(--surface); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Plan / Spec · Migracja dialogów · 2026-07-05</p>
+  <h1>Przeniesienie logiki dialogów: <span style="color:var(--muted)">RPG</span> → <span style="color:var(--accent)">MoM</span></h1>
+  <p class="lead">Silnik rozgałęzionych dialogów z projektu <a href="https://github.com/HubertReX/RPG">RPG</a> (tekstowy, rich/Textual)
+  przeniesiony do <strong>Misadventures of Malachi</strong> (Pygame-CE, desktop + web). Ten dokument to mapa encji, przepływ runtime,
+  lista ryzyk i plan krok po kroku — <em>przed</em> pisaniem kodu.</p>
+
+  <div class="grid cols-4" style="margin:var(--s5) 0">
+    <div class="card metric"><div class="num">3+1</div><div class="label">Encje: Node · Option · Result <span style="opacity:.6">(+ Character)</span></div></div>
+    <div class="card metric"><div class="num">5</div><div class="label">Postaci z dialogami (PL+EN)</div></div>
+    <div class="card metric"><div class="num">7</div><div class="label">Kategorie NodeVisitResult</div></div>
+    <div class="card metric"><div class="num">~1</div><div class="label">Miejsce integracji w MoM: <code>DialogPanel</code></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--s5)">
+    <strong>Spis treści</strong>
+    <div class="toc row" style="margin-top:var(--s2); gap:var(--s5)">
+      <a href="#stan">1 · Stan wyjściowy</a>
+      <a href="#model">2 · Model danych i mapowanie encji</a>
+      <a href="#runtime">3 · Przepływ runtime</a>
+      <a href="#authoring">4 · Pipeline autorski (Markdown → config)</a>
+      <a href="#gap">5 · MoM: co jest, czego brakuje</a>
+      <a href="#ryzyka">6 · Ryzyka</a>
+      <a href="#plan">7 · Plan krok po kroku</a>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="stan">1 · Stan wyjściowy: co przenosimy i dokąd</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3 style="margin-top:0">🎲 RPG — źródło <span class="badge info">tekstowy, turowy</span></h3>
+      <p style="margin-bottom:var(--s2)">Pełny silnik rozgałęzionych dialogów:</p>
+      <ul style="margin-top:0">
+        <li>Graf <code>DialogNode</code> ↔ <code>DialogOption</code> z warunkami i „sentymentem”</li>
+        <li>Warunki opcji ewaluowane przez <code>eval()</code> (<code>dialog_loc.py:19</code>)</li>
+        <li>Efekty węzła (<code>NodeVisitResult</code>): pieniądze / itemy / zdrowie / sentyment</li>
+        <li>Autorstwo w Markdown PL+EN → kompilacja do <code>config.json</code></li>
+        <li>Runtime: <code>main.py:action_talk</code> (~2700), UI rich/Textual, wybór klawiszami <span class="kbd">1</span>–<span class="kbd">9</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">🕹️ MoM — cel <span class="badge purple">Pygame-CE, real-time</span></h3>
+      <p style="margin-bottom:var(--s2)">Ma UI dialogu, ale <strong>bez logiki</strong>:</p>
+      <ul style="margin-top:0">
+        <li><code>DialogPanel</code> (<code>ui/panels/dialog.py</code>) renderuje <strong>jeden statyczny blok</strong> tekstu</li>
+        <li><code>NPC.dialogs: str | None</code> — czytany z pliku w <code>load_dialogs()</code> (<code>characters.py:290</code>)</li>
+        <li>Otwarcie: <span class="kbd">Space</span> na spotkanym NPC → panel; zamknięcie <span class="kbd">Space</span></li>
+        <li>Jest stan <code>Talk</code> w <code>npc_state.py</code>, jest <code>RichText</code> do renderu znaczników</li>
+        <li><strong>Brak:</strong> węzłów, opcji, warunków, efektów, wyborów, persystencji rozmowy</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout"><strong>Sedno migracji.</strong> Nie przenosimy UI (MoM ma własne, pygame'owe) ani parsera rich/Textual.
+  Przenosimy <strong>model danych + silnik warunków + przetwarzanie efektów + pipeline autorski</strong> i wpinamy je
+  w istniejący <code>DialogPanel</code> oraz stan <code>Talk</code>.</div>
+
+  <!-- ============================================================ -->
+  <h2 id="model">2 · Model danych i mapowanie encji</h2>
+  <p class="prose">Trzy dataclassy (<code>dialog_node.py</code>) plus pola na <code>Character</code>. Graf jest ładowany
+  z <code>config["character_dialogs"][KLUCZ]</code> przez <code>Game.init_dialog()</code> (<code>main.py:1157</code>).</p>
+
+  <div class="card" style="margin-bottom:var(--s4)">
+    <svg viewBox="0 0 940 430" width="100%" role="img" aria-label="Diagram relacji encji dialogu">
+      <defs>
+        <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="var(--muted)"/>
+        </marker>
+        <marker id="ahacc" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <!-- Character -->
+      <rect x="30" y="160" width="200" height="120" rx="10" fill="var(--purple-soft)" stroke="var(--purple)" stroke-width="1.5"/>
+      <text x="130" y="184" text-anchor="middle" font-weight="700" fill="var(--text)" font-size="15">Character (NPC)</text>
+      <text x="46" y="208" fill="var(--muted)" font-size="12">dialog → DialogNode (kursor)</text>
+      <text x="46" y="226" fill="var(--muted)" font-size="12">selected_options_dict</text>
+      <text x="46" y="244" fill="var(--muted)" font-size="12">sentiment : int</text>
+      <text x="46" y="262" fill="var(--muted)" font-size="12">disposition / known_disp.</text>
+
+      <!-- DialogNode -->
+      <rect x="380" y="40" width="220" height="150" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="490" y="64" text-anchor="middle" font-weight="700" fill="var(--text)" font-size="15">DialogNode</text>
+      <text x="396" y="88" fill="var(--muted)" font-size="12">key : str</text>
+      <text x="396" y="106" fill="var(--muted)" font-size="12">text : str (klucz i18n)</text>
+      <text x="396" y="124" fill="var(--muted)" font-size="12">options : [DialogOption]</text>
+      <text x="396" y="142" fill="var(--muted)" font-size="12">is_final · visited : bool</text>
+      <text x="396" y="160" fill="var(--muted)" font-size="12">result : NodeVisitResult?</text>
+      <text x="396" y="178" fill="var(--muted)" font-size="12">available_options (runtime)</text>
+
+      <!-- DialogOption -->
+      <rect x="700" y="230" width="210" height="150" rx="10" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.5"/>
+      <text x="805" y="254" text-anchor="middle" font-weight="700" fill="var(--text)" font-size="15">DialogOption</text>
+      <text x="716" y="278" fill="var(--muted)" font-size="12">key : str</text>
+      <text x="716" y="296" fill="var(--muted)" font-size="12">next_node → DialogNode</text>
+      <text x="716" y="314" fill="var(--muted)" font-size="12">text : str (klucz i18n)</text>
+      <text x="716" y="332" fill="var(--muted)" font-size="12">order : int</text>
+      <text x="716" y="350" fill="var(--muted)" font-size="12">condition : str (eval)</text>
+      <text x="716" y="368" fill="var(--muted)" font-size="12">sentiment : str (emoji)</text>
+
+      <!-- NodeVisitResult -->
+      <rect x="380" y="290" width="220" height="110" rx="10" fill="var(--warn-soft)" stroke="var(--warn)" stroke-width="1.5"/>
+      <text x="490" y="314" text-anchor="middle" font-weight="700" fill="var(--text)" font-size="15">NodeVisitResult</text>
+      <text x="396" y="338" fill="var(--muted)" font-size="12">category : enum (7)</text>
+      <text x="396" y="356" fill="var(--muted)" font-size="12">money · health · value : int</text>
+      <text x="396" y="374" fill="var(--muted)" font-size="12">items : [str]</text>
+
+      <!-- edges -->
+      <!-- Character.dialog -> DialogNode -->
+      <path d="M230,200 C300,190 320,150 378,130" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ahacc)"/>
+      <text x="270" y="150" fill="var(--accent)" font-size="11" font-weight="600">kursor</text>
+      <!-- DialogNode.options -> DialogOption -->
+      <path d="M600,150 C660,170 680,210 720,228" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+      <text x="628" y="188" fill="var(--muted)" font-size="11">1 : N options</text>
+      <!-- DialogOption.next_node -> DialogNode -->
+      <path d="M760,230 C740,150 660,110 602,105" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+      <text x="640" y="132" fill="var(--muted)" font-size="11">next_node</text>
+      <!-- DialogNode.result -> NodeVisitResult -->
+      <path d="M490,190 L490,288" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+      <text x="500" y="245" fill="var(--muted)" font-size="11">0..1 result</text>
+    </svg>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--purple)"></span> stan gracza/NPC</span>
+      <span><span class="sw" style="background:var(--accent)"></span> węzeł (wypowiedź postaci)</span>
+      <span><span class="sw" style="background:var(--border)"></span> opcja (odpowiedź Malachiego)</span>
+      <span><span class="sw" style="background:var(--warn)"></span> efekt odwiedzenia węzła</span>
+      <span class="arrow-note">— — linia przerywana = wskaźnik „dokąd prowadzi”</span>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="e1">DialogNode</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="e2">DialogOption</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="e3">NodeVisitResult</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="e4">Character (pola)</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="e5">Sekcje config</button>
+  </div>
+
+  <div class="tabpanel" data-panel="e1">
+    <div class="tablescroll"><table>
+      <thead><tr><th>Pole</th><th>Typ</th><th>Rola</th><th>W MoM</th></tr></thead>
+      <tbody>
+        <tr><td><code>key</code></td><td>str</td><td>ID węzła, np. <code>008</code></td><td>bez zmian</td></tr>
+        <tr><td><code>text</code></td><td>str</td><td>Klucz i18n <code>M_&lt;CHAR&gt;_DN_&lt;node&gt;</code>, nie surowy tekst</td><td>zależy od i18n MoM (patrz §6)</td></tr>
+        <tr><td><code>options</code></td><td>[DialogOption]</td><td>Wszystkie odpowiedzi z tego węzła</td><td>bez zmian</td></tr>
+        <tr><td><code>available_options</code></td><td>[DialogOption]</td><td>Runtime: podzbiór po sprawdzeniu warunków</td><td>bez zmian</td></tr>
+        <tr><td><code>is_final</code></td><td>bool</td><td>Węzeł kończący rozmowę (klucz <code>*-end</code>)</td><td>bez zmian</td></tr>
+        <tr><td><code>visited</code></td><td>bool</td><td>Czy efekt już policzony (żeby nie dublować)</td><td><span class="badge warn">musi trafić do save</span></td></tr>
+        <tr><td><code>result</code></td><td>NodeVisitResult?</td><td>Efekt przy pierwszej wizycie</td><td>hook do inventory/hero</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="tabpanel" data-panel="e2" hidden>
+    <div class="tablescroll"><table>
+      <thead><tr><th>Pole</th><th>Typ</th><th>Rola</th><th>Uwaga</th></tr></thead>
+      <tbody>
+        <tr><td><code>key</code></td><td>str</td><td>ID opcji <code>&lt;from&gt;to&lt;to&gt;_&lt;order&gt;</code>, np. <code>001to008_3</code></td><td>koduje trasę w nazwie</td></tr>
+        <tr><td><code>next_node</code></td><td>DialogNode</td><td>Dokąd prowadzi wybór</td><td>referencja rozwiązywana przy ładowaniu</td></tr>
+        <tr><td><code>text</code></td><td>str</td><td>Klucz i18n odpowiedzi Malachiego</td><td>—</td></tr>
+        <tr><td><code>order</code></td><td>int</td><td>Kolejność / numer klawisza (sort w runtime)</td><td>9 = zwykle „wróć/koniec”</td></tr>
+        <tr><td><code>condition</code></td><td>str</td><td>Wyrażenie Pythona, <code>eval</code> → bool. Domyślnie <code>"True"</code></td><td><span class="badge err">ryzyko: eval</span></td></tr>
+        <tr><td><code>sentiment</code></td><td>str</td><td>Emoji nastroju (😇😢😐😡🧠😉), maps → <code>disposition</code></td><td>zmienia <code>character.sentiment</code></td></tr>
+        <tr><td><code>selected</code></td><td>bool</td><td>Czy już wybrana (pogrubienie znika)</td><td>runtime + save</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="tabpanel" data-panel="e3" hidden>
+    <p>Enum <code>NodeVisitResultCategory</code> — 7 kategorii. Efekt liczony <strong>raz</strong>, przy pierwszej wizycie węzła.</p>
+    <div class="tablescroll"><table>
+      <thead><tr><th>Kategoria</th><th>Pole nośne</th><th>Efekt w grze</th><th>Hook w MoM</th></tr></thead>
+      <tbody>
+        <tr><td><code>MONEY_RECEIVED</code> / <code>MONEY_RETURNED</code></td><td><code>money</code></td><td>+/− złoto gracza</td><td><code>hero</code> / inventory</td></tr>
+        <tr><td><code>ITEMS_RECEIVED</code> / <code>ITEMS_RETURNED</code></td><td><code>items[]</code></td><td>+/− przedmioty</td><td><code>Inventory</code></td></tr>
+        <tr><td><code>HEALTH_RESTORED</code> / <code>HEALTH_LOST</code></td><td><code>health</code></td><td>+/− HP</td><td><code>hero.health</code></td></tr>
+        <tr><td><code>SENTIMENT_SHIFT</code></td><td><code>value</code></td><td>Zmiana nastawienia NPC</td><td><code>character.sentiment</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout warn"><strong>Uwaga.</strong> W <code>dialog_loc.py</code> (stara wersja) enum ma tylko 4 kategorie i brak pól <code>health</code>/<code>value</code>.
+    Kanoniczna jest <code>dialog_node.py</code> (7 kategorii, <code>slots=True</code>). Przenosimy tę.</div>
+  </div>
+  <div class="tabpanel" data-panel="e4" hidden>
+    <p>Pola dopięte do postaci (<code>character.py</code> w RPG). W MoM trzeba je dodać do modelu NPC / configu.</p>
+    <div class="tablescroll"><table>
+      <thead><tr><th>Pole</th><th>Typ</th><th>Rola</th></tr></thead>
+      <tbody>
+        <tr><td><code>dialog</code></td><td>DialogNode?</td><td>Bieżący węzeł (kursor w grafie)</td></tr>
+        <tr><td><code>dialog_key</code></td><td>str</td><td>Klucz grafu w <code>character_dialogs</code></td></tr>
+        <tr><td><code>selected_options_dict</code></td><td>dict[str,str]</td><td><code>{node_key: option_key}</code> — historia wyborów, karmi warunki</td></tr>
+        <tr><td><code>sentiment</code></td><td>int (0–100)</td><td>Skumulowane nastawienie NPC do gracza</td></tr>
+        <tr><td><code>disposition</code></td><td>dict[str,int]</td><td>Waga każdego emoji-nastroju dla tej postaci</td></tr>
+        <tr><td><code>known_disposition</code></td><td>dict[str,int]</td><td>Które wagi gracz już „odkrył”</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="tabpanel" data-panel="e5" hidden>
+    <p>Graf postaci to 5 słowników pod <code>config["character_dialogs"][CHAR_KEY]</code>:</p>
+    <div class="tablescroll"><table>
+      <thead><tr><th>Sekcja</th><th>Zawartość</th></tr></thead>
+      <tbody>
+        <tr><td><code>DIALOG_NODES</code></td><td><code>{node_key: {text, is_final, result}}</code></td></tr>
+        <tr><td><code>DIALOG_OPTIONS</code></td><td><code>{opt_key: {next_node, condition, sentiment, order, text}}</code></td></tr>
+        <tr><td><code>NODES_OPTIONS</code></td><td><code>{node_key: [opt_key, ...]}</code> — które opcje wiszą pod węzłem</td></tr>
+        <tr><td><code>NODE_RESULTS</code></td><td><code>{result_key: {category, money, health, value, items}}</code></td></tr>
+        <tr><td><code>START_NODE</code></td><td>klucz węzła startowego</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin-top:var(--s3)">Teksty NIE są tu — siedzą w <code>config["messages"][lang][key]</code>. Graf trzyma tylko klucze i18n.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="runtime">3 · Przepływ runtime (jedna tura rozmowy)</h2>
+  <p class="prose">Cała pętla to <code>action_talk(command)</code> (<code>main.py:2700</code>). Wywoływana raz na akcję:
+  najpierw przetwarza wybraną opcję, potem pokazuje nowy węzeł i filtruje dostępne odpowiedzi.</p>
+
+  <div class="card" style="margin-bottom:var(--s4)">
+    <svg viewBox="0 0 940 300" width="100%" role="img" aria-label="Przepływ jednej tury dialogu">
+      <defs>
+        <marker id="fa" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <g font-size="12.5">
+        <rect x="20" y="120" width="140" height="60" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+        <text x="90" y="146" text-anchor="middle" fill="var(--text)" font-weight="600">wejście: command</text>
+        <text x="90" y="164" text-anchor="middle" fill="var(--muted)">(numer opcji lub 0)</text>
+
+        <rect x="200" y="110" width="150" height="80" rx="8" fill="var(--surface-2)" stroke="var(--border)"/>
+        <text x="275" y="138" text-anchor="middle" fill="var(--text)" font-weight="600">jeśli wybór 1..N:</text>
+        <text x="275" y="156" text-anchor="middle" fill="var(--muted)">selected=True,</text>
+        <text x="275" y="172" text-anchor="middle" fill="var(--muted)">sentiment+=, kursor→next</text>
+
+        <rect x="390" y="120" width="150" height="60" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+        <text x="465" y="144" text-anchor="middle" fill="var(--text)" font-weight="600">render tekstu węzła</text>
+        <text x="465" y="162" text-anchor="middle" fill="var(--muted)">get_msg(node.text)</text>
+
+        <rect x="580" y="30" width="150" height="70" rx="8" fill="var(--warn-soft)" stroke="var(--warn)"/>
+        <text x="655" y="56" text-anchor="middle" fill="var(--text)" font-weight="600">if not visited</text>
+        <text x="655" y="74" text-anchor="middle" fill="var(--muted)">→ process_result()</text>
+        <text x="655" y="90" text-anchor="middle" fill="var(--muted)">visited=True</text>
+
+        <rect x="580" y="130" width="150" height="80" rx="8" fill="var(--surface-2)" stroke="var(--border)"/>
+        <text x="655" y="158" text-anchor="middle" fill="var(--text)" font-weight="600">filtr opcji:</text>
+        <text x="655" y="176" text-anchor="middle" fill="var(--muted)">sort by order,</text>
+        <text x="655" y="192" text-anchor="middle" fill="var(--muted)">check_condition(eval)</text>
+
+        <rect x="770" y="130" width="150" height="80" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+        <text x="845" y="158" text-anchor="middle" fill="var(--text)" font-weight="600">pokaż odpowiedzi</text>
+        <text x="845" y="176" text-anchor="middle" fill="var(--muted)">available_options</text>
+        <text x="845" y="192" text-anchor="middle" fill="var(--muted)">→ czekaj na input</text>
+
+        <rect x="580" y="240" width="340" height="46" rx="8" fill="var(--ok-soft)" stroke="var(--ok)"/>
+        <text x="750" y="262" text-anchor="middle" fill="var(--text)" font-weight="600">if is_final → zapisz historię, zamknij panel, wróć do gry</text>
+        <text x="750" y="278" text-anchor="middle" fill="var(--muted)">append_gameplay_to_history(TALK) · resume_game()</text>
+      </g>
+      <g fill="none" stroke="var(--accent)" stroke-width="1.6">
+        <path d="M160,150 L198,150" marker-end="url(#fa)"/>
+        <path d="M350,150 L388,150" marker-end="url(#fa)"/>
+        <path d="M540,140 C560,120 560,90 578,72" marker-end="url(#fa)"/>
+        <path d="M540,160 C560,165 560,168 578,170" marker-end="url(#fa)"/>
+        <path d="M730,170 L768,170" marker-end="url(#fa)"/>
+        <path d="M655,210 L655,238" marker-end="url(#fa)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3 style="margin-top:0">Silnik warunków</h3>
+      <pre><code>def check_condition(condition, cfg):
+    glob = {"__builtins__": {}, "cfg": cfg}
+    return eval(condition, cfg)   # ⚠️</code></pre>
+      <p style="margin-bottom:0">Warunek to wyrażenie Pythona nad kontekstem <code>{character, option, hero, config, g, ...}</code>.
+      Przykład z Boba:</p>
+      <pre style="margin-bottom:0"><code>"node03_hobby" in character
+   .selected_options_dict
+   and ... == "option0302_bike_start"</code></pre>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Sentyment → disposition</h3>
+      <p>Po wyborze opcji (<code>main.py:2736</code>):</p>
+      <pre><code>character.sentiment +=
+   character.disposition.get(
+       option.sentiment, 0)
+character.sentiment =
+   clamp(0, 100)
+# odkrywanie wag:
+known_disposition[emoji] = ...</code></pre>
+      <p style="margin-bottom:0">Każde emoji-nastroju ma wagę zależną od postaci → ta sama odpowiedź różnie wpływa na różne NPC.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="authoring">4 · Pipeline autorski (Markdown → config.json)</h2>
+  <p class="prose">Dialogi pisze się ręcznie w Markdown (osobno <code>PL/</code> i <code>EN/</code>), a <code>import_dialog_from_md.py</code>
+  kompiluje je do sekcji <code>character_dialogs</code> + <code>messages</code> w <code>config.json</code>. Parser jest oparty
+  na <code>markdown_to_json</code> + regexach — kruchy, ale zwięzły dla autora.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="a1">Format Markdown</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="a2">Jak to się parsuje</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="a3">Znaczniki i warunki</button>
+  </div>
+  <div class="tabpanel" data-panel="a1">
+    <p>Realny fragment z <code>char-Hammer_Hoaxheart.md</code>:</p>
+    <pre><code>### 001
+* Czego chcesz?
+
+* [002](#002) 1😐: Od zawsze byłeś kowalem?
+* [008](#008) 3🧠: Widzę, tu kawał dobrej roboty...
+* [990](#990-end) 9😐: To tyle, do następnego razu.</code></pre>
+    <p style="margin-bottom:0"><code>### 001</code> = węzeł. Pierwszy <code>*</code> = tekst postaci. Kolejne <code>*</code> = opcje:
+    <code>[cel](#cel) &lt;order&gt;&lt;emoji&gt;: tekst odpowiedzi</code>. Sufiks <code>-end</code> ⇒ <code>is_final</code>.</p>
+  </div>
+  <div class="tabpanel" data-panel="a2" hidden>
+    <ol style="margin-top:0">
+      <li><code>markdown_to_json.dictify()</code> → drzewo nagłówków</li>
+      <li><code>parse_markdown()</code> → węzły + opcje (rozbiór linii po pozycji spacji/nawiasu/dwukropka — <em>pozycyjnie!</em>)</li>
+      <li><code>convert_nodes()</code> → klucze i18n <code>M_&lt;CHAR&gt;_DN_&lt;node&gt;</code> / <code>M_&lt;CHAR&gt;_DO_&lt;from&gt;to&lt;to&gt;_&lt;order&gt;</code></li>
+      <li>efekt wyłuskiwany z tekstu węzła <code>[MONEY+100]...</code> → <code>NODE_RESULTS</code></li>
+      <li>opcje z <code>**DEBUG**</code> pomijane; DEBUG-owe skoki dodawane dopiero przy ładowaniu gry (<code>main.py:1186</code>)</li>
+    </ol>
+    <div class="callout warn" style="margin-bottom:0"><strong>Kruche miejsca.</strong> Rozbiór opcji liczy znaki po pozycjach
+    (<code>line[first_space+1] != "["</code> itd.). Literówka w formacie = cichy błąd lub zła trasa.</div>
+  </div>
+  <div class="tabpanel" data-panel="a3" hidden>
+    <p><strong>Formatowanie tekstu</strong> (<code>parse_md_formatting</code>): <code>_kursywa_</code> → <code>[italic]</code>,
+    <code>**pogrubienie**</code> → <code>[reverse]</code>.</p>
+    <p><strong>Warunki</strong> (<code>parse_condition</code>) — cukier składniowy → wyrażenie do <code>eval</code>:</p>
+    <div class="tablescroll"><table>
+      <thead><tr><th>W Markdown</th><th>Po parsowaniu</th></tr></thead>
+      <tbody>
+        <tr><td><code>001to008_3.selected</code></td><td><code>"001to008_3" in character.selected_options_dict.values()</code></td></tr>
+        <tr><td><code>008.visited</code></td><td><code>"008" in character.selected_options_dict</code></td></tr>
+        <tr><td><code>barman.008.not_visited</code></td><td><code>"008" not in config['characters']['BARMAN_001'].selected_options_dict</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout" style="margin-bottom:0">To najważniejsza decyzja projektowa: <strong>czy zachować <code>eval</code></strong>,
+    czy zamienić warunki na bezpieczny mini-DSL. Patrz §6.</div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="gap">5 · MoM: co już jest, czego brakuje</h2>
+  <div class="tablescroll"><table>
+    <thead><tr><th>Element</th><th>RPG</th><th>MoM dziś</th><th>Do zrobienia</th></tr></thead>
+    <tbody>
+      <tr><td>Panel dialogu (UI)</td><td>rich/Textual</td><td><span class="badge ok">jest</span> <code>DialogPanel</code></td><td>dodać listę opcji + wybór</td></tr>
+      <tr><td>Stan rozmowy NPC</td><td><code>Talk</code> w pętli</td><td><span class="badge ok">jest</span> <code>Talk</code> w <code>npc_state.py</code></td><td>wpiąć kursor grafu</td></tr>
+      <tr><td>Render znaczników tekstu</td><td>rich <code>[reverse]</code>…</td><td><span class="badge warn">inny dialekt</span> <code>RichText</code> (<code>[bold]</code>,<code>[act]</code>)</td><td>mapowanie tagów (§6)</td></tr>
+      <tr><td>Dane dialogu NPC</td><td>graf w config</td><td><span class="badge err">brak</span> — <code>dialogs: str</code> (1 plik tekstu)</td><td>zastąpić grafem</td></tr>
+      <tr><td>Encje Node/Option/Result</td><td><code>dialog_node.py</code></td><td><span class="badge err">brak</span></td><td>przenieść dataclassy</td></tr>
+      <tr><td>Silnik warunków</td><td><code>eval</code></td><td><span class="badge err">brak</span></td><td>bezpieczny ewaluator</td></tr>
+      <tr><td>Efekty (money/items/hp)</td><td><code>process_result</code></td><td><span class="badge warn">są systemy</span> Inventory/hero</td><td>hooki do nich</td></tr>
+      <tr><td>Sentyment / disposition</td><td>pola Character</td><td><span class="badge err">brak</span></td><td>dodać do modelu NPC</td></tr>
+      <tr><td>Persystencja rozmowy</td><td>w obiekcie</td><td><span class="badge warn">jest save/load</span> (pydantic + backendy)</td><td>dodać pola do modelu save</td></tr>
+      <tr><td>i18n PL/EN</td><td><code>messages[lang]</code></td><td><span class="badge warn">sprawdzić</span></td><td>zdecydować mechanizm</td></tr>
+      <tr><td>Pipeline autorski</td><td><code>import_dialog_from_md.py</code></td><td><span class="badge err">brak</span></td><td>przenieść lub uprościć</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============================================================ -->
+  <h2 id="ryzyka">6 · Ryzyka — na co uważać</h2>
+  <div class="grid cols-2">
+    <div class="card" style="border-left:3px solid var(--err)">
+      <span class="badge err">Krytyczne</span>
+      <h3 style="margin-top:var(--s2)">1 · <code>eval()</code> w warunkach</h3>
+      <p style="margin-bottom:0">RPG robi <code>eval(condition, cfg)</code>. W MoM na <strong>web (pygbag/WASM)</strong> to może działać,
+      ale jest to wektor błędów i słaba przenośność. Warunki to realny content (dostęp do <code>character</code>, <code>hero</code>, innych NPC).
+      <strong>Decyzja:</strong> zostawić <code>eval</code> z whitelistą, czy zbudować mini-DSL (bezpieczniejsze, więcej pracy).</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--err)">
+      <span class="badge err">Krytyczne</span>
+      <h3 style="margin-top:var(--s2)">2 · Brak Pydantic na web</h3>
+      <p style="margin-bottom:0">Reguła MoM: web nie ma Pydantic (<code>AGENTS.md</code>). Graf RPG to i tak czyste dicty — dobrze.
+      Ale <strong>save/load MoM opiera się na modelach pydantic</strong>. Nowe pola rozmowy (<code>selected_options_dict</code>,
+      <code>sentiment</code>, <code>visited</code>) muszą działać w obu trybach i w istniejących testach korupcji save.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--warn)">
+      <span class="badge warn">Ważne</span>
+      <h3 style="margin-top:var(--s2)">3 · Dialekt znaczników</h3>
+      <p style="margin-bottom:0">RPG: <code>[reverse]</code>, <code>[italic]</code>, <code>[red]</code>. MoM <code>RichText</code>: <code>[bold]</code>,
+      <code>[act]</code>, <code>[h3]</code>, linki+tooltip. Potrzebna <strong>warstwa mapująca</strong> tagi RPG→MoM
+      (albo przy imporcie, albo w rendererze). Inaczej dialogi wyświetlą surowe <code>[reverse]</code>.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--warn)">
+      <span class="badge warn">Ważne</span>
+      <h3 style="margin-top:var(--s2)">4 · Turowe UI → real-time</h3>
+      <p style="margin-bottom:0">RPG blokuje pętlę i czyta klawisz. MoM to pętla klatek — <code>DialogPanel</code> musi
+      <strong>renderować listę opcji, obsłużyć klawisze <span class="kbd">1</span>–<span class="kbd">9</span></strong> (lub padem/myszą),
+      i przechodzić między węzłami bez blokowania. Dziś panel umie tylko scroll + <span class="kbd">Space</span>.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--warn)">
+      <span class="badge warn">Ważne</span>
+      <h3 style="margin-top:var(--s2)">5 · Persystencja i <code>visited</code></h3>
+      <p style="margin-bottom:0">Efekty liczą się <strong>raz</strong> (flaga <code>visited</code>). Zapis/odczyt gry musi
+      utrwalać <code>visited</code>, <code>selected</code>, <code>selected_options_dict</code>, <code>sentiment</code> — inaczej
+      po reloadzie gracz znów dostanie złoto albo warunki się rozjadą.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--warn)">
+      <span class="badge warn">Ważne</span>
+      <h3 style="margin-top:var(--s2)">6 · Kruchy parser Markdown</h3>
+      <p style="margin-bottom:0"><code>import_dialog_from_md.py</code> rozbiera opcje <strong>pozycyjnie</strong> (indeksy znaków).
+      Łatwo o cichy błąd. Rozważyć: przenieść as-is (szybciej), czy przepisać na porządny parser / autorstwo wprost w JSON.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--info)">
+      <span class="badge info">Do ustalenia</span>
+      <h3 style="margin-top:var(--s2)">7 · i18n PL/EN</h3>
+      <p style="margin-bottom:0">RPG trzyma teksty w <code>config["messages"][lang][key]</code>, węzły mają tylko klucze.
+      Trzeba ustalić, jak MoM lokalizuje (jeden format wiadomości? tylko PL na start?) i czy <code>get_msg()</code> ma odpowiednik.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--info)">
+      <span class="badge info">Do ustalenia</span>
+      <h3 style="margin-top:var(--s2)">8 · Efekty vs systemy MoM</h3>
+      <p style="margin-bottom:0"><code>process_result</code> w RPG operuje na własnym inventory/hero. Trzeba zmapować 7 kategorii
+      na realne API MoM (<code>Inventory</code>, HP gracza, złoto). Format itemów musi zgadzać się z <code>items.csv</code> MoM.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="plan">7 · Plan krok po kroku</h2>
+  <p class="prose">Kolejność zaprojektowana tak, by <strong>każdy etap dało się odpalić i zobaczyć</strong> (zgodnie z dual-target desktop+web MoM),
+  zanim ruszymy dalej. Etapy 0–3 to fundament bez ryzyka; 4+ dotykają UI i save.</p>
+
+  <div class="card">
+    <div class="step"><div class="n">0</div><div>
+      <strong>Rozpoznanie decyzji projektowych</strong> <span class="badge info">spike</span><br>
+      Ustalić 3 rzeczy przed kodem: (a) <code>eval</code> vs mini-DSL warunków, (b) mechanizm i18n w MoM, (c) format zapisu stanu rozmowy w save/load.
+      Wynik: krótkie ADR w <code>doc/</code>.
+    </div></div>
+    <div class="step"><div class="n">1</div><div>
+      <strong>Przeniesienie encji (bez UI)</strong> <span class="badge purple">core</span><br>
+      Skopiować <code>dialog_node.py</code> (kanoniczna, 7 kategorii, <code>slots=True</code>) do <code>project/</code>. Zero zależności od pygame.
+      Dodać <code>init_dialog()</code> (odpowiednik <code>main.py:1157</code>) budujący graf z dictów. <em>Test:</em> unit — załaduj przykładowy graf, przejdź ścieżkę w pamięci.
+    </div></div>
+    <div class="step"><div class="n">2</div><div>
+      <strong>Silnik warunków</strong> <span class="badge err">ryzyko #1</span><br>
+      Zaimplementować <code>check_condition()</code> wg decyzji z etapu 0. Whitelist kontekstu (<code>character</code>, <code>hero</code>, <code>config</code>).
+      <em>Test:</em> warunki z realnych dialogów (Bob, Potioneer) dają poprawny bool.
+    </div></div>
+    <div class="step"><div class="n">3</div><div>
+      <strong>Model NPC + sentyment</strong><br>
+      Dodać do modelu postaci MoM: <code>dialog_key</code>, <code>dialog</code> (kursor), <code>selected_options_dict</code>,
+      <code>sentiment</code>, <code>disposition</code>, <code>known_disposition</code>. Zadbać o brak Pydantic na web (§6.2).
+    </div></div>
+    <div class="step"><div class="n">4</div><div>
+      <strong>Pipeline danych</strong> <span class="badge warn">ryzyko #6</span><br>
+      Przenieść 1 postać (np. <code>Hammer Hoaxheart</code> — najkrótszy) przez import MD→config, albo zapisać jej graf wprost w JSON MoM.
+      Dorzucić warstwę mapowania tagów rich→MoM (§6.3). <em>Test:</em> graf ładuje się bez błędów.
+    </div></div>
+    <div class="step"><div class="n">5</div><div>
+      <strong>UI: lista opcji i wybór</strong> <span class="badge warn">ryzyko #4</span><br>
+      Rozszerzyć <code>DialogPanel</code>: render tekstu węzła + numerowanych odpowiedzi, obsługa <span class="kbd">1</span>–<span class="kbd">9</span>/pad/mysz,
+      przejście do <code>next_node</code>. Wpiąć w stan <code>Talk</code>. <em>Test:</em> odpalić grę, pogadać z Hammerem tam i z powrotem.
+    </div></div>
+    <div class="step"><div class="n">6</div><div>
+      <strong>Efekty węzłów</strong> <span class="badge info">ryzyko #8</span><br>
+      Podpiąć <code>process_result</code> do realnych systemów MoM (Inventory, HP, złoto) dla 7 kategorii. Flaga <code>visited</code> chroni przed dublem.
+      <em>Test:</em> węzeł z <code>MONEY+</code> / <code>ITEMS+</code> zmienia stan gracza raz.
+    </div></div>
+    <div class="step"><div class="n">7</div><div>
+      <strong>Persystencja</strong> <span class="badge warn">ryzyko #5</span><br>
+      Dodać stan rozmowy do save/load (oba backendy), przejść testy korupcji. <em>Test:</em> zapis w połowie rozmowy → reload → kursor,
+      wybory, sentyment i efekty zachowane.
+    </div></div>
+    <div class="step"><div class="n">8</div><div>
+      <strong>Reszta postaci + web smoke-test</strong> <span class="badge ok">domknięcie</span><br>
+      Przenieść pozostałe 4 postaci, sprawdzić na <code>just serve-web</code> (WASM, bez pydantic/shaderów). Zaktualizować <code>test-scenarios-list.md</code>
+      i automatyczne testy wizualne.
+    </div></div>
+  </div>
+
+  <div style="margin-top:var(--s5)" class="row">
+    <button class="btn primary" onclick="copyPlan()">📋 Kopiuj plan jako Markdown</button>
+    <button class="btn" onclick="copyEntities()">Kopiuj mapę encji (JSON)</button>
+    <span class="arrow-note">Do wklejenia w zadanie MOAB lub notatkę.</span>
+  </div>
+
+  <p style="margin-top:var(--s7); color:var(--muted); font-size:.85rem">
+    Źródła: RPG <code>dialog_node.py</code>, <code>dialog_loc.py</code>, <code>import_dialog_from_md.py</code>, <code>main.py:1108–1224 / 2700–2811</code>,
+    <code>character.py</code> · MoM <code>ui/panels/dialog.py</code>, <code>characters.py:87–295 / 1316</code>, <code>npc_state.py</code>, <code>AGENTS.md</code>.
+    Wygenerowano 2026-07-05.
+  </p>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const group = tab.closest('.tabs');
+      const panels = group.nextElementSibling;
+      group.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t === tab));
+      const id = tab.dataset.tab;
+      // scope to sibling panels of this tab group
+      let el = group.nextElementSibling;
+      while (el && el.classList.contains('tabpanel')) {
+        el.hidden = el.dataset.panel !== id;
+        el = el.nextElementSibling;
+      }
+    });
+  });
+
+  function copyToClipboard(text, msg = 'Skopiowano') {
+    navigator.clipboard.writeText(text).then(() => showToast(msg))
+      .catch(() => {
+        const ta = document.createElement('textarea'); ta.value = text;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        ta.remove(); showToast(msg);
+      });
+  }
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function copyPlan() {
+    const plan = `# Plan: przeniesienie dialogów RPG -> MoM
+
+0. Rozpoznanie decyzji (spike): eval vs mini-DSL, i18n w MoM, format save stanu rozmowy -> ADR w doc/
+1. Encje (core): przenieść dialog_node.py (7 kategorii, slots) do project/, dodać init_dialog(); test w pamieci
+2. Silnik warunkow (ryzyko #1): check_condition() wg etapu 0, whitelist kontekstu; test realnych warunkow
+3. Model NPC + sentyment: dialog_key, dialog, selected_options_dict, sentiment, disposition, known_disposition (bez pydantic na web)
+4. Pipeline danych (ryzyko #6): 1 postac (Hammer) MD->config lub wprost JSON; mapowanie tagow rich->MoM
+5. UI lista opcji i wybor (ryzyko #4): DialogPanel render + klawisze 1-9/pad/mysz, przejscie next_node, stan Talk
+6. Efekty wezlow (ryzyko #8): process_result -> Inventory/HP/zloto, flaga visited
+7. Persystencja (ryzyko #5): stan rozmowy do save/load (oba backendy), testy korupcji
+8. Reszta postaci + web smoke-test: 4 postaci, just serve-web, testy wizualne
+
+## Ryzyka
+1. eval() w warunkach (krytyczne)
+2. Brak Pydantic na web + save/load (krytyczne)
+3. Dialekt znacznikow rich -> MoM RichText (wazne)
+4. Turowe UI -> real-time pygame (wazne)
+5. Persystencja + flaga visited (wazne)
+6. Kruchy pozycyjny parser Markdown (wazne)
+7. i18n PL/EN - do ustalenia
+8. Mapowanie efektow na systemy MoM - do ustalenia`;
+    copyToClipboard(plan, 'Plan skopiowany');
+  }
+
+  function copyEntities() {
+    const entities = {
+      DialogNode: { key:"str", text:"i18n key", options:"[DialogOption]", available_options:"[DialogOption] (runtime)", is_final:"bool", visited:"bool (save)", result:"NodeVisitResult?" },
+      DialogOption: { key:"str <from>to<to>_<order>", next_node:"DialogNode", text:"i18n key", order:"int", condition:"str (eval)", sentiment:"str emoji", selected:"bool (save)" },
+      NodeVisitResult: { category:"enum(7): MONEY/ITEMS/HEALTH _RECEIVED|RETURNED|RESTORED|LOST, SENTIMENT_SHIFT", money:"int", health:"int", value:"int", items:"[str]" },
+      Character: { dialog:"DialogNode? (kursor)", dialog_key:"str", selected_options_dict:"{node:opt}", sentiment:"int 0-100", disposition:"{emoji:int}", known_disposition:"{emoji:int}" },
+      config_sections: ["DIALOG_NODES","DIALOG_OPTIONS","NODES_OPTIONS","NODE_RESULTS","START_NODE"]
+    };
+    copyToClipboard(JSON.stringify(entities, null, 2), 'Mapa encji skopiowana');
+  }
+</script>
+</body>
+</html>
