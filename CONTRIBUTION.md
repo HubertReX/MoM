@@ -20,6 +20,29 @@ You can play it online:
 Build using:
 ![Pygame-ce](https://raw.githubusercontent.com/pygame/pygame/main/docs/reST/_static/pygame_logo.svg)
 
+## Contributing
+
+Contributions are welcome. This project follows the standard GitHub fork-and-pull-request workflow - you do **not** need (and will not be granted) write access to the main repository.
+
+**How to contribute:**
+
+1. **Fork** this repository to your own account.
+2. Create a topic branch off `main` (e.g. `fix/camera-follow`, `feat/weather-system`).
+3. Make your changes, keeping commits focused and with clear messages.
+4. Open a **Pull Request** from your fork against the `main` branch of this repo.
+5. Wait for review. The maintainer ([@HubertReX](https://github.com/HubertReX)) will review, request changes if needed, and merge.
+
+**Ground rules:**
+
+- The `main` branch is protected: direct pushes, force-pushes, and branch deletion are blocked, and all changes land through reviewed Pull Requests.
+- Only the maintainer can merge to `main`. PRs are never auto-merged.
+- Keep PRs small and single-purpose - they get reviewed and merged faster.
+- Do **not** commit secrets, API keys, or credentials. Push protection is enabled and will reject them, but keep them out of your history too.
+- CI/deploy workflows are manual-trigger only and are run by the maintainer; a PR will not run them.
+- Be respectful in issues and reviews. Off-topic, spam, or abusive activity will be moderated.
+
+To report a **security vulnerability**, do not open a public issue - see [SECURITY.md](./SECURITY.md).
+
 ## Table of contents <!-- omit in toc -->
 
 - [Features](#features)
