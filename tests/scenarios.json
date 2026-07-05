@@ -136,5 +136,25 @@
             { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
             { "label": "Game loaded", "commands": ["screenshot"] }
         ]
+    },
+    {
+        "name": "TextInput Basic",
+        "actions": [
+            { "label": "Open TextInput demo", "commands": ["debug_text_input"], "wait": 1.0 },
+            { "label": "Empty fields, first focused", "commands": ["screenshot"] },
+            { "label": "Type into free-text field", "commands": ["type:Hello123"], "wait": 0.4 },
+            { "label": "Free-text field shows Hello123", "commands": ["screenshot"] },
+            { "label": "Focus digits field", "commands": ["down"], "wait": 0.3 },
+            { "label": "Type digits + letters over the limit", "commands": ["type:12ab3456"], "wait": 0.4 },
+            { "label": "Digits filter + max_length keep 123456", "commands": ["screenshot"] },
+            { "label": "Focus password field", "commands": ["down"], "wait": 0.3 },
+            { "label": "Type a secret", "commands": ["type:secret"], "wait": 0.4 },
+            { "label": "Password masks display (value=secret)", "commands": ["screenshot"] },
+            { "label": "Focus latin field", "commands": ["down"], "wait": 0.3 },
+            { "label": "Type latin letters and a digit", "commands": ["type:Kate9"], "wait": 0.4 },
+            { "label": "Latin filter rejects digit 9 (keeps Kate)", "commands": ["screenshot"] },
+            { "label": "Backspace removes last char (keeps Kat)", "commands": ["backspace"], "wait": 0.4 },
+            { "label": "Final state", "commands": ["screenshot"] }
+        ]
     }
 ]

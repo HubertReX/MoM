@@ -45,8 +45,8 @@ powierzchnię** (dirty-flag) — statyczne UI = jeden blit/klatkę, zero alokacj
 | `ui/widget.py`, `ui/manager.py` | `Widget` (bazowa, cache) + `UIManager` (eventy/update/draw, z-order)               |
 | `ui/theme.py`                   | Cache fontów `(rozmiar,bold,italic)`, palety, teł 9-patch                          |
 | `ui/text/`                      | `markup.py` (parser tagów z `STYLE_TAGS_DICT` + emoji), `style.py` (`Style`)       |
-| `ui/widgets/`                   | `Label`, `Image`, `Button`, `RichText` (zawijanie, scroll, linki, animowane emoji) |
-| `ui/panels/`                    | `main_menu`, `hud`, `dialog`, `modal`, `inventory`, `trade`                        |
+| `ui/widgets/`                   | `Label`, `Image`, `Button`, `RichText` (zawijanie, scroll, linki, animowane emoji), `TextInput` (`CharSet`, max_length, password, placeholder, `TEXTINPUT`+caret) |
+| `ui/panels/`                    | `main_menu`, `hud`, `dialog`, `modal`, `inventory`, `trade`, `text_input_demo` (stan demo `TextInput`, komenda agenta `debug_text_input`) |
 | `ui/game_ui.py`                 | **`GameUI`** — kontroler HUD+paneli per-`Scene`                                    |
 
 **Czyste API** (`Scene.ui` to `GameUI`): `ui.open(PanelType, **kw)`, `ui.close(PanelType)`,
@@ -123,6 +123,10 @@ przytrzymywany. Dla ruchu sensowne wartości to 10–60; w menu wystarczy 1.
   - `debug_settings` - loguje aktualne ustawienia wyświetlania.
   - `debug_death_screen` - wymusza ekran śmierci.
   - `debug_load_last_save` - wczytuje ostatni zajęty slot.
+  - `debug_text_input` - pokazuje stan demo widgetu `TextInput` (`ui/panels/text_input_demo.py`).
+  - `type:<tekst>` - wpisuje tekst do pola z fokusem (jedno słowo, bez spacji); wysyła
+    realne zdarzenia `TEXTINPUT` (syntetyczne `KEYDOWN` ich nie generują). Np. `type:Abc123`.
+  - `backspace` - kasuje znak przed kursorem w polu tekstowym (wysyła `KEYDOWN` Backspace).
 
 Zrzuty trafiają do `screenshots/agent/` (zapisywany `self.screen`). Przy `USE_SHADERS=True`
 finalny obraz idzie przez GL i `self.screen` może nie zawierać klatki — testuj z shaderami off.

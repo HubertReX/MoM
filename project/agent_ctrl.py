@@ -55,7 +55,11 @@ przed przeładowaniem strony:
   W MENU długość przytrzymania nie ma znaczenia (jeden KEYDOWN = jeden ruch kursora);
   w SCENIE dłuższe przytrzymanie = dalszy ruch postaci.
 - komendy specjalne: `screenshot` (zrzut ekranu), `exit` (zamknięcie procesu gry),
-  `debug_map_change` (debugowa zmiana mapy - wywołuje auto-save).
+  `debug_map_change` (debugowa zmiana mapy - wywołuje auto-save),
+  `debug_text_input` (pokaż panel demo widgetu TextInput),
+  `type:<tekst>` (wpisz tekst do pola z fokusem - jedno słowo, bez spacji; wysyła
+  realne zdarzenia TEXTINPUT, np. `type:Abc123`),
+  `backspace` (skasuj znak przed kursorem w polu tekstowym - wysyła KEYDOWN Backspace).
 
 ## Nawigacja po menu głównym (przydatne dla agenta)
     accept            # uruchom zaznaczoną pozycję (Play jest domyślnie zaznaczone)
@@ -108,6 +112,8 @@ class AgentController:
         self._death_pending = False
         self._load_last_pending = False
         self._map_change_pending = False
+        self._type_pending: str = ""          # tekst do "wpisania" (posted TEXTINPUT)
+        self._text_demo_pending = False       # żądanie pokazania panelu demo TextInput
         if not web_mode:
             self._write_file("")           # wyczyść stary plik na starcie
 
@@ -203,6 +209,21 @@ class AgentController:
             self._map_change_pending = True
             return
 
+        if action == "debug_text_input":
+            self._text_demo_pending = True
+            return
+
+        if action == "type":
+            # `type:<tekst>` — wpisz tekst do pola z fokusem (bez spacji; jedno słowo).
+            # frames_str zawiera wszystko po pierwszym ':' (patrz partition wyżej).
+            self._type_pending += frames_str
+            return
+
+        if action == "backspace":
+            # wyślij realne KEYDOWN Backspace (pola tekstowe kasują znak przed kursorem)
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_BACKSPACE, mod=0))
+            return
+
         key = self._key_for(action)
         if key is None:
             self.log(f"[agent_ctrl] unknown action: {action!r} (ignored)")
@@ -233,6 +254,19 @@ class AgentController:
 
         # 2) wczytaj nowe komendy (wyśle KEYDOWN, ustawi przytrzymania)
         self.poll()
+
+        # wpisywanie tekstu: wyślij realne zdarzenia TEXTINPUT (jeden na znak).
+        # Syntetyczne KEYDOWN NIE generują TEXTINPUT, więc pola tekstowe (TextInput)
+        # muszą dostać te zdarzenia wprost — tak samo odbierze je gra przez event.get().
+        if self._type_pending:
+            for ch in self._type_pending:
+                pygame.event.post(pygame.event.Event(pygame.TEXTINPUT, text=ch))
+            self._type_pending = ""
+
+        if self._text_demo_pending and game.states:
+            self._text_demo_pending = False
+            from ui.panels.text_input_demo import TextInputDemoState
+            TextInputDemoState(game).enter_state()
 
         if self._exit_requested:
             game.is_running = False

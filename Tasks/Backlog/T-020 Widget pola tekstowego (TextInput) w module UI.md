@@ -52,39 +52,49 @@ Nowy widget `TextInput` w toolkicie UI (`project/ui/widgets/`) pozwalający grac
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Sprawdź zakres glifów `font_pixel.ttf` (które znaki ma / nie ma) - ustala realny zakres filtra `LATIN` i znak maski hasła
-- [ ] Zdefiniuj klasy znaków (`CharSet`: `ANY`, `ALPHANUMERIC`, `ALPHA`, `LATIN`, `DIGITS`) + mapowanie na funkcję walidującą pojedynczy znak
-- [ ] Zaimplementuj `TextInput(Widget)` w `project/ui/widgets/text_input.py`:
-  - [ ] konstruktor z parametrami: `max_length`, `charset`, `password`, `placeholder`, `size`, `color`, `font_path`, `width`, `anchor`, `on_change`, `on_submit`
-  - [ ] stan: `_text`, `_caret` (pozycja), `_focused`
-  - [ ] `render()` - tło/ramka + tekst (lub maska hasła, lub placeholder) + migający kursor
-  - [ ] `_on_event()` - fokus (klik), `TEXTINPUT` (wstaw znak z walidacją charset + max_length), `KEYDOWN` (backspace/delete/strzałki/home/end/enter→`on_submit`/ctrl+v)
-  - [ ] `update(dt)` - miganie kursora (timer)
-  - [ ] `value` getter + `set_text()` / `clear()`
-- [ ] Eksportuj `TextInput` (i `CharSet`) w `project/ui/widgets/__init__.py`
-- [ ] Mini-demo / panel testowy pokazujący pola: zwykłe, tylko cyfry, hasło, tylko łacińskie (do manualnej weryfikacji; może być tymczasowy panel lub wpięcie w istniejący)
-- [ ] **Scenariusz testów agentowych:** dodaj komendę wprowadzania tekstu do `project/agent_ctrl.py` (np. `type:<tekst>`) i nowy scenariusz w `tests/scenarios.json` (np. „TextInput Basic") - fokus pola, wpisanie tekstu, weryfikacja filtra (odrzucenie znaku spoza klasy), backspace, maska hasła; screenshoty w punktach kontrolnych. Ma przechodzić na desktop i web przez `tests/automate_display_test.py`
-- [ ] mypy bez nowych błędów; sprawdź desktop i web
+- [x] Sprawdź zakres glifów `font_pixel.ttf` (które znaki ma / nie ma) - ustala realny zakres filtra `LATIN` i znak maski hasła
+- [x] Zdefiniuj klasy znaków (`CharSet`: `ANY`, `ALPHANUMERIC`, `ALPHA`, `LATIN`, `DIGITS`) + mapowanie na funkcję walidującą pojedynczy znak
+- [x] Zaimplementuj `TextInput(Widget)` w `project/ui/widgets/text_input.py`:
+  - [x] konstruktor z parametrami: `max_length`, `charset`, `password`, `placeholder`, `size`, `color`, `font_path`, `width`, `anchor`, `on_change`, `on_submit`
+  - [x] stan: `_text`, `_caret` (pozycja), `_focused`
+  - [x] `render()` - tło/ramka + tekst (lub maska hasła, lub placeholder) + migający kursor
+  - [x] `_on_event()` - fokus (klik), `TEXTINPUT` (wstaw znak z walidacją charset + max_length), `KEYDOWN` (backspace/delete/strzałki/home/end/enter→`on_submit`/ctrl+v)
+  - [x] `update(dt)` - miganie kursora (timer)
+  - [x] `value` getter + `set_text()` / `clear()`
+- [x] Eksportuj `TextInput` (i `CharSet`) w `project/ui/widgets/__init__.py`
+- [x] Mini-demo / panel testowy pokazujący pola: zwykłe, tylko cyfry, hasło, tylko łacińskie (do manualnej weryfikacji; może być tymczasowy panel lub wpięcie w istniejący)
+- [x] **Scenariusz testów agentowych:** dodaj komendę wprowadzania tekstu do `project/agent_ctrl.py` (np. `type:<tekst>`) i nowy scenariusz w `tests/scenarios.json` (np. „TextInput Basic") - fokus pola, wpisanie tekstu, weryfikacja filtra (odrzucenie znaku spoza klasy), backspace, maska hasła; screenshoty w punktach kontrolnych. Ma przechodzić na desktop i web przez `tests/automate_display_test.py`
+- [x] mypy bez nowych błędów; sprawdź desktop i web
 
 ## ✅ Definition of Done
 
-- [ ] `TextInput` renderuje się i przyjmuje tekst z klawiatury (fokus po kliknięciu, migający kursor)
-- [ ] `max_length` blokuje wpisywanie po przekroczeniu limitu
-- [ ] Filtry `DIGITS` (tylko cyfry), `ALPHANUMERIC`, `LATIN` (tylko litery łacińskie) działają - znaki spoza klasy są odrzucane
-- [ ] Tryb `password` maskuje wyświetlane znaki, a `value` zwraca prawdziwy tekst
-- [ ] Backspace / delete / strzałki / home / end / enter (`on_submit`) działają
-- [ ] Placeholder widoczny przy pustym polu bez fokusu
-- [ ] Scenariusz testów agentowych dla `TextInput` w `tests/scenarios.json` przechodzi na desktop i web (`tests/automate_display_test.py`), z komendą wpisywania tekstu w `agent_ctrl.py`
-- [ ] Działa na desktop (`./run.sh`) i web (`./serve_web.sh`)
-- [ ] mypy nie zgłasza nowych błędów
-- [ ] zmiany udokumentowane w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcie potwierdzające prawidłowe działanie (np. panel z kilkoma polami: cyfry, hasło, łacińskie)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
-- [ ] commit zmian wykonany
+- [x] `TextInput` renderuje się i przyjmuje tekst z klawiatury (fokus po kliknięciu, migający kursor)
+- [x] `max_length` blokuje wpisywanie po przekroczeniu limitu
+- [x] Filtry `DIGITS` (tylko cyfry), `ALPHANUMERIC`, `LATIN` (tylko litery łacińskie) działają - znaki spoza klasy są odrzucane
+- [x] Tryb `password` maskuje wyświetlane znaki, a `value` zwraca prawdziwy tekst
+- [x] Backspace / delete / strzałki / home / end / enter (`on_submit`) działają
+- [x] Placeholder widoczny przy pustym polu bez fokusu
+- [x] Scenariusz testów agentowych dla `TextInput` w `tests/scenarios.json` przechodzi na desktop i web (`tests/automate_display_test.py`), z komendą wpisywania tekstu w `agent_ctrl.py`
+- [x] Działa na desktop (`./run.sh`) i web (`./serve_web.sh`)
+- [x] mypy nie zgłasza nowych błędów
+- [x] zmiany udokumentowane w tasku (`moab log`)
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcie potwierdzające prawidłowe działanie (np. panel z kilkoma polami: cyfry, hasło, łacińskie)
+- [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
+- [x] commit zmian wykonany
+
+Dowód działania - desktop (Any=Hello123, Digits=123456 z filtrem+limitem, Password=****** maskowane, Latin=Kat po filtrze i backspace):
+
+![[T-020_textinput_demo.png]]
+
+To samo w przeglądarce (pygbag/web) - `TEXTINPUT` działa identycznie:
+
+![[T-020_textinput_web.png]]
 
 ## 📓 Agent Log
 
 - 2026-07-05 07:10 cc: claimed, starting
+- 2026-07-05 07:29 cc: Zaimplementowano TextInput(Widget) + CharSet (ANY/ALPHANUMERIC/ALPHA/LATIN/DIGITS), password mask, max_length, placeholder, migajacy caret, TEXTINPUT+KEYDOWN (backspace/delete/strzalki/home/end/enter/ctrl+v). LATIN = jawna whitelist A-Z a-z (font_pixel.ttf renderuje tez glify spoza laciny, wiec probing czcionki niewiarygodny). Eksport w widgets/__init__.py.
+- 2026-07-05 07:29 cc: Testy agentowe: dodano komendy type:<tekst> (post TEXTINPUT), backspace, debug_text_input w agent_ctrl.py + stan demo ui/panels/text_input_demo.py + scenariusz 'TextInput Basic' w scenarios.json. Przeszedł desktop i web (pygbag+Playwright), po 6 screenshotow kazdy - filtry/limit/maska potwierdzone wizualnie. mypy: 0 nowych bledow. AGENTS.md zaktualizowane.
 
 ## 🙋 Needs-You / Questions
 
