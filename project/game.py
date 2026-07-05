@@ -198,6 +198,8 @@ class Game:
         # logo_image = load_image(LOGO_IMG).convert_alpha()
         # logo_image = pygame.transform.scale_by(logo_image, 5)
         # bg_image.blit(logo_image, (WIDTH // 2, 100))
+        # keep the menu background so screens opened later (e.g. Esc during play) can reuse it
+        self.menu_bg_image: pygame.Surface = bg_image
         from save_load.manager import SaveManager
 
         self.save_manager: SaveManager = SaveManager(self)

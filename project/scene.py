@@ -1303,7 +1303,8 @@ class Scene(State):
                     cnt, time = val
                     print(f"{fun};{cnt};{time:.10f};{time / cnt:.10f}")
                 from ui.panels.main_menu import MainMenuScreen
-                MainMenuScreen(self.game, "MainMenu").enter_state()
+                bg = getattr(self.game, "menu_bg_image", None)
+                MainMenuScreen(self.game, "MainMenu", bg).enter_state()
                 self.game.reset_inputs()
             INPUTS["quit"] = False
 
@@ -1457,7 +1458,8 @@ class Scene(State):
             # next_scene = None #  self # Scene(self.game, "grasslands", "start")
             # AboutMenuScreen(self.game, next_scene).enter_state()
             from ui.panels.main_menu import MainMenuScreen
-            MainMenuScreen(self.game, "MainMenu").enter_state()
+            bg = getattr(self.game, "menu_bg_image", None)
+            MainMenuScreen(self.game, "MainMenu", bg).enter_state()
             # self.game.reset_inputs()
             INPUTS["menu"] = False
 
