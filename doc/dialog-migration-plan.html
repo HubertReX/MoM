@@ -642,7 +642,7 @@ known_disposition[emoji] = ...</code></pre>
   <!-- D3 -->
   <div class="dec" id="d3">
     <div class="dec-head"><span class="id">D3</span><h3>Dialekt znaczników tekstu (rich → MoM RichText)</h3>
-      <span class="badge info">W trakcie</span><span class="badge warn">ryzyko #3</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge warn">ryzyko #3</span></div>
     <div class="dec-body">
       <p><strong>Metoda ustalona:</strong> konwersja <strong>jednorazowa przy imporcie</strong> (build-time) — <code>[reverse]</code> itp.
       zamieniamy na dialekt MoM raz, config wychodzi już czysty. Poniżej podgląd wizualny + inwentarz do uzupełnienia mapowania.</p>
@@ -661,19 +661,19 @@ known_disposition[emoji] = ...</code></pre>
       <div class="tablescroll"><table>
         <thead><tr><th>RPG (rich)</th><th>Znaczenie</th><th>Kandydat w MoM</th><th>Mapowanie (Ty)</th></tr></thead>
         <tbody>
-          <tr><td><code>[reverse]</code></td><td>wyróżnienie (inwersja tła) — z <code>**bold**</code> w MD</td><td>MoM nie ma inwersji → <code>[char]</code>/<code>[act]</code>/<code>[bold]</code>?</td><td>?</td></tr>
+          <tr><td><code>[reverse]</code></td><td>wyróżnienie (inwersja tła) — z <code>**bold**</code> w MD</td><td>MoM nie ma inwersji → <code>[char]</code>/<code>[act]</code>/<code>[bold]</code>?</td><td class="pro"><code>[shadow]</code></td></tr>
           <tr><td><code>[italic]</code> / <code>[i]</code></td><td>kursywa — z <code>_italic_</code> w MD</td><td class="pro"><code>[italic]</code> / <code>[i]</code> ✓</td><td>=</td></tr>
           <tr><td><code>[bold]</code> / <code>[b]</code></td><td>pogrubienie</td><td class="pro"><code>[bold]</code> / <code>[b]</code> ✓</td><td>=</td></tr>
-          <tr><td><code>[red]</code></td><td>kolor czerwony</td><td><code>[error]</code> (223,57,76) / <code>[act]</code> (255,110,104)</td><td>?</td></tr>
-          <tr><td><code>[blue]</code></td><td>kolor niebieski</td><td><code>[item]</code> (104,113,255)</td><td>?</td></tr>
-          <tr><td><code>[yellow]</code></td><td>kolor żółty</td><td><code>[char]</code> (255,252,103)</td><td>?</td></tr>
+          <tr><td><code>[red]</code></td><td>kolor czerwony</td><td><code>[error]</code> (223,57,76) / <code>[act]</code> (255,110,104)</td><td class="pro"><code>[error]</code></td></tr>
+          <tr><td><code>[blue]</code></td><td>kolor niebieski</td><td><code>[item]</code> (104,113,255)</td><td class="pro"><code>[item]</code></td></tr>
+          <tr><td><code>[yellow]</code></td><td>kolor żółty</td><td><code>[char]</code> (255,252,103)</td><td class="pro"><code>[char]</code></td></tr>
           <tr><td><code>[char]</code></td><td>nazwa postaci (kolor)</td><td class="pro"><code>[char]</code> ✓</td><td>=</td></tr>
           <tr><td><code>[action]</code></td><td>akcja/klawisz (kolor)</td><td class="pro"><code>[act]</code> ✓</td><td>=</td></tr>
           <tr><td><code>[item]</code></td><td>przedmiot</td><td class="pro"><code>[item]</code> ✓</td><td>=</td></tr>
           <tr><td><code>[location]</code></td><td>lokacja</td><td class="pro"><code>[loc]</code> ✓</td><td>=</td></tr>
           <tr><td><code>[number]</code></td><td>liczba</td><td class="pro"><code>[num]</code> ✓</td><td>=</td></tr>
-          <tr><td><code>[key]</code></td><td>klawisz na klawiaturze</td><td>ikona <code>:key_X:</code> lub <code>[act]</code>?</td><td>?</td></tr>
-          <tr><td><code>[symbol]</code> / <code>[e]</code></td><td>emoji/symbol inline</td><td>składnia <code>:name:</code> (patrz niżej)</td><td>?</td></tr>
+          <tr><td><code>[key]</code></td><td>klawisz na klawiaturze</td><td>ikona <code>:key_X:</code> lub <code>[act]</code>?</td><td class="pro"><code>:key_X:</code></td></tr>
+          <tr><td><code>[symbol]</code> / <code>[e]</code></td><td>emoji/symbol inline</td><td>składnia <code>:name:</code> (patrz niżej)</td><td class="pro"><code>:name:</code></td></tr>
         </tbody>
       </table></div>
       <p style="font-size:.85rem; color:var(--muted); margin:var(--s2) 0 0"><strong>Cały słownik tagów MoM RichText</strong> (do wyboru):
@@ -687,22 +687,28 @@ known_disposition[emoji] = ...</code></pre>
       <div class="tablescroll"><table>
         <thead><tr><th>RPG unicode</th><th>Znaczenie</th><th>Kandydat MoM <code>:key:</code></th><th>Mapowanie (Ty)</th></tr></thead>
         <tbody>
-          <tr><td><code>😇</code></td><td>kind (miły)</td><td><code>:blessed:</code> / <code>:love:</code></td><td>?</td></tr>
-          <tr><td><code>😢</code></td><td>weak (współczucie/smutek)</td><td><code>:sad:</code> / <code>:miserable:</code></td><td>?</td></tr>
-          <tr><td><code>😐</code></td><td>neutral</td><td><code>:neutral:</code> / <code>:indifferent:</code></td><td>?</td></tr>
-          <tr><td><code>😡</code></td><td>angry</td><td><code>:angry:</code> / <code>:evil:</code></td><td>?</td></tr>
-          <tr><td><code>🧠</code></td><td>smart (spryt)</td><td>brak mózgu → <code>:wondering:</code> / <code>:doubt:</code> / <code>:question:</code></td><td>?</td></tr>
-          <tr><td><code>😉</code></td><td>funny (żart)</td><td><code>:happy:</code> / <code>:smile:</code></td><td>?</td></tr>
-          <tr><td><code>🤖</code></td><td>technical (opcja systemowa, sentiment ignorowany)</td><td>pomiń / <code>:human:</code></td><td>?</td></tr>
+          <tr><td><code>😇</code></td><td>kind (miły)</td><td><code>:blessed:</code> / <code>:love:</code></td><td class="pro"><code>:blessed:</code></td></tr>
+          <tr><td><code>😢</code></td><td>weak (współczucie/smutek)</td><td><code>:sad:</code> / <code>:miserable:</code></td><td class="pro"><code>:offended:</code></td></tr>
+          <tr><td><code>😐</code></td><td>neutral</td><td><code>:neutral:</code> / <code>:indifferent:</code></td><td class="pro"><code>:neutral:</code></td></tr>
+          <tr><td><code>😡</code></td><td>angry</td><td><code>:angry:</code> / <code>:evil:</code></td><td class="pro"><code>:angry:</code></td></tr>
+          <tr><td><code>🧠</code></td><td>smart (spryt)</td><td>brak mózgu → <code>:wondering:</code> / <code>:doubt:</code> / <code>:question:</code></td><td class="pro"><code>:wondering:</code></td></tr>
+          <tr><td><code>😉</code></td><td>funny (żart)</td><td><code>:happy:</code> / <code>:smile:</code></td><td class="pro"><code>:blink:</code></td></tr>
+          <tr><td><code>🤖</code></td><td>technical (opcja systemowa, sentiment ignorowany)</td><td>pomiń / <code>:human:</code></td><td class="pro"><code>:human:</code></td></tr>
         </tbody>
       </table></div>
       <p style="font-size:.85rem; color:var(--muted); margin:var(--s2) 0 0"><strong>Dostępne emote MoM</strong> (arkusz <code>emote_all_anim.png</code>, klucze <code>EMOTE_SHEET_DEFINITION</code>):
       twarze — <code>blessed love angry indifferent happy wondering doubt frounce smile dreaming sad neutral dead miserable offended peaceful evil human shocked</code>;
       symbole — <code>heart broken_heart star exclamation question dots cross zzz $ fight walk A B X Y</code>. Wiele ma warianty <code>_anim</code> (np. <code>:love_anim:</code>).</p>
 
-      <div class="ustalenia open"><span class="lbl">Ustalenia · w toku</span><br>
-        <strong>Metoda: A</strong> — konwersja jednorazowa w imporcie. <strong>Czekam na Twoje mapowanie</strong> w kolumnach „Mapowanie (Ty)”:
-        (a) tagi tekstu z „?”, (b) 7 emoji nastroju → klucze MoM. Po podaniu wpiszę finalną tabelę konwersji.</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Metoda A — konwersja jednorazowa przy imporcie. Mapowanie ustalone:</strong>
+        <ul style="margin:var(--s2) 0 0">
+          <li>Tagi: <code>[reverse]→[shadow]</code>, <code>[red]→[error]</code>, <code>[blue]→[item]</code>, <code>[yellow]→[char]</code>,
+          <code>[key]→:key_X:</code> (ikona), <code>[symbol]/[e]→:name:</code> (inline emote). Tagi zgodne 1:1 (<code>italic</code>, <code>bold</code>,
+          <code>char</code>, <code>action→act</code>, <code>item</code>, <code>location→loc</code>, <code>number→num</code>) bez zmian.</li>
+          <li>Emoji nastroju (unicode → <code>:key:</code>): <code>😇→:blessed:</code>, <code>😢→:offended:</code>, <code>😐→:neutral:</code>,
+          <code>😡→:angry:</code>, <code>🧠→:wondering:</code>, <code>😉→:blink:</code>, <code>🤖→:human:</code>.</li>
+        </ul></div>
     </div>
   </div>
 

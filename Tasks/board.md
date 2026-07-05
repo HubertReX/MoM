@@ -9,6 +9,17 @@ tags:
 
 ## 🧊 Backlog
 
+- [ ] [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]] #feature #p2 #M
+- [ ] [[T-024 DS: Pipeline importu Markdown do config (parser + walidacja + konwersja znacznikow)]] #feature #p2 #L
+- [ ] [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]] #feature #p2 #M
+- [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M
+- [ ] [[T-030 DS: Persystencja stanu rozmowy w save-load (oba backendy + testy korupcji)]] #feature #p2 #M
+- [ ] [[T-032 DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)]] #feature #p2 #L
+- [ ] [[T-033 DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)]] #feature #p2 #L
+- [ ] [[T-034 DS: Efekty wezlow - adapter ResultSink (zloto, itemy, HP, sentyment)]] #feature #p2 #M
+- [ ] [[T-035 DS: Sentyment w rozgrywce - odkrywanie, bramkowanie opcji, mnoznik cen]] #feature #p2 #L
+- [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S
+
 ## 🟢 Ready for AI
 
 ## 🤖 In Progress
