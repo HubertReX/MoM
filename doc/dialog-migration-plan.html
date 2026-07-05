@@ -762,7 +762,7 @@ known_disposition[emoji] = ...</code></pre>
   <!-- D6 -->
   <div class="dec" id="d6">
     <div class="dec-head"><span class="id">D6</span><h3>Parser / import danych z Markdown</h3>
-      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #6</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge warn">ryzyko #6</span></div>
     <div class="dec-body">
       <p>D11 = Markdown jako źródło, więc pipeline import MD→config zostaje. Pytanie brzmi tylko: <strong>jak solidny parser</strong>.
       Opcja C (autorstwo wprost w JSON) <strong>odrzucona</strong> — patrz złota reguła niżej. Format MD zostaje bez zmian; różnica jest wyłącznie w środku parsera.</p>
@@ -795,9 +795,9 @@ known_disposition[emoji] = ...</code></pre>
       (nadmiarowy, nieczytelny, problemogenny bez wsparcia schema). Preferencja: <strong>YAML lub TOML</strong>; JSON tylko jako artefakt
       <em>generowany maszynowo</em> (tu: skompilowany <code>config.json</code>, którego nikt nie tyka ręcznie) — i to jest OK.</div>
 
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>
-        C odrzucone (złota reguła). Do wyboru <strong>A vs B</strong>. Rekomendacja: <strong>B</strong> — koszt ~1 pliku, a walidacja przy imporcie
-        wycina dokładnie te ciche błędy tras, które inaczej wychodzą dopiero w rozgrywce (spójne z motywacją D9).</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano B — porządny parser: 1 regex z nazwanymi grupami + walidacja grafu.</strong> Błędy łapane przy imporcie z <code>plik:linia</code>
+        (wiszące referencje, niezgodny anchor, węzły-sieroty, brak START) zamiast cichych złych tras w rozgrywce. C (JSON) odrzucone złotą regułą.</div>
     </div>
   </div>
 
@@ -841,7 +841,7 @@ known_disposition[emoji] = ...</code></pre>
   <!-- D8 -->
   <div class="dec" id="d8">
     <div class="dec-head"><span class="id">D8</span><h3>Mapowanie efektów węzłów na systemy MoM</h3>
-      <span class="badge warn">Otwarte</span><span class="badge info">ryzyko #8</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge info">ryzyko #8</span></div>
     <div class="dec-body">
       <p>Jak <code>process_result</code> odwzorowuje 7 kategorii na realne API MoM (Inventory / HP / złoto)?</p>
       <div class="tablescroll"><table>
@@ -901,9 +901,9 @@ def process_result(r: NodeVisitResult, character, game) -> str:
     return build_feedback_msg(r)   # np. "Otrzymujesz 100 złota"</code></pre>
       </div>
 
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>
-        Do decyzji A vs B. Rekomendacja: <strong>A (adapter)</strong> — silnik dialogu bez importów z gry = testowalny w izolacji (a testów będzie dużo, D9).
-        Niezależnie od wyboru: <strong>nazwy itemów w efektach muszą zgadzać się z kluczami <code>items.csv</code> MoM</strong> (walidować przy imporcie — łączy się z D6/B).</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano A — cienki adapter (<code>ResultSink</code>).</strong> Silnik dialogu bez importów z gry = testowalny w izolacji (a testów będzie dużo, D9).
+        <strong>Warunek:</strong> nazwy itemów w efektach muszą zgadzać się z kluczami <code>items.csv</code> MoM — walidować przy imporcie (spina się z D6/B).</div>
     </div>
   </div>
 
@@ -958,18 +958,23 @@ def process_result(r: NodeVisitResult, character, game) -> str:
         <tbody>
           <tr><td>Ikona nastroju przy opcji</td><td>Sprite emoji (<code>:key:</code>) obok każdej odpowiedzi — Twój „ikona + liczba”</td><td class="pro">tak</td></tr>
           <tr><td>Bieżący poziom (0–100)</td><td>Wskaźnik nastawienia NPC (pasek / mina) w panelu rozmowy</td><td>tak (prosty)</td></tr>
-          <tr><td><strong>Mechanika odkrywania</strong> (<code>known_disposition</code>)</td><td>Wagę danego emoji dla postaci gracz poznaje <em>dopiero po pierwszym użyciu</em> — UI musi rozróżniać znane/nieznane (np. <code>?</code>)</td><td>do decyzji</td></tr>
+          <tr><td><strong>Mechanika odkrywania</strong> (<code>known_disposition</code>)</td><td>Wagę danego emoji dla postaci gracz poznaje <em>dopiero po pierwszym użyciu</em> — UI musi rozróżniać znane/nieznane (np. <code>?</code>)</td><td class="pro">tak</td></tr>
+          <tr><td><strong>Bramkowanie opcji</strong></td><td>Opcje/zakończenia dostępne dopiero od progu sentymentu (przez <code>condition</code>, D1 — predykat <code>sentiment &gt;= N</code>)</td><td class="pro">tak</td></tr>
+          <tr><td>Wpływ na handel</td><td>Sentyment → <strong>jeden współczynnik</strong> mnożący wszystkie ceny u kupca (<code>trade_spread</code>, <code>trade.py</code>)</td><td class="pro">tak · 1 mnożnik</td></tr>
           <tr><td>Podgląd skutku przed wyborem</td><td>Czy pokazać +N/−N zanim gracz kliknie, czy dopiero po (RPG: po)</td><td>po wyborze</td></tr>
-          <tr><td>Feedback zmiany</td><td>Floating +N/−N lub kolor przy zmianie sentymentu</td><td>miłe mieć</td></tr>
-          <tr><td><strong>Bramkowanie opcji</strong></td><td>Opcje/zakończenia dostępne dopiero od progu sentymentu (przez <code>condition</code>, D1)</td><td>do decyzji</td></tr>
-          <tr><td>Wpływ na handel</td><td>Sentyment ↔ ceny u kupca (<code>trade_spread</code>, <code>trade.py</code> MoM)</td><td>raczej nie w v1</td></tr>
+          <tr><td>Feedback zmiany</td><td>Floating +N/−N lub kolor przy zmianie sentymentu</td><td>później (backlog)</td></tr>
           <tr><td>Balans wag <code>disposition</code></td><td>Strojenie per postać, żeby emoji miały sensowny wpływ</td><td>iteracyjnie</td></tr>
         </tbody>
       </table></div>
       <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
-        <strong>Wybrano A — pełny sentyment.</strong> UI minimum = ikona emoji (<code>:key:</code>) + liczba przy opcji oraz prosty wskaźnik poziomu NPC.
-        <strong>Do doprecyzowania (2 pytania):</strong> (1) czy robimy <em>mechanikę odkrywania</em> <code>known_disposition</code> (znane/nieznane wagi) w v1, czy pełna jawność?
-        (2) czy sentyment <em>bramkuje</em> opcje/zakończenia w v1? Handel-ceny i podgląd-przed-wyborem: poza v1.</div>
+        <strong>Wybrano A — pełny sentyment.</strong> W zakresie v1:
+        <ul style="margin:var(--s2) 0 0">
+          <li><strong>Mechanika odkrywania — TAK:</strong> waga emoji ujawniana dopiero po pierwszym użyciu (<code>known_disposition</code>); UI pokazuje <code>?</code> dla nieodkrytych.</li>
+          <li><strong>Bramkowanie opcji — TAK:</strong> część opcji/zakończeń dostępna dopiero powyżej progu sentymentu (predykat <code>sentiment &gt;= N</code> z D1).</li>
+          <li><strong>Handel — TAK (proste):</strong> jeden współczynnik sentymentu mnożący wszystkie ceny u kupca.</li>
+          <li><strong>Balans wag <code>disposition</code>:</strong> iteracyjnie, w trakcie testów.</li>
+          <li><strong>Później (backlog, żeby nie zapomnieć):</strong> feedback zmiany — floating <code>+N/−N</code> / kolor przy zmianie sentymentu. Podgląd skutku: dopiero po wyborze.</li>
+        </ul></div>
     </div>
   </div>
 
