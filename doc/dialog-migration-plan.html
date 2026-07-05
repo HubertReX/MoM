@@ -578,7 +578,7 @@ known_disposition[emoji] = ...</code></pre>
   <!-- D1 -->
   <div class="dec" id="d1">
     <div class="dec-head"><span class="id">D1</span><h3>Silnik warunków: <code>eval()</code> czy alternatywa</h3>
-      <span class="badge info">W trakcie</span><span class="badge err">ryzyko #1</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge err">ryzyko #1</span></div>
     <div class="dec-body">
       <p>Warunki opcji to dziś stringi Pythona ewaluowane przez <code>eval(condition, cfg)</code>. Wejście jest <strong>zaufane</strong>
       (autorskie, w bundlu), więc problemem nie jest tyle bezpieczeństwo, co <strong>kruchość</strong>, <strong>brak walidacji w czasie autorstwa</strong>
@@ -604,17 +604,19 @@ known_disposition[emoji] = ...</code></pre>
       <p style="margin:var(--s3) 0 0"><strong>Mini-DSL w skrócie:</strong> zamknięty słownik predykatów, które <em>Ty</em> implementujesz i tylko one
       sięgają do danych: <code>selected(001to008_3)</code>, <code>visited(008)</code>, <code>visited(BARMAN, 008)</code>, <code>has_item("amulet")</code>,
       <code>sentiment &gt;= 50</code>, spinane przez <code>and/or/not</code>. Autor nie dotyka <code>character.selected_options_dict.values()</code>.</p>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>
-        Trwa omawianie. Rekomendacja: <strong>C (AST-whitelist z nazwanymi predykatami)</strong>. Kluczowa obserwacja: przy zaufanym,
-        bundlowanym wejściu realnym problemem nie jest bezpieczeństwo, lecz kruchość i brak walidacji autorskiej — dlatego samo „ograniczenie
-        kontekstu <code>eval</code>” nie rozwiązuje właściwego bólu.</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano C — mini-DSL: interpreter AST-whitelist z nazwanymi predykatami.</strong> Autor pisze czytelny infiks
+        (<code>selected(a) and not visited(b)</code>); parsujemy <code>ast.parse(mode="eval")</code> i własnym walkerem interpretujemy
+        wyłącznie dozwolone węzły (<code>BoolOp</code>, <code>UnaryOp</code>, <code>Compare</code>, <code>Call</code> do whitelisty,
+        <code>Name</code>, <code>Constant</code>) — nigdy <code>eval</code>/<code>exec</code>. Predykaty (<code>selected</code>,
+        <code>visited</code>, <code>has_item</code>, <code>sentiment</code>) to jedyny most do danych.</div>
     </div>
   </div>
 
   <!-- D2 -->
   <div class="dec" id="d2">
     <div class="dec-head"><span class="id">D2</span><h3>Reprezentacja danych: brak Pydantic na web + save/load</h3>
-      <span class="badge warn">Otwarte</span><span class="badge err">ryzyko #2</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge err">ryzyko #2</span></div>
     <div class="dec-body">
       <p>Web (pygbag/WASM) nie ma Pydantic, a save/load MoM na nim stoi. Jak reprezentować graf dialogu i stan rozmowy w obu trybach?</p>
       <div class="tablescroll"><table>
@@ -631,38 +633,73 @@ known_disposition[emoji] = ...</code></pre>
             <td class="con">Walidacja ręczna</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano C — dataclassy z <code>slots=True</code>.</strong> Spójne z kanoniczną <code>dialog_node.py</code>, działa na web
+        (bez pydantic), typowane. Graf walidujemy raz przy imporcie (build-time), stan rozmowy trzymamy jako dataclassy dopięte do modelu save.</div>
     </div>
   </div>
 
   <!-- D3 -->
   <div class="dec" id="d3">
     <div class="dec-head"><span class="id">D3</span><h3>Dialekt znaczników tekstu (rich → MoM RichText)</h3>
-      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #3</span></div>
+      <span class="badge info">W trakcie</span><span class="badge warn">ryzyko #3</span></div>
     <div class="dec-body">
-      <p>RPG używa <code>[reverse]</code>/<code>[italic]</code>/<code>[red]</code>; MoM <code>RichText</code> zna <code>[bold]</code>/<code>[act]</code>/<code>[h3]</code>. Gdzie mapować?</p>
+      <p><strong>Metoda ustalona:</strong> konwersja <strong>jednorazowa przy imporcie</strong> (build-time) — <code>[reverse]</code> itp.
+      zamieniamy na dialekt MoM raz, config wychodzi już czysty. Poniżej inwentarz do uzupełnienia mapowania.</p>
+
+      <h4 style="margin:var(--s4) 0 var(--s2); font-size:.95rem">a) Znaczniki tekstu</h4>
       <div class="tablescroll"><table>
-        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <thead><tr><th>RPG (rich)</th><th>Znaczenie</th><th>Kandydat w MoM</th><th>Mapowanie (Ty)</th></tr></thead>
         <tbody>
-          <tr><td><strong>A.</strong> Mapowanie przy imporcie (build-time)</td>
-            <td class="pro">Runtime czysty; policzone raz; pipeline i tak kompiluje MD→config</td>
-            <td class="con">Dwa formaty w repo; trudniej dojść do źródła znacznika</td></tr>
-          <tr><td><strong>B.</strong> Mapowanie w rendererze (runtime)</td>
-            <td class="pro">Źródło 1:1 z RPG; łatwy re-import</td>
-            <td class="con">Koszt na klatkę; renderer musi znać oba dialekty</td></tr>
-          <tr><td><strong>C.</strong> Ujednolicić autorstwo do tagów MoM</td>
-            <td class="pro">Brak mapowania w ogóle</td>
-            <td class="con">Trzeba przepisać istniejące dialogi</td></tr>
+          <tr><td><code>[reverse]</code></td><td>wyróżnienie (inwersja tła) — z <code>**bold**</code> w MD</td><td>MoM nie ma inwersji → <code>[char]</code>/<code>[act]</code>/<code>[bold]</code>?</td><td>?</td></tr>
+          <tr><td><code>[italic]</code> / <code>[i]</code></td><td>kursywa — z <code>_italic_</code> w MD</td><td class="pro"><code>[italic]</code> / <code>[i]</code> ✓</td><td>=</td></tr>
+          <tr><td><code>[bold]</code> / <code>[b]</code></td><td>pogrubienie</td><td class="pro"><code>[bold]</code> / <code>[b]</code> ✓</td><td>=</td></tr>
+          <tr><td><code>[red]</code></td><td>kolor czerwony</td><td><code>[error]</code> (223,57,76) / <code>[act]</code> (255,110,104)</td><td>?</td></tr>
+          <tr><td><code>[blue]</code></td><td>kolor niebieski</td><td><code>[item]</code> (104,113,255)</td><td>?</td></tr>
+          <tr><td><code>[yellow]</code></td><td>kolor żółty</td><td><code>[char]</code> (255,252,103)</td><td>?</td></tr>
+          <tr><td><code>[char]</code></td><td>nazwa postaci (kolor)</td><td class="pro"><code>[char]</code> ✓</td><td>=</td></tr>
+          <tr><td><code>[action]</code></td><td>akcja/klawisz (kolor)</td><td class="pro"><code>[act]</code> ✓</td><td>=</td></tr>
+          <tr><td><code>[item]</code></td><td>przedmiot</td><td class="pro"><code>[item]</code> ✓</td><td>=</td></tr>
+          <tr><td><code>[location]</code></td><td>lokacja</td><td class="pro"><code>[loc]</code> ✓</td><td>=</td></tr>
+          <tr><td><code>[number]</code></td><td>liczba</td><td class="pro"><code>[num]</code> ✓</td><td>=</td></tr>
+          <tr><td><code>[key]</code></td><td>klawisz na klawiaturze</td><td>ikona <code>:key_X:</code> lub <code>[act]</code>?</td><td>?</td></tr>
+          <tr><td><code>[symbol]</code> / <code>[e]</code></td><td>emoji/symbol inline</td><td>składnia <code>:name:</code> (patrz niżej)</td><td>?</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+      <p style="font-size:.85rem; color:var(--muted); margin:var(--s2) 0 0"><strong>Cały słownik tagów MoM RichText</strong> (do wyboru):
+      <code>h1 h2 h3</code>, <code>shadow</code>, <code>dark</code>, <code>light</code>, <code>bold/b</code>, <code>italic/i</code>, <code>underline/u</code>,
+      <code>link URL</code>, <code>big</code>, <code>small</code>, <code>left/right/center</code>, <code>act</code>, <code>char</code>, <code>item</code>,
+      <code>loc</code>, <code>num</code>, <code>quest</code>, <code>text</code>, <code>error</code>. Źródło: <code>settings.py:STYLE_TAGS_DICT</code>.</p>
+
+      <h4 style="margin:var(--s5) 0 var(--s2); font-size:.95rem">b) Emoji nastroju (<code>sentiment</code>) — unicode → grafika MoM</h4>
+      <p style="margin-top:0">RPG trzyma nastrój opcji jako <strong>unicode emoji</strong> (np. <code>😇</code>) i po nim indeksuje <code>disposition</code>.
+      MoM renderuje emoji jako <strong>sprite z arkusza</strong> składnią <code>:nazwa:</code>. Trzeba zmapować:</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>RPG unicode</th><th>Znaczenie</th><th>Kandydat MoM <code>:key:</code></th><th>Mapowanie (Ty)</th></tr></thead>
+        <tbody>
+          <tr><td><code>😇</code></td><td>kind (miły)</td><td><code>:blessed:</code> / <code>:love:</code></td><td>?</td></tr>
+          <tr><td><code>😢</code></td><td>weak (współczucie/smutek)</td><td><code>:sad:</code> / <code>:miserable:</code></td><td>?</td></tr>
+          <tr><td><code>😐</code></td><td>neutral</td><td><code>:neutral:</code> / <code>:indifferent:</code></td><td>?</td></tr>
+          <tr><td><code>😡</code></td><td>angry</td><td><code>:angry:</code> / <code>:evil:</code></td><td>?</td></tr>
+          <tr><td><code>🧠</code></td><td>smart (spryt)</td><td>brak mózgu → <code>:wondering:</code> / <code>:doubt:</code> / <code>:question:</code></td><td>?</td></tr>
+          <tr><td><code>😉</code></td><td>funny (żart)</td><td><code>:happy:</code> / <code>:smile:</code></td><td>?</td></tr>
+          <tr><td><code>🤖</code></td><td>technical (opcja systemowa, sentiment ignorowany)</td><td>pomiń / <code>:human:</code></td><td>?</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:.85rem; color:var(--muted); margin:var(--s2) 0 0"><strong>Dostępne emote MoM</strong> (arkusz <code>emote_all_anim.png</code>, klucze <code>EMOTE_SHEET_DEFINITION</code>):
+      twarze — <code>blessed love angry indifferent happy wondering doubt frounce smile dreaming sad neutral dead miserable offended peaceful evil human shocked</code>;
+      symbole — <code>heart broken_heart star exclamation question dots cross zzz $ fight walk A B X Y</code>. Wiele ma warianty <code>_anim</code> (np. <code>:love_anim:</code>).</p>
+
+      <div class="ustalenia open"><span class="lbl">Ustalenia · w toku</span><br>
+        <strong>Metoda: A</strong> — konwersja jednorazowa w imporcie. <strong>Czekam na Twoje mapowanie</strong> w kolumnach „Mapowanie (Ty)”:
+        (a) tagi tekstu z „?”, (b) 7 emoji nastroju → klucze MoM. Po podaniu wpiszę finalną tabelę konwersji.</div>
     </div>
   </div>
 
   <!-- D4 -->
   <div class="dec" id="d4">
     <div class="dec-head"><span class="id">D4</span><h3>UI turowe → real-time + sterowanie wyborem</h3>
-      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #4</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge warn">ryzyko #4</span></div>
     <div class="dec-body">
       <p>Jak <code>DialogPanel</code> pokazuje opcje i przyjmuje wybór (klawiatura / pad / mysz)?</p>
       <div class="tablescroll"><table>
@@ -679,14 +716,16 @@ known_disposition[emoji] = ...</code></pre>
             <td class="con">Najwięcej kodu obsługi wejścia</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano C — hybryda.</strong> Kursor ↑/↓ + Enter (spójne z padem i menu MoM) <em>oraz</em> skróty <span class="kbd">1</span>–<span class="kbd">9</span>
+        i mysz. Podświetlenie aktywnej opcji obsługuje wszystkie trzy metody wejścia.</div>
     </div>
   </div>
 
   <!-- D5 -->
   <div class="dec" id="d5">
     <div class="dec-head"><span class="id">D5</span><h3>Persystencja stanu rozmowy i flaga <code>visited</code></h3>
-      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #5</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge warn">ryzyko #5</span></div>
     <div class="dec-body">
       <p>Co dokładnie zapisujemy, żeby efekty nie liczyły się dwa razy i warunki się nie rozjechały po reloadzie?</p>
       <div class="tablescroll"><table>
@@ -703,7 +742,10 @@ known_disposition[emoji] = ...</code></pre>
             <td class="con">Traci warunki oparte na konkretnych wyborach</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano A — pełny stan per-NPC.</strong> Zapisujemy kursor (bieżący węzeł) + <code>selected_options_dict</code> +
+        <code>sentiment</code> + <code>visited</code> + <code>selected</code>. Reload wznawia rozmowę dokładnie w miejscu przerwania.
+        Konsekwencja: nowe pola trafiają do modelu save i do testów korupcji (patrz plan, krok 7).</div>
     </div>
   </div>
 
@@ -712,29 +754,47 @@ known_disposition[emoji] = ...</code></pre>
     <div class="dec-head"><span class="id">D6</span><h3>Parser / import danych z Markdown</h3>
       <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #6</span></div>
     <div class="dec-body">
-      <p>Zależy od D11 (źródło prawdy). Jak importujemy/utrzymujemy dane dialogów?</p>
+      <p>D11 = Markdown jako źródło, więc pipeline import MD→config zostaje. Pytanie brzmi tylko: <strong>jak solidny parser</strong>.
+      Opcja C (autorstwo wprost w JSON) <strong>odrzucona</strong> — patrz złota reguła niżej. Format MD zostaje bez zmian; różnica jest wyłącznie w środku parsera.</p>
       <div class="tablescroll"><table>
         <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
         <tbody>
           <tr><td><strong>A.</strong> Przenieść <code>import_dialog_from_md.py</code> as-is</td>
-            <td class="pro">Najszybciej; działa</td>
-            <td class="con">Pozycyjny parser = kruchy; dług techniczny</td></tr>
-          <tr><td><strong>B.</strong> Przepisać parser na porządny (regex/gramatyka per linia + walidacja)</td>
-            <td class="pro">Odporny na literówki; błędy łapane przy imporcie</td>
-            <td class="con">Praca teraz</td></tr>
-          <tr><td><strong>C.</strong> Autorstwo wprost w JSON (porzucić MD)</td>
-            <td class="pro">Zero parsera; jedno źródło</td>
-            <td class="con">Mniej wygodne pisanie długich dialogów</td></tr>
+            <td class="pro">Najszybciej; działa dziś</td>
+            <td class="con">Pozycyjny rozbiór (indeksy znaków: <code>line[first_space+1] != "["</code>) = kruchy; literówka → cichy błąd/zła trasa; dług techniczny</td></tr>
+          <tr><td><strong>B.</strong> Przepisać rozbiór linii na 1 regex z nazwanymi grupami + walidacja grafu</td>
+            <td class="pro">Odporny na literówki; błędy łapane przy imporcie z numerem linii; walidacja referencji (patrz opis)</td>
+            <td class="con">Trochę pracy teraz (~1 plik)</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia (powiązane z D11) —</div>
+
+      <p style="margin:var(--s3) 0 var(--s2)"><strong>Opcja B — konkret.</strong> Zamiast liczenia pozycji znaków, każda linia opcji przez jeden nazwany regex:</p>
+      <pre><code>^\*\s*\[(?P&lt;target&gt;\w+)\]\(#(?P&lt;anchor&gt;[\w-]+)\)\s+
+   (?P&lt;order&gt;\d+)(?P&lt;sentiment&gt;\S)
+   (?:\s*\[(?P&lt;condition&gt;[^\]]*)\])?
+   :\s*(?P&lt;text&gt;.+)$</code></pre>
+      <p style="margin:var(--s2) 0">Plus <strong>walidacja grafu po sparsowaniu</strong> (czego pozycyjny parser nie robi):</p>
+      <ul style="margin-top:0">
+        <li>każdy <code>target</code> opcji istnieje jako węzeł; brak wiszących referencji</li>
+        <li>istnieje węzeł START; każdy węzeł osiągalny; ostrzeżenie o węzłach-sierotach</li>
+        <li>zgodność <code>anchor</code> z <code>target</code> (łapie <code>[002](#003)</code>)</li>
+        <li><strong>błąd = przerwany import z <code>plik:linia</code></strong>, zamiast cichego przekierowania w grze</li>
+      </ul>
+
+      <div class="callout"><strong>Złota reguła (utrwalona).</strong> Do <em>ręcznej</em> edycji nigdy nie proponuję konfiguracji w JSON
+      (nadmiarowy, nieczytelny, problemogenny bez wsparcia schema). Preferencja: <strong>YAML lub TOML</strong>; JSON tylko jako artefakt
+      <em>generowany maszynowo</em> (tu: skompilowany <code>config.json</code>, którego nikt nie tyka ręcznie) — i to jest OK.</div>
+
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>
+        C odrzucone (złota reguła). Do wyboru <strong>A vs B</strong>. Rekomendacja: <strong>B</strong> — koszt ~1 pliku, a walidacja przy imporcie
+        wycina dokładnie te ciche błędy tras, które inaczej wychodzą dopiero w rozgrywce (spójne z motywacją D9).</div>
     </div>
   </div>
 
   <!-- D7 -->
   <div class="dec" id="d7">
     <div class="dec-head"><span class="id">D7</span><h3>Mechanizm i18n (PL/EN)</h3>
-      <span class="badge warn">Otwarte</span><span class="badge info">ryzyko #7</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge info">ryzyko #7</span></div>
     <div class="dec-body">
       <p>Jak MoM lokalizuje teksty dialogów?</p>
       <div class="tablescroll"><table>
@@ -746,12 +806,25 @@ known_disposition[emoji] = ...</code></pre>
           <tr><td><strong>B.</strong> Tekst wprost w węźle, PL-only na start</td>
             <td class="pro">Najprościej; szybko do grywalnego demo</td>
             <td class="con">Późniejsza migracja do i18n bolesna</td></tr>
-          <tr><td><strong>C.</strong> Zewnętrzne pliki i18n per język (csv/json)</td>
+          <tr><td><strong>C.</strong> Zewnętrzne pliki i18n per język (csv/toml)</td>
             <td class="pro">Czyste; tłumacze pracują niezależnie</td>
             <td class="con">Więcej infrastruktury</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia (zależne od priorytetu EN) —</div>
+
+      <p style="margin:var(--s3) 0 var(--s2)"><strong>Alternatywny format magazynu</strong> (na Twoją prośbę — wzorzec A, ale nie-JSON):
+      teksty i tak generujemy z MD, więc format to detal. Warianty:</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Format</th><th>Wygląd</th><th>Uwagi</th></tr></thead>
+        <tbody>
+          <tr><td>JSON (generowany)</td><td><code>{"M_HAMMER_DN_001": "Czego chcesz?"}</code></td><td class="pro">OK — maszynowy artefakt, nikt nie edytuje ręcznie</td></tr>
+          <tr><td>TOML per język</td><td><code>M_HAMMER_DN_001 = "Czego chcesz?"</code></td><td>Czytelny też ręcznie; dobre gdy tłumacz zagląda do pliku</td></tr>
+          <tr><td>CSV per język</td><td><code>M_HAMMER_DN_001;Czego chcesz?</code></td><td>Spójne z <code>characters.csv</code>/<code>items.csv</code> MoM; łatwe dla tłumaczy w arkuszu</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano A — <code>messages[lang][key]</code>, węzły trzymają tylko klucze</strong> (jak RPG); potrzebny odpowiednik <code>get_msg()</code> w MoM.
+        <strong>Otwarte (drobne):</strong> format magazynu — JSON generowany jest OK; jeśli tłumacz ma zaglądać do pliku, rozważyć CSV (spójne z resztą MoM) lub TOML. Do dopięcia przy krokach 4/7.</div>
     </div>
   </div>
 
@@ -772,14 +845,62 @@ known_disposition[emoji] = ...</code></pre>
             <td class="con">Sprzęga silnik dialogu z wnętrzem gry</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia. Uwaga: nazwy itemów muszą zgadzać się z <code>items.csv</code> MoM —</div>
+
+      <div class="tabs" role="tablist" style="margin-top:var(--s4)">
+        <button class="tab" role="tab" aria-selected="true" data-tab="d8a">Opcja A — adapter</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="d8b">Opcja B — bezpośrednio</button>
+      </div>
+      <div class="tabpanel" data-panel="d8a">
+        <p style="margin-top:0">Silnik dialogu <strong>nie zna MoM</strong>. Woła interfejs, który gra dostarcza. Efekt = łatwo testowalny bez pygame.</p>
+        <pre><code># silnik_dialogu.py — zero importów z gry
+class ResultSink(Protocol):
+    def give_money(self, n: int) -> None: ...
+    def take_money(self, n: int) -> None: ...
+    def give_items(self, keys: list[str]) -> None: ...
+    def heal(self, n: int) -> None: ...
+    def hurt(self, n: int) -> None: ...
+    def shift_sentiment(self, v: int) -> None: ...
+
+def apply_result(r: NodeVisitResult, sink: ResultSink) -> None:
+    match r.category:
+        case Cat.MONEY_RECEIVED:  sink.give_money(r.money)
+        case Cat.ITEMS_RECEIVED:  sink.give_items(r.items)
+        case Cat.HEALTH_LOST:     sink.hurt(r.health)
+        case Cat.SENTIMENT_SHIFT: sink.shift_sentiment(r.value)
+        # ...
+
+# gra dostarcza konkret spięty z Inventory/hero
+class GameSink:
+    def give_money(self, n): self.hero.money += n
+    def give_items(self, keys):
+        for k in keys: self.hero.inventory.add(self.items[k])</code></pre>
+      </div>
+      <div class="tabpanel" data-panel="d8b" hidden>
+        <p style="margin-top:0">Silnik importuje systemy gry i woła je wprost. Mniej kodu, ale <code>process_result</code> zna wnętrze MoM.</p>
+        <pre><code># silnik zna game — sprzężenie
+def process_result(r: NodeVisitResult, character, game) -> str:
+    if r.category == Cat.MONEY_RECEIVED:
+        game.hero.money += r.money
+    elif r.category == Cat.ITEMS_RECEIVED:
+        for k in r.items:
+            game.hero.inventory.add(game.config.items[k])
+    elif r.category == Cat.HEALTH_LOST:
+        game.hero.health -= r.health
+    elif r.category == Cat.SENTIMENT_SHIFT:
+        character.sentiment = clamp(character.sentiment + r.value)
+    return build_feedback_msg(r)   # np. "Otrzymujesz 100 złota"</code></pre>
+      </div>
+
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>
+        Do decyzji A vs B. Rekomendacja: <strong>A (adapter)</strong> — silnik dialogu bez importów z gry = testowalny w izolacji (a testów będzie dużo, D9).
+        Niezależnie od wyboru: <strong>nazwy itemów w efektach muszą zgadzać się z kluczami <code>items.csv</code> MoM</strong> (walidować przy imporcie — łączy się z D6/B).</div>
     </div>
   </div>
 
   <!-- D9 -->
   <div class="dec" id="d9">
     <div class="dec-head"><span class="id">D9</span><h3>Opcje DEBUG w dialogach</h3>
-      <span class="badge warn">Otwarte</span><span class="badge purple">nowe</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge purple">nowe</span></div>
     <div class="dec-body">
       <p>RPG przy ładowaniu dostrzykuje opcje DEBUG (skok do START / do węzłów <code>is_final</code>, <code>main.py:1186</code>). Zostawiamy w MoM?</p>
       <div class="tablescroll"><table>
@@ -793,14 +914,17 @@ known_disposition[emoji] = ...</code></pre>
             <td class="con">Trudniej testować długie gałęzie</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano A — opcje DEBUG gated <code>IS_DEBUG_MODE</code>.</strong> Uzasadnienie: testowanie drzew dialogowych będzie
+        jedną z najżmudniejszych prac (dużo postaci i wariantów), a błędy logiki dialogu <em>nie rzucają wyjątków</em> — to najgorszy
+        rodzaj błędów do wyłapania. Szybkie skoki (do START / do węzłów <code>is_final</code>) = mniej nielogicznych dialogów. Sprząc z testami wizualnymi MoM.</div>
     </div>
   </div>
 
   <!-- D10 -->
   <div class="dec" id="d10">
     <div class="dec-head"><span class="id">D10</span><h3>Zakres funkcji sentymentu w v1</h3>
-      <span class="badge warn">Otwarte</span><span class="badge purple">nowe</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge purple">nowe</span></div>
     <div class="dec-body">
       <p>Czy <code>sentiment</code>/<code>disposition</code>/<code>known_disposition</code> jest widoczny dla gracza w v1, tylko wewnętrzny, czy cięty?</p>
       <div class="tablescroll"><table>
@@ -817,14 +941,32 @@ known_disposition[emoji] = ...</code></pre>
             <td class="con">Trzeba potem dodać pola + migrację save</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+
+      <div class="callout warn"><strong>„Ikona emoji + liczba” to nie wszystko.</strong> Pełny sentyment (A) pociąga kilka rzeczy, o których warto zdecydować z góry:</div>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Aspekt</th><th>Co to znaczy</th><th>W v1?</th></tr></thead>
+        <tbody>
+          <tr><td>Ikona nastroju przy opcji</td><td>Sprite emoji (<code>:key:</code>) obok każdej odpowiedzi — Twój „ikona + liczba”</td><td class="pro">tak</td></tr>
+          <tr><td>Bieżący poziom (0–100)</td><td>Wskaźnik nastawienia NPC (pasek / mina) w panelu rozmowy</td><td>tak (prosty)</td></tr>
+          <tr><td><strong>Mechanika odkrywania</strong> (<code>known_disposition</code>)</td><td>Wagę danego emoji dla postaci gracz poznaje <em>dopiero po pierwszym użyciu</em> — UI musi rozróżniać znane/nieznane (np. <code>?</code>)</td><td>do decyzji</td></tr>
+          <tr><td>Podgląd skutku przed wyborem</td><td>Czy pokazać +N/−N zanim gracz kliknie, czy dopiero po (RPG: po)</td><td>po wyborze</td></tr>
+          <tr><td>Feedback zmiany</td><td>Floating +N/−N lub kolor przy zmianie sentymentu</td><td>miłe mieć</td></tr>
+          <tr><td><strong>Bramkowanie opcji</strong></td><td>Opcje/zakończenia dostępne dopiero od progu sentymentu (przez <code>condition</code>, D1)</td><td>do decyzji</td></tr>
+          <tr><td>Wpływ na handel</td><td>Sentyment ↔ ceny u kupca (<code>trade_spread</code>, <code>trade.py</code> MoM)</td><td>raczej nie w v1</td></tr>
+          <tr><td>Balans wag <code>disposition</code></td><td>Strojenie per postać, żeby emoji miały sensowny wpływ</td><td>iteracyjnie</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano A — pełny sentyment.</strong> UI minimum = ikona emoji (<code>:key:</code>) + liczba przy opcji oraz prosty wskaźnik poziomu NPC.
+        <strong>Do doprecyzowania (2 pytania):</strong> (1) czy robimy <em>mechanikę odkrywania</em> <code>known_disposition</code> (znane/nieznane wagi) w v1, czy pełna jawność?
+        (2) czy sentyment <em>bramkuje</em> opcje/zakończenia w v1? Handel-ceny i podgląd-przed-wyborem: poza v1.</div>
     </div>
   </div>
 
   <!-- D11 -->
   <div class="dec" id="d11">
     <div class="dec-head"><span class="id">D11</span><h3>Źródło prawdy dla dialogów</h3>
-      <span class="badge warn">Otwarte</span><span class="badge purple">nowe</span></div>
+      <span class="badge ok">Rozstrzygnięte</span><span class="badge purple">nowe</span></div>
     <div class="dec-body">
       <p>Gdzie żyje kanoniczna definicja dialogu — Markdown (kompilowany), JSON, czy edytor? Determinuje D6.</p>
       <div class="tablescroll"><table>
@@ -841,7 +983,9 @@ known_disposition[emoji] = ...</code></pre>
             <td class="con">Duży osobny projekt; poza zakresem tej migracji</td></tr>
         </tbody>
       </table></div>
-      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+      <div class="ustalenia"><span class="lbl">Ustalenia · 2026-07-05</span><br>
+        <strong>Wybrano A — Markdown jako źródło prawdy, config generowany.</strong> Wygodne, diff-friendly autorstwo (jak w RPG).
+        Determinuje D6 (potrzebny pipeline import). Edytor (C) to ewentualna przyszłość, poza zakresem tej migracji.</div>
     </div>
   </div>
 
