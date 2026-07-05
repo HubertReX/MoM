@@ -9,15 +9,17 @@ tags:
 
 ## 🧊 Backlog
 
+- [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2
+
 ## 🟢 Ready for AI
 
 ## 🤖 In Progress
 
+- [ ] [[T-020 Widget pola tekstowego (TextInput) w module UI]] #feature #p2 #cc
+
 ## 🙋 Needs You
 
 - [ ] [[T-018 Load z menu głównego nie działa]] #bug #p1 #opencode #review
-- [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2 #opencode #review
-
 ## 🏁 Done
 
 **Complete**
@@ -25,6 +27,7 @@ tags:
 - [ ] [[T-015 Continue w menu głównym tylko przy trwającej grze]] #feature #p2 #opencode
 - [ ] [[T-016 Load w menu głównym pokazuje wybór slotu i wczytuje grę]] #feature #p2 #opencode
 - [ ] [[T-017 DeathScreen i DeadState pokazują wybór slotu do wczytania]] #feature #p2
+- [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2 #opencode
 
 
 ## Archive
