@@ -186,10 +186,55 @@
             { "label": "New name typed in editor", "commands": ["screenshot"] },
             { "label": "Commit rename (Enter)", "commands": ["accept"], "wait": 0.5 },
             { "label": "Slot renamed in list", "commands": ["screenshot"] },
-            { "label": "Open delete confirm (Del)", "commands": ["slot_delete"], "wait": 0.5 },
+            { "label": "Open delete confirm (D)", "commands": ["slot_delete"], "wait": 0.5 },
             { "label": "Delete confirmation modal (Yes/No)", "commands": ["screenshot"] },
             { "label": "Confirm delete (Yes)", "commands": ["accept"], "wait": 0.5 },
             { "label": "Slot removed - empty list", "commands": ["screenshot"] }
+        ]
+    },
+    {
+        "name": "In-Game LoadPanel Paused",
+        "cleanup_saves": [0, 1, 2],
+        "actions": [
+            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
+            { "label": "Open LoadPanel in-game (F9)", "commands": ["quick_load"], "wait": 0.5 },
+            { "label": "LoadPanel over the frozen game", "commands": ["screenshot"] },
+            { "label": "Press R - opens Rename, does NOT reload the map", "commands": ["slot_rename"], "wait": 0.5 },
+            { "label": "Rename editor over the game", "commands": ["screenshot"] },
+            { "label": "Cancel rename (Esc)", "commands": ["quit"], "wait": 0.3 },
+            { "label": "Close LoadPanel (Esc)", "commands": ["quit"], "wait": 0.5 },
+            { "label": "Back in game, not main menu", "commands": ["screenshot"] }
+        ]
+    },
+    {
+        "name": "Maze Save Blocked",
+        "cleanup_saves": [0, 1, 2],
+        "actions": [
+            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Force dungeon/maze mode", "commands": ["debug_set_maze"], "wait": 0.3 },
+            { "label": "Try to quick save (F5)", "commands": ["quick_save"], "wait": 0.5 },
+            { "label": "Notification: cannot save in the dungeon", "commands": ["screenshot"] }
+        ]
+    },
+    {
+        "name": "In-Game Reload Confirm",
+        "actions": [
+            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Press R (reload map)", "commands": ["reload"], "wait": 0.5 },
+            { "label": "Reload confirmation dialog (default No)", "commands": ["screenshot"] },
+            { "label": "Cancel (Esc)", "commands": ["quit"], "wait": 0.5 },
+            { "label": "Back in game, map not reloaded", "commands": ["screenshot"] }
+        ]
+    },
+    {
+        "name": "In-Game Esc Shows Continue",
+        "actions": [
+            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Press Esc in game", "commands": ["quit"], "wait": 0.5 },
+            { "label": "Main menu on top with Continue", "commands": ["screenshot"] },
+            { "label": "Select Continue (top option)", "commands": ["accept"], "wait": 1.0 },
+            { "label": "Resumed the same game", "commands": ["screenshot"] }
         ]
     },
     {
