@@ -142,6 +142,7 @@ F5 w lochu/maze - zapis zablokowany z powiadomieniem:
 ![Maze save blocked](../_attachments/T-021-maze-save-blocked.png)
 - 2026-07-05 12:30 cc: Naprawione wszystkie 7 uwag z review (stray 'r', layout, pauza panelu w grze, potwierdzenie reload, Continue w menu z gry, Delete->d, zakaz zapisu w maze). Zweryfikowane 4 nowymi scenariuszami agentowymi na desktop, screenshoty w tasku. mypy bez nowych błędów, testy jednostkowe zielone.
 - 2026-07-05 14:16 cc: Follow-up: menu otwierane w grze (Esc/F2) nie miało tła (bg_image=None). Zapisane game.menu_bg_image i przekazywane przy pushu MainMenuScreen ze sceny - teraz to samo tło co menu startowe. Zweryfikowane screenshotem.
+- 2026-07-05 14:25 cc: Fix: Load z MainMenu + Esc zamykał grę (panel konsumował event Esc, ale INPUTS['quit'] wyciekał do MainMenuScreen pod spodem -> quit). LoadMenuScreen._on_cancel woła reset_inputs(). Dodany hotkey F7 (akcja text_demo) do otwierania ekranu demo TextInput z dowolnego miejsca. Scenariusze 'Menu Load Cancel Returns to Menu' i 'TextInput Demo Hotkey' przechodzą na desktop.
 
 ## 🙋 Needs-You / Questions
 
