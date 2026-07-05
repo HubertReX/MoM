@@ -1,7 +1,7 @@
 ---
 id: T-015
 title: Continue w menu głównym tylko przy trwającej grze
-status: done
+status: archive
 owner: human
 priority: p2
 type: feature

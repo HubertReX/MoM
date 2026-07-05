@@ -26,18 +26,13 @@ tags:
 
 ## 🙋 Needs You
 
-- [ ] [[T-018 Load z menu głównego nie działa]] #bug #p1 #opencode #review
-- [ ] [[T-020 Widget pola tekstowego (TextInput) w module UI]] #feature #p2 #cc #review
-- [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2 #opencode #review
-- [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2 #cc #review
-
 ## 🏁 Done
 
 **Complete**
-- [ ] [[T-014 F5 quick save zapisuje w nowym slocie]] #feature #p2 #opencode
-- [ ] [[T-015 Continue w menu głównym tylko przy trwającej grze]] #feature #p2 #opencode
-- [ ] [[T-016 Load w menu głównym pokazuje wybór slotu i wczytuje grę]] #feature #p2 #opencode
-- [ ] [[T-017 DeathScreen i DeadState pokazują wybór slotu do wczytania]] #feature #p2
+- [ ] [[T-018 Load z menu głównego nie działa]] #bug #p1 #opencode
+- [ ] [[T-020 Widget pola tekstowego (TextInput) w module UI]] #feature #p2 #cc
+- [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2 #opencode
+- [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2 #cc
 
 ## Archive
 
@@ -54,6 +49,10 @@ tags:
 - [ ] [[T-011 Auto Save on Map Change nie testuje faktycznie zmiany mapy]] #bug #p2
 - [ ] [[T-012 quick_load nie zamyka otwartego LoadPanel w testach]] #bug #p2 #user #opencode
 - [ ] [[T-013 Po wczytaniu gry nie wyświetlają się ikony w inventory]] #bug #p1
+- [ ] [[T-014 F5 quick save zapisuje w nowym slocie]] #feature #p2 #opencode
+- [ ] [[T-015 Continue w menu głównym tylko przy trwającej grze]] #feature #p2 #opencode
+- [ ] [[T-016 Load w menu głównym pokazuje wybór slotu i wczytuje grę]] #feature #p2 #opencode
+- [ ] [[T-017 DeathScreen i DeadState pokazują wybór slotu do wczytania]] #feature #p2
 
 
 %% kanban:settings

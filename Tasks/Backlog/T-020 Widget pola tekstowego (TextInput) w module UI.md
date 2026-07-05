@@ -1,7 +1,7 @@
 ---
 id: T-020
 title: Widget pola tekstowego (TextInput) w module UI
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: feature

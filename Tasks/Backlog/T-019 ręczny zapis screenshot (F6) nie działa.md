@@ -1,7 +1,7 @@
 ---
 id: T-019
 title: ręczny zapis screenshot (F6) nie działa
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: bug

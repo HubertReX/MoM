@@ -1,7 +1,7 @@
 ---
 id: T-017
 title: DeathScreen i DeadState pokazują wybór slotu do wczytania
-status: done
+status: archive
 owner: human
 priority: p2
 type: feature

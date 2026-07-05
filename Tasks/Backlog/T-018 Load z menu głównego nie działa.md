@@ -1,7 +1,7 @@
 ---
 id: T-018
 title: Load z menu głównego nie działa
-status: needs-you
+status: done
 owner: human
 priority: p1
 type: bug

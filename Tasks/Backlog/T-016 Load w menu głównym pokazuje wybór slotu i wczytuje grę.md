@@ -1,7 +1,7 @@
 ---
 id: T-016
 title: Load w menu głównym pokazuje wybór slotu i wczytuje grę
-status: done
+status: archive
 owner: human
 priority: p2
 type: feature

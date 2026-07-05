@@ -1,7 +1,7 @@
 ---
 id: T-014
 title: F5 quick save zapisuje w nowym slocie
-status: done
+status: archive
 owner: human
 priority: p2
 type: feature

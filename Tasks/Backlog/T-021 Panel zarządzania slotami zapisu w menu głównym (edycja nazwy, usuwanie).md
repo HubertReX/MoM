@@ -1,7 +1,7 @@
 ---
 id: T-021
 title: Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: feature
