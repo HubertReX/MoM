@@ -6,6 +6,53 @@
 
 ---
 
+User:
+
+Ta gra działa jednocześnie w trybie desktop i przez web. Sprawdź, czy obecny mechanizm testów automatycznych przez Agentów AI obsługuje również tryb web? Czy poprawnie generowane są screenshoty, czy obecny zestaw scenariuszy testowych działa również dla trybu web?
+Zbadam ten problem. Przejrzę kod testowy i infrastrukturę z obu trybów.
+
+Odpowiedź: Tryb web NIE jest obsługiwany przez obecny mechanizm testów automatycznych
+Krótko: Cały harness scenariuszowy jest desktop-only. Żaden test nie jest uruchamiany w trybie web, screenshoty z weba nie są możliwe do pobrania przez runner, a sam agent control jest w trybie web jawne wyłączony.
+
+Dowody (file:line)
+1. Runner jest desktop-only, brak ścieżki web
+
+tests/automate_display_test.py:17 — polecenie startu gry to dosłownie SDL_VIDEODRIVER=dummy ... .venv/bin/python3 project/main.py. Brak jakiejkolwiek gałęzi emscripten/pygbag/--web.
+automate_display_test.py:143-145 — start przez subprocess.Popen + os.setsid (POSIX), co w WASM/przeglądarce w ogóle nie istnieje.
+Komendy są dostarczane przez echo "CMD" > agent_input.txt (automate_display_test.py:77-78) — w przeglądarce WASM nie ma dostępnego host-filesystemu, więc ten kanał jest martwy.
+2. Agent control jest w trybie web wyłączony na sztywno
+
+project/game.py:210 — if USE_AGENT_CONTROL and not IS_WEB: → IS_WEB=True ⇒ self.agent_ctrl zostaje None. Hooki apply/capture (game.py:988-989) to no-opy.
+project/agent_ctrl.py:14-15 — docstring potwierdza: „Tryb wyłącznie desktop (operacje na plikach) i opt-in". poll() (agent_ctrl.py:107-113) otwiera plik dyskowy; capture() (agent_ctrl.py:225-227) robi pygame.image.save(surface, path) na dysk.
+3. Screenshoty w trybie web nie trafiają do runnera
+
+Mechanizm w grze (game.py:575-596): w web robie platform.window.download_from_browser_fs(...) — screenshot idzie jako pobranie przeglądarki, nie plik możliwy do wczytania przez proces testowy.
+Mechanizm agentowy (agent_ctrl.py:217-231): pygame.image.save na dysk — nieosiągalny w web bo agent_ctrl jest gated off (patrz pkt 2), a zresztą SDL w emscripten renderuje na canvas, nie działa SDL_VIDEODRIVER=dummy.
+4. Scenariusze nie są web-aware
+
+tests/scenarios.json: 9 scenariuszy. Żaden nie ma pola platform/web/target/mode (schema parsera w automate_display_test.py:164-184 czyta tylko name, actions, assertions, cleanup_saves).
+Każdy scenariusz z quick_save/quick_load/debug_map_change i assertions.file_exists opiera się na FileSaveBackend (host FS). Web build używa LocalStorageSaveBackend (project/save_load/backends.py:92-126), więc te assercje nie mają sensu w web.
+5. Save helper jest desktop-only
+
+tests/test_save_load_corrupt.py:24-32 — _get_save_dir() zna tylko ~/Library/Application Support/mom/saves, ~/.local/share/mom/saves, AppData\Local\mom\saves. Brak obsługi window.localStorage.
+6. Brak automatyzacji przeglądarki
+
+Przeszukanie repo (poza .venv//utils/): zero selenium|playwright|puppeteer|MCP server. Żadnego tests/test_web*.py, żadnego conftest.py, żadnego mcp.json.
+7. Build/web skrypty bez testów
+
+serve_web.sh i build_itchio.sh — tylko uruchamiają pygbag, bez --test i bez jakiegokolwiek hooka integrującego tests/.
+CI (.github/workflows/pygbag.yml, itch_io.yml) — tylko build. W project/AGENTS.md:73 jedyną wskazówką dla web jest ręczne uruchomienie ./serve_web.sh (weryfikacja manualna).
+Co trzeba by dodać, by web test zadziałał
+Kanał komend dla web — Playwright (Python) sterujący serve_web.sh, tłumaczący TestAction.commands na page.keyboard.press(...) (zamiast echo do pliku) + zdjęcie blokady not IS_WEB w game.py:210 albo dedykowany branch w AgentController.poll() (agent_ctrl.py:105-116) czytający z localStorage/kolejki JS.
+Screenshot z web — page.screenshot() Playwright (najprościej), lub wystawienie game.py:575-596 na bocznym kanale zamiast download_from_browser_fs.
+Save assertion web — nowy typ localStorage_exists ewaluowany przez page.evaluate(...) na kluczach save_<N>; corrupt helper piszący złe dane do localStorage zamiast na dysk.
+Schema scenariuszy — pole platform/target (lub osobny tests/scenarios_web.json), żeby scenariusze zależne od FileSaveBackend nie leciały ślepo na web.
+Runner — WebRunner (uruchamia serve_web.sh + kontekst Playwright) zamiast TestRunner.start_game (automate_display_test.py:139-147).
+CI — job serwujący zbudowaną stronę i odpalający suite Playwright, z artifactem screenshots/agent/.
+Zgłoszenie vedette (opcjonalne)
+project/AGENTS.md:60,76,79 podaje settings.py:84/83/92, ale realna definicja IS_WEBjest teraz w settings.py:130-131 — numery wierszy w AGENTS.md są nieaktualne.
+
+
 ## Assistant (Build · Big Pickle · 173.7s)
 
 **Co udało się zrobić:**
