@@ -1,5 +1,7 @@
 # Dialog System
 
+Brief dla agentów: [[Tasks/DS-epic-brief.md]]
+
 ## Podsumowanie
 
 **D3 rozstrzygnięte** - mapowanie naniesione do obu tabel + finalna tabela konwersji w Ustaleniach. Wszystkie **11 decyzji (D1-D11) zamknięte**.
