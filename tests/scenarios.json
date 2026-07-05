@@ -156,5 +156,42 @@
             { "label": "Backspace removes last char (keeps Kat)", "commands": ["backspace"], "wait": 0.4 },
             { "label": "Final state", "commands": ["screenshot"] }
         ]
+    },
+    {
+        "name": "Manage Saves",
+        "cleanup_saves": [0, 1, 2],
+        "actions": [
+            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
+            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
+            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "label": "LoadPanel with one slot (hint shows Rename/Delete)", "commands": ["screenshot"] },
+            { "label": "Open rename editor (R)", "commands": ["slot_rename"], "wait": 0.5 },
+            { "label": "Rename editor prefilled with current name", "commands": ["screenshot"] },
+            { "label": "Clear current name", "commands": ["backspace", "backspace", "backspace", "backspace", "backspace", "backspace"], "wait": 0.4 },
+            { "label": "Type new name", "commands": ["type:Hero123"], "wait": 0.5 },
+            { "label": "New name typed in editor", "commands": ["screenshot"] },
+            { "label": "Commit rename (Enter)", "commands": ["accept"], "wait": 0.5 },
+            { "label": "Slot renamed in list", "commands": ["screenshot"] },
+            { "label": "Open delete confirm (Del)", "commands": ["slot_delete"], "wait": 0.5 },
+            { "label": "Delete confirmation modal (Yes/No)", "commands": ["screenshot"] },
+            { "label": "Confirm delete (Yes)", "commands": ["accept"], "wait": 0.5 },
+            { "label": "Slot removed - empty list", "commands": ["screenshot"] }
+        ]
+    },
+    {
+        "name": "Load from Menu then Esc",
+        "cleanup_saves": [0],
+        "actions": [
+            { "label": "Start New Game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
+            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
+            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "label": "Confirm load", "commands": ["accept"] },
+            { "label": "Activate load", "commands": ["accept"], "wait": 2.0 },
+            { "label": "Back in game after load", "commands": ["screenshot"] },
+            { "label": "Press Esc (should show main menu, not quit)", "commands": ["quit"], "wait": 1.0 },
+            { "label": "Main menu visible again (game did not quit)", "commands": ["screenshot"] }
+        ]
     }
 ]

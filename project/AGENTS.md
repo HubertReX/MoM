@@ -116,7 +116,9 @@ przytrzymywany. Dla ruchu sensowne wartości to 10–60; w menu wystarczy 1.
 - Zwykłe akcje z `ACTIONS` w `settings.py`: `left`, `right`, `up`, `down`, `run`,
   `jump`, `attack`, `talk`, `open`, `pick_up`, `drop`, `inventory`, `menu`, `accept`,
   `quit`, `zoom_in`, `zoom_out`, `reload`, `next_day`, `quick_save` (F5), `quick_load` (F9),
-  itd.
+  `slot_rename` (R) / `slot_delete` (Del) - akcje na zaznaczonym slocie w panelu Save/Load
+  (`ui/panels/save_load.py`: `LoadPanel`/`SavePanel` - zmiana nazwy przez `TextInput` i
+  usunięcie z potwierdzeniem), itd.
 - Specjalne komendy interpretera (`project/agent_ctrl.py`):
   - `screenshot` / `shot` - zapisuje bieżącą klatkę do `screenshots/agent/`.
   - `exit` / `quit_game` - zamyka grę.

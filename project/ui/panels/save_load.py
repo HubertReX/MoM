@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+import string
 import time
 from typing import TYPE_CHECKING, Callable
 
 import pygame
 from enums import NotificationTypeEnum
-from save_load.models import SaveSlotInfo
+from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo
 from settings import HEIGHT, MAX_SAVE_SLOTS, WIDTH
 
 from .. import theme
 from ..widget import Widget
-from ..widgets import Button, Label
+from ..widgets import Button, Label, TextInput
 
 if TYPE_CHECKING:
     from game import Game
@@ -22,6 +23,16 @@ if TYPE_CHECKING:
 _PAD = 20
 _GAP = 10
 _BUTTON_SIZE = 28
+
+
+def _slot_name_char(ch: str) -> bool:
+    """Characters allowed in a save-slot name: Latin letters, digits and space.
+
+    Deliberately excludes the hyphen/apostrophe that :class:`CharSet.LATIN` allows and
+    any diacritics, per T-021. Sanitization at save time (``sanitize_slot_name``) is the
+    real safety net; this predicate just shapes what the player can type.
+    """
+    return ch in string.ascii_letters or ch in string.digits or ch == " "
 
 
 def _format_timestamp(ts: float) -> str:
@@ -202,6 +213,11 @@ class SaveLoadPanel(Widget):
         self._confirm_slot_idx: int = -1
         self._confirm_buttons: list[Button] = []
         self._confirm_selected: int = 0
+        self._confirm_text: str = ""
+
+        # inline rename editor (TextInput) — active only while renaming a slot
+        self._editor: TextInput | None = None
+        self._editing_slot_idx: int = -1
 
         self._build_background()
         self._refresh_slots()
@@ -230,9 +246,14 @@ class SaveLoadPanel(Widget):
             do_load = getattr(self, "_do_load", None)
             if do_load is not None:
                 do_load(self._confirm_slot_idx)
+        elif self._confirm_action == "delete":
+            self.game.save_manager.delete_slot(self._confirm_slot_idx)
         self._confirm_action = None
         self._confirm_slot_idx = -1
         self._refresh_slots()
+        # deleting may shrink the visible list (LoadPanel lists only occupied slots)
+        if self._selected_idx >= len(self._slots):
+            self._selected_idx = max(0, len(self._slots) - 1)
 
     def _confirm_no(self) -> None:
         self._confirm_action = None
@@ -250,9 +271,17 @@ class SaveLoadPanel(Widget):
         self._confirm_slot_idx = -1
         self._confirm_selected = 0
         self._selected_idx = 0
+        self._close_editor()
         self._refresh_slots()
 
     def handle_event(self, event: pygame.event.Event) -> bool:
+        # while the rename editor is open it swallows input (Esc cancels, Enter commits)
+        if self._editor is not None:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self._close_editor()  # cancel: leaves the saved name unchanged
+                return True
+            return self._editor.handle_event(event)
+
         if self._confirm_action:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
@@ -276,6 +305,12 @@ class SaveLoadPanel(Widget):
             if event.key == pygame.K_DOWN and self._slots:
                 self._selected_idx = (self._selected_idx + 1) % len(self._slots)
                 return True
+            if event.key == pygame.K_r and self._slots:
+                self._begin_rename(self._slots[self._selected_idx])
+                return True
+            if event.key == pygame.K_DELETE and self._slots:
+                self._begin_delete(self._slots[self._selected_idx])
+                return True
             if event.key == pygame.K_RETURN and self._slots:
                 self._on_slot_click(self._slots[self._selected_idx])
                 return True
@@ -292,6 +327,43 @@ class SaveLoadPanel(Widget):
                     return True
         return False
 
+    #############################################################################################################
+    # MARK: rename / delete slot actions
+
+    def _begin_rename(self, slot: _SlotButton) -> None:
+        """Open the inline TextInput to rename an occupied slot (no-op for empty slots)."""
+        if not slot.occupied or slot.info is None or slot.info.metadata is None:
+            return
+        editor = TextInput(
+            width=360,
+            max_length=MAX_SLOT_NAME_LEN,
+            predicate=_slot_name_char,
+            on_submit=self._commit_rename,
+        )
+        editor.rect.center = (self.rect.centerx, self.rect.centery)
+        editor.set_text(slot.info.metadata.slot_name or f"Slot {slot.idx + 1}")
+        editor.set_focus(True)
+        self._editor = editor
+        self._editing_slot_idx = slot.idx
+
+    def _commit_rename(self, text: str) -> None:
+        if self._editing_slot_idx >= 0:
+            self.game.save_manager.rename_slot(self._editing_slot_idx, text)
+        self._close_editor()
+        self._refresh_slots()
+
+    def _close_editor(self) -> None:
+        if self._editor is not None:
+            self._editor.set_focus(False)
+        self._editor = None
+        self._editing_slot_idx = -1
+
+    def _begin_delete(self, slot: _SlotButton) -> None:
+        """Ask for confirmation before deleting an occupied slot (no-op for empty slots)."""
+        if not slot.occupied:
+            return
+        self._show_confirm("delete", slot)
+
     def _on_slot_click(self, slot: _SlotButton) -> None:
         if not slot.occupied:
             self._do_save(slot.idx)
@@ -300,8 +372,15 @@ class SaveLoadPanel(Widget):
             self._show_confirm("overwrite", slot)
 
     def _show_confirm(self, action: str, slot: _SlotButton) -> None:
-        msg = f"Overwrite save in slot {slot.idx + 1}?" if action == "overwrite" else f"Load slot {slot.idx + 1}?"
-        self._confirm_action = "save" if action == "overwrite" else "load"
+        if action == "overwrite":
+            self._confirm_action = "save"
+            msg = f"Overwrite save in slot {slot.idx + 1}?"
+        elif action == "delete":
+            self._confirm_action = "delete"
+            msg = "Delete this save? This cannot be undone."
+        else:
+            self._confirm_action = "load"
+            msg = f"Load slot {slot.idx + 1}?"
         self._confirm_slot_idx = slot.idx
         self._confirm_selected = 0
         cx = self.rect.centerx
@@ -317,6 +396,11 @@ class SaveLoadPanel(Widget):
     def update(self, dt: float) -> None:
         for btn in self._confirm_buttons:
             btn.update(dt)
+        if self._editor is not None:
+            self._editor.update(dt)
+
+    def _selected_is_occupied(self) -> bool:
+        return bool(self._slots) and self._slots[self._selected_idx].occupied
 
     def draw(self, surface: pygame.Surface) -> None:
         if not self.visible:
@@ -335,7 +419,14 @@ class SaveLoadPanel(Widget):
             sf = theme.menu_font(18).render(slot.label, False, color)
             surface.blit(sf, (slot.rect.left + 8, slot.rect.top + 6))
 
-        if self._confirm_action:
+        # hint for the per-slot actions, shown whenever an occupied slot is selected
+        if self._selected_is_occupied() and not self._confirm_action and self._editor is None:
+            hint = theme.menu_font(16).render("[R] Rename   [Del] Delete", False, (150, 140, 110))
+            surface.blit(hint, hint.get_rect(midbottom=(self.rect.centerx, self.rect.bottom - 16)))
+
+        if self._editor is not None:
+            self._draw_rename_editor(surface)
+        elif self._confirm_action:
             overlay = pygame.Surface(self.bg.get_size(), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 160))
             surface.blit(overlay, self.rect.topleft)
@@ -344,6 +435,17 @@ class SaveLoadPanel(Widget):
             for i, btn in enumerate(self._confirm_buttons):
                 btn.selected = i == self._confirm_selected
                 btn.draw(surface)
+
+    def _draw_rename_editor(self, surface: pygame.Surface) -> None:
+        overlay = pygame.Surface(self.bg.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 190))
+        surface.blit(overlay, self.rect.topleft)
+        assert self._editor is not None
+        prompt = theme.menu_font(22).render("Rename slot", False, (255, 230, 180))
+        surface.blit(prompt, prompt.get_rect(midbottom=(self.rect.centerx, self._editor.rect.top - 12)))
+        self._editor.draw(surface)
+        hint = theme.menu_font(16).render("Enter = save    Esc = cancel", False, (170, 160, 130))
+        surface.blit(hint, hint.get_rect(midtop=(self.rect.centerx, self._editor.rect.bottom + 12)))
 
 
 class SavePanel(SaveLoadPanel):

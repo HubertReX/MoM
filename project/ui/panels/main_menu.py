@@ -238,9 +238,18 @@ class LoadMenuScreen(State):
         self._load_panel.open()
 
     def _on_load(self, slot_idx: int) -> None:
-        # SaveManager.load pushed a new Scene on top; discard any older Scene/menu states below it.
-        if self.game.states:
-            self.game.states[:] = [self.game.states[-1]]
+        # SaveManager.load pushed a new Scene on top. Collapse the stack to
+        # [MainMenuScreen, Scene] so the game resumes but Esc still returns to the main
+        # menu. Previously we kept only the Scene, leaving a stack of length 1, so Esc
+        # in the loaded game quit the whole game instead of showing the menu.
+        if not self.game.states:
+            return
+        new_scene = self.game.states[-1]
+        menu = next((s for s in self.game.states if type(s).__name__ == "MainMenuScreen"), None)
+        if menu is not None and menu is not new_scene:
+            self.game.states[:] = [menu, new_scene]
+        else:
+            self.game.states[:] = [new_scene]
 
     def _on_cancel(self) -> None:
         self.exit_state()

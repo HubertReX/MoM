@@ -21,6 +21,7 @@ from save_load.models import (
     SaveMetadata,
     SaveSlot,
     SaveSlotInfo,
+    sanitize_slot_name,
 )
 from settings import IS_WEB, MAX_SAVE_SLOTS, USE_WEB_SIMULATOR
 
@@ -61,7 +62,10 @@ class SaveManager:
         if save_game is None:
             return False
 
-        save_game.metadata.slot_name = slot_name or f"Slot {slot_idx + 1}"
+        # sanitize even the caller-supplied name so no flow can write a name that
+        # breaks the save JSON / slot layout (defence in depth, see sanitize_slot_name)
+        clean_name = sanitize_slot_name(slot_name)
+        save_game.metadata.slot_name = clean_name or f"Slot {slot_idx + 1}"
         save_game.metadata.timestamp = time.time()
 
         slot = SaveSlot(
@@ -94,6 +98,26 @@ class SaveManager:
 
     def delete_slot(self, slot_idx: int) -> bool:
         return self.backend.delete_slot(slot_idx)
+
+    def rename_slot(self, slot_idx: int, new_name: str) -> bool:
+        """Rename an occupied slot in place, without re-saving the live game state.
+
+        Reads the slot, sanitizes ``new_name`` (see :func:`sanitize_slot_name`),
+        swaps only ``metadata.slot_name`` and writes it back through the same backend
+        used everywhere else (file on desktop, localStorage on web). Returns ``False``
+        for an out-of-range or empty slot.
+        """
+        if slot_idx < 0 or slot_idx >= MAX_SAVE_SLOTS:
+            print(f"[save] invalid slot index {slot_idx}")
+            return False
+
+        slot = self.backend.read_slot(slot_idx)
+        if slot is None or not slot.is_occupied or slot.save_data is None:
+            print(f"[save] slot {slot_idx} is empty, cannot rename")
+            return False
+
+        slot.save_data.metadata.slot_name = sanitize_slot_name(new_name)
+        return self.backend.write_slot(slot)
 
     def find_first_free_slot(self) -> int | None:
         """Return the first unoccupied save slot index, or None if all are full."""

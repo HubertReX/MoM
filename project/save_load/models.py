@@ -63,6 +63,28 @@ def _enum_val(v: str | None, enum_cls: Any) -> Any:
 
 
 # ---------------------------------------------------------------------------
+# Slot name sanitization
+# ---------------------------------------------------------------------------
+
+# Maximum length of a user-visible save-slot name.
+MAX_SLOT_NAME_LEN: int = 20
+
+
+def sanitize_slot_name(name: str) -> str:
+    """Normalize a user-supplied save-slot name so it can never corrupt the save file.
+
+    Strips control / non-printable characters (newlines, tabs, carriage returns, etc.),
+    trims surrounding whitespace and clamps the result to ``MAX_SLOT_NAME_LEN``
+    characters. ``json.dumps`` (used by the backends) already escapes quotes and
+    backslashes, so this is the *last line of defence*: it keeps the name safe no
+    matter what the UI character filter allows, so widening that filter later can
+    never break a save's JSON or the slot-list layout.
+    """
+    cleaned = "".join(ch for ch in str(name) if ch.isprintable())
+    return cleaned.strip()[:MAX_SLOT_NAME_LEN]
+
+
+# ---------------------------------------------------------------------------
 # Metadata
 # ---------------------------------------------------------------------------
 

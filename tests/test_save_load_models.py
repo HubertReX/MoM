@@ -28,7 +28,9 @@ from save_load.models import (
     SaveSlot,
     SaveSlotInfo,
     SAVE_VERSION,
+    MAX_SLOT_NAME_LEN,
     migrate_save,
+    sanitize_slot_name,
 )
 
 
@@ -232,6 +234,38 @@ def test_save_slot_info_empty() -> None:
     assert_eq(orig, restored, "SaveSlotInfo (empty)")
 
 
+def test_sanitize_slot_name_basic() -> None:
+    assert_eq("Hero", sanitize_slot_name("Hero"), "plain name unchanged")
+    assert_eq("A B 12", sanitize_slot_name("A B 12"), "letters digits spaces kept")
+
+
+def test_sanitize_slot_name_strips_and_clamps() -> None:
+    assert_eq("Hero", sanitize_slot_name("   Hero   "), "surrounding whitespace stripped")
+    long = "A" * 40
+    assert len(sanitize_slot_name(long)) == MAX_SLOT_NAME_LEN, "clamped to MAX_SLOT_NAME_LEN"
+
+
+def test_sanitize_slot_name_removes_control_chars() -> None:
+    # newlines / tabs / carriage returns / other control chars must be dropped
+    dirty = "He\nll\to\r\x00Slot\x1b"
+    cleaned = sanitize_slot_name(dirty)
+    assert "\n" not in cleaned and "\t" not in cleaned and "\r" not in cleaned, "no control chars"
+    assert "\x00" not in cleaned and "\x1b" not in cleaned, "no null/escape chars"
+    assert_eq("HelloSlot", cleaned, "control chars removed, rest intact")
+
+
+def test_sanitize_slot_name_survives_json_roundtrip() -> None:
+    # a name with quotes/backslashes/newlines must still produce a loadable save
+    meta = SaveMetadata(slot_name=sanitize_slot_name('bad"name\\\n' + "x" * 50))
+    slot = SaveSlot(slot_id="0", save_data=SaveGame(metadata=meta), is_occupied=True)
+    raw = json.dumps(slot.to_dict())  # must not raise
+    restored = SaveSlot.from_dict(json.loads(raw))
+    assert restored.save_data is not None
+    name = restored.save_data.metadata.slot_name
+    assert len(name) <= MAX_SLOT_NAME_LEN, "sanitized length survives round-trip"
+    assert "\n" not in name, "no newline survived into the save"
+
+
 def test_json_roundtrip() -> None:
     """Full JSON round-trip: model → dict → json → dict → model."""
     orig = SaveGame(
@@ -320,6 +354,10 @@ if __name__ == "__main__":
         ("save slot empty", test_save_slot_empty),
         ("save slot info round-trip", test_save_slot_info_roundtrip),
         ("save slot info empty", test_save_slot_info_empty),
+        ("sanitize slot name basic", test_sanitize_slot_name_basic),
+        ("sanitize slot name strip/clamp", test_sanitize_slot_name_strips_and_clamps),
+        ("sanitize slot name control chars", test_sanitize_slot_name_removes_control_chars),
+        ("sanitize slot name JSON safe", test_sanitize_slot_name_survives_json_roundtrip),
         ("JSON round-trip", test_json_roundtrip),
         ("migrate save noop", test_migrate_save_noop),
         ("deep copy independence", test_deep_copy_independence),

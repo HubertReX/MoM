@@ -313,6 +313,9 @@ ACTIONS: dict[str, dict[str, Any]] = {
     "down": {"show": None, "msg": "", "keys": [pygame.K_DOWN, pygame.K_s]},
     "quick_save": {"show": ([] if IS_WEB else ["key_F5"]), "msg": "quick save", "keys": [pygame.K_F5]},
     "quick_load": {"show": ([] if IS_WEB else ["key_F9"]), "msg": "quick load", "keys": [pygame.K_F9]},
+    # save-slot management inside the Save/Load panel (rename / delete selected slot)
+    "slot_rename": {"show": None, "msg": "rename slot", "keys": [pygame.K_r]},
+    "slot_delete": {"show": None, "msg": "delete slot", "keys": [pygame.K_DELETE]},
     "pause": {"show": None, "msg": "pause", "keys": [pygame.K_F8]},
     "scroll_up": {"show": None, "msg": "", "keys": []},
     "left_click": {"show": ["mouse_LMB"], "msg": "go to", "keys": []},

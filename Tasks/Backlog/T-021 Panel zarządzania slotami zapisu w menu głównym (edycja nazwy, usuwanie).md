@@ -18,13 +18,13 @@ tags:
 
 ## 🎯 Goal / Outcome
 
-- [ ] `LoadPanel` (`save_load.py`) rozszerzony o akcje na zaznaczonym slocie: „Rename" i „Delete" (np. dodatkowe klawisze/przyciski przy zaznaczonym slocie). Dostępne tam, gdzie `LoadPanel` już działa - w tym w menu głównym
-- [ ] **Edycja nazwy** zaznaczonego slotu: pole `TextInput` (z T-020) prefill aktualną nazwą, limit **20 znaków**, dozwolone **litery łacińskie, cyfry i spacje**; zapis nowej nazwy do metadanych slotu
-- [ ] **Usuwanie** zaznaczonego slotu z modalem potwierdzenia („Na pewno usunąć zapis? Tej operacji nie można cofnąć") - Yes/No, wzór `modal.py`
-- [ ] **Sanityzacja nazwy przy zapisie** (patrz Constraints) - nazwa jest normalizowana zanim trafi do pliku save (JSON), niezależnie od filtra w UI
-- [ ] Zmiany (nazwa/usunięcie) od razu widoczne na liście i trwałe (desktop: plik na dysku, web: localStorage)
-- [ ] Anulowanie edycji nazwy (Esc) nie zmienia zapisanej nazwy
-- [ ] Działa na desktop (`./run.sh`) i web (`./serve_web.sh`)
+- [x] `LoadPanel` (`save_load.py`) rozszerzony o akcje na zaznaczonym slocie: „Rename" (klawisz R) i „Delete" (klawisz Del) przy zaznaczonym slocie. Dostępne tam, gdzie `LoadPanel` już działa - w tym w menu głównym
+- [x] **Edycja nazwy** zaznaczonego slotu: pole `TextInput` (z T-020) prefill aktualną nazwą, limit **20 znaków**, dozwolone **litery łacińskie, cyfry i spacje** (własny `predicate`); zapis nowej nazwy do metadanych slotu przez `SaveManager.rename_slot`
+- [x] **Usuwanie** zaznaczonego slotu z modalem potwierdzenia („Delete this save? This cannot be undone.") - Yes/No (wzór z istniejącego confirm w `save_load.py`)
+- [x] **Sanityzacja nazwy przy zapisie** (patrz Constraints) - `sanitize_slot_name` w `models.py`, wołana przy każdym ustawieniu `slot_name` (`save` + `rename_slot`)
+- [x] Zmiany (nazwa/usunięcie) od razu widoczne na liście i trwałe (desktop: plik na dysku - zweryfikowane; web/localStorage: przez ten sam backend, weryfikacja web odłożona)
+- [x] Anulowanie edycji nazwy (Esc) nie zmienia zapisanej nazwy
+- [x] Działa na desktop (`./run.sh`) - zweryfikowane scenariuszem agentowym; web (`./serve_web.sh`) - weryfikacja odłożona na później (decyzja użytkownika)
 
 ## 🧭 Context
 
@@ -56,35 +56,48 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Dodaj funkcję sanityzacji nazwy slotu (przytnij do 20, usuń znaki sterujące/nowe linie/tab, `strip()`) i wywołaj ją przy każdym ustawieniu `slot_name`
-- [ ] Dodaj `SaveManager.rename_slot(slot_idx, new_name)` (odczyt → sanityzacja → zmiana `metadata.slot_name` → zapis); zastosuj tę samą sanityzację w `save(slot_idx, slot_name=...)`
-- [ ] Rozszerz `LoadPanel`/`SaveLoadPanel` (`save_load.py`) o akcje „Rename" / „Delete" na zaznaczonym slocie (klawisze/przyciski)
-- [ ] Zweryfikuj, że rozszerzony `LoadPanel` działa w menu głównym (`LoadMenuScreen` + proxy) - modal usunięcia i `TextInput` obsłużone także tam
-- [ ] Edycja nazwy: otwarcie `TextInput` (prefill aktualną nazwą, `max_length=20`, litery łacińskie + cyfry + spacja), zatwierdzenie (Enter) → `rename_slot`, Esc → anuluj
-- [ ] Usuwanie: `Modal` Yes/No → `delete_slot` → odświeżenie listy
-- [ ] Odświeżanie listy po każdej operacji (nazwa/usunięcie)
-- [ ] Scenariusz testów agentowych w `tests/scenarios.json` (np. „Manage Saves"): wejście do `LoadPanel`, zmiana nazwy slotu (użycie komendy wpisywania tekstu dodanej w T-020), usunięcie slotu z potwierdzeniem; screenshoty w punktach kontrolnych; desktop + web
-- [ ] Test/asercja sanityzacji: nazwa z niedozwolonym znakiem / za długa / ze znakiem sterującym zapisuje się jako poprawny JSON, plik nadal się wczytuje (rozważ dołożenie do `tests/test_save_load_*.py`)
-- [ ] mypy bez nowych błędów; sprawdź desktop i web
+- [x] Dodaj funkcję sanityzacji nazwy slotu (`sanitize_slot_name` w `models.py`: usuń znaki niedrukowalne/sterujące/`\n`/`\r`/`\t`, `strip()`, przytnij do `MAX_SLOT_NAME_LEN=20`) i wołaj przy każdym ustawieniu `slot_name`
+- [x] Dodaj `SaveManager.rename_slot(slot_idx, new_name)` (odczyt → sanityzacja → zmiana `metadata.slot_name` → zapis); ta sama sanityzacja w `save(slot_idx, slot_name=...)`
+- [x] Rozszerz `LoadPanel`/`SaveLoadPanel` (`save_load.py`) o akcje „Rename" (R) / „Delete" (Del) na zaznaczonym slocie
+- [x] Zweryfikuj, że rozszerzony `LoadPanel` działa w menu głównym (`LoadMenuScreen` + proxy) - modal usunięcia i `TextInput` obsłużone także tam (zweryfikowane scenariuszem „Manage Saves")
+- [x] Edycja nazwy: otwarcie `TextInput` (prefill aktualną nazwą, `max_length=20`, predykat litery łacińskie + cyfry + spacja), zatwierdzenie (Enter) → `rename_slot`, Esc → anuluj
+- [x] Usuwanie: confirm Yes/No → `delete_slot` → odświeżenie listy
+- [x] Odświeżanie listy po każdej operacji (nazwa/usunięcie), z korektą zaznaczenia po skróceniu listy
+- [x] Scenariusz testów agentowych w `tests/scenarios.json` („Manage Saves"): wejście do `LoadPanel`, zmiana nazwy slotu (`type:`/`backspace`), usunięcie slotu z potwierdzeniem; screenshoty w punktach kontrolnych - **przechodzi na desktop** (web odłożony)
+- [x] Test/asercja sanityzacji + rename: `tests/test_save_load_models.py` (4 testy sanityzacji, w tym JSON round-trip) i `tests/test_save_load_backends.py` (3 testy `rename_slot`)
+- [x] mypy bez nowych błędów (11 błędów, wszystkie pre-existing, żaden w zmienionych liniach); desktop zweryfikowany, web odłożony
 
 ## ✅ Definition of Done
 
-- [ ] Rozszerzony `LoadPanel` ma akcje „Rename" i „Delete" na zaznaczonym slocie (działają też w menu głównym)
-- [ ] Zmiana nazwy slotu przez `TextInput` (maks. 20 znaków, litery łacińskie + cyfry + spacja) działa i jest trwała (desktop + web)
-- [ ] Usuwanie slotu z potwierdzeniem działa i jest trwałe (desktop + web)
-- [ ] Sanityzacja nazwy przy zapisie: nawet nazwa ze znakami sterującymi / za długa nie psuje pliku save (JSON), plik nadal się wczytuje
-- [ ] Anulowanie edycji nazwy (Esc) nie zmienia zapisu; puste sloty nie mają akcji rename/delete
-- [ ] Lista odświeża się po każdej operacji
-- [ ] Scenariusz testów agentowych „Manage Saves" przechodzi na desktop i web (`tests/automate_display_test.py`)
-- [ ] mypy nie zgłasza nowych błędów
-- [ ] zmiany udokumentowane w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcie potwierdzające prawidłowe działanie (panel z edycją nazwy i/lub potwierdzeniem usunięcia)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
-- [ ] commit zmian wykonany
+- [x] Rozszerzony `LoadPanel` ma akcje „Rename" i „Delete" na zaznaczonym slocie (działają też w menu głównym)
+- [x] Zmiana nazwy slotu przez `TextInput` (maks. 20 znaków, litery łacińskie + cyfry + spacja) działa i jest trwała na **desktop** (web odłożony - ten sam `SaveManager`/backend)
+- [x] Usuwanie slotu z potwierdzeniem działa i jest trwałe na **desktop** (web odłożony)
+- [x] Sanityzacja nazwy przy zapisie: nawet nazwa ze znakami sterującymi / za długa nie psuje pliku save (JSON), plik nadal się wczytuje (test `test_sanitize_slot_name_survives_json_roundtrip`)
+- [x] Anulowanie edycji nazwy (Esc) nie zmienia zapisu; puste sloty nie mają akcji rename/delete (guard w `_begin_rename`/`_begin_delete`)
+- [x] Lista odświeża się po każdej operacji
+- [x] Scenariusz testów agentowych „Manage Saves" przechodzi na **desktop** (`tests/automate_display_test.py`); web odłożony (decyzja użytkownika)
+- [x] mypy nie zgłasza nowych błędów
+- [x] zmiany udokumentowane w tasku (`moab log`)
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcie potwierdzające prawidłowe działanie (panel z edycją nazwy i potwierdzeniem usunięcia)
+- [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane (`project/AGENTS.md` - akcje `slot_rename`/`slot_delete`)
+- [x] commit zmian wykonany
+- [x] **Bonus (z opisu zadania):** naprawiony błąd - po wczytaniu gry z `LoadPanel` w menu głównym Esc pokazuje MainMenu zamiast wychodzić z gry (`main_menu.py:_on_load` zostawia `[MainMenuScreen, Scene]` na stosie stanów)
+
+### Dowód działania
+
+Rename (edycja nazwy przez `TextInput`, prefill + predykat litery/cyfry/spacja):
+
+![Rename editor](../_attachments/T-021-rename-editor.png)
+
+Delete (modal potwierdzenia Yes/No):
+
+![Delete confirm](../_attachments/T-021-delete-confirm.png)
 
 ## 📓 Agent Log
 
 - 2026-07-05 07:57 cc: claimed, starting
+- 2026-07-05 08:20 cc: zaimplementowane. `sanitize_slot_name`+`MAX_SLOT_NAME_LEN` (models.py), `SaveManager.rename_slot` + sanityzacja w `save()` (manager.py), akcje Rename(R)/Delete(Del) w `SaveLoadPanel` z inline `TextInput` i confirm usuwania (save_load.py), ACTIONS `slot_rename`/`slot_delete` (settings.py). Bonus: fix Esc-po-load w `main_menu.py`. Testy: +4 sanityzacja (test_save_load_models), +3 rename (test_save_load_backends) - wszystkie zielone. Scenariusze agentowe „Manage Saves" i „Load from Menu then Esc" (scenarios.json) przechodzą na desktop, screenshoty potwierdzają. mypy: brak nowych błędów. Web odłożony na życzenie użytkownika.
+- 2026-07-05 08:20 cc: Implemented: sanitize_slot_name + rename_slot, Rename(R)/Delete(Del) actions in SaveLoadPanel with inline TextInput and delete confirm; Esc-after-load fix. 7 new unit tests green, Manage Saves agent scenario passes on desktop; web deferred.
 
 ## 🙋 Needs-You / Questions
 
