@@ -251,5 +251,26 @@
             { "label": "Press Esc (should show main menu, not quit)", "commands": ["quit"], "wait": 1.0 },
             { "label": "Main menu visible again (game did not quit)", "commands": ["screenshot"] }
         ]
+    },
+    {
+        "name": "Menu Load Cancel Returns to Menu",
+        "cleanup_saves": [0],
+        "actions": [
+            { "label": "Create save via new game", "commands": ["accept"], "wait": 3.0 },
+            { "label": "Quick save", "commands": ["quick_save"], "wait": 0.5 },
+            { "label": "Open main menu", "commands": ["menu"], "wait": 1.0 },
+            { "label": "Select Load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "label": "Load panel open", "commands": ["screenshot"] },
+            { "label": "Press Esc to cancel Load", "commands": ["quit"], "wait": 1.0 },
+            { "label": "Back at main menu, game NOT closed", "commands": ["screenshot"] }
+        ]
+    },
+    {
+        "name": "TextInput Demo Hotkey",
+        "actions": [
+            { "label": "At main menu", "commands": ["screenshot"] },
+            { "label": "Press F7 (text_demo hotkey)", "commands": ["text_demo"], "wait": 1.0 },
+            { "label": "TextInput demo screen shown", "commands": ["screenshot"] }
+        ]
     }
 ]

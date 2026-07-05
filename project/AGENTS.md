@@ -46,7 +46,7 @@ powierzchnię** (dirty-flag) — statyczne UI = jeden blit/klatkę, zero alokacj
 | `ui/theme.py`                   | Cache fontów `(rozmiar,bold,italic)`, palety, teł 9-patch                          |
 | `ui/text/`                      | `markup.py` (parser tagów z `STYLE_TAGS_DICT` + emoji), `style.py` (`Style`)       |
 | `ui/widgets/`                   | `Label`, `Image`, `Button`, `RichText` (zawijanie, scroll, linki, animowane emoji), `TextInput` (`CharSet`, max_length, password, placeholder, `TEXTINPUT`+caret) |
-| `ui/panels/`                    | `main_menu`, `hud`, `dialog`, `modal`, `inventory`, `trade`, `text_input_demo` (stan demo `TextInput`, komenda agenta `debug_text_input`) |
+| `ui/panels/`                    | `main_menu`, `hud`, `dialog`, `modal`, `inventory`, `trade`, `text_input_demo` (stan demo `TextInput`; hotkey **F7** = akcja `text_demo`, lub komenda agenta `debug_text_input`) |
 | `ui/game_ui.py`                 | **`GameUI`** — kontroler HUD+paneli per-`Scene`                                    |
 
 **Czyste API** (`Scene.ui` to `GameUI`): `ui.open(PanelType, **kw)`, `ui.close(PanelType)`,

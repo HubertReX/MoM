@@ -1011,6 +1011,15 @@ class Game:
                 state.ui.toggle(_LP)
             INPUTS["quick_load"] = False
 
+        # F7: open the TextInput demo screen (dev tool for exercising the widget's
+        # configurations) from anywhere - menu or scene
+        if INPUTS.get("text_demo"):
+            from ui.panels.text_input_demo import TextInputDemoState
+
+            if not self.states or not isinstance(self.states[-1], TextInputDemoState):
+                TextInputDemoState(self).enter_state()
+            INPUTS["text_demo"] = False
+
         # first draw on separate Surface (game.canvas)
         if not self.is_paused:
             self.time_elapsed += dt

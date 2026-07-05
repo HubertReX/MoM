@@ -303,6 +303,7 @@ ACTIONS: dict[str, dict[str, Any]] = {
     "show_ui": {"show": ["key_F3"], "msg": "toggle UI", "keys": [pygame.K_F3]},
     "screenshot": {"show": ["key_F6"], "msg": "screenshot", "keys": [pygame.K_F6]},
     "intro": {"show": ["key_F4"], "msg": "intro", "keys": [pygame.K_F4]},
+    "text_demo": {"show": ["key_F7"], "msg": "TextInput demo", "keys": [pygame.K_F7]},
     # "record":         {"show": ([] if IS_WEB else ["key_F3"]), "msg":  "record mp4", "keys": [pygame.K_F3]},
     "reload": {"show": ([] if IS_WEB else ["key_R"]), "msg": "reload map", "keys": [pygame.K_r]},
     "zoom_in": {"show": ["key_+"], "msg": "zoom in", "keys": [pygame.K_EQUALS, pygame.K_KP_PLUS]},

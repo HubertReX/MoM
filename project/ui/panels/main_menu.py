@@ -252,6 +252,9 @@ class LoadMenuScreen(State):
             self.game.states[:] = [new_scene]
 
     def _on_cancel(self) -> None:
+        # the LoadPanel consumed the Esc *pygame event*, but INPUTS["quit"] is still set;
+        # clear it so the MainMenuScreen underneath doesn't read it next frame and quit.
+        self.game.reset_inputs()
         self.exit_state()
 
     def update(self, dt: float, events: list[pygame.event.Event]) -> None:
