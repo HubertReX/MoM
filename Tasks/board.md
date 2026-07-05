@@ -9,11 +9,11 @@ tags:
 
 ## 🧊 Backlog
 
-- [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2
-
 ## 🟢 Ready for AI
 
 ## 🤖 In Progress
+
+- [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2 #cc
 
 ## 🙋 Needs You
 
