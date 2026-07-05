@@ -131,6 +131,20 @@
   .arrow-note { font-size:.8rem; color:var(--muted); }
   .kbd { font-family:var(--mono); font-size:.8em; border:1px solid var(--border); border-bottom-width:2px;
     border-radius:5px; padding:1px 6px; background:var(--surface); }
+  .dec { border:1px solid var(--border); border-radius:var(--radius); background:var(--surface);
+    box-shadow:var(--shadow); margin-bottom:var(--s5); overflow:hidden; }
+  .dec > .dec-head { padding:var(--s4) var(--s5); display:flex; align-items:center; gap:var(--s3);
+    flex-wrap:wrap; border-bottom:1px solid var(--border); background:var(--surface-2); }
+  .dec > .dec-head h3 { margin:0; font-size:1.05rem; }
+  .dec > .dec-head .id { font-family:var(--mono); font-weight:700; color:var(--accent); }
+  .dec-body { padding:var(--s5); }
+  .dec-body > p:first-child { margin-top:0; }
+  .rec { color:var(--ok); font-weight:600; }
+  .ustalenia { border-left:3px solid var(--ok); background:var(--ok-soft);
+    padding:var(--s3) var(--s4); border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin-top:var(--s4); }
+  .ustalenia.open { border-color:var(--muted); background:var(--surface-2); }
+  .ustalenia .lbl { text-transform:uppercase; letter-spacing:.06em; font-size:.72rem; font-weight:700; color:var(--muted); }
+  td .pro { color:var(--ok); } td .con { color:var(--err); }
 </style>
 </head>
 <body>
@@ -158,7 +172,8 @@
       <a href="#authoring">4 · Pipeline autorski (Markdown → config)</a>
       <a href="#gap">5 · MoM: co jest, czego brakuje</a>
       <a href="#ryzyka">6 · Ryzyka</a>
-      <a href="#plan">7 · Plan krok po kroku</a>
+      <a href="#decyzje">7 · Decyzje</a>
+      <a href="#plan">8 · Plan krok po kroku</a>
     </div>
   </div>
 
@@ -554,15 +569,292 @@ known_disposition[emoji] = ...</code></pre>
   </div>
 
   <!-- ============================================================ -->
-  <h2 id="plan">7 · Plan krok po kroku</h2>
+  <h2 id="decyzje">7 · Decyzje</h2>
+  <p class="prose">Kwestie do rozstrzygnięcia zanim (lub w trakcie) wpinamy kod. Każda ma zestaw opcji z wadami i zaletami.
+  Omawiamy po kolei; blok <strong>Ustalenia</strong> uzupełniam na bieżąco. Legenda statusów:
+  <span class="badge warn">Otwarte</span> <span class="badge info">W trakcie</span> <span class="badge ok">Rozstrzygnięte</span>.
+  D1–D8 wynikają z ryzyk (§6); D9–D11 to kwestie dodatkowe.</p>
+
+  <!-- D1 -->
+  <div class="dec" id="d1">
+    <div class="dec-head"><span class="id">D1</span><h3>Silnik warunków: <code>eval()</code> czy alternatywa</h3>
+      <span class="badge info">W trakcie</span><span class="badge err">ryzyko #1</span></div>
+    <div class="dec-body">
+      <p>Warunki opcji to dziś stringi Pythona ewaluowane przez <code>eval(condition, cfg)</code>. Wejście jest <strong>zaufane</strong>
+      (autorskie, w bundlu), więc problemem nie jest tyle bezpieczeństwo, co <strong>kruchość</strong>, <strong>brak walidacji w czasie autorstwa</strong>
+      i <strong>sprzężenie warunku z wewnętrzną strukturą danych</strong>. Dodatkowo obecny sandbox jest nieszczelny (bug: <code>eval</code> dostaje
+      <code>cfg</code> jako globals, więc Python dostrzykuje prawdziwe <code>__builtins__</code>).</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> <code>eval</code> jak dziś (ograniczony kontekst)</td>
+            <td class="pro">Działa, zero pracy, maksymalnie ekspresyjne; wejście zaufane</td>
+            <td class="con">Sandbox de facto nieszczelny; fałszywe poczucie bezpieczeństwa; literówka = wyjątek w rozmowie; brak walidacji autorskiej; sprzężenie z wnętrzem</td></tr>
+          <tr><td><strong>B.</strong> <code>eval</code> utwardzony + walidacja AST <em>przed</em></td>
+            <td class="pro">Zachowuje składnię; dokłada walidację; naprawia bug globals</td>
+            <td class="con">Skoro i tak walidujesz AST, po co go wykonywać <code>eval</code>-em? Złożoność bez pełnej korzyści</td></tr>
+          <tr><td><strong>C.</strong> Mini-DSL: interpreter AST-whitelist + nazwane predykaty <span class="rec">(rekomendacja)</span></td>
+            <td class="pro">Czytelny infiks <code>selected(a) and not visited(b)</code>; provably safe (interpretacja zamkniętego zbioru węzłów, zero <code>exec</code>); walidacja w czasie autorstwa; odcina sprzężenie od wnętrza (predykaty); web-safe (<code>ast</code> to czysty Python)</td>
+            <td class="con">Trzeba napisać walker + zestaw predykatów (~1 plik); nowa, choć drobna, warstwa</td></tr>
+          <tr><td><strong>D.</strong> Warunki strukturalne (drzewo JSON)</td>
+            <td class="pro">Najbezpieczniejsze; natywnie serializowalne; brak parsera</td>
+            <td class="con">Rozwlekłe w autorstwie; gorsza czytelność; migracja istniejących stringów</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin:var(--s3) 0 0"><strong>Mini-DSL w skrócie:</strong> zamknięty słownik predykatów, które <em>Ty</em> implementujesz i tylko one
+      sięgają do danych: <code>selected(001to008_3)</code>, <code>visited(008)</code>, <code>visited(BARMAN, 008)</code>, <code>has_item("amulet")</code>,
+      <code>sentiment &gt;= 50</code>, spinane przez <code>and/or/not</code>. Autor nie dotyka <code>character.selected_options_dict.values()</code>.</p>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>
+        Trwa omawianie. Rekomendacja: <strong>C (AST-whitelist z nazwanymi predykatami)</strong>. Kluczowa obserwacja: przy zaufanym,
+        bundlowanym wejściu realnym problemem nie jest bezpieczeństwo, lecz kruchość i brak walidacji autorskiej — dlatego samo „ograniczenie
+        kontekstu <code>eval</code>” nie rozwiązuje właściwego bólu.</div>
+    </div>
+  </div>
+
+  <!-- D2 -->
+  <div class="dec" id="d2">
+    <div class="dec-head"><span class="id">D2</span><h3>Reprezentacja danych: brak Pydantic na web + save/load</h3>
+      <span class="badge warn">Otwarte</span><span class="badge err">ryzyko #2</span></div>
+    <div class="dec-body">
+      <p>Web (pygbag/WASM) nie ma Pydantic, a save/load MoM na nim stoi. Jak reprezentować graf dialogu i stan rozmowy w obu trybach?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Graf jako czyste dicty (jak RPG) + stan rozmowy jako proste pola w modelu save</td>
+            <td class="pro">Działa wszędzie; minimalna zmiana; RPG już tak robi; graf walidowany raz przy imporcie</td>
+            <td class="con">Brak walidacji schematu w runtime; ręczne budowanie obiektów</td></tr>
+          <tr><td><strong>B.</strong> Pydantic na desktopie, ręczny fallback na web (dual-path)</td>
+            <td class="pro">Walidacja tam, gdzie się da</td>
+            <td class="con">Podwójna ścieżka = ryzyko rozjazdu; więcej kodu; trudniejsze testy</td></tr>
+          <tr><td><strong>C.</strong> Dataclassy (<code>slots</code>) + lekka własna walidacja</td>
+            <td class="pro">Działa na web, typowane, bez pydantic; spójne z <code>dialog_node.py</code></td>
+            <td class="con">Walidacja ręczna</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+    </div>
+  </div>
+
+  <!-- D3 -->
+  <div class="dec" id="d3">
+    <div class="dec-head"><span class="id">D3</span><h3>Dialekt znaczników tekstu (rich → MoM RichText)</h3>
+      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #3</span></div>
+    <div class="dec-body">
+      <p>RPG używa <code>[reverse]</code>/<code>[italic]</code>/<code>[red]</code>; MoM <code>RichText</code> zna <code>[bold]</code>/<code>[act]</code>/<code>[h3]</code>. Gdzie mapować?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Mapowanie przy imporcie (build-time)</td>
+            <td class="pro">Runtime czysty; policzone raz; pipeline i tak kompiluje MD→config</td>
+            <td class="con">Dwa formaty w repo; trudniej dojść do źródła znacznika</td></tr>
+          <tr><td><strong>B.</strong> Mapowanie w rendererze (runtime)</td>
+            <td class="pro">Źródło 1:1 z RPG; łatwy re-import</td>
+            <td class="con">Koszt na klatkę; renderer musi znać oba dialekty</td></tr>
+          <tr><td><strong>C.</strong> Ujednolicić autorstwo do tagów MoM</td>
+            <td class="pro">Brak mapowania w ogóle</td>
+            <td class="con">Trzeba przepisać istniejące dialogi</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+    </div>
+  </div>
+
+  <!-- D4 -->
+  <div class="dec" id="d4">
+    <div class="dec-head"><span class="id">D4</span><h3>UI turowe → real-time + sterowanie wyborem</h3>
+      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #4</span></div>
+    <div class="dec-body">
+      <p>Jak <code>DialogPanel</code> pokazuje opcje i przyjmuje wybór (klawiatura / pad / mysz)?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Klawisze <span class="kbd">1</span>–<span class="kbd">9</span> (jak RPG)</td>
+            <td class="pro">Wierne oryginałowi; proste</td>
+            <td class="con">Słabe na padzie; limit 9 opcji</td></tr>
+          <tr><td><strong>B.</strong> Kursor ↑/↓ + Enter (+ pad + mysz)</td>
+            <td class="pro">Spójne z padem i menu MoM; skalowalne</td>
+            <td class="con">Więcej stanu UI (podświetlenie, focus)</td></tr>
+          <tr><td><strong>C.</strong> Hybryda: kursor + skróty 1–9</td>
+            <td class="pro">Najlepsze z obu światów</td>
+            <td class="con">Najwięcej kodu obsługi wejścia</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+    </div>
+  </div>
+
+  <!-- D5 -->
+  <div class="dec" id="d5">
+    <div class="dec-head"><span class="id">D5</span><h3>Persystencja stanu rozmowy i flaga <code>visited</code></h3>
+      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #5</span></div>
+    <div class="dec-body">
+      <p>Co dokładnie zapisujemy, żeby efekty nie liczyły się dwa razy i warunki się nie rozjechały po reloadzie?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Pełny stan per-NPC (kursor + <code>selected_options_dict</code> + <code>sentiment</code> + <code>visited</code> + <code>selected</code>)</td>
+            <td class="pro">Wierne wznowienie w połowie rozmowy</td>
+            <td class="con">Większy save; więcej pól w modelu i testach korupcji</td></tr>
+          <tr><td><strong>B.</strong> Tylko trwałe skutki (<code>selected_options_dict</code>, <code>sentiment</code>, <code>visited</code>); rozmowa zawsze od START</td>
+            <td class="pro">Mniejszy save; prostsze; zachowuje warunki i efekty</td>
+            <td class="con">Reload w środku rozmowy resetuje ją do początku</td></tr>
+          <tr><td><strong>C.</strong> Minimal: tylko flagi ukończenia questów</td>
+            <td class="pro">Najmniejszy save</td>
+            <td class="con">Traci warunki oparte na konkretnych wyborach</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+    </div>
+  </div>
+
+  <!-- D6 -->
+  <div class="dec" id="d6">
+    <div class="dec-head"><span class="id">D6</span><h3>Parser / import danych z Markdown</h3>
+      <span class="badge warn">Otwarte</span><span class="badge warn">ryzyko #6</span></div>
+    <div class="dec-body">
+      <p>Zależy od D11 (źródło prawdy). Jak importujemy/utrzymujemy dane dialogów?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Przenieść <code>import_dialog_from_md.py</code> as-is</td>
+            <td class="pro">Najszybciej; działa</td>
+            <td class="con">Pozycyjny parser = kruchy; dług techniczny</td></tr>
+          <tr><td><strong>B.</strong> Przepisać parser na porządny (regex/gramatyka per linia + walidacja)</td>
+            <td class="pro">Odporny na literówki; błędy łapane przy imporcie</td>
+            <td class="con">Praca teraz</td></tr>
+          <tr><td><strong>C.</strong> Autorstwo wprost w JSON (porzucić MD)</td>
+            <td class="pro">Zero parsera; jedno źródło</td>
+            <td class="con">Mniej wygodne pisanie długich dialogów</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia (powiązane z D11) —</div>
+    </div>
+  </div>
+
+  <!-- D7 -->
+  <div class="dec" id="d7">
+    <div class="dec-head"><span class="id">D7</span><h3>Mechanizm i18n (PL/EN)</h3>
+      <span class="badge warn">Otwarte</span><span class="badge info">ryzyko #7</span></div>
+    <div class="dec-body">
+      <p>Jak MoM lokalizuje teksty dialogów?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Jak RPG: <code>messages[lang][key]</code>, węzły trzymają tylko klucze</td>
+            <td class="pro">Rozdziela treść od grafu; gotowy wzorzec</td>
+            <td class="con">Trzeba dodać odpowiednik <code>get_msg()</code> do MoM</td></tr>
+          <tr><td><strong>B.</strong> Tekst wprost w węźle, PL-only na start</td>
+            <td class="pro">Najprościej; szybko do grywalnego demo</td>
+            <td class="con">Późniejsza migracja do i18n bolesna</td></tr>
+          <tr><td><strong>C.</strong> Zewnętrzne pliki i18n per język (csv/json)</td>
+            <td class="pro">Czyste; tłumacze pracują niezależnie</td>
+            <td class="con">Więcej infrastruktury</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia (zależne od priorytetu EN) —</div>
+    </div>
+  </div>
+
+  <!-- D8 -->
+  <div class="dec" id="d8">
+    <div class="dec-head"><span class="id">D8</span><h3>Mapowanie efektów węzłów na systemy MoM</h3>
+      <span class="badge warn">Otwarte</span><span class="badge info">ryzyko #8</span></div>
+    <div class="dec-body">
+      <p>Jak <code>process_result</code> odwzorowuje 7 kategorii na realne API MoM (Inventory / HP / złoto)?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Cienki adapter: kategoria → wywołanie systemu MoM</td>
+            <td class="pro">Izoluje silnik dialogu od gry; testowalne w izolacji</td>
+            <td class="con">Trzeba zdefiniować API adaptera</td></tr>
+          <tr><td><strong>B.</strong> Bezpośrednie wołania w <code>process_result</code></td>
+            <td class="pro">Mniej warstw</td>
+            <td class="con">Sprzęga silnik dialogu z wnętrzem gry</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia. Uwaga: nazwy itemów muszą zgadzać się z <code>items.csv</code> MoM —</div>
+    </div>
+  </div>
+
+  <!-- D9 -->
+  <div class="dec" id="d9">
+    <div class="dec-head"><span class="id">D9</span><h3>Opcje DEBUG w dialogach</h3>
+      <span class="badge warn">Otwarte</span><span class="badge purple">nowe</span></div>
+    <div class="dec-body">
+      <p>RPG przy ładowaniu dostrzykuje opcje DEBUG (skok do START / do węzłów <code>is_final</code>, <code>main.py:1186</code>). Zostawiamy w MoM?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Zachować, gated <code>IS_DEBUG_MODE</code></td>
+            <td class="pro">Szybki test drzew dialogowych; niewidoczne w release; pasuje do testów wizualnych MoM</td>
+            <td class="con">Kod do utrzymania</td></tr>
+          <tr><td><strong>B.</strong> Pominąć na start, dodać gdy potrzebne</td>
+            <td class="pro">Mniej kodu w v1</td>
+            <td class="con">Trudniej testować długie gałęzie</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+    </div>
+  </div>
+
+  <!-- D10 -->
+  <div class="dec" id="d10">
+    <div class="dec-head"><span class="id">D10</span><h3>Zakres funkcji sentymentu w v1</h3>
+      <span class="badge warn">Otwarte</span><span class="badge purple">nowe</span></div>
+    <div class="dec-body">
+      <p>Czy <code>sentiment</code>/<code>disposition</code>/<code>known_disposition</code> jest widoczny dla gracza w v1, tylko wewnętrzny, czy cięty?</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Pełny: wpływa na dostępne opcje + UI odkrywania dyspozycji</td>
+            <td class="pro">Głębia RPG; wierne oryginałowi</td>
+            <td class="con">Dużo UI + balansu; ryzyko przeciągnięcia v1</td></tr>
+          <tr><td><strong>B.</strong> Wewnętrzny: liczony i zapisywany, bez UI</td>
+            <td class="pro">Prostsze; zachowuje dane pod przyszłość</td>
+            <td class="con">Gracz nie widzi efektu</td></tr>
+          <tr><td><strong>C.</strong> Ciąć z v1: samo rozgałęzienie + efekty</td>
+            <td class="pro">Najszybciej do grywalnego demo</td>
+            <td class="con">Trzeba potem dodać pola + migrację save</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+    </div>
+  </div>
+
+  <!-- D11 -->
+  <div class="dec" id="d11">
+    <div class="dec-head"><span class="id">D11</span><h3>Źródło prawdy dla dialogów</h3>
+      <span class="badge warn">Otwarte</span><span class="badge purple">nowe</span></div>
+    <div class="dec-body">
+      <p>Gdzie żyje kanoniczna definicja dialogu — Markdown (kompilowany), JSON, czy edytor? Determinuje D6.</p>
+      <div class="tablescroll"><table>
+        <thead><tr><th>Opcja</th><th>Zalety</th><th>Wady</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A.</strong> Markdown jako źródło, <code>config.json</code> generowany</td>
+            <td class="pro">Wygodne pisanie; diff-friendly; jak RPG</td>
+            <td class="con">Wymaga pipeline (D6); dwa artefakty</td></tr>
+          <tr><td><strong>B.</strong> JSON jako źródło (config MoM), brak MD</td>
+            <td class="pro">Jedno źródło; brak parsera</td>
+            <td class="con">Ręczne pisanie grafu uciążliwe</td></tr>
+          <tr><td><strong>C.</strong> Edytor (RPG ma <code>launch_editor.py</code>/<code>inspector.py</code>)</td>
+            <td class="pro">Wizualne autorstwo</td>
+            <td class="con">Duży osobny projekt; poza zakresem tej migracji</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ustalenia open"><span class="lbl">Ustalenia</span><br>— do ustalenia —</div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="plan">8 · Plan krok po kroku</h2>
   <p class="prose">Kolejność zaprojektowana tak, by <strong>każdy etap dało się odpalić i zobaczyć</strong> (zgodnie z dual-target desktop+web MoM),
   zanim ruszymy dalej. Etapy 0–3 to fundament bez ryzyka; 4+ dotykają UI i save.</p>
 
   <div class="card">
     <div class="step"><div class="n">0</div><div>
-      <strong>Rozpoznanie decyzji projektowych</strong> <span class="badge info">spike</span><br>
-      Ustalić 3 rzeczy przed kodem: (a) <code>eval</code> vs mini-DSL warunków, (b) mechanizm i18n w MoM, (c) format zapisu stanu rozmowy w save/load.
-      Wynik: krótkie ADR w <code>doc/</code>.
+      <strong>Rozstrzygnięcie decyzji</strong> <span class="badge info">spike</span><br>
+      Domknąć kwestie z <a href="#decyzje">§7 Decyzje</a> (min. blokujące: D1 warunki, D2 dane/save, D11 źródło prawdy → D6, D7 i18n).
+      Ustalenia zapisywane na bieżąco w blokach „Ustalenia” tej strony.
     </div></div>
     <div class="step"><div class="n">1</div><div>
       <strong>Przeniesienie encji (bez UI)</strong> <span class="badge purple">core</span><br>
