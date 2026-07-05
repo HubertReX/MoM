@@ -1,8 +1,8 @@
 ---
 id: T-021
 title: Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: cc
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-021 — Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)
@@ -98,6 +99,7 @@ Delete (modal potwierdzenia Yes/No):
 - 2026-07-05 07:57 cc: claimed, starting
 - 2026-07-05 08:20 cc: zaimplementowane. `sanitize_slot_name`+`MAX_SLOT_NAME_LEN` (models.py), `SaveManager.rename_slot` + sanityzacja w `save()` (manager.py), akcje Rename(R)/Delete(Del) w `SaveLoadPanel` z inline `TextInput` i confirm usuwania (save_load.py), ACTIONS `slot_rename`/`slot_delete` (settings.py). Bonus: fix Esc-po-load w `main_menu.py`. Testy: +4 sanityzacja (test_save_load_models), +3 rename (test_save_load_backends) - wszystkie zielone. Scenariusze agentowe „Manage Saves" i „Load from Menu then Esc" (scenarios.json) przechodzą na desktop, screenshoty potwierdzają. mypy: brak nowych błędów. Web odłożony na życzenie użytkownika.
 - 2026-07-05 08:20 cc: Implemented: sanitize_slot_name + rename_slot, Rename(R)/Delete(Del) actions in SaveLoadPanel with inline TextInput and delete confirm; Esc-after-load fix. 7 new unit tests green, Manage Saves agent scenario passes on desktop; web deferred.
+- 2026-07-05 08:22 cc: Rename(R)/Delete(Del) w Save/Load panelu + sanityzacja nazw + rename_slot; bonus fix Esc-po-load. 7 testów jednostkowych zielone, scenariusz agentowy Manage Saves przechodzi na desktop (screenshoty w DoD). Web odłożony na życzenie. Test: just mypy; .venv/bin/python tests/test_save_load_models.py; .venv/bin/python tests/test_save_load_backends.py; .venv/bin/python3 tests/automate_display_test.py 'Manage Saves'.
 
 ## 🙋 Needs-You / Questions
 

@@ -13,13 +13,12 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2 #cc
-
 ## 🙋 Needs You
 
 - [ ] [[T-018 Load z menu głównego nie działa]] #bug #p1 #opencode #review
 - [ ] [[T-020 Widget pola tekstowego (TextInput) w module UI]] #feature #p2 #cc #review
 - [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2 #opencode #review
+- [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2 #cc #review
 
 ## 🏁 Done
 
