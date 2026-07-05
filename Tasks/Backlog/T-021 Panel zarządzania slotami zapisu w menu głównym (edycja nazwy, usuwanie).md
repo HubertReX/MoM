@@ -1,8 +1,8 @@
 ---
 id: T-021
 title: Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: cc
@@ -19,7 +19,7 @@ state: review
 
 ## 🎯 Goal / Outcome
 
-- [x] `LoadPanel` (`save_load.py`) rozszerzony o akcje na zaznaczonym slocie: „Rename" (klawisz R) i „Delete" (klawisz Del) przy zaznaczonym slocie. Dostępne tam, gdzie `LoadPanel` już działa - w tym w menu głównym
+- [x] `LoadPanel` (`save_load.py`) rozszerzony o akcje na zaznaczonym slocie: „Rename" (klawisz R) i „Delete" (klawisz D, także Del) przy zaznaczonym slocie. Dostępne tam, gdzie `LoadPanel` już działa - w tym w menu głównym
 - [x] **Edycja nazwy** zaznaczonego slotu: pole `TextInput` (z T-020) prefill aktualną nazwą, limit **20 znaków**, dozwolone **litery łacińskie, cyfry i spacje** (własny `predicate`); zapis nowej nazwy do metadanych slotu przez `SaveManager.rename_slot`
 - [x] **Usuwanie** zaznaczonego slotu z modalem potwierdzenia („Delete this save? This cannot be undone.") - Yes/No (wzór z istniejącego confirm w `save_load.py`)
 - [x] **Sanityzacja nazwy przy zapisie** (patrz Constraints) - `sanitize_slot_name` w `models.py`, wołana przy każdym ustawieniu `slot_name` (`save` + `rename_slot`)
@@ -59,7 +59,7 @@ state: review
 
 - [x] Dodaj funkcję sanityzacji nazwy slotu (`sanitize_slot_name` w `models.py`: usuń znaki niedrukowalne/sterujące/`\n`/`\r`/`\t`, `strip()`, przytnij do `MAX_SLOT_NAME_LEN=20`) i wołaj przy każdym ustawieniu `slot_name`
 - [x] Dodaj `SaveManager.rename_slot(slot_idx, new_name)` (odczyt → sanityzacja → zmiana `metadata.slot_name` → zapis); ta sama sanityzacja w `save(slot_idx, slot_name=...)`
-- [x] Rozszerz `LoadPanel`/`SaveLoadPanel` (`save_load.py`) o akcje „Rename" (R) / „Delete" (Del) na zaznaczonym slocie
+- [x] Rozszerz `LoadPanel`/`SaveLoadPanel` (`save_load.py`) o akcje „Rename" (R) / „Delete" (D, także Del) na zaznaczonym slocie
 - [x] Zweryfikuj, że rozszerzony `LoadPanel` działa w menu głównym (`LoadMenuScreen` + proxy) - modal usunięcia i `TextInput` obsłużone także tam (zweryfikowane scenariuszem „Manage Saves")
 - [x] Edycja nazwy: otwarcie `TextInput` (prefill aktualną nazwą, `max_length=20`, predykat litery łacińskie + cyfry + spacja), zatwierdzenie (Enter) → `rename_slot`, Esc → anuluj
 - [x] Usuwanie: confirm Yes/No → `delete_slot` → odświeżenie listy
@@ -140,6 +140,7 @@ Esc w grze - menu z Continue (wznawia bez zmian):
 F5 w lochu/maze - zapis zablokowany z powiadomieniem:
 
 ![Maze save blocked](../_attachments/T-021-maze-save-blocked.png)
+- 2026-07-05 12:30 cc: Naprawione wszystkie 7 uwag z review (stray 'r', layout, pauza panelu w grze, potwierdzenie reload, Continue w menu z gry, Delete->d, zakaz zapisu w maze). Zweryfikowane 4 nowymi scenariuszami agentowymi na desktop, screenshoty w tasku. mypy bez nowych błędów, testy jednostkowe zielone.
 
 ## 🙋 Needs-You / Questions
 
