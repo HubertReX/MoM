@@ -1,8 +1,8 @@
 ---
 id: T-036
 title: DS: Feedback zmiany sentymentu - floating plus-minus N (later)
-status: backlog
-owner: human
+status: ready
+owner: ai
 priority: p3
 type: feature
 agent:

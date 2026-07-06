@@ -69,3 +69,15 @@ Zmienne środowiskowe:
 | 18  | Load from Menu then Esc           | `load_from_menu_then_esc`     |    ✓    |  ✓  | review (MENU_MAIN) + process_alive                |
 | 19  | Menu Load Cancel Returns to Menu  | `menu_load_cancel_returns`    |    ✓    |  ✓  | review (MENU_MAIN) + process_alive                |
 | 20  | TextInput Demo Hotkey             | `textinput_demo_hotkey`       |    ✓    |  ✓  | review ×2 (MENU_MAIN, ekran demo)                 |
+
+## Postacie zmigrowane z RPG (dialogi i sentyment)
+
+Wszystkie postacie z prototypu RPG zostały zmigrowane do `config.json` w projekcie MoM:
+- **Hammer** (Hammer Hoaxheart) - Kowal w wiosce. Pełny graf dialogowy, sprawdzany w scenariuszach `"Hammer Dialog Flow"` oraz `"Dialog Save and Load"`.
+- **Barman Absinthrayner** - Barman Absyntnent. Graf zmigrowany przez pipeline z markdown, obsługuje warunki i zmianę sentymentu.
+- **Clapback Sword** - Gadający miecz. Graf zmigrowany i zweryfikowany pod kątem spójności językowej PL/EN.
+- **Potioneer Puzzlemint** - Alchemik w wiosce. Graf zmigrowany przez pipeline, zawiera efekty zmiany sentymentu i warunki.
+- **Madame Sarcasmia** - Dowcipna czarodziejka. Graf i tłumaczenia zmigrowane z RPG config.json, a warunki (szukanie przedmiotów i odpytywanie o opcje) w pełni przetłumaczone na mini-DSL MoM.
+
+Do debugowania i szybkiego testowania drzew dialogowych na żywo służą opcje `DEBUG` dodawane do grafu, gdy włączony jest tryb `IS_DEBUG_MODE` w `project/settings.py` (decyzja **D9**). Pozwalają one na natychmiastowe skoki do START_NODE lub węzłów końcowych (`is_final`).
+

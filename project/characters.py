@@ -318,7 +318,8 @@ class NPC(pygame.sprite.Sprite):
         if self.dialog_key:
             dialog_config: dict[str, Any] = self.game.conf.dialogs.get(self.dialog_key, {})
             if dialog_config:
-                nodes = init_dialog(dialog_config)
+                from settings import IS_DEBUG_MODE
+                nodes = init_dialog(dialog_config, debug=IS_DEBUG_MODE)
                 self.dialog_nodes = nodes
                 self.dialog = get_start_node(dialog_config, nodes)
                 self.has_dialog = True

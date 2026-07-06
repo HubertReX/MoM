@@ -169,6 +169,24 @@ class _ParsedNode:
 # ---------------------------------------------------------------------------
 
 
+def _find_markdown_file(src_dir: Path, lang: str, character_name: str) -> Path:
+    lang_dir = src_dir / lang
+    if not lang_dir.exists():
+        raise DialogImportError(f"Language directory not found: {lang_dir}", file=str(lang_dir))
+
+    # Try case-insensitive matching for both char- and chara- prefix
+    normalized_name = character_name.replace(" ", "_").lower()
+    for p in lang_dir.iterdir():
+        if p.is_file() and p.suffix == ".md":
+            name_lower = p.name.lower()
+            if name_lower in (f"char-{normalized_name}.md", f"chara-{normalized_name}.md"):
+                return p
+
+    # Fallback to default
+    character_key = _character_name_to_key(character_name)
+    return lang_dir / f"char-{character_key}.md"
+
+
 def import_character_dialog(
     src_dir: Path,
     character_name: str,
@@ -194,8 +212,8 @@ def import_character_dialog(
         described in the module docstring.
     """
     character_key = _character_name_to_key(character_name)
-    pl_nodes = _parse_file(src_dir / "PL" / f"char-{character_key}.md")
-    en_nodes = _parse_file(src_dir / "EN" / f"char-{character_key}.md")
+    pl_nodes = _parse_file(_find_markdown_file(src_dir, "PL", character_name))
+    en_nodes = _parse_file(_find_markdown_file(src_dir, "EN", character_name))
 
     _validate_language_consistency(
         pl_nodes, en_nodes, character_name, str(src_dir)

@@ -9,14 +9,11 @@ tags:
 
 ## 🧊 Backlog
 
-- [ ] [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]] #feature #p2 #M
-- [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S
-
 ## 🟢 Ready for AI
 
-## 🤖 In Progress
+- [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S
 
-- [ ] [[T-035 DS: Sentyment w rozgrywce - odkrywanie, bramkowanie opcji, mnoznik cen]] #feature #p2 #L #opencode
+## 🤖 In Progress
 
 ## 🙋 Needs You
 
@@ -27,6 +24,8 @@ tags:
 - [ ] [[T-033 DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)]] #feature #p2 #L #opencode #review
 - [ ] [[T-034 DS: Efekty wezlow - adapter ResultSink (zloto, itemy, HP, sentyment)]] #feature #p2 #M #opencode #review
 - [ ] [[T-030 DS: Persystencja stanu rozmowy w save-load (oba backendy + testy korupcji)]] #feature #p2 #M #opencode #review
+- [ ] [[T-035 DS: Sentyment w rozgrywce - odkrywanie, bramkowanie opcji, mnoznik cen]] #feature #p2 #L #opencode #review
+- [ ] [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]] #feature #p2 #M #opencode #review
 
 ## 🏁 Done
 

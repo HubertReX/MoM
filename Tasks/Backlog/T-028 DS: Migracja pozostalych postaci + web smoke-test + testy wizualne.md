@@ -1,15 +1,16 @@
 ---
 id: T-028
 title: DS: Migracja pozostalych postaci + web smoke-test + testy wizualne
-status: backlog
+status: needs-you
 owner: human
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-028 - DS: Migracja postaci + web smoke-test
@@ -52,5 +53,8 @@ tags:
 - [ ] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 15:02 opencode: claimed, starting
+- 2026-07-06 15:38 opencode: Przeniesiono 4 postacie (Barman Absinthrayner, Clapback Sword, Potioneer Puzzlemint, Madame Sarcasmia) z RPG do config.json i items.csv. Dostosowano importer do wyszukiwania plików (prefiks char-/chara-, wielkość liter). Zaimplementowano konwersję warunków dla Madame Sarcasmia i zweryfikowano wszystkie 32 testy jednostkowe dialogów (test_dialog_graph, test_dialog_conditions, test_dialog_result_sink, test_dialog_import). Włączono opcję DEBUG gated przez IS_DEBUG_MODE w settings.py. Zaktualizowano listę scenariuszy.
 
 ## 🙋 Needs-You / Questions

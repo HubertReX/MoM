@@ -34,3 +34,7 @@ shashlik;Shashlik;consumable;20;1.0;30;10;1.0
 leaf;Tea leaf;consumable;5;0.01;3;10;1.0
 shrimp;Tiger shrimp;consumable;15;0.1;5;10;1.0
 fish;Fresh fish;consumable;15;0.5;15;10;1.0
+POTION_CURSE_NO_MORE;Potion curse-no-more;consumable;1000;0.5;10;0;1.0
+GNOMES_WHISKER;Gnome's whisker;key;800;0.1;0;0;1.0
+MERMAIDS_TEAR;Mermaid's tear;key;800;0.1;0;0;1.0
+PHOENIX_FEATHER;Phoenix feather;key;800;0.1;0;0;1.0
