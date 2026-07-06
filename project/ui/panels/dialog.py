@@ -24,6 +24,7 @@ from settings import (
     AVATAR_SCALE,
     CHAR_NAME_COLOR,
     FONT_SIZE_LARGE,
+    FONT_SIZE_MEDIUM,
     FONT_SIZE_SMALL,
     HEIGHT,
     MAIN_FONT,
@@ -87,6 +88,9 @@ class DialogPanel(Widget):
         self._weight_font = theme.get_font(FONT_SIZE_SMALL, font_path=str(MAIN_FONT))
 
         self.tooltip = Tooltip(scene.icons, _TOOLTIP_TEMPLATE, cursor_size=self.game.cursor_img.get_size())
+        self._feedback_font = theme.get_font(FONT_SIZE_MEDIUM, font_path=str(MAIN_FONT))
+        self._floating_texts: list[dict[str, any]] = []
+        self._sentiment_flash_timer = 0.0
 
     #############################################################################################################
     def open(self, npc: "NPC | None" = None, text: str = "") -> None:
@@ -103,6 +107,8 @@ class DialogPanel(Widget):
             (self.offset[0] + 4 * TILE_SIZE, self.offset[1] - int(1.5 * TILE_SIZE))
         )
         self.tooltip.update(None, (0, 0))
+        self._floating_texts.clear()
+        self._sentiment_flash_timer = 0.0
         self._visit_current_node()
         self._refresh_options()
 
@@ -223,7 +229,22 @@ class DialogPanel(Widget):
         opt = visible[self.selected_index]
         opt.selected = True
         self.npc.selected_options_dict[opt.key] = True
-        self.npc.apply_option_sentiment(opt.sentiment)
+        shift = self.npc.apply_option_sentiment(opt.sentiment)
+        if shift != 0:
+            bar_w = 80
+            x_pos = self.offset[0] + 4 * TILE_SIZE + bar_w // 2
+            y_pos = self.offset[1] - int(2.2 * TILE_SIZE) - 6
+            text = f"{shift:+d}"
+            color = (50, 220, 50) if shift > 0 else (220, 50, 50)
+            self._floating_texts.append({
+                "text": text,
+                "x": float(x_pos),
+                "y": float(y_pos),
+                "color": color,
+                "age": 0.0,
+                "lifetime": 1.2,
+            })
+            self._sentiment_flash_timer = 0.5
         self.npc.dialog = opt.next_node
         self._visit_current_node()
         if self.npc.dialog.is_final:
@@ -302,6 +323,17 @@ class DialogPanel(Widget):
         self.body.update(dt)
         self.tooltip.update(self.body.link_at(pygame.mouse.get_pos()), pygame.mouse.get_pos())
 
+        # Update floating texts
+        for ft in list(self._floating_texts):
+            ft["age"] += dt
+            ft["y"] -= 30.0 * dt  # Floats upwards
+            if ft["age"] >= ft["lifetime"]:
+                self._floating_texts.remove(ft)
+
+        # Update flash timer
+        if self._sentiment_flash_timer > 0.0:
+            self._sentiment_flash_timer = max(0.0, self._sentiment_flash_timer - dt)
+
     def draw(self, surface: pygame.Surface) -> None:
         if not self.visible:
             return
@@ -332,6 +364,14 @@ class DialogPanel(Widget):
         self.name_label.draw(surface)
         self._draw_sentiment_indicator(surface)
 
+        # Draw floating texts
+        for ft in self._floating_texts:
+            txt_surf = self._feedback_font.render(ft["text"], True, ft["color"])
+            alpha = int(max(0, min(255, 255 * (1.0 - ft["age"] / ft["lifetime"]))))
+            txt_surf.set_alpha(alpha)
+            rect = txt_surf.get_rect(center=(int(ft["x"]), int(ft["y"])))
+            surface.blit(txt_surf, rect)
+
         surface.blit(self.key_space, (self.offset[0] + self.bg.get_width() - 15, self.offset[1] + 40))
         self.tooltip.draw(surface)
 
@@ -353,4 +393,11 @@ class DialogPanel(Widget):
             else:
                 color = (int(255 * (100 - sentiment) / 50), 255, 0)
             pygame.draw.rect(surface, color, (x, y, fill_w, bar_h), border_radius=2)
-        pygame.draw.rect(surface, CHAR_NAME_COLOR, (x, y, bar_w, bar_h), width=1, border_radius=2)
+            
+        border_color = CHAR_NAME_COLOR
+        if self._sentiment_flash_timer > 0.0:
+            if int(self._sentiment_flash_timer * 10) % 2 == 0:
+                border_color = (255, 255, 255)
+                # Draw a slightly inflated border for flash emphasis
+                pygame.draw.rect(surface, border_color, (x - 1, y - 1, bar_w + 2, bar_h + 2), width=1, border_radius=2)
+        pygame.draw.rect(surface, border_color, (x, y, bar_w, bar_h), width=1, border_radius=2)
