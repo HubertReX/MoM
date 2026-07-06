@@ -1,11 +1,11 @@
 ---
 id: T-029
 title: DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: cc
 created: 2026-07-05
 updated: 2026-07-05
 tags:
@@ -50,5 +50,7 @@ tags:
 - [ ] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 07:16 cc: claimed, starting
 
 ## 🙋 Needs-You / Questions
