@@ -1,11 +1,11 @@
 ---
 id: T-036
 title: DS: Feedback zmiany sentymentu - floating plus-minus N (later)
-status: ready
+status: in-progress
 owner: ai
 priority: p3
 type: feature
-agent:
+agent: opencode
 created: 2026-07-05
 updated: 2026-07-05
 tags:
@@ -45,5 +45,7 @@ tags:
 - [ ] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 15:46 opencode: claimed, starting
 
 ## 🙋 Needs-You / Questions

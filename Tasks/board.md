@@ -11,9 +11,9 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S
-
 ## 🤖 In Progress
+
+- [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S #opencode
 
 ## 🙋 Needs You
 
