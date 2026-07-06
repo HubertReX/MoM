@@ -317,3 +317,10 @@ publikując `screenshots/agent/` jako artifact.
 - **AI ruchu:** waypointy z mapy Tiled / random-walk (animals) / pościg A* (monsters,
   budzą się w `MONSTER_WAKE_DISTANCE`, `settings.py:112`). Ścieżki: `find_path()`
   (`characters.py:647`) → `a_star_cached` z `maze_generator` (`characters.py:11`).
+- **Dialog i sentyment (T-023):** instancja `NPC` (`characters.py`) rozszerzona o:
+  `dialog_key` (z modelu), `dialog` (bieżący `DialogNode` / kursor w grafie),
+  `selected_options_dict`, `sentiment` (0–100, domyślnie 50), `disposition`
+  (z modelu) oraz `known_disposition` (odkrywana przez gracza, domyślnie 50).
+  Przy ładowaniu `load_dialogs()` buduje graf z `Config.dialogs[dialog_key]`
+  przez `dialog.graph.init_dialog` i ustawia `dialog` na `START_NODE`.
+  Stare pole `dialogs: str` (markdown) pozostawione bez zmian do czasu migracji.

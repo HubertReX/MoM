@@ -49,14 +49,24 @@ wybierane przez `IS_WEB`:
 ```
 Config {
   characters:   dict[str, Character]   # name, sprite, race, attitude, is_merchant,
-                                        # health, items[], money, damage, speed_walk/run, allowed_zones
+                                        # health, items[], money, damage, speed_walk/run, allowed_zones,
+                                        # dialog_key, disposition
   items:        dict[str, Item]        # type (weapon/gem/consumable/key/money), value,
                                         # weight, health_impact, damage, cooldown_time
   chests:       dict[str, Chest]       # is_small, items[], random_items[], total_items_count
   maze_configs: dict[int, MazeLevelProperties]  # monsters_list, boss_monster, monsters_count,
                                         # chest templates, maze_cols/rows
+  dialogs:      dict[str, dict]        # character dialog graphs keyed by dialog_key
+                                        # (NODE_RESULTS, DIALOG_NODES, DIALOG_OPTIONS,
+                                        #  NODES_OPTIONS, START_NODE)
 }
 ```
+
+- `Character.dialog_key` — opcjonalny klucz do `Config.dialogs`; gdy ustawiony, NPC
+  buduje graf `DialogNode` przy ładowaniu i ustawia kursor na `START_NODE` (`characters.py:load_dialogs`).
+- `Character.disposition` — bazowa skłonność postaci do gracza, 0–100 (domyślnie 50).
+- `Config.dialogs` — opcjonalna sekcja z grafami dialogowymi (domyślnie pusta).
+  Format sekcji: [`project/dialog/graph.py`](./dialog/graph.py).
 
 `maze_configs` jest konsumowane przez generator labiryntów — patrz
 [`../maze_generator/AGENTS.md`](../maze_generator/AGENTS.md).

@@ -110,6 +110,27 @@
                     "gr": 0,
                     "title": "Speed Run",
                     "type": "integer"
+                },
+                "dialog_key": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Key into Config.dialogs for this character's dialog graph",
+                    "title": "Dialog Key"
+                },
+                "disposition": {
+                    "default": 50,
+                    "description": "Base disposition towards the player (0-100)",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "title": "Disposition",
+                    "type": "integer"
                 }
             },
             "required": [
@@ -355,6 +376,11 @@
                 "$ref": "#/$defs/MazeLevelProperties"
             },
             "title": "Maze Configs",
+            "type": "object"
+        },
+        "dialogs": {
+            "description": "Character dialog graphs keyed by dialog_key",
+            "title": "Dialogs",
             "type": "object"
         },
         "$schema": "./config_schema.json"

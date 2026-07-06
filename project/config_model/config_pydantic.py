@@ -70,6 +70,8 @@ class Character(BaseModel):
     damage:        Annotated[int,          Field(10, ge=0, description="amount of damage delt to others", repr=False)]
     speed_walk:    Annotated[int,          Field(30, gr=0, description="walking speed", repr=False)]
     speed_run:     Annotated[int,          Field(40, gr=0, description="walking speed", repr=False)]
+    dialog_key:    Annotated[str | None,   Field(None, description="Key into Config.dialogs for this character's dialog graph", repr=False)]
+    disposition:   Annotated[int,          Field(50, ge=0, le=100, description="Base disposition towards the player (0-100)", repr=False)]
 
 
 ##################################################################################################################
@@ -122,6 +124,8 @@ class Config(BaseModel):
     chests:       dict[str, Chest]
     items:        dict[str, Item]
     maze_configs: dict[int, MazeLevelProperties]
+    dialogs:      Annotated[dict[str, Any], Field(default_factory=dict, repr=False,
+                                                  description="Character dialog graphs keyed by dialog_key")]
 
     @model_validator(mode='after')
     def check_character_items(self) -> Self:

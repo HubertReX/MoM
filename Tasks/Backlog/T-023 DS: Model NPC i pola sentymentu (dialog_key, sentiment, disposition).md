@@ -1,11 +1,11 @@
 ---
 id: T-023
 title: DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-05
 updated: 2026-07-05
 tags:
@@ -16,8 +16,8 @@ tags:
 
 ## 🎯 Goal / Outcome
 
-- [ ] Model NPC MoM rozszerzony o pola: `dialog_key`, `dialog` (kursor w grafie), `selected_options_dict`, `sentiment` (0-100), `disposition`, `known_disposition`
-- [ ] Pola działają w obu trybach (desktop + web, bez Pydantic)
+- [x] Model NPC MoM rozszerzony o pola: `dialog_key`, `dialog` (kursor w grafie), `selected_options_dict`, `sentiment` (0-100), `disposition`, `known_disposition`
+- [x] Pola działają w obu trybach (desktop + web, bez Pydantic)
 
 ## 🧭 Context
 
@@ -36,19 +36,22 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Dodać pola do modelu NPC (dataclass / config).
-- [ ] Inicjalizacja `dialog` z `START_NODE` przy ładowaniu (odpowiednik `load_character_dialogs`).
-- [ ] `disposition` per postać z danych configu.
+- [x] Dodać pola do modelu NPC (dataclass / config).
+- [x] Inicjalizacja `dialog` z `START_NODE` przy ładowaniu (odpowiednik `load_character_dialogs`).
+- [x] `disposition` per postać z danych configu.
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
 - [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
+- [x] Testy / lint przechodzą (jeśli dotyczy)
+- [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
 - [ ] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 07:40 opencode: claimed, starting
+- 2026-07-06 07:47 opencode: Dodano pola dialog_key/disposition do Character (Pydantic+dataclass), sekcję dialogs do Config, rozszerzono NPC o dialog, selected_options_dict, sentiment, disposition, known_disposition; load_dialogs inicjalizuje graf z START_NODE; dodano test_npc_sentiment.py; zaktualizowano AGENTS.md i config_schema.json
 
 ## 🙋 Needs-You / Questions

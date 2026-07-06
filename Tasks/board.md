@@ -9,7 +9,6 @@ tags:
 
 ## 🧊 Backlog
 
-- [ ] [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]] #feature #p2 #M
 - [ ] [[T-024 DS: Pipeline importu Markdown do config (parser + walidacja + konwersja znacznikow)]] #feature #p2 #L
 - [ ] [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]] #feature #p2 #M
 - [ ] [[T-030 DS: Persystencja stanu rozmowy w save-load (oba backendy + testy korupcji)]] #feature #p2 #M
@@ -21,6 +20,8 @@ tags:
 ## 🟢 Ready for AI
 
 ## 🤖 In Progress
+
+- [ ] [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]] #feature #p2 #M #opencode
 
 ## 🙋 Needs You
 

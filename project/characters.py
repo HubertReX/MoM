@@ -49,6 +49,9 @@ if IS_WEB:
 else:
     from config_model.config_pydantic import Character  # type: ignore[assignment]
 
+from dialog.entities import DialogNode
+from dialog.graph import get_start_node, init_dialog
+
 import game
 import npc_state
 import scene
@@ -86,6 +89,15 @@ class NPC(pygame.sprite.Sprite):
         self.current_map = self.scene.current_map
         self.dialogs: str | None = None
         self.has_dialog: bool = False
+
+        # new dialog-system state (T-023).  `dialogs` (str) is the legacy markdown
+        # path; `dialog` is the live cursor into the DialogNode graph.
+        self.dialog_key: str | None = self.model.dialog_key
+        self.dialog: DialogNode | None = None
+        self.selected_options_dict: dict[str, bool] = {}
+        self.sentiment: int = 50
+        self.disposition: int = self.model.disposition
+        self.known_disposition: int = 50
 
         self.load_dialogs()
 
@@ -292,6 +304,15 @@ class NPC(pygame.sprite.Sprite):
             modal_panel_file = DIALOGS_DIR / f"{self.model.name}.md"
             if modal_panel_file.exists():
                 self.dialogs = modal_panel_file.read_text()
+                self.has_dialog = True
+
+        # new dialog graph path (T-023): if the character config points at a
+        # dialog_key, build the DialogNode graph and set the cursor to START_NODE.
+        if self.dialog_key:
+            dialog_config: dict[str, Any] = self.game.conf.dialogs.get(self.dialog_key, {})
+            if dialog_config:
+                nodes = init_dialog(dialog_config)
+                self.dialog = get_start_node(dialog_config, nodes)
                 self.has_dialog = True
 
     #############################################################################################################

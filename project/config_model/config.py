@@ -73,6 +73,8 @@ class Character():
     damage:                Annotated[int,                field(repr=False)]
     speed_walk:            Annotated[int,                field(repr=False)]
     speed_run:             Annotated[int,                field(repr=False)]
+    dialog_key:            Annotated[str | None,         field(repr=False)] = None
+    disposition:           Annotated[int,                field(repr=False)] = 50
 
     @classmethod
     def from_dict(cls: type["Character"], data: dict[str, Any]) -> "Character":
@@ -92,6 +94,8 @@ class Character():
             damage = data.get("damage", 10),
             speed_walk = data.get("speed_walk", 30),
             speed_run = data.get("speed_run", 40),
+            dialog_key = data.get("dialog_key"),
+            disposition = data.get("disposition", 50),
         )
 
 
@@ -160,6 +164,7 @@ class Config():
     chests:       dict[str, Chest]
     items:        dict[str, Item]
     maze_configs: dict[int, MazeLevelProperties]
+    dialogs:      dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def build(cls, data: dict[str, Any]) -> "Config":
@@ -183,7 +188,9 @@ class Config():
             maze_config = MazeLevelProperties.from_dict(maze_config_dict)
             maze_configs[int(name)] = maze_config
 
-        return cls(chars, chests, items, maze_configs)
+        dialogs = data.get("dialogs", {})
+
+        return cls(chars, chests, items, maze_configs, dialogs)
 ###################################################################################################################
 
 
