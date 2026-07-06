@@ -1,8 +1,8 @@
 ---
 id: T-032
 title: DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: cc
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-032 - DS: Silnik warunkow (mini-DSL)
@@ -58,5 +59,6 @@ Dowód działania - 19/19 testów jednostkowych mini-DSL (predykaty, kompozycja 
 
 - 2026-07-06 07:29 cc: claimed, starting
 - 2026-07-06 07:34 cc: Implementacja mini-DSL warunków (D1). Nowy moduł project/dialog/conditions.py: check_condition()/validate_condition() na ast.parse(mode=eval) + własny walker po whiteliście (BoolOp/UnaryOp/Compare/Call-predykaty/Name/Constant), zero eval/exec, zero builtins/atrybutów/subscriptów. Predykaty jako jedyny most: selected(opt), visited(node), visited(npc,node), has_item(key), sentiment. ConditionContext jako Protocol. Walidacja wpięta w graph._build_options (błędny warunek = ValueError przy imporcie, nie cichy False). Testy: tests/test_dialog_conditions.py (19/19) z realnymi warunkami RPG (Bob, Potioneer quest-items, sentiment gate, cross-NPC visited) + odrzucanie eval-podatnych. mypy + isort czyste; regresja test_dialog_graph 4/4.
+- 2026-07-06 07:34 cc: Mini-DSL warunków gotowe. Nowy moduł project/dialog/conditions.py (check_condition/validate_condition, AST-whitelist, zero eval/exec), walidacja przy imporcie w graph.py. Testy: .venv/bin/python tests/test_dialog_conditions.py (19/19) + regresja tests/test_dialog_graph.py (4/4). mypy + isort czyste. Odblokowuje T-035 (bramkowanie opcji sentymentem).
 
 ## 🙋 Needs-You / Questions

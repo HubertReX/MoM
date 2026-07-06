@@ -22,11 +22,10 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-032 DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)]] #feature #p2 #L #cc
-
 ## 🙋 Needs You
 
 - [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M #cc #review
+- [ ] [[T-032 DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)]] #feature #p2 #L #cc #review
 
 ## 🏁 Done
 
