@@ -1,9 +1,17 @@
-"""Dialog System — graph entities and builder (epic DS, task T-029).
+"""Dialog System — graph entities, builder and condition engine (epic DS).
 
 Pure logic (no pygame): dialog graph entities plus :func:`init_dialog` that
-turns config dicts into a resolved ``{key: DialogNode}`` graph.
+turns config dicts into a resolved ``{key: DialogNode}`` graph (T-029), and the
+mini-DSL condition engine (:func:`check_condition` / :func:`validate_condition`,
+T-032) that decides whether an option is available.
 """
 
+from dialog.conditions import (
+    ConditionContext,
+    ConditionError,
+    check_condition,
+    validate_condition,
+)
 from dialog.entities import (
     DialogNode,
     DialogOption,
@@ -19,4 +27,8 @@ __all__ = [
     "NodeVisitResultCategory",
     "init_dialog",
     "get_start_node",
+    "ConditionContext",
+    "ConditionError",
+    "check_condition",
+    "validate_condition",
 ]

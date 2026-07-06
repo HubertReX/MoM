@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from dialog.conditions import ConditionError, validate_condition
 from dialog.entities import (
     DialogNode,
     DialogOption,
@@ -110,12 +111,19 @@ def _build_options(
             raise ValueError(
                 f"option {key!r} points at unknown next_node {next_key!r}"
             )
+        condition = data.get("condition", "True")
+        # validate the mini-DSL condition now (decision D1/D6): an unknown
+        # predicate or name fails loudly here, not silently mid-conversation.
+        try:
+            validate_condition(condition)
+        except ConditionError as error:
+            raise ValueError(f"option {key!r} has an invalid condition: {error}") from error
         options[key] = DialogOption(
             key,
             nodes[next_key],
             data["text"],
             data.get("order", 0),
-            data.get("condition", "True"),
+            condition,
             data.get("sentiment", "😐"),
         )
     return options
