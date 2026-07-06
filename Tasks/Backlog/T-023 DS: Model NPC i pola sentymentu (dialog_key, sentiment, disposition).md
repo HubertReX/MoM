@@ -1,8 +1,8 @@
 ---
 id: T-023
 title: DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-023 - DS: Model NPC i pola sentymentu
@@ -53,5 +54,6 @@ tags:
 
 - 2026-07-06 07:40 opencode: claimed, starting
 - 2026-07-06 07:47 opencode: Dodano pola dialog_key/disposition do Character (Pydantic+dataclass), sekcję dialogs do Config, rozszerzono NPC o dialog, selected_options_dict, sentiment, disposition, known_disposition; load_dialogs inicjalizuje graf z START_NODE; dodano test_npc_sentiment.py; zaktualizowano AGENTS.md i config_schema.json
+- 2026-07-06 07:48 opencode: Zaimplementowano T-023. Modele postaci rozszerzone o dialog_key/disposition (Pydantic i dataclass web), Config o sekcję dialogs, NPC o dialog (kursor DialogNode), selected_options_dict, sentiment, disposition, known_disposition. load_dialogs buduje graf i ustawia START_NODE. Zaktualizowano config_schema.json, AGENTS.md, dodano tests/test_npc_sentiment.py. Testy: test_dialog_graph.py, test_dialog_conditions.py, test_npc_sentiment.py przechodzą; mypy na zmienionych plikach czyste. Gra ładuje się w dummy driverze bez regresji.
 
 ## 🙋 Needs-You / Questions

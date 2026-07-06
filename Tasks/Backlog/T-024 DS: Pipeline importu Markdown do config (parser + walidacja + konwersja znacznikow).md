@@ -1,8 +1,8 @@
 ---
 id: T-024
 title: DS: Pipeline importu Markdown do config (parser + walidacja + konwersja znacznikow)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-024 - DS: Pipeline importu Markdown do config
@@ -58,5 +59,6 @@ tags:
 
 - 2026-07-06 07:50 opencode: claimed, starting
 - 2026-07-06 08:07 opencode: Implemented dialog/markdown_importer.py: named-group regex option parser, graph validation with file:line errors, D3 tag/emoji conversion, D7 i18n messages, mini-DSL condition conversion. Added tests/test_dialog_import.py with Hammer Hoaxheart smoke-test plus Barman/Potioneer coverage. All dialog tests, mypy and isort pass. Updated project/AGENTS.md.
+- 2026-07-06 08:11 opencode: Implemented and tested. Import pipeline parses Markdown with named-group regex, validates graph with file:line errors, converts D3 tags/emoji, generates D7 i18n messages, and rewrites conditions to mini-DSL. Hammer Hoaxheart passes smoke-test. All dialog tests + mypy + isort pass. Ready for review.
 
 ## 🙋 Needs-You / Questions

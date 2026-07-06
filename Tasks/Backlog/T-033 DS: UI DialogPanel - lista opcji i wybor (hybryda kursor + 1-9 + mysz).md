@@ -1,11 +1,11 @@
 ---
 id: T-033
 title: DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-05
 updated: 2026-07-05
 tags:
@@ -52,5 +52,7 @@ tags:
 - [ ] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 08:12 opencode: claimed, starting
 
 ## 🙋 Needs-You / Questions
