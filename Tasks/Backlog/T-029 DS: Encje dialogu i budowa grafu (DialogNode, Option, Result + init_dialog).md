@@ -1,7 +1,7 @@
 ---
 id: T-029
 title: DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: feature

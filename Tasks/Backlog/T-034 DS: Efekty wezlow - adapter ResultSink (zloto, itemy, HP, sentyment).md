@@ -50,7 +50,7 @@ state: review
 - [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania - zobacz `![[agent_20260706_T-034_tests_passed.png]]`
 - [x] Testy / lint przechodzą (jeśli dotyczy)
 - [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
-- [ ] commit zmian wykonany
+- [x] commit zmian wykonany
 
 ![[agent_20260706_T-034_tests_passed.png]]
 

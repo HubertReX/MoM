@@ -1,7 +1,7 @@
 ---
 id: T-032
 title: DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)
-status: needs-you
+status: done
 owner: human
 priority: p2
 type: feature

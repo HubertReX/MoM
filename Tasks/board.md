@@ -17,8 +17,6 @@ tags:
 
 ## 🙋 Needs You
 
-- [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M #cc #review
-- [ ] [[T-032 DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)]] #feature #p2 #L #cc #review
 - [ ] [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]] #feature #p2 #M #opencode #review
 - [ ] [[T-024 DS: Pipeline importu Markdown do config (parser + walidacja + konwersja znacznikow)]] #feature #p2 #L #opencode #review
 - [ ] [[T-033 DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)]] #feature #p2 #L #opencode #review
@@ -35,6 +33,8 @@ tags:
 - [ ] [[T-020 Widget pola tekstowego (TextInput) w module UI]] #feature #p2 #cc
 - [ ] [[T-019 ręczny zapis screenshot (F6) nie działa]] #bug #p2 #opencode
 - [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2 #cc
+- [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M #cc
+- [ ] [[T-032 DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)]] #feature #p2 #L #cc
 
 ## Archive
 

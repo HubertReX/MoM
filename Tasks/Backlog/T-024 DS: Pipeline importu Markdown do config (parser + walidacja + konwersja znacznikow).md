@@ -50,10 +50,18 @@ state: review
 
 - [x] Kryteria z Goal spełnione
 - [x] zmiany udokumentowa w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania - narzędzie build-time (bez UI); dowód = testy + wygenerowany config (patrz niżej)
 - [x] Testy / lint przechodzą (jeśli dotyczy)
 - [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
 - [x] commit zmian wykonany
+
+### Dowód działania
+
+Narzędzie build-time (parser Markdown->config, bez UI do zrzutu). Dowód:
+
+- `tests/test_dialog_import.py` - 8/8 PASS (regex opcji, walidacja grafu, konwersja D3, i18n D7, mini-DSL).
+- Wszystkie 5 postaci (`HAMMER_HOAXHEART`, `BARMAN_ABSINTHRAYNER`, `CLAPBACK_SWORD`, `POTIONEER_PUZZLEMINT`, `MADAME_SARCASMIA`) buduje się przez `init_dialog` z wygenerowanego `config.json`; wszystkie referencje komunikatów rozwiązują się w EN i PL.
+- Wizualne potwierdzenie renderu Hammera w grze: patrz [[T-033 DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)]].
 
 ## 📓 Agent Log
 

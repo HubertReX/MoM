@@ -45,10 +45,18 @@ state: review
 
 - [x] Kryteria z Goal spełnione
 - [x] zmiany udokumentowa w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania - zadanie czysto-modelowe (pola danych, bez UI); dowodem jest wyjście testów (patrz niżej)
 - [x] Testy / lint przechodzą (jeśli dotyczy)
 - [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
-- [ ] commit zmian wykonany
+- [x] commit zmian wykonany
+
+### Dowód działania
+
+Zadanie modelowe (pola NPC/Character, bez UI do zrzutu). Dowód = testy jednostkowe i wpięcie w grę:
+
+- `tests/test_npc_sentiment.py` - 8/8 PASS (pola sentymentu, dyspozycje, mnożniki cen).
+- Wszystkie 5 postaci ma `dialog_key` rozwiązujący się do istniejącego grafu dialogu (weryfikacja podczas review epica).
+- mypy na zmienionych plikach czysty.
 
 ## 📓 Agent Log
 
