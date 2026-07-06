@@ -22,6 +22,7 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 | `scene.py`                 | Ładowanie mapy `.tmx` (pytmx), render pyscroll `BufferedRenderer`, kolizje, czas/dzień-noc, NPC | **73K — duży**                                   |
 | `characters.py`            | `NPC` i `Player`: animacja, A*, movement, walka, inventory                                      | **66K — duży**                                   |
 | `ui/`                      | **Własny toolkit UI** (retained-mode, czysty pygame-ce). Patrz niżej.                           | zastąpił `ui.py`+`menus.py`+`rich_text.py`       |
+| `dialog/`                  | **System dialogów** (encje grafu, builder, silnik warunków mini-DSL). Patrz niżej.              | czysta logika, bez pygame; web-safe              |
 | `settings.py`              | **Wszystkie stałe** gry + definicje sprite-sheetów                                              | **30K**                                          |
 | `objects.py`               | Sprite'y: `ItemSprite`, `ChestSprite`, `HealthBar`, `EmoteSprite`, `Collider`, `Notification`   |                                                  |
 | `npc_state.py`             | FSM NPC (Idle/Walk/Run/Jump/Fly/Stunned/Attacking/Talk/Dead)                                    |                                                  |
@@ -54,6 +55,50 @@ powierzchnię** (dirty-flag) — statyczne UI = jeden blit/klatkę, zero alokacj
 `ui.reset()`. Stan paneli jest wewnątrz nich (np. `TradePanel.is_buying`) — bez luźnych
 boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[link URL]`/`:emoji:`
 (tabela `STYLE_TAGS_DICT` w `settings.py`).
+
+## System dialogów (`dialog/`)
+
+Logika dialogów przeniesiona z prototypu RPG (osobne repo — patrz [`../Tasks/DS-epic-brief.md`](../Tasks/DS-epic-brief.md),
+epic **DS**). **Czysta logika, zero pygame** — testowalna w izolacji i web-safe (działa
+w pygbag/WASM, bez Pydantic). Renderowanie i wpięcie w rozgrywkę robi `ui/panels/dialog.py`
+(osobne zadania DS).
+
+| Moduł                  | Rola                                                                                                    | Zadanie |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ | ------- |
+| `dialog/entities.py`   | Dataclassy `slots=True`: `DialogNode`, `DialogOption`, `NodeVisitResult` + `NodeVisitResultCategory`   | T-029   |
+| `dialog/graph.py`      | `init_dialog(dialog_dict)` — buduje `{key: DialogNode}` z sekcji configu; wiszące referencje = `ValueError` | T-029   |
+| `dialog/conditions.py` | Silnik warunków opcji (mini-DSL) — `check_condition()` / `validate_condition()`                        | T-032   |
+
+### Silnik warunków (mini-DSL, decyzja D1)
+
+Warunek widoczności opcji (`DialogOption.condition`) to **wyrażenie w mini-DSL**, nie kod
+Pythona. `check_condition()` parsuje je przez `ast.parse(mode="eval")` i interpretuje
+**własnym walkerem** wyłącznie po whiteliście węzłów (`BoolOp`, `UnaryOp`, `Compare`,
+`Call`-do-predykatów, `Name`, `Constant`). **Nigdy `eval`/`exec`** — brak dostępu do
+builtins, atrybutów, subscriptów. Zastąpiło to `eval(condition, cfg)` z RPG
+(`dialog_loc.py:check_condition`).
+
+- **Predykaty = jedyny most do danych gry:** `selected(opt)`, `visited(node)`,
+  `visited(npc, node)`, `has_item(key)` oraz gołe `sentiment` (int, do porównań).
+- **Kontekst** przez `ConditionContext` (`Protocol`) — grę podłącza adapter (zadanie T-023),
+  testy używają stuba. Silnik nie importuje niczego z gry.
+- **Walidacja przy imporcie:** `graph._build_options` woła `validate_condition()` — błędny
+  warunek (nieznana nazwa/predykat, zła arność, dostęp do atrybutu) = `ValueError` przy
+  budowie grafu, **nie cichy `False`** w trakcie rozmowy. Parsowanie cache'owane (`lru_cache`),
+  bo warunki sprawdzane są co klatkę.
+
+Przykłady: `sentiment >= 42 and selected("BOB_DO_HOBBY_BIKE")`,
+`not visited("003") or has_item("MERMAIDS_TEAR")`,
+`visited("HAMMER_HOAXHEART_001", "004")`.
+
+### Testy
+
+Czysta logika — testy to samodzielne skrypty (bez SDL), uruchamiane wprost interpreterem:
+
+```bash
+.venv/bin/python tests/test_dialog_graph.py        # encje + builder (T-029)
+.venv/bin/python tests/test_dialog_conditions.py   # silnik warunków (T-032)
+```
 
 ## 🔑 KRYTYCZNE: różnice desktop ↔ web
 
