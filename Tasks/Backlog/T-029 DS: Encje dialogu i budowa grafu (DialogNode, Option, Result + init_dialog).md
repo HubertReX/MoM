@@ -16,9 +16,9 @@ tags:
 
 ## 🎯 Goal / Outcome
 
-- [ ] `DialogNode`, `DialogOption`, `NodeVisitResult` (+ `NodeVisitResultCategory`, 7 kategorii) przeniesione do `project/` jako dataclassy `slots=True`, bez zależności od pygame
-- [ ] `init_dialog()` buduje graf postaci z dictów configu (odpowiednik `RPG main.py:1157`), rozwiązuje referencje `next_node`
-- [ ] test jednostkowy: załadowanie przykładowego grafu i przejście ścieżki w pamięci
+- [x] `DialogNode`, `DialogOption`, `NodeVisitResult` (+ `NodeVisitResultCategory`, 7 kategorii) przeniesione do `project/` jako dataclassy `slots=True`, bez zależności od pygame
+- [x] `init_dialog()` buduje graf postaci z dictów configu (odpowiednik `RPG main.py:1157`), rozwiązuje referencje `next_node`
+- [x] test jednostkowy: załadowanie przykładowego grafu i przejście ścieżki w pamięci
 
 ## 🧭 Context
 
@@ -36,21 +36,29 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Zaadaptować dataclassy do `project/` (np. `project/dialog/`).
-- [ ] `init_dialog()` z rozwiązywaniem referencji `next_node` i sekcji configu (DIALOG_NODES/OPTIONS/NODES_OPTIONS/NODE_RESULTS/START_NODE).
-- [ ] Test jednostkowy przejścia grafu (ścieżka + końcowy węzeł `is_final`).
+- [x] Zaadaptować dataclassy do `project/` (np. `project/dialog/`).
+- [x] `init_dialog()` z rozwiązywaniem referencji `next_node` i sekcji configu (DIALOG_NODES/OPTIONS/NODES_OPTIONS/NODE_RESULTS/START_NODE).
+- [x] Test jednostkowy przejścia grafu (ścieżka + końcowy węzeł `is_final`).
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
-- [ ] commit zmian wykonany
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
+- [x] Testy / lint przechodzą (jeśli dotyczy) - 4/4 testy + mypy czysto
+- [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane - nie dotyczy (moduł fundamentowy, bez nowych konwencji)
+- [x] commit zmian wykonany
+
+### Dowód działania
+
+Moduł czysto-logiczny (headless, bez pygame), więc dowodem jest wyjście testu jednostkowego + mypy:
+
+![[T-029-test-run.png]]
 
 ## 📓 Agent Log
 
 - 2026-07-06 07:16 cc: claimed, starting
+- 2026-07-06 07:2x cc: dodano `project/dialog/` (entities.py: dataclassy `slots=True` `DialogNode`/`DialogOption`/`NodeVisitResult`/`NodeVisitResultCategory` bez pygame; graph.py: `init_dialog()` + `get_start_node()` z rozwiązywaniem referencji `next_node`/`result`/opcji i walidacją dangling refs; opcje DEBUG gated flagą `debug`). Test `tests/test_dialog_graph.py` (build, przejście ścieżki do węzła `is_final`, opcje DEBUG, błędy walidacji) - 4/4 PASS, mypy clean.
+- 2026-07-06 07:21 cc: Zaimplementowano project/dialog/ (entities + init_dialog) + test_dialog_graph.py 4/4 PASS, mypy clean
 
 ## 🙋 Needs-You / Questions
