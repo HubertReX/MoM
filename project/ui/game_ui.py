@@ -144,21 +144,27 @@ class GameUI:
             if self._edge("down"):
                 dialog.select_next()
             if self._edge("accept") or self._edge("talk"):
-                if dialog.activate_selected():
-                    self.close(DialogPanel)
-                    self.scene.player.is_talking = False
-                    if self.scene.player.npc_met:
-                        self.scene.player.npc_met.is_talking = False
+                dialog.activate_selected()
                 # raw key events also call activate_selected; clear accept/talk
                 # so the same press is not handled twice this frame.
                 INPUTS["accept"] = False
                 INPUTS["talk"] = False
 
-        # route raw events (scroll wheel / arrows / mouse) to the topmost open panel
+        # route raw events (scroll wheel / arrows / mouse / digit keys) to the topmost open panel
         if self._open:
             top = self._open[-1]
             for event in events:
                 top.handle_event(event)
+
+        # Close the dialog once a final node was reached via ANY input path
+        # (accept/talk INPUTS, digit keys, or mouse click).
+        if self.is_open(DialogPanel):
+            dialog = cast(DialogPanel, self._panel(DialogPanel))
+            if dialog.consume_close():
+                self.close(DialogPanel)
+                self.scene.player.is_talking = False
+                if self.scene.player.npc_met:
+                    self.scene.player.npc_met.is_talking = False
 
         for panel in self._open:
             panel.update(time_elapsed)

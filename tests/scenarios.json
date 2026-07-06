@@ -387,13 +387,13 @@
             { "slug": "dialog_open", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
             { "slug": "hub_node", "commands": ["screenshot"], "wait": 2.0 },
-            { "slug": "pick_topic", "commands": ["item_2"], "wait": 1.5 },
-            { "slug": "topic_node", "commands": ["screenshot"], "wait": 2.0 }
+            { "slug": "pick_goodbye", "commands": ["item_6"], "wait": 1.5 },
+            { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 2.0 }
         ],
         "assertions": [
             { "type": "screenshot_review", "target": "dialog_open", "expect": "A dialog panel is open showing text from Hammer and a numbered list of reply options (at least one visible)." },
-            { "type": "screenshot_review", "target": "hub_node", "expect": "The dialog panel shows Hammer's follow-up line after the player's first reply (a different node than the opening greeting), with a fresh numbered list of reply options." },
-            { "type": "screenshot_review", "target": "topic_node", "expect": "The dialog panel shows a further Hammer node reached after picking a second reply, again with a numbered list of options - proving the dialog graph advances between nodes." },
+            { "type": "screenshot_review", "target": "hub_node", "expect": "The dialog panel shows Hammer's hub node after the player's first reply, with a numbered list of about six reply options that all fit inside the panel frame (no option overlaps or spills below the border)." },
+            { "type": "screenshot_review", "target": "dialog_closed", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; the dialog panel is closed after the player picked the final farewell option." },
             { "type": "process_alive" }
         ]
     },

@@ -11,8 +11,6 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-037 DialogPanel nie zamyka rozmowy przy opcji finalnej poza widocznym zwojem listy]] #bug #p2
-
 ## 🤖 In Progress
 
 ## 🙋 Needs You
@@ -25,6 +23,7 @@ tags:
 - [ ] [[T-035 DS: Sentyment w rozgrywce - odkrywanie, bramkowanie opcji, mnoznik cen]] #feature #p2 #L #opencode #review
 - [ ] [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]] #feature #p2 #M #opencode #review
 - [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S #opencode #review
+- [ ] [[T-037 DialogPanel nie zamyka rozmowy przy opcji finalnej poza widocznym zwojem listy]] #bug #p2 #cc #review
 
 ## 🏁 Done
 
