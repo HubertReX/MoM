@@ -11,6 +11,8 @@ tags:
 
 ## 🟢 Ready for AI
 
+- [ ] [[T-037 DialogPanel nie zamyka rozmowy przy opcji finalnej poza widocznym zwojem listy]] #bug #p2
+
 ## 🤖 In Progress
 
 ## 🙋 Needs You

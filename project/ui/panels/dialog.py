@@ -12,7 +12,7 @@ are kept identical to the original so the screen looks unchanged.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pygame
 from dialog.conditions import check_condition
@@ -89,7 +89,7 @@ class DialogPanel(Widget):
 
         self.tooltip = Tooltip(scene.icons, _TOOLTIP_TEMPLATE, cursor_size=self.game.cursor_img.get_size())
         self._feedback_font = theme.get_font(FONT_SIZE_MEDIUM, font_path=str(MAIN_FONT))
-        self._floating_texts: list[dict[str, any]] = []
+        self._floating_texts: list[dict[str, Any]] = []
         self._sentiment_flash_timer = 0.0
 
     #############################################################################################################

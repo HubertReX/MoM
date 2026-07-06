@@ -284,7 +284,7 @@
             "sprite": "Villager2",
             "race": "humanoid",
             "attitude": "friendly",
-            "dialog_key": "Hammer",
+            "dialog_key": "HAMMER_HOAXHEART",
             "disposition": {
                 "blessed": 8,
                 "blink": 4,
@@ -780,82 +780,323 @@
         }
     },
     "dialogs": {
-        "Hammer": {
-            "NODE_RESULTS": {},
+        "HAMMER_HOAXHEART": {
             "DIALOG_NODES": {
-                "START": {
-                    "text": "M_HAMMER_DN_START",
+                "000": {
                     "is_final": false,
-                    "result": ""
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_000"
                 },
-                "SELL": {
-                    "text": "M_HAMMER_DN_SELL",
+                "001": {
                     "is_final": false,
-                    "result": ""
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_001"
                 },
-                "MORE": {
-                    "text": "M_HAMMER_DN_MORE",
+                "002": {
                     "is_final": false,
-                    "result": ""
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_002"
                 },
-                "END": {
-                    "text": "M_HAMMER_DN_END",
+                "007": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_007"
+                },
+                "003": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_003"
+                },
+                "008": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_008"
+                },
+                "004": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_004"
+                },
+                "009": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_009"
+                },
+                "005": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_005"
+                },
+                "006": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_006"
+                },
+                "010": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_010"
+                },
+                "990": {
                     "is_final": true,
-                    "result": ""
+                    "result": null,
+                    "text": "M_HAMMER_HOAXHEART_DN_990"
                 }
             },
             "DIALOG_OPTIONS": {
-                "STARTtoSELL_1": {
-                    "next_node": "SELL",
-                    "text": "M_HAMMER_DO_STARTtoSELL_1",
-                    "order": 1,
+                "000to001_1": {
+                    "next_node": "001",
                     "condition": "True",
-                    "sentiment": "neutral"
+                    "sentiment": "blessed",
+                    "order": 1,
+                    "text": "M_HAMMER_HOAXHEART_DO_000to001_1"
                 },
-                "STARTtoEND_2": {
-                    "next_node": "END",
-                    "text": "M_HAMMER_DO_STARTtoEND_2",
+                "000to001_2": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "angry",
                     "order": 2,
-                    "condition": "True",
-                    "sentiment": "blessed"
+                    "text": "M_HAMMER_HOAXHEART_DO_000to001_2"
                 },
-                "SELLtoMORE_1": {
-                    "next_node": "MORE",
-                    "text": "M_HAMMER_DO_SELLtoMORE_1",
+                "000to001_3": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "wondering",
+                    "order": 3,
+                    "text": "M_HAMMER_HOAXHEART_DO_000to001_3"
+                },
+                "001to002_1": {
+                    "next_node": "002",
+                    "condition": "True",
+                    "sentiment": "neutral",
                     "order": 1,
-                    "condition": "True",
-                    "sentiment": "neutral"
+                    "text": "M_HAMMER_HOAXHEART_DO_001to002_1"
                 },
-                "SELLtoEND_2": {
-                    "next_node": "END",
-                    "text": "M_HAMMER_DO_SELLtoEND_2",
+                "001to003_2": {
+                    "next_node": "003",
+                    "condition": "True",
+                    "sentiment": "neutral",
                     "order": 2,
-                    "condition": "True",
-                    "sentiment": "neutral"
+                    "text": "M_HAMMER_HOAXHEART_DO_001to003_2"
                 },
-                "MOREtoEND_1": {
-                    "next_node": "END",
-                    "text": "M_HAMMER_DO_MOREtoEND_1",
-                    "order": 1,
+                "001to004_3": {
+                    "next_node": "004",
                     "condition": "True",
-                    "sentiment": "neutral"
+                    "sentiment": "neutral",
+                    "order": 3,
+                    "text": "M_HAMMER_HOAXHEART_DO_001to004_3"
+                },
+                "001to005_4": {
+                    "next_node": "005",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 4,
+                    "text": "M_HAMMER_HOAXHEART_DO_001to005_4"
+                },
+                "001to006_5": {
+                    "next_node": "006",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 5,
+                    "text": "M_HAMMER_HOAXHEART_DO_001to006_5"
+                },
+                "001to990_9": {
+                    "next_node": "990",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 9,
+                    "text": "M_HAMMER_HOAXHEART_DO_001to990_9"
+                },
+                "002to007_1": {
+                    "next_node": "007",
+                    "condition": "True",
+                    "sentiment": "blessed",
+                    "order": 1,
+                    "text": "M_HAMMER_HOAXHEART_DO_002to007_1"
+                },
+                "002to007_2": {
+                    "next_node": "007",
+                    "condition": "True",
+                    "sentiment": "angry",
+                    "order": 2,
+                    "text": "M_HAMMER_HOAXHEART_DO_002to007_2"
+                },
+                "002to007_3": {
+                    "next_node": "007",
+                    "condition": "True",
+                    "sentiment": "blink",
+                    "order": 3,
+                    "text": "M_HAMMER_HOAXHEART_DO_002to007_3"
+                },
+                "007to001_9": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 9,
+                    "text": "M_HAMMER_HOAXHEART_DO_007to001_9"
+                },
+                "003to008_1": {
+                    "next_node": "008",
+                    "condition": "True",
+                    "sentiment": "offended",
+                    "order": 1,
+                    "text": "M_HAMMER_HOAXHEART_DO_003to008_1"
+                },
+                "003to008_2": {
+                    "next_node": "008",
+                    "condition": "True",
+                    "sentiment": "angry",
+                    "order": 2,
+                    "text": "M_HAMMER_HOAXHEART_DO_003to008_2"
+                },
+                "003to008_3": {
+                    "next_node": "008",
+                    "condition": "True",
+                    "sentiment": "wondering",
+                    "order": 3,
+                    "text": "M_HAMMER_HOAXHEART_DO_003to008_3"
+                },
+                "008to001_9": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 9,
+                    "text": "M_HAMMER_HOAXHEART_DO_008to001_9"
+                },
+                "004to009_1": {
+                    "next_node": "009",
+                    "condition": "True",
+                    "sentiment": "blessed",
+                    "order": 1,
+                    "text": "M_HAMMER_HOAXHEART_DO_004to009_1"
+                },
+                "004to009_2": {
+                    "next_node": "009",
+                    "condition": "True",
+                    "sentiment": "offended",
+                    "order": 2,
+                    "text": "M_HAMMER_HOAXHEART_DO_004to009_2"
+                },
+                "004to009_3": {
+                    "next_node": "009",
+                    "condition": "True",
+                    "sentiment": "blink",
+                    "order": 3,
+                    "text": "M_HAMMER_HOAXHEART_DO_004to009_3"
+                },
+                "009to001_9": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 9,
+                    "text": "M_HAMMER_HOAXHEART_DO_009to001_9"
+                },
+                "005to001_9": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 9,
+                    "text": "M_HAMMER_HOAXHEART_DO_005to001_9"
+                },
+                "006to010_1": {
+                    "next_node": "010",
+                    "condition": "True",
+                    "sentiment": "blessed",
+                    "order": 1,
+                    "text": "M_HAMMER_HOAXHEART_DO_006to010_1"
+                },
+                "006to010_2": {
+                    "next_node": "010",
+                    "condition": "True",
+                    "sentiment": "wondering",
+                    "order": 2,
+                    "text": "M_HAMMER_HOAXHEART_DO_006to010_2"
+                },
+                "006to010_3": {
+                    "next_node": "010",
+                    "condition": "True",
+                    "sentiment": "blink",
+                    "order": 3,
+                    "text": "M_HAMMER_HOAXHEART_DO_006to010_3"
+                },
+                "010to001_9": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 9,
+                    "text": "M_HAMMER_HOAXHEART_DO_010to001_9"
+                },
+                "990to001_1": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 1,
+                    "text": "M_HAMMER_HOAXHEART_DO_990to001_1"
+                },
+                "990to000_9": {
+                    "next_node": "000",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 9,
+                    "text": "M_HAMMER_HOAXHEART_DO_990to000_9"
                 }
             },
             "NODES_OPTIONS": {
-                "START": [
-                    "STARTtoSELL_1",
-                    "STARTtoEND_2"
+                "000": [
+                    "000to001_1",
+                    "000to001_2",
+                    "000to001_3"
                 ],
-                "SELL": [
-                    "SELLtoMORE_1",
-                    "SELLtoEND_2"
+                "001": [
+                    "001to002_1",
+                    "001to003_2",
+                    "001to004_3",
+                    "001to005_4",
+                    "001to006_5",
+                    "001to990_9"
                 ],
-                "MORE": [
-                    "MOREtoEND_1"
+                "002": [
+                    "002to007_1",
+                    "002to007_2",
+                    "002to007_3"
                 ],
-                "END": []
+                "007": [
+                    "007to001_9"
+                ],
+                "003": [
+                    "003to008_1",
+                    "003to008_2",
+                    "003to008_3"
+                ],
+                "008": [
+                    "008to001_9"
+                ],
+                "004": [
+                    "004to009_1",
+                    "004to009_2",
+                    "004to009_3"
+                ],
+                "009": [
+                    "009to001_9"
+                ],
+                "005": [
+                    "005to001_9"
+                ],
+                "006": [
+                    "006to010_1",
+                    "006to010_2",
+                    "006to010_3"
+                ],
+                "010": [
+                    "010to001_9"
+                ],
+                "990": [
+                    "990to001_1",
+                    "990to000_9"
+                ]
             },
-            "START_NODE": "START"
+            "NODE_RESULTS": {},
+            "START_NODE": "000"
         },
         "BARMAN_ABSINTHRAYNER": {
             "DIALOG_NODES": {
@@ -2875,15 +3116,6 @@
     },
     "messages": {
         "EN": {
-            "M_HAMMER_DN_START": "Greetings, traveler. I'm Hammer, the village blacksmith.",
-            "M_HAMMER_DN_SELL": "I forge swords, shields, and the occasional horseshoe.",
-            "M_HAMMER_DN_MORE": "Afraid my stock is low today. Come back after the next shipment.",
-            "M_HAMMER_DN_END": "Farewell. May your blade stay sharp.",
-            "M_HAMMER_DO_STARTtoSELL_1": "What do you sell?",
-            "M_HAMMER_DO_STARTtoEND_2": "Goodbye.",
-            "M_HAMMER_DO_SELLtoMORE_1": "Tell me more.",
-            "M_HAMMER_DO_SELLtoEND_2": "Goodbye.",
-            "M_HAMMER_DO_MOREtoEND_1": "Goodbye.",
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej! Witaj w naszej [shadow]Karczmie[/shadow]! Jestem [shadow]Barmanem Absynthraynerem[/shadow]. A kogo tu do mnie los sprowadził?",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_1": "Jestem Malachi, Twój nowy przyjaciel",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_2": "Ech, szkoda gadać, jestem przeklęty przez los",
@@ -3139,7 +3371,47 @@
             "M_DO_ASK_SARCASMIA_WHAT_ITEMS_PEACE_OF_CAKE_TEXT": ":face_with_raised_eyebrow: This is going to be a piece of cake, right?",
             "M_DO_SARCASMIA_2AD_NO_GNOMES_WHISKER_TEXT": "Well, I don't have the [char]Gnome's[/] [item]whisker[/].",
             "M_DN_SARCASMIA_AF_NO_ITEMS_TEXT": "Oh, my poor, unfortunate soul. I see [char]{hero.name}[/] you're more adept at returning empty-handed than not. I guess you're doomed for good.",
-            "M_DN_SARCASMIA_AE_NO_PHOENIX_FEATHER_TEXT": " Oh, how utterly unsurprising. A [char]Phoenix[/] [item]feather[/] eludes you, you say?"
+            "M_DN_SARCASMIA_AE_NO_PHOENIX_FEATHER_TEXT": " Oh, how utterly unsurprising. A [char]Phoenix[/] [item]feather[/] eludes you, you say?",
+            "M_HAMMER_HOAXHEART_DN_000": "Po coś tu przylazł? Co z Ciebie za jeden?",
+            "M_HAMMER_HOAXHEART_DO_000to001_1": "Spokojnie, nazywam się Malachi, nie chcę problemów.",
+            "M_HAMMER_HOAXHEART_DO_000to001_2": "Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!",
+            "M_HAMMER_HOAXHEART_DO_000to001_3": "To zależy co masz do zaoferowania - rozegraj to dobrze, a zarobisz.",
+            "M_HAMMER_HOAXHEART_DN_001": "Czego chcesz?",
+            "M_HAMMER_HOAXHEART_DO_001to002_1": "Od zawsze byłeś kowalem?",
+            "M_HAMMER_HOAXHEART_DO_001to003_2": "Jak Ci idą interesy w tej wiosce?",
+            "M_HAMMER_HOAXHEART_DO_001to004_3": "Masz trochę klientów z okolicznych wsi?",
+            "M_HAMMER_HOAXHEART_DO_001to005_4": "Potrafisz wykuwać magiczne przedmioty?",
+            "M_HAMMER_HOAXHEART_DO_001to006_5": "Kto tu jest najmądrzejszy w okolicy?",
+            "M_HAMMER_HOAXHEART_DO_001to990_9": "To tyle, do następnego razu.",
+            "M_HAMMER_HOAXHEART_DN_002": "Od kiedy pamiętam.",
+            "M_HAMMER_HOAXHEART_DO_002to007_1": "A wcześniej?",
+            "M_HAMMER_HOAXHEART_DO_002to007_2": "Hejże, gadaj jak człowiek! Co robiłeś wcześniej?",
+            "M_HAMMER_HOAXHEART_DO_002to007_3": "A wcześniej to chyba byłeś elokwentnym pisarzem?",
+            "M_HAMMER_HOAXHEART_DN_007": "A wcześniej nie pamiętam.",
+            "M_HAMMER_HOAXHEART_DO_007to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_003": "Raz lepiej, raz gorzej.",
+            "M_HAMMER_HOAXHEART_DO_003to008_1": "Wioska wygląda biednie, współczuję... Nikt tu pewnie nie docenia Twojej pracy?",
+            "M_HAMMER_HOAXHEART_DO_003to008_2": "Słuchaj, jak masz zły dzień, to nie moja wina. Pytam czy dużo osób u Ciebie kupuje, bo to byłby dowód jakości Twojej pracy.",
+            "M_HAMMER_HOAXHEART_DO_003to008_3": "Widzę, tu kawał dobrej roboty, ale w tej wiosce raczej nikt nie odróżni porządnego miecza dwuręcznego od bastardowego?",
+            "M_HAMMER_HOAXHEART_DN_008": "Broń, którą tu robię nie ma sobie równych w całym [shadow]Królestwie Pomylenia[/shadow]. Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.",
+            "M_HAMMER_HOAXHEART_DO_008to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_004": "Pozostałe wsie są tak samo biedne. Broń i zbroje kupują jedynie zarozumiali panicze z miasta [shadow]Porażkowo[/shadow].",
+            "M_HAMMER_HOAXHEART_DO_004to009_1": "No to oni pewnie dadzą zarobić? Znasz tam kogoś?",
+            "M_HAMMER_HOAXHEART_DO_004to009_2": "Pewnie Cię poniżają ci [italic]wielcy panicze[/italic]. Często musisz masz z nimi do czynienia?",
+            "M_HAMMER_HOAXHEART_DO_004to009_3": "A po co tym [italic]francuskim pieskom[/italic] dobra broń? Polują kuszami na kury karczmarza?",
+            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [shadow]Barmana Absyntnenta[/shadow] - on gada ze wszystkimi przybyszami.",
+            "M_HAMMER_HOAXHEART_DO_009to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_005": "Moja broń jest tak dobra, że nie potrzeba mi czarów.",
+            "M_HAMMER_HOAXHEART_DO_005to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_006": "Kto mądry to nie zostaje tu za długo. [shadow]Barman Absyntnent[/shadow] nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.",
+            "M_HAMMER_HOAXHEART_DO_006to010_1": "Że, co? Ja dużo gadam?",
+            "M_HAMMER_HOAXHEART_DO_006to010_2": "Mam rozumieć, że Ty nie bardzo lubisz rozmawiać?",
+            "M_HAMMER_HOAXHEART_DO_006to010_3": "No i tak jak Ty!",
+            "M_HAMMER_HOAXHEART_DN_010": "...",
+            "M_HAMMER_HOAXHEART_DO_010to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_990": "Żegnam",
+            "M_HAMMER_HOAXHEART_DO_990to001_1": "technical loop back",
+            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku"
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej! Witaj w naszej [shadow]Karczmie[/shadow]! Jestem [shadow]Barmanem Absyntnent[/shadow]. A kogo tu do mnie los sprowadził?",
@@ -3397,7 +3669,47 @@
             "M_DO_ASK_SARCASMIA_WHAT_ITEMS_PEACE_OF_CAKE_TEXT": ":face_with_raised_eyebrow: To będzie bułka z masłem, prawda?",
             "M_DO_SARCASMIA_2AD_NO_GNOMES_WHISKER_TEXT": "M_DO_SARCASMIA_2AD_NO_GNOMES_WHISKER_TEXT PL <<PLACEHOLDER>>",
             "M_DN_SARCASMIA_AF_NO_ITEMS_TEXT": "M_DN_SARCASMIA_AF_NO_ITEMS_TEXT PL <<PLACEHOLDER>>",
-            "M_DN_SARCASMIA_AE_NO_PHOENIX_FEATHER_TEXT": "M_DN_SARCASMIA_AE_NO_PHOENIX_FEATHER_TEXT PL <<PLACEHOLDER>>"
+            "M_DN_SARCASMIA_AE_NO_PHOENIX_FEATHER_TEXT": "M_DN_SARCASMIA_AE_NO_PHOENIX_FEATHER_TEXT PL <<PLACEHOLDER>>",
+            "M_HAMMER_HOAXHEART_DN_000": "Po coś tu przylazł? Co z Ciebie za jeden?",
+            "M_HAMMER_HOAXHEART_DO_000to001_1": "Spokojnie, nazywam się Malachi, nie chcę problemów.",
+            "M_HAMMER_HOAXHEART_DO_000to001_2": "Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!",
+            "M_HAMMER_HOAXHEART_DO_000to001_3": "To zależy co masz do zaoferowania - rozegraj to dobrze, a zarobisz.",
+            "M_HAMMER_HOAXHEART_DN_001": "Czego chcesz?",
+            "M_HAMMER_HOAXHEART_DO_001to002_1": "Od zawsze byłeś kowalem?",
+            "M_HAMMER_HOAXHEART_DO_001to003_2": "Jak Ci idą interesy w tej wiosce?",
+            "M_HAMMER_HOAXHEART_DO_001to004_3": "Masz trochę klientów z okolicznych wsi?",
+            "M_HAMMER_HOAXHEART_DO_001to005_4": "Potrafisz wykuwać magiczne przedmioty?",
+            "M_HAMMER_HOAXHEART_DO_001to006_5": "Kto tu jest najmądrzejszy w okolicy?",
+            "M_HAMMER_HOAXHEART_DO_001to990_9": "To tyle, do następnego razu.",
+            "M_HAMMER_HOAXHEART_DN_002": "Od kiedy pamiętam.",
+            "M_HAMMER_HOAXHEART_DO_002to007_1": "A wcześniej?",
+            "M_HAMMER_HOAXHEART_DO_002to007_2": "Hejże, gadaj jak człowiek! Co robiłeś wcześniej?",
+            "M_HAMMER_HOAXHEART_DO_002to007_3": "A wcześniej to chyba byłeś elokwentnym pisarzem?",
+            "M_HAMMER_HOAXHEART_DN_007": "A wcześniej nie pamiętam.",
+            "M_HAMMER_HOAXHEART_DO_007to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_003": "Raz lepiej, raz gorzej.",
+            "M_HAMMER_HOAXHEART_DO_003to008_1": "Wioska wygląda biednie, współczuję... Nikt tu pewnie nie docenia Twojej pracy?",
+            "M_HAMMER_HOAXHEART_DO_003to008_2": "Słuchaj, jak masz zły dzień, to nie moja wina. Pytam czy dużo osób u Ciebie kupuje, bo to byłby dowód jakości Twojej pracy.",
+            "M_HAMMER_HOAXHEART_DO_003to008_3": "Widzę, tu kawał dobrej roboty, ale w tej wiosce raczej nikt nie odróżni porządnego miecza dwuręcznego od bastardowego?",
+            "M_HAMMER_HOAXHEART_DN_008": "Broń, którą tu robię nie ma sobie równych w całym [shadow]Królestwie Pomylenia[/shadow]. Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.",
+            "M_HAMMER_HOAXHEART_DO_008to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_004": "Pozostałe wsie są tak samo biedne. Broń i zbroje kupują jedynie zarozumiali panicze z miasta [shadow]Porażkowo[/shadow].",
+            "M_HAMMER_HOAXHEART_DO_004to009_1": "No to oni pewnie dadzą zarobić? Znasz tam kogoś?",
+            "M_HAMMER_HOAXHEART_DO_004to009_2": "Pewnie Cię poniżają ci [italic]wielcy panicze[/italic]. Często musisz masz z nimi do czynienia?",
+            "M_HAMMER_HOAXHEART_DO_004to009_3": "A po co tym [italic]francuskim pieskom[/italic] dobra broń? Polują kuszami na kury karczmarza?",
+            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [shadow]Barmana Absyntnenta[/shadow] - on gada ze wszystkimi przybyszami.",
+            "M_HAMMER_HOAXHEART_DO_009to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_005": "Moja broń jest tak dobra, że nie potrzeba mi czarów.",
+            "M_HAMMER_HOAXHEART_DO_005to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_006": "Kto mądry to nie zostaje tu za długo. [shadow]Barman Absyntnent[/shadow] nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.",
+            "M_HAMMER_HOAXHEART_DO_006to010_1": "Że, co? Ja dużo gadam?",
+            "M_HAMMER_HOAXHEART_DO_006to010_2": "Mam rozumieć, że Ty nie bardzo lubisz rozmawiać?",
+            "M_HAMMER_HOAXHEART_DO_006to010_3": "No i tak jak Ty!",
+            "M_HAMMER_HOAXHEART_DN_010": "...",
+            "M_HAMMER_HOAXHEART_DO_010to001_9": "Dzięki, to mi wystarczy",
+            "M_HAMMER_HOAXHEART_DN_990": "Żegnam",
+            "M_HAMMER_HOAXHEART_DO_990to001_1": "technical loop back",
+            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku"
         }
     }
 }

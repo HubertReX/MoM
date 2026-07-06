@@ -21,7 +21,7 @@ state: review
 - [x] Walidacja grafu po parsowaniu: wiszące referencje, istnienie START, zgodność anchor <-> target, węzły-sieroty; błąd przerywa import z `plik:linia`
 - [x] Konwersja znaczników (D3): `[reverse]->[shadow]`, `[red]->[error]`, `[blue]->[item]`, `[yellow]->[char]`, `[key]->:key_X:`, `[symbol]/[e]->:name:`; emoji: `😇->:blessed:`, `😢->:offended:`, `😐->:neutral:`, `😡->:angry:`, `🧠->:wondering:`, `😉->:blink:`, `🤖->:human:`
 - [x] i18n: teksty do `messages[lang][key]`, węzły trzymają tylko klucze (D7)
-- [x] Postać `Hammer Hoaxheart` przechodzi pełny import bez błędów
+- [x] Postać `Hammer Hoaxheart` przechodzi pełny import bez błędów (12 węzłów; od 2026-07-06 pełny import trafił też do `config.json` - wcześniej grywalny NPC używał 4-węzłowego stuba, patrz Agent Log)
 
 ## 🧭 Context
 
@@ -60,5 +60,6 @@ state: review
 - 2026-07-06 07:50 opencode: claimed, starting
 - 2026-07-06 08:07 opencode: Implemented dialog/markdown_importer.py: named-group regex option parser, graph validation with file:line errors, D3 tag/emoji conversion, D7 i18n messages, mini-DSL condition conversion. Added tests/test_dialog_import.py with Hammer Hoaxheart smoke-test plus Barman/Potioneer coverage. All dialog tests, mypy and isort pass. Updated project/AGENTS.md.
 - 2026-07-06 08:11 opencode: Implemented and tested. Import pipeline parses Markdown with named-group regex, validates graph with file:line errors, converts D3 tags/emoji, generates D7 i18n messages, and rewrites conditions to mini-DSL. Hammer Hoaxheart passes smoke-test. All dialog tests + mypy + isort pass. Ready for review.
+- 2026-07-06 17:05 cc (review): Import był udowodniony w testach, ale wynik nigdy nie trafił do `config.json` - grywalny NPC "Hammer" używał 4-węzłowego ręcznego stuba (`START/SELL/MORE/END`). Wygenerowano pełny import (`markdown_importer.py "Hammer Hoaxheart"`, 12 węzłów, 40 komunikatów EN/PL), podmieniono stub w `config.json` na `HAMMER_HOAXHEART`, zaktualizowano `characters.Hammer.dialog_key`, usunięto osierocone klucze stuba. Wszystkie 5 grafów buduje się, referencje komunikatów rozwiązują się w EN i PL. Uwaga jakości źródła: RPG `EN/char-Hammer_Hoaxheart.md` (jak i inni migrowani) zawiera polski tekst - import wierny, ale EN=PL (zastany problem danych RPG, poza zakresem).
 
 ## 🙋 Needs-You / Questions
