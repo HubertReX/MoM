@@ -1,11 +1,11 @@
 ---
 id: T-035
 title: DS: Sentyment w rozgrywce - odkrywanie, bramkowanie opcji, mnoznik cen
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-05
 updated: 2026-07-05
 tags:
@@ -54,5 +54,7 @@ tags:
 - [ ] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 14:30 opencode: claimed, starting
 
 ## 🙋 Needs-You / Questions

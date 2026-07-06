@@ -1,8 +1,8 @@
 ---
 id: T-033
 title: DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-033 - DS: UI DialogPanel (opcje i wybor)
@@ -54,5 +55,6 @@ tags:
 ## 📓 Agent Log
 
 - 2026-07-06 08:12 opencode: claimed, starting
+- 2026-07-06 10:23 opencode: Implemented DialogPanel with hybrid input, Hammer dialog graph, and Hammer Dialog Flow scenario. Desktop agent tests pass; screenshot_review sometimes fails due to local LLM endpoint connectivity, not UI.
 
 ## 🙋 Needs-You / Questions

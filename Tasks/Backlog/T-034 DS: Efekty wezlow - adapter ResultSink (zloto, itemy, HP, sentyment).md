@@ -1,25 +1,26 @@
 ---
 id: T-034
 title: DS: Efekty wezlow - adapter ResultSink (zloto, itemy, HP, sentyment)
-status: backlog
+status: needs-you
 owner: human
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-034 - DS: Efekty wezlow (adapter ResultSink)
 
 ## 🎯 Goal / Outcome
 
-- [ ] Adapter `ResultSink` (Protocol) mapujący 7 kategorii `NodeVisitResult` na systemy MoM: złoto, `Inventory`, HP gracza, sentyment NPC
-- [ ] Silnik dialogu bez importów z gry; gra dostarcza konkretny sink (odwrócona zależność)
-- [ ] Flaga `visited` chroni przed dublem - efekt liczony raz przy pierwszej wizycie węzła
-- [ ] Test: węzeł z `MONEY+` / `ITEMS+` zmienia stan gracza dokładnie jednokrotnie
+- [x] Adapter `ResultSink` (Protocol) mapujący 7 kategorii `NodeVisitResult` na systemy MoM: złoto, `Inventory`, HP gracza, sentyment NPC
+- [x] Silnik dialogu bez importów z gry; gra dostarcza konkretny sink (odwrócona zależność)
+- [x] Flaga `visited` chroni przed dublem - efekt liczony raz przy pierwszej wizycie węzła
+- [x] Test: węzeł z `MONEY+` / `ITEMS+` zmienia stan gracza dokładnie jednokrotnie
 
 ## 🧭 Context
 
@@ -37,20 +38,27 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] `ResultSink` (Protocol) + `apply_result()` (match po kategorii).
-- [ ] Konkretny `GameSink` spięty z Inventory/hero/HP/sentyment.
-- [ ] Ochrona `visited` przed podwójnym naliczeniem.
-- [ ] Test jednokrotności efektu.
+- [x] `ResultSink` (Protocol) + `apply_result()` (match po kategorii).
+- [x] Konkretny `GameSink` spięty z Inventory/hero/HP/sentyment.
+- [x] Ochrona `visited` przed podwójnym naliczeniem.
+- [x] Test jednokrotności efektu.
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania - zobacz `![[agent_20260706_T-034_tests_passed.png]]`
+- [x] Testy / lint przechodzą (jeśli dotyczy)
+- [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
 - [ ] commit zmian wykonany
 
+![[agent_20260706_T-034_tests_passed.png]]
+
 ## 📓 Agent Log
+
+- 2026-07-06 10:23 opencode: claimed, starting
+- 2026-07-06 13:12 opencode: implemented `ResultSink` Protocol, `GameResultSink`, visited-once guard, tests; dialog/graph/conditions/import + new result-sink tests pass; mypy clean; updated `project/AGENTS.md`
+- 2026-07-06 13:14 opencode: Implemented ResultSink Protocol, GameResultSink, visited-once guard, and tests. All dialog tests + mypy pass. Ready for review.
+- 2026-07-06 13:15 opencode: Ready for review. Changes: project/dialog/result_sink.py (ResultSink Protocol + apply_result + visit_node), project/result_sink_adapter.py (GameResultSink), project/dialog/__init__.py (exports), project/ui/panels/dialog.py (_visit_current_node wiring), project/AGENTS.md (docs), tests/test_dialog_result_sink.py. Tests: test_dialog_result_sink.py + graph + conditions + import all pass; mypy clean. See attached screenshot in Definition of Done.
 
 ## 🙋 Needs-You / Questions
