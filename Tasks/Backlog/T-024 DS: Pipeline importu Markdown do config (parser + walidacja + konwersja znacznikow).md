@@ -1,11 +1,11 @@
 ---
 id: T-024
 title: DS: Pipeline importu Markdown do config (parser + walidacja + konwersja znacznikow)
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-05
 updated: 2026-07-05
 tags:
@@ -16,11 +16,11 @@ tags:
 
 ## 🎯 Goal / Outcome
 
-- [ ] Import Markdown -> config: rozbiór linii opcji jednym regexem z nazwanymi grupami (koniec z rozbiorem pozycyjnym)
-- [ ] Walidacja grafu po parsowaniu: wiszące referencje, istnienie START, zgodność anchor <-> target, węzły-sieroty; błąd przerywa import z `plik:linia`
-- [ ] Konwersja znaczników (D3): `[reverse]->[shadow]`, `[red]->[error]`, `[blue]->[item]`, `[yellow]->[char]`, `[key]->:key_X:`, `[symbol]/[e]->:name:`; emoji: `😇->:blessed:`, `😢->:offended:`, `😐->:neutral:`, `😡->:angry:`, `🧠->:wondering:`, `😉->:blink:`, `🤖->:human:`
-- [ ] i18n: teksty do `messages[lang][key]`, węzły trzymają tylko klucze (D7)
-- [ ] Postać `Hammer Hoaxheart` przechodzi pełny import bez błędów
+- [x] Import Markdown -> config: rozbiór linii opcji jednym regexem z nazwanymi grupami (koniec z rozbiorem pozycyjnym)
+- [x] Walidacja grafu po parsowaniu: wiszące referencje, istnienie START, zgodność anchor <-> target, węzły-sieroty; błąd przerywa import z `plik:linia`
+- [x] Konwersja znaczników (D3): `[reverse]->[shadow]`, `[red]->[error]`, `[blue]->[item]`, `[yellow]->[char]`, `[key]->:key_X:`, `[symbol]/[e]->:name:`; emoji: `😇->:blessed:`, `😢->:offended:`, `😐->:neutral:`, `😡->:angry:`, `🧠->:wondering:`, `😉->:blink:`, `🤖->:human:`
+- [x] i18n: teksty do `messages[lang][key]`, węzły trzymają tylko klucze (D7)
+- [x] Postać `Hammer Hoaxheart` przechodzi pełny import bez błędów
 
 ## 🧭 Context
 
@@ -39,21 +39,24 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] Regex opcji z nazwanymi grupami (target/anchor/order/sentiment/condition/text).
-- [ ] Walidator grafu z raportem `plik:linia`.
-- [ ] Tabela konwersji znaczników + emoji (D3).
-- [ ] Generacja `messages[lang][key]` + sekcji `character_dialogs`.
-- [ ] Import Hammera jako smoke-test.
+- [x] Regex opcji z nazwanymi grupami (target/anchor/order/sentiment/condition/text).
+- [x] Walidator grafu z raportem `plik:linia`.
+- [x] Tabela konwersji znaczników + emoji (D3).
+- [x] Generacja `messages[lang][key]` + sekcji `character_dialogs`.
+- [x] Import Hammera jako smoke-test.
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
+- [x] Kryteria z Goal spełnione
+- [x] zmiany udokumentowa w tasku (`moab log`)
 - [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
-- [ ] commit zmian wykonany
+- [x] Testy / lint przechodzą (jeśli dotyczy)
+- [x] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
+- [x] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 07:50 opencode: claimed, starting
+- 2026-07-06 08:07 opencode: Implemented dialog/markdown_importer.py: named-group regex option parser, graph validation with file:line errors, D3 tag/emoji conversion, D7 i18n messages, mini-DSL condition conversion. Added tests/test_dialog_import.py with Hammer Hoaxheart smoke-test plus Barman/Potioneer coverage. All dialog tests, mypy and isort pass. Updated project/AGENTS.md.
 
 ## 🙋 Needs-You / Questions

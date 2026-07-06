@@ -63,11 +63,21 @@ epic **DS**). **Czysta logika, zero pygame** — testowalna w izolacji i web-saf
 w pygbag/WASM, bez Pydantic). Renderowanie i wpięcie w rozgrywkę robi `ui/panels/dialog.py`
 (osobne zadania DS).
 
-| Moduł                  | Rola                                                                                                    | Zadanie |
-| ---------------------- | ------------------------------------------------------------------------------------------------------ | ------- |
-| `dialog/entities.py`   | Dataclassy `slots=True`: `DialogNode`, `DialogOption`, `NodeVisitResult` + `NodeVisitResultCategory`   | T-029   |
-| `dialog/graph.py`      | `init_dialog(dialog_dict)` — buduje `{key: DialogNode}` z sekcji configu; wiszące referencje = `ValueError` | T-029   |
-| `dialog/conditions.py` | Silnik warunków opcji (mini-DSL) — `check_condition()` / `validate_condition()`                        | T-032   |
+| Moduł                         | Rola                                                                                                    | Zadanie |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ | ------- |
+| `dialog/entities.py`          | Dataclassy `slots=True`: `DialogNode`, `DialogOption`, `NodeVisitResult` + `NodeVisitResultCategory`   | T-029   |
+| `dialog/graph.py`             | `init_dialog(dialog_dict)` — buduje `{key: DialogNode}` z sekcji configu; wiszące referencje = `ValueError` | T-029   |
+| `dialog/conditions.py`        | Silnik warunków opcji (mini-DSL) — `check_condition()` / `validate_condition()`                        | T-032   |
+| `dialog/markdown_importer.py` | Build-time importer Markdown -> `messages` + `character_dialogs` (regex opcji, walidacja grafu, D3/D7)  | T-024   |
+
+``dialog/markdown_importer.py`` reads RPG source Markdown (`RPG/dialogs/PL` and
+`RPG/dialogs/EN`) and emits the machine-generated ``messages`` and
+``character_dialogs`` sections consumed by ``dialog.graph.init_dialog``. It uses
+a single named-group regex for option lines, validates dangling references,
+orphan nodes, anchor/target agreement and START presence with ``file:line``
+errors, converts RPG rich markup / emoji to MoM ``RichText`` tags (D3), and
+rewrites RPG conditions to the mini-DSL understood by ``dialog.conditions``.
+Run smoke tests with ``.venv/bin/python tests/test_dialog_import.py``.
 
 ### Silnik warunków (mini-DSL, decyzja D1)
 
