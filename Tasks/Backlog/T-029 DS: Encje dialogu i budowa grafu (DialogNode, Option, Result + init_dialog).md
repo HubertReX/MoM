@@ -1,8 +1,8 @@
 ---
 id: T-029
 title: DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: cc
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-029 - DS: Encje dialogu i budowa grafu
@@ -60,5 +61,6 @@ Moduł czysto-logiczny (headless, bez pygame), więc dowodem jest wyjście testu
 - 2026-07-06 07:16 cc: claimed, starting
 - 2026-07-06 07:2x cc: dodano `project/dialog/` (entities.py: dataclassy `slots=True` `DialogNode`/`DialogOption`/`NodeVisitResult`/`NodeVisitResultCategory` bez pygame; graph.py: `init_dialog()` + `get_start_node()` z rozwiązywaniem referencji `next_node`/`result`/opcji i walidacją dangling refs; opcje DEBUG gated flagą `debug`). Test `tests/test_dialog_graph.py` (build, przejście ścieżki do węzła `is_final`, opcje DEBUG, błędy walidacji) - 4/4 PASS, mypy clean.
 - 2026-07-06 07:21 cc: Zaimplementowano project/dialog/ (entities + init_dialog) + test_dialog_graph.py 4/4 PASS, mypy clean
+- 2026-07-06 07:25 cc: project/dialog/ (entities + init_dialog + walidacja + opcje DEBUG). Test: .venv/bin/python tests/test_dialog_graph.py -> 4/4 PASS; mypy project/dialog/ clean. Odblokowuje T-032/T-023/T-024.
 
 ## 🙋 Needs-You / Questions

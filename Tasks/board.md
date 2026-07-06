@@ -23,9 +23,9 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M #cc
-
 ## 🙋 Needs You
+
+- [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M #cc #review
 
 ## 🏁 Done
 
