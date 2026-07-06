@@ -1,8 +1,8 @@
 ---
 id: T-036
 title: DS: Feedback zmiany sentymentu - floating plus-minus N (later)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p3
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-05
 updated: 2026-07-05
 tags:
   - task
+state: review
 ---
 
 # T-036 - DS: Feedback zmiany sentymentu (later)
@@ -47,5 +48,7 @@ tags:
 ## 📓 Agent Log
 
 - 2026-07-06 15:46 opencode: claimed, starting
+- 2026-07-06 16:30 opencode: Implemented floating text and pulsating border feedback for sentiment shifts
+- 2026-07-06 16:30 opencode: Floating text +N/-N in green/red and pulsating border flash on sentiment bar are completed and tested. Verified with unit tests and visual scenario tests.
 
 ## 🙋 Needs-You / Questions

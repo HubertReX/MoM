@@ -13,8 +13,6 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S #opencode
-
 ## 🙋 Needs You
 
 - [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M #cc #review
@@ -26,6 +24,7 @@ tags:
 - [ ] [[T-030 DS: Persystencja stanu rozmowy w save-load (oba backendy + testy korupcji)]] #feature #p2 #M #opencode #review
 - [ ] [[T-035 DS: Sentyment w rozgrywce - odkrywanie, bramkowanie opcji, mnoznik cen]] #feature #p2 #L #opencode #review
 - [ ] [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]] #feature #p2 #M #opencode #review
+- [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S #opencode #review
 
 ## 🏁 Done
 
