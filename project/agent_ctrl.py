@@ -157,6 +157,7 @@ class AgentController:
             return
         if not raw:
             return
+        self.log(f"[agent_ctrl] poll raw={raw!r}")
         self._write_file("")  # konsumuj zawartość
         for token in raw.split():
             self._enqueue(token)
@@ -246,6 +247,7 @@ class AgentController:
             frames = DEFAULT_HOLD_FRAMES if action in CONTINUOUS_ACTIONS else 1
 
         # wyślij KEYDOWN tylko gdy klawisz nie jest już "wciśnięty" przez agenta
+        self.log(f"[agent_ctrl] queue action={action} frames={frames} key={key}")
         if action not in self._held:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=key))
         self._held[action] = max(self._held.get(action, 0), frames)

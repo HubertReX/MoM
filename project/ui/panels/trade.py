@@ -16,6 +16,8 @@ from settings import (
     INVENTORY_ITEM_WIDTH,
     MAX_HOTBAR_ITEMS,
     WIDTH,
+    get_buy_price_multiplier,
+    get_sell_price_multiplier,
 )
 
 from .. import theme
@@ -80,7 +82,15 @@ class TradePanel(Widget):
         if npc.selected_item_idx < 0:
             return
         item_model = npc.items[npc.selected_item_idx].model
-        draw_item_details(self.hud, surface, props_top_left, props_top_middle, item_model)
+        merchant = self.scene.player.npc_met
+        if merchant and self.is_buying:
+            multiplier = get_buy_price_multiplier(merchant.sentiment)
+        elif merchant:
+            multiplier = get_sell_price_multiplier(merchant.sentiment)
+        else:
+            multiplier = 1.0
+        price = int(round(item_model.value * multiplier))
+        draw_item_details(self.hud, surface, props_top_left, props_top_middle, item_model, price=price)
 
     def _draw_merchant_stats(self, surface: pygame.Surface, npc: "NPC", top_left: tuple[int, int]) -> None:
         properties = [

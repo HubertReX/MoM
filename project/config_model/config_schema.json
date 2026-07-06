@@ -125,12 +125,19 @@
                     "title": "Dialog Key"
                 },
                 "disposition": {
-                    "default": 50,
-                    "description": "Base disposition towards the player (0-100)",
-                    "maximum": 100,
-                    "minimum": 0,
-                    "title": "Disposition",
-                    "type": "integer"
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "additionalProperties": {
+                                "type": "integer"
+                            },
+                            "type": "object"
+                        }
+                    ],
+                    "description": "Per-sentiment weights that shift NPC sentiment when a dialog option is chosen; legacy int is converted to default weights",
+                    "title": "Disposition"
                 }
             },
             "required": [
@@ -381,6 +388,17 @@
         "dialogs": {
             "description": "Character dialog graphs keyed by dialog_key",
             "title": "Dialogs",
+            "type": "object"
+        },
+        "messages": {
+            "additionalProperties": {
+                "additionalProperties": {
+                    "type": "string"
+                },
+                "type": "object"
+            },
+            "description": "Localized dialog texts keyed by language",
+            "title": "Messages",
             "type": "object"
         },
         "$schema": "./config_schema.json"

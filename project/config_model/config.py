@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Annotated, Any, Dict, List, Literal, Tuple
 
 from enums import AttitudeEnum, ItemTypeEnum, RaceEnum
+from settings import DEFAULT_DISPOSITION_WEIGHTS
 
 
 # https://docs.python.org/3/library/enum.html#enum.Enum
@@ -74,10 +75,14 @@ class Character():
     speed_walk:            Annotated[int,                field(repr=False)]
     speed_run:             Annotated[int,                field(repr=False)]
     dialog_key:            Annotated[str | None,         field(repr=False)] = None
-    disposition:           Annotated[int,                field(repr=False)] = 50
+    disposition:           Annotated[dict[str, int],     field(repr=False)] = field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS))
 
     @classmethod
     def from_dict(cls: type["Character"], data: dict[str, Any]) -> "Character":
+        raw_disposition = data.get("disposition")
+        disposition: dict[str, int] = dict(DEFAULT_DISPOSITION_WEIGHTS)
+        if isinstance(raw_disposition, dict):
+            disposition.update({str(k): int(v) for k, v in raw_disposition.items()})
         return cls(
             name = data.get("name", ""),
             sprite = data.get("sprite", ""),
@@ -95,7 +100,7 @@ class Character():
             speed_walk = data.get("speed_walk", 30),
             speed_run = data.get("speed_run", 40),
             dialog_key = data.get("dialog_key"),
-            disposition = data.get("disposition", 50),
+            disposition = disposition,
         )
 
 
@@ -165,6 +170,7 @@ class Config():
     items:        dict[str, Item]
     maze_configs: dict[int, MazeLevelProperties]
     dialogs:      dict[str, Any] = field(default_factory=dict)
+    messages:     dict[str, dict[str, str]] = field(default_factory=dict)
 
     @classmethod
     def build(cls, data: dict[str, Any]) -> "Config":
@@ -189,8 +195,9 @@ class Config():
             maze_configs[int(name)] = maze_config
 
         dialogs = data.get("dialogs", {})
+        messages = data.get("messages", {})
 
-        return cls(chars, chests, items, maze_configs, dialogs)
+        return cls(chars, chests, items, maze_configs, dialogs, messages)
 ###################################################################################################################
 
 

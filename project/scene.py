@@ -1151,7 +1151,6 @@ class Scene(State):
     def update(self, dt: float, events: list[pygame.event.EventType]) -> None:
         # MARK: update
         global INPUTS
-
         self.remove_old_notifications()
 
         # sample this before ui.update() so that on the frame a modal panel closes
@@ -1287,7 +1286,7 @@ class Scene(State):
                 if distance_from_player < FRIENDLY_WAKE_DISTANCE**2:
                     npc.health_bar.show()
 
-                    if (npc.has_dialog and npc.dialogs) or (npc.model.is_merchant):
+                    if (npc.has_dialog and (npc.dialogs or npc.dialog is not None)) or (npc.model.is_merchant):
                         self.player.npc_met = npc
                         npc.npc_met = self.player
                         break

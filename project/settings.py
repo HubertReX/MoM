@@ -63,6 +63,70 @@ def lerp_vectors(v1: vec, v2: vec, t: float) -> vec:
     return v1 + (v2 - v1) * t
 
 
+def get_msg(messages: dict[str, dict[str, str]], key: str, lang: str = LANG) -> str:
+    """Resolve an i18n message key to the current language text.
+
+    Falls back to the key itself (and then to an empty string) so a missing
+    translation never crashes the UI.
+    """
+    return messages.get(lang, {}).get(key) or key
+
+
+# ---------------------------------------------------------------------------
+# Sentiment / disposition
+# ---------------------------------------------------------------------------
+
+# Source RPG emoji -> MoM emote key (without colons).  Shared with the
+# markdown importer and the dialog graph builder so both can normalise
+# option sentiment to the same canonical keys.
+SENTIMENT_EMOJI_TO_EMOTE: dict[str, str] = {
+    "😇": "blessed",
+    "😢": "offended",
+    "😐": "neutral",
+    "😡": "angry",
+    "🧠": "wondering",
+    "😉": "blink",
+    "🤖": "human",
+}
+
+# Default per-emoji sentiment shift applied when a dialog option is chosen.
+# Characters can override individual entries via ``Character.disposition``.
+DEFAULT_DISPOSITION_WEIGHTS: dict[str, int] = {
+    "blessed": 10,
+    "blink": 5,
+    "wondering": 2,
+    "neutral": 0,
+    "human": 0,
+    "offended": -5,
+    "angry": -10,
+}
+
+# Trade price sentiment multipliers.  At sentiment 50 (neutral) both are 1.0;
+# higher sentiment makes buying cheaper and selling more expensive.
+SENTIMENT_BUY_MULTIPLIER_BASE: float = 1.5
+SENTIMENT_SELL_MULTIPLIER_BASE: float = 0.5
+
+
+def get_buy_price_multiplier(sentiment: int) -> float:
+    """Return the price multiplier when the player buys from an NPC."""
+    return max(0.1, SENTIMENT_BUY_MULTIPLIER_BASE - sentiment / 100.0)
+
+
+def get_sell_price_multiplier(sentiment: int) -> float:
+    """Return the price multiplier when the player sells to an NPC."""
+    return max(0.1, SENTIMENT_SELL_MULTIPLIER_BASE + sentiment / 100.0)
+
+
+def normalise_sentiment(sentiment: str) -> str:
+    """Return the canonical emote name for a sentiment value.
+
+    Accepts either a source RPG emoji (e.g. ``"😐"``) or an already-normalised
+    MoM emote name (e.g. ``"neutral"``).  Unknown values are returned as-is so
+    they can still be used as custom keys.
+    """
+    return SENTIMENT_EMOJI_TO_EMOTE.get(sentiment, sentiment)
+
+
 TILE_SIZE = 16
 X_TILES = 80  # 100
 Y_TILES = 45  # 64

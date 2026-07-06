@@ -373,5 +373,58 @@
             { "type": "screenshot_review", "target": "at_main_menu", "expected_state": "MENU_MAIN", "expect": "The game main menu is visible." },
             { "type": "screenshot_review", "target": "textinput_demo_screen_shown", "expect": "A text-input demo screen with input fields is shown (the F7 hotkey opened the TextInput demo)." }
         ]
+    },
+    {
+        "name": "Hammer Dialog Flow",
+        "slug": "hammer_dialog_flow",
+        "platform": ["desktop", "web"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "near_hammer", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
+            { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.0 },
+            { "slug": "dialog_open", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "select_what_do_you_sell", "commands": ["accept"], "wait": 1.0 },
+            { "slug": "sell_node", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "select_tell_me_more", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "more_node", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "end_dialog", "commands": ["accept"], "wait": 1.0 },
+            { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 2.0 }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "dialog_open", "expect": "A dialog panel is open showing text from Hammer and a numbered list of options (at least one visible)." },
+            { "type": "screenshot_review", "target": "sell_node", "expect": "The dialog panel shows Hammer talking about swords and shields with reply options." },
+            { "type": "screenshot_review", "target": "dialog_closed", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; the dialog panel is closed after reaching the final node." },
+            { "type": "process_alive" }
+        ]
+    },
+    {
+        "name": "Dialog Save and Load",
+        "slug": "dialog_save_and_load",
+        "platform": ["desktop", "web"],
+        "cleanup_saves": [0],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "near_hammer", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
+            { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.0 },
+            { "slug": "dialog_open", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "select_what_do_you_sell", "commands": ["accept"], "wait": 1.0 },
+            { "slug": "sell_node", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 1.0 },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 1.0 },
+            { "slug": "select_slot", "commands": ["accept"], "wait": 1.0 },
+            { "slug": "confirm_load", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "after_load", "commands": ["screenshot"], "wait": 1.0 },
+            { "slug": "start_dialog_after_load", "commands": ["talk:5"], "wait": 1.0 },
+            { "slug": "dialog_open_after_load", "commands": ["screenshot"], "wait": 2.0 }
+        ],
+        "assertions": [
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
+            { "type": "screenshot_review", "target": "dialog_open_after_load", "expect": "A dialog panel is open showing Hammer talking about swords, shields and horseshoes (the SELL node), NOT the initial greeting. This proves the dialog cursor was restored after load." },
+            { "type": "process_alive" }
+        ]
     }
 ]

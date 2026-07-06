@@ -15,6 +15,7 @@ from save_load.models import (
     GroundItemState,
     ItemState,
     MapState,
+    NPCDialogState,
     NPCState,
     PlayerState,
     SaveGame,
@@ -264,9 +265,26 @@ class SaveManager:
                     cooldown_time=int(item.model.cooldown_time),
                     health_impact=item.model.health_impact,
                 ) for item in npc.items],
+                dialog_state=self._build_npc_dialog_state(npc),
             )
             for npc in scene.NPCs
         }
+
+    def _build_npc_dialog_state(self, npc: Any) -> NPCDialogState | None:
+        """Capture the conversation state for an NPC, if it has a dialog graph."""
+        dialog_key = getattr(npc, "dialog_key", None)
+        dialog_nodes = getattr(npc, "dialog_nodes", None)
+        if not dialog_key or dialog_nodes is None:
+            return None
+        current_node_key = npc.dialog.key if npc.dialog else ""
+        visited_nodes = {key: True for key, node in dialog_nodes.items() if node.visited}
+        return NPCDialogState(
+            current_node_key=current_node_key,
+            selected_options=dict(getattr(npc, "selected_options_dict", {})),
+            visited_nodes=visited_nodes,
+            sentiment=int(getattr(npc, "sentiment", 50)),
+            known_disposition=dict(getattr(npc, "known_disposition", {})),
+        )
 
     def _build_chest_states(self, scene: Scene) -> dict[str, ChestState]:
         return {
@@ -332,6 +350,7 @@ class SaveManager:
                 is_dead=npc.is_dead,
                 inventory=[ItemState(name=it.name, type=it.model.type, count=it.model.count)
                            for it in npc.items],
+                dialog_state=self._build_npc_dialog_state(npc),
             )
         return result
 
@@ -509,6 +528,8 @@ class SaveManager:
                 npc.model.money = saved.money
                 npc.pos = vec(saved.pos_x, saved.pos_y)
                 npc.is_dead = saved.is_dead
+                if saved.dialog_state is not None and hasattr(npc, "restore_dialog_state"):
+                    npc.restore_dialog_state(saved.dialog_state)
 
     def _apply_maze_mobs(self, scene: Scene, ms: MapState) -> None:
         pass

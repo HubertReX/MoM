@@ -74,16 +74,7 @@ class DialogImportError(ValueError):
 # Conversion tables (Decision D3)
 # ---------------------------------------------------------------------------
 
-# emoji used for option sentiment -> MoM emote key (without colons)
-SENTIMENT_EMOJI_TO_EMOTE: dict[str, str] = {
-    "😇": "blessed",
-    "😢": "offended",
-    "😐": "neutral",
-    "😡": "angry",
-    "🧠": "wondering",
-    "😉": "blink",
-    "🤖": "human",
-}
+from settings import SENTIMENT_EMOJI_TO_EMOTE
 
 # emoji appearing inside node/option text -> inline :emote: tag
 _EMOJI_TO_EMOTE_TAG: dict[str, str] = {

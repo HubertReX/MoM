@@ -6,7 +6,7 @@ by the HUD on top (matching the original draw order). ``draw_item_details`` and
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pygame
 
@@ -32,17 +32,20 @@ def build_inventory_bg() -> pygame.Surface:
 
 
 def draw_item_details(hud: "HUD", surface: pygame.Surface, props_top_left: tuple[int, int],
-                      props_top_middle: tuple[int, int], item_model) -> None:  # noqa: ANN001
+                      props_top_middle: tuple[int, int], item_model: Any,
+                      price: int | None = None) -> None:
     from settings import IS_WEB
     if IS_WEB:
         from config_model.config import ItemTypeEnum
     else:
         from config_model.config_pydantic import ItemTypeEnum  # type: ignore[assignment]
 
+    value_label = "Price" if price is not None else "Value"
+    value_text = f"{price:4d}" if price is not None else f"{item_model.value:4d}"
     left_properties = [
         {"icon_name": "", "label": "", "value": f"{item_model.name}"},
         {"icon_name": "pan_balance", "label": "Weight", "value": f"{item_model.weight:4.2f}"},
-        {"icon_name": "golden_coin", "label": "Value", "value": f"{item_model.value:4d}"},
+        {"icon_name": "golden_coin", "label": value_label, "value": value_text},
         {"icon_name": "abacus2", "label": "Amount", "value": f"{item_model.count:4d}"},
     ]
     for row, prop in enumerate(left_properties):

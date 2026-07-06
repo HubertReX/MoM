@@ -31,6 +31,7 @@ from dialog.entities import (
     NodeVisitResult,
     NodeVisitResultCategory,
 )
+from settings import normalise_sentiment
 
 
 def init_dialog(dialog: dict[str, Any], *, debug: bool = False) -> dict[str, DialogNode]:
@@ -118,13 +119,14 @@ def _build_options(
             validate_condition(condition)
         except ConditionError as error:
             raise ValueError(f"option {key!r} has an invalid condition: {error}") from error
+        sentiment = normalise_sentiment(data.get("sentiment", "neutral"))
         options[key] = DialogOption(
             key,
             nodes[next_key],
             data["text"],
             data.get("order", 0),
             condition,
-            data.get("sentiment", "😐"),
+            sentiment,
         )
     return options
 
@@ -163,7 +165,7 @@ def _build_debug_options(
             text="[red]DEBUG[/] START ([blue]current dialog node[/]=[yellow]{character.dialog.key}[/])",
             order=100,
             condition="True",
-            sentiment="🤖",
+            sentiment="human",
         )
     ]
     i = 0
@@ -177,7 +179,7 @@ def _build_debug_options(
                     text=f"[red]DEBUG[/] END   ([blue]end     dialog node[/]=[yellow]{node.key}[/])",
                     order=100 + i,
                     condition="True",
-                    sentiment="🤖",
+                    sentiment="human",
                 )
             )
     return debug_options

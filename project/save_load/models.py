@@ -226,6 +226,38 @@ class PlayerState:
 
 
 @dataclass
+class NPCDialogState:
+    """Snapshot of a single NPC's dialog graph state.
+
+    Maps to the live NPC fields as follows:
+    - ``current_node_key``   -> ``NPC.dialog.key`` (cursor into the graph)
+    - ``selected_options``   -> ``NPC.selected_options_dict``
+    - ``visited_nodes``      -> ``DialogNode.visited`` flags on the rebuilt graph
+    - ``sentiment``          -> ``NPC.sentiment``
+    - ``known_disposition``  -> ``NPC.known_disposition``
+    """
+
+    current_node_key: str = ""
+    selected_options: dict[str, bool] = field(default_factory=dict)
+    visited_nodes: dict[str, bool] = field(default_factory=dict)
+    sentiment: int = 50
+    known_disposition: dict[str, int] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return _to_dict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> NPCDialogState:
+        return cls(
+            current_node_key=str(data.get("current_node_key", "")),
+            selected_options={str(k): bool(v) for k, v in data.get("selected_options", {}).items()},
+            visited_nodes={str(k): bool(v) for k, v in data.get("visited_nodes", {}).items()},
+            sentiment=int(data.get("sentiment", 50)),
+            known_disposition={str(k): int(v) for k, v in data.get("known_disposition", {}).items()},
+        )
+
+
+@dataclass
 class NPCState:
     """Snapshot of a single NPC's mutable state."""
 
@@ -237,12 +269,14 @@ class NPCState:
     money: int = 0
     is_dead: bool = False
     inventory: list[ItemState] = field(default_factory=list)
+    dialog_state: NPCDialogState | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return _to_dict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> NPCState:
+        dialog_state_raw = data.get("dialog_state")
         return cls(
             name=str(data.get("name", "")),
             attitude=_enum_val(data.get("attitude"), AttitudeEnum),
@@ -252,6 +286,7 @@ class NPCState:
             money=int(data.get("money", 0)),
             is_dead=bool(data.get("is_dead", False)),
             inventory=[ItemState.from_dict(i) for i in data.get("inventory", [])],
+            dialog_state=NPCDialogState.from_dict(dialog_state_raw) if dialog_state_raw else None,
         )
 
 

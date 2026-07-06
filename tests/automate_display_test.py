@@ -437,6 +437,7 @@ class DesktopRunner(RunnerBase):
             # Osadź slug akcji w komendzie: gra użyje go w nazwie pliku.
             tokens.append(f"screenshot:{action.slug}")
         cmd = f'echo "{" ".join(tokens)}" > {TEST_CONFIG["INPUT_FILE"]}'
+        print(f"[RUNNER SEND] {cmd}")
         subprocess.run(cmd, shell=True)
         if wants_shot:
             # Przewidź ścieżkę, którą zapisze gra (ten sam format nazwy), na potrzeby asercji.

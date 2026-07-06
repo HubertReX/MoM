@@ -68,6 +68,8 @@ w pygbag/WASM, bez Pydantic). Renderowanie i wpięcie w rozgrywkę robi `ui/pane
 | `dialog/entities.py`          | Dataclassy `slots=True`: `DialogNode`, `DialogOption`, `NodeVisitResult` + `NodeVisitResultCategory`   | T-029   |
 | `dialog/graph.py`             | `init_dialog(dialog_dict)` — buduje `{key: DialogNode}` z sekcji configu; wiszące referencje = `ValueError` | T-029   |
 | `dialog/conditions.py`        | Silnik warunków opcji (mini-DSL) — `check_condition()` / `validate_condition()`                        | T-032   |
+| `dialog/result_sink.py`       | `ResultSink` (Protocol) + `apply_result()` / `visit_node()` — efekty węzłów bez importów z gry        | T-034   |
+| `result_sink_adapter.py`      | `GameResultSink(ResultSink)` — adapter do `Inventory`, HP, złota i sentymentu NPC                      | T-034   |
 | `dialog/markdown_importer.py` | Build-time importer Markdown -> `messages` + `character_dialogs` (regex opcji, walidacja grafu, D3/D7)  | T-024   |
 
 ``dialog/markdown_importer.py`` reads RPG source Markdown (`RPG/dialogs/PL` and
@@ -101,6 +103,27 @@ Przykłady: `sentiment >= 42 and selected("BOB_DO_HOBBY_BIKE")`,
 `not visited("003") or has_item("MERMAIDS_TEAR")`,
 `visited("HAMMER_HOAXHEART_001", "004")`.
 
+### Efekty węzłów (ResultSink, T-034)
+
+Węzły mogą mieć efekt uboczny (`NodeVisitResult`).  `dialog.result_sink` definiuje
+`ResultSink` (Protocol) i bezimportowo rozdziela 7 kategorii na metody sinku;
+`result_sink_adapter.GameResultSink` mapuje je na systemy MoM:
+
+| Kategoria           | Metoda sinku     | Efekt w grze                                      |
+| ------------------- | ---------------- | ------------------------------------------------- |
+| `money_received`    | `add_money()`    | `player.model.money += amount`                    |
+| `money_returned`    | `remove_money()` | `player.model.money` z clamp do 0                 |
+| `items_received`    | `add_items()`    | `scene.create_item()` + `player.pick_up()`        |
+| `items_returned`    | `remove_items()` | usuwa/zmniejsza stack z `player.items`            |
+| `health_restored`   | `restore_health()` | `player.model.health` z clamp do `max_health`   |
+| `health_lost`       | `lose_health()`  | `player.model.health` z clamp do 0                |
+| `sentiment_shift`   | `shift_sentiment()` | `npc.sentiment` z clamp do 0–100               |
+
+`visit_node(node, sink)` aplikuje efekt **dokładnie raz** — `DialogNode.visited`
+chroni przed dublem przy ponownym otwarciu dialogu lub cofnięciu się do węzła.
+Wpięcie w grze: `DialogPanel._visit_current_node()` wywoływane przy otwarciu
+panelu oraz po wyborze opcji (`activate_selected`).
+
 ### Testy
 
 Czysta logika — testy to samodzielne skrypty (bez SDL), uruchamiane wprost interpreterem:
@@ -108,6 +131,7 @@ Czysta logika — testy to samodzielne skrypty (bez SDL), uruchamiane wprost int
 ```bash
 .venv/bin/python tests/test_dialog_graph.py        # encje + builder (T-029)
 .venv/bin/python tests/test_dialog_conditions.py   # silnik warunków (T-032)
+.venv/bin/python tests/test_dialog_result_sink.py  # efekty węzłów + GameSink (T-034)
 ```
 
 ## 🔑 KRYTYCZNE: różnice desktop ↔ web
@@ -330,7 +354,36 @@ publikując `screenshots/agent/` jako artifact.
 - **Dialog i sentyment (T-023):** instancja `NPC` (`characters.py`) rozszerzona o:
   `dialog_key` (z modelu), `dialog` (bieżący `DialogNode` / kursor w grafie),
   `selected_options_dict`, `sentiment` (0–100, domyślnie 50), `disposition`
-  (z modelu) oraz `known_disposition` (odkrywana przez gracza, domyślnie 50).
+  (z modelu) oraz `known_disposition` (odkrywana przez gracza, pusta na start).
   Przy ładowaniu `load_dialogs()` buduje graf z `Config.dialogs[dialog_key]`
   przez `dialog.graph.init_dialog` i ustawia `dialog` na `START_NODE`.
   Stare pole `dialogs: str` (markdown) pozostawione bez zmian do czasu migracji.
+- **Odkrywanie sentymentu (T-035):** `NPC.apply_option_sentiment(sentiment_key)`
+  wyciąga wagę z `self.disposition[sentiment_key]`, dodaje do `self.sentiment`
+  (clamp 0–100) i zapisuje w `self.known_disposition[sentiment_key]` = waga.
+  W `DialogPanel._build_weight_indicator()`: jeśli `sentiment` jest w
+  `known_disposition` — pokazuje wagę (np. `+4`), jeśli nie — `?`.
+  Nad nazwą NPC rysowany jest `_draw_sentiment_indicator()`: poziomy pasek
+  od czerwonego (0) przez żółty (50) do zielonego (100).
+- **Handel a sentyment (T-035):** ceny zakupu i sprzedaży zależą od sentymentu
+  NPC. `get_buy_price_multiplier(sentiment)` (zakres 0.5×–1.5×, clamped ≥0.1)
+  i `get_sell_price_multiplier(sentiment)` (odwrotnie). Sentiment 50 → oba 1.0×.
+  Cena = `round(item.value * multiplier)`.
+- **Persystencja rozmowy (T-030):** pełny stan dialogu per-NPC jest zapisywany
+  w save/load przez `NPCDialogState` (`save_load/models.py`): bieżący węzeł
+  (`current_node_key`), `selected_options_dict`, odwiedzone węzły (`visited_nodes`),
+  `sentiment` i `known_disposition`. `SaveManager` serializuje go w `NPCState.dialog_state`,
+  a po loadzie `NPC.restore_dialog_state()` odbudowuje graf i przywraca kursor
+  oraz flagi.
+
+## DialogPanel (T-033)
+
+- `ui/panels/dialog.py` renderuje aktywny węzeł grafu (`npc.dialog`) oraz
+  przefiltrowane opcje spełniające warunki mini-DSL.
+- Wejście hybrydowe: strzałki / drążek + `accept`, klawisze `1-9`, kliknięcia myszy.
+- `ui/game_ui.py` obsługuje nawigację i rising-edge dla `up`/`down`/`accept`/`talk`,
+  a `characters.py` otwiera panel gdy gracz naciśnie `talk` w zasięgu NPC.
+- Zasięg rozmowy to `FRIENDLY_WAKE_DISTANCE` (`settings.py:175`); wymagana bliskość
+  NPC jest sprawdzana w `scene.py` (`npc.model.attitude == friendly` i warunek dialogu).
+- Przykładowy dialog: Hammer w `config.json` + spawn w `Village.tmx`;
+  scenariusz testowy: `tests/scenarios.json` → "Hammer Dialog Flow".

@@ -4,8 +4,11 @@ import math
 import os
 import random
 from enum import Enum, auto
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from rich import print
+
+if TYPE_CHECKING:
+    from save_load.models import NPCDialogState
 
 import pygame
 from maze_generator.maze_utils import a_star_cached
@@ -25,6 +28,9 @@ from settings import (
     HEIGHT,
     INPUTS,
     IS_WEB,
+    get_buy_price_multiplier,
+    get_msg,
+    get_sell_price_multiplier,
     JOY_MOVE_MULTIPLIER,
     MAX_HOTBAR_ITEMS,
     MONSTER_WAKE_DISTANCE,
@@ -94,10 +100,11 @@ class NPC(pygame.sprite.Sprite):
         # path; `dialog` is the live cursor into the DialogNode graph.
         self.dialog_key: str | None = self.model.dialog_key
         self.dialog: DialogNode | None = None
+        self.dialog_nodes: dict[str, DialogNode] | None = None
         self.selected_options_dict: dict[str, bool] = {}
         self.sentiment: int = 50
-        self.disposition: int = self.model.disposition
-        self.known_disposition: int = 50
+        self.disposition: dict[str, int] = dict(self.model.disposition)
+        self.known_disposition: dict[str, int] = {}
 
         self.load_dialogs()
 
@@ -312,8 +319,57 @@ class NPC(pygame.sprite.Sprite):
             dialog_config: dict[str, Any] = self.game.conf.dialogs.get(self.dialog_key, {})
             if dialog_config:
                 nodes = init_dialog(dialog_config)
+                self.dialog_nodes = nodes
                 self.dialog = get_start_node(dialog_config, nodes)
                 self.has_dialog = True
+
+    #############################################################################################################
+
+    def apply_option_sentiment(self, option_sentiment: str) -> int:
+        """Apply a dialog option's sentiment shift and reveal its weight.
+
+        Returns the actual shift applied (after clamping).  The weight is
+        recorded in ``known_disposition`` so future options with the same
+        sentiment show their value instead of ``?``.
+        """
+        weight = self.disposition.get(option_sentiment, 0)
+        self.sentiment = max(0, min(100, self.sentiment + weight))
+        self.known_disposition[option_sentiment] = weight
+        return weight
+
+    def restore_dialog_state(self, dialog_state: "NPCDialogState") -> None:
+        """Restore the conversation state from a save snapshot.
+
+        Rebuilds the dialog graph if necessary, then applies the saved cursor,
+        selected options, visited nodes, sentiment and discovered disposition.
+        """
+        if not self.dialog_key:
+            return
+        if self.dialog_nodes is None:
+            self.load_dialogs()
+        if self.dialog_nodes is None:
+            return
+
+        self.selected_options_dict = dict(dialog_state.selected_options)
+        self.sentiment = dialog_state.sentiment
+        self.known_disposition = dict(dialog_state.known_disposition)
+
+        current_key = dialog_state.current_node_key
+        if current_key and current_key in self.dialog_nodes:
+            self.dialog = self.dialog_nodes[current_key]
+        elif self.dialog is None:
+            # Fallback to the graph entry node if the saved cursor is missing.
+            dialog_config = self.game.conf.dialogs.get(self.dialog_key, {})
+            if dialog_config:
+                self.dialog = get_start_node(dialog_config, self.dialog_nodes)
+
+        for key, node in self.dialog_nodes.items():
+            node.visited = dialog_state.visited_nodes.get(key, False)
+
+        selected_options = dialog_state.selected_options
+        for node in self.dialog_nodes.values():
+            for opt in node.options:
+                opt.selected = selected_options.get(opt.key, False)
 
     #############################################################################################################
     def generate_masks(self) -> None:
@@ -1159,8 +1215,9 @@ class NPC(pygame.sprite.Sprite):
             return False
 
         selected_item = self.npc_met.items[self.npc_met.selected_item_idx]
+        price = int(round(selected_item.model.value * get_buy_price_multiplier(self.npc_met.sentiment)))
 
-        if self.model.money < selected_item.model.value:
+        if self.model.money < price:
             self.scene.add_notification(
                 f"You can't buy '[item]{
                     selected_item.model.name}[/item]' - not enough money :red_exclamation_anim:",
@@ -1198,8 +1255,9 @@ class NPC(pygame.sprite.Sprite):
             return False
 
         selected_item = self.items[self.selected_item_idx]
+        price = int(round(selected_item.model.value * get_sell_price_multiplier(self.npc_met.sentiment)))
 
-        if self.npc_met.model.money < selected_item.model.value:
+        if self.npc_met.model.money < price:
             self.scene.add_notification(
                 f"Merchant can't buy '[item]{
                     selected_item.model.name}[/item]' - not enough money :red_exclamation_anim:",
@@ -1312,10 +1370,9 @@ class Player(NPC):
 
     #############################################################################################################
     def movement(self) -> None:
+        global INPUTS
         if self.is_stunned or self.is_attacking:
             return
-
-        global INPUTS
 
         if INPUTS["open"]:
             if self.chest_in_range and self.chest_in_range.model.is_closed and not self.is_talking:
@@ -1334,10 +1391,17 @@ class Player(NPC):
                     self.scene.group.add(item, layer=self.scene.sprites_layer - 1)
             INPUTS["open"] = False
         elif INPUTS["talk"]:
+            print(f"[DEBUG talk] npc_met={getattr(self.npc_met, 'name', None)}, has_dialog={getattr(self.npc_met, 'has_dialog', None) if self.npc_met else None}, is_talking={self.is_talking}, dialog={getattr(self.npc_met, 'dialog', None) is not None if self.npc_met else None}")
             if self.npc_met and (self.npc_met.has_dialog or self.npc_met.model.is_merchant) and not self.is_talking:
                 # dialog or trading?
                 if self.npc_met.has_dialog:
-                    self.scene.ui.open(DialogPanel, npc=self.npc_met, text=self.npc_met.dialogs or "")
+                    if self.npc_met.dialog is not None:
+                        text = get_msg(self.game.conf.messages, self.npc_met.dialog.text)
+                        self.scene.ui.open(DialogPanel, npc=self.npc_met, text=text)
+                        print(f"[DEBUG talk] opened DialogPanel for {self.npc_met.name} at node {self.npc_met.dialog.key}")
+                    else:
+                        self.scene.ui.open(DialogPanel, npc=self.npc_met, text=self.npc_met.dialogs or "")
+                        print(f"[DEBUG talk] opened DialogPanel (legacy) for {self.npc_met.name}")
                 else:
                     # since trader might accept only selected types of items
                     # selected item index needs to be initiated again
@@ -1350,7 +1414,7 @@ class Player(NPC):
                         else:
                             self.selected_item_idx = filtered_items.index(selected_item)
 
-                    self.scene.ui.open(TradePanel)
+                        self.scene.ui.open(TradePanel)
                 self.is_talking = True
                 self.npc_met.is_talking = True
             INPUTS["talk"] = False
@@ -1380,12 +1444,13 @@ class Player(NPC):
                 if self.can_buy():
                     item_to_buy = self.npc_met.drop_item(show=False)
                     if item_to_buy:
-                        self.model.money -= item_to_buy.model.value
-                        self.npc_met.model.money += item_to_buy.model.value
+                        price = int(round(item_to_buy.model.value * get_buy_price_multiplier(self.npc_met.sentiment)))
+                        self.model.money -= price
+                        self.npc_met.model.money += price
                         self.pick_up(item_to_buy)
                         self.scene.add_notification(
                             f"Bought '[item]{item_to_buy.model.name}[/item]'"
-                            f"for [num]{item_to_buy.model.value}[/num] :$_anim:",
+                            f"for [num]{price}[/num] :$_anim:",
                             NotificationTypeEnum.info)
             INPUTS["buy"] = False
 
@@ -1394,12 +1459,13 @@ class Player(NPC):
                 if self.can_sell():
                     item_to_sell = self.drop_item(show=False)
                     if item_to_sell:
-                        self.model.money += item_to_sell.model.value
-                        self.npc_met.model.money -= item_to_sell.model.value
+                        price = int(round(item_to_sell.model.value * get_sell_price_multiplier(self.npc_met.sentiment)))
+                        self.model.money += price
+                        self.npc_met.model.money -= price
                         self.npc_met.pick_up(item_to_sell)
                         self.scene.add_notification(
                             f"Sold '[item]{item_to_sell.model.name}[/item]' "
-                            f"for [num]{item_to_sell.model.value}[/num] :$_anim:",
+                            f"for [num]{price}[/num] :$_anim:",
                             NotificationTypeEnum.info)
             INPUTS["sell"] = False
 

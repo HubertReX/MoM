@@ -10,15 +10,16 @@ from dialog.conditions import (
     ConditionContext,
     ConditionError,
     check_condition,
-    validate_condition,
-)
+    validate_condition
+    )
 from dialog.entities import (
     DialogNode,
     DialogOption,
     NodeVisitResult,
-    NodeVisitResultCategory,
-)
+    NodeVisitResultCategory
+    )
 from dialog.graph import get_start_node, init_dialog
+from dialog.result_sink import ResultSink, apply_result, visit_node
 
 __all__ = [
     "DialogNode",
@@ -31,4 +32,7 @@ __all__ = [
     "ConditionError",
     "check_condition",
     "validate_condition",
+    "ResultSink",
+    "apply_result",
+    "visit_node",
 ]

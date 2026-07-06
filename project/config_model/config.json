@@ -278,6 +278,23 @@
             "health": 60,
             "max_health": 60,
             "damage": 20
+        },
+        "Hammer": {
+            "name": "Hammer",
+            "sprite": "Villager2",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "dialog_key": "Hammer",
+            "disposition": {
+                "blessed": 8,
+                "blink": 4,
+                "wondering": 2,
+                "neutral": 0,
+                "human": 0,
+                "offended": -4,
+                "angry": -8
+            },
+            "money": 30
         }
     },
     "chests": {
@@ -664,6 +681,98 @@
             "big_chest_template": "BigChest_Maze_04",
             "maze_cols": 12,
             "maze_rows": 9
+        }
+    },
+    "dialogs": {
+        "Hammer": {
+            "NODE_RESULTS": {},
+            "DIALOG_NODES": {
+                "START": {
+                    "text": "M_HAMMER_DN_START",
+                    "is_final": false,
+                    "result": ""
+                },
+                "SELL": {
+                    "text": "M_HAMMER_DN_SELL",
+                    "is_final": false,
+                    "result": ""
+                },
+                "MORE": {
+                    "text": "M_HAMMER_DN_MORE",
+                    "is_final": false,
+                    "result": ""
+                },
+                "END": {
+                    "text": "M_HAMMER_DN_END",
+                    "is_final": true,
+                    "result": ""
+                }
+            },
+            "DIALOG_OPTIONS": {
+    "STARTtoSELL_1": {
+      "next_node": "SELL",
+      "text": "M_HAMMER_DO_STARTtoSELL_1",
+      "order": 1,
+      "condition": "True",
+      "sentiment": "neutral"
+                },
+    "STARTtoEND_2": {
+      "next_node": "END",
+      "text": "M_HAMMER_DO_STARTtoEND_2",
+      "order": 2,
+      "condition": "True",
+      "sentiment": "blessed"
+                },
+                "SELLtoMORE_1": {
+                    "next_node": "MORE",
+                    "text": "M_HAMMER_DO_SELLtoMORE_1",
+                    "order": 1,
+                    "condition": "True",
+                    "sentiment": "neutral"
+                },
+                "SELLtoEND_2": {
+                    "next_node": "END",
+                    "text": "M_HAMMER_DO_SELLtoEND_2",
+                    "order": 2,
+                    "condition": "True",
+                    "sentiment": "neutral"
+                },
+                "MOREtoEND_1": {
+                    "next_node": "END",
+                    "text": "M_HAMMER_DO_MOREtoEND_1",
+                    "order": 1,
+                    "condition": "True",
+                    "sentiment": "neutral"
+                }
+            },
+            "NODES_OPTIONS": {
+                "START": [
+                    "STARTtoSELL_1",
+                    "STARTtoEND_2"
+                ],
+                "SELL": [
+                    "SELLtoMORE_1",
+                    "SELLtoEND_2"
+                ],
+                "MORE": [
+                    "MOREtoEND_1"
+                ],
+                "END": []
+            },
+            "START_NODE": "START"
+        }
+    },
+    "messages": {
+        "EN": {
+            "M_HAMMER_DN_START": "Greetings, traveler. I'm Hammer, the village blacksmith.",
+            "M_HAMMER_DN_SELL": "I forge swords, shields, and the occasional horseshoe.",
+            "M_HAMMER_DN_MORE": "Afraid my stock is low today. Come back after the next shipment.",
+            "M_HAMMER_DN_END": "Farewell. May your blade stay sharp.",
+            "M_HAMMER_DO_STARTtoSELL_1": "What do you sell?",
+            "M_HAMMER_DO_STARTtoEND_2": "Goodbye.",
+            "M_HAMMER_DO_SELLtoMORE_1": "Tell me more.",
+            "M_HAMMER_DO_SELLtoEND_2": "Goodbye.",
+            "M_HAMMER_DO_MOREtoEND_1": "Goodbye."
         }
     }
 }

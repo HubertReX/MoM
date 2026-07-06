@@ -14,7 +14,7 @@ overlay (weapon/hotbar/help) is hidden while a blocking panel (dialog/trade) is 
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pygame
 
@@ -47,6 +47,8 @@ class GameUI:
         self.hud = HUD(scene)
         self._panels: dict[type, "Widget"] = {}
         self._open: list["Widget"] = []
+        # rising-edge detector for held gamepad/keyboard inputs while DialogPanel is open
+        self._dialog_held: dict[str, bool] = {}
 
     #############################################################################################################
     # MARK: panel registry / open-close API
@@ -111,6 +113,14 @@ class GameUI:
         self.hud.show_help_info = value
 
     #############################################################################################################
+    def _edge(self, action: str) -> bool:
+        """Rising-edge detector so a held key/stick moves the selection only once."""
+        value = bool(INPUTS[action])
+        fired = value and not self._dialog_held.get(action, False)
+        self._dialog_held[action] = value
+        return fired
+
+    #############################################################################################################
     # MARK: per-frame update
 
     def update(self, time_elapsed: float, events: list[pygame.event.Event]) -> None:
@@ -126,18 +136,25 @@ class GameUI:
                 else:
                     modal.page_down()  # type: ignore[attr-defined]
                 INPUTS["talk"] = False
-            if self.is_open(DialogPanel):
-                dialog = self._panel(DialogPanel)
-                if dialog.at_bottom:  # type: ignore[attr-defined]
+
+        if self.is_open(DialogPanel):
+            dialog = cast(DialogPanel, self._panel(DialogPanel))
+            if self._edge("up"):
+                dialog.select_prev()
+            if self._edge("down"):
+                dialog.select_next()
+            if self._edge("accept") or self._edge("talk"):
+                if dialog.activate_selected():
                     self.close(DialogPanel)
                     self.scene.player.is_talking = False
                     if self.scene.player.npc_met:
                         self.scene.player.npc_met.is_talking = False
-                else:
-                    dialog.page_down()  # type: ignore[attr-defined]
+                # raw key events also call activate_selected; clear accept/talk
+                # so the same press is not handled twice this frame.
+                INPUTS["accept"] = False
                 INPUTS["talk"] = False
 
-        # route raw events (scroll wheel / arrows) to the topmost open panel
+        # route raw events (scroll wheel / arrows / mouse) to the topmost open panel
         if self._open:
             top = self._open[-1]
             for event in events:

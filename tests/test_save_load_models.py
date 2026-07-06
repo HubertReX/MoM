@@ -9,6 +9,7 @@ import json
 import os
 import sys
 from copy import deepcopy
+from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
 os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -21,6 +22,7 @@ from save_load.models import (
     GroundItemState,
     ItemState,
     MapState,
+    NPCDialogState,
     NPCState,
     PlayerState,
     SaveGame,
@@ -124,6 +126,56 @@ def test_npc_state_roundtrip() -> None:
     d = orig.to_dict()
     restored = NPCState.from_dict(d)
     assert_eq(orig, restored, "NPCState")
+
+
+def test_npc_dialog_state_roundtrip() -> None:
+    orig = NPCDialogState(
+        current_node_key="NODE_002",
+        selected_options={"OPT_A": True, "OPT_B": True},
+        visited_nodes={"NODE_001": True, "NODE_002": True},
+        sentiment=73,
+    )
+    d = orig.to_dict()
+    restored = NPCDialogState.from_dict(d)
+    assert_eq(orig, restored, "NPCDialogState")
+
+
+def test_npc_state_with_dialog_state_roundtrip() -> None:
+    dialog_state = NPCDialogState(
+        current_node_key="NODE_003",
+        selected_options={"OPT_1": True},
+        visited_nodes={"NODE_001": True, "NODE_002": True, "NODE_003": True},
+        sentiment=42,
+    )
+    orig = NPCState(
+        name="Merchant",
+        attitude=AttitudeEnum.friendly,
+        pos_x=100.0,
+        pos_y=200.0,
+        health=80,
+        dialog_state=dialog_state,
+    )
+    d = orig.to_dict()
+    restored = NPCState.from_dict(d)
+    assert_eq(orig, restored, "NPCState with dialog_state")
+
+
+def test_npc_state_dialog_json_roundtrip() -> None:
+    """Dialog state must survive the full JSON serialization used by backends."""
+    dialog_state = NPCDialogState(
+        current_node_key="NODE_002",
+        selected_options={"OPT_A": True},
+        visited_nodes={"NODE_001": True, "NODE_002": True},
+        sentiment=88,
+    )
+    orig = NPCState(name="Hammer", attitude=AttitudeEnum.friendly, dialog_state=dialog_state)
+    json_str = json.dumps(orig.to_dict())
+    restored = NPCState.from_dict(json.loads(json_str))
+    assert restored.dialog_state is not None
+    assert_eq(restored.dialog_state.current_node_key, "NODE_002")
+    assert_eq(restored.dialog_state.selected_options, {"OPT_A": True})
+    assert_eq(restored.dialog_state.visited_nodes, {"NODE_001": True, "NODE_002": True})
+    assert_eq(restored.dialog_state.sentiment, 88)
 
 
 def test_npc_state_attitude_enum() -> None:
@@ -307,11 +359,12 @@ def test_migrate_save_noop() -> None:
 
 def test_empty_defaults() -> None:
     """All models should construct with no args."""
-    models = [
+    models: list[Any] = [
         SaveMetadata(),
         ItemState(),
         GroundItemState(),
         PlayerState(),
+        NPCDialogState(),
         NPCState(),
         ChestState(),
         GameClockState(),
@@ -344,6 +397,9 @@ if __name__ == "__main__":
         ("ground item round-trip", test_ground_item_state_roundtrip),
         ("player state round-trip", test_player_state_roundtrip),
         ("npc state round-trip", test_npc_state_roundtrip),
+        ("npc dialog state round-trip", test_npc_dialog_state_roundtrip),
+        ("npc state with dialog state round-trip", test_npc_state_with_dialog_state_roundtrip),
+        ("npc state dialog JSON round-trip", test_npc_state_dialog_json_roundtrip),
         ("npc attitude enum", test_npc_state_attitude_enum),
         ("chest state round-trip", test_chest_state_roundtrip),
         ("game clock round-trip", test_game_clock_roundtrip),

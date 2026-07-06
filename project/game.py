@@ -703,6 +703,8 @@ class Game:
                 for action, definition in ACTIONS.items():
                     if event.key in definition["keys"]:
                         INPUTS[action] = True
+                        if action == "talk":
+                            print(f"[DEBUG game.py KEYDOWN] talk set to True")
             elif event.type == pygame.KEYUP:
                 self.is_joystick_in_use = False
                 for action, definition in ACTIONS.items():

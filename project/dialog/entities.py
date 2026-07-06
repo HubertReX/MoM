@@ -61,5 +61,5 @@ class DialogOption:
     text: str = field(repr=False)
     order: int = field(default=0, repr=False)
     condition: str = field(default="True", repr=False)
-    sentiment: str = field(default="😐", repr=False)
+    sentiment: str = field(default="neutral", repr=False)
     selected: bool = field(default=False, repr=False)

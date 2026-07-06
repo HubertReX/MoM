@@ -6,13 +6,13 @@ from rich import print
 from pydantic import BaseModel, ConfigDict, Field, PositiveInt, ValidationError, field_validator, model_validator
 
 try:
-    from settings import SCHEMA_FILE
+    from settings import DEFAULT_DISPOSITION_WEIGHTS, SCHEMA_FILE
     from enums import AttitudeEnum, ItemTypeEnum, RaceEnum
 except Exception:
     # when script run as stand alone to update config schema
     import sys
     sys.path.append("..")
-    from settings import SCHEMA_FILE
+    from settings import DEFAULT_DISPOSITION_WEIGHTS, SCHEMA_FILE
     from enums import AttitudeEnum, ItemTypeEnum, RaceEnum
 
 
@@ -71,7 +71,16 @@ class Character(BaseModel):
     speed_walk:    Annotated[int,          Field(30, gr=0, description="walking speed", repr=False)]
     speed_run:     Annotated[int,          Field(40, gr=0, description="walking speed", repr=False)]
     dialog_key:    Annotated[str | None,   Field(None, description="Key into Config.dialogs for this character's dialog graph", repr=False)]
-    disposition:   Annotated[int,          Field(50, ge=0, le=100, description="Base disposition towards the player (0-100)", repr=False)]
+    disposition:   Annotated[int | dict[str, int], Field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS), description="Per-sentiment weights that shift NPC sentiment when a dialog option is chosen; legacy int is converted to default weights", repr=False)]
+
+    @field_validator("disposition", mode="before")
+    @classmethod
+    def _convert_disposition(cls, v: object) -> dict[str, int]:
+        if isinstance(v, int):
+            return dict(DEFAULT_DISPOSITION_WEIGHTS)
+        if isinstance(v, dict):
+            return {str(k): int(val) for k, val in v.items()}
+        return dict(DEFAULT_DISPOSITION_WEIGHTS)
 
 
 ##################################################################################################################
@@ -126,6 +135,8 @@ class Config(BaseModel):
     maze_configs: dict[int, MazeLevelProperties]
     dialogs:      Annotated[dict[str, Any], Field(default_factory=dict, repr=False,
                                                   description="Character dialog graphs keyed by dialog_key")]
+    messages:     Annotated[dict[str, dict[str, str]], Field(default_factory=dict, repr=False,
+                                                             description="Localized dialog texts keyed by language")]
 
     @model_validator(mode='after')
     def check_character_items(self) -> Self:

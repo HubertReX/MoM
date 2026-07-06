@@ -58,7 +58,7 @@ SAMPLE: dict[str, object] = {
             "next_node": "T_DN_END",
             "text": "M_T_DO_TAKE",
             "order": 1,
-            "sentiment": "😇",
+            "sentiment": "blessed",
         },
         "T_DO_LEAVE": {"next_node": "T_DN_END", "text": "M_T_DO_LEAVE", "order": 2},
     },
@@ -111,7 +111,7 @@ def test_walk_path_to_final() -> None:
     # option object identity: next_node is the same object as in the graph dict
     take = nodes["T_DN_MIDDLE"].options[0]
     assert_true(take.next_node is nodes["T_DN_END"], "next_node is shared instance")
-    assert_eq(take.sentiment, "😇", "option sentiment carried through")
+    assert_eq(take.sentiment, "blessed", "option sentiment normalised to emote name")
 
 
 def test_debug_options() -> None:
