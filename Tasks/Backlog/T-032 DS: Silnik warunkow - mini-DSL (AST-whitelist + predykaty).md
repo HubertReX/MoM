@@ -1,11 +1,11 @@
 ---
 id: T-032
 title: DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: cc
 created: 2026-07-05
 updated: 2026-07-05
 tags:
@@ -51,5 +51,7 @@ tags:
 - [ ] commit zmian wykonany
 
 ## 📓 Agent Log
+
+- 2026-07-06 07:29 cc: claimed, starting
 
 ## 🙋 Needs-You / Questions
