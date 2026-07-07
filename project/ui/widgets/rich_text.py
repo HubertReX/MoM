@@ -284,3 +284,115 @@ class RichText(Widget):
         thumb_y = view.y + int((view.height - thumb_h) * (self.scroll / self.max_scroll))
         pygame.draw.rect(surface, (0, 0, 0, 90), track, border_radius=2)
         pygame.draw.rect(surface, theme.DEFAULT_TEXT_COLOR, (track.x, thumb_y, 4, thumb_h), border_radius=2)
+
+
+def render_rich_text_surface(
+    text: str,
+    max_width: int,
+    icons: dict[str, list[pygame.Surface]],
+    *,
+    base_size: int = 20,
+    base_color: tuple[int, int, int] = theme.DEFAULT_TEXT_COLOR,
+    shadow: bool = False,
+) -> pygame.Surface:
+    """Render styled ``text`` to a static surface, word-wrapped to ``max_width``.
+
+    Emoji uses frame 0 only (static).  Pass ``shadow=True`` to apply a drop shadow
+    on unstyled text (same effect as ``Label(shadow=True)``).
+    """
+    base_style = Style(size=base_size, color=base_color, shadow=shadow)
+    tokens = parse(text, base_style)
+
+    def _render_word(word: str, style: Style, font: pygame.font.Font) -> pygame.Surface:
+        base = font.render(word, False, style.color)
+        if not style.shadow:
+            return base
+        ox, oy = style.shadow_offset
+        surf = pygame.Surface((base.get_width() + ox, base.get_height() + oy), pygame.SRCALPHA)
+        surf.blit(font.render(word, False, style.shadow_color), (ox, oy))
+        surf.blit(base, (0, 0))
+        return surf
+
+    # --- layout (word-wrap) ---
+    lines: list[dict] = []
+    items: list[dict] = []
+    x = 0
+    line_h = 0
+    pending_space = 0
+
+    def flush() -> None:
+        nonlocal items, x, line_h, pending_space
+        lines.append({
+            "items": items,
+            "width": x,
+            "height": line_h or base_style.size,
+        })
+        items, x, line_h, pending_space = [], 0, 0, 0
+
+    for tok in tokens:
+        if tok.kind == "newline":
+            flush()
+            continue
+
+        if tok.kind == "image":
+            target_h = theme.get_font(tok.style.size).get_height()
+            src = icons.get(tok.value, [])
+            if not src:
+                continue
+            w0, h0 = src[0].get_size()
+            scale = target_h / h0 if h0 else 1.0
+            w = max(1, round(w0 * scale))
+            if items and x + pending_space + w > max_width:
+                flush()
+            if items:
+                x += pending_space
+            pending_space = 0
+            items.append({"kind": "image", "name": tok.value, "x": x, "w": w, "h": target_h})
+            x += w
+            line_h = max(line_h, target_h)
+            continue
+
+        font = theme.get_font(tok.style.size, bold=tok.style.bold,
+                              italic=tok.style.italic)
+        space_w = font.size(" ")[0]
+        for seg in _WORD_RE.findall(tok.value):
+            if seg.isspace():
+                pending_space += space_w * len(seg)
+                continue
+            word_surf = _render_word(seg, tok.style, font)
+            w = word_surf.get_width()
+            if items and x + pending_space + w > max_width:
+                flush()
+            if items:
+                x += pending_space
+            pending_space = 0
+            items.append({"kind": "text", "surf": word_surf, "x": x, "w": w,
+                          "h": word_surf.get_height()})
+            x += w
+            line_h = max(line_h, word_surf.get_height())
+
+    if items:
+        flush()
+
+    # --- bake ---
+    total_h = sum(line["height"] for line in lines) or base_style.size
+    surface = pygame.Surface((max_width, total_h), pygame.SRCALPHA)
+    y = 0
+    for line in lines:
+        ox = 0  # left-aligned
+        for it in line["items"]:
+            if it["kind"] == "text":
+                surface.blit(it["surf"], (ox + it["x"], y))
+            else:
+                src = icons.get(it["name"], [])
+                if src:
+                    frame = src[0]
+                    w0, h0 = frame.get_size()
+                    scale = it["h"] / h0 if h0 else 1.0
+                    scaled = pygame.transform.scale(
+                        frame, (max(1, round(w0 * scale)), it["h"]),
+                    )
+                    surface.blit(scaled, (ox + it["x"], y))
+        y += line["height"]
+
+    return surface

@@ -9,7 +9,6 @@ tags:
 
 ## 🧊 Backlog
 
-- [ ] [[T-038 DS bug: opcje dialogu renderowane plain fontem - znaczniki italic i kolory literalnie]] #bug #p2
 - [ ] [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]] #bug #p2
 - [ ] [[T-041 DS: semantyczne kolorowanie slow kluczowych char, loc, item plus inline emotki w tresci wezla]] #feature #p2
 - [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3
@@ -19,8 +18,6 @@ tags:
 ## 🟢 Ready for AI
 
 ## 🤖 In Progress
-
-- [ ] [[T-040 DS bug: strzalki przesuwaja wybor opcji o 2 pozycje (podwojna obsluga KEYDOWN)]] #bug #p1 #opencode
 
 ## 🙋 Needs You
 
@@ -33,6 +30,8 @@ tags:
 - [ ] [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]] #feature #p2 #M #opencode #review
 - [ ] [[T-036 DS: Feedback zmiany sentymentu - floating plus-minus N (later)]] #feature #p3 #S #opencode #review
 - [ ] [[T-037 DialogPanel nie zamyka rozmowy przy opcji finalnej poza widocznym zwojem listy]] #bug #p2 #cc #review
+- [ ] [[T-040 DS bug: strzalki przesuwaja wybor opcji o 2 pozycje (podwojna obsluga KEYDOWN)]] #bug #p1 #opencode #review
+- [ ] [[T-038 DS bug: opcje dialogu renderowane plain fontem - znaczniki italic i kolory literalnie]] #bug #p2 #opencode #review
 
 ## 🏁 Done
 
@@ -43,7 +42,6 @@ tags:
 - [ ] [[T-021 Panel zarządzania slotami zapisu w menu głównym (edycja nazwy, usuwanie)]] #feature #p2 #cc
 - [ ] [[T-029 DS: Encje dialogu i budowa grafu (DialogNode, Option, Result + init_dialog)]] #feature #p2 #M #cc
 - [ ] [[T-032 DS: Silnik warunkow - mini-DSL (AST-whitelist + predykaty)]] #feature #p2 #L #cc
-
 ## Archive
 
 - [ ] [[T-001 UI nie skaluje się przy zmianie rozdzielczości]] #bug #p2 #opencode

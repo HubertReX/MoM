@@ -36,7 +36,7 @@ from settings import (
 from .. import theme
 from ..widget import Widget
 from ..widgets import Label
-from ..widgets.rich_text import RichText
+from ..widgets.rich_text import RichText, render_rich_text_surface
 from ._tooltip import Tooltip
 
 if TYPE_CHECKING:
@@ -82,7 +82,7 @@ class DialogPanel(Widget):
         self._options: list[DialogOption] = []          # filtered, indexed source of truth
         self._option_surfaces: list[pygame.Surface] = []  # weight-indicator surface per option
         self.option_rects: list[pygame.Rect] = []       # parallel to _options; off-screen if not in window
-        self.option_labels: list[Label] = []            # parallel to _options
+        self.option_surfaces: list[pygame.Surface] = []  # parallel to _options
         self.option_weight_indicators: list[tuple[pygame.Surface, pygame.Rect]] = []
         self.selected_index = 0
         self._scroll_offset = 0                          # index of first option in the visible window
@@ -138,7 +138,7 @@ class DialogPanel(Widget):
         `_layout_options` which also handles the scrollable viewport window.
         """
         self._options = []
-        self.option_labels = []
+        self.option_surfaces = []
         self._option_surfaces = []
         self.option_rects = []
         self.option_weight_indicators = []
@@ -164,15 +164,14 @@ class DialogPanel(Widget):
         max_w = self.body_rect.width - _CURSOR_WIDTH - _WEIGHT_COL
         for display_idx, opt in enumerate(self._options):
             text = get_msg(self.game.conf.messages, opt.text)
-            label = Label(
-                f"{display_idx + 1}. {text}",
-                size=_OPTION_FONT,
-                font_path=str(MAIN_FONT),
-                color=theme.DEFAULT_TEXT_COLOR,
+            rich_text = f"{display_idx + 1}. {text}"
+            surf = render_rich_text_surface(
+                rich_text, max_w, self.scene.icons,
+                base_size=_OPTION_FONT,
+                base_color=theme.DEFAULT_TEXT_COLOR,
                 shadow=True,
             )
-            label.rect.width = min(label.rect.width, max_w)
-            self.option_labels.append(label)
+            self.option_surfaces.append(surf)
             self._option_surfaces.append(self._build_weight_indicator(opt))
 
         self._layout_options()
@@ -184,7 +183,7 @@ class DialogPanel(Widget):
         not a fixed body ratio), so short nodes give options the whole panel. When
         options exceed the available height they scroll to keep the selection in view.
         """
-        n = len(self.option_labels)
+        n = len(self.option_surfaces)
         self.option_rects = [pygame.Rect(-10000, -10000, 0, 0) for _ in range(n)]
         empty = (pygame.Surface((0, 0), pygame.SRCALPHA), pygame.Rect(0, 0, 0, 0))
         self.option_weight_indicators = [empty for _ in range(n)]
@@ -192,7 +191,7 @@ class DialogPanel(Widget):
             self._visible_count = 0
             return
 
-        line_h = self.option_labels[0].rect.height
+        line_h = self.option_surfaces[0].get_height()
         per = line_h + _OPTION_PAD + _OPTION_GAP
 
         content = self.body.content_surface
@@ -215,11 +214,11 @@ class DialogPanel(Widget):
         end = min(n, start + self._visible_count)
         y = top
         for i in range(start, end):
-            self.option_labels[i].rect.topleft = (left, y)
-            rect = pygame.Rect(self.body_rect.left, y, self.body_rect.width, line_h + _OPTION_PAD)
+            surf_h = self.option_surfaces[i].get_height()
+            rect = pygame.Rect(self.body_rect.left, y, self.body_rect.width, surf_h + _OPTION_PAD)
             self.option_rects[i] = rect
             self.option_weight_indicators[i] = self._weight_pos(self._option_surfaces[i], rect)
-            y += per
+            y += surf_h + _OPTION_PAD + _OPTION_GAP
 
     def _build_weight_indicator(self, opt: DialogOption) -> pygame.Surface:
         """Return the sentiment-weight surface for an option (position set on layout).
@@ -324,7 +323,7 @@ class DialogPanel(Widget):
     # scroll/close helpers used by the UI controller
     @property
     def at_bottom(self) -> bool:
-        return self.body.is_scroll_bottom() and not self.option_labels
+        return self.body.is_scroll_bottom() and not self.option_surfaces
 
     def page_down(self) -> None:
         self.body.scroll_page_down()
@@ -387,7 +386,7 @@ class DialogPanel(Widget):
 
         # Draw only the visible scroll window of options.
         start = self._scroll_offset
-        end = min(len(self.option_labels), start + self._visible_count)
+        end = min(len(self.option_surfaces), start + self._visible_count)
 
         # Highlight the active option (only when it is inside the window).
         if start <= self.selected_index < end:
@@ -396,11 +395,13 @@ class DialogPanel(Widget):
             pygame.draw.rect(surface, CHAR_NAME_COLOR, rect.inflate(-2, -2), width=1, border_radius=3)
 
         for i in range(start, end):
-            self.option_labels[i].draw(surface)
-            indicator, pos = self.option_weight_indicators[i]
-            surface.blit(indicator, pos)
+            rect = self.option_rects[i]
+            blit_pos = (rect.left + _CURSOR_WIDTH, rect.top)
+            surface.blit(self.option_surfaces[i], blit_pos)
+            indicator, wpos = self.option_weight_indicators[i]
+            surface.blit(indicator, wpos)
 
-        self._draw_scroll_hints(surface, start, end, len(self.option_labels))
+        self._draw_scroll_hints(surface, start, end, len(self.option_surfaces))
 
         surface.blit(self.name_bg, (self.offset[0] + 3 * TILE_SIZE, self.offset[1] - 3 * TILE_SIZE))
         self.name_label.draw(surface)
