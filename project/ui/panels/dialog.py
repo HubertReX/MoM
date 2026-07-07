@@ -169,7 +169,7 @@ class DialogPanel(Widget):
                 rich_text, max_w, self.scene.icons,
                 base_size=_OPTION_FONT,
                 base_color=theme.DEFAULT_TEXT_COLOR,
-                shadow=True,
+                shadow=False,
             )
             self.option_surfaces.append(surf)
             self._option_surfaces.append(self._build_weight_indicator(opt))
@@ -191,23 +191,38 @@ class DialogPanel(Widget):
             self._visible_count = 0
             return
 
-        line_h = self.option_surfaces[0].get_height()
-        per = line_h + _OPTION_PAD + _OPTION_GAP
-
         content = self.body.content_surface
         content_h = content.get_height() if content is not None else self.body_rect.height
         used_body_h = min(content_h, self.body_rect.height)
         top = self.body_rect.top + used_body_h + _OPTION_GAP
         self.options_top = top
         avail = self.options_bottom - top
-        self._visible_count = max(1, avail // per)
 
-        # Keep the selected option inside the scroll window.
+        def _fit_from(start: int) -> int:
+            """How many consecutive options fit in ``avail`` from ``start`` by *actual* height.
+
+            Option surfaces vary in height (long text word-wraps to 2+ lines), so the
+            window size must be measured, not derived from a single uniform row height.
+            """
+            used = 0
+            count = 0
+            for i in range(start, n):
+                row_h = self.option_surfaces[i].get_height() + _OPTION_PAD
+                add = row_h if count == 0 else row_h + _OPTION_GAP
+                if count > 0 and used + add > avail:
+                    break
+                used += add
+                count += 1
+            return max(1, count)
+
+        # Keep the selected option inside the scroll window. Because heights vary,
+        # we advance the offset one option at a time until the selection fits.
+        self._scroll_offset = max(0, min(self._scroll_offset, n - 1))
         if self.selected_index < self._scroll_offset:
             self._scroll_offset = self.selected_index
-        elif self.selected_index >= self._scroll_offset + self._visible_count:
-            self._scroll_offset = self.selected_index - self._visible_count + 1
-        self._scroll_offset = max(0, min(self._scroll_offset, max(0, n - self._visible_count)))
+        while self.selected_index >= self._scroll_offset + _fit_from(self._scroll_offset):
+            self._scroll_offset += 1
+        self._visible_count = _fit_from(self._scroll_offset)
 
         left = self.body_rect.left + _CURSOR_WIDTH
         start = self._scroll_offset

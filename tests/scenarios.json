@@ -398,6 +398,30 @@
         ]
     },
     {
+        "name": "Dialog Option Formatting",
+        "slug": "dialog_option_formatting",
+        "platform": ["desktop"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
+            { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.5 },
+            { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
+            { "slug": "pick_villages_node", "commands": ["item_3"], "wait": 1.5 },
+            { "slug": "formatted_options", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "scroll_down_1", "commands": ["down"], "wait": 0.4 },
+            { "slug": "scroll_down_2", "commands": ["down"], "wait": 0.4 },
+            { "slug": "scroll_down_3", "commands": ["down"], "wait": 0.4 },
+            { "slug": "scroll_down_4", "commands": ["down"], "wait": 0.6 },
+            { "slug": "scrolled_options", "commands": ["screenshot"], "wait": 2.0 }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "formatted_options", "expect": "A dialog panel is open showing Hammer's reply options; at least one option contains an italic-styled (slanted) word fragment such as 'francuskim pieskom' or 'wielcy panicze'. NO literal markup tags like [italic] or [/italic] appear as plain text, and the option text has NO drop shadow behind it. All options fit inside the panel frame (none spill below the border)." },
+            { "type": "screenshot_review", "target": "scrolled_options", "expect": "The dialog option list has scrolled after pressing Down repeatedly: the highlighted selection is on a lower option, the first option is no longer shown (an up-arrow indicator is visible), and every visible option still fits inside the panel frame without spilling past the bottom border." },
+            { "type": "process_alive" }
+        ]
+    },
+    {
         "name": "Dialog Save and Load",
         "slug": "dialog_save_and_load",
         "platform": ["desktop", "web"],

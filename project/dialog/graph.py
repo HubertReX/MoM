@@ -161,8 +161,10 @@ def _build_debug_options(
         DialogOption(
             key="DEBUG_START_NODE",
             next_node=nodes[dialog["START_NODE"]],
-            # not an f-string on purpose — RPG evaluates the markup later
-            text="[red]DEBUG[/] START ([blue]current dialog node[/]=[yellow]{character.dialog.key}[/])",
+            # not an f-string on purpose — RPG evaluates the markup later.
+            # MoM RichText tags (D3): [red]->[error], [blue]->[item], [yellow]->[char];
+            # named closing tags (MoM parser has no generic [/]).
+            text="[error]DEBUG[/error] START ([item]current dialog node[/item]=[char]{character.dialog.key}[/char])",
             order=100,
             condition="True",
             sentiment="human",
@@ -176,7 +178,7 @@ def _build_debug_options(
                 DialogOption(
                     key=f"DEBUG_END_NODE_{node.key}",
                     next_node=node,
-                    text=f"[red]DEBUG[/] END   ([blue]end     dialog node[/]=[yellow]{node.key}[/])",
+                    text=f"[error]DEBUG[/error] END   ([item]end     dialog node[/item]=[char]{node.key}[/char])",
                     order=100 + i,
                     condition="True",
                     sentiment="human",
