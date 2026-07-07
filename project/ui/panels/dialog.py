@@ -362,7 +362,6 @@ class DialogPanel(Widget):
             return False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                print(f"[DIALOG handle_event] ESC, setting _pending_close=True (was={self._pending_close})")
                 self._pending_close = True
                 return True
             if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):

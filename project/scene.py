@@ -1296,12 +1296,7 @@ class Scene(State):
         # Esc opens the main menu *on top of* the running scene (not exit_state, which
         # would discard the game). The menu offers Continue (resume unchanged), so the
         # player can return to the exact game state.
-        if getattr(self, '_suppress_quit_on_next_check', False):
-            self._suppress_quit_on_next_check = False
-            INPUTS["quit"] = False
-            print(f"[SCENE] suppress_quit consumed")
         if INPUTS["quit"]:
-            print(f"[SCENE] opening main menu (framenum unknown)")
             if not self.ui.is_open(TradePanel):
                 for fun, val in _TIMEIT_CACHE.items():
                     cnt, time = val

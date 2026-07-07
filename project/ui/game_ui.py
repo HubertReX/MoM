@@ -169,7 +169,6 @@ class GameUI:
                 # the main menu (scene.py handler). The quit KEYDOWN was consumed
                 # but INPUTS["quit"] is already True; clear it here.
                 INPUTS["quit"] = False
-                print(f"[GAMEUI] dialog closed, INPUTS[quit]=False")
 
         for panel in self._open:
             panel.update(time_elapsed)
