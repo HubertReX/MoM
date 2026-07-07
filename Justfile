@@ -89,6 +89,22 @@ update-config-schema:
     cd project/config_model
     ..\..\.venv\Scripts\python.exe config_pydantic.py
 
+# Import dialog Markdown sources (project/assets/dialogs/{EN,PL}/*.md) into config_model/config.json
+[unix]
+import-dialogs:
+    .venv/bin/python project/dialog/markdown_importer.py
+
+# Import dialog Markdown sources from project/assets/dialogs/ into config.json.
+# By default imports all compatible characters; pass a character name to import one.
+[unix]
+import-dialogs *name:
+    #!/usr/bin/env bash
+    if [ -z "{{name}}" ]; then
+        .venv/bin/python project/dialog/markdown_importer.py
+    else
+        .venv/bin/python project/dialog/markdown_importer.py "{{name}}"
+    fi
+
 # Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/img/ from real MoM modules
 [unix]
 gen-dialog-docs:

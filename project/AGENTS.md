@@ -72,14 +72,17 @@ w pygbag/WASM, bez Pydantic). Renderowanie i wpięcie w rozgrywkę robi `ui/pane
 | `result_sink_adapter.py`      | `GameResultSink(ResultSink)` — adapter do `Inventory`, HP, złota i sentymentu NPC                      | T-034   |
 | `dialog/markdown_importer.py` | Build-time importer Markdown -> `messages` + `character_dialogs` (regex opcji, walidacja grafu, D3/D7)  | T-024   |
 
-``dialog/markdown_importer.py`` reads RPG source Markdown (`RPG/dialogs/PL` and
-`RPG/dialogs/EN`) and emits the machine-generated ``messages`` and
-``character_dialogs`` sections consumed by ``dialog.graph.init_dialog``. It uses
-a single named-group regex for option lines, validates dangling references,
-orphan nodes, anchor/target agreement and START presence with ``file:line``
-errors, converts RPG rich markup / emoji to MoM ``RichText`` tags (D3), and
-rewrites RPG conditions to the mini-DSL understood by ``dialog.conditions``.
-Run smoke tests with ``.venv/bin/python tests/test_dialog_import.py``.
+``dialog/markdown_importer.py`` reads source Markdown from
+``project/assets/dialogs/{EN,PL}/`` (the single source of truth for dialogs)
+and emits the machine-generated ``messages`` and ``character_dialogs`` sections
+consumed by ``dialog.graph.init_dialog``. It uses a single named-group regex
+for option lines, validates dangling references, orphan nodes, anchor/target
+agreement and START presence with ``file:line`` errors, converts RPG rich
+markup / emoji to MoM ``RichText`` tags (D3), and rewrites RPG conditions to
+the mini-DSL understood by ``dialog.conditions``.
+
+**Regeneracja:** ``just import-dialogs`` (nie trzeba zmieniać `config.json` ręcznie).
+Smoke tests: ``.venv/bin/python tests/test_dialog_import.py``.
 
 ### Silnik warunków (mini-DSL, decyzja D1)
 

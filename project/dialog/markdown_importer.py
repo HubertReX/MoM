@@ -7,8 +7,15 @@ of RPG rich-markup / emoji to MoM ``RichText`` tags and ``:key:`` emotes.
 
 The importer is pure logic (no pygame, no Pydantic) so it can be unit-tested
 in isolation, but it is intended as a **build-time** tool: it reads source
-Markdown from the RPG prototype and emits the ``messages`` /
-``character_dialogs`` sections that can be merged into ``config.json``.
+Markdown and emits the ``messages`` / ``character_dialogs`` sections that
+can be merged into ``config.json``.
+
+Source MD files live in ``project/assets/dialogs/{EN,PL}/`` (naming
+convention: ``Name_Surname.md``). Run ``just import-dialogs`` (or invoke
+``python project/dialog/markdown_importer.py`` directly) to rebuild
+``config_model/config.json`` from them. Characters whose format the importer
+can parse are listed in ``IMPORTABLE_CHARACTERS``; non-compatible dialogs
+(e.g. Madame Sarcasmia) are preserved untouched.
 
 Output shape matches ``dialog.graph.init_dialog`` expectations:
 
@@ -174,17 +181,25 @@ def _find_markdown_file(src_dir: Path, lang: str, character_name: str) -> Path:
     if not lang_dir.exists():
         raise DialogImportError(f"Language directory not found: {lang_dir}", file=str(lang_dir))
 
-    # Try case-insensitive matching for both char- and chara- prefix
+    # Try case-insensitive matching: char-<name>.md, chara-<name>.md, <name>.md
     normalized_name = character_name.replace(" ", "_").lower()
+    candidates = (
+        f"char-{normalized_name}.md",
+        f"chara-{normalized_name}.md",
+        f"{normalized_name}.md",
+    )
     for p in lang_dir.iterdir():
         if p.is_file() and p.suffix == ".md":
             name_lower = p.name.lower()
-            if name_lower in (f"char-{normalized_name}.md", f"chara-{normalized_name}.md"):
+            if name_lower in candidates:
                 return p
 
-    # Fallback to default
+    # Fallback to char- prefixed default
     character_key = _character_name_to_key(character_name)
-    return lang_dir / f"char-{character_key}.md"
+    default = lang_dir / f"char-{character_key}.md"
+    # Also try bare <KEY>.md as last resort
+    bare = lang_dir / f"{character_key.lower()}.md"
+    return bare if bare.exists() else default
 
 
 def import_character_dialog(
@@ -195,13 +210,15 @@ def import_character_dialog(
 ) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
     """Import one character from RPG Markdown source.
 
-    Reads ``PL/char-<KEY>.md`` and ``EN/char-<KEY>.md`` under ``src_dir``,
+    Reads ``PL/<Name>.md`` and ``EN/<Name>.md`` under ``src_dir``,
     validates the graph, converts markup and conditions, and returns
     ``(messages, character_dialogs)``.
 
+    The importer looks for files in this order (case-insensitive):
+    ``char-<name>.md``, ``chara-<name>.md``, ``<name>.md``.
+
     Args:
-        src_dir: directory containing ``PL/`` and ``EN/`` subdirectories
-            (typically ``RPG/dialogs``).
+        src_dir: directory containing ``PL/`` and ``EN/`` subdirectories.
         character_name: canonical character name, e.g. ``"Hammer Hoaxheart"``.
         valid_items: optional set of item keys (from ``items.csv``) used to
             validate item names referenced by ``[ITEMS+...]`` node results.
@@ -345,6 +362,146 @@ def load_valid_items(csv_path: Path) -> set[str]:
             if key:
                 keys.add(key)
     return keys
+
+
+# ---------------------------------------------------------------------------
+# Full-config rebuild
+# ---------------------------------------------------------------------------
+
+# Default source directory for dialog Markdown files
+_DEFAULT_DIALOG_SRC = _PROJECT_ROOT / "assets" / "dialogs"
+# Default config.json path
+_DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config_model" / "config.json"
+
+# Characters whose Markdown format is supported by the importer.
+IMPORTABLE_CHARACTERS: list[str] = [
+    "Hammer Hoaxheart",
+    "Barman Absinthrayner",
+    "Clapback Sword",
+    "Potioneer Puzzlemint",
+]
+
+
+def _collect_text_references(dialogs: dict[str, Any]) -> set[str]:
+    """Collect all message-key references from a dialog config dict."""
+    refs: set[str] = set()
+    for dlg in dialogs.values():
+        for node in dlg.get("DIALOG_NODES", {}).values():
+            if node.get("text"):
+                refs.add(node["text"])
+        for opt in dlg.get("DIALOG_OPTIONS", {}).values():
+            if opt.get("text"):
+                refs.add(opt["text"])
+    return refs
+
+
+def build_dialog_config(
+    src_dir: Path | None = None,
+    config_path: Path | None = None,
+    character_names: list[str] | None = None,
+) -> int:
+    """Rebuild dialog sections of ``config.json`` from Markdown sources.
+
+    Reads the existing ``config.json``, imports each character in
+    ``character_names`` from ``src_dir``, merges the generated
+    ``messages`` and ``dialogs`` sections, preserves entries for
+    characters not in the import list, removes orphaned message keys
+    (not referenced by any dialog), and writes the file back.
+
+    Args:
+        src_dir: directory containing ``PL/`` and ``EN/`` subdirectories.
+            Defaults to ``project/assets/dialogs/``.
+        config_path: path to ``config.json``.
+            Defaults to ``project/config_model/config.json``.
+        character_names: list of canonical character names to import.
+            Defaults to ``IMPORTABLE_CHARACTERS``.
+
+    Returns:
+        0 on success, 1 if any import failed.
+    """
+    import json
+
+    if src_dir is None:
+        src_dir = _DEFAULT_DIALOG_SRC
+    if config_path is None:
+        config_path = _DEFAULT_CONFIG_PATH
+    if character_names is None:
+        character_names = list(IMPORTABLE_CHARACTERS)
+
+    if not config_path.exists():
+        print(
+            f"config.json not found: {config_path}",
+            file=sys.stderr,
+        )
+        return 1
+
+    with config_path.open("r", encoding="utf-8") as f:
+        config = json.load(f)
+
+    existing_dialogs: dict[str, Any] = config.get("dialogs", {})
+    existing_messages: dict[str, dict[str, str]] = config.get(
+        "messages", {"PL": {}, "EN": {}}
+    )
+
+    items_csv = config_path.parent / "items.csv"
+    valid_items = load_valid_items(items_csv) if items_csv.exists() else None
+
+    new_messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
+    new_dialogs: dict[str, Any] = {}
+    imported: list[str] = []
+    errors: list[str] = []
+
+    for name in character_names:
+        try:
+            char_messages, char_dialog = import_character_dialog(
+                src_dir, name, valid_items=valid_items
+            )
+            for lang in ("PL", "EN"):
+                new_messages[lang].update(char_messages[lang])
+            new_dialogs.update(char_dialog)
+            imported.append(name)
+        except DialogImportError as exc:
+            errors.append(f"  {exc}")
+        except Exception as exc:
+            errors.append(f"  {name}: {exc}")
+
+    if imported:
+        print(f"Imported {len(imported)} character(s): {', '.join(imported)}")
+
+    if errors:
+        for err in errors:
+            print(err, file=sys.stderr)
+        print(
+            "Preserving existing config entries for failed characters.",
+            file=sys.stderr,
+        )
+
+    # Merge new content into existing
+    for lang in ("PL", "EN"):
+        existing_messages.setdefault(lang, {})
+        existing_messages[lang].update(new_messages[lang])
+
+    existing_dialogs.update(new_dialogs)
+
+    # Remove orphaned message keys
+    referenced = _collect_text_references(existing_dialogs)
+    for lang in ("PL", "EN"):
+        if lang in existing_messages:
+            orphaned = set(existing_messages[lang]) - referenced
+            for key in orphaned:
+                del existing_messages[lang][key]
+            if orphaned:
+                print(f"Removed {len(orphaned)} orphaned message keys from {lang}")
+
+    config["messages"] = existing_messages
+    config["dialogs"] = existing_dialogs
+
+    with config_path.open("w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=4)
+        f.write("\n")
+
+    print(f"Written: {config_path}")
+    return 0 if not errors else 1
 
 
 # ---------------------------------------------------------------------------
@@ -732,18 +889,120 @@ def _validate_graph(
         )
 
 
-def main(argv: list[str] | None = None) -> None:
-    """CLI entry point for quick manual imports.
+# Characters whose dialog format the importer can parse
+IMPORTABLE_CHARACTERS: list[str] = [
+    "Hammer Hoaxheart",
+    "Barman Absinthrayner",
+    "Clapback Sword",
+    "Potioneer Puzzlemint",
+]
 
-    Usage:
-        .venv/bin/python project/dialog/markdown_importer.py \
-            /Users/hubertnafalski/Projects/RPG/dialogs \
-            "Hammer Hoaxheart"
+# Default paths (relative to project root)
+_DEFAULT_DIALOG_SRC = _PROJECT_ROOT / "assets" / "dialogs"
+_DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config_model" / "config.json"
 
-    Prints the generated ``character_dialogs`` section as indented JSON.
+
+def build_dialog_config(
+    src_dir: Path | None = None,
+    config_path: Path | None = None,
+    character_names: list[str] | None = None,
+) -> None:
+    """Rebuild dialog sections of ``config.json`` from Markdown sources.
+
+    Reads existing ``config.json``, imports each character from its Markdown
+    files under ``src_dir``, merges results, preserves dialogs for non-imported
+    characters (e.g. ``Madame Sarcasmia`` which uses a custom format), removes
+    orphaned message keys no longer referenced by any dialog, and writes back.
+
+    Args:
+        src_dir: directory with ``PL/`` and ``EN/`` subdirectories of Markdown
+            source files.  Defaults to ``project/assets/dialogs/``.
+        config_path: path to ``config.json``.  Defaults to
+            ``project/config_model/config.json``.
+        character_names: character names to import.  Defaults to
+            ``IMPORTABLE_CHARACTERS``.
     """
     import json
-    import sys
+
+    if src_dir is None:
+        src_dir = _DEFAULT_DIALOG_SRC
+    if config_path is None:
+        config_path = _DEFAULT_CONFIG_PATH
+    if character_names is None:
+        character_names = list(IMPORTABLE_CHARACTERS)
+
+    # Suppress the pygame-ce banner on import
+    import os
+    os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+
+    with config_path.open("r", encoding="utf-8") as f:
+        config: dict[str, Any] = json.load(f)
+
+    existing_dialogs: dict[str, Any] = config.get("dialogs", {})
+    existing_messages: dict[str, dict[str, str]] = config.get(
+        "messages", {"PL": {}, "EN": {}}
+    )
+    for lang in ("PL", "EN"):
+        existing_messages.setdefault(lang, {})
+
+    items_csv = config_path.parent / "items.csv"
+    valid_items = load_valid_items(items_csv) if items_csv.exists() else None
+
+    new_messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
+    new_dialogs: dict[str, Any] = {}
+
+    for name in character_names:
+        char_messages, char_dialog = import_character_dialog(
+            src_dir, name, valid_items=valid_items
+        )
+        for lang in ("PL", "EN"):
+            new_messages[lang].update(char_messages[lang])
+        new_dialogs.update(char_dialog)
+
+    for lang in ("PL", "EN"):
+        existing_messages[lang].update(new_messages[lang])
+
+    existing_dialogs.update(new_dialogs)
+
+    # Remove orphaned message keys (not referenced by any dialog)
+    referenced_keys: set[str] = set()
+    for dlg in existing_dialogs.values():
+        for node in dlg.get("DIALOG_NODES", {}).values():
+            if node.get("text"):
+                referenced_keys.add(node["text"])
+        for opt in dlg.get("DIALOG_OPTIONS", {}).values():
+            if opt.get("text"):
+                referenced_keys.add(opt["text"])
+
+    for lang in ("PL", "EN"):
+        orphaned = set(existing_messages[lang]) - referenced_keys
+        for key in orphaned:
+            del existing_messages[lang][key]
+
+    config["messages"] = existing_messages
+    config["dialogs"] = existing_dialogs
+
+    with config_path.open("w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=4)
+        f.write("\n")
+
+
+def main(argv: list[str] | None = None) -> None:
+    """CLI entry point.
+
+    Usage:
+        .venv/bin/python project/dialog/markdown_importer.py
+            Build all compatible characters from
+            ``project/assets/dialogs/`` into ``config.json``.
+
+        .venv/bin/python project/dialog/markdown_importer.py "Hammer Hoaxheart"
+            Build a single character (or space-separated list).
+
+        .venv/bin/python project/dialog/markdown_importer.py \\
+            /path/to/rpg/dialogs "Hammer Hoaxheart"
+            Legacy mode when first arg contains a ``/`` path separator.
+    """
+    import json
 
     project_root = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(project_root))
@@ -751,27 +1010,32 @@ def main(argv: list[str] | None = None) -> None:
     if argv is None:
         argv = sys.argv[1:]
 
-    if len(argv) < 2:
-        print(
-            "usage: markdown_importer.py <rpg_dialogs_dir> <character_name>",
-            file=sys.stderr,
+    if not argv:
+        build_dialog_config()
+        return
+
+    # Detect legacy usage: first arg looks like a filesystem path
+    if "/" in argv[0] or "\\" in argv[0] or argv[0].startswith("."):
+        if len(argv) < 2:
+            print(
+                "usage: markdown_importer.py <src_dir> <character_name>",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        src_dir = Path(argv[0])
+        character_name = argv[1]
+        items_csv = Path("project/config_model/items.csv")
+        valid_items = load_valid_items(items_csv) if items_csv.exists() else None
+        messages, character_dialogs = import_character_dialog(
+            src_dir, character_name, valid_items=valid_items
         )
-        sys.exit(1)
-
-    src_dir = Path(argv[0])
-    character_name = argv[1]
-    items_csv = Path("project/config_model/items.csv")
-    valid_items = load_valid_items(items_csv) if items_csv.exists() else None
-
-    messages, character_dialogs = import_character_dialog(
-        src_dir, character_name, valid_items=valid_items
-    )
-
-    output = {
-        "messages": messages,
-        "character_dialogs": character_dialogs,
-    }
-    print(json.dumps(output, ensure_ascii=False, indent=2))
+        output = {
+            "messages": messages,
+            "character_dialogs": character_dialogs,
+        }
+        print(json.dumps(output, ensure_ascii=False, indent=2))
+    else:
+        build_dialog_config(character_names=list(argv))
 
 
 if __name__ == "__main__":

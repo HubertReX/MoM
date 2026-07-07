@@ -24,8 +24,16 @@ Autor edytuje/tworzy assety w **Aseprite** (baza = paczki licencjonowane + włas
 
 ## Dialogi i lokalizacja
 
-- Teksty w `dialogs/EN/` i `dialogs/PL/` (+ `game_economy.md`, `rich_text_sample.md`).
-- **Wybór języka działa przez stałą `LANG`** w `settings.py:21`:
+- Teksty źródłowe w `dialogs/EN/` i `dialogs/PL/` (+ `game_economy.md`, `rich_text_sample.md`).
+  **Pliki Markdown są źródłem prawdy** dla `config_model/config.json`.
+- **Konwencja nazw:** `<Name_Surname>.md` (np. `Hammer_Hoaxheart.md`). Importer znajduje
+  je przez `_find_markdown_file()` — najpierw szuka `char-<name>.md`, potem `chara-<name>.md`,
+  na końcu `<name>.md` (wszystkie case-insensitive).
+- **Regeneracja configu:** `just import-dialogs` uruchamia `markdown_importer.py`, który
+  odczytuje wszystkie postacie z `IMPORTABLE_CHARACTERS`, merge'uje do istniejącego
+  `config.json`, usuwa osierocone klucze `messages`. Postacie spoza listy (np. Madame
+  Sarcamia) są zachowane bez zmian.
+- **Wybór języka** w runtime przez stałą `LANG` w `settings.py:21`:
   ```python
   LANG = "EN"                                   # settings.py:21
   DIALOGS_DIR = ASSETS_DIR / "dialogs" / LANG   # settings.py:436
