@@ -1,8 +1,8 @@
 ---
 id: T-041
 title: DS: semantyczne kolorowanie slow kluczowych char, loc, item plus inline emotki w tresci wezla
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-06
 updated: 2026-07-06
 tags:
   - task
+state: review
 ---
 # T-041 - DS: semantyczne kolorowanie słów kluczowych (char/loc/item) + inline emotki
 

@@ -61,6 +61,7 @@ state: review
 - 2026-07-07 opencode: copied 5 RPG MD pairs (Hammer, Barman, Clapback, Potioneer, Madame Sarcasmia) to project/assets/dialogs/{EN,PL}/; updated _find_markdown_file to match <name>.md as third fallback (after char-, chara-); added build_dialog_config() + updated main() for --all mode; added just import-dialogs; verified idempotent import (296 msg keys per lang, 0 orphans, 8/8 tests pass). Remaining: moab review + commit.
 - 2026-07-07 14:40 opencode: Completed: copied 5 MD pairs, added build_dialog_config(), added just import-dialogs, verified idempotent import. Updated assets/AGENTS.md + project/AGENTS.md. All 8 tests pass, 0 orphans, config.json consistent.
 - 2026-07-07 14:40 opencode: Import pipeline działa: just import-dialogs rebuilds config.json z assets/dialogs/{EN,PL}/. 4 postacie importowane, Madame Sarcasmia preserved, 0 orphanów. Weryfikacja: tests/test_dialog_import.py — 8/8 PASS.
+- 2026-07-07 14:42 opencode: Commit d8c5ddd. T-043 done - MD sources in project, importer pipeline works, docs updated.
 
 ## 🙋 Needs-You / Questions
 

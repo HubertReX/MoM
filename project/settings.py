@@ -18,7 +18,7 @@ pretty.install()
 
 VERSION = 0.1
 GAME_NAME = "Misadventures of Malachi"
-LANG = "EN"
+LANG = "PL"
 ABOUT = [f"Version: {VERSION}", "Author: Hubert Nafalski", "WWW: https://hubertnafalski.itch.io/"]
 
 # custom type definition
@@ -206,7 +206,7 @@ USE_SHADERS = False
 # zewnętrzne sterowanie grą + screenshoty dla agentów AI (debug, desktop-only, opt-in)
 # włączane zmienną środowiskową: MOM_AGENT_CONTROL=1 just run
 USE_AGENT_CONTROL = __import__("os").environ.get("MOM_AGENT_CONTROL", "0") == "1"
-IS_DEBUG_MODE = True
+IS_DEBUG_MODE = False
 SHOW_DEBUG_INFO = False
 SHOW_HELP_INFO = False
 SHOW_UI = True
@@ -869,6 +869,10 @@ ITEMS_SHEET_DEFINITION = {
     "sword_long": [(8, 7)],
     "bow": [(3, 9)],
     "arrow": [(4, 9)],
+    "POTION_CURSE_NO_MORE": [(8, 2)],
+    "GNOMES_WHISKER": [(4, 2)],
+    "MERMAIDS_TEAR": [(0, 14)],
+    "PHOENIX_FEATHER": [(5, 3)],
 }
 
 GEMS_SHEET_DEFINITION = {

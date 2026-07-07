@@ -15,8 +15,6 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-044 DS: umieszczenie pozostalych postaci z dialogami na mapie (Barman, Potioneer, Clapback, Sarcasmia)]] #feature #p2 #opencode
-
 ## 🙋 Needs You
 
 - [ ] [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]] #feature #p2 #M #opencode #review
@@ -32,6 +30,7 @@ tags:
 - [ ] [[T-038 DS bug: opcje dialogu renderowane plain fontem - znaczniki italic i kolory literalnie]] #bug #p2 #opencode #review
 - [ ] [[T-041 DS: semantyczne kolorowanie slow kluczowych char, loc, item plus inline emotki w tresci wezla]] #feature #p2 #opencode #review
 - [ ] [[T-043 DS: zrodlowe MD dialogow w project assets dialogs plus task just konwersji MD do config.json]] #chore #p2 #opencode #review
+- [ ] [[T-044 DS: umieszczenie pozostalych postaci z dialogami na mapie (Barman, Potioneer, Clapback, Sarcasmia)]] #feature #p2 #opencode #review
 
 ## 🏁 Done
 

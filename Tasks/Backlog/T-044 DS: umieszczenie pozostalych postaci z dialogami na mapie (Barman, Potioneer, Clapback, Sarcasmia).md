@@ -1,15 +1,16 @@
 ---
 id: T-044
 title: DS: umieszczenie pozostalych postaci z dialogami na mapie (Barman, Potioneer, Clapback, Sarcasmia)
-status: backlog
+status: needs-you
 owner: human
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-06
 updated: 2026-07-06
 tags:
   - task
+state: review
 ---
 # T-044 - DS: umieszczenie pozostałych postaci z dialogami na mapie
 
@@ -60,6 +61,7 @@ tags:
 
 - 2026-07-06 cc (review): utworzony na życzenie użytkownika. Postacie są w config.json, ale bez obiektów w warstwie Tiled `spawn_points` (spawn wg `scene.py::load_NPCs`).
 - 2026-07-07 decyzja (autor): **opcja A** - wszyscy na zewnątrz w `Village.tmx`, tematycznie rozproszeni. Poprawiono ścieżkę mapy w Context (`NinjaAdventure/maps/Village.tmx`, nie `assets/map/`). Konkretna obsada + współrzędne w Plan.
+- 2026-07-07 14:41 opencode: claimed, starting
 
 ## 🙋 Needs-You / Questions
 
