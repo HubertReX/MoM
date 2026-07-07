@@ -49,7 +49,7 @@ _OPTION_GAP = 3
 _OPTION_FONT = 14
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
-_WEIGHT_COL = 46      # px reserved on the right of each option row for the sentiment weight
+_WEIGHT_COL = 60      # px reserved on the right of each option row for emote + sentiment weight
 _BODY_RATIO = 0.55
 _TOOLTIP_TEMPLATE = "[h3][act]Hint[/act][/h3]\n\n[bold]%s[/bold]"
 
@@ -238,8 +238,8 @@ class DialogPanel(Widget):
     def _build_weight_indicator(self, opt: DialogOption) -> pygame.Surface:
         """Return the sentiment-weight surface for an option (position set on layout).
 
-        The weight is shown as a small key icon followed by the numeric value.
-        Undiscovered weights (not yet selected for this NPC) render a ``?`` icon.
+        Shows the emote sprite for ``opt.sentiment`` (e.g. ``:blessed:``) followed by
+        the numeric weight or ``?`` for undiscovered sentiment.
         """
         if self.npc is None:
             return pygame.Surface((0, 0), pygame.SRCALPHA)
@@ -249,13 +249,13 @@ class DialogPanel(Widget):
         color = theme.DEFAULT_TEXT_COLOR
 
         text_surf = self._weight_font.render(text, False, color)
-        icon = self.key_icon
+        emote = self.scene.icons.get(opt.sentiment, [self.key_icon])[0]
         spacing = 2
-        total_w = icon.get_width() + spacing + text_surf.get_width()
-        total_h = max(icon.get_height(), text_surf.get_height())
+        total_w = emote.get_width() + spacing + text_surf.get_width()
+        total_h = max(emote.get_height(), text_surf.get_height())
         surf = pygame.Surface((total_w, total_h), pygame.SRCALPHA)
-        surf.blit(icon, (0, 0))
-        surf.blit(text_surf, (icon.get_width() + spacing, (total_h - text_surf.get_height()) // 2))
+        surf.blit(emote, (0, (total_h - emote.get_height()) // 2))
+        surf.blit(text_surf, (emote.get_width() + spacing, (total_h - text_surf.get_height()) // 2))
         return surf
 
     def _weight_pos(

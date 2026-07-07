@@ -9,11 +9,13 @@ tags:
 
 ## 🧊 Backlog
 
-- [ ] [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]] #bug #p2
-- [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3
 ## 🟢 Ready for AI
 
+- [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3
+
 ## 🤖 In Progress
+
+- [ ] [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]] #bug #p2 #opencode
 
 ## 🙋 Needs You
 
