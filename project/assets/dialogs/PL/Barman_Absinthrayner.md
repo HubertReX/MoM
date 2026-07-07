@@ -14,22 +14,22 @@ translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
 
 ### 000
 
-* Hej! Witaj w naszej **Karczmie**! Jestem **Barmanem Absyntnent**. A kogo tu do mnie los sprowadził?
+* Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barmanem Absyntnent[/char]. A kogo tu do mnie los sprowadził?
 
-* [001](#001) 1😇: Jestem **Malachi**, **Twój** nowy przyjaciel
-* [001](#001) 2😢: Ech, szkoda gadać, jestem przeklęty przez los
-* [001](#001) 3😉: Jak chcesz, no mogę zostać **Twoim** najlepszym klientem
+* [001](#001) 1😇: Jestem [char]Malachi[/char], [big]Twój[/big] nowy przyjaciel :blink:
+* [001](#001) 2😢: Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los..
+* [001](#001) 3😉: Jak chcesz, no mogę zostać **Twoim** najlepszym klientem :happy:
 
 ### 001
 
 * To jak mogę Ci pomóc?
 
-* [002](#002) 1😐: Co Cię tu sprowadziło?
-* [003](#003) 2😐: Jak Ci się podoba to miejsce?
-* [004](#004) 3😐: Jest tu coś ciekawego w okolicy?
-* [005](#005) 4😐: Znasz kogoś kto zna się na zaklęciach?
-* [006](#006) 5😐: Gdzie mógłbym zdobyć wiedzę o zaklęciach?
-* [990](#990-end) 9😐: To tyle, do następnego razu.
+* [002](#002) 1😐: Co Cię tu sprowadziło :question:
+* [003](#003) 2😐: Jak Ci się podoba to miejsce :red_question:
+* [004](#004) 3😐: Jest tu coś ciekawego w [dark]okolicy[/dark] :red_question_anim:
+* [005](#005) 4😐: Znasz kogoś kto zna się na [light]zaklęciach[/light] :question:
+* [006](#006) 5😐: Gdzie mógłbym zdobyć wiedzę o [num]3[/num] zaklęciach :question:
+* [990](#990-end) 9😐: To tyle, do następnego razu :walk:
 
 ### 002
 
