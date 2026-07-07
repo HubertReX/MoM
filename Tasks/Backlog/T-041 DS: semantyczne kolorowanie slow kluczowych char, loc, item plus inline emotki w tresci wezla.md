@@ -1,11 +1,11 @@
 ---
 id: T-041
 title: DS: semantyczne kolorowanie slow kluczowych char, loc, item plus inline emotki w tresci wezla
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p2
 type: feature
-agent:
+agent: opencode
 created: 2026-07-06
 updated: 2026-07-06
 tags:
@@ -70,6 +70,7 @@ Konwersja z tagów RPG (dla importu istniejących MD): `[reverse]->[shadow]`, `[
 
 - 2026-07-06 cc (review): utworzony podczas weryfikacji epica DS. Analiza: źródło MD używa tylko `**bold**` dla słów kluczowych; brak tagów typu do kolorowania. Wymaga decyzji autorskiej (ręczne tagi vs auto-mapowanie).
 - 2026-07-07 decyzja (autor): **opcja A** - ręczne, jawne tagi w MD (brak auto-mapowania po słowniku; polska fleksja + false-positive). Jawne mapowanie tagów wpisane w sekcji "🎨 Jawne mapowanie tagów".
+- 2026-07-07 14:19 opencode: claimed, starting
 
 ## 🙋 Needs-You / Questions
 

@@ -1,8 +1,8 @@
 ---
 id: T-043
 title: DS: zrodlowe MD dialogow w project assets dialogs plus task just konwersji MD do config.json
-status: backlog
-owner: human
+status: ready
+owner: ai
 priority: p2
 type: chore
 agent:
