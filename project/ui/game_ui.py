@@ -157,7 +157,7 @@ class GameUI:
                 top.handle_event(event)
 
         # Close the dialog once a final node was reached via ANY input path
-        # (accept/talk INPUTS, digit keys, or mouse click).
+        # (accept/talk INPUTS, digit keys, Esc, or mouse click).
         if self.is_open(DialogPanel):
             dialog = cast(DialogPanel, self._panel(DialogPanel))
             if dialog.consume_close():
@@ -165,6 +165,11 @@ class GameUI:
                 self.scene.player.is_talking = False
                 if self.scene.player.npc_met:
                     self.scene.player.npc_met.is_talking = False
+                # Prevent the Esc key that closed the dialog from also opening
+                # the main menu (scene.py handler). The quit KEYDOWN was consumed
+                # but INPUTS["quit"] is already True; clear it here.
+                INPUTS["quit"] = False
+                print(f"[GAMEUI] dialog closed, INPUTS[quit]=False")
 
         for panel in self._open:
             panel.update(time_elapsed)
