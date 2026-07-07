@@ -9,9 +9,18 @@ tags:
 
 ## 🧊 Backlog
 
+- [ ] [[T-038 DS bug: opcje dialogu renderowane plain fontem - znaczniki italic i kolory literalnie]] #bug #p2
+- [ ] [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]] #bug #p2
+- [ ] [[T-041 DS: semantyczne kolorowanie slow kluczowych char, loc, item plus inline emotki w tresci wezla]] #feature #p2
+- [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3
+- [ ] [[T-043 DS: zrodlowe MD dialogow w project assets dialogs plus task just konwersji MD do config.json]] #chore #p2
+- [ ] [[T-044 DS: umieszczenie pozostalych postaci z dialogami na mapie (Barman, Potioneer, Clapback, Sarcasmia)]] #feature #p2
+
 ## 🟢 Ready for AI
 
 ## 🤖 In Progress
+
+- [ ] [[T-040 DS bug: strzalki przesuwaja wybor opcji o 2 pozycje (podwojna obsluga KEYDOWN)]] #bug #p1 #opencode
 
 ## 🙋 Needs You
 

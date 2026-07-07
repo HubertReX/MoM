@@ -347,12 +347,6 @@ class DialogPanel(Widget):
                     return self.activate_selected()
             return False
         if event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_UP, pygame.K_w):
-                self.select_prev()
-                return True
-            if event.key in (pygame.K_DOWN, pygame.K_s):
-                self.select_next()
-                return True
             if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
                 return self.activate_selected()
             if pygame.K_1 <= event.key <= pygame.K_9:
