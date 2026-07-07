@@ -1,8 +1,8 @@
 ---
 id: T-040
 title: DS bug: strzalki przesuwaja wybor opcji o 2 pozycje (podwojna obsluga KEYDOWN)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p1
 type: bug
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-06
 updated: 2026-07-06
 tags:
   - task
+state: review
 ---
 # T-040 - DS bug: strzałki przesuwają wybór opcji o 2 pozycje
 
@@ -66,5 +67,6 @@ Węzeł hub po wybraniu opcji 1:
 - 2026-07-06 cc (review): utworzony podczas weryfikacji epica DS. Root cause: podwójna obsługa KEYDOWN strzałek (`_edge` w game_ui + `handle_event` w dialog.py).
 - 2026-07-07 09:28 opencode: claimed, starting
 - 2026-07-07 09:32 opencode: Fix: removed duplicate K_UP/K_DOWN/K_w/K_s handling from DialogPanel.handle_event(). Arrow navigation now only goes through _edge(up/down) in game_ui.py (single source of truth). Gamepad support preserved via INPUTS dict -> _edge. All unit tests (dialog graph, conditions, result sink) and Hammer Dialog Flow scenario pass. Screenshots: dialog_open, hub_node. Ready for review.
+- 2026-07-07 09:32 opencode: Fix zaimplementowany i zweryfikowany. Zmiana: usunięcie K_UP/K_DOWN/K_w/K_s z DialogPanel.handle_event() — strzałki obsługiwane wyłącznie przez _edge(up/down) w game_ui.py (to samo źródło co gamepad przez INPUTS). Testy: mypy, 3x dialog unit test, Hammer Dialog Flow (PASS, 4 screenshoty). Commit f28f087.
 
 ## 🙋 Needs-You / Questions
