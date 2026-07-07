@@ -1,8 +1,8 @@
 ---
 id: T-039
 title: DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p2
 type: bug
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-06
 updated: 2026-07-06
 tags:
   - task
+state: review
 ---
 # T-039 - DS bug: wskaznik opcji pokazuje generyczną ikonę zamiast emotki sentymentu
 
@@ -82,6 +83,7 @@ Testy: `test_dialog_graph`, `test_dialog_conditions`, `test_dialog_result_sink` 
 - 2026-07-07 17:10 opencode: claimed, starting
 - 2026-07-07 17:30 opencode: fix applied — `_build_weight_indicator` now renders `scene.icons[opt.sentiment][0]` emote sprite instead of generic `key_icon`. `_WEIGHT_COL` bumped 46→60. Tests pass (dialog unit + Hammer Dialog Flow scenario). Screenshot shows hub node with 6 distinct sentiment emotes.
 - 2026-07-07 17:30 opencode: fix applied: _build_weight_indicator now renders scene.icons[opt.sentiment][0] emote sprite instead of generic key_icon. _WEIGHT_COL bumped 46->60. Unit tests + Hammer Dialog Flow scenario pass.
+- 2026-07-07 17:30 opencode: fix applied: _build_weight_indicator renders emote sprite (scene.icons[opt.sentiment][0]) instead of generic key_icon per option. _WEIGHT_COL 46->60. Unit tests (graph, conditions, result_sink) pass. Hammer Dialog Flow scenario passes (dialog_open ss-review PASS). Screenshot in _attachments/.
 
 ## 🙋 Needs-You / Questions
 

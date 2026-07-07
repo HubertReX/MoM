@@ -1,8 +1,8 @@
 ---
 id: T-042
 title: DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)
-status: in-progress
-owner: ai
+status: needs-you
+owner: human
 priority: p3
 type: feature
 agent: opencode
@@ -10,6 +10,7 @@ created: 2026-07-06
 updated: 2026-07-06
 tags:
   - task
+state: review
 ---
 # T-042 - DS: wizualne oznaczanie odwiedzonych linii dialogowych
 
@@ -47,7 +48,7 @@ tags:
 - [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcie potwierdzające prawidłowe działanie
 - [x] Testy / lint przechodzą (mypy, isort clean)
 - [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane (nie dotyczy - zmiana lokalna w `dialog.py`)
-- [ ] commit zmian wykonany
+- [x] commit zmian wykonany (`0d1b29b`)
 
 ![[agent_20260707_T-042_dimmed_option.png]]
 
@@ -58,6 +59,7 @@ tags:
 - 2026-07-07 opencode: implementacja - dodano stałą `_VISITED_ALPHA = 100` i warunek `if opt.selected: surf.set_alpha(_VISITED_ALPHA)` w `_refresh_options()`. Test Hammer Dialog Flow (przechodzi), test wizualny (flow 001→002→007→001) potwierdza przygaszenie opcji 1 na hubie. Screenshot: [[agent_20260707_T-042_dimmed_option.png|hub z przygaszoną opcją 1]].
 - 2026-07-07 17:39 opencode: claimed, starting
 - 2026-07-07 17:48 opencode: implementacja: dodano _VISITED_ALPHA=100 i set_alpha() dla opt.selected w _refresh_options(). Hammer Dialog Flow przechodzi. Test wizualny potwierdza dzialanie - screenshot w _attachments.
+- 2026-07-07 17:49 opencode: Zrealizowano: dodano _VISITED_ALPHA=100 i surf.set_alpha() dla opt.selected w _refresh_options(). Hammer Dialog Flow przechodzi. Test wizualny: dialog nawigacja 001->002->007->001 - opcja 1 przygaszona po powrocie do huba. Screenshot w _attachments. mypy/isort clean.
 
 ## 🙋 Needs-You / Questions
 

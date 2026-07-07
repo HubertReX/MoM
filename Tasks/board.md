@@ -13,8 +13,6 @@ tags:
 
 ## 🤖 In Progress
 
-- [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3 #opencode
-
 ## 🙋 Needs You
 
 - [ ] [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]] #feature #p2 #M #opencode #review
@@ -32,6 +30,7 @@ tags:
 - [ ] [[T-043 DS: zrodlowe MD dialogow w project assets dialogs plus task just konwersji MD do config.json]] #chore #p2 #opencode #review
 - [ ] [[T-044 DS: umieszczenie pozostalych postaci z dialogami na mapie (Barman, Potioneer, Clapback, Sarcasmia)]] #feature #p2 #opencode #review
 - [ ] [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]] #bug #p2 #opencode #review
+- [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3 #opencode #review
 
 ## 🏁 Done
 
