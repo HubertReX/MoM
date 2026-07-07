@@ -50,6 +50,7 @@ _OPTION_FONT = 14
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
 _WEIGHT_COL = 60      # px reserved on the right of each option row for emote + sentiment weight
+_VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _BODY_RATIO = 0.55
 _TOOLTIP_TEMPLATE = "[h3][act]Hint[/act][/h3]\n\n[bold]%s[/bold]"
 
@@ -171,6 +172,8 @@ class DialogPanel(Widget):
                 base_color=theme.DEFAULT_TEXT_COLOR,
                 shadow=False,
             )
+            if opt.selected:
+                surf.set_alpha(_VISITED_ALPHA)
             self.option_surfaces.append(surf)
             self._option_surfaces.append(self._build_weight_indicator(opt))
 

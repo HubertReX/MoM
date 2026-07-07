@@ -1,11 +1,11 @@
 ---
 id: T-042
 title: DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)
-status: backlog
-owner: human
+status: in-progress
+owner: ai
 priority: p3
 type: feature
-agent:
+agent: opencode
 created: 2026-07-06
 updated: 2026-07-06
 tags:
@@ -35,24 +35,29 @@ tags:
 
 ## 🪜 Plan / Subtasks
 
-- [ ] **Wizualizacja (zdecydowane - opcja B):** odwiedzone opcje **przygaszone** (przyciemniony kolor / niższa alpha), nowe w pełnej jasności. Bez zmiany grubości fontu (layoutowo stabilne, nie rusza wyjustowania z [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]]) i bez zmiany tła (kolizja z boxem kursora).
-- [ ] W `_refresh_options`/`draw` odczytać `opt.selected` (lub `npc.selected_options_dict`) i zastosować przygaszenie (kolor/alpha) dla odwiedzonych.
-- [ ] Zweryfikować utrzymanie po save/load i po ponownym wejściu w dialog.
-- [ ] Test wizualny: wejść, wybrać kilka opcji, wrócić do huba - odwiedzone wyróżnione.
+- [x] **Wizualizacja (zdecydowane - opcja B):** odwiedzone opcje **przygaszone** (niższa alpha = 100/255), nowe w pełnej jasności. Bez zmiany grubości fontu (layoutowo stabilne) i bez zmiany tła (brak kolizji z boxem kursora).
+- [x] W `_refresh_options()` odczytać `opt.selected` i zastosować `surf.set_alpha(_VISITED_ALPHA)` dla odwiedzonych.
+- [x] Zweryfikować utrzymanie po save/load i po ponownym wejściu w dialog - `restore_dialog_state()` (characters.py:370-373) przywraca `opt.selected` z `selected_options_dict` dla każdej opcji.
+- [x] Test wizualny: wejść, wybrać kilka opcji (001→002→007→001), wrócić do huba - odwiedzone wyróżnione.
 
 ## ✅ Definition of Done
 
-- [ ] Kryteria z Goal spełnione
-- [ ] zmiany udokumentowa w tasku (`moab log`)
-- [ ] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcia potwierdzające prawidłowe działania
-- [ ] Testy / lint przechodzą (jeśli dotyczy)
-- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane
+- [x] Kryteria z Goal spełnione - odwiedzone opcje są przygaszone (alpha 100/255), nowe w pełnej jasności
+- [x] zmiany udokumentowane w tasku (`moab log`)
+- [x] na końcu tej sekcji "✅ Definition of Done" dodane jest zdjęcie potwierdzające prawidłowe działanie
+- [x] Testy / lint przechodzą (mypy, isort clean)
+- [ ] W razie potrzeby odpowiednie pliki AGENTS.md są zaktualizowane (nie dotyczy - zmiana lokalna w `dialog.py`)
 - [ ] commit zmian wykonany
+
+![[agent_20260707_T-042_dimmed_option.png]]
 
 ## 📓 Agent Log
 
 - 2026-07-06 cc (review): utworzony na życzenie użytkownika. Stan `selected`/`selected_options_dict` już istnieje - brakuje tylko wizualizacji w panelu.
 - 2026-07-07 decyzja (autor): **opcja B** - odwiedzone przygaszone (kolor/alpha), nowe pełna jasność. Bez bold (layout) i bez tła (kolizja z kursorem).
+- 2026-07-07 opencode: implementacja - dodano stałą `_VISITED_ALPHA = 100` i warunek `if opt.selected: surf.set_alpha(_VISITED_ALPHA)` w `_refresh_options()`. Test Hammer Dialog Flow (przechodzi), test wizualny (flow 001→002→007→001) potwierdza przygaszenie opcji 1 na hubie. Screenshot: [[agent_20260707_T-042_dimmed_option.png|hub z przygaszoną opcją 1]].
+- 2026-07-07 17:39 opencode: claimed, starting
+- 2026-07-07 17:48 opencode: implementacja: dodano _VISITED_ALPHA=100 i set_alpha() dla opt.selected w _refresh_options(). Hammer Dialog Flow przechodzi. Test wizualny potwierdza dzialanie - screenshot w _attachments.
 
 ## 🙋 Needs-You / Questions
 

@@ -11,11 +11,9 @@ tags:
 
 ## 🟢 Ready for AI
 
-- [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3
-
 ## 🤖 In Progress
 
-- [ ] [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]] #bug #p2 #opencode
+- [ ] [[T-042 DS: oznaczanie odwiedzonych linii dialogowych (nowe bold, odwiedzone bez bold)]] #feature #p3 #opencode
 
 ## 🙋 Needs You
 
@@ -33,6 +31,7 @@ tags:
 - [ ] [[T-041 DS: semantyczne kolorowanie slow kluczowych char, loc, item plus inline emotki w tresci wezla]] #feature #p2 #opencode #review
 - [ ] [[T-043 DS: zrodlowe MD dialogow w project assets dialogs plus task just konwersji MD do config.json]] #chore #p2 #opencode #review
 - [ ] [[T-044 DS: umieszczenie pozostalych postaci z dialogami na mapie (Barman, Potioneer, Clapback, Sarcasmia)]] #feature #p2 #opencode #review
+- [ ] [[T-039 DS bug: wskaznik opcji pokazuje generyczna ikone zamiast emotki sentymentu z pliku MD]] #bug #p2 #opencode #review
 
 ## 🏁 Done
 
