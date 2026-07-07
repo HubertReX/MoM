@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import random
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, cast
 
 if TYPE_CHECKING:
@@ -215,7 +216,8 @@ class Game:
             from agent_ctrl import AgentController
 
             self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=False)
-            self.log("[agent_ctrl] external control ENABLED (desktop)")
+            self.log(f"[agent_ctrl] external control ENABLED (desktop)")
+            self.log(f"[agent_ctrl] screenshot dir: {Path(AGENT_SCREENSHOT_DIR).resolve()}")
         elif IS_WEB and not USE_WEB_SIMULATOR:
             web_agent_enabled = False
             try:
