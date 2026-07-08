@@ -47,11 +47,19 @@ _BORDER = 24
 _OPTION_PAD = 4
 _OPTION_GAP = 3
 _OPTION_FONT = 14
+_BODY_FONT = 14
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
 _WEIGHT_COL = 60      # px reserved on the right of each option row for emote + sentiment weight
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
-_BODY_RATIO = 0.55
+_OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
+_OPTION_ROW_H = _OPTION_FONT + _OPTION_PAD  # approx rendered option row height
+_OPTION_AREA_H = _OPTION_VISIBLE_COUNT * (_OPTION_ROW_H + _OPTION_GAP) + _OPTION_GAP
+_SEPARATOR_H = 2
+_SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01c)
+_OPTION_HIGHLIGHT_COLOR = (22, 55, 82)  # dark blue, high contrast vs turquoise text
+_OPTION_HIGHLIGHT_ALPHA = 200
+_OPTION_HIGHLIGHT_BORDER = 2
 _TOOLTIP_TEMPLATE = "[h3][act]Hint[/act][/h3]\n\n[bold]%s[/bold]"
 
 
@@ -62,19 +70,20 @@ class DialogPanel(Widget):
         self.game = scene.game
         self.npc: "NPC | None" = None
 
-        bg_w, bg_h = WIDTH - 200, HEIGHT // 3
+        bg_w, bg_h = WIDTH - 64, HEIGHT // 3
         self.bg = theme.nine_patch("nine_patch_01c.png", bg_w, bg_h)
-        self.offset = (100, HEIGHT - self.bg.get_height() - 10)
+        self.offset = (32, HEIGHT - self.bg.get_height() - 10)
         self.rect = pygame.Rect(self.offset, self.bg.get_size())
 
-        body_h = int(bg_h * _BODY_RATIO)
         self.body_rect = pygame.Rect(
             self.offset[0] + _BORDER,
             self.offset[1] + _BORDER,
             bg_w - 2 * _BORDER,
-            body_h,
+            bg_h - 2 * _BORDER - _SEPARATOR_H - _OPTION_AREA_H,
         )
-        self.body = RichText("", self.body_rect, scene.icons, base_size=20)
+        self.options_bottom = self.rect.bottom - _BORDER
+        self.options_top = self.options_bottom - _OPTION_AREA_H
+        self.body = RichText("", self.body_rect, scene.icons, base_size=_BODY_FONT)
 
         # Options grow downward from just under the *actual* node text (dynamic,
         # not a fixed body ratio); body_rect is the max region the text may use.
@@ -90,7 +99,7 @@ class DialogPanel(Widget):
         self._visible_count = 0                          # how many options fit in the area
         self._pending_close = False                      # a final node was reached; controller should close
 
-        self.name_bg = theme.nine_patch("nine_patch_13.png", 26 * TILE_SIZE, TILE_SIZE)
+        self.name_bg = theme.nine_patch("nine_patch_13.png", 8 * TILE_SIZE, TILE_SIZE)
         self.name_label = Label("", size=FONT_SIZE_LARGE, font_path=str(MAIN_FONT),
                                 color=CHAR_NAME_COLOR, shadow=True)
         self.key_space = scene.icons["key_Space"][0]
@@ -117,6 +126,9 @@ class DialogPanel(Widget):
         self.name_label.set_pos(
             (self.offset[0] + 4 * TILE_SIZE, self.offset[1] - int(1.5 * TILE_SIZE))
         )
+        # dynamiczne dopasowanie pola imienia do szerokości tekstu
+        name_w = max(self.name_label.rect.width + 2 * TILE_SIZE, 8 * TILE_SIZE)
+        self.name_bg = theme.nine_patch("nine_patch_13.png", name_w, TILE_SIZE)
         self.tooltip.update(None, (0, 0))
         self._floating_texts.clear()
         self._sentiment_flash_timer = 0.0
@@ -180,11 +192,12 @@ class DialogPanel(Widget):
         self._layout_options()
 
     def _layout_options(self) -> None:
-        """Position the visible slice of options below the *actual* node text.
+        """Position the visible slice of options in the fixed bottom area.
 
-        The node text height is measured from the baked RichText surface (dynamic,
-        not a fixed body ratio), so short nodes give options the whole panel. When
-        options exceed the available height they scroll to keep the selection in view.
+        Options are always bottom-aligned in a fixed area sized for
+        ``_OPTION_VISIBLE_COUNT`` rows; when there are more options they scroll to
+        keep the selection in view. The node text occupies the area above the
+        separator, independent of option count.
         """
         n = len(self.option_surfaces)
         self.option_rects = [pygame.Rect(-10000, -10000, 0, 0) for _ in range(n)]
@@ -194,49 +207,25 @@ class DialogPanel(Widget):
             self._visible_count = 0
             return
 
-        content = self.body.content_surface
-        content_h = content.get_height() if content is not None else self.body_rect.height
-        used_body_h = min(content_h, self.body_rect.height)
-        top = self.body_rect.top + used_body_h + _OPTION_GAP
-        self.options_top = top
-        avail = self.options_bottom - top
-
-        def _fit_from(start: int) -> int:
-            """How many consecutive options fit in ``avail`` from ``start`` by *actual* height.
-
-            Option surfaces vary in height (long text word-wraps to 2+ lines), so the
-            window size must be measured, not derived from a single uniform row height.
-            """
-            used = 0
-            count = 0
-            for i in range(start, n):
-                row_h = self.option_surfaces[i].get_height() + _OPTION_PAD
-                add = row_h if count == 0 else row_h + _OPTION_GAP
-                if count > 0 and used + add > avail:
-                    break
-                used += add
-                count += 1
-            return max(1, count)
-
-        # Keep the selected option inside the scroll window. Because heights vary,
-        # we advance the offset one option at a time until the selection fits.
+        # Keep the selected option inside the scroll window (fixed visible count).
         self._scroll_offset = max(0, min(self._scroll_offset, n - 1))
         if self.selected_index < self._scroll_offset:
             self._scroll_offset = self.selected_index
-        while self.selected_index >= self._scroll_offset + _fit_from(self._scroll_offset):
+        while self.selected_index >= self._scroll_offset + _OPTION_VISIBLE_COUNT:
             self._scroll_offset += 1
-        self._visible_count = _fit_from(self._scroll_offset)
+        self._visible_count = _OPTION_VISIBLE_COUNT
 
-        left = self.body_rect.left + _CURSOR_WIDTH
         start = self._scroll_offset
         end = min(n, start + self._visible_count)
-        y = top
-        for i in range(start, end):
+        # bottom-align: start from options_bottom and stack upward
+        y = self.options_bottom
+        for i in range(end - 1, start - 1, -1):
             surf_h = self.option_surfaces[i].get_height()
+            y -= surf_h + _OPTION_PAD
             rect = pygame.Rect(self.body_rect.left, y, self.body_rect.width, surf_h + _OPTION_PAD)
             self.option_rects[i] = rect
             self.option_weight_indicators[i] = self._weight_pos(self._option_surfaces[i], rect)
-            y += surf_h + _OPTION_PAD + _OPTION_GAP
+            y -= _OPTION_GAP
 
     def _build_weight_indicator(self, opt: DialogOption) -> pygame.Surface:
         """Return the sentiment-weight surface for an option (position set on layout).
@@ -253,18 +242,20 @@ class DialogPanel(Widget):
 
         text_surf = self._weight_font.render(text, False, color)
         emote = self.scene.icons.get(opt.sentiment, [self.key_icon])[0]
-        spacing = 2
-        total_w = emote.get_width() + spacing + text_surf.get_width()
+        # Fixed-width column so emotes align in one vertical line and the numeric
+        # weights align in a second right-justified column across all options.
+        total_w = _WEIGHT_COL
         total_h = max(emote.get_height(), text_surf.get_height())
         surf = pygame.Surface((total_w, total_h), pygame.SRCALPHA)
         surf.blit(emote, (0, (total_h - emote.get_height()) // 2))
-        surf.blit(text_surf, (emote.get_width() + spacing, (total_h - text_surf.get_height()) // 2))
+        text_x = total_w - text_surf.get_width()
+        surf.blit(text_surf, (text_x, (total_h - text_surf.get_height()) // 2))
         return surf
 
     def _weight_pos(
         self, surf: pygame.Surface, option_rect: pygame.Rect
     ) -> tuple[pygame.Surface, pygame.Rect]:
-        """Right-align the weight surface inside an option row."""
+        """Right-align the (fixed-width) weight column inside an option row."""
         total_w, total_h = surf.get_size()
         x = option_rect.right - total_w - _OPTION_PAD
         y = option_rect.centery - total_h // 2
@@ -367,8 +358,12 @@ class DialogPanel(Widget):
             if event.key == pygame.K_ESCAPE:
                 self._pending_close = True
                 return True
-            if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
+            if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                 return self.activate_selected()
+            if event.key == pygame.K_SPACE:
+                # SPACE only scrolls the NPC speech; it never selects an option.
+                self.page_down()
+                return True
             if pygame.K_1 <= event.key <= pygame.K_9:
                 idx = event.key - pygame.K_1
                 if idx < len(self._options):
@@ -395,11 +390,12 @@ class DialogPanel(Widget):
         if not self.visible:
             return
         avatar_off = TILE_SIZE * AVATAR_SCALE
+        avatar_inset = TILE_SIZE * 5  # bring faces toward the centre
         if self.npc is not None:
-            surface.blit(self.npc.avatar, (self.offset[0], self.offset[1] + 4 - avatar_off))
+            surface.blit(self.npc.avatar, (self.offset[0] + avatar_inset, self.offset[1] + 4 - avatar_off))
             surface.blit(
                 self.scene.player.avatar,
-                (self.offset[0] + self.bg.get_width() - avatar_off, self.offset[1] + 4 - avatar_off),
+                (self.offset[0] + self.bg.get_width() - avatar_off - avatar_inset, self.offset[1] + 4 - avatar_off),
             )
 
         surface.blit(self.bg, self.offset)
@@ -412,8 +408,8 @@ class DialogPanel(Widget):
         # Highlight the active option (only when it is inside the window).
         if start <= self.selected_index < end:
             rect = self.option_rects[self.selected_index]
-            pygame.draw.rect(surface, (*CHAR_NAME_COLOR, 80), rect.inflate(-2, -2), border_radius=3)
-            pygame.draw.rect(surface, CHAR_NAME_COLOR, rect.inflate(-2, -2), width=1, border_radius=3)
+            pygame.draw.rect(surface, (*_OPTION_HIGHLIGHT_COLOR, _OPTION_HIGHLIGHT_ALPHA), rect, border_radius=3)
+            pygame.draw.rect(surface, _OPTION_HIGHLIGHT_COLOR, rect, width=_OPTION_HIGHLIGHT_BORDER, border_radius=3)
 
         for i in range(start, end):
             rect = self.option_rects[i]
@@ -424,7 +420,17 @@ class DialogPanel(Widget):
 
         self._draw_scroll_hints(surface, start, end, len(self.option_surfaces))
 
-        surface.blit(self.name_bg, (self.offset[0] + 3 * TILE_SIZE, self.offset[1] - 3 * TILE_SIZE))
+        # Separator line between the NPC speech and the options (panel border colour).
+        sep_y = self.body_rect.bottom + _OPTION_GAP + _SEPARATOR_H // 2
+        pygame.draw.line(
+            surface, _SEPARATOR_COLOR,
+            (self.body_rect.left, sep_y), (self.body_rect.right, sep_y),
+            _SEPARATOR_H,
+        )
+
+        # Name plate (dynamic width) centred under the name label.
+        name_x = self.name_label.rect.centerx - self.name_bg.get_width() // 2
+        surface.blit(self.name_bg, (name_x, self.offset[1] - 3 * TILE_SIZE))
         self.name_label.draw(surface)
         self._draw_sentiment_indicator(surface)
 

@@ -27,7 +27,7 @@ from settings import (
 # default rich-text colours (mirror RichPanel defaults so dialogs look unchanged)
 DEFAULT_TEXT_COLOR: tuple[int, int, int] = (0, 197, 199)
 DEFAULT_SHADOW_COLOR: tuple[int, int, int] = (130, 32, 32)
-DEFAULT_SHADOW_OFFSET: tuple[int, int] = (4, 4)
+DEFAULT_SHADOW_OFFSET: tuple[int, int] = (2, 2)
 
 
 #######################################################################################################################
