@@ -46,11 +46,12 @@ if TYPE_CHECKING:
 _BORDER = 24
 _OPTION_PAD = 4
 _OPTION_GAP = 3
-_OPTION_FONT = 14
-_BODY_FONT = 14
+_OPTION_FONT = 18
+_BODY_FONT = 16
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
-_WEIGHT_COL = 60      # px reserved on the right of each option row for emote + sentiment weight
+_WEIGHT_COL = 80      # px reserved on the right of each option row for emote + sentiment weight
+_EMOTE_SCALE = 1.8    # scale factor for sentiment emotes in the weight indicator column
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
 _OPTION_ROW_H = _OPTION_FONT + _OPTION_PAD  # approx rendered option row height
@@ -249,6 +250,12 @@ class DialogPanel(Widget):
 
         text_surf = self._weight_font.render(text, False, color)
         emote = self.scene.icons.get(opt.sentiment, [self.key_icon])[0]
+        # Scale emote up for readability
+        if _EMOTE_SCALE != 1.0:
+            w, h = emote.get_size()
+            emote = pygame.transform.scale(
+                emote, (max(1, round(w * _EMOTE_SCALE)), max(1, round(h * _EMOTE_SCALE)))
+            )
         # Fixed-width column so emotes align in one vertical line and the numeric
         # weights align in a second right-justified column across all options.
         total_w = _WEIGHT_COL
