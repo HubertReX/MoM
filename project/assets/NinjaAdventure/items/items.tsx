@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.0" name="items" tilewidth="16" tileheight="16" tilecount="110" columns="10">
+<tileset version="1.10" tiledversion="1.12.1" name="items" tilewidth="16" tileheight="16" tilecount="110" columns="10">
  <image source="items_trans_weapons.png" width="160" height="176"/>
  <tile id="11">
   <properties>
@@ -108,22 +108,22 @@
  </tile>
  <tile id="36">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="item_name" value="MERMAIDS_TEAR"/>
   </properties>
  </tile>
  <tile id="37">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="item_name" value="PHOENIX_FEATHER"/>
   </properties>
  </tile>
  <tile id="38">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="item_name" value="POTION_CURSE_NO_MORE"/>
   </properties>
  </tile>
  <tile id="41">
   <properties>
-   <property name="item_name" value=""/>
+   <property name="item_name" value="GNOMES_WHISKER"/>
   </properties>
  </tile>
  <tile id="42">

@@ -16,9 +16,10 @@ translation: [**Madame Sarcasmia**](../PL/Madame_Sarcasmia.md)
 
 * Well, well, well, what do we have here? Another lost soul seeking a cure, I presume? Raises an eyebrow :wondering:.
 
-* [001](#001) 1😇: Uh, yes, actually. I heard you're a powerful sorceress, and I was hoping you could help me break this… age-old curse of perpetual bad luck.
-* [001](#001) 2😉: No, I just thought your chamber could use some redecorating.
-* [007](#007) 3🧠: Can you tell me a bit more about yourself?
+* [001](#001) 1[not visited("005")]😇: Uh, yes, actually. I heard you're a powerful sorceress, and I was hoping you could help me break this… age-old curse of perpetual bad luck.
+* [001](#001) 2[not visited("005")]😉: No, I just thought your chamber could use some redecorating.
+* [007](#007) 3[not visited("005")]🧠: Can you tell me a bit more about yourself?
+* [011](#011) 4[visited("005")]😐: I'm back. Any leads for me yet?
 
 ### 001
 
@@ -59,17 +60,13 @@ Good luck, dearie.
 * [005](#005) 2😉: I'll be back with your trinkets before you can say "abracadabra" — just have that potion ready.
 * [006](#006) 3😢: That sounds… awful.
 
-### 005
+### 005-end
 
 * Now, off you go. Chop-chop. And if you manage to survive, I'll consider brewing that "cure" you're so desperate for. No refunds, though. Ta-ta!
 
-* [011](#011) 1😐: technical loop back
-
-### 006
+### 006-end
 
 * Oh, don't be such a princess :love:. Now, off you go. Chop-chop. And if you manage to survive, I'll consider brewing that "cure" you're so desperate for. No refunds, though. Ta-ta!
-
-* [011](#011) 1😐: technical loop back
 
 ### 007
 
@@ -157,11 +154,9 @@ Good luck, dearie.
 * [021](#021) 2😐: It must work, it must work, it must work…
 * [021](#021) 3😉: It was so clever of me not to bother to collect all items…
 
-### 019
+### 019-end
 
 * A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.
-
-* [011](#011) 1😐: technical loop back
 
 ### 020
 

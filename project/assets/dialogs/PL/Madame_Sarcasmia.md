@@ -16,9 +16,10 @@ translation: [**Madame Sarcasmia**](../EN/Madame_Sarcasmia.md)
 
 * No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukającą jakiegoś cudownego lekarstwa? Unosi brwi :wondering:.
 
-* [001](#001) 1😇: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.
-* [001](#001) 2😉: Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.
-* [007](#007) 3🧠: Czy możesz mi powiedzieć coś więcej o sobie?
+* [001](#001) 1[not visited("005")]😇: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.
+* [001](#001) 2[not visited("005")]😉: Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.
+* [007](#007) 3[not visited("005")]🧠: Czy możesz mi powiedzieć coś więcej o sobie?
+* [011](#011) 4[visited("005")]😐: Wracam. Masz już dla mnie jakieś wskazówki?
 
 ### 001
 
@@ -59,17 +60,13 @@ Powodzenia, kochanieńki.
 * [005](#005) 2😉: Wrócę z twoimi bibelotami, ale oczekuję, że będziesz mieć gotowy eliksir — puszczasz oczko.
 * [006](#006) 3😢: To brzmi… okropnie.
 
-### 005
+### 005-end
 
 * A teraz idź już. Raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
 
-* [011](#011) 1😐: technical loop back
-
-### 006
+### 006-end
 
 * Och, nie bądź taką księżniczką :love:. A teraz idź już, raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
-
-* [011](#011) 1😐: technical loop back
 
 ### 007
 
@@ -119,31 +116,31 @@ Powodzenia, kochanieńki.
 
 ### 013
 
-* How very typical. You've never been one for completing tasks, have you?
+* No proszę, jakie to typowe. Nigdy nie słynąłeś z doprowadzania spraw do końca, co?
 
 * [018](#018) 1😢: Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.
 
 ### 014
 
-* Pathetic. [char]Gnomes[/char] are rather agile indeed. Perhaps next time you'll consider the art of negotiation.
+* Żałosne. [char]Gnomy[/char] są rzeczywiście całkiem zwinne. Może następnym razem rozważysz sztukę negocjacji?
 
 * [018](#018) 1😢: Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.
 
 ### 015
 
-* Oh, how utterly unsurprising. A [char]Phoenix[/char] [item]feather[/item] eludes you, you say?
+* Och, ależ to kompletnie nie zaskakuje. [item]Pióro[/item] [char]Feniksa[/char] cię przerasta, powiadasz?
 
 * [018](#018) 1😢: Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.
 
 ### 016
 
-* Oh, my poor, unfortunate soul. I see you're more adept at returning empty-handed than not. I guess you're doomed for good.
+* Och, moja biedna, nieszczęsna duszo. Widzę, że lepiej ci wracać z pustymi rękami niż z czymkolwiek. Chyba jesteś skazany na zagładę.
 
 * [019](#019) 1😐: Kto w ogóle potrzebuje lekarstwa, prawda?
 
 ### 017
 
-* Oh, ye of little faith! Hand them over, and let's see if your efforts were in vain or not.
+* O wy małej wiary! Dawaj je tutaj i zobaczmy, czy twoje wysiłki poszły na marne, czy nie.
 
 * [020](#020) 1😉: Mam schować się za tą wielką skrzynią?
 * [020](#020) 2😐: Zobaczmy…
@@ -151,32 +148,30 @@ Powodzenia, kochanieńki.
 
 ### 018
 
-* Oh, how charmingly dramatic! I'll do my best with the incomplete collection you've managed to gather.
+* Och, jakież to urocze! Zrobię, co mogę, z tą niekompletną kolekcją, którą udało ci się zgromadzić.
 
 * [021](#021) 1😢: Z drugiej strony, może jednak powinienem był zebrać je wszystkie…
 * [021](#021) 2😐: To musi działać, to musi działać, to musi działać…
 * [021](#021) 3😉: To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…
 
-### 019
+### 019-end
 
-* A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.
-
-* [011](#011) 1😐: technical loop back
+* Pogodzenie się z własnym losem, jakże to rozkosznie odświeżające. Mistrzowsko opanowałeś sztukę akceptowania nieuchronnego. Idź w pokoju.
 
 ### 020
 
-* [ITEMS+POTION_CURSE_NO_MORE] Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.
+* [ITEMS+POTION_CURSE_NO_MORE] Niech magia tka swoje misteria. Weź tę [item]miksturę[/item] i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.
 
 * [011](#011) 1😐: technical loop back
 
 ### 021
 
-* Here goes nothing, I suppose. I'll see what can be done with what you've provided…
+* No cóż, trudno, jakoś to ogarnę. Zobaczę, co da się zrobić z tym, co przyniosłeś…
 
 . .. ...
 
 * Psssssssst….
 
-* I'm afraid it's no use. You need to come back with all ingredients.
+* Obawiam się, że to bez sensu. Musisz wrócić ze wszystkimi składnikami.
 
 * [011](#011) 1😐: technical loop back
