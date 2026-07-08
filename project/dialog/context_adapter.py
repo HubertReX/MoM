@@ -50,7 +50,7 @@ class NPCConditionContext(ConditionContext):
         return False
 
     def has_item(self, item_key: str) -> bool:
-        return any(item.model.name == item_key for item in self.player.items)
+        return any(item.name == item_key for item in self.player.items)
 
     @property
     def sentiment(self) -> int:
