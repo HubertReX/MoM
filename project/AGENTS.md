@@ -453,10 +453,16 @@ SS_REVIEW_TIMEOUT = 60.0
   Cena = `round(item.value * multiplier)`.
 - **Persystencja rozmowy (T-030):** pełny stan dialogu per-NPC jest zapisywany
   w save/load przez `NPCDialogState` (`save_load/models.py`): bieżący węzeł
-  (`current_node_key`), `selected_options_dict`, odwiedzone węzły (`visited_nodes`),
+  (`current_node_key`), start_node dla następnej rozmowy (`dialog_start_node_key`),
+  `selected_options_dict`, odwiedzone węzły (`visited_nodes`),
   `sentiment` i `known_disposition`. `SaveManager` serializuje go w `NPCState.dialog_state`,
   a po loadzie `NPC.restore_dialog_state()` odbudowuje graf i przywraca kursor
   oraz flagi.
+
+  **⚠️ Save/load rule:** Każda nowa funkcjonalność, która ma stan zmieniający się
+  w trakcie gry (flagi, liczniki, pozycje, stany UI, odblokowane treści) MUSI być
+  dodana do save/load — albo od razu, albo skonsultowana z autorem. Jeśli nie masz
+  pewności, DOPYTAJ. Pominięcie powoduje utratę postępu po wczytaniu save'a.
 
 ## DialogPanel (T-033)
 

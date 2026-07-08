@@ -292,9 +292,10 @@ class DialogPanel(Widget):
         # `self._options` is the same indexed list the cursor/number keys act on,
         # so a selection below the visible scroll window still resolves correctly.
         opt = self._options[self.selected_index]
+        is_new_selection = not opt.selected
         opt.selected = True
         self.npc.selected_options_dict[opt.key] = True
-        shift = self.npc.apply_option_sentiment(opt.sentiment)
+        shift = self.npc.apply_option_sentiment(opt.sentiment) if is_new_selection else 0
         if shift != 0:
             bar_w = 80
             x_pos = self.offset[0] + 4 * TILE_SIZE + bar_w // 2
