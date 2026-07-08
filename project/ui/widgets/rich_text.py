@@ -18,6 +18,7 @@ from ..widget import Widget
 
 _WORD_RE = re.compile(r"\S+|\s+")
 _ANIM_FPS = 8.0
+_ICON_SCALE = 1.35        # inline icons are scaled up relative to font height
 
 
 class RichText(Widget):
@@ -123,7 +124,7 @@ class RichText(Widget):
                 continue
 
             if tok.kind == "image":
-                target_h = theme.get_font(tok.style.size).get_height()
+                target_h = round(theme.get_font(tok.style.size).get_height() * _ICON_SCALE)
                 frames = self._icon_frames(tok.value, target_h)
                 if not frames:
                     continue
@@ -340,7 +341,7 @@ def render_rich_text_surface(
             continue
 
         if tok.kind == "image":
-            target_h = theme.get_font(tok.style.size).get_height()
+            target_h = round(theme.get_font(tok.style.size).get_height() * _ICON_SCALE)
             src = icons.get(tok.value, [])
             if not src:
                 continue

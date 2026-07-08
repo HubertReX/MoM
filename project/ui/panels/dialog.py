@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 _BORDER = 24
 _OPTION_PAD = 4
 _OPTION_GAP = 3
-_OPTION_FONT = 18
+_OPTION_FONT = 16
 _BODY_FONT = 16
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
@@ -425,13 +425,21 @@ class DialogPanel(Widget):
     def draw(self, surface: pygame.Surface) -> None:
         if not self.visible:
             return
-        avatar_off = TILE_SIZE * AVATAR_SCALE
-        avatar_inset = TILE_SIZE * 5  # bring faces toward the centre
+        a_off = TILE_SIZE * AVATAR_SCALE
+        a_rise = TILE_SIZE * 2  # extra upward shift so the panel doesn't obscure the portrait
+        npc_inset = TILE_SIZE * 10  # NPC face shifted right toward center
+        p_inset = TILE_SIZE * 5     # player face stays near right edge
         if self.npc is not None:
-            surface.blit(self.npc.avatar, (self.offset[0] + avatar_inset, self.offset[1] + 4 - avatar_off))
+            surface.blit(
+                self.npc.avatar,
+                (self.offset[0] + npc_inset, self.offset[1] + 4 - a_off - a_rise),
+            )
             surface.blit(
                 self.scene.player.avatar,
-                (self.offset[0] + self.bg.get_width() - avatar_off - avatar_inset, self.offset[1] + 4 - avatar_off),
+                (
+                    self.offset[0] + self.bg.get_width() - a_off - p_inset,
+                    self.offset[1] + 4 - a_off - a_rise,
+                ),
             )
 
         surface.blit(self.bg, self.offset)
