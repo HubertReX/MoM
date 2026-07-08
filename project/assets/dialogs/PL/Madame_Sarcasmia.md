@@ -1,6 +1,6 @@
-# Madame Sarcasmia
+# **Madame Sarcasmia**
 
-translation: [**Madame Sarcasmia**](../EN/chara-Madame_Sarcasmia.md)
+translation: [**Madame Sarcasmia**](../EN/Madame_Sarcasmia.md)
 
 * friendly=0.5
 * 😇kind+
@@ -12,150 +12,171 @@ translation: [**Madame Sarcasmia**](../EN/chara-Madame_Sarcasmia.md)
 
 ## PL
 
-### A **Madame Sarcasmia**
+### 000
 
-- A: No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukająca jakiegoś cudownego lekarstwa? Unosi brwi :face_with_raised_brow:.
+* No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukającą jakiegoś cudownego lekarstwa? Unosi brwi :wondering:.
 
-### **Hero**
+* [001](#001) 1😇: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.
+* [001](#001) 2😉: Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.
+* [007](#007) 3🧠: Czy możesz mi powiedzieć coś więcej o sobie?
 
-- A.1: :smiling_face_with_halo: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.
-- A.2: :smiling_face_with_sunglasses: Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.
-- A.3: Czy możesz mi powiedzieć coś więcej o sobie?
+### 001
 
-### B **Madame Sarcasmia**
+* Wzdycha dramatycznie: Ach, odwieczna klątwa nieszczęścia. Jakie oryginalne :dots:. Dobra, pewnie mogłabym ci pomóc, ale wiedz, że magia nie jest tania.
 
-- B: Wzdycha dramatycznie: Ach, odwieczna klątwa nieszczęścia. Jakie oryginalne :face_with_rolling_eyes:. Dobra, pewnie mogłabym ci pomóc, ale wiedz, że magia nie jest tania.
+* [002](#002) 1😇: Zrobię wszystko, co trzeba. Po prostu podaj swoją cenę.
+* [002](#002) 2😉: Cóż, a to pech, bo miałem zamiar ci zapłacić wyrazami wdzięczności.
 
-### B **Hero**
+### 002
 
-- B.1: :smiling_face_with_halo: Zrobię wszystko, co trzeba. Po prostu podaj swoją cenę.
-- B.2: :smiling_face_with_sunglasses: Cóż, a to pech, bo miałem zamiar ci zapłacić w wyrazami wdzięczności.
+* Och, zrobię to, nie martw się. Widzisz kochanieńki, potrzebuję kilku drobiazgów do mojego małego… projektu. Zdobądź je dla mnie, a być może przygotuję Ci eliksir, który teoretycznie może złamać twoją klątwę. Albo zamieni Cię w traszkę. To się jeszcze zobaczy.
 
-- B.2: :smiling_face_with_sunglasses: Och, nie martw się o to. Mam wystarczająco dużo złota, żeby pokryć koszty. (ALT)
+* [003](#003) 1😇: Drobiazgi, mówisz? O czym konkretnie mówimy?
+* [003](#003) 2😉: To będzie bułka z masłem, prawda?
 
-### C **Madame Sarcasmia**
+### 003
 
-- C: Och, zrobię to, nie martw się. Widzisz kochanieńki, potrzebuję kilku drobiazgów do mojego małego... projektu. Zdobądź je dla mnie, a być może przygotuję Ci eliksir, który teoretycznie może złamać twoją klątwę. Albo zamieni Cię w traszkę. To się jeszcze zobaczy.
+* Och, nic wielkiego:
+[act]*[/act] [item]łza[/item] [char]Melancholijnej Syrenki[/char],
+[act]*[/act] [item]pióro[/item] [char]Przygnębionego Feniksa[/char] wyrwane podczas zaćmienia słońca,
+[act]*[/act] oraz [item]wąsik[/item] [char]Gniewnego Gnoma[/char].
 
-### C **Hero**
+To powinna być bułka z masłem — przewraca oczami :dots:.
 
-- C.1: :pleading_face: Drobiazgi, mówisz? O czym konkretnie mówimy?
-- C.2: :face_with_raised_eyebrow: To będzie bułka z masłem, prawda?
-- C.3: :smiling_face_with_sunglasses: Nie mogę się doczekać aby zobaczyć Twoją minę, jak tu wrócę w 5 min. (ALT)
+* [004](#004) 1😇: Och, ja jestem tu nowy. Czy możesz mi powiedzieć, gdzie to wszystko mam znaleźć?
+* [004](#004) 2😉: Serio?
 
-### D **Madame Sarcasmia**
+### 004
 
-- D: Och, nic wielkiego:\n[action]*[/] [item]łza[/] [char]Melancholijnej Syrenki[/],\n[action]*[/] [item]pióro[/] [char]Przygnębionego Feniksa[/] wyrwane podczas zaćmienia słońca,\n[action]*[/] oraz [item]wąsik[/] [char]Gniewnego Gnoma[/].\n\nTo powinna być bułka z masłem - przewraca oczami :face_with_rolling_eyes:.
+* Rzeczywiście, kiwa głową:
+[act]*[/act] Plotka głosi, że [char]Melancholijna Syrenka[/char] spędza czas łkając na samotnej skale w pobliżu [loc]Mglistego Bagna[/loc].
+[act]*[/act] [char]Przygnębiony Feniks[/char] często odwiedza [loc]Urwiska Jęków[/loc], bo czemu nie.
+[act]*[/act] A [char]Gniewny Gnom[/char], cóż, powiedzmy po prostu, że możesz go znaleźć gdzieś na [loc]Bagnie Ruchomych Piasków[/loc].
 
-### D **Hero**
+Powodzenia, kochanieńki.
 
-- D.1: :smiling_face_with_halo: Och, ja jestem tu nowy. Czy możesz mi powiedzieć, gdzie to wszystko mam znaleźć?
-- D.2: :face_with_raised_eyebrow: Serio?
+* [005](#005) 1😐: [item]łza[/item] [char]Melancholijnej Syrenki[/char], [item]pióro[/item] [char]Przygnębionego Feniksa[/char] i [item]wąsik[/item] [char]Zrzędliwego Gnoma[/char]. Zrozumiano.
+* [005](#005) 2😉: Wrócę z twoimi bibelotami, ale oczekuję, że będziesz mieć gotowy eliksir — puszczasz oczko.
+* [006](#006) 3😢: To brzmi… okropnie.
 
-### E **Madame Sarcasmia**
+### 005
 
-- E: Rzeczywiście, kiwa głową:\n[action]*[/] Plotka głosi, że [char]Melancholijna Syrenka[/] spędza czas łkając na samotnej skale w pobliżu [location]Mglistego Bagna[/].\n[action]*[/] [char]Przygnębiony Feniks[/] często odwiedza [location]Urwiska Jęków[/], bo czemu nie.\n[action]*[/] A [char]Gniewny Gnom[/], cóż, powiedzmy po prostu, że możesz go znaleźć gdzieś na [location]Bagnie Ruchomych Piasków[/].\n\nPowodzenia, kochanieńki.
+* A teraz idź już. Raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
 
-### E **Hero**
+* [011](#011) 1😐: technical loop back
 
-- E.1: :thumbs_up: [char]Łkająca Syrenka[/], [char]Mopey Feniks[/] i [char]Gniewnego Gnom[/]. Zrozumiano.
-- E.2: :winking_face: Wrócę z twoimi bibelotami, ale oczekuję, że będziesz mieć gotowy eliksir - puszczasz oczko
-- E.3: :fearful_face: To brzmi... okropnie.
+### 006
 
-### F **Madame Sarcasmia**
+* Och, nie bądź taką księżniczką :love:. A teraz idź już, raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
 
-- F: A teraz idź już, idź. Raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa”, którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
+* [011](#011) 1😐: technical loop back
 
-### G **Madame Sarcasmia**
+### 007
 
-- G: Och, nie bądź taką księżniczką :princess:. A teraz idź już, idź. Raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa”, którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
+* Och, brawo! Pytania! Wal śmiało, tylko spróbuj mnie nie zanudzić :dots:.
 
-### H **Madame Sarcasmia**
+* [008](#008) 1[not selected("007to008_1")]🧠: O co chodzi z tym całym sarkazmem? Nie możesz przez chwilę być poważna?
+* [009](#009) 2[not selected("007to009_2")]🧠: Czy masz jakieś najnowsze wiadomości o tym co się dzieje w okolicy?
+* [010](#010) 3[not selected("007to010_3")]🧠: Jeszcze jedno pytanie. Co najbardziej lubisz w tej krainie?
+* [000](#000) 9😐: W porządku, dowiedziałem się wystarczająco wiele.
 
-- H: Och, brawo! Pytania! Wal śmiało tylko spróbuj mnie nie zanudzić :yawning_face:.
+### 008
 
-### H **Hero**
+* Sarkazm to mój sposób radzenia sobie z przyziemnymi i nudnymi sprawami. Życie jest za krótkie, żeby być cały czas poważnym.
 
-- H.1: O co chodzi z tym całym sarkazmem? Nie możesz przez chwilę być poważna?
-- H.2: Czy masz jakieś najnowsze wiadomości o tym co się dzieje w okolicy?
-- H.3: Jeszcze jedno pytanie. Co najbardziej lubisz w tej krainie?
+* [000](#000) 1😐: W porządku, dowiedziałem się wystarczająco wiele.
+* [007](#007) 9😐: Rozumiem, dziękuję.
 
-### I **Madame Sarcasmia**
+### 009
 
-- I: Sarkazm to mój sposób radzenia sobie z przyziemnymi i nudnymi sprawami. Życie jest za krótkie, żeby być cały czas poważnym.
+* Ostatnie zmiany? Cóż, lokalna społeczność [char]goblinów[/char] planuje program „[shadow]Goblin Ma Talent[/shadow]". Nie mogę się doczekać, żeby zobaczyć ich autorskie numery taneczne.
 
-### I **Hero**
+* [000](#000) 1😐: W porządku, dowiedziałem się wystarczająco wiele.
+* [007](#007) 9😐: Rozumiem, dziękuję.
 
-- (Option I.1) Czy to prawda, że [char]Syrenki[/] płaczą tylko w nocy? (ALT)
-- (Option I.1) W porządku, dowiedziałem się wystarczająco wiele.
-- I.2: Rozumiem, dziękuję.
+### 010
 
-### J **Madame Sarcasmia**
+* Moja ulubiona rzecz? Zdecydowanie sposób, w jaki światło księżyca odbija się od zbocza [loc]Urwiska Jęków[/loc], rzucając niesamowity blask, który doskonale uzupełnia dramatyzm tego świata.
 
-- J: Ostatnie zmiany? Cóż, lokalna społeczność [char]goblinów[/] planuje program „[btext]Goblin Ma Talent[/]”. Nie mogę się doczekać, żeby zobaczyć ich autorskie numery taneczne.
+* [000](#000) 1😐: W porządku, dowiedziałem się wystarczająco wiele.
+* [007](#007) 9😐: Rozumiem, dziękuję.
 
-### K **Madame Sarcasmia**
+### 011
 
-- K: Moja ulubiona rzecz? Zdecydowanie sposób, w jaki światło księżyca odbija się od zbocza [location]Urwiska Jęków[/], rzucając niesamowity blask, który doskonale uzupełnia dramatyzm tego świata.
+* Ach, wracasz tak szybko, jak widzę. Powiedz, czy udało Ci się zebrać moją małą kolekcję bibelotów?
 
----
-**Hero** returns to **Madame Sarcasmia's** chamber, carrying a [item]tear[/] of a melancholic [char]Mermaid[/], a [char]Phoenix[/] [item]feather[/], and an ill-tempered [char]Gnome's[/] [item]whisker[/].
+* [012](#012) 1[has_item("MERMAIDS_TEAR") and has_item("GNOMES_WHISKER") and has_item("PHOENIX_FEATHER")]😐: Rzeczywiście, mam wszystkie trzy przedmioty. [item]Łzę[/item] [char]Syrenki[/char], [item]pióro[/item] [char]Feniksa[/char] i [item]wąsik[/item] [char]Gnoma[/char].
+* [013](#013) 2[not has_item("MERMAIDS_TEAR") and (has_item("GNOMES_WHISKER") or has_item("PHOENIX_FEATHER"))]😢: Cóż, nie mam [item]łzy[/item] [char]Syrenki[/char].
+* [014](#014) 3[not has_item("GNOMES_WHISKER") and (has_item("MERMAIDS_TEAR") or has_item("PHOENIX_FEATHER"))]😢: Cóż, nie mam [item]wąsika[/item] [char]Gnoma[/char].
+* [015](#015) 4[not has_item("PHOENIX_FEATHER") and (has_item("GNOMES_WHISKER") or has_item("MERMAIDS_TEAR"))]😢: Cóż, nie mam [item]pióra[/item] [char]Feniksa[/char].
+* [016](#016) 5[not has_item("MERMAIDS_TEAR") and not has_item("GNOMES_WHISKER") and not has_item("PHOENIX_FEATHER")]😢: Niestety, wracam z pustymi rękoma. Jak się okazuje, [char]Syrenki[/char] są dość opiekuńcze wobec swoich [item]łez[/item], [char]Feniksy[/char] nie lubią być skubane, a [char]Gnomy[/char] są zaskakująco zwinne.
 
-### PL AA **Madame Sarcasmia**
+### 012
 
-- AA: Ach, wracasz tak szybko, jak widzę. Powiedz, czy udało Ci się zebrać moją małą kolekcję bibelotów?
+* [ITEMS-GNOMES_WHISKER,MERMAIDS_TEAR,PHOENIX_FEATHER] Och, ale mnie zaskoczyłeś. Wygląda na to, że udało ci się oszukać sam los i zebrać wszystkie trzy absurdalne przedmioty. Dawaj je teraz, a zobaczymy, czy moja magia jest w stanie wyczarować to cudeńko, którego tak desperacko pragniesz.
 
-### PL AA **Hero**
+* [017](#017) 1😐: Proszę bardzo, w całej ich psotliwej chwale. Ufam, że twoje umiejętności eliksirowe nie zawiodą?
 
-- (Option AA.1) Indeed, I have all three items you requested. A [char]Mermaid's[/] [item]tear[/], a [char]Phoenix[/] [item]feather[/], and a [char]Gnome's[/] [item]whisker[/].
-- (Option AA.2) Well, I don't have the [char]Mermaid's[/] [item]tear[/]
-- (Option AA.3) Well, I don't have the [char]Gnome's[/] [item]whisker[/]
-- (Option AA.4) Well, I don't have the [char]Phoenix[/] [item]feather[/]
-- (Option AA.5) Unfortunately, I've come empty-handed. Turns out, [char]Mermaids[/] are rather protective of their [item]tears[/], [char]Phoenix[/] don't appreciate plucking, and [char]Gnomes[/] are surprisingly agile.
+### 013
 
-### PL AD **Madame Sarcasmia**
+* How very typical. You've never been one for completing tasks, have you?
 
-- AB (AD AA.1) Och, ale mnie zaskoczyłeś. Wygląda na to, że udało ci się oszukać nawet sam los i zebrać wszystkie trzy absurdalne przedmioty. Daj mi je teraz, a zobaczymy, czy moja magia jest w stanie wykuć to cudeńko, którego tak desperacko pragniesz.
-- AC (AD AA.2) How very typical. You've never been one for completing tasks, have you?
-- AD (AD AA.3) Pathetic. [char]Gnomes[/] are rather agile indeed. Perhaps next time you'll consider the art of negotiation.
-- AE (AD AA.4) Oh, how utterly unsurprising. A [char]Phoenix[/] [item]feather[/] eludes you, you say?
-- AF (AD AA.5) Oh, my poor, unfortunate soul. I see you're more adept at returning empty-handed than not. I guess you're doomed for good.
+* [018](#018) 1😢: Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.
 
-### PL AB **Hero**
+### 014
 
-- (OPTION AB.1) Here they are, in all their mischievous glory. I trust your potion-making skills won't disappoint?
-- (OPTION AC.1-AE.1) But the other items are right here, so work your magic, figuratively speaking.
-( Yeah, yeah, I get it. A [char]Phoenix[/] [item]feather[/] is harder to catch than a whisper in a thunderstorm. Negotiation might not be my strong suit, but I've come to appreciate the charm of a challenging endeavor)
-- (OPTION AF.1) Who needs a cure anyway, right?
-2AJ => 2AK
+* Pathetic. [char]Gnomes[/char] are rather agile indeed. Perhaps next time you'll consider the art of negotiation.
 
-### PL AD AB **Madame Sarcasmia**
+* [018](#018) 1😢: Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.
 
-- AG (AD AB.1) Oh, ye of little faith! Hand them over, and let's see if your efforts were in vain or not.
-- AH(AD AC.1-AE.1) Oh, how charmingly dramatic! I'll do my best with the incomplete collection you've managed to gather.
-- AI (AD AF.1) A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.
+### 015
 
-### PL AG AH **Hero**
+* Oh, how utterly unsurprising. A [char]Phoenix[/char] [item]feather[/item] eludes you, you say?
 
-- (OPTION AG.1) Should I hide behind this big chest?
-- (OPTION AG.2) Let's see...
-- (OPTION AG.3) I can't wait!
+* [018](#018) 1😢: Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.
 
-- (OPTION AH.1) On the other hand, perhaps I should have collected them all...
-- (OPTION AH.2) It must work, it must work, it must work...
-- (OPTION AH.3) It was so clever of me not to bother to collect all items...
+### 016
 
----
-**Madame Sarcasmia** takes the items and begins her spellcasting, enveloping the trinkets in a shimmering aura.
+* Oh, my poor, unfortunate soul. I see you're more adept at returning empty-handed than not. I guess you're doomed for good.
 
-### PL AD AG **Madame Sarcasmia**
+* [019](#019) 1😐: Kto w ogóle potrzebuje lekarstwa, prawda?
 
-- AJ (AD AG) Let the magic weave its mysteries. Take this potion and drink it... somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.
-- AK (AD AH) Here goes nothing, I suppose. I'll see what can be done with what you've provided...\n.\n..\n...\n\nPsssssssst....\n\nI'm afraid it's no use. You need to come back with all ingredients.
+### 017
 
----
+* Oh, ye of little faith! Hand them over, and let's see if your efforts were in vain or not.
 
-As the magic unfolds, a wave of energy washes over the hero, creating a sense of both apprehension and hope.
+* [020](#020) 1😉: Mam schować się za tą wielką skrzynią?
+* [020](#020) 2😐: Zobaczmy…
+* [020](#020) 3😇: Nie mogę się doczekać!
 
-**Note**
-This continuation of the dialog captures the hero's return to Madame Sarcasmia's chamber with the collected items. The dialogue takes into account various possibilities: the hero having all three items, having some but not all, or having none. Madame Sarcasmia's responses reflect her characteristic sarcasm and the outcomes of the hero's efforts.
+### 018
+
+* Oh, how charmingly dramatic! I'll do my best with the incomplete collection you've managed to gather.
+
+* [021](#021) 1😢: Z drugiej strony, może jednak powinienem był zebrać je wszystkie…
+* [021](#021) 2😐: To musi działać, to musi działać, to musi działać…
+* [021](#021) 3😉: To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…
+
+### 019
+
+* A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.
+
+* [011](#011) 1😐: technical loop back
+
+### 020
+
+* [ITEMS+POTION_CURSE_NO_MORE] Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.
+
+* [011](#011) 1😐: technical loop back
+
+### 021
+
+* Here goes nothing, I suppose. I'll see what can be done with what you've provided…
+
+. .. ...
+
+* Psssssssst….
+
+* I'm afraid it's no use. You need to come back with all ingredients.
+
+* [011](#011) 1😐: technical loop back

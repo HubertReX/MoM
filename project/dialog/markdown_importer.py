@@ -379,6 +379,7 @@ IMPORTABLE_CHARACTERS: list[str] = [
     "Barman Absinthrayner",
     "Clapback Sword",
     "Potioneer Puzzlemint",
+    "Madame Sarcasmia",
 ]
 
 
@@ -895,6 +896,7 @@ IMPORTABLE_CHARACTERS: list[str] = [
     "Barman Absinthrayner",
     "Clapback Sword",
     "Potioneer Puzzlemint",
+    "Madame Sarcasmia",
 ]
 
 # Default paths (relative to project root)
