@@ -89,9 +89,10 @@ class DialogPanel(Widget):
         self.options_top = self.options_bottom - _OPTION_AREA_H
         self.body = RichText("", self.body_rect, scene.icons, base_size=_BODY_FONT, line_spacing=4)
 
-        # Options grow downward from just under the *actual* node text (dynamic,
-        # not a fixed body ratio); body_rect is the max region the text may use.
-        self.options_top = self.body_rect.bottom + _OPTION_GAP
+        # Options grow downward from under the separator line (which sits between
+        # the node text and the first option row).
+        sep_h = _OPTION_GAP + _OPTION_PAD + _SEPARATOR_H  # total vertical space for the separator line + gap
+        self.options_top = self.body_rect.bottom + sep_h
         self.options_bottom = self.rect.bottom - _BORDER
         self._options: list[DialogOption] = []          # filtered, indexed source of truth
         self._option_surfaces: list[pygame.Surface] = []  # weight-indicator surface per option
@@ -428,19 +429,19 @@ class DialogPanel(Widget):
         if not self.visible:
             return
         a_off = TILE_SIZE * AVATAR_SCALE
-        a_rise = TILE_SIZE * 2  # extra upward shift so the panel doesn't obscure the portrait
+        npc_rise = TILE_SIZE * 3  # extra upward shift so the panel doesn't obscure the portrait
         npc_inset = TILE_SIZE * 10  # NPC face shifted right toward center
         p_inset = TILE_SIZE * 5     # player face stays near right edge
         if self.npc is not None:
             surface.blit(
                 self.npc.avatar,
-                (self.offset[0] + npc_inset, self.offset[1] + 4 - a_off - a_rise),
+                (self.offset[0] + npc_inset, self.offset[1] + 4 - a_off - npc_rise),
             )
             surface.blit(
                 self.scene.player.avatar,
                 (
                     self.offset[0] + self.bg.get_width() - a_off - p_inset,
-                    self.offset[1] + 4 - a_off - a_rise,
+                    self.offset[1] + 4 - a_off,
                 ),
             )
 
@@ -478,8 +479,8 @@ class DialogPanel(Widget):
 
         self._draw_scroll_hints(surface, start, end, len(self.option_surfaces))
 
-        # Separator line between the NPC speech and the options (panel border colour).
-        sep_y = self.body_rect.bottom + _OPTION_GAP + _SEPARATOR_H // 2
+        # Separator line between the NPC speech and the options.
+        sep_y = self.body_rect.bottom + _OPTION_GAP + _OPTION_PAD + _SEPARATOR_H // 2
         pygame.draw.line(
             surface, _SEPARATOR_COLOR,
             (self.body_rect.left, sep_y), (self.body_rect.right, sep_y),

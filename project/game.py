@@ -1030,6 +1030,10 @@ class Game:
                 TextInputDemoState(self).enter_state()
             INPUTS["text_demo"] = False
 
+        # Stash screenshot intent *before* the scene update may clear it
+        # (Scene.update → reset_inputs when a modal panel is open).
+        _screenshot_pending = not USE_SHADERS and INPUTS.get("screenshot")
+
         # first draw on separate Surface (game.canvas)
         if not self.is_paused:
             self.time_elapsed += dt
@@ -1064,7 +1068,7 @@ class Game:
         pygame.display.flip()
 
         # manual screenshot (F6) — capture what the user sees on screen
-        if INPUTS["screenshot"] and not USE_SHADERS:
+        if _screenshot_pending:
             state = self.states[-1]
             add_notification = (
                 state.add_notification
