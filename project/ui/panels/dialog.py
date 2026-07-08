@@ -84,7 +84,7 @@ class DialogPanel(Widget):
         )
         self.options_bottom = self.rect.bottom - _BORDER
         self.options_top = self.options_bottom - _OPTION_AREA_H
-        self.body = RichText("", self.body_rect, scene.icons, base_size=_BODY_FONT)
+        self.body = RichText("", self.body_rect, scene.icons, base_size=_BODY_FONT, line_spacing=4)
 
         # Options grow downward from just under the *actual* node text (dynamic,
         # not a fixed body ratio); body_rect is the max region the text may use.

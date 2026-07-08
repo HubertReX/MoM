@@ -165,6 +165,7 @@ class _ParsedNode:
     is_final: bool = False
     options: list[_ParsedOption] = field(default_factory=list)
     line_no: int = 0
+    _prev_empty: bool = field(default=True, repr=False)
 
     @property
     def text(self) -> str:
@@ -575,15 +576,20 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
 
         text_match = _NODE_TEXT_RE.match(line)
         if text_match:
-            current_node.text_lines.append(text_match.group("text").strip())
+            processed = text_match.group("text").strip()
+        elif line:
+            processed = line
+        else:
+            # Empty line = paragraph separator
+            current_node._prev_empty = True
             continue
 
-        # Continuation text: lines that don't start with `*` but are part of
-        # the same dialog block (e.g. [act]*[/act] markup or bare prose lines).
-        # The true end of a node's text is the first option line `* [N](#N)...`.
-        if line:
-            current_node.text_lines.append(line)
-            continue
+        if current_node._prev_empty:
+            current_node.text_lines.append(processed)
+        else:
+            current_node.text_lines[-1] += "\n" + processed
+        current_node._prev_empty = False
+        continue
 
     if not nodes:
         raise DialogImportError(

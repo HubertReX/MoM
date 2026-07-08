@@ -30,11 +30,13 @@ class RichText(Widget):
         base_size: int = 20,
         base_color: pygame._common.ColorValue = theme.DEFAULT_TEXT_COLOR,
         show_scrollbar: bool = True,
+        line_spacing: int = 0,
     ) -> None:
         super().__init__(rect)
         self.icons = icons
         self.base_style = Style(size=base_size, color=tuple(base_color))  # type: ignore[arg-type]
         self.show_scrollbar = show_scrollbar
+        self.line_spacing = line_spacing
 
         self.scroll: int = 0
         self.max_scroll: int = 0
@@ -165,7 +167,10 @@ class RichText(Widget):
     def _bake(self) -> None:
         lines = self._layout()
         width = self.rect.width
-        total_h = sum(line["height"] for line in lines) or self._default_line_height()
+        n_lines = len(lines)
+        total_h = (
+            sum(line["height"] for line in lines) + self.line_spacing * max(0, n_lines - 1)
+        ) or self._default_line_height()
 
         content = pygame.Surface((width, total_h), pygame.SRCALPHA)
         self.link_rects = []
@@ -188,7 +193,7 @@ class RichText(Widget):
                     self.image_items.append((it["name"], rect, it["th"]))
                 if it["link"]:
                     self.link_rects.append((rect, it["link"]))
-            y += line["height"]
+            y += line["height"] + self.line_spacing
 
         self._content = content
         self.content_width = max((line["width"] for line in lines), default=0)

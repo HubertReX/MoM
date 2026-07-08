@@ -112,7 +112,9 @@ się od `* `. Koniec tekstu wyznacza pierwsza linia opcji (`* [00x](#00x) ...`).
 
 Węzły z rozbitą kwestią na kilka akapitów (np. lista wymaganych przedmiotów
 w #003 Madame Sarcasmii) używają linii bez `* ` dla drugiego i dalszych
-akapitów. Importer poprawnie zbiera je jako kontynuację.
+akapitów. Importer grupuje kolejne linie bez pustej linii między nimi w jeden
+akapit (połączone pojedynczym `\n`). Pusta linia w źródle = nowy akapit
+(separator `\n\n` w renderowanym tekście).
 
 ## Znane pułapki (bug history)
 
@@ -142,5 +144,7 @@ akapitów. Importer poprawnie zbiera je jako kontynuację.
    `* ` (wzorzec `_NODE_TEXT_RE`). Linie kontynuacji bez gwiazdki — np. listing
    `[act]*[/act] ...` albo czysta proza w nowym akapicie — były milcząco pomijane.
    Dotknięci: Madame Sarcasmia (węzły #003, #004 i inne z rozbitą kwestią na
-   wiele linii). Fix: każdej nieopcyjnej, niepustej linii między nagłówkiem węzła
-   a pierwszą opcją traktowanej jako kontynuacja tekstu.
+   wiele linii). Fix: każda nieopcyjna, niepusta linia między nagłówkiem węzła
+   a pierwszą opcją traktowane jako kontynuacja. Kolejne linie bez pustej linii
+   między nimi grupuje w jeden akapit (połączone `\n`). Pusta linia = separator
+   akapitów (`\n\n`).
