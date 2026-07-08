@@ -1402,7 +1402,7 @@ class Scene(State):
 
                     # print(f"Dropped '[item]{item.name}[/item]' [[magenta]{item.model.type}[/magenta]]")
                     self.add_notification(
-                        f"Dropped '[item]{item.name}[/item]'", NotificationTypeEnum.info)
+                        f"Dropped '[item]{item.model.name}[/item]'", NotificationTypeEnum.info)
                 else:
                     print("[red]ERROR![/red] No item to drop!")
             INPUTS["drop"] = False
@@ -1415,7 +1415,7 @@ class Scene(State):
                 if collided_index > -1:
                     item = items[collided_index]
                     if self.player.pick_up(item):
-                        self.add_notification(f"Picked up '[item]{item.name}[/item]'", NotificationTypeEnum.success)
+                        self.add_notification(f"Picked up '[item]{item.model.name}[/item]'", NotificationTypeEnum.success)
                         with contextlib.suppress(KeyError):
                             # if self.group.has(item):
                             self.group.remove(item)
