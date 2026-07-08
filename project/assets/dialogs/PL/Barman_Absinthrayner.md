@@ -127,7 +127,7 @@ Wróć jak będziesz chciał zapytać o jakieś konkretne miejsce.
 
 ### 012
 
-* Ach, rozumiem. Hmmm, no to może jedynie stara **Zielarka Zmora** mogła by co pomóc. Ona potrafi przygotować taką miksturę, że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. Czasami to ludziskom gorzej się robi po tych miksturach. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu.
+* Ach, rozumiem. Hmmm, no to może jedynie stara [char]Zielarka Zmora[/char] mogła by co pomóc. Ona potrafi przygotować taką miksturę, że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. Czasami to ludziskom gorzej się robi po tych miksturach. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu.
 
 * [001](#001) 9😐: Dzięki, to mi wystarczy
 
