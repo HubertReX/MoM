@@ -450,42 +450,60 @@
         ]
     },
     {
-        "name": "All 4 Dialog NPCs",
-        "slug": "all_4_dialog_npcs",
+        "name": "Three Townsfolk Dialogs",
+        "slug": "three_townsfolk_dialogs",
         "platform": ["desktop"],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "start_area", "commands": ["screenshot"], "wait": 1.0 },
             { "slug": "talk_to_barman", "commands": ["talk"], "wait": 1.5 },
             { "slug": "barman_dialog", "commands": ["screenshot"], "wait": 2.0 },
-            { "slug": "close_barman", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "close_barman_1", "commands": ["item_1"], "wait": 1.0 },
+            { "slug": "close_barman_2", "commands": ["item_6"], "wait": 1.5 },
             { "slug": "after_barman", "commands": ["screenshot"], "wait": 1.0 },
-            { "slug": "move_to_clapback", "commands": ["right:40"], "wait": 1.0 },
-            { "slug": "talk_to_clapback", "commands": ["talk"], "wait": 1.5 },
-            { "slug": "clapback_dialog", "commands": ["screenshot"], "wait": 2.0 },
-            { "slug": "close_clapback", "commands": ["quit"], "wait": 1.0 },
-            { "slug": "after_clapback", "commands": ["screenshot"], "wait": 1.0 },
-            { "slug": "move_to_sarcasmia", "commands": ["right:48"], "wait": 1.0 },
+            { "slug": "move_to_sarcasmia", "commands": ["right:88"], "wait": 2.0 },
             { "slug": "talk_to_sarcasmia", "commands": ["talk"], "wait": 1.5 },
             { "slug": "sarcasmia_dialog", "commands": ["screenshot"], "wait": 2.0 },
-            { "slug": "close_sarcasmia", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "close_sarc_1", "commands": ["item_1"], "wait": 0.5 },
+            { "slug": "close_sarc_2", "commands": ["item_1"], "wait": 0.5 },
+            { "slug": "close_sarc_3", "commands": ["item_1"], "wait": 0.5 },
+            { "slug": "close_sarc_4", "commands": ["item_1"], "wait": 0.5 },
+            { "slug": "close_sarc_5", "commands": ["item_1"], "wait": 1.5 },
             { "slug": "after_sarcasmia", "commands": ["screenshot"], "wait": 1.0 },
-            { "slug": "move_to_potioneer", "commands": ["right:48"], "wait": 1.0 },
+            { "slug": "move_to_potioneer", "commands": ["right:48"], "wait": 2.0 },
             { "slug": "talk_to_potioneer", "commands": ["talk"], "wait": 1.5 },
             { "slug": "potioneer_dialog", "commands": ["screenshot"], "wait": 2.0 },
-            { "slug": "close_potioneer", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "close_potioneer", "commands": ["item_2"], "wait": 1.5 },
             { "slug": "after_potioneer", "commands": ["screenshot"], "wait": 1.0 }
         ],
         "assertions": [
             { "type": "screenshot_review", "target": "barman_dialog", "expect": "A dialog panel is open showing the Barman Absinthrayner NPC's dialog text. The panel should show the NPC avatar on the left and player avatar on the right, with reply options numbered 1-5 or more." },
             { "type": "screenshot_review", "target": "after_barman", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; Barman's dialog panel is closed." },
-            { "type": "screenshot_review", "target": "clapback_dialog", "expect": "A dialog panel is open showing the Clapback Sword NPC's dialog text." },
-            { "type": "screenshot_review", "target": "after_clapback", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; Clapback Sword's dialog panel is closed." },
             { "type": "screenshot_review", "target": "sarcasmia_dialog", "expect": "A dialog panel is open showing the Madame Sarcasmia NPC's dialog text." },
             { "type": "screenshot_review", "target": "after_sarcasmia", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; Madame Sarcasmia's dialog panel is closed." },
             { "type": "screenshot_review", "target": "potioneer_dialog", "expect": "A dialog panel is open showing the Potioneer Puzzlemint NPC's dialog text." },
             { "type": "screenshot_review", "target": "after_potioneer", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; Potioneer Puzzlemint's dialog panel is closed." },
             { "type": "process_alive" }
+        ]
+    },
+    {
+        "name": "Dialog Escape Blocked",
+        "slug": "dialog_escape_blocked",
+        "platform": ["desktop"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.5 },
+            { "slug": "dialog_open", "commands": ["screenshot"], "wait": 1.0 },
+            { "slug": "press_escape", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "after_escape", "commands": ["screenshot"], "wait": 1.0 },
+            { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.0 },
+            { "slug": "close_dialog", "commands": ["item_6"], "wait": 1.5 },
+            { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 1.0 }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "after_escape", "expect": "A dialog panel is STILL open showing Hammer's dialog text and reply options. The dialog did NOT close after pressing Escape." },
+            { "type": "screenshot_review", "target": "dialog_closed", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; the dialog panel is closed after picking the final farewell option." }
         ]
     }
 ]

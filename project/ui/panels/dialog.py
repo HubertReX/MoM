@@ -306,6 +306,9 @@ class DialogPanel(Widget):
         self.npc.dialog = opt.next_node
         self._visit_current_node()
         if self.npc.dialog.is_final:
+            # Refresh the body text/options for the final node so the player
+            # actually sees the last line before the panel closes.
+            self._refresh_node()
             # Signal the controller to close, no matter which input path (accept,
             # digit key, or mouse) triggered this selection.
             self._pending_close = True
@@ -356,9 +359,8 @@ class DialogPanel(Widget):
                     return self.activate_selected()
             return False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                self._pending_close = True
-                return True
+            # Esc no longer closes the dialog; the conversation can only end by
+            # reaching the final node and pressing Enter/accept.
             if event.key in (pygame.K_UP, pygame.K_DOWN):
                 # Arrow keys move the option cursor — _edge("up"/"down") in
                 # GameUI.update() handles actual navigation via INPUTS. We

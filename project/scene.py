@@ -1164,6 +1164,13 @@ class Scene(State):
         # while a Save/Load panel is open the world is frozen and input goes only to
         # the panel; clear INPUTS so nothing queued fires when the panel closes.
         if modal_open:
+            # Dialog/Trade freeze the world, but keep the animated emotes above
+            # characters running so the scene doesn't look completely static.
+            for npc in self.NPCs:
+                if npc.emote:
+                    npc.emote.animate(dt)
+            if self.player.emote:
+                self.player.emote.animate(dt)
             self.game.reset_inputs()
             return
 

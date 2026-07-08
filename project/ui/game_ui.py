@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 _BLOCKING = (DialogPanel, TradePanel)
 # panels that fully freeze the world while open: input must go to the panel only,
 # not to the scene underneath (otherwise e.g. R renames a slot *and* reloads the map)
-_MODAL = (LoadPanel, SavePanel)
+_MODAL = (DialogPanel, TradePanel, LoadPanel, SavePanel)
 
 
 class GameUI:
