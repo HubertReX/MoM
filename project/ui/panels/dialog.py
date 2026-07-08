@@ -186,8 +186,6 @@ class DialogPanel(Widget):
                 base_color=theme.DEFAULT_TEXT_COLOR,
                 shadow=False,
             )
-            if opt.selected:
-                surf.set_alpha(_VISITED_ALPHA)
             self.option_surfaces.append(surf)
             self._option_surfaces.append(self._build_weight_indicator(opt))
 
@@ -361,6 +359,13 @@ class DialogPanel(Widget):
             if event.key == pygame.K_ESCAPE:
                 self._pending_close = True
                 return True
+            if event.key in (pygame.K_UP, pygame.K_DOWN):
+                # Arrow keys move the option cursor — _edge("up"/"down") in
+                # GameUI.update() handles actual navigation via INPUTS. We
+                # consume the KEYDOWN here so it does NOT fall through to
+                # self.body.handle_event() which would also scroll the NPC
+                # speech text.
+                return True
             if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                 # If the UI controller already advanced the dialog from INPUTS["accept"]
                 # in this frame, the same KEYDOWN event is routed here afterwards.
@@ -424,7 +429,12 @@ class DialogPanel(Widget):
         for i in range(start, end):
             rect = self.option_rects[i]
             blit_pos = (rect.left + _CURSOR_WIDTH, rect.top)
-            surface.blit(self.option_surfaces[i], blit_pos)
+            surf = self.option_surfaces[i]
+            if self._options[i].selected:
+                surf.set_alpha(_VISITED_ALPHA)
+            else:
+                surf.set_alpha(255)
+            surface.blit(surf, blit_pos)
             indicator, wpos = self.option_weight_indicators[i]
             surface.blit(indicator, wpos)
 
