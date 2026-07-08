@@ -23,11 +23,18 @@ from dialog import (
     apply_result,
     visit_node
     )
+from enums import NotificationTypeEnum
 from result_sink_adapter import GameResultSink
 
 
 def assert_eq(a: object, b: object, msg: str = "") -> None:
     assert a == b, f"{msg}: expected {b!r}, got {a!r}"
+
+
+@dataclass
+class _FakeNotification:
+    message: str = ""
+    create_time: float = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +180,7 @@ def test_visit_node_without_result_still_marks_visited() -> None:
 class _FakeItemModel:
     weight: float = 1.0
     count: int = 1
+    name: str = "Sword"
 
 
 @dataclass
@@ -191,12 +199,18 @@ class _FakePlayerModel:
 @dataclass
 class _FakeScene:
     created: list[tuple[str, int, int, dict[str, bool]]] = field(default_factory=list)
+    notifications: list[_FakeNotification] = field(default_factory=list)
 
     def create_item(
         self, name: str, x: int, y: int, show: bool = True
     ) -> _FakeItem:
         self.created.append((name, x, y, {"show": show}))
         return _FakeItem(name, _FakeItemModel())
+
+    def add_notification(
+        self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info
+    ) -> None:
+        self.notifications.append(_FakeNotification(message=text))
 
 
 @dataclass
