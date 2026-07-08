@@ -278,8 +278,10 @@ class SaveManager:
             return None
         current_node_key = npc.dialog.key if npc.dialog else ""
         visited_nodes = {key: True for key, node in dialog_nodes.items() if node.visited}
+        start_node_key = npc.dialog_start_node.key if npc.dialog_start_node else ""
         return NPCDialogState(
             current_node_key=current_node_key,
+            dialog_start_node_key=start_node_key,
             selected_options=dict(getattr(npc, "selected_options_dict", {})),
             visited_nodes=visited_nodes,
             sentiment=int(getattr(npc, "sentiment", 50)),

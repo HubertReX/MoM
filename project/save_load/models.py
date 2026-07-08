@@ -231,6 +231,7 @@ class NPCDialogState:
 
     Maps to the live NPC fields as follows:
     - ``current_node_key``   -> ``NPC.dialog.key`` (cursor into the graph)
+    - ``dialog_start_node_key`` -> ``NPC.dialog_start_node.key`` (next conversation start)
     - ``selected_options``   -> ``NPC.selected_options_dict``
     - ``visited_nodes``      -> ``DialogNode.visited`` flags on the rebuilt graph
     - ``sentiment``          -> ``NPC.sentiment``
@@ -238,6 +239,7 @@ class NPCDialogState:
     """
 
     current_node_key: str = ""
+    dialog_start_node_key: str = ""
     selected_options: dict[str, bool] = field(default_factory=dict)
     visited_nodes: dict[str, bool] = field(default_factory=dict)
     sentiment: int = 50
@@ -250,6 +252,7 @@ class NPCDialogState:
     def from_dict(cls, data: dict[str, Any]) -> NPCDialogState:
         return cls(
             current_node_key=str(data.get("current_node_key", "")),
+            dialog_start_node_key=str(data.get("dialog_start_node_key", "")),
             selected_options={str(k): bool(v) for k, v in data.get("selected_options", {}).items()},
             visited_nodes={str(k): bool(v) for k, v in data.get("visited_nodes", {}).items()},
             sentiment=int(data.get("sentiment", 50)),

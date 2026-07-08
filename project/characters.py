@@ -366,6 +366,15 @@ class NPC(pygame.sprite.Sprite):
             if dialog_config:
                 self.dialog = get_start_node(dialog_config, self.dialog_nodes)
 
+        # Restore dialog_start_node (next conversation start, may differ from START_NODE)
+        start_key = dialog_state.dialog_start_node_key
+        if start_key and start_key in self.dialog_nodes:
+            self.dialog_start_node = self.dialog_nodes[start_key]
+        elif self.dialog_start_node is None:
+            dialog_config = self.game.conf.dialogs.get(self.dialog_key, {})
+            if dialog_config:
+                self.dialog_start_node = get_start_node(dialog_config, self.dialog_nodes)
+
         for key, node in self.dialog_nodes.items():
             node.visited = dialog_state.visited_nodes.get(key, False)
 
