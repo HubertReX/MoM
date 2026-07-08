@@ -388,6 +388,7 @@
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
             { "slug": "hub_node", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "pick_goodbye", "commands": ["item_6"], "wait": 1.5 },
+            { "slug": "close_with_accept", "commands": ["accept"], "wait": 0.5 },
             { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 2.0 }
         ],
         "assertions": [
@@ -460,6 +461,7 @@
             { "slug": "barman_dialog", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "close_barman_1", "commands": ["item_1"], "wait": 1.0 },
             { "slug": "close_barman_2", "commands": ["item_6"], "wait": 1.5 },
+            { "slug": "close_barman_accept", "commands": ["accept"], "wait": 0.5 },
             { "slug": "after_barman", "commands": ["screenshot"], "wait": 1.0 },
             { "slug": "move_to_sarcasmia", "commands": ["right:88"], "wait": 2.0 },
             { "slug": "talk_to_sarcasmia", "commands": ["talk"], "wait": 1.5 },
@@ -469,11 +471,13 @@
             { "slug": "close_sarc_3", "commands": ["item_1"], "wait": 0.5 },
             { "slug": "close_sarc_4", "commands": ["item_1"], "wait": 0.5 },
             { "slug": "close_sarc_5", "commands": ["item_1"], "wait": 1.5 },
+            { "slug": "close_sarc_accept", "commands": ["accept"], "wait": 0.5 },
             { "slug": "after_sarcasmia", "commands": ["screenshot"], "wait": 1.0 },
             { "slug": "move_to_potioneer", "commands": ["right:48"], "wait": 2.0 },
             { "slug": "talk_to_potioneer", "commands": ["talk"], "wait": 1.5 },
             { "slug": "potioneer_dialog", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "close_potioneer", "commands": ["item_2"], "wait": 1.5 },
+            { "slug": "close_pot_accept", "commands": ["accept"], "wait": 0.5 },
             { "slug": "after_potioneer", "commands": ["screenshot"], "wait": 1.0 }
         ],
         "assertions": [
@@ -499,6 +503,7 @@
             { "slug": "after_escape", "commands": ["screenshot"], "wait": 1.0 },
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.0 },
             { "slug": "close_dialog", "commands": ["item_6"], "wait": 1.5 },
+            { "slug": "esc_close_accept", "commands": ["accept"], "wait": 0.5 },
             { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 1.0 }
         ],
         "assertions": [

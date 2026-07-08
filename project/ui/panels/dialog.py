@@ -98,7 +98,7 @@ class DialogPanel(Widget):
         self.selected_index = 0
         self._scroll_offset = 0                          # index of first option in the visible window
         self._visible_count = 0                          # how many options fit in the area
-        self._pending_close = False                      # a final node was reached; controller should close
+        self._on_final_node = False                      # a final node was reached; wait for Accept to close
         self._accept_consumed = False                    # guard against double-handling Enter in the same frame
 
         self.name_bg = theme.nine_patch("nine_patch_13.png", 8 * TILE_SIZE, TILE_SIZE)
@@ -134,7 +134,7 @@ class DialogPanel(Widget):
         self.tooltip.update(None, (0, 0))
         self._floating_texts.clear()
         self._sentiment_flash_timer = 0.0
-        self._pending_close = False
+        self._on_final_node = False
         self._visit_current_node()
         self._refresh_options()
 
@@ -307,21 +307,19 @@ class DialogPanel(Widget):
         self._visit_current_node()
         if self.npc.dialog.is_final:
             # Refresh the body text/options for the final node so the player
-            # actually sees the last line before the panel closes.
+            # sees the farewell text. The panel stays open until the player
+            # presses Accept (Enter) to close it.
             self._refresh_node()
-            # Signal the controller to close, no matter which input path (accept,
-            # digit key, or mouse) triggered this selection.
-            self._pending_close = True
+            self._on_final_node = True
             return True
+        self._on_final_node = False
         self._refresh_node()
         return False
 
-    def consume_close(self) -> bool:
-        """Return (and clear) whether a final node was reached and the panel should close."""
-        if self._pending_close:
-            self._pending_close = False
-            return True
-        return False
+    @property
+    def on_final_node(self) -> bool:
+        """True when the dialog is at a final (farewell) node waiting for Accept."""
+        return self._on_final_node
 
     def _refresh_node(self) -> None:
         """Update the body text after advancing to a new node."""

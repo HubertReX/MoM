@@ -144,7 +144,14 @@ class GameUI:
             if self._edge("down"):
                 dialog.select_next()
             if self._edge("accept"):
-                dialog.activate_selected()
+                if dialog.on_final_node:
+                    # Final node reached: Accept closes the farewell text.
+                    self.close(DialogPanel)
+                    self.scene.player.is_talking = False
+                    if self.scene.player.npc_met:
+                        self.scene.player.npc_met.is_talking = False
+                else:
+                    dialog.activate_selected()
                 # raw key events also call activate_selected; clear accept
                 # so the same press is not handled twice this frame.
                 INPUTS["accept"] = False
@@ -159,20 +166,6 @@ class GameUI:
             top = self._open[-1]
             for event in events:
                 top.handle_event(event)
-
-        # Close the dialog once a final node was reached via ANY input path
-        # (accept/talk INPUTS, digit keys, Esc, or mouse click).
-        if self.is_open(DialogPanel):
-            dialog = cast(DialogPanel, self._panel(DialogPanel))
-            if dialog.consume_close():
-                self.close(DialogPanel)
-                self.scene.player.is_talking = False
-                if self.scene.player.npc_met:
-                    self.scene.player.npc_met.is_talking = False
-                # Prevent the Esc key that closed the dialog from also opening
-                # the main menu (scene.py handler). The quit KEYDOWN was consumed
-                # but INPUTS["quit"] is already True; clear it here.
-                INPUTS["quit"] = False
 
         for panel in self._open:
             panel.update(time_elapsed)
