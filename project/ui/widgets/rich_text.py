@@ -124,7 +124,8 @@ class RichText(Widget):
                 continue
 
             if tok.kind == "image":
-                target_h = round(theme.get_font(tok.style.size).get_height() * _ICON_SCALE)
+                font_h = theme.get_font(tok.style.size).get_height()
+                target_h = round(font_h * _ICON_SCALE)
                 frames = self._icon_frames(tok.value, target_h)
                 if not frames:
                     continue
@@ -135,8 +136,9 @@ class RichText(Widget):
                 if items:
                     x += pending_space
                 pending_space = 0
+                adj = (target_h - font_h) // 2  # upward offset to vertically center the oversized icon
                 items.append({"kind": "image", "name": tok.value, "x": x, "w": w, "h": h,
-                              "th": target_h, "link": tok.style.link})
+                              "th": target_h, "link": tok.style.link, "adj": adj})
                 x += w
                 line_h = max(line_h, h)
                 continue
@@ -191,6 +193,8 @@ class RichText(Widget):
                 if it["kind"] == "text":
                     content.blit(it["surf"], (ix, y))
                 else:
+                    adj = it.get("adj", 0)
+                    rect = pygame.Rect(ix, y - adj, it["w"], it["h"])
                     self.image_items.append((it["name"], rect, it["th"]))
                 if it["link"]:
                     self.link_rects.append((rect, it["link"]))
@@ -353,7 +357,9 @@ def render_rich_text_surface(
             if items:
                 x += pending_space
             pending_space = 0
-            items.append({"kind": "image", "name": tok.value, "x": x, "w": w, "h": target_h})
+            font_h = theme.get_font(tok.style.size).get_height()
+            adj = (target_h - font_h) // 2
+            items.append({"kind": "image", "name": tok.value, "x": x, "w": w, "h": target_h, "adj": adj})
             x += w
             line_h = max(line_h, target_h)
             continue
@@ -398,7 +404,8 @@ def render_rich_text_surface(
                     scaled = pygame.transform.scale(
                         frame, (max(1, round(w0 * scale)), it["h"]),
                     )
-                    surface.blit(scaled, (ox + it["x"], y))
+                    adj = it.get("adj", 0)
+                    surface.blit(scaled, (ox + it["x"], y - adj))
         y += line["height"]
 
     return surface
