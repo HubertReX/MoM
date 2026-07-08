@@ -218,7 +218,7 @@ INVENTORY_ITEM_SCALE = 4
 # width (with padding) of hotbar slot
 INVENTORY_ITEM_WIDTH = 22 * INVENTORY_ITEM_SCALE
 # avatar (faceset) size in tiles
-AVATAR_SCALE: int = 16
+AVATAR_SCALE: int = 18
 
 # game render fps cap
 FPS_CAP = 0  # 130
