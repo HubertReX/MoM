@@ -379,6 +379,15 @@ class NPC(pygame.sprite.Sprite):
         if self.dialog_start_node is not None:
             self.dialog = self.dialog_start_node
 
+    def apply_resume_node(self) -> None:
+        """If the current dialog node has a resume_node, update dialog_start_node
+        so the next conversation begins there instead of the original START_NODE.
+        """
+        if self.dialog is not None and self.dialog.resume_node and self.dialog_nodes:
+            resume_key = self.dialog.resume_node
+            if resume_key in self.dialog_nodes:
+                self.dialog_start_node = self.dialog_nodes[resume_key]
+
     #############################################################################################################
     def generate_masks(self) -> None:
         # _mask = pygame.mask.from_surface(self.image)

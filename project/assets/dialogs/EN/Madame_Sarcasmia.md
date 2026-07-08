@@ -56,15 +56,15 @@ Should be a piece of cake. Rolls eyes :dots:.
 
 Good luck, dearie.
 
-* [005](#005) 1😐: [char]Mermaid[/char] [item]tear[/item], [char]Mopey Phoenix[/char] [item]feather[/item], and [char]Grumpy Gnome[/char] [item]whisker[/item]. Got it.
-* [005](#005) 2😉: I'll be back with your trinkets before you can say "abracadabra" — just have that potion ready.
-* [006](#006) 3😢: That sounds… awful.
+* [005](#005-end) 1😐: [char]Mermaid[/char] [item]tear[/item], [char]Mopey Phoenix[/char] [item]feather[/item], and [char]Grumpy Gnome[/char] [item]whisker[/item]. Got it.
+* [005](#005-end) 2😉: I'll be back with your trinkets before you can say "abracadabra" — just have that potion ready.
+* [006](#006-end) 3😢: That sounds… awful.
 
-### 005-end
+### 005-end [011](#011)
 
 * Now, off you go. Chop-chop. And if you manage to survive, I'll consider brewing that "cure" you're so desperate for. No refunds, though. Ta-ta!
 
-### 006-end
+### 006-end [011](#011)
 
 * Oh, don't be such a princess :love:. Now, off you go. Chop-chop. And if you manage to survive, I'll consider brewing that "cure" you're so desperate for. No refunds, though. Ta-ta!
 
@@ -136,7 +136,7 @@ Good luck, dearie.
 
 * Oh, my poor, unfortunate soul. I see you're more adept at returning empty-handed than not. I guess you're doomed for good.
 
-* [019](#019) 1😐: Who needs a cure anyway, right?
+* [019](#019-end) 1😐: Who needs a cure anyway, right?
 
 ### 017
 
@@ -154,7 +154,7 @@ Good luck, dearie.
 * [021](#021) 2😐: It must work, it must work, it must work…
 * [021](#021) 3😉: It was so clever of me not to bother to collect all items…
 
-### 019-end
+### 019-end [011](#011)
 
 * A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.
 

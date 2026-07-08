@@ -52,7 +52,7 @@ Runtime:
 ### 3. Zamknięcie panelu
 1. `game_ui.py` wykrywa `on_final_node` + Accept
 2. `npc.reset_dialog()` → `npc.dialog = dialog_start_node`
-3. Następna rozmowa zaczyna się od START_NODE, a warunki decydują o ścieżce
+3. Następna rozmowa zaczyna się od `dialog_start_node` (może być zmieniony przez `resume_node`), a warunki decydują o ścieżce
 
 ## Kluczowe koncepty
 
@@ -82,7 +82,7 @@ to adapter do żywych danych gry.
 | `selected(opt_key)` | `npc.selected_options_dict` | per-NPC, zapisywane przy `activate_selected()` |
 | `visited(node_key)` | `npc.dialog_nodes[node_key].visited` | własny NPC |
 | `visited(dialog_key, node_key)` | `scene.loaded_NPCs[dialog_key].dialog_nodes[node_key].visited` | **cross-NPC lookup** |
-| `has_item(key)` | `player.items` po `item.model.name` | |
+| `has_item(key)` | `player.items` po `item.name` (config key) | **nie** `item.model.name` (to display name) |
 | `sentiment` | `npc.sentiment` (int, 0–100) | może być clampowany |
 
 ### Cross-NPC lookup — ZAWSZE po `dialog_key`
@@ -116,6 +116,42 @@ akapitów. Importer grupuje kolejne linie bez pustej linii między nimi w jeden
 akapit (połączone pojedynczym `\n`). Pusta linia w źródle = nowy akapit
 (separator `\n\n` w renderowanym tekście).
 
+### Węzły końcowe (`-end`) i resume
+
+Węzły końcowe (po których rozmowa się kończy) mają sufiks `-end` w nagłówku:
+
+```md
+### 005-end [011](#011)
+
+* A teraz idź już...
+```
+
+- Sufiks `-end` → `is_final=True` — po dotarciu do tego węzła panel pokazuje tekst i czeka na Accept, nie wyświetla opcji.
+- Link `[011](#011)` w nagłówku → `resume_node="011"` — **następna rozmowa** z tym NPC zacznie się od węzła #011 zamiast od START_NODE.
+- Link jest klikalny w VS Code (podgląd Markdown), co ułatwia nawigację między plikami.
+
+**Opcje wskazujące na węzeł końcowy** używają `-end` w anchorze linku:
+
+```md
+* [005](#005-end) 1😐: Zrozumiano.
+```
+
+Importer automatycznie stripuje `-end` z targetu (`#005-end` → node key `005`), ale anchor z `-end` działa w VS Code preview.
+
+**Mechanizm resume w runtime:**
+1. Gdy gracz wybiera opcję prowadzącą do węzła z `is_final=True`, `DialogPanel.activate_selected()` woła `npc.apply_resume_node()`.
+2. `apply_resume_node()` podmienia `npc.dialog_start_node` na węzeł wskazany przez `resume_node`.
+3. Po zamknięciu panelu, `npc.reset_dialog()` ustawia kursor na `dialog_start_node` — czyli na docelowy węzeł wznowienia.
+4. `resume_node` jest przechowywane w `config.json` (`DIALOG_NODES[nkey].resume_node`) i deserializowane jako `DialogNode.resume_node`.
+
+**Backward compat:** stary format z opcją `* [001](#001) 1😐: technical loop back` jest nadal wspierany — importer rozpoznaje tekst "technical loop back" i traktuje go jako dyrektywę resume (nie dodaje jako realnej opcji). Nowy format (link w nagłówku) ma pierwszeństwo.
+
+### `has_item()` — porównanie po config key
+
+`has_item()` w `context_adapter.py` porównuje `item.name` (`ItemSprite.name` = config key, np. `"MERMAIDS_TEAR"`) z kluczem z warunku. **Nie** porównuje `item.model.name` (display name jak `"Mermaid's tear"`) — to był bug (fix 2026-07-08).
+
+Node #012 Madame Sarcasmii używa `[ITEMS-GNOMES_WHISKER,MERMAIDS_TEAR,PHOENIX_FEATHER]` → `_remove_one_item()` też używa `item.name`, więc poprawnie usuwa przedmioty z inventory po spełnieniu questu.
+
 ## Znane pułapki (bug history)
 
 1. **Bug visited() — bieżący węzeł zamiast historii** (fix 2026-07-08):
@@ -148,3 +184,22 @@ akapit (połączone pojedynczym `\n`). Pusta linia w źródle = nowy akapit
    a pierwszą opcją traktowane jako kontynuacja. Kolejne linie bez pustej linii
    między nimi grupuje w jeden akapit (połączone `\n`). Pusta linia = separator
    akapitów (`\n\n`).
+
+6. **`has_item()` porównuje display name z config key** (fix 2026-07-08):
+   `context_adapter.py:53` — `item.model.name` (display name "Mermaid's tear")
+   vs `item_key` (config key "MERMAIDS_TEAR") — zawsze `False`.
+   Dotknięty: Madame Sarcasmia (węzeł #011 sprawdzający posiadanie przedmiotów).
+   Fix: `item.name` (config key, tak jak reszta kodu).
+
+7. **Brak `resume_node` — „technical loop back" był ignorowany** (fix 2026-07-08):
+   Opcje z tekstem "technical loop back" były dodawane do grafu jako realne opcje
+   (niewidoczne na finalnych węzłach, ale zaśmiecały dane). `resume_node` w ogóle
+   nie istniał — `reset_dialog()` zawsze wracał do START_NODE, podczas gdy niektóre
+   końcowe węzły powinny kierować następną rozmowę do innego węzła (np. #011 zamiast
+   #000). Fix: dodano `DialogNode.resume_node`, parse linku `[011](#011)` w nagłówku
+   węzła, i `NPC.apply_resume_node()` aktualizujące `dialog_start_node`.
+
+8. **Walidator grafu nie znał `resume_node`** (fix 2026-07-08):
+   Po przeniesieniu dyrektywy resume z opcji do nagłówka, węzły osiągalne tylko
+   przez `resume_node` (np. Clapback Sword node #100) były zgłaszane jako orphan.
+   Fix: `_validate_graph()` dodaje `resume_node` targety do zbioru znanych krawędzi.

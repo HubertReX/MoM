@@ -113,8 +113,11 @@ _OPTION_RE = re.compile(
     r"(?P<text>.*)$"
 )
 
-# heading that starts a node: "### 000" or "### 990-end"
-_NODE_HEADING_RE = re.compile(r"^###\s*(?P<key>[A-Za-z0-9_\-]+)$")
+# heading that starts a node: "### 000", "### 990-end", or "### 990-end [011](#011)"
+_NODE_HEADING_RE = re.compile(
+    r"^###\s*(?P<key>[A-Za-z0-9_\-]+)"
+    r"(?:\s*\[(?P<resume_anchor>[^\]]+)\]\(#(?P<resume_target>[^)]+)\))?\s*$"
+)
 
 # bullet that carries node text: "* Some text..."
 _NODE_TEXT_RE = re.compile(r"^\*\s+(?P<text>.+)$")
@@ -163,6 +166,7 @@ class _ParsedNode:
     key: str
     text_lines: list[str] = field(default_factory=list)
     is_final: bool = False
+    resume_node: str | None = None
     options: list[_ParsedOption] = field(default_factory=list)
     line_no: int = 0
     _prev_empty: bool = field(default=True, repr=False)
@@ -267,11 +271,14 @@ def import_character_dialog(
         messages["PL"][node_message_key] = _convert_text(pl_text)
         messages["EN"][node_message_key] = _convert_text(en_text)
 
-        dialog_config[character_key]["DIALOG_NODES"][node_key] = {
+        node_config = {
             "is_final": pl_node.is_final,
             "result": result_key,
             "text": node_message_key,
         }
+        if pl_node.resume_node:
+            node_config["resume_node"] = pl_node.resume_node
+        dialog_config[character_key]["DIALOG_NODES"][node_key] = node_config
 
         if result_key:
             dialog_config[character_key]["NODE_RESULTS"][result_key] = (
@@ -542,9 +549,11 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
             node_key = node_match.group("key")
             is_final = node_key.endswith("-end")
             node_key = node_key.replace("-end", "")
+            resume_node = node_match.group("resume_target")
             current_node = _ParsedNode(
                 key=node_key,
                 is_final=is_final,
+                resume_node=resume_node,
                 line_no=line_no,
             )
             if node_key in nodes:
@@ -561,6 +570,13 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
 
         option_match = _OPTION_RE.match(line)
         if option_match:
+            opt_text = option_match.group("text").strip()
+            # "technical loop back" is a directive, not a real option — it
+            # sets the resume_node for backward-compat heading format.
+            if opt_text == "technical loop back" and current_node.is_final:
+                if current_node.resume_node is None:
+                    current_node.resume_node = option_match.group("target").replace("-end", "")
+                continue
             current_node.options.append(
                 _ParsedOption(
                     anchor=option_match.group("anchor"),
@@ -568,7 +584,7 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
                     order=option_match.group("order"),
                     condition=option_match.group("condition"),
                     sentiment=option_match.group("sentiment"),
-                    text=option_match.group("text").strip(),
+                    text=opt_text,
                     line_no=line_no,
                 )
             )
@@ -889,6 +905,10 @@ def _validate_graph(
 
     # orphan nodes (no incoming edge except START)
     targets = {opt.target for node in nodes.values() for opt in node.options}
+    # resume targets from final-node headings also count as incoming edges
+    for node in nodes.values():
+        if node.resume_node:
+            targets.add(node.resume_node)
     orphans = [
         (key, node.line_no)
         for key, node in nodes.items()

@@ -98,6 +98,7 @@ def _build_nodes(
             data["text"],
             is_final=data.get("is_final", False),
             result=results.get(result_key),
+            resume_node=data.get("resume_node"),
         )
     return nodes
 

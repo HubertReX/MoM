@@ -137,9 +137,12 @@ class DialogPanel(Widget):
         self._on_final_node = False
         self._visit_current_node()
         self._refresh_options()
+        if self.npc and self.npc.dialog and self.npc.dialog.is_final:
+            self.npc.apply_resume_node()
+            self._on_final_node = True
         # Dead-end: opening node has no visible options and is not final →
         # treat as auto-final so the player can close the conversation.
-        if not self._options and self.npc and self.npc.dialog and not self.npc.dialog.is_final:
+        elif not self._options:
             self._on_final_node = True
 
     def _visit_current_node(self) -> None:
@@ -313,6 +316,7 @@ class DialogPanel(Widget):
             # Refresh the body text/options for the final node so the player
             # sees the farewell text. The panel stays open until the player
             # presses Accept (Enter) to close it.
+            self.npc.apply_resume_node()
             self._refresh_node()
             self._on_final_node = True
             return True

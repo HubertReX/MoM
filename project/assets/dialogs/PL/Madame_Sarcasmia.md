@@ -56,15 +56,15 @@ To powinna być bułka z masłem — przewraca oczami :dots:.
 
 Powodzenia, kochanieńki.
 
-* [005](#005) 1😐: [item]łza[/item] [char]Melancholijnej Syrenki[/char], [item]pióro[/item] [char]Przygnębionego Feniksa[/char] i [item]wąsik[/item] [char]Zrzędliwego Gnoma[/char]. Zrozumiano.
-* [005](#005) 2😉: Wrócę z twoimi bibelotami, ale oczekuję, że będziesz mieć gotowy eliksir — puszczasz oczko.
-* [006](#006) 3😢: To brzmi… okropnie.
+* [005](#005-end) 1😐: [item]łza[/item] [char]Melancholijnej Syrenki[/char], [item]pióro[/item] [char]Przygnębionego Feniksa[/char] i [item]wąsik[/item] [char]Zrzędliwego Gnoma[/char]. Zrozumiano.
+* [005](#005-end) 2😉: Wrócę z twoimi bibelotami, ale oczekuję, że będziesz mieć gotowy eliksir — puszczasz oczko.
+* [006](#006-end) 3😢: To brzmi… okropnie.
 
-### 005-end
+### 005-end [011](#011)
 
 * A teraz idź już. Raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
 
-### 006-end
+### 006-end [011](#011)
 
 * Och, nie bądź taką księżniczką :love:. A teraz idź już, raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!
 
@@ -136,7 +136,7 @@ Powodzenia, kochanieńki.
 
 * Och, moja biedna, nieszczęsna duszo. Widzę, że lepiej ci wracać z pustymi rękami niż z czymkolwiek. Chyba jesteś skazany na zagładę.
 
-* [019](#019) 1😐: Kto w ogóle potrzebuje lekarstwa, prawda?
+* [019](#019-end) 1😐: Kto w ogóle potrzebuje lekarstwa, prawda?
 
 ### 017
 
@@ -154,7 +154,7 @@ Powodzenia, kochanieńki.
 * [021](#021) 2😐: To musi działać, to musi działać, to musi działać…
 * [021](#021) 3😉: To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…
 
-### 019-end
+### 019-end [011](#011)
 
 * Pogodzenie się z własnym losem, jakże to rozkosznie odświeżające. Mistrzowsko opanowałeś sztukę akceptowania nieuchronnego. Idź w pokoju.
 

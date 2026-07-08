@@ -146,23 +146,17 @@ Tak jak ja.
 
 * [012](#012) 1😐: ok, dzięki.
 
-### 990-end
+### 990-end [001](#001)
 
 * Powodzenia!
-
-* [001](#001) 1😐: technical loop back
 * [000](#000) 9😐: **DEBUG** od początku
 
-### 991-end
+### 991-end [001](#001)
 
 * [SENTIMENT-10]Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - wynocha!
-
-* [001](#001) 1😐: technical loop back
 * [000](#000) 9😐: **DEBUG** od początku
 
-### 992-end
+### 992-end [016](#016)
 
 * Nie rozmawiam z obcymi, żegnam.
-
-* [016](#016) 1😐: technical loop back
 * [000](#000) 9😐: **DEBUG** od początku

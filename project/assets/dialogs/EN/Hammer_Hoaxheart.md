@@ -93,9 +93,7 @@ translation: [**Kowal Kłamca**](../PL/char-Hammer_Hoaxheart.md)
 
 * [001](#001) 9😐: Dzięki, to mi wystarczy
 
-### 990-end
+### 990-end [001](#001)
 
 * Żegnam
-
-* [001](#001) 1😐: technical loop back
 * [000](#000) 9😐: **DEBUG** od początku

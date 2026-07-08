@@ -166,16 +166,10 @@ Wróć jak będziesz miał chciał zapytać o jakieś konkretne miejsce.
 
 * [991-end](#991-end) 1😐: Nie, nie, to nie tak...
 
-### 990-end
+### 990-end [001](#001)
 
 * Do zobaczenia!
 
-* [001](#001) 1😐: technical loop back
-* [000](#000) 9😐: **DEBUG** od początku
-
-### 991-end
+### 991-end [001](#001)
 
 * Wynocha!
-
-* [001](#001) 1😐: technical loop back
-* [000](#000) 9😐: **DEBUG** od początku

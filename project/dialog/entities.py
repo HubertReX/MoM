@@ -50,6 +50,7 @@ class DialogNode:
     is_final: bool = field(default=False, repr=False)
     visited: bool = field(default=False, repr=False)
     result: NodeVisitResult | None = field(default=None, repr=False)
+    resume_node: str | None = field(default=None, repr=False)
 
 
 @dataclass(slots=True)

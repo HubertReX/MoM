@@ -139,12 +139,11 @@ instead of the expected fullness of life, you shall be touched by the **Eternal 
 
 * [015-end](#015-end) 1😐: So what? Am I supposed to lie down and wait for death?
 
-### 015-end
+### 015-end [100](#100)
 
 * Alright, let's think. What we know so far about this curse is a mix of children's tales and bard's nonsense songs. We need to find out more specifics. One thing is certain. If you've always thought deep down that you're special, now you have proof to confirm it. You're special - you are exceptionally good at getting into trouble.
 Now let's hit the road! We need ask people around. I would start in the [location]Tavern[/].
 
-* [100](#100) 1😐: technical loop back
 * [000](#000) 9😐: **DEBUG** start over
 
 ### 100
