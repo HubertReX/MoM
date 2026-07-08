@@ -1280,12 +1280,12 @@
                     "order": 9,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_001to990_9"
                 },
-                "002to001_9": {
+                "002to001_1": {
                     "next_node": "001",
                     "condition": "True",
                     "sentiment": "neutral",
-                    "order": 9,
-                    "text": "M_BARMAN_ABSINTHRAYNER_DO_002to001_9"
+                    "order": 1,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_002to001_1"
                 },
                 "003to007_1": {
                     "next_node": "007",
@@ -1583,7 +1583,7 @@
                     "001to990_9"
                 ],
                 "002": [
-                    "002to001_9"
+                    "002to001_1"
                 ],
                 "003": [
                     "003to007_1",
@@ -3128,7 +3128,6 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to006_5": "Gdzie mógłbym zdobyć wiedzę o zaklęciach?",
             "M_BARMAN_ABSINTHRAYNER_DO_001to990_9": "To tyle, do następnego razu.",
             "M_BARMAN_ABSINTHRAYNER_DN_002": "Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjeła mój poród na tamtym stole w rogu. Mój ojciec jest właścicielem tej karczmy, a ja od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy.",
-            "M_BARMAN_ABSINTHRAYNER_DO_002to001_9": "Dzięki, to mi wystarczy",
             "M_BARMAN_ABSINTHRAYNER_DN_003": "[shadow]Gafowo Kolonia[/shadow]? Może to nie jest Rzym, ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych czarodziei i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty. Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki. Ponoć użyli swojej magii. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów.",
             "M_BARMAN_ABSINTHRAYNER_DO_003to007_1": "Czary? Tutaj? To niesłychane! Co stało się dalej?",
             "M_BARMAN_ABSINTHRAYNER_DO_003to008_2": "Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar",
@@ -3411,11 +3410,12 @@
             "M_HAMMER_HOAXHEART_DO_010to001_9": "Dzięki, to mi wystarczy",
             "M_HAMMER_HOAXHEART_DN_990": "Żegnam",
             "M_HAMMER_HOAXHEART_DO_990to001_1": "technical loop back",
-            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku"
+            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku",
+            "M_BARMAN_ABSINTHRAYNER_DO_002to001_1": "Dzięki, to mi wystarczy"
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barmanem Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
-            "M_BARMAN_ABSINTHRAYNER_DO_000to001_1": "Jestem [char]Malachi[/char], [big]Twój[/big] nowy przyjaciel :blink:",
+            "M_BARMAN_ABSINTHRAYNER_DO_000to001_1": "Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_2": "Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los..",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_3": "Jak chcesz, no mogę zostać [shadow]Twoim[/shadow] najlepszym klientem :happy:",
             "M_BARMAN_ABSINTHRAYNER_DN_001": "To jak mogę Ci pomóc?",
@@ -3425,8 +3425,7 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to005_4": "Znasz kogoś kto zna się na [light]zaklęciach[/light] :question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to006_5": "Gdzie mógłbym zdobyć wiedzę o [num]3[/num] zaklęciach :question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to990_9": "To tyle, do następnego razu :walk:",
-            "M_BARMAN_ABSINTHRAYNER_DN_002": "Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjeła mój poród na tamtym stole w rogu. Mój ojciec jest właścicielem tej karczmy, a ja od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy.",
-            "M_BARMAN_ABSINTHRAYNER_DO_002to001_9": "Dzięki, to mi wystarczy",
+            "M_BARMAN_ABSINTHRAYNER_DN_002": "Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjeła mój poród na tamtym stole w rogu. Mój ojciec jest właścicielem tej karczmy, a ja od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki.",
             "M_BARMAN_ABSINTHRAYNER_DN_003": "[shadow]Gafowo Kolonia[/shadow]? Może to nie jest Rzym, ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych czarodziei i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty. Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki. Ponoć użyli swojej magii. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów.",
             "M_BARMAN_ABSINTHRAYNER_DO_003to007_1": "Czary? Tutaj? To niesłychane! Co stało się dalej?",
             "M_BARMAN_ABSINTHRAYNER_DO_003to008_2": "Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar",
@@ -3709,7 +3708,8 @@
             "M_HAMMER_HOAXHEART_DO_010to001_9": "Dzięki, to mi wystarczy",
             "M_HAMMER_HOAXHEART_DN_990": "Żegnam",
             "M_HAMMER_HOAXHEART_DO_990to001_1": "technical loop back",
-            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku"
+            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku",
+            "M_BARMAN_ABSINTHRAYNER_DO_002to001_1": "Dzięki, to mi wystarczy"
         }
     }
 }
