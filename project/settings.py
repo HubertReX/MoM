@@ -870,9 +870,9 @@ ITEMS_SHEET_DEFINITION = {
     "bow": [(3, 9)],
     "arrow": [(4, 9)],
     "POTION_CURSE_NO_MORE": [(8, 2)],
-    "GNOMES_WHISKER": [(4, 2)],
-    "MERMAIDS_TEAR": [(0, 14)],
-    "PHOENIX_FEATHER": [(5, 3)],
+    "GNOMES_WHISKER": [(1, 4)],
+    "MERMAIDS_TEAR": [(6, 3)],
+    "PHOENIX_FEATHER": [(7, 3)],
 }
 
 GEMS_SHEET_DEFINITION = {
