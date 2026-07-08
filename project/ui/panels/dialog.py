@@ -56,6 +56,7 @@ _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
 _OPTION_ROW_H = _OPTION_FONT + _OPTION_PAD  # approx rendered option row height
 _OPTION_AREA_H = _OPTION_VISIBLE_COUNT * (_OPTION_ROW_H + _OPTION_GAP) + _OPTION_GAP
 _SEPARATOR_H = 2
+_SEPARATOR_MARGIN = 8  # extra empty space above the separator (raises the line)
 _SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01c)
 _OPTION_HIGHLIGHT_COLOR = (22, 55, 82)  # dark blue, high contrast vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
@@ -79,7 +80,7 @@ class DialogPanel(Widget):
             self.offset[0] + _BORDER,
             self.offset[1] + _BORDER,
             bg_w - 2 * _BORDER,
-            bg_h - 2 * _BORDER - _SEPARATOR_H - _OPTION_AREA_H,
+            bg_h - 2 * _BORDER - _SEPARATOR_H - _OPTION_AREA_H - _SEPARATOR_MARGIN,
         )
         self.options_bottom = self.rect.bottom - _BORDER
         self.options_top = self.options_bottom - _OPTION_AREA_H
@@ -98,6 +99,7 @@ class DialogPanel(Widget):
         self._scroll_offset = 0                          # index of first option in the visible window
         self._visible_count = 0                          # how many options fit in the area
         self._pending_close = False                      # a final node was reached; controller should close
+        self._accept_consumed = False                    # guard against double-handling Enter in the same frame
 
         self.name_bg = theme.nine_patch("nine_patch_13.png", 8 * TILE_SIZE, TILE_SIZE)
         self.name_label = Label("", size=FONT_SIZE_LARGE, font_path=str(MAIN_FONT),
@@ -277,6 +279,7 @@ class DialogPanel(Widget):
 
         Returns ``True`` if the conversation should close (final node reached).
         """
+        self._accept_consumed = True
         if not self._options or not self.npc or not self.npc.dialog:
             return False
         if self.selected_index >= len(self._options):
@@ -359,6 +362,12 @@ class DialogPanel(Widget):
                 self._pending_close = True
                 return True
             if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                # If the UI controller already advanced the dialog from INPUTS["accept"]
+                # in this frame, the same KEYDOWN event is routed here afterwards.
+                # Consume it once so a single physical Enter press does not enter
+                # and immediately exit the next node.
+                if self._accept_consumed:
+                    return True
                 return self.activate_selected()
             if event.key == pygame.K_SPACE:
                 # SPACE only scrolls the NPC speech; it never selects an option.
@@ -372,6 +381,7 @@ class DialogPanel(Widget):
         return self.body.handle_event(event)
 
     def update(self, dt: float) -> None:
+        self._accept_consumed = False
         self.body.update(dt)
         self.tooltip.update(self.body.link_at(pygame.mouse.get_pos()), pygame.mouse.get_pos())
 
