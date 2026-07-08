@@ -115,3 +115,39 @@ MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python
 
 ---
 
+## Assistant (Build · Big Pickle · 2026-07-08) — Fix ss-review
+
+**Co zrobiono** (commit `d50c801`):
+
+| Komponent | Zmiana |
+|---|---|
+| `tests/automate_display_test.py` | `-f` → inline path w prompcie; `--pure` zamiast pluginów; `gtimeout` hard kill; `SS_REVIEW_TIMEOUT` 150→60s; `SS_REVIEW_MODELS` jawny `opencode-go/mimo-v2.5` zamiast `None` |
+| `ss-rev.sh` | Przyjmuje `$1` (ścieżka) + `$2` (expected state); dokumentacja inline path vs `-f` |
+| `AGENTS.md` (root) | Dodane przykłady z `MOM_SS_REVIEW_MODEL` i `MOM_SKIP_SS_REVIEW` |
+| `project/AGENTS.md` | Nowa sekcja "ss-review (wizualna analiza screenshotów)" |
+
+**Ustalenia:**
+- `--plain` nie istnieje w OC 1.17.10; poprawna flaga to `--pure` (wyłącza pluginy, w tym discover-models.js)
+- `opencode-go/mimo-v2.5` ma vision i działa jako tani model do ss-review
+- `-f` wymaga modelu z `attachment: true` + `modalities.input: ["text","image"]` — bez tego error
+- `gtimeout` (GNU coreutils) dostępny na macOS przez Homebrew; fallback do `timeout` na Linux
+
+**Przykłady:**
+```bash
+# Test z domyślnym modelem (mimo-v2.5)
+MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+  .venv/bin/python3 tests/automate_display_test.py "TextInput Demo Hotkey"
+
+# Z wymuszonym modelem Gemini
+MOM_SS_REVIEW_MODEL='google/gemini-3.1-flash-lite' MOM_AGENT_CONTROL=1 \
+  SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+  .venv/bin/python3 tests/automate_display_test.py "Display Settings Flow"
+
+# Pomiń ss-review (szybka iteracja)
+MOM_SKIP_SS_REVIEW=1 MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+  .venv/bin/python3 tests/automate_display_test.py
+
+# Ręczna analiza screenshotu
+./ss-rev.sh screenshots/agent/agent_20260708_151153_textinput_demo_hotkey_01_at_main_menu.png MENU_MAIN
+```
+
