@@ -59,6 +59,9 @@ boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[lin
 
 ## System dialogów (`dialog/`)
 
+**Szczegółowa dokumentacja przepływu, mapy plików i znanych pułapek:**
+[`dialog/AGENTS.md`](./dialog/AGENTS.md).
+
 Logika dialogów przeniesiona z prototypu RPG (osobne repo — patrz [`../Tasks/DS-epic-brief.md`](../Tasks/DS-epic-brief.md),
 epic **DS**). **Czysta logika, zero pygame** — testowalna w izolacji i web-safe (działa
 w pygbag/WASM, bez Pydantic). Renderowanie i wpięcie w rozgrywkę robi `ui/panels/dialog.py`

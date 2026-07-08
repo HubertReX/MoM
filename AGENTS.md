@@ -98,4 +98,5 @@ mniejsze części. Nie analizuj katalogów oznaczonych ⛔.
 - [`project/config_model/AGENTS.md`](./project/config_model/AGENTS.md) — konfiguracja
 - [`project/maze_generator/AGENTS.md`](./project/maze_generator/AGENTS.md) — labirynty
 - [`project/assets/AGENTS.md`](./project/assets/AGENTS.md) — assety i lokalizacja
+- [`project/dialog/AGENTS.md`](./project/dialog/AGENTS.md) — system dialogów (graf, warunki DSL, adaptery, przepływ)
 - [`project/shaders/AGENTS.md`](./project/shaders/AGENTS.md) — shadery OpenGL/WebGL
