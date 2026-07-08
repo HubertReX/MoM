@@ -11,6 +11,8 @@ import pygame
 import settings as _settings
 from settings import HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH
 
+from save_load.display_settings import save_display_settings
+
 from .. import theme
 from ..manager import UIManager
 from ..widget import Widget
@@ -167,11 +169,13 @@ class DisplayPanel(Widget):
             if self._apply_callback is not None:
                 self._apply_callback()
             self._rebuild_buttons()
+            save_display_settings()
         elif bt == "fullscreen":
             _settings._IS_FULLSCREEN = not _settings._IS_FULLSCREEN
             if self._apply_callback is not None:
                 self._apply_callback()
             self._rebuild_buttons()
+            save_display_settings()
         elif bt == "back":
             if self._back_callback is not None:
                 self._back_callback()

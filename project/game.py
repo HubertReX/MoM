@@ -77,6 +77,8 @@ from settings import (  # LOGO_IMG,; ColorValue,
     vec3,
 )
 
+from save_load.display_settings import create_display_settings_storage, load_display_settings
+
 if USE_WEB_SIMULATOR:
     import pygbag.aio as asyncio
 else:
@@ -146,6 +148,12 @@ class Game:
         self.clock: pygame.time.Clock = pygame.time.Clock()
         # time elapsed in seconds (milliseconds as fraction) without pause time
         self.time_elapsed: float = 0.0
+
+        # Load persisted display settings before creating the window
+        self.display_settings_storage = create_display_settings_storage()
+        _ds = load_display_settings(self.display_settings_storage)
+        settings._DISPLAY_RES_INDEX = _ds.resolution_index
+        settings._IS_FULLSCREEN = False if IS_WEB else _ds.fullscreen
 
         self.set_display()
 

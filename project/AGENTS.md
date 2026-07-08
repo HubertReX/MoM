@@ -33,6 +33,7 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 | `transition.py`            | Efekty przejść (`Transition`, `TransitionCircle`)                                               |                                                  |
 | `second_order_dynamics.py` | Gładkie animacje (Second Order Dynamics) — POC                                                  |                                                  |
 | `enums.py`                 | Typy wyliczeniowe (Race, Attitude, ItemType, …)                                                 |                                                  |
+| `save_load/display_settings.py` | Persystencja ustawień wyświetlania (rozdzielczość, fullscreen)                              | desktop `settings.json`, web `localStorage`      |
 | `main.py`                  | Entry point + CLI (Click na desktopie)                                                          |                                                  |
 
 ## Toolkit UI (`ui/`)
@@ -319,7 +320,7 @@ publikując `screenshots/agent/` jako artifact.
 - Port 8001 jest używany domyślnie (konfigurowalny przez `--url`).
 - Nie wspiera `USE_WEB_SIMULATOR` — web runner uruchamia prawdziwy pygbag.
 
-## Persystencja stanu (uwaga: brak zapisu na dysk)
+## Persystencja stanu
 
 - **Brak systemu save/load na dysk** — zamknięcie gry traci postęp (na liście TODO w README).
 - **Persystencja między mapami = tylko w RAM** podczas sesji: `Scene` cache'uje stan w
@@ -330,6 +331,14 @@ publikując `screenshots/agent/` jako artifact.
   `player.reset()` (`characters.py:1020`: pełne zdrowie, **przeładowanie startowego ekwipunku
   z configu — zebrane przedmioty przepadają**, wyczyszczenie flag), nowa `Scene("Village",
   "start")` + splash `"GAME OVER"`. To pełny respawn w wiosce, nie wczytanie zapisu.
+- **Persystencja ustawień wyświetlania** (`save_load/display_settings.py`): rozdzielczość i
+  stan fullscreen są zapisywane automatycznie przy każdej zmianie i wczytywane przy starcie gry.
+  Desktop: `<data_dir>/mom/settings.json` (taka sama logika ścieżek jak save'y). Web:
+   localStorage klucz `MoM.settings`. Format JSON z `version`, `resolution_index`, `fullscreen`
+   i `resolution` (fallback px, gdyby lista opcji się zmieniła). Fullscreen jest wyłączony na
+   web (`IS_WEB` wymusza `fullscreen=False` — w przeglądarce fullscreen obsługuje F11, nie SDL).
+   Uwaga: `XDG_DATA_HOME` zmienia położenie pliku na macOS (testowano z XDG_DATA_HOME=~/.local/share).
+   Przypadki brzegowe: uszkodzony plik → log + domyślne; index poza zakresem → clamp do max_idx.
 
 ## Konwencje
 
