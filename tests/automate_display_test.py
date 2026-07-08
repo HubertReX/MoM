@@ -44,6 +44,7 @@ import json
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -93,12 +94,11 @@ WEB_AGENT_FLAG = "MoM.agent_control"
 SS_PREFIX_ENV = "MOM_AGENT_SS_PREFIX"  # desktop: prefix "{run_ts}_{scenario_slug}" przekazany do gry
 
 # --- ss-reviewer (analiza screenshotów przez subagenta z vision) ---
-# Kolejność prób: None = domyślny model agenta (opencode-go/mimo-v2.5); potem fallback Gemini.
-# Fallback wybrany przez usera: google/gemini-3.1-flash-lite (ma vision). Gdy żaden model nie
-# zwróci werdyktu -> asercja twardo pada (decyzja usera: hard-fail).
+# Kolejność prób: najpierw tani model z vision (mimo-v2.5), potem fallback Gemini.
+# Gdy żaden model nie zwróci werdyktu -> asercja twardo pada (decyzja usera: hard-fail).
 SS_REVIEW_AGENT = "ss-reviewer"
-SS_REVIEW_MODELS: list[str | None] = [None, "google/gemini-3.1-flash-lite"]
-SS_REVIEW_TIMEOUT = 150.0
+SS_REVIEW_MODELS: list[str | None] = ["opencode-go/mimo-v2.5", "google/gemini-3.1-flash-lite"]
+SS_REVIEW_TIMEOUT = 60.0
 SS_REVIEW_SKIP_ENV = "MOM_SKIP_SS_REVIEW"  # ustaw =1, by pominąć (szybka iteracja)
 
 
@@ -127,18 +127,33 @@ def parse_review_verdict(text: str) -> str | None:
     return None
 
 
+def _timeout_cmd(cmd: list[str], timeout: int = 60) -> list[str]:
+    """Wrap cmd with gtimeout (GNU coreutils, macOS) or timeout (Linux), if available."""
+    exe = shutil.which("gtimeout") or shutil.which("timeout")
+    if exe:
+        return [exe, str(timeout), *cmd]
+    return cmd
+
+
 def review_screenshot(path: Path, expect: str, expected_state: str | None) -> tuple[str | None, str]:
     """Poproś subagenta ss-reviewer o werdykt PASS/FAIL dla screenshotu.
 
     Zwraca ``(verdict, detail)`` gdzie verdict to 'PASS'/'FAIL'/None (żaden model nie dał werdyktu).
     Próbuje kolejno modeli z ``SS_REVIEW_MODELS``; pierwszy zwracający czytelny werdykt wygrywa.
+
+    UWAGA: ścieżka screenshotu jest przekazywana inline w prompcie, a nie przez ``-f``.
+    ``-f`` wymaga modelu z vision (``attachment: true``, ``modalities.input: ["text","image"]``),
+    a nie każdy model go ma. Modele użyte w ``SS_REVIEW_MODELS`` (mimo-v2.5, Gemini)
+    mają vision, ale inne modele (deepseek-v4, glm) — nie. Przekazując ścieżkę inline,
+    model bez vision może przynajmniej odpowiedzieć że nie widzi obrazka, zamiast błędu.
     """
     prompt = (
         "You are validating an automated test screenshot from the game "
         '"Misadventures of Malachi" (MoM). '
         f"Expected game state: {expected_state or 'described below'}. "
         f"Expectation to verify: {expect} "
-        "Analyze the attached screenshot and produce your structured report. "
+        f"Screenshot file path: {path} "
+        "Analyze the screenshot located at the given path and produce your structured report. "
         "Then, on the FINAL line, output exactly 'RESULT: PASS' if the screenshot "
         "matches the expectation, or 'RESULT: FAIL' if it does not."
     )
@@ -148,13 +163,14 @@ def review_screenshot(path: Path, expect: str, expected_state: str | None) -> tu
     last_detail = "no model attempted"
     for model in models:
         label = model or "agent-default"
-        cmd = ["opencode", "run", prompt, "--agent", SS_REVIEW_AGENT, "-f", str(path)]
+        cmd = ["opencode", "run", "--pure", prompt, "--agent", SS_REVIEW_AGENT]
         if model:
             cmd += ["--model", model]
+        cmd = _timeout_cmd(cmd, int(SS_REVIEW_TIMEOUT))
         try:
             proc = subprocess.run(
                 cmd, capture_output=True, text=True,
-                timeout=SS_REVIEW_TIMEOUT, cwd=str(REPO_ROOT),
+                timeout=SS_REVIEW_TIMEOUT + 10.0, cwd=str(REPO_ROOT),
             )
         except subprocess.TimeoutExpired:
             last_detail = f"{label}: timed out after {SS_REVIEW_TIMEOUT:.0f}s"

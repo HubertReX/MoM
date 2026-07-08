@@ -320,6 +320,36 @@ publikując `screenshots/agent/` jako artifact.
 - Port 8001 jest używany domyślnie (konfigurowalny przez `--url`).
 - Nie wspiera `USE_WEB_SIMULATOR` — web runner uruchamia prawdziwy pygbag.
 
+### ss-review (wizualna analiza screenshotów)
+
+Test runner deleguje analizę screenshotów do subagenta `ss-reviewer` przez `opencode run`.
+Asercja `screenshot_review` w `scenarios.json` woła `review_screenshot()` w
+`automate_display_test.py`.
+
+**Ważne zasady:**
+
+1. **Ścieżkę screenshotu przekazuj inline w prompcie**, nie przez `-f`. Flaga `-f` wymaga
+   modelu z vision (`attachment: true`, `modalities.input: ["text","image"]`), a nie każdy
+   model go ma — `-f` z modelem bez vision powoduje błąd. Modele w `SS_REVIEW_MODELS`
+   (``opencode-go/mimo-v2.5``, ``google/gemini-3.1-flash-lite``) mają vision i potrafią
+   czytać plik ze ścieżki w treści prompta.
+2. **Wymuś model z vision** przez `MOM_SS_REVIEW_MODEL='google/gemini-3.1-flash-lite'` lub
+   parametr `--model` w wywołaniu opencode. Bez tego test używa domyślnego modelu agenta.
+3. **Używaj `--pure`** w komendzie `opencode run`, żeby wyłączyć plugin `discover-models.js`.
+   Bez tego plugin robi HTTP requesty do wszystkich providerów przy starcie, co może
+   powodować logi na stderr i opóźnienia. `--pure` uruchamia opencode bez zewnętrznych pluginów.
+4. **Hard timeout**: subprocess jest dodatkowo owinięty w `gtimeout` (GNU coreutils, macOS)
+   lub `timeout` (Linux), żeby ubić wiszący proces gdy model discovery hanguje.
+   `SS_REVIEW_TIMEOUT = 60s`.
+5. **Pomiń ss-review** przez `MOM_SKIP_SS_REVIEW=1` — szybka iteracja bez vision.
+
+Konfiguracja w `automate_display_test.py:96-103`:
+```python
+SS_REVIEW_AGENT = "ss-reviewer"
+SS_REVIEW_MODELS: list[str | None] = ["opencode-go/mimo-v2.5", "google/gemini-3.1-flash-lite"]
+SS_REVIEW_TIMEOUT = 60.0
+```
+
 ## Persystencja stanu
 
 - **Brak systemu save/load na dysk** — zamknięcie gry traci postęp (na liście TODO w README).

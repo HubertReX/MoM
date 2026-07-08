@@ -67,6 +67,15 @@ Testowanie przez agenta AI: `tests/scenarios.json` + `tests/automate_display_tes
 ```bash
 # Pojedynczy scenariusz - ZAWSZE uruchamiaj tak do weryfikacji:
 MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py "Save and Load Basic"
+
+# Z wizualną weryfikacją screenshotów (wymaga modelu z vision):
+MOM_SS_REVIEW_MODEL='google/gemini-3.1-flash-lite' MOM_AGENT_CONTROL=1 \
+  SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+  .venv/bin/python3 tests/automate_display_test.py "TextInput Demo Hotkey"
+
+# Pomiń ss-review (szybka iteracja):
+MOM_SKIP_SS_REVIEW=1 MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+  .venv/bin/python3 tests/automate_display_test.py
 ```
 
 **Pełny protokół, komendy agenta, struktura scenariuszy, izolacja, ścieżki save'ów,
