@@ -62,7 +62,8 @@ _SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01
 _OPTION_HIGHLIGHT_COLOR = (22, 55, 82)  # dark blue, high contrast vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
 _OPTION_HIGHLIGHT_BORDER = 2
-_VISITED_BG_ALPHA = 60     # alpha for visited-option background (subtle dim behind text)
+_VISITED_BG_ALPHA = 40     # alpha for visited-option background (subtle dim behind text)
+_VISITED_BG_COLOR = (8, 12, 16)  # very dark, neutral — distinct from highlight blue
 _TOOLTIP_TEMPLATE = "[h3][act]Hint[/act][/h3]\n\n[bold]%s[/bold]"
 
 
@@ -452,9 +453,9 @@ class DialogPanel(Widget):
 
         # 1. Draw dimmed background for visited options (always, regardless of cursor).
         for i in range(start, end):
-            if self._options[i].selected:
-                rect = self.option_rects[i]
-                pygame.draw.rect(surface, (*_OPTION_HIGHLIGHT_COLOR, _VISITED_BG_ALPHA), rect, border_radius=3)
+                if self._options[i].selected:
+                    rect = self.option_rects[i]
+                    pygame.draw.rect(surface, (*_VISITED_BG_COLOR, _VISITED_BG_ALPHA), rect, border_radius=3)
 
         # 2. Highlight the active option (on top of visited background, if any).
         if start <= self.selected_index < end:
