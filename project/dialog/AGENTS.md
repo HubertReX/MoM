@@ -104,6 +104,16 @@ który występuje w `config.json` jako klucz sekcji `character_dialogs`.
 | `markdown_importer.py` | `conditions` (walidacja) | ❌ (tylko desktop) | Build-time: `.md → config.json` |
 | `result_sink_adapter.py` | `result_sink`, **`characters`** (TYPE_CHECKING) | ✅ | `GameResultSink(ResultSink)` |
 
+### Uwaga dotycząca formatu MD
+
+Tekst węzła dialogowego w plikach `.md` zaczyna się od `* ` (gwiazdka + spacja)
+ale może się ciągnąć przez wiele linii — również takich, które **nie** zaczynają
+się od `* `. Koniec tekstu wyznacza pierwsza linia opcji (`* [00x](#00x) ...`).
+
+Węzły z rozbitą kwestią na kilka akapitów (np. lista wymaganych przedmiotów
+w #003 Madame Sarcasmii) używają linii bez `* ` dla drugiego i dalszych
+akapitów. Importer poprawnie zbiera je jako kontynuację.
+
 ## Znane pułapki (bug history)
 
 1. **Bug visited() — bieżący węzeł zamiast historii** (fix 2026-07-08):
@@ -126,3 +136,11 @@ który występuje w `config.json` jako klucz sekcji `character_dialogs`.
    Po zamknięciu panelu `npc.dialog` wskazywał ostatni węzeł (często finalny).
    Następna rozmowa zaczynała się od tego węzła, a nie od START_NODE.
    Dodano `NPC.reset_dialog()` wołane przez `game_ui.py`.
+
+5. **Importer gubi kontynuację tekstu** (fix 2026-07-08):
+   `_parse_file()` w `markdown_importer.py` zbierał tylko linie zaczynające się od
+   `* ` (wzorzec `_NODE_TEXT_RE`). Linie kontynuacji bez gwiazdki — np. listing
+   `[act]*[/act] ...` albo czysta proza w nowym akapicie — były milcząco pomijane.
+   Dotknięci: Madame Sarcasmia (węzły #003, #004 i inne z rozbitą kwestią na
+   wiele linii). Fix: każdej nieopcyjnej, niepustej linii między nagłówkiem węzła
+   a pierwszą opcją traktowanej jako kontynuacja tekstu.

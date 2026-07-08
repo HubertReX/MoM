@@ -578,6 +578,13 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
             current_node.text_lines.append(text_match.group("text").strip())
             continue
 
+        # Continuation text: lines that don't start with `*` but are part of
+        # the same dialog block (e.g. [act]*[/act] markup or bare prose lines).
+        # The true end of a node's text is the first option line `* [N](#N)...`.
+        if line:
+            current_node.text_lines.append(line)
+            continue
+
     if not nodes:
         raise DialogImportError(
             "no dialog nodes found (missing '## PL'/'## EN' section?)",
