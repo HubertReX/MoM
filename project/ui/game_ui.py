@@ -150,6 +150,7 @@ class GameUI:
                     self.scene.player.is_talking = False
                     if self.scene.player.npc_met:
                         self.scene.player.npc_met.is_talking = False
+                        self.scene.player.npc_met.reset_dialog()
                 else:
                     dialog.activate_selected()
                 # raw key events also call activate_selected; clear accept

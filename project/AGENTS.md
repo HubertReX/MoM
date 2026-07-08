@@ -107,6 +107,43 @@ Przykłady: `sentiment >= 42 and selected("BOB_DO_HOBBY_BIKE")`,
 `not visited("003") or has_item("MERMAIDS_TEAR")`,
 `visited("HAMMER_HOAXHEART_001", "004")`.
 
+### Adapter warunków (`context_adapter.py`)
+
+``NPCConditionContext`` (w ``dialog/context_adapter.py``) łączy mini-DSL z danymi gry:
+
+- **``visited(node_key)``** sprawdza ``DialogNode.visited`` na pełnym grafie NPC
+  (``dialog_nodes[node_key].visited``), **nie** bieżącą pozycję kursora (``npc.dialog.key``).
+- **Cross-NPC ``visited(dialog_key, node_key)``** szuka NPC po ``dialog_key``
+  (a nie po ``name`` — wcześniej ``"BARMAN_ABSINTHRAYNER"`` vs ``"Barman Absinthrayner"``
+  nigdy nie matchowało).
+- **``selected(opt_key)``** czyta z ``npc.selected_options_dict`` (poprawne).
+- **``has_item(key)``** przeszukuje ``player.items`` po ``item.name`` (poprawne).
+
+**Znane bugi (fix 2026-07-08):** oryginalna implementacja ``visited()`` porównywała
+``npc.dialog.key == node_key`` (bieżący węzeł, nie historię odwiedzin) i cross-NPC
+używała ``other.name`` zamiast ``other.dialog_key`` — wszystkie warunki ``visited()``
+zwracały ``False``, przez co:
+- Potioneer_Puzzlemint: warunek ``visited("BARMAN_ABSINTHRAYNER", "012")`` zawsze failował
+  → pokazywana tylko opcja "nie znam cię".
+- Clapback Sword: ``visited("003") and visited("004") and visited("005")`` zawsze ``False``
+  → opcja kontynuacji (prowadząca do #006) nigdy niewidoczna → dialog nie do ukończenia.
+- Warunek ``visited("005")`` w pętli ``not visited("005")`` zawsze ``True`` → ekspozycje
+  zawsze pokazywane, nawet po odwiedzeniu.
+
+### Reset kursora po rozmowie
+
+Gdy dialog kończy się na węźle ``is_final`` (lub dead-endzie z 0 widocznymi opcjami),
+``game_ui.py`` woła ``NPC.reset_dialog()``, która ustawia ``npc.dialog`` z powrotem na
+węzeł startowy grafu. Dzięki temu każda rozmowa zaczyna się od zaprojektowanego punktu
+wejścia, a warunki węzła startowego (np. gate node ``016`` u Potioneera) decydują o dalszej
+ścieżce na podstawie zapamiętanego stanu (``visited``, ``selected``, ``has_item``).
+
+### Auto-end dla dead-endów
+
+Gdy po przejściu do nowego węzła lista widocznych opcji jest pusta (wszystkie
+odfiltrowane przez warunki), ``DialogPanel`` automatycznie ustawia stan ``on_final_node``.
+Gracz widzi tekst NPC i może zamknąć panel klawiszem Accept — rozmowa nie zawisa.
+
 ### Efekty węzłów (ResultSink, T-034)
 
 Węzły mogą mieć efekt uboczny (`NodeVisitResult`).  `dialog.result_sink` definiuje

@@ -102,6 +102,7 @@ class NPC(pygame.sprite.Sprite):
         self.dialog: DialogNode | None = None
         self.dialog_nodes: dict[str, DialogNode] | None = None
         self.selected_options_dict: dict[str, bool] = {}
+        self.dialog_start_node: DialogNode | None = None
         self.sentiment: int = 50
         self.disposition: dict[str, int] = dict(self.model.disposition)
         self.known_disposition: dict[str, int] = {}
@@ -322,6 +323,7 @@ class NPC(pygame.sprite.Sprite):
                 nodes = init_dialog(dialog_config, debug=IS_DEBUG_MODE)
                 self.dialog_nodes = nodes
                 self.dialog = get_start_node(dialog_config, nodes)
+                self.dialog_start_node = self.dialog
                 self.has_dialog = True
 
     #############################################################################################################
@@ -371,6 +373,11 @@ class NPC(pygame.sprite.Sprite):
         for node in self.dialog_nodes.values():
             for opt in node.options:
                 opt.selected = selected_options.get(opt.key, False)
+
+    def reset_dialog(self) -> None:
+        """Reset the dialog cursor to the start node for the next conversation."""
+        if self.dialog_start_node is not None:
+            self.dialog = self.dialog_start_node
 
     #############################################################################################################
     def generate_masks(self) -> None:

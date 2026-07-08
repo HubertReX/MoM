@@ -35,13 +35,18 @@ class NPCConditionContext(ConditionContext):
         return self.npc.selected_options_dict.get(option_key, False)
 
     def visited(self, node_key: str, npc: str | None = None) -> bool:
-        if npc is None or npc == self.npc.name:
-            target = self.npc.dialog
-            return target is not None and target.key == node_key
-        # cross-NPC query: walk the Scene's loaded NPCs
+        if npc is None or npc == self.npc.dialog_key:
+            nodes = self.npc.dialog_nodes
+            if nodes and node_key in nodes:
+                return nodes[node_key].visited
+            return False
+        # cross-NPC query by dialog_key (not display name)
         for other in self.player.scene.loaded_NPCs.values():
-            if other.name == npc:
-                return other.dialog is not None and other.dialog.key == node_key
+            if other.dialog_key == npc:
+                nodes = other.dialog_nodes
+                if nodes and node_key in nodes:
+                    return nodes[node_key].visited
+                return False
         return False
 
     def has_item(self, item_key: str) -> bool:

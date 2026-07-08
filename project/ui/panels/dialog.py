@@ -137,6 +137,10 @@ class DialogPanel(Widget):
         self._on_final_node = False
         self._visit_current_node()
         self._refresh_options()
+        # Dead-end: opening node has no visible options and is not final →
+        # treat as auto-final so the player can close the conversation.
+        if not self._options and self.npc and self.npc.dialog and not self.npc.dialog.is_final:
+            self._on_final_node = True
 
     def _visit_current_node(self) -> None:
         """Apply the current node's side effect exactly once (first visit)."""
@@ -314,6 +318,11 @@ class DialogPanel(Widget):
             return True
         self._on_final_node = False
         self._refresh_node()
+        # Dead-end: advanced to a non-final node with no visible options →
+        # auto-end the conversation.
+        if not self._options:
+            self._on_final_node = True
+            return True
         return False
 
     @property
