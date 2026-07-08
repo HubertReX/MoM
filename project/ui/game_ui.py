@@ -157,9 +157,11 @@ class GameUI:
                 # so the same press is not handled twice this frame.
                 INPUTS["accept"] = False
             if self._edge("talk"):
-                # SPACE (talk) only scrolls the NPC speech; it never selects an option.
+                # SPACE (talk) scrolls the NPC speech; at the bottom it wraps to top.
                 if not dialog.body.is_scroll_bottom():
                     dialog.page_down()
+                else:
+                    dialog.scroll_top()
                 INPUTS["talk"] = False
 
         # route raw events (scroll wheel / arrows / mouse / digit keys) to the topmost open panel
