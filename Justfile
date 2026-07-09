@@ -148,10 +148,10 @@ sourcery:
 # Run all static analysis and code checks (Sourcery + mypy)
 check: sourcery mypy
 
-# Fix libpng sRGB profile warnings in PNG files using mogrify
+# Fix all PNGs that have sRGB/gAMA/cHRM/iCCP chunks (strips profile chunks via mogrify)
 [unix]
 fix-bad-png:
-    mogrify *.png
+    @python3 utils/find_bad_png.py | xargs -r mogrify -strip
 
 # Fix libpng sRGB profile warnings in PNG files using Python
 [windows]
@@ -159,10 +159,10 @@ fix-bad-png:
     #!powershell
     .venv\Scripts\python.exe utils\fix_bad_png.py
 
-# Find PNG files with incorrect libpng sRGB profiles using pngcrush
+# Find PNGs with sRGB/gAMA/cHRM/iCCP chunks (potential libpng header warnings)
 [unix]
 find-bad-png:
-    pngcrush -n -q **/*.png 2> >(grep -v "Total")
+    @python3 utils/find_bad_png.py
 
 # Run memray live memory profiling (Unix only)
 [unix]
