@@ -163,3 +163,4 @@ screenshots/agent/
 profiling/
 _temp/**
 .aider*
+/project/assets/dialogs/.obsidian
