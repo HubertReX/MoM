@@ -96,4 +96,3 @@ translation: [**HAMMER_HOAXHEART**](../EN/char-Hammer_Hoaxheart.md)
 ### 990-end [001](#001)
 
 * Żegnam
-* [000](#000) 9😐: **DEBUG** od początku

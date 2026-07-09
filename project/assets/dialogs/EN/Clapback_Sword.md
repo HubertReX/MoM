@@ -144,9 +144,6 @@ instead of the expected fullness of life, you shall be touched by the **Eternal 
 * Alright, let's think. What we know so far about this curse is a mix of children's tales and bard's nonsense songs. We need to find out more specifics. One thing is certain. If you've always thought deep down that you're special, now you have proof to confirm it. You're special - you are exceptionally good at getting into trouble.
 Now let's hit the road! We need ask people around. I would start in the [location]Tavern[/].
 
-* [000](#000) 9😐: **DEBUG** start over
-
 ### 100
 
 * start thread...
-* [000](#000) 9😐: **DEBUG** start over

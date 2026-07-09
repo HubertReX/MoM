@@ -149,14 +149,11 @@ Tak jak ja.
 ### 990-end [001](#001)
 
 * Powodzenia!
-* [000](#000) 9😐: **DEBUG** od początku
 
 ### 991-end [001](#001)
 
 * [SENTIMENT-10]Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - wynocha!
-* [000](#000) 9😐: **DEBUG** od początku
 
 ### 992-end [016](#016)
 
 * Nie rozmawiam z obcymi, żegnam.
-* [000](#000) 9😐: **DEBUG** od początku

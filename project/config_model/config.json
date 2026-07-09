@@ -1026,13 +1026,6 @@
                     "sentiment": "neutral",
                     "order": 9,
                     "text": "M_HAMMER_HOAXHEART_DO_010to001_9"
-                },
-                "990to000_9": {
-                    "next_node": "000",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 9,
-                    "text": "M_HAMMER_HOAXHEART_DO_990to000_9"
                 }
             },
             "NODES_OPTIONS": {
@@ -1084,9 +1077,7 @@
                 "010": [
                     "010to001_9"
                 ],
-                "990": [
-                    "990to000_9"
-                ]
+                "990": []
             },
             "NODE_RESULTS": {},
             "START_NODE": "000"
@@ -2040,20 +2031,6 @@
                     "sentiment": "neutral",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_014to015_1"
-                },
-                "015to000_9": {
-                    "next_node": "000",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 9,
-                    "text": "M_CLAPBACK_SWORD_DO_015to000_9"
-                },
-                "100to000_9": {
-                    "next_node": "000",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 9,
-                    "text": "M_CLAPBACK_SWORD_DO_100to000_9"
                 }
             },
             "NODES_OPTIONS": {
@@ -2131,12 +2108,8 @@
                 "014": [
                     "014to015_1"
                 ],
-                "015": [
-                    "015to000_9"
-                ],
-                "100": [
-                    "100to000_9"
-                ]
+                "015": [],
+                "100": []
             },
             "NODE_RESULTS": {},
             "START_NODE": "000"
@@ -2518,27 +2491,6 @@
                     "sentiment": "neutral",
                     "order": 1,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_017to012_1"
-                },
-                "990to000_9": {
-                    "next_node": "000",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 9,
-                    "text": "M_POTIONEER_PUZZLEMINT_DO_990to000_9"
-                },
-                "991to000_9": {
-                    "next_node": "000",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 9,
-                    "text": "M_POTIONEER_PUZZLEMINT_DO_991to000_9"
-                },
-                "992to000_9": {
-                    "next_node": "000",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 9,
-                    "text": "M_POTIONEER_PUZZLEMINT_DO_992to000_9"
                 }
             },
             "NODES_OPTIONS": {
@@ -2616,15 +2568,9 @@
                 "017": [
                     "017to012_1"
                 ],
-                "990": [
-                    "990to000_9"
-                ],
-                "991": [
-                    "991to000_9"
-                ],
-                "992": [
-                    "992to000_9"
-                ]
+                "990": [],
+                "991": [],
+                "992": []
             },
             "NODE_RESULTS": {
                 "POTIONEER_PUZZLEMINT_NR_991": {
@@ -2743,14 +2689,16 @@
                     "resume_node": "011"
                 },
                 "020": {
-                    "is_final": false,
+                    "is_final": true,
                     "result": "MADAME_SARCASMIA_NR_020",
-                    "text": "M_MADAME_SARCASMIA_DN_020"
+                    "text": "M_MADAME_SARCASMIA_DN_020",
+                    "resume_node": "011"
                 },
                 "021": {
-                    "is_final": false,
+                    "is_final": true,
                     "result": null,
-                    "text": "M_MADAME_SARCASMIA_DN_021"
+                    "text": "M_MADAME_SARCASMIA_DN_021",
+                    "resume_node": "011"
                 }
             },
             "DIALOG_OPTIONS": {
@@ -3026,20 +2974,6 @@
                     "sentiment": "blink",
                     "order": 3,
                     "text": "M_MADAME_SARCASMIA_DO_018to021_3"
-                },
-                "020to011_1": {
-                    "next_node": "011",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 1,
-                    "text": "M_MADAME_SARCASMIA_DO_020to011_1"
-                },
-                "021to011_1": {
-                    "next_node": "011",
-                    "condition": "True",
-                    "sentiment": "neutral",
-                    "order": 1,
-                    "text": "M_MADAME_SARCASMIA_DO_021to011_1"
                 }
             },
             "NODES_OPTIONS": {
@@ -3119,12 +3053,8 @@
                     "018to021_3"
                 ],
                 "019": [],
-                "020": [
-                    "020to011_1"
-                ],
-                "021": [
-                    "021to011_1"
-                ]
+                "020": [],
+                "021": []
             },
             "NODE_RESULTS": {
                 "MADAME_SARCASMIA_NR_012": {
@@ -3280,9 +3210,7 @@
             "M_CLAPBACK_SWORD_DN_014": "Ha, ha, ha. That's a real knee-slapper. Now you feel like cracking jokes?",
             "M_CLAPBACK_SWORD_DO_014to015_1": "So what? Am I supposed to lie down and wait for death?",
             "M_CLAPBACK_SWORD_DN_015": "Alright, let's think. What we know so far about this curse is a mix of children's tales and bard's nonsense songs. We need to find out more specifics. One thing is certain. If you've always thought deep down that you're special, now you have proof to confirm it. You're special - you are exceptionally good at getting into trouble.\nNow let's hit the road! We need ask people around. I would start in the [location]Tavern[/].",
-            "M_CLAPBACK_SWORD_DO_015to000_9": "[shadow]DEBUG[/shadow] start over",
             "M_CLAPBACK_SWORD_DN_100": "start thread...",
-            "M_CLAPBACK_SWORD_DO_100to000_9": "[shadow]DEBUG[/shadow] start over",
             "M_POTIONEER_PUZZLEMINT_DN_016": "Ktoś Ty? Kto Cię tu przysłał?",
             "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[shadow]Barman Absyntnent[/shadow] told me about you.",
             "M_POTIONEER_PUZZLEMINT_DO_016to992_2": "Nikt, ja sam tu trafiłem.",
@@ -3340,11 +3268,8 @@
             "M_POTIONEER_PUZZLEMINT_DN_017": "Po odejściu ode mnie ludzie zaczęli na nią wołać [shadow]Bibliofilistka des Informacja[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DO_017to012_1": "ok, dzięki.",
             "M_POTIONEER_PUZZLEMINT_DN_990": "Powodzenia!",
-            "M_POTIONEER_PUZZLEMINT_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_POTIONEER_PUZZLEMINT_DN_991": "Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - wynocha!",
-            "M_POTIONEER_PUZZLEMINT_DO_991to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_POTIONEER_PUZZLEMINT_DN_992": "Nie rozmawiam z obcymi, żegnam.",
-            "M_POTIONEER_PUZZLEMINT_DO_992to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_HAMMER_HOAXHEART_DN_000": "Po coś tu przylazł? Co z Ciebie za jeden?",
             "M_HAMMER_HOAXHEART_DO_000to001_1": "Spokojnie, nazywam się Malachi, nie chcę problemów.",
             "M_HAMMER_HOAXHEART_DO_000to001_2": "Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!",
@@ -3383,7 +3308,6 @@
             "M_HAMMER_HOAXHEART_DN_010": "...",
             "M_HAMMER_HOAXHEART_DO_010to001_9": "Dzięki, to mi wystarczy",
             "M_HAMMER_HOAXHEART_DN_990": "Żegnam",
-            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_BARMAN_ABSINTHRAYNER_DO_002to001_1": "Dzięki, to mi wystarczy",
             "M_MADAME_SARCASMIA_DN_000": "Well, well, well, what do we have here? Another lost soul seeking a cure, I presume? Raises an eyebrow :wondering:.",
             "M_MADAME_SARCASMIA_DO_000to001_1": "Uh, yes, actually. I heard you're a powerful sorceress, and I was hoping you could help me break this… age-old curse of perpetual bad luck.",
@@ -3444,9 +3368,7 @@
             "M_MADAME_SARCASMIA_DO_018to021_3": "It was so clever of me not to bother to collect all items…",
             "M_MADAME_SARCASMIA_DN_019": "A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.",
             "M_MADAME_SARCASMIA_DN_020": "Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.",
-            "M_MADAME_SARCASMIA_DO_020to011_1": "technical loop back",
             "M_MADAME_SARCASMIA_DN_021": "Here goes nothing, I suppose. I'll see what can be done with what you've provided…\n\n. .. ...\n\nPsssssssst….\n\nI'm afraid it's no use. You need to come back with all ingredients.",
-            "M_MADAME_SARCASMIA_DO_021to011_1": "technical loop back",
             "M_MADAME_SARCASMIA_DO_000to011_4": "I'm back. Any leads for me yet?"
         },
         "PL": {
@@ -3577,9 +3499,7 @@
             "M_CLAPBACK_SWORD_DN_014": "Ha, ha, ha. No boki zrywać. Teraz zebrało Ci się na żarty?",
             "M_CLAPBACK_SWORD_DO_014to015_1": "To co? Mam położyć się i czekać na śmierć?",
             "M_CLAPBACK_SWORD_DN_015": "No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne. Jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz dowód na potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha.\nA teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [location]Tawerny[/].",
-            "M_CLAPBACK_SWORD_DO_015to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_CLAPBACK_SWORD_DN_100": "Na razie nie mam Ci nic nowego do powiedzenia.",
-            "M_CLAPBACK_SWORD_DO_100to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_POTIONEER_PUZZLEMINT_DN_016": "Ktoś Ty? Kto Cię tu przysłał?",
             "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[shadow]Barman Absyntnent[/shadow] powiedział mi o Tobie.",
             "M_POTIONEER_PUZZLEMINT_DO_016to992_2": "Nikt, ja sam tu trafiłem.",
@@ -3637,11 +3557,8 @@
             "M_POTIONEER_PUZZLEMINT_DN_017": "Po odejściu ode mnie ludzie zaczęli na nią wołać [shadow]Bibliofilistka des Informacja[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DO_017to012_1": "ok, dzięki.",
             "M_POTIONEER_PUZZLEMINT_DN_990": "Powodzenia!",
-            "M_POTIONEER_PUZZLEMINT_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_POTIONEER_PUZZLEMINT_DN_991": "Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - wynocha!",
-            "M_POTIONEER_PUZZLEMINT_DO_991to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_POTIONEER_PUZZLEMINT_DN_992": "Nie rozmawiam z obcymi, żegnam.",
-            "M_POTIONEER_PUZZLEMINT_DO_992to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_HAMMER_HOAXHEART_DN_000": "Po coś tu przylazł? Co z Ciebie za jeden?",
             "M_HAMMER_HOAXHEART_DO_000to001_1": "Spokojnie, nazywam się Malachi, nie chcę problemów.",
             "M_HAMMER_HOAXHEART_DO_000to001_2": "Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!",
@@ -3680,7 +3597,6 @@
             "M_HAMMER_HOAXHEART_DN_010": "...",
             "M_HAMMER_HOAXHEART_DO_010to001_9": "Dzięki, to mi wystarczy",
             "M_HAMMER_HOAXHEART_DN_990": "Żegnam",
-            "M_HAMMER_HOAXHEART_DO_990to000_9": "[shadow]DEBUG[/shadow] od początku",
             "M_BARMAN_ABSINTHRAYNER_DO_002to001_1": "Dzięki, to mi wystarczy",
             "M_MADAME_SARCASMIA_DN_000": "No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukającą jakiegoś cudownego lekarstwa? Unosi brwi :wondering:.",
             "M_MADAME_SARCASMIA_DO_000to001_1": "Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.",
@@ -3741,9 +3657,7 @@
             "M_MADAME_SARCASMIA_DO_018to021_3": "To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…",
             "M_MADAME_SARCASMIA_DN_019": "Pogodzenie się z własnym losem, jakże to rozkosznie odświeżające. Mistrzowsko opanowałeś sztukę akceptowania nieuchronnego. Idź w pokoju.",
             "M_MADAME_SARCASMIA_DN_020": "Niech magia tka swoje misteria. Weź tę [item]miksturę[/item] i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.",
-            "M_MADAME_SARCASMIA_DO_020to011_1": "technical loop back",
             "M_MADAME_SARCASMIA_DN_021": "No cóż, trudno, jakoś to ogarnę. Zobaczę, co da się zrobić z tym, co przyniosłeś…\n\n. .. ...\n\nPsssssssst….\n\nObawiam się, że to bez sensu. Musisz wrócić ze wszystkimi składnikami.",
-            "M_MADAME_SARCASMIA_DO_021to011_1": "technical loop back",
             "M_MADAME_SARCASMIA_DO_000to011_4": "Wracam. Masz już dla mnie jakieś wskazówki?"
         }
     }

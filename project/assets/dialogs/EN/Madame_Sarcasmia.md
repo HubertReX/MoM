@@ -142,29 +142,27 @@ Good luck, dearie.
 
 * Oh, ye of little faith! Hand them over, and let's see if your efforts were in vain or not.
 
-* [020](#020) 1😉: Should I hide behind this big chest?
-* [020](#020) 2😐: Let's see…
-* [020](#020) 3😇: I can't wait!
+* [020](#020-end) 1😉: Should I hide behind this big chest?
+* [020](#020-end) 2😐: Let's see…
+* [020](#020-end) 3😇: I can't wait!
 
 ### 018
 
 * Oh, how charmingly dramatic! I'll do my best with the incomplete collection you've managed to gather.
 
-* [021](#021) 1😢: On the other hand, perhaps I should have collected them all…
-* [021](#021) 2😐: It must work, it must work, it must work…
-* [021](#021) 3😉: It was so clever of me not to bother to collect all items…
+* [021](#021-end) 1😢: On the other hand, perhaps I should have collected them all…
+* [021](#021-end) 2😐: It must work, it must work, it must work…
+* [021](#021-end) 3😉: It was so clever of me not to bother to collect all items…
 
 ### 019-end [011](#011)
 
 * A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.
 
-### 020
+### 020-end [011](#011)
 
 * [ITEMS+POTION_CURSE_NO_MORE] Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.
 
-* [011](#011) 1😐: technical loop back
-
-### 021
+### 021-end [011](#011)
 
 * Here goes nothing, I suppose. I'll see what can be done with what you've provided…
 
@@ -174,4 +172,3 @@ Good luck, dearie.
 
 * I'm afraid it's no use. You need to come back with all ingredients.
 
-* [011](#011) 1😐: technical loop back

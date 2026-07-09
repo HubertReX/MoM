@@ -142,29 +142,27 @@ Powodzenia, kochanieńki.
 
 * O wy małej wiary! Dawaj je tutaj i zobaczmy, czy twoje wysiłki poszły na marne, czy nie.
 
-* [020](#020) 1😉: Mam schować się za tą wielką skrzynią?
-* [020](#020) 2😐: Zobaczmy…
-* [020](#020) 3😇: Nie mogę się doczekać!
+* [020](#020-end) 1😉: Mam schować się za tą wielką skrzynią?
+* [020](#020-end) 2😐: Zobaczmy…
+* [020](#020-end) 3😇: Nie mogę się doczekać!
 
 ### 018
 
 * Och, jakież to urocze! Zrobię, co mogę, z tą niekompletną kolekcją, którą udało ci się zgromadzić.
 
-* [021](#021) 1😢: Z drugiej strony, może jednak powinienem był zebrać je wszystkie…
-* [021](#021) 2😐: To musi działać, to musi działać, to musi działać…
-* [021](#021) 3😉: To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…
+* [021](#021-end) 1😢: Z drugiej strony, może jednak powinienem był zebrać je wszystkie…
+* [021](#021-end) 2😐: To musi działać, to musi działać, to musi działać…
+* [021](#021-end) 3😉: To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…
 
 ### 019-end [011](#011)
 
 * Pogodzenie się z własnym losem, jakże to rozkosznie odświeżające. Mistrzowsko opanowałeś sztukę akceptowania nieuchronnego. Idź w pokoju.
 
-### 020
+### 020-end [011](#011)
 
 * [ITEMS+POTION_CURSE_NO_MORE] Niech magia tka swoje misteria. Weź tę [item]miksturę[/item] i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.
 
-* [011](#011) 1😐: technical loop back
-
-### 021
+### 021-end [011](#011)
 
 * No cóż, trudno, jakoś to ogarnę. Zobaczę, co da się zrobić z tym, co przyniosłeś…
 
@@ -174,4 +172,3 @@ Powodzenia, kochanieńki.
 
 * Obawiam się, że to bez sensu. Musisz wrócić ze wszystkimi składnikami.
 
-* [011](#011) 1😐: technical loop back
