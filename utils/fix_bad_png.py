@@ -1,24 +1,51 @@
 import os
+import subprocess
+
+
+SKIP_DIRS = {'utils', 'screenshots', 'references', '.git', '.venv',
+             '__pycache__', '.mypy_cache', '.egg-info', 'node_modules',
+             'build', 'doc', 'Tasks'}
+
+
+def has_bad_chunks(path: str) -> bool:
+    """Check if PNG has sRGB/gAMA/cHRM/iCCP chunks."""
+    import struct
+    with open(path, 'rb') as f:
+        if f.read(8) != b'\x89PNG\r\n\x1a\n':
+            return False
+        while True:
+            buf = f.read(4)
+            if len(buf) < 4:
+                break
+            length = struct.unpack('>I', buf)[0]
+            ctype = f.read(4)
+            if ctype in (b'sRGB', b'gAMA', b'cHRM', b'iCCP'):
+                return True
+            if ctype == b'IEND':
+                break
+            f.seek(f.tell() + length + 4)
+    return False
 
 
 def main() -> None:
-    # path = r'project\\assets\\NinjaAdventure\\characters\\Boar'  # path to all .png images
-    path = r'project\\assets'  # path to all .png images
-    # file = r'C:\\Users\\user\\Downloads\\pngcrush_1_8_9_w64.exe'  # pngcrush file
-    tool = r'pngcrush.exe'  # pngcrush file
+    root = r'project'
+    tool = r'pngcrush.exe'
 
-    png_files = []
+    for dirpath, subdirs, files in os.walk(root):
+        # Skip excluded dirs in-place
+        subdirs[:] = [d for d in subdirs if d not in SKIP_DIRS]
+        for fn in files:
+            if not fn.endswith('.png'):
+                continue
+            fp = os.path.join(dirpath, fn)
+            if not has_bad_chunks(fp):
+                continue
+            cmd = r'{} -q -ow -rem gAMA -rem sRGB -rem cHRM -rem iCCP -reduce "{}"'.format(tool, fp)
+            subprocess.run(cmd, shell=True)
 
-    for dirpath, subdirs, files in os.walk(path):
-        for x in files:
-            if x.endswith('.png'):
-                png_files.append(os.path.join(dirpath, x))
 
-    for name in png_files:
-        cmd = r'{} -q -ow -rem allb -reduce {}'.format(tool, name)
-        # cmd = r'{} -q -n -check {}'.format(tool, name)
-        os.system(cmd)
-        # print(cmd)
+if __name__ == '__main__':
+    main()
 
 
 if __name__ == '__main__':
