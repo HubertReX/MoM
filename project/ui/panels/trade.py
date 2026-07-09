@@ -16,6 +16,7 @@ from settings import (
     INVENTORY_ITEM_WIDTH,
     MAX_HOTBAR_ITEMS,
     WIDTH,
+    _,
     get_buy_price_multiplier,
     get_sell_price_multiplier,
 )
@@ -100,7 +101,7 @@ class TradePanel(Widget):
         ]
         tradeable = npc.model.tradeable_items_types
         if tradeable:
-            properties.append({"icon_name": "red_exclamation_anim", "value": "Trades only:"})
+            properties.append({"icon_name": "red_exclamation_anim", "value": _("trade.trades_only")})
             for item_type in tradeable:
                 properties.append({"icon_name": "", "value": f"        {item_type.value.capitalize()}"})
         for row, prop in enumerate(properties):
@@ -141,8 +142,8 @@ class TradePanel(Widget):
 
         self.hud.show_action(surface, "end_trade", 0)
         if self.is_buying:
-            self.hud.show_action(surface, "toggle", 1, label="show mine")
+            self.hud.show_action(surface, "toggle", 1, label=_("trade.show_mine"))
             self.hud.show_action(surface, "buy", 2)
         else:
-            self.hud.show_action(surface, "toggle", 1, label="show shop")
+            self.hud.show_action(surface, "toggle", 1, label=_("trade.show_shop"))
             self.hud.show_action(surface, "sell", 2)

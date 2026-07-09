@@ -60,6 +60,14 @@ class Button(Widget):
             self._selected = value
             self.mark_dirty()
 
+    def set_text(self, text: str) -> None:
+        if text != self._text:
+            self._text = str(text)
+            font = get_font(self._size, font_path=self._font_path)
+            tw, th = font.size(self._text)
+            self.rect.size = (tw + 2 * self._padding[0], th + 2 * self._padding[1])
+            self.mark_dirty()
+
     def activate(self) -> None:
         if self.enabled and self._callback is not None:
             self._callback()

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Callable
 import pygame
 from enums import NotificationTypeEnum
 from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo
-from settings import HEIGHT, MAX_SAVE_SLOTS, WIDTH
+from settings import HEIGHT, MAX_SAVE_SLOTS, WIDTH, _
 
 from .. import theme
 from ..widget import Widget
@@ -43,7 +43,7 @@ def _format_timestamp(ts: float) -> str:
 def _format_playtime(secs: float) -> str:
     h = int(secs // 3600)
     m = int((secs % 3600) // 60)
-    return f"{h}h {m:02d}m"
+    return _("save.playtime_format", h=h, m=m)
 
 
 class _SlotButton:
@@ -56,9 +56,9 @@ class _SlotButton:
     @property
     def label(self) -> str:
         if not self.occupied or self.info is None or self.info.metadata is None:
-            return f"Slot {self.idx + 1} — Empty"
+            return _("save.slot_empty", n=self.idx + 1)
         m = self.info.metadata
-        name = m.slot_name or f"Slot {self.idx + 1}"
+        name = m.slot_name or _("save.slot_default_name", n=self.idx + 1)
         return f"{name}  |  {_format_timestamp(m.timestamp)}  |  {_format_playtime(m.playtime)}"
 
 
@@ -105,12 +105,12 @@ class _LoadSlotSelector:
         self._confirm_action = "load"
         self._confirm_slot_idx = slot.idx
         self._confirm_selected = 0
-        self._confirm_text = f"Load slot {slot.idx + 1}?"
+        self._confirm_text = _("save.load_confirm", n=slot.idx + 1)
         cx = self.rect.centerx
         cy = self.rect.centery
         self._confirm_buttons = [
-            Button("Yes", self._confirm_yes, size=_BUTTON_SIZE),
-            Button("No", self._confirm_no, size=_BUTTON_SIZE),
+            Button(_("menu.yes"), self._confirm_yes, size=_BUTTON_SIZE),
+            Button(_("menu.no"), self._confirm_no, size=_BUTTON_SIZE),
         ]
         for i, btn in enumerate(self._confirm_buttons):
             btn.rect.center = (cx - 60 + i * 120, cy)
@@ -175,7 +175,7 @@ class _LoadSlotSelector:
         pygame.draw.rect(surface, (80, 70, 55), self.rect, border_radius=4, width=2)
 
         if not self._slots:
-            empty_surf = theme.menu_font(20).render("No saved games found", False, (120, 110, 90))
+            empty_surf = theme.menu_font(20).render(_("save.no_saves"), False, (120, 110, 90))
             surface.blit(empty_surf, empty_surf.get_rect(center=self.rect.center))
 
         for i, slot in enumerate(self._slots):
@@ -199,7 +199,7 @@ class _LoadSlotSelector:
 
 
 class SaveLoadPanel(Widget):
-    _TITLE = ""
+    _TITLE_KEY = ""
 
     def __init__(self, scene: Scene, hud: HUD | None = None) -> None:
         super().__init__()
@@ -229,7 +229,7 @@ class SaveLoadPanel(Widget):
         bw, bh = 600, 420
         self.bg = theme.nine_patch("nine_patch_04.png", bw, bh)
         self.rect = self.bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-        self._title_surf = theme.menu_font(32).render(self._TITLE, False, theme.NAME)
+        self._title_surf = theme.menu_font(32).render(_(self._TITLE_KEY), False, theme.NAME)
         self._close_btn = Label("[X]", size=24)
 
     # header/footer sit inside the 9-patch border; keep the slot list clear of both
@@ -272,7 +272,7 @@ class SaveLoadPanel(Widget):
     def _do_save(self, slot_idx: int) -> None:
         success = self.game.save_manager.save(slot_idx)
         if success:
-            self.scene.add_notification("Game saved", NotificationTypeEnum.success)
+            self.scene.add_notification(_("save.game_saved"), NotificationTypeEnum.success)
         self._confirm_action = None
         self._refresh_slots()
 
@@ -355,7 +355,7 @@ class SaveLoadPanel(Widget):
             on_submit=self._commit_rename,
         )
         editor.rect.center = (self.rect.centerx, self.rect.centery)
-        editor.set_text(slot.info.metadata.slot_name or f"Slot {slot.idx + 1}")
+        editor.set_text(slot.info.metadata.slot_name or _("save.slot_default_name", n=slot.idx + 1))
         editor.set_focus(True)
         self._editor = editor
         self._editing_slot_idx = slot.idx
@@ -390,20 +390,20 @@ class SaveLoadPanel(Widget):
     def _show_confirm(self, action: str, slot: _SlotButton) -> None:
         if action == "overwrite":
             self._confirm_action = "save"
-            msg = f"Overwrite save in slot {slot.idx + 1}?"
+            msg = _("save.overwrite", n=slot.idx + 1)
         elif action == "delete":
             self._confirm_action = "delete"
-            msg = "Delete this save? This cannot be undone."
+            msg = _("save.delete_confirm")
         else:
             self._confirm_action = "load"
-            msg = f"Load slot {slot.idx + 1}?"
+            msg = _("save.load_confirm", n=slot.idx + 1)
         self._confirm_slot_idx = slot.idx
         self._confirm_selected = 0
         cx = self.rect.centerx
         cy = self.rect.centery + 40
         self._confirm_buttons = [
-            Button("Yes", self._confirm_yes, size=_BUTTON_SIZE),
-            Button("No", self._confirm_no, size=_BUTTON_SIZE),
+            Button(_("menu.yes"), self._confirm_yes, size=_BUTTON_SIZE),
+            Button(_("menu.no"), self._confirm_no, size=_BUTTON_SIZE),
         ]
         for i, btn in enumerate(self._confirm_buttons):
             btn.rect.center = (cx - 60 + i * 120, cy)
@@ -441,7 +441,7 @@ class SaveLoadPanel(Widget):
 
         # hint for the per-slot actions, shown whenever an occupied slot is selected
         if self._selected_is_occupied() and not self._confirm_action and self._editor is None:
-            hint = theme.menu_font(16).render("[R] Rename   [D] Delete", False, (150, 140, 110))
+            hint = theme.menu_font(16).render(_("save.action_hint"), False, (150, 140, 110))
             surface.blit(hint, hint.get_rect(midbottom=(self.rect.centerx, self.rect.bottom - self._FOOTER_Y)))
 
         if self._editor is not None:
@@ -461,19 +461,19 @@ class SaveLoadPanel(Widget):
         overlay.fill((0, 0, 0, 190))
         surface.blit(overlay, self.rect.topleft)
         assert self._editor is not None
-        prompt = theme.menu_font(22).render("Rename slot", False, (255, 230, 180))
+        prompt = theme.menu_font(22).render(_("save.rename_title"), False, (255, 230, 180))
         surface.blit(prompt, prompt.get_rect(midbottom=(self.rect.centerx, self._editor.rect.top - 12)))
         self._editor.draw(surface)
-        hint = theme.menu_font(16).render("Enter = save    Esc = cancel", False, (170, 160, 130))
+        hint = theme.menu_font(16).render(_("save.rename_hint"), False, (170, 160, 130))
         surface.blit(hint, hint.get_rect(midtop=(self.rect.centerx, self._editor.rect.bottom + 12)))
 
 
 class SavePanel(SaveLoadPanel):
-    _TITLE = "Save Game"
+    _TITLE_KEY = "save.title_save"
 
 
 class LoadPanel(SaveLoadPanel):
-    _TITLE = "Load Game"
+    _TITLE_KEY = "save.title_load"
 
     def __init__(self, scene: Scene, hud: HUD | None = None, on_load: Callable[[int], None] | None = None) -> None:
         super().__init__(scene, hud)
@@ -482,7 +482,7 @@ class LoadPanel(SaveLoadPanel):
     def _do_load(self, slot_idx: int) -> None:
         success = self.game.save_manager.load(slot_idx)
         if success:
-            self.scene.add_notification("Game loaded", NotificationTypeEnum.info)
+            self.scene.add_notification(_("save.game_loaded"), NotificationTypeEnum.info)
             if self.on_load is not None:
                 self.on_load(slot_idx)
         self._confirm_action = None
@@ -512,7 +512,7 @@ class DeathScreen(Widget):
         bw, bh = 600, 520
         self.bg = theme.nine_patch("nine_patch_12b.png", bw, bh)
         self.rect = self.bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-        self._title_surf = theme.menu_font(48).render("You Died!", False, (200, 40, 40))
+        self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
 
         slot_rect = pygame.Rect(
             self.rect.left + _PAD,
@@ -526,7 +526,7 @@ class DeathScreen(Widget):
             on_load=self._on_load_slot,
         )
 
-        self._restart_btn = Button("Restart", self._on_restart, size=28)
+        self._restart_btn = Button(_("save.restart"), self._on_restart, size=28)
         self._restart_btn.rect.center = (self.rect.centerx, self.rect.bottom - 40)
         self._focus: str = "slots"
 
@@ -542,7 +542,7 @@ class DeathScreen(Widget):
 
         self._close_state()
         scene_mod.Scene(self.game, "Village", "start").enter_state()
-        splash_screen.SplashScreen(self.game, "GAME OVER").enter_state()
+        splash_screen.SplashScreen(self.game, _("save.game_over")).enter_state()
 
     def _on_load_slot(self, slot_idx: int) -> None:
         if not hasattr(self.game, "save_manager"):
@@ -594,7 +594,7 @@ class DeadState(_State):
     def __init__(self, game: Game) -> None:
         super().__init__(game)
         self.name = "DeadState"
-        self._title_surf = theme.menu_font(48).render("You Died!", False, (200, 40, 40))
+        self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
         bg_w, bg_h = 600, 520
         self._bg = theme.nine_patch("nine_patch_12b.png", bg_w, bg_h)
         self._bg_rect = self._bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
@@ -611,7 +611,7 @@ class DeadState(_State):
             on_load=self._on_load_slot,
         )
 
-        self._restart_btn = Button("Restart", self._on_restart, size=28)
+        self._restart_btn = Button(_("save.restart"), self._on_restart, size=28)
         self._restart_btn.rect.center = (self._bg_rect.centerx, self._bg_rect.bottom - 40)
         self._focus: str = "slots"
 
@@ -621,7 +621,7 @@ class DeadState(_State):
 
         self.exit_state()
         scene_mod.Scene(self.game, "Village", "start").enter_state()
-        splash_screen.SplashScreen(self.game, "GAME OVER").enter_state()
+        splash_screen.SplashScreen(self.game, _("save.game_over")).enter_state()
 
     def _on_load_slot(self, slot_idx: int) -> None:
         self.game.save_manager.load(slot_idx)

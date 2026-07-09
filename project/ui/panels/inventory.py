@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import pygame
 
-from settings import HEIGHT, WIDTH
+from settings import HEIGHT, WIDTH, _
 
 from .. import theme
 from ..widget import Widget
@@ -40,27 +40,27 @@ def draw_item_details(hud: "HUD", surface: pygame.Surface, props_top_left: tuple
     else:
         from config_model.config_pydantic import ItemTypeEnum  # type: ignore[assignment]
 
-    value_label = "Price" if price is not None else "Value"
+    value_label = _("inv.price") if price is not None else _("inv.value")
     value_text = f"{price:4d}" if price is not None else f"{item_model.value:4d}"
     left_properties = [
         {"icon_name": "", "label": "", "value": f"{item_model.name}"},
-        {"icon_name": "pan_balance", "label": "Weight", "value": f"{item_model.weight:4.2f}"},
+        {"icon_name": "pan_balance", "label": _("inv.weight"), "value": f"{item_model.weight:4.2f}"},
         {"icon_name": "golden_coin", "label": value_label, "value": value_text},
-        {"icon_name": "abacus2", "label": "Amount", "value": f"{item_model.count:4d}"},
+        {"icon_name": "abacus2", "label": _("inv.amount"), "value": f"{item_model.count:4d}"},
     ]
     for row, prop in enumerate(left_properties):
         hud.draw_icon_label_value(surface, props_top_left, row, prop)
 
     right_properties: list[dict[str, str]] = [
         {"icon_name": "", "label": "", "value": ""},
-        {"icon_name": "red_question", "label": "Type", "value": item_model.type.value.capitalize()},
+        {"icon_name": "red_question", "label": _("inv.type"), "value": item_model.type.value.capitalize()},
     ]
     if item_model.type == ItemTypeEnum.weapon:
-        right_properties.append({"icon_name": "big_heart", "label": "Damage", "value": f"{-item_model.damage:4d}"})
-        right_properties.append({"icon_name": "hourglass", "label": "Cooldown",
+        right_properties.append({"icon_name": "big_heart", "label": _("inv.damage"), "value": f"{-item_model.damage:4d}"})
+        right_properties.append({"icon_name": "hourglass", "label": _("inv.cooldown"),
                                  "value": f"{item_model.cooldown_time:4.2f}"})
     if item_model.type == ItemTypeEnum.consumable:
-        right_properties.append({"icon_name": "big_heart", "label": "Health",
+        right_properties.append({"icon_name": "big_heart", "label": _("inv.health"),
                                  "value": f"{item_model.health_impact:+4d}"})
     for row, prop in enumerate(right_properties):
         hud.draw_icon_label_value(surface, props_top_middle, row, prop)

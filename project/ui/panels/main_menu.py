@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Callable
 
 import pygame
 from objects import NotificationTypeEnum
-from settings import HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH
+from settings import VERSION, HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH, LANG, _
 from state import State
 
 from .. import theme
@@ -41,7 +41,9 @@ class MenuPanel(Widget):
         options: list[tuple[str, object]],
         *,
         title: str | None = None,
+        title_key: str | None = None,
         lines: list[str] | None = None,
+        line_keys: list[str | tuple[str, dict[str, object]]] | None = None,
         bg_file: str = "nine_patch_06b.png",
         anchor: str = "midleft",
         pos: tuple[int, int] = (60, HEIGHT // 2),
@@ -52,16 +54,34 @@ class MenuPanel(Widget):
     ) -> None:
         super().__init__()
         self.index: int = 0
+        self._i18n_keys: list[str] = [key for key, _ in options]  # type: ignore[misc]
+        self._title_key: str | None = title_key
+        self._title_size: int = title_size
+        self._line_keys: list[str | tuple[str, dict[str, object]]] = line_keys or []
+        self._line_size: int = line_size
+        self._bg_file: str = bg_file
 
         self.buttons: list[Button] = [
-            Button(label, cb, size=button_size)
-            for label, cb in options  # type: ignore[arg-type]
+            Button(_(key), cb, size=button_size)
+            for key, cb in options  # type: ignore[arg-type]
         ]
-        self.line_labels: list[Label] = [
-            Label(text, size=line_size, font_path=str(MENU_FONT)) for text in (lines or [])
-        ]
+        if lines is not None:
+            self.line_labels: list[Label] = [
+                Label(text, size=line_size, font_path=str(MENU_FONT)) for text in lines
+            ]
+            self._lines_are_keys = False
+        else:
+            self.line_labels = [
+                Label(_(spec if isinstance(spec, str) else spec[0], **(spec[1] if isinstance(spec, tuple) else {})),
+                      size=line_size, font_path=str(MENU_FONT))
+                for spec in (line_keys or [])
+            ]
+            self._lines_are_keys = True
 
-        self._title_surf = theme.menu_font(title_size).render(title, False, theme.NAME) if title else None
+        title_text = title
+        if title_text is None and title_key is not None:
+            title_text = _(title_key)
+        self._title_surf = theme.menu_font(title_size).render(title_text, False, theme.NAME) if title_text else None
 
         title_h = (self._title_surf.get_height() + _GAP) if self._title_surf else 0
         lines_h = sum(lbl.rect.height + 4 for lbl in self.line_labels)
@@ -80,6 +100,23 @@ class MenuPanel(Widget):
         self._sync_selection()
 
     #############################################################################################################
+    def _relayout(self) -> None:
+        title_h = (self._title_surf.get_height() + _GAP) if self._title_surf else 0
+        lines_h = sum(lbl.rect.height + 4 for lbl in self.line_labels)
+        buttons_h = sum(b.rect.height + _GAP for b in self.buttons)
+        content_w = max(
+            [b.rect.width for b in self.buttons] + [lbl.rect.width for lbl in self.line_labels]
+        )
+        width = content_w + 2 * _PAD
+        height = title_h + lines_h + buttons_h + 2 * _PAD
+        old_center = self.rect.center
+        self.rect.size = (width, height)
+        self.rect.center = old_center
+        self._bg = theme.nine_patch(self._bg_file, width, height)
+        self.children.clear()
+        self._layout_children()
+        self.mark_dirty()
+
     def _layout_children(self) -> None:
         y = self.rect.top + _PAD
         if self._title_surf:
@@ -121,6 +158,25 @@ class MenuPanel(Widget):
             surf.blit(self._title_surf, rect)
         return surf
 
+    def rebuild_i18n(self) -> None:
+        """Re-apply _() to all button labels, title and lines after language change."""
+        for btn, key in zip(self.buttons, self._i18n_keys):
+            btn.set_text(_(key))
+        if self._title_key is not None:
+            self._title_surf = theme.menu_font(self._title_size).render(
+                _(self._title_key), False, theme.NAME
+            )
+        if self._lines_are_keys:
+            for i, line_spec in enumerate(self._line_keys):
+                if isinstance(line_spec, tuple):
+                    key, kw = line_spec
+                    text = _(key, **kw)
+                else:
+                    text = _(line_spec)
+                if i < len(self.line_labels):
+                    self.line_labels[i].set_text(text)
+        self._relayout()
+
     def handle_event(self, event: pygame.event.Event) -> bool:
         # the panel owns selection, so it does not delegate to button children
         if event.type == pygame.MOUSEMOTION:
@@ -151,6 +207,7 @@ class MenuScreen(State):
         self.panel = self.build_panel()
         self.manager.add(self.panel)
         self._held: dict[str, bool] = {}
+        self._last_lang: str = LANG
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}: {self.name}"
@@ -173,6 +230,11 @@ class MenuScreen(State):
 
     def update(self, dt: float, events: list[pygame.event.Event]) -> None:
         self.manager.handle_events(events)
+
+        # Rebuild button labels if language changed at runtime
+        if LANG != self._last_lang:
+            self._last_lang = LANG
+            self.panel.rebuild_i18n()
 
         if self._edge("up"):
             self.panel.select_prev()
@@ -283,22 +345,22 @@ class MainMenuScreen(MenuScreen):
     def build_panel(self) -> MenuPanel:
         import scene
         import splash_screen
-        from ui.panels.display_settings import DisplaySettingsScreen
+        from ui.panels.display_settings import SettingsMenu
 
         options: list[tuple[str, object]] = []
 
         if self._is_game_in_progress():
-            options.append(("Continue", self._continue_game))
+            options.append(("menu.continue", self._continue_game))
 
         if self._has_saved_games():
-            options.append(("Load", lambda: self._open_load_panel()))
+            options.append(("menu.load", lambda: self._open_load_panel()))
         options.extend([
-            ("New Game", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
-            ("Settings", lambda: DisplaySettingsScreen(self.game, "DisplaySettings", self.bg_image).enter_state()),
-            ("About", lambda: AboutMenuScreen(self.game, "AboutMenu", self.bg_image).enter_state()),
+            ("menu.new_game", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
+            ("menu.settings", lambda: SettingsMenu(self.game, _("menu.settings"), self.bg_image).enter_state()),
+            ("menu.about", lambda: AboutMenuScreen(self.game, "AboutMenu", self.bg_image).enter_state()),
         ])
         if not IS_WEB:
-            options.append(("Quit", self._quit_game))
+            options.append(("menu.quit", self._quit_game))
         return MenuPanel(options, bg_file="nine_patch_06b.png", anchor="midleft", pos=(60, HEIGHT // 2))
 
     def _has_saved_games(self) -> bool:
@@ -349,8 +411,8 @@ class ConfirmMenuScreen(MenuScreen):
         # message goes in `lines` (not `title`) because MenuPanel sizes its width to the
         # lines/buttons - a long title would overflow the panel background.
         return MenuPanel(
-            [("Yes", self._on_yes), ("No", self._on_no)],
-            title="Confirm",
+            [("menu.yes", self._on_yes), ("menu.no", self._on_no)],
+            title_key="menu.confirm",
             lines=[self._message],
             bg_file="nine_patch_12b.png",
             anchor="center",
@@ -372,12 +434,14 @@ class ConfirmMenuScreen(MenuScreen):
 
 class AboutMenuScreen(MenuScreen):
     def build_panel(self) -> MenuPanel:
-        from settings import ABOUT
-
         return MenuPanel(
-            [("Back", self.on_quit)],
-            title="About",
-            lines=list(ABOUT),
+            [("menu.back", self.on_quit)],
+            title_key="menu.about",
+            line_keys=[
+                ("menu.about_version", {"version": VERSION}),
+                "menu.about_author",
+                "menu.about_www",
+            ],
             bg_file="nine_patch_12b.png",
             anchor="midleft",
             pos=(60, HEIGHT // 2),

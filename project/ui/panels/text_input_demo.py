@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
-from settings import HEIGHT, WIDTH
+from settings import HEIGHT, WIDTH, _
 
 from .. import theme
 from ..widgets import CharSet, Label, TextInput
@@ -35,14 +35,14 @@ class TextInputDemoState(_State):
         bg_w, bg_h = 620, 420
         self._bg = theme.nine_patch("nine_patch_04.png", bg_w, bg_h)
         self._bg_rect = self._bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-        self._title_surf = theme.menu_font(40).render("TextInput Demo", False, theme.NAME)
+        self._title_surf = theme.menu_font(40).render(_("text_demo.title"), False, theme.NAME)
 
         # (label, kwargs) for each demonstrated configuration
         specs = [
-            ("Any", dict(charset=CharSet.ANY, placeholder="type anything")),
-            ("Digits", dict(charset=CharSet.DIGITS, max_length=6, placeholder="0-9")),
-            ("Password", dict(password=True, placeholder="secret")),
-            ("Latin", dict(charset=CharSet.LATIN, placeholder="A-Z a-z")),
+            (_("text_demo.field_any"), dict(charset=CharSet.ANY, placeholder=_("text_demo.ph_any"))),
+            (_("text_demo.field_digits"), dict(charset=CharSet.DIGITS, max_length=6, placeholder=_("text_demo.ph_digits"))),
+            (_("text_demo.field_password"), dict(password=True, placeholder=_("text_demo.ph_password"))),
+            (_("text_demo.field_latin"), dict(charset=CharSet.LATIN, placeholder=_("text_demo.ph_latin"))),
         ]
         self._labels: list[Label] = []
         self._fields: list[TextInput] = []

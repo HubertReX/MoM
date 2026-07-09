@@ -1,3 +1,4 @@
+import json
 from collections import namedtuple
 from dataclasses import dataclass
 from functools import partial
@@ -19,7 +20,7 @@ pretty.install()
 VERSION = 0.1
 GAME_NAME = "Misadventures of Malachi"
 LANG = "PL"
-ABOUT = [f"Version: {VERSION}", "Author: Hubert Nafalski", "WWW: https://hubertnafalski.itch.io/"]
+UI_STRINGS: dict[str, dict[str, str]] = {}
 
 # custom type definition
 # Point = namedtuple("Point", ["x", "y"])
@@ -63,13 +64,52 @@ def lerp_vectors(v1: vec, v2: vec, t: float) -> vec:
     return v1 + (v2 - v1) * t
 
 
-def get_msg(messages: dict[str, dict[str, str]], key: str, lang: str = LANG) -> str:
+_UNSET = object()
+
+
+def get_msg(messages: dict[str, dict[str, str]], key: str, lang: str | None = None) -> str:
     """Resolve an i18n message key to the current language text.
 
     Falls back to the key itself (and then to an empty string) so a missing
-    translation never crashes the UI.
+    translation never crashes the UI.  When *lang* is ``None`` the module-level
+    ``LANG`` is used (runtime-mutable).
     """
+    if lang is None:
+        lang = LANG
     return messages.get(lang, {}).get(key) or key
+
+
+def _(key: str, /, **kw: object) -> str:
+    """Translate a UI string key to the current language.
+
+    Fallback is the key itself (visible in the UI while missing).
+    Accepts optional format arguments for templates.  Auto-loads locale
+    for the current LANG on first call / after language switch.
+    """
+    if LANG not in UI_STRINGS:
+        load_ui_strings(ASSETS_DIR / "locale")
+    table = UI_STRINGS[LANG]
+    template = table.get(key) or key
+    if kw:
+        return template.format(**kw)
+    return template
+
+
+def load_ui_strings(locale_dir: str | PathLike) -> None:
+    """Load UI locale file for the current LANG into UI_STRINGS."""
+    path = Path(locale_dir) / f"{LANG}.json"
+    try:
+        with open(path, encoding="utf-8") as f:
+            data: dict[str, str] = json.load(f)
+        UI_STRINGS[LANG] = data
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        print(f"[yellow]WARN[/] UI locale {path}: {exc}")
+        UI_STRINGS[LANG] = {}
+
+
+def reload_ui_strings() -> None:
+    """Clear the UI locale cache so the next _() call re-reads for current LANG."""
+    UI_STRINGS.pop(LANG, None)
 
 
 # ---------------------------------------------------------------------------
@@ -332,60 +372,56 @@ STYLE_TAGS_DICT: dict[str, str] = {
 
 
 ACTIONS: dict[str, dict[str, Any]] = {
-    "quit": {"show": ["key_Esc", "key_Q"], "msg": "main menu", "keys": [pygame.K_ESCAPE, pygame.K_q]},
-    "debug": {"show": ["key_`", "key_Z"], "msg": "debug", "keys": [pygame.K_BACKQUOTE, pygame.K_z]},
-    "alpha": {"show": ["key_B"], "msg": "filter", "keys": [pygame.K_b]},
-    "next_day": {"show": ["key_N"], "msg": "next day", "keys": [pygame.K_n]},
-    # "shaders_toggle": {"show": ["g"],        "msg": "shader 0/1",  "keys": [pygame.K_g]},
-    # "next_shader":    {"show": [".", ">"],   "msg": "next shader", "keys": [pygame.K_PERIOD]},
-    "run": {"show": ["key_Shift"], "msg": "toggle run", "keys": [pygame.K_LSHIFT, pygame.K_RSHIFT]},
-    "jump": {"show": None, "msg": "jump", "keys": [pygame.K_SPACE]},
-    "fly": {"show": None, "msg": "toggle fly", "keys": [pygame.K_LALT, pygame.K_RALT]},
-    "open": {"show": ["key_Space"], "msg": "open", "keys": [pygame.K_SPACE]},
-    "attack": {"show": ["key_Space"], "msg": "attack", "keys": [pygame.K_SPACE]},
-    "trade": {"show": ["key_Space"], "msg": "trade", "keys": [pygame.K_SPACE]},
-    "end_trade": {"show": ["key_Esc", "key_Q"], "msg": "end trade", "keys": [pygame.K_ESCAPE, pygame.K_q]},
-    "buy": {"show": ["key_F"], "msg": "buy", "keys": [pygame.K_f]},
-    "sell": {"show": ["key_F"], "msg": "sell", "keys": [pygame.K_f]},
-    "toggle": {"show": ["key_E"], "msg": "toggle", "keys": [pygame.K_e]},
-    "talk": {"show": ["key_Space"], "msg": "talk", "keys": [pygame.K_SPACE]},
-    "pick_up": {"show": ["key_E"], "msg": "pick up", "keys": [pygame.K_e]},
-    "drop": {"show": ["key_X"], "msg": "drop", "keys": [pygame.K_x]},
-    "inventory": {"show": ["key_I"], "msg": "inventory", "keys": [pygame.K_i]},
-    "next_item": {"show": None, "msg": "next item", "keys": [pygame.K_PERIOD]},
-    "prev_item": {"show": None, "msg": "prev item", "keys": [pygame.K_COMMA]},
-    "item_1": {"show": None, "msg": "item 1", "keys": [pygame.K_1]},
-    "item_2": {"show": None, "msg": "item 2", "keys": [pygame.K_2]},
-    "item_3": {"show": None, "msg": "item 3", "keys": [pygame.K_3]},
-    "item_4": {"show": None, "msg": "item 4", "keys": [pygame.K_4]},
-    "item_5": {"show": None, "msg": "item 5", "keys": [pygame.K_5]},
-    "item_6": {"show": None, "msg": "item 6", "keys": [pygame.K_6]},
-    "use_item": {"show": ["key_F"], "msg": "use item", "keys": [pygame.K_f]},
-    "select": {"show": None, "msg": "select", "keys": [pygame.K_SPACE]},
-    "accept": {"show": None, "msg": "accept", "keys": [pygame.K_RETURN, pygame.K_KP_ENTER]},
-    "help": {"show": ["key_H"], "msg": "show help", "keys": [pygame.K_F1, pygame.K_h]},
-    "menu": {"show": ["key_F2"], "msg": "menu", "keys": [pygame.K_F2]},
-    "show_ui": {"show": ["key_F3"], "msg": "toggle UI", "keys": [pygame.K_F3]},
-    "screenshot": {"show": ["key_F6"], "msg": "screenshot", "keys": [pygame.K_F6]},
-    "intro": {"show": ["key_F4"], "msg": "intro", "keys": [pygame.K_F4]},
-    "text_demo": {"show": ["key_F7"], "msg": "TextInput demo", "keys": [pygame.K_F7]},
-    # "record":         {"show": ([] if IS_WEB else ["key_F3"]), "msg":  "record mp4", "keys": [pygame.K_F3]},
-    "reload": {"show": ([] if IS_WEB else ["key_R"]), "msg": "reload map", "keys": [pygame.K_r]},
-    "zoom_in": {"show": ["key_+"], "msg": "zoom in", "keys": [pygame.K_EQUALS, pygame.K_KP_PLUS]},
-    "zoom_out": {"show": ["key_-"], "msg": "zoom out", "keys": [pygame.K_MINUS, pygame.K_KP_MINUS]},
+    "quit": {"show": ["key_Esc", "key_Q"], "msg": "action.main_menu", "keys": [pygame.K_ESCAPE, pygame.K_q]},
+    "debug": {"show": ["key_`", "key_Z"], "msg": "action.debug", "keys": [pygame.K_BACKQUOTE, pygame.K_z]},
+    "alpha": {"show": ["key_B"], "msg": "action.filter", "keys": [pygame.K_b]},
+    "next_day": {"show": ["key_N"], "msg": "action.next_day", "keys": [pygame.K_n]},
+    "run": {"show": ["key_Shift"], "msg": "action.toggle_run", "keys": [pygame.K_LSHIFT, pygame.K_RSHIFT]},
+    "jump": {"show": None, "msg": "action.jump", "keys": [pygame.K_SPACE]},
+    "fly": {"show": None, "msg": "action.toggle_fly", "keys": [pygame.K_LALT, pygame.K_RALT]},
+    "open": {"show": ["key_Space"], "msg": "action.open", "keys": [pygame.K_SPACE]},
+    "attack": {"show": ["key_Space"], "msg": "action.attack", "keys": [pygame.K_SPACE]},
+    "trade": {"show": ["key_Space"], "msg": "action.trade", "keys": [pygame.K_SPACE]},
+    "end_trade": {"show": ["key_Esc", "key_Q"], "msg": "action.end_trade", "keys": [pygame.K_ESCAPE, pygame.K_q]},
+    "buy": {"show": ["key_F"], "msg": "action.buy", "keys": [pygame.K_f]},
+    "sell": {"show": ["key_F"], "msg": "action.sell", "keys": [pygame.K_f]},
+    "toggle": {"show": ["key_E"], "msg": "action.toggle", "keys": [pygame.K_e]},
+    "talk": {"show": ["key_Space"], "msg": "action.talk", "keys": [pygame.K_SPACE]},
+    "pick_up": {"show": ["key_E"], "msg": "action.pick_up", "keys": [pygame.K_e]},
+    "drop": {"show": ["key_X"], "msg": "action.drop", "keys": [pygame.K_x]},
+    "inventory": {"show": ["key_I"], "msg": "action.inventory", "keys": [pygame.K_i]},
+    "next_item": {"show": None, "msg": "action.next_item", "keys": [pygame.K_PERIOD]},
+    "prev_item": {"show": None, "msg": "action.prev_item", "keys": [pygame.K_COMMA]},
+    "item_1": {"show": None, "msg": "action.item_1", "keys": [pygame.K_1]},
+    "item_2": {"show": None, "msg": "action.item_2", "keys": [pygame.K_2]},
+    "item_3": {"show": None, "msg": "action.item_3", "keys": [pygame.K_3]},
+    "item_4": {"show": None, "msg": "action.item_4", "keys": [pygame.K_4]},
+    "item_5": {"show": None, "msg": "action.item_5", "keys": [pygame.K_5]},
+    "item_6": {"show": None, "msg": "action.item_6", "keys": [pygame.K_6]},
+    "use_item": {"show": ["key_F"], "msg": "action.use_item", "keys": [pygame.K_f]},
+    "select": {"show": None, "msg": "action.select", "keys": [pygame.K_SPACE]},
+    "accept": {"show": None, "msg": "action.accept", "keys": [pygame.K_RETURN, pygame.K_KP_ENTER]},
+    "help": {"show": ["key_H"], "msg": "action.show_help", "keys": [pygame.K_F1, pygame.K_h]},
+    "menu": {"show": ["key_F2"], "msg": "action.menu", "keys": [pygame.K_F2]},
+    "show_ui": {"show": ["key_F3"], "msg": "action.toggle_ui", "keys": [pygame.K_F3]},
+    "screenshot": {"show": ["key_F6"], "msg": "action.screenshot", "keys": [pygame.K_F6]},
+    "intro": {"show": ["key_F4"], "msg": "action.intro", "keys": [pygame.K_F4]},
+    "text_demo": {"show": ["key_F7"], "msg": "action.text_demo", "keys": [pygame.K_F7]},
+    "reload": {"show": ([] if IS_WEB else ["key_R"]), "msg": "action.reload_map", "keys": [pygame.K_r]},
+    "zoom_in": {"show": ["key_+"], "msg": "action.zoom_in", "keys": [pygame.K_EQUALS, pygame.K_KP_PLUS]},
+    "zoom_out": {"show": ["key_-"], "msg": "action.zoom_out", "keys": [pygame.K_MINUS, pygame.K_KP_MINUS]},
     "left": {"show": None, "msg": "", "keys": [pygame.K_LEFT, pygame.K_a]},
     "right": {"show": None, "msg": "", "keys": [pygame.K_RIGHT, pygame.K_d]},
     "up": {"show": None, "msg": "", "keys": [pygame.K_UP, pygame.K_w]},
     "down": {"show": None, "msg": "", "keys": [pygame.K_DOWN, pygame.K_s]},
-    "quick_save": {"show": ([] if IS_WEB else ["key_F5"]), "msg": "quick save", "keys": [pygame.K_F5]},
-    "quick_load": {"show": ([] if IS_WEB else ["key_F9"]), "msg": "quick load", "keys": [pygame.K_F9]},
-    # save-slot management inside the Save/Load panel (rename / delete selected slot)
-    "slot_rename": {"show": None, "msg": "rename slot", "keys": [pygame.K_r]},
-    "slot_delete": {"show": None, "msg": "delete slot", "keys": [pygame.K_d]},
-    "pause": {"show": None, "msg": "pause", "keys": [pygame.K_F8]},
+    "quick_save": {"show": ([] if IS_WEB else ["key_F5"]), "msg": "action.quick_save", "keys": [pygame.K_F5]},
+    "quick_load": {"show": ([] if IS_WEB else ["key_F9"]), "msg": "action.quick_load", "keys": [pygame.K_F9]},
+    "slot_rename": {"show": None, "msg": "action.rename_slot", "keys": [pygame.K_r]},
+    "slot_delete": {"show": None, "msg": "action.delete_slot", "keys": [pygame.K_d]},
+    "pause": {"show": None, "msg": "action.pause", "keys": [pygame.K_F8]},
     "scroll_up": {"show": None, "msg": "", "keys": []},
-    "left_click": {"show": ["mouse_LMB"], "msg": "go to", "keys": []},
-    "right_click": {"show": ["mouse_RMB"], "msg": "stop", "keys": []},
+    "left_click": {"show": ["mouse_LMB"], "msg": "action.go_to", "keys": []},
+    "right_click": {"show": ["mouse_RMB"], "msg": "action.stop", "keys": []},
     "scroll_click": {"show": None, "msg": "", "keys": []},
 }
 
@@ -539,7 +575,7 @@ ASSETS_DIR = CURRENT_DIR / "assets"
 font_name = "font_pixel"
 FONTS_PATH = ASSETS_DIR / "fonts"
 MAIN_FONT = FONTS_PATH / f"{font_name}.ttf"
-MENU_FONT = FONTS_PATH / "munro.ttf"
+MENU_FONT = FONTS_PATH / f"{font_name}.ttf"
 
 FONT_SIZES_DICT = {
     "font": [8, 24, 38, 42, 55],

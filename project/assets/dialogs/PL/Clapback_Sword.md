@@ -14,8 +14,8 @@ translation: [**CLAPBACK_SWORD**](../EN/char-Clapback_Sword.md)
 
 ### 000
 
-* O! Jesteś!
-Halooooo?
+* O:red_exclamation: Jesteś!
+Halooooo:red_question:
 Hej, słyszysz mnie?
 
 * [001](#001) 1😇: Uhh...

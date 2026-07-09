@@ -23,6 +23,7 @@ from settings import (
     SPRITE_SHEET_DEFINITIONS,
     ANIMATION_SPEED,
     AVATAR_SCALE,
+    _,
     CHARACTERS_DIR,
     DIALOGS_DIR,
     HEIGHT,
@@ -1238,15 +1239,14 @@ class NPC(pygame.sprite.Sprite):
                             f"\n[red]ERROR:[/] {self.name} All '[num]{MAX_HOTBAR_ITEMS}[/num]'"
                             " items slots are taken!\n")
                         self.scene.add_notification(
-                            f"All '[num]{MAX_HOTBAR_ITEMS}[/num]' items slots are taken :red_exclamation_anim:",
+                            _("notify.all_slots_taken", n=MAX_HOTBAR_ITEMS),
                             scene.NotificationTypeEnum.failure)
             else:
                 print(
                     f"\n[red]ERROR:[/] {self.name} Max carry weight "
                     f"'[num]{self.model.max_carry_weight:4.2f}[/num]' exceeded!\n")
                 self.scene.add_notification(
-                    f"Max carry weight '[num]{
-                        self.model.max_carry_weight:4.2f}[/num]' exceeded :red_exclamation_anim:",
+                    _("notify.max_weight_exceeded", w=f"{self.model.max_carry_weight:4.2f}"),
                     scene.NotificationTypeEnum.failure)
 
         return result
@@ -1274,15 +1274,13 @@ class NPC(pygame.sprite.Sprite):
 
         if self.model.money < price:
             self.scene.add_notification(
-                f"You can't buy '[item]{
-                    selected_item.model.name}[/item]' - not enough money :red_exclamation_anim:",
+                _("notify.cant_buy_money", name=selected_item.model.name),
                 scene.NotificationTypeEnum.failure)
             return False
 
         if self.model.max_carry_weight < self.total_items_weight + selected_item.model.weight:
             self.scene.add_notification(
-                f"You can't buy '[item]{
-                    selected_item.model.name}[/item]' - too heavy :red_exclamation_anim:",
+                _("notify.cant_buy_weight", name=selected_item.model.name),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1294,8 +1292,7 @@ class NPC(pygame.sprite.Sprite):
 
         if not found and len(self.items) == MAX_HOTBAR_ITEMS:
             self.scene.add_notification(
-                f"You can't buy '[item]{
-                    selected_item.model.name}[/item]' - no free items slots :red_exclamation_anim:",
+                _("notify.cant_buy_slots", name=selected_item.model.name),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1314,15 +1311,13 @@ class NPC(pygame.sprite.Sprite):
 
         if self.npc_met.model.money < price:
             self.scene.add_notification(
-                f"Merchant can't buy '[item]{
-                    selected_item.model.name}[/item]' - not enough money :red_exclamation_anim:",
+                _("notify.merchant_cant_buy_money", name=selected_item.model.name),
                 scene.NotificationTypeEnum.failure)
             return False
 
         if self.npc_met.model.max_carry_weight < self.npc_met.total_items_weight + selected_item.model.weight:
             self.scene.add_notification(
-                f"Merchant can't buy '[item]{
-                    selected_item.model.name}[/item]' - too heavy :red_exclamation_anim:",
+                _("notify.merchant_cant_buy_weight", name=selected_item.model.name),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1334,8 +1329,7 @@ class NPC(pygame.sprite.Sprite):
 
         if not found and len(self.npc_met.items) == MAX_HOTBAR_ITEMS:
             self.scene.add_notification(
-                f"Merchant can't buy '[item]{
-                    selected_item.model.name}[/item]' - no free items slots :red_exclamation_anim:",
+                _("notify.merchant_cant_buy_slots", name=selected_item.model.name),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1433,7 +1427,7 @@ class Player(NPC):
             if self.chest_in_range and self.chest_in_range.model.is_closed and not self.is_talking:
                 chest = self.chest_in_range
                 chest.open()
-                self.scene.add_notification("Chest opened :red_exclamation_anim:", NotificationTypeEnum.success)
+                self.scene.add_notification(_("notify.chest_opened"), NotificationTypeEnum.success)
                 for item_name in chest.model.items:
                     # print(f"[light_green] '{item_name}' item from chest")
                     chest_pos = vec(self.chest_in_range.rect.centerx, self.chest_in_range.rect.centery)
@@ -1504,8 +1498,7 @@ class Player(NPC):
                         self.npc_met.model.money += price
                         self.pick_up(item_to_buy)
                         self.scene.add_notification(
-                            f"Bought '[item]{item_to_buy.model.name}[/item]'"
-                            f"for [num]{price}[/num] :$_anim:",
+                            _("notify.bought", name=item_to_buy.model.name, price=price),
                             NotificationTypeEnum.info)
             INPUTS["buy"] = False
 
@@ -1519,8 +1512,7 @@ class Player(NPC):
                         self.npc_met.model.money -= price
                         self.npc_met.pick_up(item_to_sell)
                         self.scene.add_notification(
-                            f"Sold '[item]{item_to_sell.model.name}[/item]' "
-                            f"for [num]{price}[/num] :$_anim:",
+                            _("notify.sold", name=item_to_sell.model.name, price=price),
                             NotificationTypeEnum.info)
             INPUTS["sell"] = False
 
@@ -1551,7 +1543,7 @@ class Player(NPC):
                 walk_cost = self.scene.path_finding_grid[cell_y][cell_x]
                 if walk_cost > 0:
                     print("[yellow]INFO[/] destination unreachable")
-                    self.scene.add_notification("destination unreachable :red_exclamation_anim:",
+                    self.scene.add_notification(_("notify.destination_unreachable"),
                                                 NotificationTypeEnum.failure)
                     skip = True
 

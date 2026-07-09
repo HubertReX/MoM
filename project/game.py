@@ -18,6 +18,7 @@ from objects import NotificationTypeEnum
 from PIL import Image
 from rich import print, traceback
 from settings import (  # LOGO_IMG,; ColorValue,
+    _,
     ACTIONS,
     AGENT_INPUT_FILE,
     AGENT_SCREENSHOT_DIR,
@@ -154,6 +155,7 @@ class Game:
         _ds = load_display_settings(self.display_settings_storage)
         settings._DISPLAY_RES_INDEX = _ds.resolution_index
         settings._IS_FULLSCREEN = False if IS_WEB else _ds.fullscreen
+        settings.LANG = _ds.language
 
         self.set_display()
 
@@ -394,7 +396,7 @@ class Game:
     def show_loading_screen(self) -> None:
         self.screen.fill(BG_COLOR)
         self.render_text(
-            "Loading...",
+            _("game.loading"),
             (WIDTH_SCALED // 2, HEIGHT_SCALED // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
@@ -621,7 +623,7 @@ class Game:
                 short_name = str(file_name).split("..")[-1]
             else:
                 short_name = str(file_name)
-            add_notification(f"screenshot saved to file '[u]{short_name}[/u]'", NotificationTypeEnum.info)
+            add_notification(_("notify.screenshot_saved", name=short_name), NotificationTypeEnum.info)
 
             return True
 
@@ -648,7 +650,7 @@ class Game:
                 short_name = str(file_name).split("..")[-1]
             else:
                 short_name = str(file_name)
-            add_notification(f"screenshot saved to file '[u]{short_name}[/u]'", NotificationTypeEnum.info)
+            add_notification(_("notify.screenshot_saved", name=short_name), NotificationTypeEnum.info)
 
             return True
         else:
@@ -863,7 +865,7 @@ class Game:
         self.rec_process.stdin.close()
         self.log("saving recordings - this can take a while...")
         self.render_text(
-            "SAVING...",
+            _("game.saving"),
             (WIDTH_SCALED // 2, HEIGHT_SCALED // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
@@ -906,7 +908,7 @@ class Game:
     #############################################################################################################
     def show_pause_message(self) -> None:
         self.render_text(
-            "PAUSED",
+            _("game.paused"),
             (WIDTH // 2, HEIGHT // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
@@ -1000,18 +1002,18 @@ class Game:
             if getattr(state, "is_maze", False):
                 # saving is not allowed inside dungeons/mazes (procedural, non-persistable)
                 if hasattr(state, "add_notification"):
-                    state.add_notification("Cannot save in the dungeon", NotificationTypeEnum.error)  # type: ignore[attr-defined]
+                    state.add_notification(_("notify.cannot_save_dungeon"), NotificationTypeEnum.error)  # type: ignore[attr-defined]
             else:
                 slot_idx = self.save_manager.pick_quick_save_slot()
                 if slot_idx is None:
                     if hasattr(state, "add_notification"):
-                        state.add_notification("No free save slots", NotificationTypeEnum.error)  # type: ignore[attr-defined]
+                        state.add_notification(_("notify.no_free_slots"), NotificationTypeEnum.error)  # type: ignore[attr-defined]
                 elif self.save_manager.save(slot_idx):
                     if hasattr(state, "add_notification"):
-                        state.add_notification(f"Game saved in slot {slot_idx + 1}", NotificationTypeEnum.success)  # type: ignore[attr-defined]
+                        state.add_notification(_("notify.game_saved_slot", n=slot_idx + 1), NotificationTypeEnum.success)  # type: ignore[attr-defined]
                 else:
                     if hasattr(state, "add_notification"):
-                        state.add_notification("Failed to save game", NotificationTypeEnum.error)  # type: ignore[attr-defined]
+                        state.add_notification(_("notify.failed_save"), NotificationTypeEnum.error)  # type: ignore[attr-defined]
             INPUTS["quick_save"] = False
         if INPUTS.get("quick_load"):
             state = self.states[-1]

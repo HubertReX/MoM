@@ -33,13 +33,13 @@ Autor edytuje/tworzy assety w **Aseprite** (baza = paczki licencjonowane + włas
   odczytuje wszystkie postacie z `IMPORTABLE_CHARACTERS`, merge'uje do istniejącego
   `config.json`, usuwa osierocone klucze `messages`. Postacie spoza listy (np. Madame
   Sarcamia) są zachowane bez zmian.
-- **Wybór języka** w runtime przez stałą `LANG` w `settings.py:21`:
+- **Wybór języka** w runtime przez zmienną `LANG` w `settings.py:21`:
   ```python
-  LANG = "EN"                                   # settings.py:21
-  DIALOGS_DIR = ASSETS_DIR / "dialogs" / LANG   # settings.py:436
+  LANG = "EN"                                   # settings.py:21 — mutable, zmieniane z UI
   ```
-  Zmiana `LANG` przełącza katalog dialogów (`EN` ↔ `PL`). **Brak jeszcze przełącznika w UI** —
-  zmiana następuje w kodzie. Dodając nowy dialog, utwórz odpowiedniki w **obu** językach.
+  Zmiana `LANG` jest sterowana z panelu Settings w grze (przełącznik `Language: PL`/`Language: EN`)
+  i persistowana w `save_load/display_settings.py` (`settings.json` / localStorage).
+  Dodając nowy dialog, utwórz odpowiedniki w **obu** językach (`assets/dialogs/{PL,EN}/`).
 - Format rich-text (tagi `[bold]`, `[link plik.md]…[/link]`, inline `:emoji:`) renderowany
   przez SFText / `rich_text.py`.
 

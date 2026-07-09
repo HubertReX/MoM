@@ -35,6 +35,7 @@ from pytmx import TiledMap, TiledObjectGroup, TiledTileLayer
 from pytmx.util_pygame import load_pygame
 from config_model.config import AttitudeEnum, RaceEnum
 from settings import (
+    _,
     # ACTIONS,
     # BG_COLOR,
     # CIRCLE_GRADIENT,
@@ -704,7 +705,7 @@ class Scene(State):
 
         if not result:
             print("\n[red]ERROR![/] no entry point found!\n")
-            self.add_notification("[error]ERROR[/error]:red_exclamation_anim: no entry point found",
+            self.add_notification(_("scene.error_no_entry"),
                                   NotificationTypeEnum.debug)
 
     #############################################################################################################
@@ -1402,7 +1403,7 @@ class Scene(State):
 
                     # print(f"Dropped '[item]{item.name}[/item]' [[magenta]{item.model.type}[/magenta]]")
                     self.add_notification(
-                        f"Dropped '[item]{item.model.name}[/item]'", NotificationTypeEnum.info)
+                        _("notify.dropped", name=item.model.name), NotificationTypeEnum.info)
                 else:
                     print("[red]ERROR![/red] No item to drop!")
             INPUTS["drop"] = False
@@ -1415,7 +1416,7 @@ class Scene(State):
                 if collided_index > -1:
                     item = items[collided_index]
                     if self.player.pick_up(item):
-                        self.add_notification(f"Picked up '[item]{item.model.name}[/item]'", NotificationTypeEnum.success)
+                        self.add_notification(_("notify.picked_up", name=item.model.name), NotificationTypeEnum.success)
                         with contextlib.suppress(KeyError):
                             # if self.group.has(item):
                             self.group.remove(item)
@@ -1474,7 +1475,7 @@ class Scene(State):
             from ui.panels.main_menu import ConfirmMenuScreen
             ConfirmMenuScreen(
                 self.game,
-                "Reload map? Unsaved progress on this map will be lost.",
+                _("scene.reload_confirm"),
                 self._confirm_reload_map,
             ).enter_state()
             self.game.reset_inputs()
@@ -1676,8 +1677,8 @@ class Scene(State):
     def apply_alpha_filter(self, screen: pygame.Surface) -> None:
         # MARK: apply_alpha_filter
         h = HEIGHT // 2
-        self.game.render_text("Day",   (0, int(h - FONT_SIZE_MEDIUM * TEXT_ROW_SPACING)))
-        self.game.render_text("Night", (0, int(h +                    TEXT_ROW_SPACING)))
+        self.game.render_text(_("scene.day_label"),   (0, int(h - FONT_SIZE_MEDIUM * TEXT_ROW_SPACING)))
+        self.game.render_text(_("scene.night_label"), (0, int(h +                    TEXT_ROW_SPACING)))
 
         # sunny, warm yellow light during daytime
         half_screen = pygame.Surface((WIDTH, h), pygame.SRCALPHA)

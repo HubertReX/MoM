@@ -33,7 +33,7 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 | `transition.py`            | Efekty przejść (`Transition`, `TransitionCircle`)                                               |                                                  |
 | `second_order_dynamics.py` | Gładkie animacje (Second Order Dynamics) — POC                                                  |                                                  |
 | `enums.py`                 | Typy wyliczeniowe (Race, Attitude, ItemType, …)                                                 |                                                  |
-| `save_load/display_settings.py` | Persystencja ustawień wyświetlania (rozdzielczość, fullscreen)                              | desktop `settings.json`, web `localStorage`      |
+| `save_load/display_settings.py` | Persystencja ustawień (rozdzielczość, fullscreen, język)                                    | desktop `settings.json`, web `localStorage`      |
 | `main.py`                  | Entry point + CLI (Click na desktopie)                                                          |                                                  |
 
 ## Toolkit UI (`ui/`)
@@ -401,14 +401,17 @@ SS_REVIEW_TIMEOUT = 60.0
   `player.reset()` (`characters.py:1020`: pełne zdrowie, **przeładowanie startowego ekwipunku
   z configu — zebrane przedmioty przepadają**, wyczyszczenie flag), nowa `Scene("Village",
   "start")` + splash `"GAME OVER"`. To pełny respawn w wiosce, nie wczytanie zapisu.
-- **Persystencja ustawień wyświetlania** (`save_load/display_settings.py`): rozdzielczość i
-  stan fullscreen są zapisywane automatycznie przy każdej zmianie i wczytywane przy starcie gry.
-  Desktop: `<data_dir>/mom/settings.json` (taka sama logika ścieżek jak save'y). Web:
-   localStorage klucz `MoM.settings`. Format JSON z `version`, `resolution_index`, `fullscreen`
-   i `resolution` (fallback px, gdyby lista opcji się zmieniła). Fullscreen jest wyłączony na
-   web (`IS_WEB` wymusza `fullscreen=False` — w przeglądarce fullscreen obsługuje F11, nie SDL).
-   Uwaga: `XDG_DATA_HOME` zmienia położenie pliku na macOS (testowano z XDG_DATA_HOME=~/.local/share).
-   Przypadki brzegowe: uszkodzony plik → log + domyślne; index poza zakresem → clamp do max_idx.
+- **Persystencja ustawień** (`save_load/display_settings.py`): rozdzielczość, fullscreen
+  i wybrany język (`LANG`) są zapisywane automatycznie przy każdej zmianie i wczytywane
+  przy starcie gry. Desktop: `<data_dir>/mom/settings.json` (taka sama logika ścieżek jak save'y).
+  Web: localStorage klucz `MoM.settings`. Format JSON z `version`, `resolution_index`,
+  `fullscreen`, `language` i `resolution` (fallback px, gdyby lista opcji się zmieniła).
+  Fullscreen jest wyłączony na web (`IS_WEB` wymusza `fullscreen=False` — w przeglądarce
+  fullscreen obsługuje F11, nie SDL). Język jest od razu stosowany w runtime przez
+  `get_msg()` (dynamiczny lookup przez `settings.LANG`), a dialogi z postaciami używają
+  wiadomości w wybranym języku z dwujęzycznego `messages` dicta (PL+EN).
+  Uwaga: `XDG_DATA_HOME` zmienia położenie pliku na macOS (testowano z XDG_DATA_HOME=~/.local/share).
+  Przypadki brzegowe: uszkodzony plik → log + domyślne; index poza zakresem → clamp do max_idx.
 
 ## Konwencje
 

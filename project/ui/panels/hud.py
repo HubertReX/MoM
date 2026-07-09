@@ -36,6 +36,7 @@ from settings import (
     UI_BORDER_WIDTH,
     UI_COOL_OFF_COLOR,
     WIDTH,
+    _,
 )
 
 from .. import theme
@@ -170,7 +171,7 @@ class HUD(Widget):
             {"icon_name": "big_heart", "value": ""},
             {"icon_name": "pan_balance",
              "value": f"{player.total_items_weight:4.2f}/{player.model.max_carry_weight:4.2f}"},
-            {"icon_name": "hourglass", "value": f"D:{self.scene.day:d} H:{self.scene.hour:d}:{self.scene.minute:02d}"},
+            {"icon_name": "hourglass", "value": _("hud.datetime", day=self.scene.day, hour=self.scene.hour, min=self.scene.minute)},
             {"icon_name": "golden_coin", "value": f"{player.model.money}"},
         ]
         for row, prop in enumerate(properties):
@@ -265,16 +266,16 @@ class HUD(Widget):
                            (len(show_actions) + 1) * FONT_SIZE_MEDIUM * row_spacing)
         surface.blit(self.help_bg, rect.topleft)
         for i, action in enumerate(show_actions, start=1):
-            self.draw_text(surface, f"{action['msg']}",
+            self.draw_text(surface, _(action['msg']),
                            (WIDTH - 300 + 38, 2 + int(i * FONT_SIZE_MEDIUM * row_spacing)), shadow=True)
             surface.blit(self.icons[action['show'][0]][0],
                          (WIDTH - 300, -6 + int(i * FONT_SIZE_MEDIUM * row_spacing)))
 
     def show_action(self, surface: pygame.Surface, action: str, row: int, label: str = "") -> None:
         row_spacing = row * 48
-        label = label or ACTIONS[action]["msg"]
+        label = label or _(ACTIONS[action]["msg"])
         icon = self.icons[ACTIONS[action]["show"][0]][0]
-        label_w, _ = self.font.size(label)
+        label_w, _h = self.font.size(label)
         surface.blit(self.available_action_bg, (WIDTH - TILE_SIZE - 200, HEIGHT - (2 * TILE_SIZE) - 16 - row_spacing))
         surface.blit(icon, (WIDTH - (2 * TILE_SIZE) - 16, HEIGHT - (2 * TILE_SIZE) - 14 - row_spacing))
         self.draw_text(surface, label, (WIDTH - TILE_SIZE - label_w - 40, HEIGHT - (2 * TILE_SIZE) - 7 - row_spacing))
@@ -292,15 +293,15 @@ class HUD(Widget):
             item: ItemSprite = player.items[player.selected_item_idx]
             label = ""
             if item.model.type == ItemTypeEnum.consumable:
-                label = "consume"
+                label = _("action.consume")
             elif item.model.type == ItemTypeEnum.weapon:
                 if player.selected_weapon and player.selected_weapon.name == item.name:
-                    label = "disarm"
+                    label = _("action.disarm")
                 else:
-                    label = "equip"
+                    label = _("action.equip")
             self.show_action(surface, "use_item", 3, label=label)
         if player.chest_in_range:
-            self.show_action(surface, "open", 4, label="open chest")
+            self.show_action(surface, "open", 4, label=_("action.open_chest"))
         elif player.npc_met:
             if player.npc_met.has_dialog:
                 self.show_action(surface, "talk", 4)

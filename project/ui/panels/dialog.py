@@ -30,7 +30,8 @@ from settings import (
     MAIN_FONT,
     TILE_SIZE,
     WIDTH,
-    get_msg
+    _,
+    get_msg,
     )
 
 from .. import theme
@@ -124,7 +125,7 @@ class DialogPanel(Widget):
         self.npc = npc
         self.body.set_text(text)
         self.body.scroll_top()
-        name = npc.model.name if npc else "????"
+        name = npc.model.name if npc else _("dialog.unknown_npc")
         self.name_label.set_text(name)
         self.name_label.set_pos(
             (self.offset[0] + 4 * TILE_SIZE, self.offset[1] - int(1.5 * TILE_SIZE))
@@ -302,7 +303,7 @@ class DialogPanel(Widget):
         shift = self.npc.apply_option_sentiment(opt.sentiment) if is_new_selection else 0
         if shift != 0:
             self.scene.add_notification(
-                f"Sentiment [num]{shift:+d}[/num]",
+                _("notify.sentiment", amount=shift),
                 NotificationTypeEnum.success if shift > 0 else NotificationTypeEnum.info,
             )
             self._sentiment_flash_timer = 0.5

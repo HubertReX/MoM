@@ -1,4 +1,4 @@
-"""Display settings panel: resolution selector + fullscreen toggle.
+"""Settings panel: resolution, fullscreen, language selector.
 
 Replaces the placeholder "Settings" splash screen in the main menu.
 """
@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Callable
 
 import pygame
 import settings as _settings
-from settings import HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH
+from settings import HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH, _
 
 from save_load.display_settings import save_display_settings
 
@@ -31,8 +31,8 @@ _LINE_SIZE = 16
 # Import settings module for mutable state
 
 
-class DisplayPanel(Widget):
-    """Menu-style panel with resolution + fullscreen buttons using Button widgets."""
+class SettingsPanel(Widget):
+    """Menu-style panel with resolution, fullscreen and language buttons."""
 
     def __init__(
         self,
@@ -49,7 +49,7 @@ class DisplayPanel(Widget):
         self._button_types: list[str] = []
         self._buttons: list[Button] = []
 
-        self._title_surf = theme.menu_font(_TITLE_SIZE).render("Display Settings", False, theme.NAME)
+        self._title_surf = theme.menu_font(_TITLE_SIZE).render(_("settings.title"), False, theme.NAME)
         self._rebuild_buttons()
 
         # Calculate panel size
@@ -87,18 +87,22 @@ class DisplayPanel(Widget):
         for i, (xt, yt) in enumerate(_settings.DISPLAY_RES_OPTIONS):
             w = xt * _settings.TILE_SIZE
             h = yt * _settings.TILE_SIZE
-            # Use a fixed label length or alignment to keep "Resolution:" aligned
-            label = f"Resolution: {w}x{h}"
+            label = _("settings.resolution", w=w, h=h)
             self._buttons.append(Button(label, None, size=_BUTTON_SIZE))
             self._button_types.append("resolution")
 
         # Fullscreen button (desktop only)
         if not IS_WEB:
-            label = f"Fullscreen: {'ON' if _settings._IS_FULLSCREEN else 'OFF'}"
+            state = _("settings.fullscreen_on") if _settings._IS_FULLSCREEN else _("settings.fullscreen_off")
+            label = _("settings.fullscreen", state=state)
             self._buttons.append(Button(label, None, size=_BUTTON_SIZE))
             self._button_types.append("fullscreen")
 
-        self._buttons.append(Button("Back", None, size=_BUTTON_SIZE))
+        # Language toggle
+        self._buttons.append(Button(_("settings.language", lang=_settings.LANG), None, size=_BUTTON_SIZE))
+        self._button_types.append("language")
+
+        self._buttons.append(Button(_("settings.back"), None, size=_BUTTON_SIZE))
         self._button_types.append("back")
 
         # Re-layout buttons as children
@@ -176,22 +180,27 @@ class DisplayPanel(Widget):
                 self._apply_callback()
             self._rebuild_buttons()
             save_display_settings()
+        elif bt == "language":
+            _settings.LANG = "EN" if _settings.LANG == "PL" else "PL"
+            _settings.reload_ui_strings()
+            self._rebuild_buttons()
+            save_display_settings()
         elif bt == "back":
             if self._back_callback is not None:
                 self._back_callback()
 
 
-class DisplaySettingsScreen:
-    """Display settings menu backed by DisplayPanel."""
+class SettingsMenu:
+    """Settings menu backed by SettingsPanel."""
 
-    def __init__(self, game: object, name: str = "DisplaySettings", bg_image: pygame.Surface | None = None) -> None:
+    def __init__(self, game: object, name: str = "Settings", bg_image: pygame.Surface | None = None) -> None:
         from ..panels.main_menu import MenuScreen
 
         screen_class = type(
-            "DisplaySettingsScreen",
+            "SettingsMenu",
             (MenuScreen,),
             {
-                "build_panel": lambda self: DisplayPanel(
+                "build_panel": lambda self: SettingsPanel(
                     anchor="midleft",
                     pos=(60, HEIGHT // 2),
                     back_callback=lambda: self.on_quit(),

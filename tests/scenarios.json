@@ -491,6 +491,35 @@
         ]
     },
     {
+        "name": "Language Switch",
+        "slug": "language_switch",
+        "platform": ["desktop"],
+        "actions": [
+            { "slug": "main_menu", "commands": ["screenshot"] },
+            { "slug": "open_settings", "commands": ["down", "accept"] },
+            { "slug": "settings_open_pl", "commands": ["screenshot"] },
+            { "slug": "nav_res1", "commands": ["down"] },
+            { "slug": "nav_res2", "commands": ["down"] },
+            { "slug": "nav_res3", "commands": ["down"] },
+            { "slug": "nav_fullscreen", "commands": ["down"] },
+            { "slug": "nav_language", "commands": ["down"] },
+            { "slug": "toggle_to_en", "commands": ["accept"], "wait": 0.3 },
+            { "slug": "settings_en_shot", "commands": ["screenshot"] },
+            { "slug": "back_to_menu", "commands": ["down", "accept"] },
+            { "slug": "start_new_game_en", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "move_to_hammer_en", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "start_dialog_en", "commands": ["talk:5"], "wait": 1.5 },
+            { "slug": "dialog_in_english", "commands": ["screenshot"], "wait": 2.0 }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "main_menu", "expected_state": "MENU_MAIN", "expect": "The game main menu is visible with menu options." },
+            { "type": "screenshot_review", "target": "settings_open_pl", "expected_state": "MENU_SETTINGS", "expect": "The settings panel is open showing 'Settings' title, resolution options, fullscreen toggle, and a 'Language: PL' button." },
+            { "type": "screenshot_review", "target": "settings_en_shot", "expected_state": "MENU_SETTINGS", "expect": "The settings panel is still open but the language toggle now reads 'Language: EN' instead of 'Language: PL'." },
+            { "type": "screenshot_review", "target": "dialog_in_english", "expect": "A dialog panel is open with Hammer Hoaxheart NPC. The dialog text and/or reply options are in English." },
+            { "type": "process_alive" }
+        ]
+    },
+    {
         "name": "Dialog Escape Blocked",
         "slug": "dialog_escape_blocked",
         "platform": ["desktop"],

@@ -26,6 +26,7 @@ CURRENT_VERSION = 1
 class DisplaySettings:
     resolution_index: int
     fullscreen: bool
+    language: str = "PL"
     resolution: tuple[int, int] | None = None
     version: int = CURRENT_VERSION
 
@@ -76,6 +77,7 @@ class FileDisplaySettingsStorage(DisplaySettingsStorage):
                 "version": settings.version,
                 "resolution_index": settings.resolution_index,
                 "fullscreen": settings.fullscreen,
+                "language": settings.language,
             }
             if settings.resolution is not None:
                 data["resolution"] = [settings.resolution[0], settings.resolution[1]]
@@ -111,6 +113,7 @@ class LocalStorageDisplaySettingsStorage(DisplaySettingsStorage):
                 "version": settings.version,
                 "resolution_index": settings.resolution_index,
                 "fullscreen": settings.fullscreen,
+                "language": settings.language,
             }
             if settings.resolution is not None:
                 data["resolution"] = [settings.resolution[0], settings.resolution[1]]
@@ -147,12 +150,13 @@ def _parse_settings(raw: dict[str, Any]) -> DisplaySettings:
     return DisplaySettings(
         resolution_index=_clamp_index(raw.get("resolution_index", 0)),
         fullscreen=bool(raw.get("fullscreen", False)),
+        language=str(raw.get("language", "PL")),
         resolution=_parse_resolution(raw.get("resolution")),
     )
 
 
 def _default_settings() -> DisplaySettings:
-    return DisplaySettings(resolution_index=0, fullscreen=False)
+    return DisplaySettings(resolution_index=0, fullscreen=False, language="PL")
 
 
 def create_display_settings_storage() -> DisplaySettingsStorage:
@@ -184,6 +188,7 @@ def save_display_settings(storage: DisplaySettingsStorage | None = None) -> None
     ds = DisplaySettings(
         resolution_index=_settings._DISPLAY_RES_INDEX,
         fullscreen=_settings._IS_FULLSCREEN,
+        language=_settings.LANG,
     )
     idx = _settings._DISPLAY_RES_INDEX
     if 0 <= idx < len(_settings.DISPLAY_RES_OPTIONS):

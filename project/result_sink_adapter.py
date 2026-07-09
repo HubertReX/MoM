@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 from enums import NotificationTypeEnum
 from dialog.result_sink import ResultSink
+from settings import _
 
 if TYPE_CHECKING:
     from characters import NPC, Player
@@ -42,7 +43,7 @@ class GameResultSink(ResultSink):
             item = scene.create_item(key, 0, 0, show=False)
             self.player.pick_up(item)
             scene.add_notification(
-                f"Received '[item]{item.model.name}[/item]'",
+                _("notify.received_item", name=item.model.name),
                 NotificationTypeEnum.success,
             )
             scene.notifications[-1].create_time += i * _ITEM_NOTIFY_DELAY
@@ -56,7 +57,7 @@ class GameResultSink(ResultSink):
                 names.append(name)
         for i, name in enumerate(names):
             scene.add_notification(
-                f"Given '[item]{name}[/item]'",
+                _("notify.given_item", name=name),
                 NotificationTypeEnum.info,
             )
             scene.notifications[-1].create_time += i * _ITEM_NOTIFY_DELAY
@@ -77,7 +78,7 @@ class GameResultSink(ResultSink):
         self.npc.sentiment = max(0, min(100, self.npc.sentiment + amount))
         if amount != 0:
             self.player.scene.add_notification(
-                f"Sentiment [num]{amount:+d}[/num]",
+                _("notify.sentiment", amount=amount),
                 NotificationTypeEnum.success if amount > 0 else NotificationTypeEnum.info,
             )
 
