@@ -107,6 +107,7 @@ class DialogPanel(Widget):
         self.name_label = Label("", size=FONT_SIZE_LARGE, font_path=str(MAIN_FONT),
                                 color=CHAR_NAME_COLOR, shadow=True)
         self.key_space = scene.icons["key_Space"][0]
+        self.key_enter = scene.icons["key_Enter"][0]
         self.key_icon = scene.icons["key"][0]
         self.question_icon = scene.icons.get("question", [self.key_space])[0]
         self._weight_font = theme.get_font(FONT_SIZE_SMALL, font_path=str(MAIN_FONT))
@@ -495,7 +496,11 @@ class DialogPanel(Widget):
             rect = txt_surf.get_rect(center=(int(ft["x"]), int(ft["y"])))
             surface.blit(txt_surf, rect)
 
-        surface.blit(self.key_space, (self.offset[0] + self.bg.get_width() - 15, self.offset[1] + 40))
+        if self.body.max_scroll > 0:
+            surface.blit(self.key_space, (self.offset[0] + self.bg.get_width() - 15, self.offset[1] + 40))
+        key_enter_x = self.offset[0] + self.bg.get_width() - 15
+        key_enter_y = (self.options_top + self.options_bottom) // 2 - self.key_enter.get_height() // 2
+        surface.blit(self.key_enter, (key_enter_x, key_enter_y))
         self.tooltip.draw(surface)
 
     def _draw_scroll_hints(self, surface: pygame.Surface, start: int, end: int, n: int) -> None:
