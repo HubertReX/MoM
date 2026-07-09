@@ -55,7 +55,8 @@ _EMOTE_SCALE = 1.8    # scale factor for sentiment emotes in the weight indicato
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
 _BODY_LINES = 3
-_SEPARATOR_H = 2
+_SEPARATOR_H = 4
+_SEPARATOR_GAP = 4
 _SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01c)
 _OPTION_HIGHLIGHT_COLOR = (22, 55, 82)  # dark blue, high contrast vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
@@ -88,7 +89,7 @@ class DialogPanel(Widget):
 
         # Options grow downward from under the separator line (which sits between
         # the node text and the first option row).
-        sep_h = _OPTION_GAP + _OPTION_PAD + _SEPARATOR_H  # total vertical space for the separator line + gap
+        sep_h = _OPTION_GAP + _OPTION_PAD + _SEPARATOR_H + _SEPARATOR_GAP
         self.options_top = self.body_rect.bottom + sep_h
         self.options_bottom = self.rect.bottom - _BORDER
         self._options: list[DialogOption] = []          # filtered, indexed source of truth
@@ -394,8 +395,9 @@ class DialogPanel(Widget):
                     return True
                 return self.activate_selected()
             if event.key == pygame.K_SPACE:
-                # SPACE only scrolls the NPC speech; it never selects an option.
-                self.page_down()
+                # SPACE is handled by GameUI._edge("talk") which includes the
+                # scroll-to-top wrap logic; do NOT handle it here as well
+                # (double-handling would override scroll_top with page_down).
                 return True
             if pygame.K_1 <= event.key <= pygame.K_9:
                 idx = event.key - pygame.K_1
@@ -476,11 +478,8 @@ class DialogPanel(Widget):
 
         # Separator line between the NPC speech and the options.
         sep_y = self.body_rect.bottom + _OPTION_GAP + _OPTION_PAD + _SEPARATOR_H // 2
-        pygame.draw.line(
-            surface, _SEPARATOR_COLOR,
-            (self.body_rect.left, sep_y), (self.body_rect.right, sep_y),
-            _SEPARATOR_H,
-        )
+        sep_rect = pygame.Rect(self.body_rect.left, sep_y - _SEPARATOR_H // 2, self.body_rect.width, _SEPARATOR_H)
+        pygame.draw.rect(surface, _SEPARATOR_COLOR, sep_rect)
 
         # Name plate (dynamic width) centred under the name label.
         name_x = self.name_label.rect.centerx - self.name_bg.get_width() // 2
