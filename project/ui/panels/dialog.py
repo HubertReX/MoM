@@ -54,10 +54,8 @@ _WEIGHT_COL = 80      # px reserved on the right of each option row for emote + 
 _EMOTE_SCALE = 1.8    # scale factor for sentiment emotes in the weight indicator column
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
-_OPTION_ROW_H = _OPTION_FONT + _OPTION_PAD  # approx rendered option row height
-_OPTION_AREA_H = 130  # vertical space reserved for option rows (at font 16, 4 rows + 2 extra lines)
+_BODY_LINES = 3
 _SEPARATOR_H = 2
-_SEPARATOR_MARGIN = 8  # extra empty space above the separator (raises the line)
 _SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01c)
 _OPTION_HIGHLIGHT_COLOR = (22, 55, 82)  # dark blue, high contrast vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
@@ -79,14 +77,13 @@ class DialogPanel(Widget):
         self.offset = (32, HEIGHT - self.bg.get_height() - 10)
         self.rect = pygame.Rect(self.offset, self.bg.get_size())
 
+        body_text_h = _BODY_LINES * _BODY_FONT + (_BODY_LINES - 1) * 4
         self.body_rect = pygame.Rect(
             self.offset[0] + _BORDER,
             self.offset[1] + _BORDER,
             bg_w - 2 * _BORDER,
-            bg_h - 2 * _BORDER - _SEPARATOR_H - _OPTION_AREA_H - _SEPARATOR_MARGIN,
+            body_text_h,
         )
-        self.options_bottom = self.rect.bottom - _BORDER
-        self.options_top = self.options_bottom - _OPTION_AREA_H
         self.body = RichText("", self.body_rect, scene.icons, base_size=_BODY_FONT, line_spacing=4)
 
         # Options grow downward from under the separator line (which sits between
@@ -203,12 +200,11 @@ class DialogPanel(Widget):
         self._layout_options()
 
     def _layout_options(self) -> None:
-        """Position the visible slice of options in the fixed bottom area.
+        """Position the visible slice of options below the separator.
 
-        Options are always bottom-aligned in a fixed area sized for
-        ``_OPTION_VISIBLE_COUNT`` rows; when there are more options they scroll to
-        keep the selection in view. The node text occupies the area above the
-        separator, independent of option count.
+        Options are top-aligned from the separator down; when there are more than
+        ``_OPTION_VISIBLE_COUNT`` they scroll to keep the selection in view.
+        The node text occupies the area above the separator.
         """
         n = len(self.option_surfaces)
         self.option_rects = [pygame.Rect(-10000, -10000, 0, 0) for _ in range(n)]
@@ -228,15 +224,14 @@ class DialogPanel(Widget):
 
         start = self._scroll_offset
         end = min(n, start + self._visible_count)
-        # bottom-align: start from options_bottom and stack upward
-        y = self.options_bottom
-        for i in range(end - 1, start - 1, -1):
+        # top-align: stack downward from options_top
+        y = self.options_top
+        for i in range(start, end):
             surf_h = self.option_surfaces[i].get_height()
-            y -= surf_h + _OPTION_PAD
             rect = pygame.Rect(self.body_rect.left, y, self.body_rect.width, surf_h + _OPTION_PAD)
             self.option_rects[i] = rect
             self.option_weight_indicators[i] = self._weight_pos(self._option_surfaces[i], rect)
-            y -= _OPTION_GAP
+            y += surf_h + _OPTION_PAD + _OPTION_GAP
 
     def _build_weight_indicator(self, opt: DialogOption) -> pygame.Surface:
         """Return the sentiment-weight surface for an option (position set on layout).
