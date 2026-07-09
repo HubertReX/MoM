@@ -338,9 +338,10 @@ class HUD(Widget):
         pad_x, pad_y = 20, 10
         bg = theme.nine_patch("nine_patch_04c.png", tw + 2 * pad_x, th + 2 * pad_y, border=3)
         surface.blit(bg, (TILE_SIZE, y))
-        # centre the text inside the panel (both axes)
+        # centre the text inside the panel (both axes), then shift down 3px so it
+        # doesn't ride up into the border.
         surface.blit(text_surf, (TILE_SIZE + (bg.get_width() - tw) // 2,
-                                 y + (bg.get_height() - th) // 2))
+                                 y + (bg.get_height() - th) // 2 + 3))
 
     #############################################################################################################
     # MARK: compose

@@ -12,7 +12,7 @@ are kept identical to the original so the screen looks unchanged.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import pygame
 from dialog.conditions import check_condition
@@ -20,11 +20,11 @@ from dialog.context_adapter import NPCConditionContext
 from dialog.entities import DialogOption
 from dialog.result_sink import visit_node
 from result_sink_adapter import GameResultSink
+from enums import NotificationTypeEnum
 from settings import (
     AVATAR_SCALE,
     CHAR_NAME_COLOR,
     FONT_SIZE_LARGE,
-    FONT_SIZE_MEDIUM,
     FONT_SIZE_SMALL,
     HEIGHT,
     MAIN_FONT,
@@ -113,8 +113,6 @@ class DialogPanel(Widget):
         self._weight_font = theme.get_font(FONT_SIZE_SMALL, font_path=str(MAIN_FONT))
 
         self.tooltip = Tooltip(scene.icons, _TOOLTIP_TEMPLATE, cursor_size=self.game.cursor_img.get_size())
-        self._feedback_font = theme.get_font(FONT_SIZE_MEDIUM, font_path=str(MAIN_FONT))
-        self._floating_texts: list[dict[str, Any]] = []
         self._sentiment_flash_timer = 0.0
 
     #############################################################################################################
@@ -135,7 +133,6 @@ class DialogPanel(Widget):
         name_w = max(self.name_label.rect.width + 2 * TILE_SIZE, 8 * TILE_SIZE)
         self.name_bg = theme.nine_patch("nine_patch_13.png", name_w, TILE_SIZE)
         self.tooltip.update(None, (0, 0))
-        self._floating_texts.clear()
         self._sentiment_flash_timer = 0.0
         self._on_final_node = False
         self._visit_current_node()
@@ -304,19 +301,10 @@ class DialogPanel(Widget):
         self.npc.selected_options_dict[opt.key] = True
         shift = self.npc.apply_option_sentiment(opt.sentiment) if is_new_selection else 0
         if shift != 0:
-            bar_w = 80
-            x_pos = self.offset[0] + 4 * TILE_SIZE + bar_w // 2
-            y_pos = self.offset[1] - int(2.2 * TILE_SIZE) - 6
-            text = f"{shift:+d}"
-            color = (50, 220, 50) if shift > 0 else (220, 50, 50)
-            self._floating_texts.append({
-                "text": text,
-                "x": float(x_pos),
-                "y": float(y_pos),
-                "color": color,
-                "age": 0.0,
-                "lifetime": 1.2,
-            })
+            self.scene.add_notification(
+                f"Sentiment [num]{shift:+d}[/num]",
+                NotificationTypeEnum.success if shift > 0 else NotificationTypeEnum.info,
+            )
             self._sentiment_flash_timer = 0.5
         self.npc.dialog = opt.next_node
         self._visit_current_node()
@@ -412,14 +400,6 @@ class DialogPanel(Widget):
         self.body.update(dt)
         self.tooltip.update(self.body.link_at(pygame.mouse.get_pos()), pygame.mouse.get_pos())
 
-        # Update floating texts
-        for ft in list(self._floating_texts):
-            ft["age"] += dt
-            ft["y"] -= 30.0 * dt  # Floats upwards
-            if ft["age"] >= ft["lifetime"]:
-                self._floating_texts.remove(ft)
-
-        # Update flash timer
         if self._sentiment_flash_timer > 0.0:
             self._sentiment_flash_timer = max(0.0, self._sentiment_flash_timer - dt)
 
@@ -487,14 +467,6 @@ class DialogPanel(Widget):
         surface.blit(self.name_bg, (name_x, self.offset[1] - 3 * TILE_SIZE))
         self.name_label.draw(surface)
         self._draw_sentiment_indicator(surface)
-
-        # Draw floating texts
-        for ft in self._floating_texts:
-            txt_surf = self._feedback_font.render(ft["text"], True, ft["color"])
-            alpha = int(max(0, min(255, 255 * (1.0 - ft["age"] / ft["lifetime"]))))
-            txt_surf.set_alpha(alpha)
-            rect = txt_surf.get_rect(center=(int(ft["x"]), int(ft["y"])))
-            surface.blit(txt_surf, rect)
 
         if self.body.max_scroll > 0:
             surface.blit(self.key_space, (self.offset[0] + self.bg.get_width() - 15, self.offset[1] + 40))

@@ -75,6 +75,11 @@ class GameResultSink(ResultSink):
 
     def shift_sentiment(self, amount: int) -> None:
         self.npc.sentiment = max(0, min(100, self.npc.sentiment + amount))
+        if amount != 0:
+            self.player.scene.add_notification(
+                f"Sentiment [num]{amount:+d}[/num]",
+                NotificationTypeEnum.success if amount > 0 else NotificationTypeEnum.info,
+            )
 
     def _remove_one_item(self, key: str) -> str | None:
         """Drop one stack-count of ``key`` from the hero's inventory.

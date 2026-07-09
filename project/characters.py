@@ -180,6 +180,8 @@ class NPC(pygame.sprite.Sprite):
         self.attack_cooldown: int = 200
         # double check cooldown since events fail
         self.weapon_cooldown: float = 0.0
+        # prevent tight pathfind retry loop when A* fails
+        self.next_pathfind_time: float = 0.0
 
         self.can_switch_weapon: bool = True
         # how long to wait before next weapon switch (in mili seconds)
@@ -558,9 +560,21 @@ class NPC(pygame.sprite.Sprite):
 
                     target_vec = self.get_random_safe_pos(self.pos, range=NPC_RANDOM_WALK_DISTANCE)
 
+                    # verify A* reachability before committing (cache makes 2nd call in find_path free)
+                    npc_tile = (self.tileset_coord.y, self.tileset_coord.x)
+                    target_tile = self.get_tileset_coord(target_vec)
+                    reachable = a_star_cached(start=npc_tile, goal=(target_tile.y, target_tile.x), grid=self.scene.path_finding_grid)
+                    if not reachable:
+                        self.target = vec(0, 0)
+                        self.end_rest_time = self.game.time_elapsed + 1.0
+                        return
+
                     self.target = target_vec
                     self.find_path()
                     self.check_waypoints_in_exit()
+                    if self.waypoints_cnt == 0:
+                        self.target = vec(0, 0)
+                        self.end_rest_time = self.game.time_elapsed + 1.0
 
     #############################################################################################################
 
@@ -666,10 +680,15 @@ class NPC(pygame.sprite.Sprite):
         # activate monsters in maze when player is near
         # no designated waypoints, distance from player in range, is enemy
         if self.waypoints_cnt == 0 and distance_from_player < MONSTER_WAKE_DISTANCE**2:
+            if self.game.time_elapsed < self.next_pathfind_time:
+                return
             self.target = self.scene.player.pos.copy()
             self.speed = self.speed_run
             self.emote.set_temporary_emote("red_exclamation_anim", 4.0)
             self.find_path()
+            if self.waypoints_cnt == 0:
+                self.target = vec(0, 0)
+                self.next_pathfind_time = self.game.time_elapsed + 0.5
             # if character has a set target (and needs to follow it) or there are no waypoints to follow any more
         elif self.target != vec(0, 0):  # or self.waypoints_cnt == 0:
             # if (no more waypoints or the player has moved) and (character is a monster chasing player)
@@ -680,8 +699,13 @@ class NPC(pygame.sprite.Sprite):
             #     self.model.attitude == AttitudeEnum.enemy.value:
             if (distance_player_moved > RECALCULATE_PATH_DISTANCE ** 2) \
                     and self.model.attitude == AttitudeEnum.enemy:
+                if self.game.time_elapsed < self.next_pathfind_time:
+                    return
                 self.target = self.scene.player.pos.copy()
                 self.find_path()
+                if self.waypoints_cnt == 0:
+                    self.target = vec(0, 0)
+                    self.next_pathfind_time = self.game.time_elapsed + 0.5
 
     #############################################################################################################
     def follow_waypoints(self) -> None:
@@ -703,9 +727,13 @@ class NPC(pygame.sprite.Sprite):
                 current_way_point_vec = self.waypoints[self.current_waypoint_no].as_vector
                 current_way_point_vec.y += 4
         direction = current_way_point_vec - npc_pos
-        direction = direction.normalize() * self.force
-        self.acc.x = direction.x
-        self.acc.y = direction.y
+        if direction.length_squared() > 0:
+            direction = direction.normalize() * self.force
+            self.acc.x = direction.x
+            self.acc.y = direction.y
+        else:
+            self.acc.x = 0
+            self.acc.y = 0
 
     #############################################################################################################
     def clear_waypoints(self) -> None:
@@ -737,6 +765,7 @@ class NPC(pygame.sprite.Sprite):
             self.waypoints_cnt = 0
             self.acc = vec(0, 0)
             self.vel = vec(0, 0)
+            self.target = vec(0, 0)
 
         self.current_waypoint_no = 0
 
