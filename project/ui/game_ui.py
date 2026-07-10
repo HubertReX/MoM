@@ -201,7 +201,11 @@ class GameUI:
                 player = self.scene.player
                 if player.npc_met and not self.is_buying:
                     if player.can_sell():
-                        item_to_sell = player.drop_item(show=False)
+                        filtered = player.get_tradable_items()
+                        if 0 <= player.selected_item_idx < len(filtered):
+                            item_to_sell = player.drop_item(show=False, item=filtered[player.selected_item_idx])
+                        else:
+                            item_to_sell = None
                         if item_to_sell:
                             price = int(round(
                                 item_to_sell.model.value * get_sell_price_multiplier(player.npc_met.sentiment)))
@@ -219,9 +223,11 @@ class GameUI:
                     player = self.scene.player
                     if self.is_buying and player.npc_met and player.npc_met.model.is_merchant:
                         npc = player.npc_met
+                        items = npc.items
                     else:
                         npc = player
-                    if idx - 1 < len(npc.items):
+                        items = npc.get_tradable_items()
+                    if idx - 1 < len(items):
                         npc.selected_item_idx = idx - 1
                     INPUTS[f"item_{idx}"] = False
 

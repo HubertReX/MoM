@@ -83,7 +83,13 @@ class TradePanel(Widget):
         surface.blit(background, top_left)
         if npc.selected_item_idx < 0:
             return
-        item_model = npc.items[npc.selected_item_idx].model
+        if self.is_buying:
+            items = npc.items
+        else:
+            items = npc.get_tradable_items()
+        if npc.selected_item_idx >= len(items):
+            return
+        item_model = items[npc.selected_item_idx].model
         merchant = self.scene.player.npc_met
         if merchant and self.is_buying:
             multiplier = get_buy_price_multiplier(merchant.sentiment)
@@ -92,7 +98,8 @@ class TradePanel(Widget):
         else:
             multiplier = 1.0
         price = int(round(item_model.value * multiplier))
-        draw_item_details(self.hud, surface, props_top_left, props_top_middle, item_model, price=price)
+        draw_item_details(self.hud, surface, props_top_left, props_top_middle, item_model, price=price,
+                          panel_w=self.trader_bg.get_width())
 
     def _draw_merchant_stats(self, surface: pygame.Surface, npc: "NPC", top_left: tuple[int, int]) -> None:
         properties = [

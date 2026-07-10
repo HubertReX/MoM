@@ -149,7 +149,8 @@ class HUD(Widget):
                            pos=(top_left[0] + 3 * TILE_SIZE + left_margin, top_left[1] + top_margin + row_height * row))
 
     def draw_icon_label_value(self, surface: pygame.Surface, top_left: tuple[int, int], row: int,
-                              property: dict[str, str]) -> None:
+                              property: dict[str, str], *,
+                              name_center_x: int | None = None) -> None:
         left_margin, top_margin, row_height = 30, 40, 35
         icon_offset = -TILE_SIZE // 2
         if property["icon_name"]:
@@ -163,9 +164,13 @@ class HUD(Widget):
             self.draw_text(surface, property["label"], color=(255, 255, 255),
                            pos=(top_left[0] + 3 * TILE_SIZE + left_margin, top_left[1] + top_margin + row_height * row))
         if property["value"]:
-            self.draw_text(surface, property["value"], color=(0, 197, 199), align="right",
-                           pos=(top_left[0] + 20 * TILE_SIZE + left_margin,
-                                top_left[1] + top_margin + row_height * row))
+            if name_center_x is not None and not property["icon_name"] and not property["label"]:
+                self.draw_text(surface, property["value"], color=(0, 197, 199), align="centred",
+                               pos=(name_center_x, top_left[1] + top_margin + row_height * row))
+            else:
+                self.draw_text(surface, property["value"], color=(0, 197, 199), align="right",
+                               pos=(top_left[0] + 20 * TILE_SIZE + left_margin,
+                                    top_left[1] + top_margin + row_height * row))
 
     def show_stats_panel(self, surface: pygame.Surface, player: "Player") -> None:
         top_left = (TILE_SIZE, TILE_SIZE)

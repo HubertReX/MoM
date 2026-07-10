@@ -150,8 +150,19 @@ sourcery:
         Write-Host "Sourcery is not installed. Uncomment it in requirements-dev.txt and run 'just setup'."
     }
 
-# Run all static analysis and code checks (Sourcery + mypy)
-check: sourcery mypy
+# Validate locale TOML files (key symmetry + placeholder consistency)
+[unix]
+validate-locale:
+    .venv/bin/python scripts/validate_locale.py
+
+# Validate locale TOML files (key symmetry + placeholder consistency)
+[windows]
+validate-locale:
+    #!powershell
+    .venv\Scripts\python.exe scripts\validate_locale.py
+
+# Run all static analysis and code checks (Sourcery + mypy + locale)
+check: sourcery mypy validate-locale
 
 # Fix all PNGs that have sRGB/gAMA/cHRM/iCCP chunks (strips profile chunks via mogrify)
 [unix]

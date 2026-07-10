@@ -237,12 +237,12 @@ class NPC(pygame.sprite.Sprite):
             filtered_items = self.items
 
         if len(filtered_items) > 0:
-
-            selected_item = self.items[self.selected_item_idx]
-
-            self.selected_item_idx =  self.items.index(selected_item) + 1
-            if self.selected_item_idx >= len(filtered_items):
-                self.selected_item_idx = 0
+            if self.selected_item_idx < len(filtered_items):
+                selected_item = filtered_items[self.selected_item_idx]
+            else:
+                selected_item = filtered_items[0]
+            new_idx = filtered_items.index(selected_item) + 1
+            self.selected_item_idx = 0 if new_idx >= len(filtered_items) else new_idx
 
     #############################################################################################################
     def select_prev_item(self, filtered_items: list[ItemSprite] | None = None) -> None:
@@ -250,12 +250,12 @@ class NPC(pygame.sprite.Sprite):
             filtered_items = self.items
 
         if len(filtered_items) > 0:
-
-            selected_item = self.items[self.selected_item_idx]
-
-            self.selected_item_idx =  self.items.index(selected_item) - 1
-            if self.selected_item_idx < 0:
-                self.selected_item_idx = len(filtered_items) - 1
+            if self.selected_item_idx < len(filtered_items):
+                selected_item = filtered_items[self.selected_item_idx]
+            else:
+                selected_item = filtered_items[0]
+            new_idx = filtered_items.index(selected_item) - 1
+            self.selected_item_idx = len(filtered_items) - 1 if new_idx < 0 else new_idx
 
     #############################################################################################################
 
@@ -1337,13 +1337,14 @@ class NPC(pygame.sprite.Sprite):
         return True
 
     #############################################################################################################
-    def drop_item(self, show: bool = True) -> ItemSprite | None:
-        if (
-            not self.items or self.selected_item_idx < 0 or self.selected_item_idx > len(self.items) - 1
-        ):
-            return None
-
-        selected_item = self.items[self.selected_item_idx]
+    def drop_item(self, show: bool = True, item: "ItemSprite | None" = None) -> "ItemSprite | None":
+        if item is None:
+            if (
+                not self.items or self.selected_item_idx < 0 or self.selected_item_idx > len(self.items) - 1
+            ):
+                return None
+            item = self.items[self.selected_item_idx]
+        selected_item = item
         self.total_items_weight -= selected_item.model.weight  # * selected_item.model.count
 
         if selected_item.model.count > 1:

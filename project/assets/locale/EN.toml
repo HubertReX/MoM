@@ -1,0 +1,187 @@
+# EN.toml - English locale
+# Placeholders: {name} - substituted via str.format()
+
+# === Main menu ===
+
+[menu]
+continue = "Continue"
+load = "Load"
+new_game = "New Game"
+settings = "Settings"
+about = "About"
+quit = "Quit"
+back = "Back"
+confirm = "Confirm"
+yes = "Yes"
+no = "No"
+about_ver = "Version: {version}"
+about_author = "Author: Hubert Nafalski"
+about_url = "WWW: https://hubertnafalski.itch.io/"
+
+# === Settings ===
+
+[settings]
+title = "Settings"
+resolution = "Resolution: {w}x{h}"
+fullscreen = "Fullscreen: {state}"
+fullscreen_on = "ON"
+fullscreen_off = "OFF"
+language = "Language: {lang}"
+back = "Back"
+
+# === Save / Load ===
+
+[save]
+title_save = "Save Game"
+title_load = "Load Game"
+slot_empty = "Slot {n} - Empty"
+slot_default_name = "Slot {n}"
+playtime_format = "{h}h {m:02d}m"
+overwrite = "Overwrite save in slot {n}?"
+delete_confirm = "Delete this save? This cannot be undone."
+load_confirm = "Load slot {n}?"
+game_saved = "Game saved"
+game_loaded = "Game loaded"
+no_saves = "No saved games found"
+rename_title = "Rename slot"
+rename_hint = "Enter = save    Esc = cancel"
+action_hint = "[R] Rename   [D] Delete"
+you_died = "You Died!"
+game_over = "GAME OVER"
+restart = "Restart"
+
+# === Item types ===
+
+[item_type]
+weapon = "Weapon"
+consumable = "Consumable"
+gem = "Gem"
+key = "Key"
+money = "Money"
+
+# === Inventory ===
+
+[inv]
+weight = "Weight"
+value = "Value"
+price = "Price"
+amount = "Amount"
+type = "Type"
+damage = "Damage"
+cooldown = "Cooldown"
+health = "Health"
+
+# === Trade ===
+
+[trade]
+trades_only = "Trades only:"
+show_mine = "show mine"
+show_shop = "show shop"
+
+# === Actions ===
+
+[action]
+consume = "consume"
+disarm = "disarm"
+equip = "equip"
+open_chest = "open chest"
+main_menu = "main menu"
+debug = "debug"
+filter = "filter"
+next_day = "next day"
+toggle_run = "toggle run"
+open = "open"
+attack = "attack"
+trade = "trade"
+end_trade = "end trade"
+buy = "buy"
+sell = "sell"
+toggle = "toggle"
+talk = "talk"
+pick_up = "pick up"
+drop = "drop"
+inventory = "inventory"
+use_item = "use item"
+show_help = "show help"
+menu = "menu"
+toggle_ui = "toggle UI"
+screenshot = "screenshot"
+intro = "intro"
+text_demo = "TextInput demo"
+reload_map = "reload map"
+zoom_in = "zoom in"
+zoom_out = "zoom out"
+quick_save = "quick save"
+quick_load = "quick load"
+go_to = "go to"
+stop = "stop"
+
+# === HUD ===
+
+[hud]
+datetime = "D:{day} H:{hour}:{min:02d}"
+
+# === Game state ===
+
+[game]
+paused = "PAUSED"
+saving = "SAVING..."
+loading = "Loading..."
+game_name = "Misadventures of Malachi"
+
+# === Splash ===
+
+[splash]
+continue = "press space to continue"
+
+# === Dialog ===
+
+[dialog]
+unknown_npc = "????"
+
+# === Scene ===
+
+[scene]
+day_label = "Day"
+night_label = "Night"
+error_no_entry = "[error]ERROR[/error]:red_exclamation_anim: no entry point found"
+reload_confirm = "Reload map? Unsaved progress on this map will be lost."
+
+# === Notifications ===
+
+[notify]
+bought = "Bought '[item]{name}[/item]' for [num]{price}[/num] :$_anim:"
+sold = "Sold '[item]{name}[/item]' for [num]{price}[/num] :$_anim:"
+cant_buy_money = "You can't buy '[item]{name}[/item]' - not enough money :red_exclamation_anim:"
+cant_buy_weight = "You can't buy '[item]{name}[/item]' - too heavy :red_exclamation_anim:"
+cant_buy_slots = "You can't buy '[item]{name}[/item]' - no free items slots :red_exclamation_anim:"
+merchant_cant_buy_money = "Merchant can't buy '[item]{name}[/item]' - not enough money :red_exclamation_anim:"
+merchant_cant_buy_weight = "Merchant can't buy '[item]{name}[/item]' - too heavy :red_exclamation_anim:"
+merchant_cant_buy_slots = "Merchant can't buy '[item]{name}[/item]' - no free items slots :red_exclamation_anim:"
+all_slots_taken = "All '[num]{n}[/num]' items slots are taken :red_exclamation_anim:"
+max_weight_exceeded = "Max carry weight '[num]{w}[/num]' exceeded :red_exclamation_anim:"
+chest_opened = "Chest opened :red_exclamation_anim:"
+destination_unreachable = "destination unreachable :red_exclamation_anim:"
+picked_up = "Picked up '[item]{name}[/item]'"
+dropped = "Dropped '[item]{name}[/item]'"
+received_item = "Received '[item]{name}[/item]'"
+given_item = "Given '[item]{name}[/item]'"
+sentiment = "Sentiment [num]{amount:+d}[/num]"
+screenshot_saved = "screenshot saved to file '[u]{name}[/u]'"
+cannot_save_dungeon = "Cannot save in the dungeon"
+no_free_slots = "No free save slots"
+game_saved_slot = "Game saved in slot {n}"
+failed_save = "Failed to save game"
+
+# === TextInput Demo ===
+
+[text_demo]
+title = "TextInput Demo"
+field_any = "Any"
+field_digits = "Digits"
+field_password = "Password"
+field_latin = "Latin"
+ph_any = "type anything"
+ph_digits = "0-9"
+ph_password = "secret"
+ph_latin = "A-Z a-z"

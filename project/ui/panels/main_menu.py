@@ -437,9 +437,9 @@ class AboutMenuScreen(MenuScreen):
             [("menu.back", self.on_quit)],
             title_key="menu.about",
             line_keys=[
-                ("menu.about_version", {"version": VERSION}),
+                ("menu.about_ver", {"version": VERSION}),
                 "menu.about_author",
-                "menu.about_www",
+                "menu.about_url",
             ],
             bg_file="nine_patch_12b.png",
             anchor="midleft",

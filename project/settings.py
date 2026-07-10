@@ -1,5 +1,10 @@
 import json
 from collections import namedtuple
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib  # type: ignore[no-redef]
 from dataclasses import dataclass
 from functools import partial
 from os import PathLike
@@ -95,14 +100,29 @@ def _(key: str, /, **kw: object) -> str:
     return template
 
 
+def _flatten_toml(nested: dict[str, Any], prefix: str = "") -> dict[str, str]:
+    """Flatten a nested TOML dict into dotted-key pairs.
+
+    ``{"menu": {"continue": "OK"}}`` → ``{"menu.continue": "OK"}``
+    """
+    flat: dict[str, str] = {}
+    for key, value in nested.items():
+        full_key = f"{prefix}.{key}" if prefix else key
+        if isinstance(value, dict):
+            flat.update(_flatten_toml(value, full_key))
+        else:
+            flat[full_key] = str(value)
+    return flat
+
+
 def load_ui_strings(locale_dir: str | PathLike) -> None:
-    """Load UI locale file for the current LANG into UI_STRINGS."""
-    path = Path(locale_dir) / f"{LANG}.json"
+    """Load UI locale TOML file for the current LANG into UI_STRINGS."""
+    path = Path(locale_dir) / f"{LANG}.toml"
     try:
-        with open(path, encoding="utf-8") as f:
-            data: dict[str, str] = json.load(f)
-        UI_STRINGS[LANG] = data
-    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        with open(path, "rb") as f:
+            data: dict[str, Any] = tomllib.load(f)
+        UI_STRINGS[LANG] = _flatten_toml(data)
+    except (FileNotFoundError, tomllib.TOMLDecodeError) as exc:
         print(f"[yellow]WARN[/] UI locale {path}: {exc}")
         UI_STRINGS[LANG] = {}
 

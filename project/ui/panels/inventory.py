@@ -33,7 +33,7 @@ def build_inventory_bg() -> pygame.Surface:
 
 def draw_item_details(hud: "HUD", surface: pygame.Surface, props_top_left: tuple[int, int],
                       props_top_middle: tuple[int, int], item_model: Any,
-                      price: int | None = None) -> None:
+                      price: int | None = None, *, panel_w: int = 0) -> None:
     from settings import IS_WEB
     if IS_WEB:
         from config_model.config import ItemTypeEnum
@@ -42,6 +42,7 @@ def draw_item_details(hud: "HUD", surface: pygame.Surface, props_top_left: tuple
 
     value_label = _("inv.price") if price is not None else _("inv.value")
     value_text = f"{price:4d}" if price is not None else f"{item_model.value:4d}"
+    left_col_cx = props_top_left[0] + panel_w // 2 if panel_w else 0
     left_properties = [
         {"icon_name": "", "label": "", "value": entity_name(item_model)},
         {"icon_name": "pan_balance", "label": _("inv.weight"), "value": f"{item_model.weight:4.2f}"},
@@ -49,7 +50,8 @@ def draw_item_details(hud: "HUD", surface: pygame.Surface, props_top_left: tuple
         {"icon_name": "abacus2", "label": _("inv.amount"), "value": f"{item_model.count:4d}"},
     ]
     for row, prop in enumerate(left_properties):
-        hud.draw_icon_label_value(surface, props_top_left, row, prop)
+        hud.draw_icon_label_value(surface, props_top_left, row, prop,
+                                  name_center_x=left_col_cx if row == 0 else None)
 
     right_properties: list[dict[str, str]] = [
         {"icon_name": "", "label": "", "value": ""},
@@ -85,5 +87,6 @@ class InventoryPanel(Widget):
         if player.selected_item_idx < 0:
             return
         item_model = player.items[player.selected_item_idx].model
-        draw_item_details(self.hud, surface, self.rect.topleft, self.rect.midtop, item_model)
+        draw_item_details(self.hud, surface, self.rect.topleft, self.rect.midtop, item_model,
+                          panel_w=self.bg.get_width())
         surface.blit(self.hud.icons["key_I"][0], (self.rect.left + self.rect.width - 8, self.rect.top + 40))

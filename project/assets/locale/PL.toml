@@ -1,0 +1,191 @@
+# PL.toml - lokalizacja polska
+# Placeholders: {nazwa} - podstawiane przez str.format()
+
+# === Menu główne ===
+
+[menu]
+continue = "Kontynuuj"
+load = "Wczytaj"
+new_game = "Nowa Gra"
+settings = "Ustawienia"
+about = "O grze"
+quit = "Wyjście"
+back = "Wstecz"
+confirm = "Potwierdź"
+yes = "Tak"
+no = "Nie"
+about_ver = "Wersja: {version}"
+about_author = "Autor: Hubert Nafalski"
+about_url = "WWW: https://hubertnafalski.itch.io/"
+
+# === Ustawienia ===
+
+[settings]
+title = "Ustawienia"
+resolution = "Rozdzielczość: {w}x{h}"
+fullscreen = "Pełny ekran: {state}"
+fullscreen_on = "WŁ"
+fullscreen_off = "WYŁ"
+language = "Język: {lang}"
+back = "Wstecz"
+
+# === Zapis / Wczytaj ===
+
+[save]
+title_save = "Zapisz Grę"
+title_load = "Wczytaj Grę"
+slot_empty = "Slot {n} — Pusty"
+slot_default_name = "Slot {n}"
+playtime_format = "{h}g {m:02d}min"
+overwrite = "Nadpisać zapis w slocie [num]{n}[/num]?"
+delete_confirm = "Usunąć ten zapis? Tej operacji nie można cofnąć."
+load_confirm = "Wczytać slot [num]{n}[/num]?"
+game_saved = "Gra zapisana"
+game_loaded = "Gra wczytana"
+no_saves = "Nie znaleziono zapisanych gier"
+rename_title = "Zmień nazwę"
+rename_hint = "Enter = zapisz    Esc = anuluj"
+action_hint = "[R] Zmień nazwę   [D] Usuń"
+you_died = "Zginąłeś!"
+game_over = "KONIEC GRY"
+restart = "Restart"
+
+# === Typy przedmiotów ===
+
+[item_type]
+weapon = "Broń"
+consumable = "Jadalny"
+gem = "Klejnot"
+key = "Klucz"
+money = "Pieniądze"
+
+# === Ekwipunek ===
+
+[inv]
+weight = "Waga"
+value = "Wartość"
+price = "Cena"
+amount = "Ilość"
+type = "Typ"
+damage = "Obrażenia"
+cooldown = "Odnowienie"
+health = "Zdrowie"
+
+# === Handel ===
+
+[trade]
+trades_only = "Handluje tylko:"
+# show_mine = "pokaż moje"
+show_mine = "moje"
+# show_shop = "pokaż sklep"
+show_shop = "sklep"
+
+# === Akcje ===
+
+[action]
+consume = "zjedz"
+# disarm = "odłóż broń"
+disarm = "odłóż"
+equip = "wyposaż"
+open_chest = "otwórz"
+main_menu = "menu główne"
+debug = "debug"
+filter = "filtr"
+next_day = "nowy dzień"
+toggle_run = "bieg"
+open = "otwórz"
+attack = "atakuj"
+trade = "handluj"
+# end_trade = "kończ handel"
+end_trade = "zakończ"
+buy = "kup"
+sell = "sprzedaj"
+toggle = "przełącz"
+talk = "rozmawiaj"
+pick_up = "podnieś"
+drop = "wyrzuć"
+inventory = "ekwipunek"
+use_item = "użyj"
+show_help = "pomoc"
+menu = "menu"
+toggle_ui = "wł/wył UI"
+screenshot = "zrzut ekranu"
+intro = "intro"
+text_demo = "demo TextInput"
+reload_map = "przeładuj grę"
+zoom_in = "przybliż"
+zoom_out = "oddal"
+quick_save = "szybki zapis"
+quick_load = "szybkie wczytanie"
+go_to = "idź do"
+stop = "stop"
+
+# === HUD ===
+
+[hud]
+datetime = "D:{day} G:{hour}:{min:02d}"
+
+# === Stan gry ===
+
+[game]
+paused = "PAUZA"
+saving = "ZAPISYWANIE..."
+loading = "ŁADOWANIE..."
+game_name = "Nieszczęścia Malachiasza"
+
+# === Splash ===
+
+[splash]
+continue = "naciśnij spację by kontynuować"
+
+# === Dialog ===
+
+[dialog]
+unknown_npc = "????"
+
+# === Scena ===
+
+[scene]
+day_label = "Dzień"
+night_label = "Noc"
+error_no_entry = "[error]BŁĄD[/error]:red_exclamation_anim: nie znaleziono punktu wejścia"
+reload_confirm = "Przeładować grę? Niezapisany postęp na tej mapie zostanie utracony."
+
+# === Powiadomienia ===
+
+[notify]
+bought = "Kupiono '[item]{name}[/item]' za [num]{price}[/num] :$_anim:"
+sold = "Sprzedano '[item]{name}[/item]' za [num]{price}[/num] :$_anim:"
+cant_buy_money = "Nie możesz kupić '[item]{name}[/item]' - brak pieniędzy :red_exclamation_anim:"
+cant_buy_weight = "Nie możesz kupić '[item]{name}[/item]' - za ciężkie :red_exclamation_anim:"
+cant_buy_slots = "Nie możesz kupić '[item]{name}[/item]' - brak miejsca :red_exclamation_anim:"
+merchant_cant_buy_money = "Kupiec nie może kupić '[item]{name}[/item]' - brak mu pieniędzy :red_exclamation_anim:"
+merchant_cant_buy_weight = "Kupiec nie może kupić '[item]{name}[/item]' - nie udźwignie :red_exclamation_anim:"
+merchant_cant_buy_slots = "Kupiec nie może kupić '[item]{name}[/item]' - brak mu miejsca :red_exclamation_anim:"
+all_slots_taken = "Wszystkie '[num]{n}[/num]' sloty na przedmioty są zajęte :red_exclamation_anim:"
+max_weight_exceeded = "Przekroczono maksymalną wagę '[num]{w}[/num]' :red_exclamation_anim:"
+chest_opened = "Skrzynia otwarta :red_exclamation_anim:"
+destination_unreachable = "miejsce niedostępne :red_exclamation_anim:"
+picked_up = "Podniesiono '[item]{name}[/item]'"
+dropped = "Wyrzucono '[item]{name}[/item]'"
+received_item = "Otrzymano '[item]{name}[/item]'"
+given_item = "Oddano '[item]{name}[/item]'"
+sentiment = "Sentyment [num]{amount:+d}[/num]"
+screenshot_saved = "zrzut ekranu zapisany '[u]{name}[/u]'"
+cannot_save_dungeon = "Nie można zapisać gry w lochu"
+no_free_slots = "Brak wolnych slotów na zapis gry"
+game_saved_slot = "Gra zapisana w slocie [num]{n}[/num]"
+failed_save = "Błąd zapisu gry"
+
+# === Demo TextInput ===
+
+[text_demo]
+title = "Demo TextInput"
+field_any = "Dowolne"
+field_digits = "Cyfry"
+field_password = "Hasło"
+field_latin = "Łacińskie"
+ph_any = "wpisz cokolwiek"
+ph_digits = "0-9"
+ph_password = "tajne"
+ph_latin = "A-Z a-z"
