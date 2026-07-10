@@ -31,6 +31,7 @@ from settings import (
     TILE_SIZE,
     WIDTH,
     _,
+    entity_name,
     get_msg,
     )
 
@@ -125,7 +126,7 @@ class DialogPanel(Widget):
         self.npc = npc
         self.body.set_text(text)
         self.body.scroll_top()
-        name = npc.model.name if npc else _("dialog.unknown_npc")
+        name = entity_name(npc.model) if npc else _("dialog.unknown_npc")
         self.name_label.set_text(name)
         self.name_label.set_pos(
             (self.offset[0] + 4 * TILE_SIZE, self.offset[1] - int(1.5 * TILE_SIZE))

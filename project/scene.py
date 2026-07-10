@@ -36,6 +36,7 @@ from pytmx.util_pygame import load_pygame
 from config_model.config import AttitudeEnum, RaceEnum
 from settings import (
     _,
+    entity_name,
     # ACTIONS,
     # BG_COLOR,
     # CIRCLE_GRADIENT,
@@ -1403,7 +1404,7 @@ class Scene(State):
 
                     # print(f"Dropped '[item]{item.name}[/item]' [[magenta]{item.model.type}[/magenta]]")
                     self.add_notification(
-                        _("notify.dropped", name=item.model.name), NotificationTypeEnum.info)
+                        _("notify.dropped", name=entity_name(item.model)), NotificationTypeEnum.info)
                 else:
                     print("[red]ERROR![/red] No item to drop!")
             INPUTS["drop"] = False
@@ -1416,7 +1417,7 @@ class Scene(State):
                 if collided_index > -1:
                     item = items[collided_index]
                     if self.player.pick_up(item):
-                        self.add_notification(_("notify.picked_up", name=item.model.name), NotificationTypeEnum.success)
+                        self.add_notification(_("notify.picked_up", name=entity_name(item.model)), NotificationTypeEnum.success)
                         with contextlib.suppress(KeyError):
                             # if self.group.has(item):
                             self.group.remove(item)

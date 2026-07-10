@@ -59,7 +59,8 @@ class MazeLevelProperties():
 
 @dataclass(slots=True)
 class Character():
-    name:                  str
+    name_EN:               str
+    name_PL:               str
     sprite:                Annotated[str,                field(repr=False)]
     race:                  Annotated[RaceEnum,           field(repr=False)]
     attitude:              Annotated[AttitudeEnum,       field(repr=False)]
@@ -74,6 +75,7 @@ class Character():
     damage:                Annotated[int,                field(repr=False)]
     speed_walk:            Annotated[int,                field(repr=False)]
     speed_run:             Annotated[int,                field(repr=False)]
+    has_dialog:            Annotated[bool,               field(repr=False)] = False
     dialog_key:            Annotated[str | None,         field(repr=False)] = None
     disposition:           Annotated[dict[str, int],     field(repr=False)] = field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS))
 
@@ -84,7 +86,8 @@ class Character():
         if isinstance(raw_disposition, dict):
             disposition.update({str(k): int(v) for k, v in raw_disposition.items()})
         return cls(
-            name = data.get("name", ""),
+            name_EN = data.get("name_EN", ""),
+            name_PL = data.get("name_PL", ""),
             sprite = data.get("sprite", ""),
             race = RaceEnum(data.get("race", "")),
             attitude = AttitudeEnum(data.get("attitude", "")),
@@ -99,6 +102,7 @@ class Character():
             damage = data.get("damage", 10),
             speed_walk = data.get("speed_walk", 30),
             speed_run = data.get("speed_run", 40),
+            has_dialog = data.get("has_dialog", False),
             dialog_key = data.get("dialog_key"),
             disposition = disposition,
         )
@@ -107,7 +111,8 @@ class Character():
 @dataclass(slots=True)
 class Item():
     # id:            Annotated[str,          field(repr=False)]
-    name:          str
+    name_EN:       str
+    name_PL:       str
     type:          ItemTypeEnum
     value:         Annotated[int,   field(repr=False)]
     in_use:        Annotated[bool,  field(repr=False)]
@@ -121,7 +126,8 @@ class Item():
     def from_dict(cls, data: dict[str, Any]) -> "Item":
         return cls(
             # id            = data.get("id", ""),
-            name          = data.get("name", ""),
+            name_EN       = data.get("name_EN", ""),
+            name_PL       = data.get("name_PL", ""),
             type          = ItemTypeEnum(data.get("type", "")),
             value         = data.get("value", 50),
             in_use        = data.get("in_use", False),

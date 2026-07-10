@@ -40,13 +40,19 @@
   "save.game_over": "KONIEC GRY",
   "save.restart": "Restart",
 
+  "item_type.weapon": "Broń",
+  "item_type.consumable": "Konsumowalny",
+  "item_type.gem": "Kamień szlachetny",
+  "item_type.key": "Klucz",
+  "item_type.money": "Pieniądze",
+
   "inv.weight": "Waga",
   "inv.value": "Wartość",
   "inv.price": "Cena",
   "inv.amount": "Ilość",
   "inv.type": "Typ",
   "inv.damage": "Obrażenia",
-  "inv.cooldown": "Cooldown",
+  "inv.cooldown": "Odnowienie",
   "inv.health": "Zdrowie",
 
   "trade.trades_only": "Tylko handel:",
@@ -61,11 +67,11 @@
   "action.debug": "debug",
   "action.filter": "filtr",
   "action.next_day": "następny dzień",
-  "action.toggle_run": "przełącz bieg",
+  "action.toggle_run": "bieg",
   "action.open": "otwórz",
   "action.attack": "atakuj",
   "action.trade": "handluj",
-  "action.end_trade": "zakończ handel",
+  "action.end_trade": "kończ handel",
   "action.buy": "kup",
   "action.sell": "sprzedaj",
   "action.toggle": "przełącz",
@@ -93,7 +99,7 @@
   "game.paused": "PAUZA",
   "game.saving": "ZAPISYWANIE...",
   "game.loading": "ŁADOWANIE...",
-  "game.game_name": "Misadventures of Malachi",
+  "game.game_name": "Nieszczęścia Malachiasza",
 
   "splash.continue": "naciśnij spację by kontynuować",
 

@@ -6,8 +6,6 @@ import pygame
 from settings import (
     BLACK_COLOR,
     CHAR_NAME_COLOR,
-    FONT_SIZE_HUGE,
-    FONT_SIZE_TINY,
     HUD_DIR,
     IS_WEB,
     PANEL_BG_COLOR,
@@ -203,7 +201,7 @@ class HealthBar(pygame.sprite.Sprite):
             return
         y: int = 8
         # show health bar only for enemies
-        if self.model.attitude == AttitudeEnum.enemy.value or self.model.name == "Player":
+        if self.model.attitude == AttitudeEnum.enemy.value or self.model.name_EN == "Player":
             self.image.blit(self.image_full, self.rect_full.topleft)
 
             percentage = min(1.0, percentage)
@@ -219,12 +217,9 @@ class HealthBar(pygame.sprite.Sprite):
         # render name of the character
         self.render_text(
             self.name,
-            # self.translate_pos((int(self.rect.width // 2), 10)),
             (int(self.rect.width // 2), y),
             self.color,
-            font_size=FONT_SIZE_TINY,
-            thin_fonts=True,
-            # shadow=(20, 27, 27),
+            font_size=5,
             shadow=(84, 135, 137),
             centred=True,
             surface=self.image

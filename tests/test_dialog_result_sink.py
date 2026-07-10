@@ -180,7 +180,8 @@ def test_visit_node_without_result_still_marks_visited() -> None:
 class _FakeItemModel:
     weight: float = 1.0
     count: int = 1
-    name: str = "Sword"
+    name_EN: str = "Sword"
+    name_PL: str = "Miecz"
 
 
 @dataclass

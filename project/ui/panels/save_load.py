@@ -461,10 +461,10 @@ class SaveLoadPanel(Widget):
         overlay.fill((0, 0, 0, 190))
         surface.blit(overlay, self.rect.topleft)
         assert self._editor is not None
-        prompt = theme.menu_font(22).render(_("save.rename_title"), False, (255, 230, 180))
+        prompt = theme.menu_font(16).render(_("save.rename_title"), False, (255, 230, 180))
         surface.blit(prompt, prompt.get_rect(midbottom=(self.rect.centerx, self._editor.rect.top - 12)))
         self._editor.draw(surface)
-        hint = theme.menu_font(16).render(_("save.rename_hint"), False, (170, 160, 130))
+        hint = theme.menu_font(12).render(_("save.rename_hint"), False, (170, 160, 130))
         surface.blit(hint, hint.get_rect(midtop=(self.rect.centerx, self._editor.rect.bottom + 12)))
 
 

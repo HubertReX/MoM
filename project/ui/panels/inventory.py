@@ -53,7 +53,7 @@ def draw_item_details(hud: "HUD", surface: pygame.Surface, props_top_left: tuple
 
     right_properties: list[dict[str, str]] = [
         {"icon_name": "", "label": "", "value": ""},
-        {"icon_name": "red_question", "label": _("inv.type"), "value": item_model.type.value.capitalize()},
+        {"icon_name": "red_question", "label": _("inv.type"), "value": _(f"item_type.{item_model.type.value}")},
     ]
     if item_model.type == ItemTypeEnum.weapon:
         right_properties.append({"icon_name": "big_heart", "label": _("inv.damage"), "value": f"{-item_model.damage:4d}"})

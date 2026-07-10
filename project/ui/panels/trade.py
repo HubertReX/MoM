@@ -17,6 +17,7 @@ from settings import (
     MAX_HOTBAR_ITEMS,
     WIDTH,
     _,
+    entity_name,
     get_buy_price_multiplier,
     get_sell_price_multiplier,
 )
@@ -123,7 +124,7 @@ class TradePanel(Widget):
         ar = avatar.get_rect()
         surface.blit(avatar, (WIDTH // 2 - ar.width // 2, self.trader_bg_rect.top + 10))
         self.hud.draw_text(
-            surface, merchant.model.name,
+            surface, entity_name(merchant.model),
             (WIDTH // 2, self.trader_bg_rect.top + 10 + ar.height - 16),
             font=self.game.fonts[FONT_SIZE_LARGE], color=CHAR_NAME_COLOR,
             border=(84, 135, 137), shadow=False, align="centred",

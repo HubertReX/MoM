@@ -25,10 +25,9 @@ if TYPE_CHECKING:
 
 _PAD = 28
 _GAP = 14
-# menu uses the munro font at the sizes the original pygame_menu theme used
-_TITLE_SIZE = 48
-_BUTTON_SIZE = 36
-_LINE_SIZE = 16
+_TITLE_SIZE = 36
+_BUTTON_SIZE = 27
+_LINE_SIZE = 12
 
 
 #######################################################################################################################
@@ -417,7 +416,7 @@ class ConfirmMenuScreen(MenuScreen):
             bg_file="nine_patch_12b.png",
             anchor="center",
             pos=(WIDTH // 2, HEIGHT // 2),
-            line_size=20,
+            line_size=15,
         )
 
     def _on_yes(self) -> None:

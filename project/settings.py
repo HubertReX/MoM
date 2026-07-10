@@ -157,6 +157,14 @@ def get_sell_price_multiplier(sentiment: int) -> float:
     return max(0.1, SENTIMENT_SELL_MULTIPLIER_BASE + sentiment / 100.0)
 
 
+def entity_name(model: Any, lang: str | None = None) -> str:
+    """Return bilingual display name for an entity (Character/Item) in the given language."""
+    _lang = (lang or LANG).upper()
+    if _lang == "PL":
+        return getattr(model, "name_PL", "") or model.name_EN
+    return model.name_EN
+
+
 def normalise_sentiment(sentiment: str) -> str:
     """Return the canonical emote name for a sentiment value.
 

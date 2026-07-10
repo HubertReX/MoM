@@ -40,6 +40,12 @@
   "save.game_over": "GAME OVER",
   "save.restart": "Restart",
 
+  "item_type.weapon": "Weapon",
+  "item_type.consumable": "Consumable",
+  "item_type.gem": "Gem",
+  "item_type.key": "Key",
+  "item_type.money": "Money",
+
   "inv.weight": "Weight",
   "inv.value": "Value",
   "inv.price": "Price",

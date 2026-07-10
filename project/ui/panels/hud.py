@@ -82,11 +82,15 @@ class HUD(Widget):
         weapon_s = 24 + TILE_SIZE * 8
         self.weapon_bg = theme.nine_patch("nine_patch_04.png", weapon_s, weapon_s)
         self.stats_bg = theme.nine_patch("nine_patch_04.png", 300, 190)
-        self.available_action_bg = theme.nine_patch("panel_brown.png", 200, 36, border=3)
+        self.available_action_bg = theme.nine_patch("panel_brown.png", 216, 36, border=3)
 
         show_actions = [action for action in ACTIONS.values() if action["show"]]
         help_h = int((len(show_actions) + 2) * FONT_SIZE_MEDIUM * 2.1)
-        self.help_bg = theme.nine_patch("nine_patch_04.png", 300, help_h)
+        self.help_bg = theme.nine_patch("nine_patch_04.png", 400, help_h)
+
+        self.help_scroll: int = 0
+        self.help_max_scroll: int = 0
+        self.help_rect: pygame.Rect = pygame.Rect(0, 0, 0, 0)
 
         # cache: notification message string -> pre-rendered rich-text surface
         self._notification_cache: dict[str, pygame.Surface] = {}
@@ -262,23 +266,45 @@ class HUD(Widget):
             return
         show_actions = [action for action in ACTIONS.values() if action["show"]]
         row_spacing = 2.2
-        rect = pygame.Rect(WIDTH - 300 - 32, TILE_SIZE // 2, 400 - 2,
-                           (len(show_actions) + 1) * FONT_SIZE_MEDIUM * row_spacing)
-        surface.blit(self.help_bg, rect.topleft)
+        row_height = int(FONT_SIZE_MEDIUM * row_spacing)
+        content_w = 400
+        panel_x = WIDTH - content_w - 16
+        content_h = (len(show_actions) + 1) * row_height
+        max_h = HEIGHT - TILE_SIZE
+        visible_h = min(content_h, max_h)
+        self.help_max_scroll = max(0, content_h - visible_h)
+        self.help_scroll = max(0, min(self.help_scroll, self.help_max_scroll))
+        rect = pygame.Rect(panel_x, TILE_SIZE // 2, content_w, visible_h)
+        self.help_rect = rect
+
+        old_clip = surface.get_clip()
+        surface.set_clip(rect)
+        surface.blit(self.help_bg, rect.topleft, area=pygame.Rect(0, self.help_scroll,
+                      content_w, visible_h))
         for i, action in enumerate(show_actions, start=1):
+            y = 2 + int(i * row_height) - self.help_scroll
             self.draw_text(surface, _(action['msg']),
-                           (WIDTH - 300 + 38, 2 + int(i * FONT_SIZE_MEDIUM * row_spacing)), shadow=True)
+                           (panel_x + 50, y), shadow=True)
             surface.blit(self.icons[action['show'][0]][0],
-                         (WIDTH - 300, -6 + int(i * FONT_SIZE_MEDIUM * row_spacing)))
+                         (panel_x + 16, -6 + int(i * row_height) - self.help_scroll))
+        surface.set_clip(old_clip)
+
+    def _on_event(self, event: pygame.event.Event) -> bool:
+        if not self.show_help_info:
+            return False
+        if event.type == pygame.MOUSEWHEEL and self.help_rect.collidepoint(pygame.mouse.get_pos()):
+            self.help_scroll = max(0, min(self.help_max_scroll, self.help_scroll - event.y * 40))
+            return True
+        return False
 
     def show_action(self, surface: pygame.Surface, action: str, row: int, label: str = "") -> None:
         row_spacing = row * 48
         label = label or _(ACTIONS[action]["msg"])
         icon = self.icons[ACTIONS[action]["show"][0]][0]
         label_w, _h = self.font.size(label)
-        surface.blit(self.available_action_bg, (WIDTH - TILE_SIZE - 200, HEIGHT - (2 * TILE_SIZE) - 16 - row_spacing))
-        surface.blit(icon, (WIDTH - (2 * TILE_SIZE) - 16, HEIGHT - (2 * TILE_SIZE) - 14 - row_spacing))
-        self.draw_text(surface, label, (WIDTH - TILE_SIZE - label_w - 40, HEIGHT - (2 * TILE_SIZE) - 7 - row_spacing))
+        surface.blit(self.available_action_bg, (WIDTH - TILE_SIZE - 216, HEIGHT - (2 * TILE_SIZE) - 16 - row_spacing))
+        surface.blit(icon, (WIDTH - (2 * TILE_SIZE) - 32, HEIGHT - (2 * TILE_SIZE) - 14 - row_spacing))
+        self.draw_text(surface, label, (WIDTH - TILE_SIZE - label_w - 56, HEIGHT - (2 * TILE_SIZE) - 7 - row_spacing))
 
     def show_available_actions(self, surface: pygame.Surface) -> None:
         if not self.show_help_info:

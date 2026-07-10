@@ -164,7 +164,9 @@ class GameUI:
                     dialog.scroll_top()
                 INPUTS["talk"] = False
 
-        # route raw events (scroll wheel / arrows / mouse / digit keys) to the topmost open panel
+        # route raw events to HUD first (e.g. help panel scroll), then to the topmost open panel
+        for event in events:
+            self.hud.handle_event(event)
         if self._open:
             top = self._open[-1]
             for event in events:

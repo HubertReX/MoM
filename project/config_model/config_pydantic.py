@@ -51,7 +51,8 @@ class MazeLevelProperties(BaseModel):
 class Character(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    name:          Annotated[str,          Field(min_length=3, frozen=IS_FROZEN, description="Unique character name")]
+    name_EN:       Annotated[str,          Field(min_length=1, frozen=IS_FROZEN, description="English character name")]
+    name_PL:       Annotated[str,          Field(min_length=1, frozen=IS_FROZEN, description="Polish character name")]
     sprite:        Annotated[str,          Field(min_length=3, repr=False,
                                                  description="Must be valid file name from assets folder")]
     race:          Annotated[RaceEnum,     Field(description="Base character race (e.g. humanoid, animal)")]
@@ -70,7 +71,8 @@ class Character(BaseModel):
     damage:        Annotated[int,          Field(10, ge=0, description="amount of damage delt to others", repr=False)]
     speed_walk:    Annotated[int,          Field(30, gr=0, description="walking speed", repr=False)]
     speed_run:     Annotated[int,          Field(40, gr=0, description="walking speed", repr=False)]
-    dialog_key:    Annotated[str | None,   Field(None, description="Key into Config.dialogs for this character's dialog graph", repr=False)]
+    has_dialog:    Annotated[bool,         Field(False, description="Whether this character has a dialog graph", repr=False)]
+    dialog_key:    Annotated[str | None,   Field(None, description="Transitional: key into Config.dialogs; replaced by UPPER_SNAKE config key in step 2", repr=False)]
     disposition:   Annotated[int | dict[str, int], Field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS), description="Per-sentiment weights that shift NPC sentiment when a dialog option is chosen; legacy int is converted to default weights", repr=False)]
 
     @field_validator("disposition", mode="before")
@@ -92,7 +94,8 @@ class Item(BaseModel):
 
     # id: str   = Field(
     #     min_length=3, frozen=IS_FROZEN, description="Unique string identifier")
-    name:          Annotated[str,          Field(min_length=3, frozen=IS_FROZEN, description="Item display name")]
+    name_EN:       Annotated[str,          Field(min_length=1, frozen=IS_FROZEN, description="English item name")]
+    name_PL:       Annotated[str,          Field(min_length=1, frozen=IS_FROZEN, description="Polish item name")]
     type:          Annotated[ItemTypeEnum, Field(description="Item type (e.g. weapon, tool, consumable)")]
     value:         Annotated[int,          Field(50, ge=0, description="Monetary value", repr=False)]
     in_use:        Annotated[bool,         Field(False, description="Whether the item is currently in use", repr=False)]
@@ -136,14 +139,14 @@ class Config(BaseModel):
     dialogs:      Annotated[dict[str, Any], Field(default_factory=dict, repr=False,
                                                   description="Character dialog graphs keyed by dialog_key")]
     messages:     Annotated[dict[str, dict[str, str]], Field(default_factory=dict, repr=False,
-                                                             description="Localized dialog texts keyed by language")]
+                                                             description="Localized UI strings keyed by language")]
 
     @model_validator(mode='after')
     def check_character_items(self) -> Self:
         for character in self.characters.values():
             for item in character.items:
                 if item not in self.items:
-                    raise ValueError(f"item '{item}' from '{character.name}' character does not exist")
+                    raise ValueError(f"item '{item}' from '{character.name_EN}' character does not exist")
 
         for chest in self.chests.values():
             for item in chest.items:

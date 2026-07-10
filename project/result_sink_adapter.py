@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 from enums import NotificationTypeEnum
 from dialog.result_sink import ResultSink
-from settings import _
+from settings import _, entity_name
 
 if TYPE_CHECKING:
     from characters import NPC, Player
@@ -43,7 +43,7 @@ class GameResultSink(ResultSink):
             item = scene.create_item(key, 0, 0, show=False)
             self.player.pick_up(item)
             scene.add_notification(
-                _("notify.received_item", name=item.model.name),
+                _("notify.received_item", name=entity_name(item.model)),
                 NotificationTypeEnum.success,
             )
             scene.notifications[-1].create_time += i * _ITEM_NOTIFY_DELAY
@@ -89,7 +89,7 @@ class GameResultSink(ResultSink):
         """
         for idx, item in enumerate(self.player.items):
             if item.name == key:
-                display_name = item.model.name
+                display_name = entity_name(item.model)
                 self.player.total_items_weight -= item.model.weight
                 if item.model.count > 1:
                     item.model.count -= 1

@@ -29,6 +29,7 @@ from settings import (
     HEIGHT,
     INPUTS,
     IS_WEB,
+    entity_name,
     get_buy_price_multiplier,
     get_msg,
     get_sell_price_multiplier,
@@ -99,7 +100,8 @@ class NPC(pygame.sprite.Sprite):
 
         # new dialog-system state (T-023).  `dialogs` (str) is the legacy markdown
         # path; `dialog` is the live cursor into the DialogNode graph.
-        self.dialog_key: str | None = self.model.dialog_key
+        self.config_key: str = model_name
+        self.dialog_key: str | None = self.model.dialog_key or (self.config_key if self.model.has_dialog else None)
         self.dialog: DialogNode | None = None
         self.dialog_nodes: dict[str, DialogNode] | None = None
         self.selected_options_dict: dict[str, bool] = {}
@@ -143,7 +145,7 @@ class NPC(pygame.sprite.Sprite):
         self.avatar = pygame.image.load(str(CHARACTERS_DIR / self.model.sprite / "Faceset.png")).convert_alpha()
         # Player avatar will be shown on the right side of the screen
         # and need to be flipped to face left
-        if self.model.name != "Player":
+        if self.model.name_EN != "Player":
             self.avatar = pygame.transform.flip(self.avatar, True, False)
 
         self.avatar = pygame.transform.scale(self.avatar, (TILE_SIZE * AVATAR_SCALE, TILE_SIZE * AVATAR_SCALE))
@@ -312,14 +314,14 @@ class NPC(pygame.sprite.Sprite):
 
     def load_dialogs(self) -> None:
         if self.model.attitude == AttitudeEnum.friendly:
-            modal_panel_file = DIALOGS_DIR / f"{self.model.name}.md"
+            modal_panel_file = DIALOGS_DIR / f"{self.model.name_EN}.md"
             if modal_panel_file.exists():
                 self.dialogs = modal_panel_file.read_text()
                 self.has_dialog = True
 
         # new dialog graph path (T-023): if the character config points at a
-        # dialog_key, build the DialogNode graph and set the cursor to START_NODE.
-        if self.dialog_key:
+        # config_key, build the DialogNode graph and set the cursor to START_NODE.
+        if self.model.has_dialog:
             dialog_config: dict[str, Any] = self.game.conf.dialogs.get(self.dialog_key, {})
             if dialog_config:
                 from settings import IS_DEBUG_MODE
@@ -421,7 +423,7 @@ class NPC(pygame.sprite.Sprite):
     def create_shadow(self) -> Shadow:
         empty: bool = False
         # TODO: add proper handling of shadows hiding when NPC is in water
-        if "Fish" in self.model.name:
+        if "Fish" in self.model.name_EN:
             empty = True
         return Shadow(self.shadow_group, (0, 0), (TILE_SIZE - 2, 6), empty)
 
@@ -853,7 +855,7 @@ class NPC(pygame.sprite.Sprite):
     def change_state(self) -> None:
         if new_state := self.state.enter_state(self):
             new_state.enter_time = self.scene.game.time_elapsed
-            # print(self.model.name, new_state)
+            # print(self.model.name_EN, new_state)
             self.state = new_state
 
     #############################################################################################################
@@ -866,7 +868,7 @@ class NPC(pygame.sprite.Sprite):
             self.adjust_rect()
         else:
             result = False
-            print(f"\n[red]ERROR![/] [char]{self.model.name}[/] no entry point found!\n")
+            print(f"\n[red]ERROR![/] [char]{self.model.name_EN}[/] no entry point found!\n")
             self.pos = default
 
         return result
@@ -901,7 +903,7 @@ class NPC(pygame.sprite.Sprite):
         self.emote.kill()
 
         # drop items and money on the ground
-        if self.model.name != "Player" and drop_items:
+        if self.model.name_EN != "Player" and drop_items:
             self.is_dead = True
 
             for item in self.items:
@@ -921,7 +923,7 @@ class NPC(pygame.sprite.Sprite):
                 self.scene.item_sprites.add(item)
                 self.scene.group.add(item, layer=self.scene.sprites_layer - 1)
 
-        if self.model.name == "Player" and self.model.health <= 0:
+        if self.model.name_EN == "Player" and self.model.health <= 0:
             self.is_dead = True
             self.scene.exit_state()
             from ui.panels.save_load import DeadState
@@ -974,7 +976,7 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
     # MARK: process_custom_event
     def process_custom_event(self, **kwargs: str) -> None:
-        # if self.model.name == "Player":
+        # if self.model.name_EN == "Player":
         #     print(kwargs["action"])
 
         action = kwargs.get("action", "")
@@ -1156,7 +1158,7 @@ class NPC(pygame.sprite.Sprite):
         """
         # self.debug([f"{self.rect.topleft=}", f"{self.old_rect.topleft=}"])
         self.pos = self.prev_pos.copy()
-        if self.model.name == "Player":  # and self.scene.camera.target == self.prev_pos:
+        if self.model.name_EN == "Player":  # and self.scene.camera.target == self.prev_pos:
             self.scene.camera.target = self.pos
 
         self.adjust_rect()
@@ -1274,13 +1276,13 @@ class NPC(pygame.sprite.Sprite):
 
         if self.model.money < price:
             self.scene.add_notification(
-                _("notify.cant_buy_money", name=selected_item.model.name),
+                _("notify.cant_buy_money", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)
             return False
 
         if self.model.max_carry_weight < self.total_items_weight + selected_item.model.weight:
             self.scene.add_notification(
-                _("notify.cant_buy_weight", name=selected_item.model.name),
+                _("notify.cant_buy_weight", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1292,7 +1294,7 @@ class NPC(pygame.sprite.Sprite):
 
         if not found and len(self.items) == MAX_HOTBAR_ITEMS:
             self.scene.add_notification(
-                _("notify.cant_buy_slots", name=selected_item.model.name),
+                _("notify.cant_buy_slots", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1311,13 +1313,13 @@ class NPC(pygame.sprite.Sprite):
 
         if self.npc_met.model.money < price:
             self.scene.add_notification(
-                _("notify.merchant_cant_buy_money", name=selected_item.model.name),
+                _("notify.merchant_cant_buy_money", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)
             return False
 
         if self.npc_met.model.max_carry_weight < self.npc_met.total_items_weight + selected_item.model.weight:
             self.scene.add_notification(
-                _("notify.merchant_cant_buy_weight", name=selected_item.model.name),
+                _("notify.merchant_cant_buy_weight", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1329,7 +1331,7 @@ class NPC(pygame.sprite.Sprite):
 
         if not found and len(self.npc_met.items) == MAX_HOTBAR_ITEMS:
             self.scene.add_notification(
-                _("notify.merchant_cant_buy_slots", name=selected_item.model.name),
+                _("notify.merchant_cant_buy_slots", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)
             return False
 
@@ -1498,7 +1500,7 @@ class Player(NPC):
                         self.npc_met.model.money += price
                         self.pick_up(item_to_buy)
                         self.scene.add_notification(
-                            _("notify.bought", name=item_to_buy.model.name, price=price),
+                            _("notify.bought", name=entity_name(item_to_buy.model), price=price),
                             NotificationTypeEnum.info)
             INPUTS["buy"] = False
 
@@ -1512,7 +1514,7 @@ class Player(NPC):
                         self.npc_met.model.money -= price
                         self.npc_met.pick_up(item_to_sell)
                         self.scene.add_notification(
-                            _("notify.sold", name=item_to_sell.model.name, price=price),
+                            _("notify.sold", name=entity_name(item_to_sell.model), price=price),
                             NotificationTypeEnum.info)
             INPUTS["sell"] = False
 
