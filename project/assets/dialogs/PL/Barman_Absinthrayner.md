@@ -70,7 +70,7 @@ Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, 
 ### 009
 
 * Ach! [quest]Odwieczna klątwą nieszczęścia[/quest]? Poważnie? Myślałem, że to tylko gadanie mojej matki...
-No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma **magii**. Popytaj [char]Zielarki Zmory[/char], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.
+No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma **magii**. Popytaj [[PL/Potioneer_Puzzlemint|POTIONEER_PUZZLEMINT]], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.
 
 * [007](#007) 2🧠: A gdzie są teraz ci **czarodzieje**?
 * [001](#001) 9😐: Dzięki, to mi wystarczy
@@ -176,10 +176,12 @@ Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś
 
 * [991-end](#991-end) 1😐: Nie, nie, to nie tak...
 
-### 990-end [001](#001)
+### 990-end
+[001](#001)
 
 * Do zobaczenia:exclamation:
 
-### 991-end [001](#001)
+### 991-end
+[001](#001)
 
 * Wynocha:red_exclamation:

@@ -1,3 +1,7 @@
+---
+aliases:
+  - MADAME_SARCASMIA
+---
 # **Madame Sarcasmia**
 
 translation: [**Madame Sarcasmia**](../PL/Madame_Sarcasmia.md)
@@ -154,15 +158,18 @@ Good luck, dearie.
 * [021](#021-end) 2😐: It must work, it must work, it must work…
 * [021](#021-end) 3😉: It was so clever of me not to bother to collect all items…
 
-### 019-end [011](#011)
+### 019-end
+[011](#011)
 
 * A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.
 
-### 020-end [011](#011)
+### 020-end
+[011](#011)
 
 * [ITEMS+POTION_CURSE_NO_MORE] Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.
 
-### 021-end [011](#011)
+### 021-end
+[011](#011)
 
 * Here goes nothing, I suppose. I'll see what can be done with what you've provided…
 

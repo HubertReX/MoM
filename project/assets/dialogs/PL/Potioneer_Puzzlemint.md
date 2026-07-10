@@ -73,7 +73,7 @@ A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś
 
 ### 003
 
-* Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. **Kowal Kłamca** nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.
+* Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.
 
 * [001](#001) 9😐: Dzięki, to mi wystarczy.
 
@@ -134,7 +134,7 @@ Tak jak ja.
 
 ### 015
 
-* Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, **Kowal Kłamca** miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
+* Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
 
 * [012](#012) 1😐: Dziękuję, to cenne informacje.
 
@@ -150,14 +150,17 @@ Tak jak ja.
 
 * [012](#012) 1😐: ok, dzięki.
 
-### 990-end [001](#001)
+### 990-end
+[001](#001)
 
 * Powodzenia!
 
-### 991-end [001](#001)
+### 991-end
+[001](#001)
 
 * [SENTIMENT-10]Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - wynocha!
 
-### 992-end [016](#016)
+### 992-end
+[016](#016)
 
 * Nie rozmawiam z obcymi, żegnam.

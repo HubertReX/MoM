@@ -119,6 +119,9 @@ _NODE_HEADING_RE = re.compile(
     r"(?:\s*\[(?P<resume_anchor>[^\]]+)\]\(#(?P<resume_target>[^)]+)\))?\s*$"
 )
 
+# standalone resume link on its own line: "[011](#011)"
+_RESUME_LINK_RE = re.compile(r"^\[(?P<anchor>[^\]]+)\]\(#(?P<target>[^)]+)\)\s*$")
+
 # bullet that carries node text: "* Some text..."
 _NODE_TEXT_RE = re.compile(r"^\*\s+(?P<text>.+)$")
 
@@ -563,8 +566,12 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
     current_node: _ParsedNode | None = None
     in_language_section = False
 
-    for line_no, raw_line in enumerate(lines, start=1):
+    idx = 0
+    while idx < len(lines):
+        raw_line = lines[idx]
+        line_no = idx + 1  # 1-based for error messages
         line = raw_line.rstrip()
+        idx += 1
 
         # skip everything before the "## PL" / "## EN" section
         if line.startswith("## "):
@@ -579,6 +586,14 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
             is_final = node_key.endswith("-end")
             node_key = node_key.replace("-end", "")
             resume_node = node_match.group("resume_target")
+
+            # New format: resume link on separate line after -end heading
+            if resume_node is None and is_final and idx < len(lines):
+                peek_match = _RESUME_LINK_RE.match(lines[idx].rstrip())
+                if peek_match:
+                    resume_node = peek_match.group("target").replace("-end", "")
+                    idx += 1  # consume the resume link line
+
             current_node = _ParsedNode(
                 key=node_key,
                 is_final=is_final,
@@ -688,8 +703,10 @@ def _convert_sentiment(emoji: str) -> str:
     return SENTIMENT_EMOJI_TO_EMOTE[emoji]
 
 
-# wikilink [[KEY]] -> entity name
-_WIKILINK_RE = re.compile(r"\[\[([A-Z][A-Z0-9_]+)\]\]")
+# wikilink [[KEY]] or [[lang_folder/file|CHAR_KEY]] -> entity name
+_WIKILINK_RE = re.compile(
+    r"\[\[(?:[A-Za-z]{2}/)?(?P<key>[A-Za-z0-9_\-]+?)(?:\|(?P<pipe_key>[A-Za-z0-9_]+))?\]\]"
+)
 
 
 def _convert_text(
@@ -755,9 +772,17 @@ def _convert_text(
     for emoji, tag in _EMOJI_TO_EMOTE_TAG.items():
         text = text.replace(emoji, tag)
 
-    # wikilinks [[KEY]] -> entity name
+    # wikilinks [[KEY]] or [[lang/file|KEY]] -> [char]entity name[/char]
     if resolve_name is not None:
-        text = _WIKILINK_RE.sub(lambda m: resolve_name(m.group(1)), text)
+        def _resolve_wikilink(m: re.Match[str]) -> str:
+            key = m.group("pipe_key") or m.group("key")
+            resolved = resolve_name(key)
+            # If resolved == "[[KEY]]" it wasn't found — leave as-is
+            if resolved.startswith("[["):
+                return resolved
+            return f"[char]{resolved}[/char]"
+
+        text = _WIKILINK_RE.sub(_resolve_wikilink, text)
 
     return text
 

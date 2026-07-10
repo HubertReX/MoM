@@ -192,7 +192,7 @@ def test_convert_text_resolve_known() -> None:
     resolve = _make_name_resolver(chars, "EN")
     assert resolve is not None
     result = _convert_text("Go see [[ARIA_SILVERSTONE]] for help.", resolve)
-    assert_eq(result, "Go see Aria Silverstone for help.")
+    assert_eq(result, "Go see [char]Aria Silverstone[/char] for help.")
 
 
 def test_convert_text_resolve_unknown() -> None:
@@ -203,6 +203,14 @@ def test_convert_text_resolve_unknown() -> None:
     assert_eq(result, "Talk to [[MISSING_NPC]] now.")
 
 
+def test_convert_text_resolve_pipe_format() -> None:
+    chars = {"HAMMER_HOAXHEART": {"name_PL": "Kowal Klamca"}}
+    resolve = _make_name_resolver(chars, "PL")
+    assert resolve is not None
+    result = _convert_text("Pytaj [[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]].", resolve)
+    assert_eq(result, "Pytaj [char]Kowal Klamca[/char].")
+
+
 def test_convert_text_with_markup_and_wikilink() -> None:
     chars = {"HAMMER_HOAXHEART": {"name_EN": "Hammer Hoaxheart"}}
     resolve = _make_name_resolver(chars, "EN")
@@ -210,7 +218,7 @@ def test_convert_text_with_markup_and_wikilink() -> None:
     result = _convert_text("Ask **[[HAMMER_HOAXHEART]]** about it.", resolve)
     assert_eq(
         result,
-        "Ask [shadow]Hammer Hoaxheart[/shadow] about it.",
+        "Ask [shadow][char]Hammer Hoaxheart[/char][/shadow] about it.",
         "wikilink resolved inside bold markup",
     )
 
@@ -241,6 +249,7 @@ def main() -> None:
         ("test_convert_text_resolve_known", test_convert_text_resolve_known),
         ("test_convert_text_resolve_unknown", test_convert_text_resolve_unknown),
         ("test_convert_text_with_markup_and_wikilink", test_convert_text_with_markup_and_wikilink),
+        ("test_convert_text_resolve_pipe_format", test_convert_text_resolve_pipe_format),
     ]
     tests.extend(self_contained_tests)
     for name, func in tests:

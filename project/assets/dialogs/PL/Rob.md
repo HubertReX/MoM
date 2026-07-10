@@ -1,4 +1,9 @@
 
+---
+aliases:
+  - ROB
+---
+
 [h3][bold]Hej[/bold] :exclamation:[/h3]
 
 Witaj w naszej [loc]Karczmie[/loc]! Ja jestem [char]Barman Bart[/char] :smile: .

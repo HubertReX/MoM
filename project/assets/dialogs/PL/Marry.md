@@ -1,4 +1,7 @@
-
+---
+aliases:
+  - MARRY
+---
 
 Ach, tak, tak, :smile: proszę, wejdź chłopcze to domu najlepszej zielarki w okolicy.
 Wołają mnie [char]Zielarka Marry[/char].

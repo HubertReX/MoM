@@ -1,3 +1,7 @@
+---
+aliases:
+  - BARMAN_ABSINTHRAYNER
+---
 # **Barman Absinthrayner**
 
 translation: [**Barman Absyntnent**](../PL/char-Barman_Absinthrayner.md)
@@ -62,7 +66,7 @@ Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam 
 
 ### 009
 
-* Ach! **Odwieczna klątwą nieszczęścia**? Poważnie? Myślałem, że to tylko gadanie mojej matki. No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj **Zielarki Zmory**, ona sama nic nie zdziała, ale może coś będzie wiedziała.
+* Ach! **Odwieczna klątwą nieszczęścia**? Poważnie? Myślałem, że to tylko gadanie mojej matki. No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj [[EN/Potioneer_Puzzlemint|POTIONEER_PUZZLEMINT]], ona sama nic nie zdziała, ale może coś będzie wiedziała.
 
 * [007](#007) 2🧠: A gdzie są teraz ci czarodzieje?
 * [001](#001) 9😐: Dzięki, to mi wystarczy
@@ -166,10 +170,12 @@ Wróć jak będziesz miał chciał zapytać o jakieś konkretne miejsce.
 
 * [991-end](#991-end) 1😐: Nie, nie, to nie tak...
 
-### 990-end [001](#001)
+### 990-end
+[001](#001)
 
 * Do zobaczenia!
 
-### 991-end [001](#001)
+### 991-end
+[001](#001)
 
 * Wynocha!

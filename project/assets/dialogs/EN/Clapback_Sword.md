@@ -1,4 +1,8 @@
-# **Clapback Sword**
+---
+aliases:
+  - CLAPBACK_SWORD
+---
+# [[EN/Clapback_Sword|CLAPBACK_SWORD]]
 
 translation: [**Miecz Ciętej-riposty**](../PL/char-Clapback_Sword.md)
 
@@ -14,13 +18,21 @@ translation: [**Miecz Ciętej-riposty**](../PL/char-Clapback_Sword.md)
 
 ### 000
 
-* O! There you are!
-Helooooo?
-Hey, can you hear me?
+* O:red_exclamation: Jesteś!
 
-* [001](#001) 1😇: Uhh...
-* [001](#001) 2😢: Oh, my head
-* [001](#001) 3🧠: _blink slowly to confirm while saving energy_
+* [017](#017) 1🧠: _<mrugnij powoli na potwierdzenie, aby oszczędzać siły>_
+
+### 017
+
+* Halooooo:red_question:
+
+* [018](#018) 1😇: Uhh...
+
+### 018
+
+* Hej, słyszysz mnie?
+
+* [001](#001) 1😢: Ała, moja głowa
 
 ### 001
 
@@ -49,11 +61,11 @@ Hey, can you hear me?
 
 ### 004
 
-* Really? You got so wasted that you don't even remember me? It's odd that a fool like you managed to survive this long. I, of all, am your only and most faithful companion. Not that I have much choice - you keep me by your side, and I can't walk on my own. Thus, I'm an involuntary witness to all of your _exploits_. I'm a sword, forged from the soul of fire, and besides a sharp edge, I have an equally sharp tongue. My name is **Clapback Sword**, and if only you could wield me skillfully, we would be invincible.
+* Really? You got so wasted that you don't even remember me? It's odd that a fool like you managed to survive this long. I, of all, am your only and most faithful companion. Not that I have much choice - you keep me by your side, and I can't walk on my own. Thus, I'm an involuntary witness to all of your _exploits_. I'm a sword, forged from the soul of fire, and besides a sharp edge, I have an equally sharp tongue. My name is [[EN/Clapback_Sword|CLAPBACK_SWORD]], and if only you could wield me skillfully, we would be invincible.
 
 * [008](#008) 1😇: Oh, I see. Thanks for clearing that up. What would I do without you?
 * [008](#008) 2😡: You talk as if you were my mother. I'm an adult, I can do whatever I want.
-* [008](#008) 3😉: **Clapback Sword** isn't just your name, but also your specialty - you're a real riot.
+* [008](#008) 3😉: [[EN/Clapback_Sword|CLAPBACK_SWORD]] isn't just your name, but also your specialty - you're a real riot.
 
 ### 005
 
@@ -99,11 +111,18 @@ And I guess me too.
 
 ### 009
 
-* Then maybe look around. Look over there, by the wall! It's some parchment. What's written there?
+* To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin. 
 
-* [010](#010) 1😐: It reads:
-_"He who plays with fate shall meet with punishment, henceforth you shall be a scoundrel and a wretch,
-instead of the expected fullness of life, you shall be touched by the **Eternal curse of misfortune**."_
+* [019](#019) 1😐: O nie! Patrz co tu jest napisane?
+
+### 019
+
+* _"He who plays with fate shall meet with punishment,_ 
+_henceforth you shall be a scoundrel and a wretch,_
+_instead of the expected fullness of life,_ 
+_you shall be touched by the **Eternal curse of misfortune**."_
+
+* [010](#010) 1😐: To chyba jakiś żart! Prawda?
 
 ### 010
 
@@ -139,11 +158,12 @@ instead of the expected fullness of life, you shall be touched by the **Eternal 
 
 * [015-end](#015-end) 1😐: So what? Am I supposed to lie down and wait for death?
 
-### 015-end [100](#100)
+### 015-end
+[100](#100)
 
 * Alright, let's think. What we know so far about this curse is a mix of children's tales and bard's nonsense songs. We need to find out more specifics. One thing is certain. If you've always thought deep down that you're special, now you have proof to confirm it. You're special - you are exceptionally good at getting into trouble.
 Now let's hit the road! We need ask people around. I would start in the [location]Tavern[/].
 
 ### 100
 
-* start thread...
+* I have nothing to tell you right now

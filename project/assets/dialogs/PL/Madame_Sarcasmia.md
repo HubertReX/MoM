@@ -1,3 +1,7 @@
+---
+aliases:
+  - MADAME_SARCASMIA
+---
 # **Madame Sarcasmia**
 
 translation: [**Madame Sarcasmia**](../EN/Madame_Sarcasmia.md)
@@ -154,15 +158,18 @@ Powodzenia, kochanieńki.
 * [021](#021-end) 2😐: To musi działać, to musi działać, to musi działać…
 * [021](#021-end) 3😉: To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…
 
-### 019-end [011](#011)
+### 019-end
+[011](#011)
 
 * Pogodzenie się z własnym losem, jakże to rozkosznie odświeżające. Mistrzowsko opanowałeś sztukę akceptowania nieuchronnego. Idź w pokoju.
 
-### 020-end [011](#011)
+### 020-end
+[011](#011)
 
 * [ITEMS+POTION_CURSE_NO_MORE] Niech magia tka swoje misteria. Weź tę [item]miksturę[/item] i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.
 
-### 021-end [011](#011)
+### 021-end
+[011](#011)
 
 * No cóż, trudno, jakoś to ogarnę. Zobaczę, co da się zrobić z tym, co przyniosłeś…
 

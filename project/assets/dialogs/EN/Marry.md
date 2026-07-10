@@ -1,4 +1,9 @@
 
+---
+aliases:
+  - MARRY
+---
+
 Oh, yes, yes, :smile: a new joiner. Nice to meet you.
 People call me [char]Herbalist Marry[/char].
 

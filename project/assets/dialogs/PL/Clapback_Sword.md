@@ -1,3 +1,7 @@
+---
+aliases:
+  - CLAPBACK_SWORD
+---
 # **Miecz Ciętej-riposty**
 
 translation: [**CLAPBACK_SWORD**](../EN/char-Clapback_Sword.md)
@@ -15,12 +19,20 @@ translation: [**CLAPBACK_SWORD**](../EN/char-Clapback_Sword.md)
 ### 000
 
 * O:red_exclamation: Jesteś!
-Halooooo:red_question:
-Hej, słyszysz mnie?
 
-* [001](#001) 1😇: Uhh...
-* [001](#001) 2😢: Ała, moja głowa
-* [001](#001) 3🧠: _<mrugnij powoli na potwierdzenie, aby oszczędzać siły>_
+* [017](#017) 1🧠: _<mrugnij powoli na potwierdzenie, aby oszczędzać siły>_
+
+### 017
+
+* Halooooo:red_question:
+
+* [018](#018) 1😇: Uhh...
+
+### 018
+
+* Hej, słyszysz mnie?
+
+* [001](#001) 1😢: Ała, moja głowa
 
 ### 001
 
@@ -55,7 +67,7 @@ Wtedy straciłem przytomność i obudziliśmy się tutaj.
 ### 004
 
 * Serio?
-Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich **Twoich** _wyczynów_. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [char][[Clapback_Sword]][/char] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.
+Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich **Twoich** _wyczynów_. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [[PL/Clapback_Sword|CLAPBACK_SWORD]] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.
 
 * [008](#008) 1😇: Och, rozumiem. Dzięki za rozjaśnienie sytuacji. Co ja bym bez Ciebie zrobił?
 * [008](#008) 2😡: Mówisz, jak byś był moją matką. Jestem dorosły mogę robić co chcę.
@@ -72,7 +84,7 @@ No i chyba ja też.
 
 ### 016
 
-* Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski [loc]Gafowo Kolonia[/loc] powiat [loc]Łękołody[/loc]. Wczoraj dokazywałeś w lokalnej karczmie, a teraz, sądząc po zapachu jesteśmy chyba w stajni.
+* Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski [loc]Gafowo Kolonia[/loc] powiat [loc]Łękołody[/loc]. Wczoraj dokazywałeś w lokalnej [loc]karczmie[/loc], a teraz, sądząc po zapachu jesteśmy chyba w [loc]stajni[/loc].
 
 * [008](#008) 1😇: Ok, dzięki - trochę to rozwiewa tę mgłę, którą mam w głowie.
 * [008](#008) 2😢: No powiem szczerze, nie brzmi to zbyt zachęcająco.
@@ -105,26 +117,35 @@ No i chyba ja też.
 
 ### 009
 
-* To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin. Co tam jest napisane?
+* To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin. 
 
-* [010](#010) 1😐: Tu jest napisane:
-_"Kto z losem igra, tego spotka kara, odtąd będziesz łajza i ślamazara,_
-_aż do czasu z ziemi tej odejścia, dotyka Cię [quest]Odwieczna klątwą nieszczęścia[/quest]."_
+* [019](#019) 1😐: O nie! Patrz co tu jest napisane?
+
+### 019
+
+* _"Kto z losem igra, tego spotka kara,_
+_odtąd będziesz łajza i ślamazara,_
+_aż do czasu z ziemi tej odejścia_,_ 
+_dotyka Cię [quest]Odwieczna klątwą nieszczęścia[/quest]."_
+
+* [010](#010) 1😐: To chyba jakiś żart! Prawda?
 
 ### 010
 
-* Nie, nie, nie! Tylko nie to! [quest]Odwieczna klątwa nieszczęścia[/quest] to jakaś masakra. Ja tam jestem ostatni aby Cię bronić, ale to nie współmierna kara.
+* Nie, nie, nie! Tylko nie to! [quest]Odwieczna klątwa nieszczęścia[/quest] to jakaś masakra. Ja tam jestem ostatni żeby Cię bronić, ale kara to gruba przesada.
 
 * [011](#011) 1😢: Serio? Aż tak źle?
-* [011](#011) 2😡: Ej! Przestań się trząść i zacznij mówić do rzeczy.
-* [011](#011) 3🧠: Hej, powoli, wiesz co to konkretnie oznacza?
+* [011](#011) 2😡: Ej! Przestań się trząść i zacznij mówić do rzeczy!
+* [011](#011) 3🧠: Hej, powoli, co to konkretnie oznacza?
 
 ### 011
 
-* No dobrze, po kolei. To jest bardzo stara klątwa. Matki straszą nią niegrzeczne dzieci, karciarze przed nią ostrzegają, ale nie znam nikogo kto by padł jej ofiarą. Mówi się, że osobą nią dotknięta ma w życiu ciągłego pecha - w kartach dostajesz same blotki, wiatr Ci wieje zawsze w oczy, a w czasie burzy piorun trafia właśnie Ciebie. No generalnie masz przechlapane.
+* No dobrze, po kolei. To jest bardzo stara klątwa. Matki straszą nią niegrzeczne dzieci, karciarze przed nią ostrzegają, ale nie znam nikogo kto by padł jej ofiarą. 
+Mówi się, że osoba nią dotknięta ma w życiu ciągłego pecha - w kartach dostajesz same blotki, wiatr Ci wieje zawsze w oczy, a w czasie burzy piorun trafia właśnie ciebie. 
+No generalnie masz prze... przechlapane.
 
 * [012](#012) 1🧠: A jak długo trwa ta klątwa?
-* [013](#013) 2😡: Musimy złapać tych czarodziei - jak im zagrożę śmiercią to będą musieli odwołać to zaklęcie.
+* [013](#013) 2😡: Musimy złapać tych czarodziei - muszą odwołać to zaklęcie.
 * [014](#014) 3😉: To może zbijemy majątek na obwoźnych pokazach słynnej klątwy na żywo?
 
 ### 012
@@ -135,7 +156,7 @@ _aż do czasu z ziemi tej odejścia, dotyka Cię [quest]Odwieczna klątwą niesz
 
 ### 013
 
-* O, macierzy wszystkich mieczy duszy ognia! Jak Ty to sobie niby wyobrażasz? Ich jest trzech, Ty nie umiesz mną władać lepiej niż byle smarkacz w samych kalesonach, a najpewniej oni już dawno odjechali.
+* O, macierzy wszystkich mieczy duszy ognia! Jak Ty to sobie niby wyobrażasz? Ich jest trzech, Ty nie umiesz mną władać lepiej niż byle smarkacz w kalesonach, a najpewniej oni już dawno odjechali.
 
 * [015-end](#015-end) 1😐: To co? Mam położyć się i czekać na śmierć?
 
@@ -145,12 +166,13 @@ _aż do czasu z ziemi tej odejścia, dotyka Cię [quest]Odwieczna klątwą niesz
 
 * [015-end](#015-end) 1😐: To co? Mam położyć się i czekać na śmierć?
 
-### 015-end [100](#100)
+### 015-end
+[100](#100)
 
-* No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne. Jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz dowód na potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha.
+* No, dobra, pomyślmy:wondering:. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. 
+Jedno jest pewne  - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha!
 A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [loc]Tawerny[/loc].
 
 ### 100
 
 * Na razie nie mam Ci nic nowego do powiedzenia.
-

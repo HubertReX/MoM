@@ -1,4 +1,9 @@
 
+---
+aliases:
+  - ROB
+---
+
 [h3][bold]Hi[/bold] :exclamation:[/h3]
 Welcome to our [loc]Tavern[/loc]! I'm [char]Barman Bart[/char] :smile: .
 I was practically [italic]born in this [loc]Tavern[/loc][/italic]. Actually,

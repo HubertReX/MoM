@@ -1,3 +1,7 @@
+---
+aliases:
+  - HAMMER_HOAXHEART
+---
 # **Hammer Hoaxheart**
 
 translation: [**Kowal Kłamca**](../PL/char-Hammer_Hoaxheart.md)
@@ -69,7 +73,7 @@ translation: [**Kowal Kłamca**](../PL/char-Hammer_Hoaxheart.md)
 
 ### 009
 
-* Nie lubię miasta, nie jeżdżę tam. Pytaj **Barmana Absyntnenta** - on gada ze wszystkimi przybyszami.
+* Nie lubię miasta, nie jeżdżę tam. Pytaj [[EN/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] - on gada ze wszystkimi przybyszami.
 
 * [001](#001) 9😐: Dzięki, to mi wystarczy
 
@@ -93,6 +97,7 @@ translation: [**Kowal Kłamca**](../PL/char-Hammer_Hoaxheart.md)
 
 * [001](#001) 9😐: Dzięki, to mi wystarczy
 
-### 990-end [001](#001)
+### 990-end
+[001](#001)
 
 * Żegnam

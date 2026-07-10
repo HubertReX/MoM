@@ -116,19 +116,44 @@ akapitów. Importer grupuje kolejne linie bez pustej linii między nimi w jeden
 akapit (połączone pojedynczym `\n`). Pusta linia w źródle = nowy akapit
 (separator `\n\n` w renderowanym tekście).
 
-### Węzły końcowe (`-end`) i resume
+### Frontmatter i wikilinki
 
-Węzły końcowe (po których rozmowa się kończy) mają sufiks `-end` w nagłówku:
+Pliki dialogowe mogą zawierać frontmatter z aliasami (dla nawigacji w Obsidian):
 
 ```md
-### 005-end [011](#011)
+---
+aliases:
+  - BARMAN_ABSINTHRAYNER
+---
+# **Barman Absyntnent**
+```
+
+Postacie w dialogach są odwoływane przez wikilinki dwojako:
+
+- **Krótki format:** `[[BARMAN_ABSINTHRAYNER]]` - klucz postaci z configu.
+- **Długi format z pipe:** `[[PL/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]]` -
+  ścieżka do pliku `lang/nazwa_pliku`, po pipe klucz postaci.
+
+Importer automatycznie rozwiązuje wikilinki przez `characters` config
+(`name_PL`/`name_EN`) i otacza wynik tagami `[char]...[/char]` w wyjściu.
+
+### Węzły końcowe (`-end`) i resume
+
+Węzły końcowe (po których rozmowa się kończy) mają sufiks `-end` w nagłówku.
+Link resume jest na **osobnej linii** pod nagłówkiem:
+
+```md
+### 005-end
+[011](#011)
 
 * A teraz idź już...
 ```
 
 - Sufiks `-end` → `is_final=True` — po dotarciu do tego węzła panel pokazuje tekst i czeka na Accept, nie wyświetla opcji.
-- Link `[011](#011)` w nagłówku → `resume_node="011"` — **następna rozmowa** z tym NPC zacznie się od węzła #011 zamiast od START_NODE.
+- Link `[011](#011)` na osobnej linii → `resume_node="011"` — **następna rozmowa** z tym NPC zacznie się od węzła #011 zamiast od START_NODE.
 - Link jest klikalny w VS Code (podgląd Markdown), co ułatwia nawigację między plikami.
+
+**Backward compat:** stary format z linkiem w nagłówku (`### 990-end [011](#011)`) jest nadal wspierany przez importer. Preferowany jest nowy format (link na osobnej linii).
 
 **Opcje wskazujące na węzeł końcowy** używają `-end` w anchorze linku:
 

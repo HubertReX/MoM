@@ -1750,6 +1750,16 @@
                     "result": null,
                     "text": "M_CLAPBACK_SWORD_DN_000"
                 },
+                "017": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_CLAPBACK_SWORD_DN_017"
+                },
+                "018": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_CLAPBACK_SWORD_DN_018"
+                },
                 "001": {
                     "is_final": false,
                     "result": null,
@@ -1800,6 +1810,11 @@
                     "result": null,
                     "text": "M_CLAPBACK_SWORD_DN_009"
                 },
+                "019": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_CLAPBACK_SWORD_DN_019"
+                },
                 "010": {
                     "is_final": false,
                     "result": null,
@@ -1838,26 +1853,26 @@
                 }
             },
             "DIALOG_OPTIONS": {
-                "000to001_1": {
-                    "next_node": "001",
+                "000to017_1": {
+                    "next_node": "017",
+                    "condition": "True",
+                    "sentiment": "wondering",
+                    "order": 1,
+                    "text": "M_CLAPBACK_SWORD_DO_000to017_1"
+                },
+                "017to018_1": {
+                    "next_node": "018",
                     "condition": "True",
                     "sentiment": "blessed",
                     "order": 1,
-                    "text": "M_CLAPBACK_SWORD_DO_000to001_1"
+                    "text": "M_CLAPBACK_SWORD_DO_017to018_1"
                 },
-                "000to001_2": {
+                "018to001_1": {
                     "next_node": "001",
                     "condition": "True",
                     "sentiment": "offended",
-                    "order": 2,
-                    "text": "M_CLAPBACK_SWORD_DO_000to001_2"
-                },
-                "000to001_3": {
-                    "next_node": "001",
-                    "condition": "True",
-                    "sentiment": "wondering",
-                    "order": 3,
-                    "text": "M_CLAPBACK_SWORD_DO_000to001_3"
+                    "order": 1,
+                    "text": "M_CLAPBACK_SWORD_DO_018to001_1"
                 },
                 "001to002_1": {
                     "next_node": "002",
@@ -2062,12 +2077,19 @@
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_007to009_3"
                 },
-                "009to010_1": {
+                "009to019_1": {
+                    "next_node": "019",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 1,
+                    "text": "M_CLAPBACK_SWORD_DO_009to019_1"
+                },
+                "019to010_1": {
                     "next_node": "010",
                     "condition": "True",
                     "sentiment": "neutral",
                     "order": 1,
-                    "text": "M_CLAPBACK_SWORD_DO_009to010_1"
+                    "text": "M_CLAPBACK_SWORD_DO_019to010_1"
                 },
                 "010to011_1": {
                     "next_node": "011",
@@ -2135,9 +2157,13 @@
             },
             "NODES_OPTIONS": {
                 "000": [
-                    "000to001_1",
-                    "000to001_2",
-                    "000to001_3"
+                    "000to017_1"
+                ],
+                "017": [
+                    "017to018_1"
+                ],
+                "018": [
+                    "018to001_1"
                 ],
                 "001": [
                     "001to002_1",
@@ -2187,7 +2213,10 @@
                     "007to009_3"
                 ],
                 "009": [
-                    "009to010_1"
+                    "009to019_1"
+                ],
+                "019": [
+                    "019to010_1"
                 ],
                 "010": [
                     "010to011_1",
@@ -3205,7 +3234,7 @@
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_1": "To już chyba koniec przygód dla mnie - rzucili na mnie [shadow]Odwieczna klątwą nieszczęścia[/shadow]",
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_2": "No cóż, jeśli masz do sprzedania coś na [shadow]Odwieczną klątwę nieszczęścia[/shadow] to jestem żywo zainteresowany",
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_3": "Potrzebuję kogoś kto może odczarować [shadow]Odwieczną klątwę nieszczęścia[/shadow]",
-            "M_BARMAN_ABSINTHRAYNER_DN_009": "Ach! [shadow]Odwieczna klątwą nieszczęścia[/shadow]? Poważnie? Myślałem, że to tylko gadanie mojej matki. No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj [shadow]Zielarki Zmory[/shadow], ona sama nic nie zdziała, ale może coś będzie wiedziała.",
+            "M_BARMAN_ABSINTHRAYNER_DN_009": "Ach! [shadow]Odwieczna klątwą nieszczęścia[/shadow]? Poważnie? Myślałem, że to tylko gadanie mojej matki. No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj [char]Potioneer Puzzlemint[/char], ona sama nic nie zdziała, ale może coś będzie wiedziała.",
             "M_BARMAN_ABSINTHRAYNER_DO_009to007_2": "A gdzie są teraz ci czarodzieje?",
             "M_BARMAN_ABSINTHRAYNER_DO_009to001_9": "Dzięki, to mi wystarczy",
             "M_BARMAN_ABSINTHRAYNER_DN_004": "No jest tu trochę wniosek w okolicy, ale nasza jest największa, reszta do dziadostwo. Interesuje Cię jakieś konkretne miejsce?",
@@ -3251,10 +3280,7 @@
             "M_BARMAN_ABSINTHRAYNER_DO_016to991_1": "Nie, nie, to nie tak...",
             "M_BARMAN_ABSINTHRAYNER_DN_990": "Do zobaczenia!",
             "M_BARMAN_ABSINTHRAYNER_DN_991": "Wynocha!",
-            "M_CLAPBACK_SWORD_DN_000": "O! There you are!\nHelooooo?\nHey, can you hear me?",
-            "M_CLAPBACK_SWORD_DO_000to001_1": "Uhh...",
-            "M_CLAPBACK_SWORD_DO_000to001_2": "Oh, my head",
-            "M_CLAPBACK_SWORD_DO_000to001_3": "[italic]blink slowly to confirm while saving energy[/italic]",
+            "M_CLAPBACK_SWORD_DN_000": "O:red_exclamation: Jesteś!",
             "M_CLAPBACK_SWORD_DN_001": "So you're still alive, barely. At this rate, I'll rust next to your skeleton soon. What a mess. You really made a scene yesterday. Playing cards with wizards and their marked cards! You brought it upon yourself, so suffer now. I won't help you. Don't even ask.",
             "M_CLAPBACK_SWORD_DO_001to002_1": "Come on, don't be like that. Can't you see I'm suffering here?",
             "M_CLAPBACK_SWORD_DO_001to002_2": "Tell me what you know! I don't have the strength for games right now.",
@@ -3268,10 +3294,10 @@
             "M_CLAPBACK_SWORD_DO_003to008_1": "Hehe, well, that was quite the adventure.",
             "M_CLAPBACK_SWORD_DO_003to008_2": "Big deal, just another day. Why all the drama?",
             "M_CLAPBACK_SWORD_DO_003to008_3": "So I didn't win anything, hmm. Maybe today I'll break the streak.",
-            "M_CLAPBACK_SWORD_DN_004": "Really? You got so wasted that you don't even remember me? It's odd that a fool like you managed to survive this long. I, of all, am your only and most faithful companion. Not that I have much choice - you keep me by your side, and I can't walk on my own. Thus, I'm an involuntary witness to all of your [italic]exploits[/italic]. I'm a sword, forged from the soul of fire, and besides a sharp edge, I have an equally sharp tongue. My name is [shadow]Clapback Sword[/shadow], and if only you could wield me skillfully, we would be invincible.",
+            "M_CLAPBACK_SWORD_DN_004": "Really? You got so wasted that you don't even remember me? It's odd that a fool like you managed to survive this long. I, of all, am your only and most faithful companion. Not that I have much choice - you keep me by your side, and I can't walk on my own. Thus, I'm an involuntary witness to all of your [italic]exploits[/italic]. I'm a sword, forged from the soul of fire, and besides a sharp edge, I have an equally sharp tongue. My name is [char]Clapback Sword[/char], and if only you could wield me skillfully, we would be invincible.",
             "M_CLAPBACK_SWORD_DO_004to008_1": "Oh, I see. Thanks for clearing that up. What would I do without you?",
             "M_CLAPBACK_SWORD_DO_004to008_2": "You talk as if you were my mother. I'm an adult, I can do whatever I want.",
-            "M_CLAPBACK_SWORD_DO_004to008_3": "[shadow]Clapback Sword[/shadow] isn't just your name, but also your specialty - you're a real riot.",
+            "M_CLAPBACK_SWORD_DO_004to008_3": "[char]Clapback Sword[/char] isn't just your name, but also your specialty - you're a real riot.",
             "M_CLAPBACK_SWORD_DN_005": "We are in the splendid kingdom of filth and stench called [shadow]Knaveshire[/shadow]. Most people here are poor villagers, with a few craftsmen and some magicians. Although most are charlatans, herbalists, quacks, and other frauds who don't know real magic. Occasionally, you might encounter remnants of the [shadow]Blue Knighthood[/shadow] on the roads, but it's not what it used to be. In the forests, caves, and dark alleys, various bloodthirsty masqueraders lurk, craving blood, money, or both. The rest are adventurers like you.\nAnd I guess me too.",
             "M_CLAPBACK_SWORD_DO_005to016_1": "Alright, that's all well and good, but what place is this exactly?",
             "M_CLAPBACK_SWORD_DO_005to016_2": "I don't need a lecture. I asked where we are [shadow]now[/shadow].",
@@ -3293,8 +3319,7 @@
             "M_CLAPBACK_SWORD_DO_007to009_1": "You were right - they've stripped us of everything.",
             "M_CLAPBACK_SWORD_DO_007to009_2": "Empty - what are we going to do now?",
             "M_CLAPBACK_SWORD_DO_007to009_3": "Wind is blowing through the pockets. So, is this going to be one of those '[shadow]from zero to hero[/shadow]' stories?",
-            "M_CLAPBACK_SWORD_DN_009": "Then maybe look around. Look over there, by the wall! It's some parchment. What's written there?\n\n[italic]\"He who plays with fate shall meet with punishment, henceforth you shall be a scoundrel and a wretch,\ninstead of the expected fullness of life, you shall be touched by the [shadow]Eternal curse of misfortune[/shadow].\"[/italic]",
-            "M_CLAPBACK_SWORD_DO_009to010_1": "It reads:",
+            "M_CLAPBACK_SWORD_DN_009": "To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin.",
             "M_CLAPBACK_SWORD_DN_010": "No, no, no! Anything but that! [shadow]Eternal curse of misfortune[/shadow] is some serious business. I'm the last one to defend you, but that's not a proportional punishment.",
             "M_CLAPBACK_SWORD_DO_010to011_1": "Seriously? Is it that bad?",
             "M_CLAPBACK_SWORD_DO_010to011_2": "Hey! Stop shaking and get to the point.",
@@ -3310,7 +3335,7 @@
             "M_CLAPBACK_SWORD_DN_014": "Ha, ha, ha. That's a real knee-slapper. Now you feel like cracking jokes?",
             "M_CLAPBACK_SWORD_DO_014to015_1": "So what? Am I supposed to lie down and wait for death?",
             "M_CLAPBACK_SWORD_DN_015": "Alright, let's think. What we know so far about this curse is a mix of children's tales and bard's nonsense songs. We need to find out more specifics. One thing is certain. If you've always thought deep down that you're special, now you have proof to confirm it. You're special - you are exceptionally good at getting into trouble.\nNow let's hit the road! We need ask people around. I would start in the [location]Tavern[/].",
-            "M_CLAPBACK_SWORD_DN_100": "start thread...",
+            "M_CLAPBACK_SWORD_DN_100": "I have nothing to tell you right now",
             "M_POTIONEER_PUZZLEMINT_DN_016": "Ktoś Ty? Kto Cię tu przysłał?",
             "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[shadow]Barman Absyntnent[/shadow] told me about you.",
             "M_POTIONEER_PUZZLEMINT_DO_016to992_2": "Nikt, ja sam tu trafiłem.",
@@ -3337,7 +3362,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_008to009_3": "Z tego co udało mi się ustalić, jestem pod wpływem [shadow]Odwiecznej klątwy nieszczęścia[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DN_009": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać [shadow]Miksturę Zapomnienia[/shadow], ale to raczej nie rozwiąże problemu.",
             "M_POTIONEER_PUZZLEMINT_DO_009to001_9": "Szkoda. Porozmawiajmy w takim razie o czymś innym.",
-            "M_POTIONEER_PUZZLEMINT_DN_003": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [shadow]Kowal Kłamca[/shadow] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
+            "M_POTIONEER_PUZZLEMINT_DN_003": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [char]Hammer[/char] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
             "M_POTIONEER_PUZZLEMINT_DO_003to001_9": "Dzięki, to mi wystarczy.",
             "M_POTIONEER_PUZZLEMINT_DN_004": "Jest trochę tego, pytanie co dla kogo jest ciekawe:\n1 [shadow]Bagno niedogodności[/shadow] jest bogate w zioła i różnego rodzaju ropuchy\n2 w [shadow]Splątanym lesie irytacji[/shadow] można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej\n3 [shadow]Jaskinie zagmatwania[/shadow] to też źródło grzybów, ale dużo bardziej niebezpieczne",
             "M_POTIONEER_PUZZLEMINT_DO_004to001_9": "Dzięki, to mi wystarczy.",
@@ -3361,7 +3386,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_012to001_9": "Dzięki, to mi wystarczy.",
             "M_POTIONEER_PUZZLEMINT_DN_013": "Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej bibliotece.",
             "M_POTIONEER_PUZZLEMINT_DO_013to012_1": "Dzięki!",
-            "M_POTIONEER_PUZZLEMINT_DN_015": "Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [shadow]Kowal Kłamca[/shadow] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.",
+            "M_POTIONEER_PUZZLEMINT_DN_015": "Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [char]Hammer[/char] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.",
             "M_POTIONEER_PUZZLEMINT_DO_015to012_1": "Dziękuję, to cenne informacje.",
             "M_POTIONEER_PUZZLEMINT_DN_014": "Kiedy była u mnie wołali na nią [shadow]Mariolka[/shadow], ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać [shadow]Bibliofilistka des Informacja[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DO_014to012_1": "ok, dzięki.",
@@ -3397,7 +3422,7 @@
             "M_HAMMER_HOAXHEART_DO_004to009_1": "No to oni pewnie dadzą zarobić? Znasz tam kogoś?",
             "M_HAMMER_HOAXHEART_DO_004to009_2": "Pewnie Cię poniżają ci [italic]wielcy panicze[/italic]. Często musisz masz z nimi do czynienia?",
             "M_HAMMER_HOAXHEART_DO_004to009_3": "A po co tym [italic]francuskim pieskom[/italic] dobra broń? Polują kuszami na kury karczmarza?",
-            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [shadow]Barmana Absyntnenta[/shadow] - on gada ze wszystkimi przybyszami.",
+            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [char]Barman Absinthrayner[/char] - on gada ze wszystkimi przybyszami.",
             "M_HAMMER_HOAXHEART_DO_009to001_9": "Dzięki, to mi wystarczy",
             "M_HAMMER_HOAXHEART_DN_005": "Moja broń jest tak dobra, że nie potrzeba mi czarów.",
             "M_HAMMER_HOAXHEART_DO_005to001_9": "Dzięki, to mi wystarczy",
@@ -3469,10 +3494,18 @@
             "M_MADAME_SARCASMIA_DN_019": "A resigned acceptance of one's fate, how delightfully refreshing. You've certainly mastered the art of embracing the inevitable. Go in peace.",
             "M_MADAME_SARCASMIA_DN_020": "Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.",
             "M_MADAME_SARCASMIA_DN_021": "Here goes nothing, I suppose. I'll see what can be done with what you've provided…\n\n. .. ...\n\nPsssssssst….\n\nI'm afraid it's no use. You need to come back with all ingredients.",
-            "M_MADAME_SARCASMIA_DO_000to011_4": "I'm back. Any leads for me yet?"
+            "M_MADAME_SARCASMIA_DO_000to011_4": "I'm back. Any leads for me yet?",
+            "M_CLAPBACK_SWORD_DO_000to017_1": "[italic]<mrugnij powoli na potwierdzenie, aby oszczędzać siły>[/italic]",
+            "M_CLAPBACK_SWORD_DN_017": "Halooooo:red_question:",
+            "M_CLAPBACK_SWORD_DO_017to018_1": "Uhh...",
+            "M_CLAPBACK_SWORD_DN_018": "Hej, słyszysz mnie?",
+            "M_CLAPBACK_SWORD_DO_018to001_1": "Ała, moja głowa",
+            "M_CLAPBACK_SWORD_DO_009to019_1": "O nie! Patrz co tu jest napisane?",
+            "M_CLAPBACK_SWORD_DN_019": "[italic]\"He who plays with fate shall meet with punishment,[/italic]\n[italic]henceforth you shall be a scoundrel and a wretch,[/italic]\n[italic]instead of the expected fullness of life,[/italic]\n[italic]you shall be touched by the [shadow]Eternal curse of misfortune[/shadow].\"[/italic]",
+            "M_CLAPBACK_SWORD_DO_019to010_1": "To chyba jakiś żart! Prawda?"
         },
         "PL": {
-            "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem Barman Asynthnent. A kogo tu do mnie los sprowadził?",
+            "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barman Asynthnent[/char]. A kogo tu do mnie los sprowadził?",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_1": "Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_2": "Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_3": "Jak chcesz, no mogę zostać [shadow]Twoim[/shadow] najlepszym klientem :happy:",
@@ -3494,7 +3527,7 @@
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_1": "To już chyba koniec przygód dla mnie - rzucili na mnie [quest]Odwieczna klątwą nieszczęścia[/quest]",
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_2": "No cóż, jeśli masz do sprzedania coś na [quest]Odwieczną klątwę nieszczęścia[/quest] to jestem żywo zainteresowany",
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_3": "Potrzebuję kogoś kto może odczarować [quest]Odwieczną klątwę nieszczęścia[/quest]",
-            "M_BARMAN_ABSINTHRAYNER_DN_009": "Ach! [quest]Odwieczna klątwą nieszczęścia[/quest]? Poważnie? Myślałem, że to tylko gadanie mojej matki...\nNo cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma [shadow]magii[/shadow]. Popytaj [char]Zielarki Zmory[/char], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.",
+            "M_BARMAN_ABSINTHRAYNER_DN_009": "Ach! [quest]Odwieczna klątwą nieszczęścia[/quest]? Poważnie? Myślałem, że to tylko gadanie mojej matki...\nNo cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma [shadow]magii[/shadow]. Popytaj [char]Zielarka Zmora[/char], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.",
             "M_BARMAN_ABSINTHRAYNER_DO_009to007_2": "A gdzie są teraz ci [shadow]czarodzieje[/shadow]?",
             "M_BARMAN_ABSINTHRAYNER_DO_009to001_9": "Dzięki, to mi wystarczy",
             "M_BARMAN_ABSINTHRAYNER_DN_004": "No jest tu trochę wiosek w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?",
@@ -3540,10 +3573,7 @@
             "M_BARMAN_ABSINTHRAYNER_DO_016to991_1": "Nie, nie, to nie tak...",
             "M_BARMAN_ABSINTHRAYNER_DN_990": "Do zobaczenia:exclamation:",
             "M_BARMAN_ABSINTHRAYNER_DN_991": "Wynocha:red_exclamation:",
-            "M_CLAPBACK_SWORD_DN_000": "O:red_exclamation: Jesteś!\nHalooooo:red_question:\nHej, słyszysz mnie?",
-            "M_CLAPBACK_SWORD_DO_000to001_1": "Uhh...",
-            "M_CLAPBACK_SWORD_DO_000to001_2": "Ała, moja głowa",
-            "M_CLAPBACK_SWORD_DO_000to001_3": "[italic]<mrugnij powoli na potwierdzenie, aby oszczędzać siły>[/italic]",
+            "M_CLAPBACK_SWORD_DN_000": "O:red_exclamation: Jesteś!",
             "M_CLAPBACK_SWORD_DN_001": "Czyli jednak żyjesz, jeszcze.\nJak tak dalej pójdzie to niedługo zardzewieję u boku [shadow]Twojego[/shadow] szkieletu. No ładny bajzel. Nieźle dałeś wczoraj do wiwatu. Żeby grać w karty z czarodziejami i to znaczonymi kartami! Sam się o to prosiłeś, to teraz cierp.\nNie będę Ci pomagał.\nNawet mnie nie proś.",
             "M_CLAPBACK_SWORD_DO_001to002_1": "No weź, nie bądź taki. Nie widzisz, że ja tu cierpię?",
             "M_CLAPBACK_SWORD_DO_001to002_2": "Gadaj co wiesz! Nie mam teraz siły na gierki.",
@@ -3557,7 +3587,7 @@
             "M_CLAPBACK_SWORD_DO_003to008_1": "He he, no to była niezła zabawa.",
             "M_CLAPBACK_SWORD_DO_003to008_2": "Wielkie mi rzeczy, dzień jak co dzień. Po co ta drama?",
             "M_CLAPBACK_SWORD_DO_003to008_3": "Czyli nic nie wygrałem, hmmm. Może dzisiaj się odkuję.",
-            "M_CLAPBACK_SWORD_DN_004": "Serio?\nTak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich [shadow]Twoich[/shadow] [italic]wyczynów[/italic]. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [char][[Clapback_Sword]][/char] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.",
+            "M_CLAPBACK_SWORD_DN_004": "Serio?\nTak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich [shadow]Twoich[/shadow] [italic]wyczynów[/italic]. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [char]Miecz Ciętej-riposty[/char] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.",
             "M_CLAPBACK_SWORD_DO_004to008_1": "Och, rozumiem. Dzięki za rozjaśnienie sytuacji. Co ja bym bez Ciebie zrobił?",
             "M_CLAPBACK_SWORD_DO_004to008_2": "Mówisz, jak byś był moją matką. Jestem dorosły mogę robić co chcę.",
             "M_CLAPBACK_SWORD_DO_004to008_3": "Cięta riposta to nie tylko Twoje imię, ale i Twoja specjalność - no boki zrywać.",
@@ -3565,7 +3595,7 @@
             "M_CLAPBACK_SWORD_DO_005to016_1": "Ok, to tak globalnie, ale co to za miejsce?",
             "M_CLAPBACK_SWORD_DO_005to016_2": "Nie wiem po co mi ten wykład. Pytałem gdzie [shadow]teraz[/shadow] jesteśmy.",
             "M_CLAPBACK_SWORD_DO_005to016_3": "No spoko, ale w jakim dokładnie śmierdzącym zakątku tego cudownego królestwa jesteśmy?",
-            "M_CLAPBACK_SWORD_DN_016": "Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski [loc]Gafowo Kolonia[/loc] powiat [loc]Łękołody[/loc]. Wczoraj dokazywałeś w lokalnej karczmie, a teraz, sądząc po zapachu jesteśmy chyba w stajni.",
+            "M_CLAPBACK_SWORD_DN_016": "Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski [loc]Gafowo Kolonia[/loc] powiat [loc]Łękołody[/loc]. Wczoraj dokazywałeś w lokalnej [loc]karczmie[/loc], a teraz, sądząc po zapachu jesteśmy chyba w [loc]stajni[/loc].",
             "M_CLAPBACK_SWORD_DO_016to008_1": "Ok, dzięki - trochę to rozwiewa tę mgłę, którą mam w głowie.",
             "M_CLAPBACK_SWORD_DO_016to008_2": "No powiem szczerze, nie brzmi to zbyt zachęcająco.",
             "M_CLAPBACK_SWORD_DO_016to008_3": "Ach, tak - ten swojski zapach, hmmm, podusia.",
@@ -3582,26 +3612,25 @@
             "M_CLAPBACK_SWORD_DO_007to009_1": "Miałeś rację - ograbili nas ze wszystkiego.",
             "M_CLAPBACK_SWORD_DO_007to009_2": "Pusto - co my teraz zrobimy?",
             "M_CLAPBACK_SWORD_DO_007to009_3": "Wiatr hula po kieszeniach. Czyli to będzie jedna z tych historii '[shadow]od zera do bohatera[/shadow]'?",
-            "M_CLAPBACK_SWORD_DN_009": "To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin. Co tam jest napisane?\n\n[italic]\"Kto z losem igra, tego spotka kara, odtąd będziesz łajza i ślamazara,[/italic]\n[italic]aż do czasu z ziemi tej odejścia, dotyka Cię [quest]Odwieczna klątwą nieszczęścia[/quest].\"[/italic]",
-            "M_CLAPBACK_SWORD_DO_009to010_1": "Tu jest napisane:",
-            "M_CLAPBACK_SWORD_DN_010": "Nie, nie, nie! Tylko nie to! [quest]Odwieczna klątwa nieszczęścia[/quest] to jakaś masakra. Ja tam jestem ostatni aby Cię bronić, ale to nie współmierna kara.",
+            "M_CLAPBACK_SWORD_DN_009": "To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin.",
+            "M_CLAPBACK_SWORD_DN_010": "Nie, nie, nie! Tylko nie to! [quest]Odwieczna klątwa nieszczęścia[/quest] to jakaś masakra. Ja tam jestem ostatni żeby Cię bronić, ale kara to gruba przesada.",
             "M_CLAPBACK_SWORD_DO_010to011_1": "Serio? Aż tak źle?",
-            "M_CLAPBACK_SWORD_DO_010to011_2": "Ej! Przestań się trząść i zacznij mówić do rzeczy.",
-            "M_CLAPBACK_SWORD_DO_010to011_3": "Hej, powoli, wiesz co to konkretnie oznacza?",
-            "M_CLAPBACK_SWORD_DN_011": "No dobrze, po kolei. To jest bardzo stara klątwa. Matki straszą nią niegrzeczne dzieci, karciarze przed nią ostrzegają, ale nie znam nikogo kto by padł jej ofiarą. Mówi się, że osobą nią dotknięta ma w życiu ciągłego pecha - w kartach dostajesz same blotki, wiatr Ci wieje zawsze w oczy, a w czasie burzy piorun trafia właśnie Ciebie. No generalnie masz przechlapane.",
+            "M_CLAPBACK_SWORD_DO_010to011_2": "Ej! Przestań się trząść i zacznij mówić do rzeczy!",
+            "M_CLAPBACK_SWORD_DO_010to011_3": "Hej, powoli, co to konkretnie oznacza?",
+            "M_CLAPBACK_SWORD_DN_011": "No dobrze, po kolei. To jest bardzo stara klątwa. Matki straszą nią niegrzeczne dzieci, karciarze przed nią ostrzegają, ale nie znam nikogo kto by padł jej ofiarą.\nMówi się, że osoba nią dotknięta ma w życiu ciągłego pecha - w kartach dostajesz same blotki, wiatr Ci wieje zawsze w oczy, a w czasie burzy piorun trafia właśnie ciebie.\nNo generalnie masz prze... przechlapane.",
             "M_CLAPBACK_SWORD_DO_011to012_1": "A jak długo trwa ta klątwa?",
-            "M_CLAPBACK_SWORD_DO_011to013_2": "Musimy złapać tych czarodziei - jak im zagrożę śmiercią to będą musieli odwołać to zaklęcie.",
+            "M_CLAPBACK_SWORD_DO_011to013_2": "Musimy złapać tych czarodziei - muszą odwołać to zaklęcie.",
             "M_CLAPBACK_SWORD_DO_011to014_3": "To może zbijemy majątek na obwoźnych pokazach słynnej klątwy na żywo?",
             "M_CLAPBACK_SWORD_DN_012": "Ty to jednak mocno oberwałeś po tej głowie. [quest]Odwieczna klątwa[/quest] - sprawa chyba jest jasna.",
             "M_CLAPBACK_SWORD_DO_012to015_1": "To co? Mam położyć się i czekać na śmierć?",
-            "M_CLAPBACK_SWORD_DN_013": "O, macierzy wszystkich mieczy duszy ognia! Jak Ty to sobie niby wyobrażasz? Ich jest trzech, Ty nie umiesz mną władać lepiej niż byle smarkacz w samych kalesonach, a najpewniej oni już dawno odjechali.",
+            "M_CLAPBACK_SWORD_DN_013": "O, macierzy wszystkich mieczy duszy ognia! Jak Ty to sobie niby wyobrażasz? Ich jest trzech, Ty nie umiesz mną władać lepiej niż byle smarkacz w kalesonach, a najpewniej oni już dawno odjechali.",
             "M_CLAPBACK_SWORD_DO_013to015_1": "To co? Mam położyć się i czekać na śmierć?",
             "M_CLAPBACK_SWORD_DN_014": "Ha, ha, ha. No boki zrywać. Teraz zebrało Ci się na żarty?",
             "M_CLAPBACK_SWORD_DO_014to015_1": "To co? Mam położyć się i czekać na śmierć?",
-            "M_CLAPBACK_SWORD_DN_015": "No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne. Jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz dowód na potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha.\nA teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [loc]Tawerny[/loc].",
+            "M_CLAPBACK_SWORD_DN_015": "No, dobra, pomyślmy:wondering:. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów.\nJedno jest pewne  - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha!\nA teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [loc]Tawerny[/loc].",
             "M_CLAPBACK_SWORD_DN_100": "Na razie nie mam Ci nic nowego do powiedzenia.",
             "M_POTIONEER_PUZZLEMINT_DN_016": "Ktoś Ty? Kto Cię tu przysłał?",
-            "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[[PL/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] powiedział mi o Tobie.",
+            "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[char]Barman Asynthnent[/char] powiedział mi o Tobie.",
             "M_POTIONEER_PUZZLEMINT_DO_016to992_2": "Nikt, ja sam tu trafiłem.",
             "M_POTIONEER_PUZZLEMINT_DN_000": "Ach, tak, tak. Proszę, wejdź chłopcze to domu najlepszej zielarki w okolicy.",
             "M_POTIONEER_PUZZLEMINT_DO_000to001_1": "Dzień dobry, jestem Malachi, straszny pechowiec. Potrzebuję pomocy.",
@@ -3626,7 +3655,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_008to009_3": "Z tego co udało mi się ustalić, jestem pod wpływem [shadow]Odwiecznej klątwy nieszczęścia[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DN_009": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać [shadow]Miksturę Zapomnienia[/shadow], ale to raczej nie rozwiąże problemu.",
             "M_POTIONEER_PUZZLEMINT_DO_009to001_9": "Szkoda. Porozmawiajmy w takim razie o czymś innym.",
-            "M_POTIONEER_PUZZLEMINT_DN_003": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [shadow]Kowal Kłamca[/shadow] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
+            "M_POTIONEER_PUZZLEMINT_DN_003": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [char]Kowal Kłamca[/char] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
             "M_POTIONEER_PUZZLEMINT_DO_003to001_9": "Dzięki, to mi wystarczy.",
             "M_POTIONEER_PUZZLEMINT_DN_004": "Jest trochę tego, pytanie co dla kogo jest ciekawe:\n1 [shadow]Bagno niedogodności[/shadow] jest bogate w zioła i różnego rodzaju ropuchy\n2 w [shadow]Splątanym lesie irytacji[/shadow] można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej\n3 [shadow]Jaskinie zagmatwania[/shadow] to też źródło grzybów, ale dużo bardziej niebezpieczne",
             "M_POTIONEER_PUZZLEMINT_DO_004to001_9": "Dzięki, to mi wystarczy.",
@@ -3650,7 +3679,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_012to001_9": "Dzięki, to mi wystarczy.",
             "M_POTIONEER_PUZZLEMINT_DN_013": "Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej bibliotece.",
             "M_POTIONEER_PUZZLEMINT_DO_013to012_1": "Dzięki!",
-            "M_POTIONEER_PUZZLEMINT_DN_015": "Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [shadow]Kowal Kłamca[/shadow] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.",
+            "M_POTIONEER_PUZZLEMINT_DN_015": "Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [char]Kowal Kłamca[/char] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.",
             "M_POTIONEER_PUZZLEMINT_DO_015to012_1": "Dziękuję, to cenne informacje.",
             "M_POTIONEER_PUZZLEMINT_DN_014": "Kiedy była u mnie wołali na nią [shadow]Mariolka[/shadow], ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać [shadow]Bibliofilistka des Informacja[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DO_014to012_1": "ok, dzięki.",
@@ -3686,7 +3715,7 @@
             "M_HAMMER_HOAXHEART_DO_004to009_1": "No to oni pewnie dadzą zarobić? Znasz tam kogoś?",
             "M_HAMMER_HOAXHEART_DO_004to009_2": "Pewnie Cię poniżają ci [italic]wielcy panicze[/italic]. Często musisz masz z nimi do czynienia?",
             "M_HAMMER_HOAXHEART_DO_004to009_3": "A po co tym [italic]francuskim pieskom[/italic] dobra broń? Polują kuszami na kury karczmarza?",
-            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [shadow]Barmana Absyntnenta[/shadow] - on gada ze wszystkimi przybyszami.",
+            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [char]Barman Asynthnent[/char] - on gada ze wszystkimi przybyszami.",
             "M_HAMMER_HOAXHEART_DO_009to001_9": "Dzięki, to mi wystarczy",
             "M_HAMMER_HOAXHEART_DN_005": "Moja broń jest tak dobra, że nie potrzeba mi czarów.",
             "M_HAMMER_HOAXHEART_DO_005to001_9": "Dzięki, to mi wystarczy",
@@ -3758,7 +3787,15 @@
             "M_MADAME_SARCASMIA_DN_019": "Pogodzenie się z własnym losem, jakże to rozkosznie odświeżające. Mistrzowsko opanowałeś sztukę akceptowania nieuchronnego. Idź w pokoju.",
             "M_MADAME_SARCASMIA_DN_020": "Niech magia tka swoje misteria. Weź tę [item]miksturę[/item] i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.",
             "M_MADAME_SARCASMIA_DN_021": "No cóż, trudno, jakoś to ogarnę. Zobaczę, co da się zrobić z tym, co przyniosłeś…\n\n. .. ...\n\nPsssssssst….\n\nObawiam się, że to bez sensu. Musisz wrócić ze wszystkimi składnikami.",
-            "M_MADAME_SARCASMIA_DO_000to011_4": "Wracam. Masz już dla mnie jakieś wskazówki?"
+            "M_MADAME_SARCASMIA_DO_000to011_4": "Wracam. Masz już dla mnie jakieś wskazówki?",
+            "M_CLAPBACK_SWORD_DO_000to017_1": "[italic]<mrugnij powoli na potwierdzenie, aby oszczędzać siły>[/italic]",
+            "M_CLAPBACK_SWORD_DN_017": "Halooooo:red_question:",
+            "M_CLAPBACK_SWORD_DO_017to018_1": "Uhh...",
+            "M_CLAPBACK_SWORD_DN_018": "Hej, słyszysz mnie?",
+            "M_CLAPBACK_SWORD_DO_018to001_1": "Ała, moja głowa",
+            "M_CLAPBACK_SWORD_DO_009to019_1": "O nie! Patrz co tu jest napisane?",
+            "M_CLAPBACK_SWORD_DN_019": "[italic]\"Kto z losem igra, tego spotka kara,[/italic]\n[italic]odtąd będziesz łajza i ślamazara,[/italic]\n[italic]aż do czasu z ziemi tej odejścia[/italic],_\n[italic]dotyka Cię [quest]Odwieczna klątwą nieszczęścia[/quest].\"[/italic]",
+            "M_CLAPBACK_SWORD_DO_019to010_1": "To chyba jakiś żart! Prawda?"
         }
     }
 }
