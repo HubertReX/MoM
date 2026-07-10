@@ -1,3 +1,7 @@
+---
+aliases:
+  - POTIONEER_PUZZLEMINT
+---
 # **Zielarka Zmora**
 
 translation: [**POTIONEER_PUZZLEMINT**](../EN/char-Potioneer_Puzzlemint.md)
@@ -16,7 +20,7 @@ translation: [**POTIONEER_PUZZLEMINT**](../EN/char-Potioneer_Puzzlemint.md)
 
 * Ktoś Ty? Kto Cię tu przysłał?
 
-* [000](#000) 1[Barman_Absinthrayner.012.visited]😐: **Barman Absyntnent** powiedział mi o Tobie.
+* [000](#000) 1[Barman_Absinthrayner.012.visited]😐: [[PL/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] powiedział mi o Tobie.
 * [992-end](#992-end) 2[Barman_Absinthrayner.012.not_visited]😐: Nikt, ja sam tu trafiłem.
 
 ### 000

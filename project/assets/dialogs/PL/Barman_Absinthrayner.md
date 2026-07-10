@@ -1,3 +1,7 @@
+---
+aliases:
+  - BARMAN_ABSINTHRAYNER
+---
 # **Barman Absyntnent**
 
 translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
@@ -14,7 +18,7 @@ translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
 
 ### 000
 
-* Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barmanem Absyntnent[/char]. A kogo tu do mnie los sprowadził?
+* Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [[BARMAN_ABSINTHRAYNER]]. A kogo tu do mnie los sprowadził?
 
 * [001](#001) 1😇: Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:
 * [001](#001) 2😢: Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...
