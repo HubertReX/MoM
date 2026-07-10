@@ -19,13 +19,16 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
 from dialog import init_dialog
 from dialog.markdown_importer import (
     DialogImportError,
+    _convert_text,
+    _make_name_resolver,
     import_character_dialog,
     import_dialogs,
-    load_valid_items
+    load_valid_items,
     )
 
 RPG_DIALOGS = Path("/Users/hubertnafalski/Projects/RPG/dialogs")
 ITEMS_CSV = Path("project/config_model/items.csv")
+_HAS_RPG_SOURCES = RPG_DIALOGS.exists()
 
 
 def assert_eq(a: object, b: object, msg: str = "") -> None:
@@ -149,20 +152,100 @@ def test_missing_file_raises() -> None:
     raise AssertionError("expected DialogImportError for missing file")
 
 
+def test_make_name_resolver_pl() -> None:
+    chars = {
+        "HAMMER_HOAXHEART": {"name_PL": "Młot Hoaxheart", "name_EN": "Hammer Hoaxheart"},
+    }
+    resolve = _make_name_resolver(chars, "PL")
+    assert resolve is not None
+    assert_eq(resolve("HAMMER_HOAXHEART"), "Młot Hoaxheart")
+
+
+def test_make_name_resolver_en() -> None:
+    chars = {
+        "HAMMER_HOAXHEART": {"name_PL": "Młot Hoaxheart", "name_EN": "Hammer Hoaxheart"},
+    }
+    resolve = _make_name_resolver(chars, "EN")
+    assert resolve is not None
+    assert_eq(resolve("HAMMER_HOAXHEART"), "Hammer Hoaxheart")
+
+
+def test_make_name_resolver_empty() -> None:
+    assert _make_name_resolver({}, "PL") is None
+    assert _make_name_resolver({}, "EN") is None
+
+
+def test_make_name_resolver_unknown_key() -> None:
+    chars = {"ARIA_SILVERSTONE": {"name_EN": "Aria Silverstone"}}
+    resolve = _make_name_resolver(chars, "EN")
+    assert resolve is not None
+    assert_eq(resolve("UNKNOWN_KEY"), "[[UNKNOWN_KEY]]")
+
+
+def test_convert_text_no_resolver() -> None:
+    result = _convert_text("Hello [[HAMMER_HOAXHEART]]")
+    assert_eq(result, "Hello [[HAMMER_HOAXHEART]]", "no resolver leaves wikilink as-is")
+
+
+def test_convert_text_resolve_known() -> None:
+    chars = {"ARIA_SILVERSTONE": {"name_EN": "Aria Silverstone"}}
+    resolve = _make_name_resolver(chars, "EN")
+    assert resolve is not None
+    result = _convert_text("Go see [[ARIA_SILVERSTONE]] for help.", resolve)
+    assert_eq(result, "Go see Aria Silverstone for help.")
+
+
+def test_convert_text_resolve_unknown() -> None:
+    chars = {"ARIA_SILVERSTONE": {"name_EN": "Aria Silverstone"}}
+    resolve = _make_name_resolver(chars, "EN")
+    assert resolve is not None
+    result = _convert_text("Talk to [[MISSING_NPC]] now.", resolve)
+    assert_eq(result, "Talk to [[MISSING_NPC]] now.")
+
+
+def test_convert_text_with_markup_and_wikilink() -> None:
+    chars = {"HAMMER_HOAXHEART": {"name_EN": "Hammer Hoaxheart"}}
+    resolve = _make_name_resolver(chars, "EN")
+    assert resolve is not None
+    result = _convert_text("Ask **[[HAMMER_HOAXHEART]]** about it.", resolve)
+    assert_eq(
+        result,
+        "Ask [shadow]Hammer Hoaxheart[/shadow] about it.",
+        "wikilink resolved inside bold markup",
+    )
+
+
 def main() -> None:
-    tests = [
-        test_import_hammer_shape,
-        test_hammer_graph_builds,
-        test_sentiment_conversion,
-        test_markup_conversion,
-        test_condition_conversion,
-        test_result_parsing,
-        test_import_multiple_characters,
-        test_missing_file_raises,
+    tests = []
+
+    if _HAS_RPG_SOURCES:
+        tests = [
+            ("test_import_hammer_shape", test_import_hammer_shape),
+            ("test_hammer_graph_builds", test_hammer_graph_builds),
+            ("test_sentiment_conversion", test_sentiment_conversion),
+            ("test_markup_conversion", test_markup_conversion),
+            ("test_condition_conversion", test_condition_conversion),
+            ("test_result_parsing", test_result_parsing),
+            ("test_import_multiple_characters", test_import_multiple_characters),
+            ("test_missing_file_raises", test_missing_file_raises),
+        ]
+    else:
+        print("  SKIP  RPG sources not found, skipping RPG-dependent tests")
+
+    self_contained_tests = [
+        ("test_make_name_resolver_pl", test_make_name_resolver_pl),
+        ("test_make_name_resolver_en", test_make_name_resolver_en),
+        ("test_make_name_resolver_empty", test_make_name_resolver_empty),
+        ("test_make_name_resolver_unknown_key", test_make_name_resolver_unknown_key),
+        ("test_convert_text_no_resolver", test_convert_text_no_resolver),
+        ("test_convert_text_resolve_known", test_convert_text_resolve_known),
+        ("test_convert_text_resolve_unknown", test_convert_text_resolve_unknown),
+        ("test_convert_text_with_markup_and_wikilink", test_convert_text_with_markup_and_wikilink),
     ]
-    for t in tests:
-        t()
-        print(f"  PASS  {t.__name__}")
+    tests.extend(self_contained_tests)
+    for name, func in tests:
+        func()
+        print(f"  PASS  {name}")
     print(f"\nAll {len(tests)} dialog import tests passed.")
 
 
