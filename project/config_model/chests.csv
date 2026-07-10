@@ -1,11 +1,11 @@
 key;name;is_small;total_items_count
-SmallChest_Maze_01;SmallChest_Maze_01;True;1
+SmallChest_Maze_01;SmallChest_Maze_01;;1
 BigChest_Maze_01;BigChest_Maze_01;False;3
-SmallChest_Maze_02;SmallChest_Maze_02;True;1
+SmallChest_Maze_02;SmallChest_Maze_02;;1
 BigChest_Maze_02;BigChest_Maze_02;False;3
-SmallChest_Maze_03;SmallChest_Maze_03;True;1
+SmallChest_Maze_03;SmallChest_Maze_03;;1
 BigChest_Maze_03;BigChest_Maze_03;False;3
-SmallChest_Maze_04;SmallChest_Maze_04;True;1
+SmallChest_Maze_04;SmallChest_Maze_04;;1
 BigChest_Maze_04;BigChest_Maze_04;False;3
-SmallChest_VillageHouse;SmallChest_VillageHouse;True;0
-BigChest_Village;BigChest_Village;False;0
+SmallChest_VillageHouse;SmallChest_VillageHouse;;
+BigChest_Village;BigChest_Village;False;

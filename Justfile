@@ -89,6 +89,11 @@ update-config-schema:
     cd project/config_model
     ..\..\.venv\Scripts\python.exe config_pydantic.py
 
+# Import entity data from CSV files into config.json (overwrites character, item, chest, and maze sections)
+[unix]
+import-entities:
+    .venv/bin/python project/config_model/import_entities.py
+
 # Import dialog Markdown sources from project/assets/dialogs/ into config.json.
 # By default imports all compatible characters; pass a character name to import one.
 [unix]

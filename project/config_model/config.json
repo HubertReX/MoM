@@ -19,7 +19,10 @@
             "money": 20,
             "name_EN": "Player",
             "name_PL": "Player",
-            "has_dialog": false
+            "has_dialog": false,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "JOHNY": {
             "sprite": "Villager1",
@@ -39,7 +42,11 @@
             "money": 3000,
             "name_EN": "Johny",
             "name_PL": "Johny",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "FRED": {
             "sprite": "Villager2",
@@ -48,7 +55,11 @@
             "money": 20,
             "name_EN": "Fred",
             "name_PL": "Fred",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "BART": {
             "sprite": "Villager3",
@@ -68,7 +79,11 @@
             "money": 200,
             "name_EN": "Bart",
             "name_PL": "Bart",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "ROB": {
             "sprite": "Villager4",
@@ -77,7 +92,11 @@
             "money": 20,
             "name_EN": "Rob",
             "name_PL": "Rob",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "MARRY": {
             "sprite": "Woman",
@@ -88,7 +107,10 @@
             "money": 25,
             "name_EN": "Marry",
             "name_PL": "Marry",
-            "has_dialog": false
+            "has_dialog": false,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "FISH_RED": {
             "sprite": "FishRed",
@@ -100,7 +122,10 @@
             "speed_walk": 10,
             "name_EN": "FishRed",
             "name_PL": "FishRed",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "CAT": {
             "sprite": "Cat",
@@ -109,7 +134,10 @@
             "speed_walk": 15,
             "name_EN": "Cat",
             "name_PL": "Cat",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "DOG_ORANGE": {
             "sprite": "Dog1",
@@ -121,7 +149,10 @@
             "speed_walk": 15,
             "name_EN": "Dog",
             "name_PL": "Dog",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "DOG_PURPLE": {
             "sprite": "Dog2",
@@ -133,7 +164,10 @@
             "speed_walk": 15,
             "name_EN": "Dog",
             "name_PL": "Dog",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "CHICKEN_BLACK": {
             "sprite": "ChickenBlack",
@@ -145,7 +179,10 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Chicken",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "CHICKEN_BROWN": {
             "sprite": "ChickenBrown",
@@ -157,7 +194,10 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Chicken",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "CHICKEN_CUTE": {
             "sprite": "ChickenCute",
@@ -169,7 +209,10 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Chicken",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "CHICKEN_WHITE": {
             "sprite": "ChickenWhite",
@@ -181,7 +224,10 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Chicken",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "PIG": {
             "sprite": "Pig",
@@ -193,7 +239,10 @@
             "speed_walk": 20,
             "name_EN": "Pig",
             "name_PL": "Pig",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "COW": {
             "sprite": "Cow",
@@ -204,7 +253,11 @@
             ],
             "name_EN": "Cow",
             "name_PL": "Cow",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "HORSE": {
             "sprite": "Horse",
@@ -215,7 +268,11 @@
             ],
             "name_EN": "Horse",
             "name_PL": "Horse",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "FROG": {
             "sprite": "Frog",
@@ -227,7 +284,10 @@
             "speed_walk": 10,
             "name_EN": "Frog",
             "name_PL": "Frog",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "RACOON": {
             "sprite": "Racoon",
@@ -236,7 +296,10 @@
             "speed_walk": 10,
             "name_EN": "Racoon",
             "name_PL": "Racoon",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "BOAR": {
             "sprite": "Boar",
@@ -245,7 +308,10 @@
             "speed_walk": 20,
             "name_EN": "Boar",
             "name_PL": "Boar",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_run": null
         },
         "SNAKE_01": {
             "sprite": "Snake",
@@ -260,7 +326,8 @@
             "speed_run": 75,
             "name_EN": "Snake",
             "name_PL": "Snake",
-            "has_dialog": false
+            "has_dialog": false,
+            "speed_walk": null
         },
         "SPIRIT_01": {
             "sprite": "Spirit",
@@ -268,7 +335,11 @@
             "attitude": "enemy",
             "name_EN": "Spirit",
             "name_PL": "Spirit",
-            "has_dialog": false
+            "has_dialog": false,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "SLIME_01": {
             "sprite": "Slime",
@@ -278,7 +349,10 @@
             "max_health": 40,
             "name_EN": "Slime",
             "name_PL": "Slime",
-            "has_dialog": false
+            "has_dialog": false,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "SPIDER_01": {
             "sprite": "SpiderRed",
@@ -289,7 +363,9 @@
             "damage": 20,
             "name_EN": "Spider",
             "name_PL": "Spider",
-            "has_dialog": false
+            "has_dialog": false,
+            "speed_walk": null,
+            "speed_run": null
         },
         "CAVE_LION": {
             "sprite": "CaveLion",
@@ -300,7 +376,9 @@
             "damage": 20,
             "name_EN": "CaveLion",
             "name_PL": "CaveLion",
-            "has_dialog": false
+            "has_dialog": false,
+            "speed_walk": null,
+            "speed_run": null
         },
         "CAVE_LION2": {
             "sprite": "CaveLion2",
@@ -311,7 +389,9 @@
             "damage": 20,
             "name_EN": "CaveLion",
             "name_PL": "CaveLion",
-            "has_dialog": false
+            "has_dialog": false,
+            "speed_walk": null,
+            "speed_run": null
         },
         "LION_YELLOW": {
             "sprite": "LionYellow",
@@ -322,7 +402,9 @@
             "damage": 20,
             "name_EN": "LionYellow",
             "name_PL": "LionYellow",
-            "has_dialog": false
+            "has_dialog": false,
+            "speed_walk": null,
+            "speed_run": null
         },
         "FLAM": {
             "sprite": "Flam",
@@ -333,7 +415,9 @@
             "damage": 20,
             "name_EN": "Flam",
             "name_PL": "Flam",
-            "has_dialog": false
+            "has_dialog": false,
+            "speed_walk": null,
+            "speed_run": null
         },
         "HAMMER_HOAXHEART": {
             "sprite": "Villager2",
@@ -351,7 +435,11 @@
             "money": 30,
             "name_EN": "Hammer",
             "name_PL": "Hammer",
-            "has_dialog": true
+            "has_dialog": true,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
@@ -369,7 +457,11 @@
             "money": 100,
             "name_EN": "Barman Absinthrayner",
             "name_PL": "Barman Absinthrayner",
-            "has_dialog": true
+            "has_dialog": true,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "CLAPBACK_SWORD": {
             "sprite": "Knight",
@@ -387,7 +479,11 @@
             "money": 100,
             "name_EN": "Clapback Sword",
             "name_PL": "Clapback Sword",
-            "has_dialog": true
+            "has_dialog": true,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "POTIONEER_PUZZLEMINT": {
             "sprite": "EggGirl",
@@ -405,7 +501,11 @@
             "money": 100,
             "name_EN": "Potioneer Puzzlemint",
             "name_PL": "Potioneer Puzzlemint",
-            "has_dialog": true
+            "has_dialog": true,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         },
         "MADAME_SARCASMIA": {
             "sprite": "SorcererBlack",
@@ -426,7 +526,11 @@
             ],
             "name_EN": "Madame Sarcasmia",
             "name_PL": "Madame Sarcasmia",
-            "has_dialog": true
+            "has_dialog": true,
+            "health": null,
+            "damage": null,
+            "speed_walk": null,
+            "speed_run": null
         }
     },
     "chests": {
@@ -437,7 +541,8 @@
                 "gem_small_green",
                 "gem_crystal_green",
                 "shrimp"
-            ]
+            ],
+            "is_small": null
         },
         "BigChest_Maze_01": {
             "name": "BigChest_Maze_01",
@@ -459,7 +564,8 @@
                 "gem_small_purple",
                 "gem_crystal_purple",
                 "shrimp"
-            ]
+            ],
+            "is_small": null
         },
         "BigChest_Maze_02": {
             "name": "BigChest_Maze_02",
@@ -481,7 +587,8 @@
                 "gem_small_blue",
                 "gem_crystal_blue",
                 "shrimp"
-            ]
+            ],
+            "is_small": null
         },
         "BigChest_Maze_03": {
             "name": "BigChest_Maze_03",
@@ -503,7 +610,8 @@
                 "gem_small_orange",
                 "gem_crystal_orange",
                 "shrimp"
-            ]
+            ],
+            "is_small": null
         },
         "BigChest_Maze_04": {
             "name": "BigChest_Maze_04",
@@ -522,7 +630,9 @@
             "name": "SmallChest_VillageHouse",
             "items": [
                 "golden_coin"
-            ]
+            ],
+            "is_small": null,
+            "total_items_count": null
         },
         "BigChest_Village": {
             "name": "BigChest_Village",
@@ -531,7 +641,8 @@
                 "sai",
                 "beef",
                 "shrimp"
-            ]
+            ],
+            "total_items_count": null
         }
     },
     "items": {
@@ -542,7 +653,8 @@
             "damage": 25,
             "cooldown_time": 0.5,
             "name_EN": "War hammer",
-            "name_PL": "War hammer"
+            "name_PL": "War hammer",
+            "health_impact": null
         },
         "club": {
             "type": "weapon",
@@ -550,7 +662,9 @@
             "damage": 30,
             "cooldown_time": 0.6,
             "name_EN": "War hammer",
-            "name_PL": "War hammer"
+            "name_PL": "War hammer",
+            "value": null,
+            "health_impact": null
         },
         "axe": {
             "type": "weapon",
@@ -559,7 +673,8 @@
             "damage": 35,
             "cooldown_time": 0.5,
             "name_EN": "War Axe",
-            "name_PL": "War Axe"
+            "name_PL": "War Axe",
+            "health_impact": null
         },
         "stick": {
             "type": "weapon",
@@ -567,14 +682,19 @@
             "damage": 5,
             "cooldown_time": 0.2,
             "name_EN": "Stick",
-            "name_PL": "Stick"
+            "name_PL": "Stick",
+            "weight": null,
+            "health_impact": null
         },
         "pitchfork": {
             "type": "weapon",
             "weight": 2.5,
             "cooldown_time": 0.4,
             "name_EN": "Pitchfork",
-            "name_PL": "Pitchfork"
+            "name_PL": "Pitchfork",
+            "value": null,
+            "health_impact": null,
+            "damage": null
         },
         "lance": {
             "type": "weapon",
@@ -583,7 +703,8 @@
             "damage": 15,
             "cooldown_time": 0.4,
             "name_EN": "Lance",
-            "name_PL": "Lance"
+            "name_PL": "Lance",
+            "health_impact": null
         },
         "katana": {
             "type": "weapon",
@@ -592,7 +713,8 @@
             "damage": 20,
             "cooldown_time": 0.3,
             "name_EN": "Katana",
-            "name_PL": "Katana"
+            "name_PL": "Katana",
+            "health_impact": null
         },
         "sword_long": {
             "type": "weapon",
@@ -601,128 +723,188 @@
             "damage": 30,
             "cooldown_time": 0.5,
             "name_EN": "Long sword",
-            "name_PL": "Long sword"
+            "name_PL": "Long sword",
+            "health_impact": null
         },
         "rapier": {
             "type": "weapon",
             "cooldown_time": 0.1,
             "name_EN": "Rapier",
-            "name_PL": "Rapier"
+            "name_PL": "Rapier",
+            "value": null,
+            "weight": null,
+            "health_impact": null,
+            "damage": null
         },
         "sword_short": {
             "type": "weapon",
             "damage": 15,
             "cooldown_time": 0.1,
             "name_EN": "Short sword",
-            "name_PL": "Short sword"
+            "name_PL": "Short sword",
+            "value": null,
+            "weight": null,
+            "health_impact": null
         },
         "sai": {
             "type": "weapon",
             "value": 20,
             "cooldown_time": 0.1,
             "name_EN": "Sai",
-            "name_PL": "Sai"
+            "name_PL": "Sai",
+            "weight": null,
+            "health_impact": null,
+            "damage": null
         },
         "golden_coin": {
             "type": "money",
             "value": 1000,
             "weight": 0.02,
             "name_EN": "Golden coin",
-            "name_PL": "Golden coin"
+            "name_PL": "Golden coin",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_small_green": {
             "type": "gem",
             "value": 10,
             "name_EN": "Green small gem",
-            "name_PL": "Green small gem"
+            "name_PL": "Green small gem",
+            "weight": null,
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_crystal_green": {
             "type": "gem",
             "value": 20,
             "weight": 2.0,
             "name_EN": "Green crystal gem",
-            "name_PL": "Green crystal gem"
+            "name_PL": "Green crystal gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_big_green": {
             "type": "gem",
             "value": 30,
             "weight": 3.0,
             "name_EN": "Green big gem",
-            "name_PL": "Green big gem"
+            "name_PL": "Green big gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_small_purple": {
             "type": "gem",
             "value": 20,
             "name_EN": "Purple small gem",
-            "name_PL": "Purple small gem"
+            "name_PL": "Purple small gem",
+            "weight": null,
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_crystal_purple": {
             "type": "gem",
             "value": 40,
             "weight": 2.0,
             "name_EN": "Purple crystal gem",
-            "name_PL": "Purple crystal gem"
+            "name_PL": "Purple crystal gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_big_purple": {
             "type": "gem",
             "value": 60,
             "weight": 3.0,
             "name_EN": "Purple big gem",
-            "name_PL": "Purple big gem"
+            "name_PL": "Purple big gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_small_blue": {
             "type": "gem",
             "value": 40,
             "name_EN": "Blue small gem",
-            "name_PL": "Blue small gem"
+            "name_PL": "Blue small gem",
+            "weight": null,
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_crystal_blue": {
             "type": "gem",
             "value": 60,
             "weight": 2.0,
             "name_EN": "Blue crystal gem",
-            "name_PL": "Blue crystal gem"
+            "name_PL": "Blue crystal gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_big_blue": {
             "type": "gem",
             "value": 80,
             "weight": 3.0,
             "name_EN": "Blue big gem",
-            "name_PL": "Blue big gem"
+            "name_PL": "Blue big gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_small_orange": {
             "type": "gem",
             "value": 60,
             "name_EN": "Orange small gem",
-            "name_PL": "Orange small gem"
+            "name_PL": "Orange small gem",
+            "weight": null,
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_crystal_orange": {
             "type": "gem",
             "value": 80,
             "weight": 2.0,
             "name_EN": "Orange crystal gem",
-            "name_PL": "Orange crystal gem"
+            "name_PL": "Orange crystal gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "gem_big_orange": {
             "type": "gem",
             "value": 90,
             "weight": 3.0,
             "name_EN": "Orange big gem",
-            "name_PL": "Orange big gem"
+            "name_PL": "Orange big gem",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "silver_key": {
             "type": "key",
             "value": 500,
             "weight": 0.01,
             "name_EN": "Silver key",
-            "name_PL": "Silver key"
+            "name_PL": "Silver key",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "golden_key": {
             "type": "key",
             "value": 500,
             "weight": 0.01,
             "name_EN": "Golden key",
-            "name_PL": "Golden key"
+            "name_PL": "Golden key",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "beef": {
             "type": "consumable",
@@ -730,21 +912,29 @@
             "weight": 2.0,
             "health_impact": 50,
             "name_EN": "Baked beef",
-            "name_PL": "Baked beef"
+            "name_PL": "Baked beef",
+            "damage": null,
+            "cooldown_time": null
         },
         "honey": {
             "type": "consumable",
             "value": 20,
             "health_impact": 40,
             "name_EN": "Bee honey",
-            "name_PL": "Bee honey"
+            "name_PL": "Bee honey",
+            "weight": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "empty_pot": {
             "type": "consumable",
             "value": 10,
             "weight": 0.1,
             "name_EN": "Empty pot",
-            "name_PL": "Empty pot"
+            "name_PL": "Empty pot",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "water_pot": {
             "type": "consumable",
@@ -752,7 +942,9 @@
             "weight": 0.15,
             "health_impact": 5,
             "name_EN": "Water pot",
-            "name_PL": "Water pot"
+            "name_PL": "Water pot",
+            "damage": null,
+            "cooldown_time": null
         },
         "life_pot": {
             "type": "consumable",
@@ -760,14 +952,19 @@
             "weight": 0.15,
             "health_impact": 100,
             "name_EN": "Life potion",
-            "name_PL": "Life potion"
+            "name_PL": "Life potion",
+            "damage": null,
+            "cooldown_time": null
         },
         "shashlik": {
             "type": "consumable",
             "value": 20,
             "health_impact": 30,
             "name_EN": "Shashlik",
-            "name_PL": "Shashlik"
+            "name_PL": "Shashlik",
+            "weight": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "leaf": {
             "type": "consumable",
@@ -775,7 +972,9 @@
             "weight": 0.01,
             "health_impact": 3,
             "name_EN": "Tea leaf",
-            "name_PL": "Tea leaf"
+            "name_PL": "Tea leaf",
+            "damage": null,
+            "cooldown_time": null
         },
         "shrimp": {
             "type": "consumable",
@@ -783,7 +982,9 @@
             "weight": 0.1,
             "health_impact": 5,
             "name_EN": "Tiger shrimp",
-            "name_PL": "Tiger shrimp"
+            "name_PL": "Tiger shrimp",
+            "damage": null,
+            "cooldown_time": null
         },
         "fish": {
             "type": "consumable",
@@ -791,7 +992,9 @@
             "weight": 0.5,
             "health_impact": 15,
             "name_EN": "Fresh fish",
-            "name_PL": "Fresh fish"
+            "name_PL": "Fresh fish",
+            "damage": null,
+            "cooldown_time": null
         },
         "POTION_CURSE_NO_MORE": {
             "type": "consumable",
@@ -799,28 +1002,39 @@
             "weight": 0.5,
             "health_impact": 10,
             "name_EN": "Potion curse-no-more",
-            "name_PL": "Potion curse-no-more"
+            "name_PL": "Potion curse-no-more",
+            "damage": null,
+            "cooldown_time": null
         },
         "GNOMES_WHISKER": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Gnome's whisker",
-            "name_PL": "Gnome's whisker"
+            "name_PL": "Gnome's whisker",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "MERMAIDS_TEAR": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Mermaid's tear",
-            "name_PL": "Mermaid's tear"
+            "name_PL": "Mermaid's tear",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         },
         "PHOENIX_FEATHER": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Phoenix feather",
-            "name_PL": "Phoenix feather"
+            "name_PL": "Phoenix feather",
+            "health_impact": null,
+            "damage": null,
+            "cooldown_time": null
         }
     },
     "maze_configs": {

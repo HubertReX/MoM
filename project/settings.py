@@ -640,9 +640,9 @@ PARTICLES = {
 }
 
 CONF_ENTITIES_TO_STORE: dict[str, list[str]] = {
-    "characters": ["name", "attitude", "race", "health", "damage", "speed_walk", "speed_run"],
+    "characters": ["name_EN", "name_PL", "attitude", "race", "health", "damage", "speed_walk", "speed_run", "has_dialog"],
     "chests": ["name", "is_small", "total_items_count"],
-    "items": ["name", "type", "value", "weight", "health_impact", "damage", "cooldown_time"],
+    "items": ["name_EN", "name_PL", "type", "value", "weight", "health_impact", "damage", "cooldown_time"],
     "maze_configs": [
         "boss_monster",
         "monsters_count",

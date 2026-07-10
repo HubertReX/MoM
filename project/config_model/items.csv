@@ -1,40 +1,40 @@
-key;name;type;value;weight;health_impact;damage;cooldown_time
-hammer;War hammer;weapon;70;5.0;0;25;0.5
-club;War hammer;weapon;50;7.0;0;30;0.6
-axe;War Axe;weapon;170;5.0;0;35;0.5
-stick;Stick;weapon;20;1.0;0;5;0.2
-pitchfork;Pitchfork;weapon;50;2.5;0;10;0.4
-lance;Lance;weapon;150;2.5;0;15;0.4
-katana;Katana;weapon;250;2.5;0;20;0.3
-sword_long;Long sword;weapon;250;3.0;0;30;0.5
-rapier;Rapier;weapon;50;1.0;0;10;0.1
-sword_short;Short sword;weapon;50;1.0;0;15;0.1
-sai;Sai;weapon;20;1.0;0;10;0.1
-golden_coin;Golden coin;money;1000;0.02;0;10;1.0
-gem_small_green;Green small gem;gem;10;1.0;0;10;1.0
-gem_crystal_green;Green crystal gem;gem;20;2.0;0;10;1.0
-gem_big_green;Green big gem;gem;30;3.0;0;10;1.0
-gem_small_purple;Purple small gem;gem;20;1.0;0;10;1.0
-gem_crystal_purple;Purple crystal gem;gem;40;2.0;0;10;1.0
-gem_big_purple;Purple big gem;gem;60;3.0;0;10;1.0
-gem_small_blue;Blue small gem;gem;40;1.0;0;10;1.0
-gem_crystal_blue;Blue crystal gem;gem;60;2.0;0;10;1.0
-gem_big_blue;Blue big gem;gem;80;3.0;0;10;1.0
-gem_small_orange;Orange small gem;gem;60;1.0;0;10;1.0
-gem_crystal_orange;Orange crystal gem;gem;80;2.0;0;10;1.0
-gem_big_orange;Orange big gem;gem;90;3.0;0;10;1.0
-silver_key;Silver key;key;500;0.01;0;10;1.0
-golden_key;Golden key;key;500;0.01;0;10;1.0
-beef;Baked beef;consumable;30;2.0;50;10;1.0
-honey;Bee honey;consumable;20;1.0;40;10;1.0
-empty_pot;Empty pot;consumable;10;0.1;0;10;1.0
-water_pot;Water pot;consumable;20;0.15;5;10;1.0
-life_pot;Life potion;consumable;300;0.15;100;10;1.0
-shashlik;Shashlik;consumable;20;1.0;30;10;1.0
-leaf;Tea leaf;consumable;5;0.01;3;10;1.0
-shrimp;Tiger shrimp;consumable;15;0.1;5;10;1.0
-fish;Fresh fish;consumable;15;0.5;15;10;1.0
-POTION_CURSE_NO_MORE;Potion curse-no-more;consumable;1000;0.5;10;0;1.0
-GNOMES_WHISKER;Gnome's whisker;key;800;0.1;0;0;1.0
-MERMAIDS_TEAR;Mermaid's tear;key;800;0.1;0;0;1.0
-PHOENIX_FEATHER;Phoenix feather;key;800;0.1;0;0;1.0
+key;name_EN;name_PL;type;value;weight;health_impact;damage;cooldown_time
+hammer;War hammer;War hammer;weapon;70;5.0;;25;0.5
+club;War hammer;War hammer;weapon;;7.0;;30;0.6
+axe;War Axe;War Axe;weapon;170;5.0;;35;0.5
+stick;Stick;Stick;weapon;20;;;5;0.2
+pitchfork;Pitchfork;Pitchfork;weapon;;2.5;;;0.4
+lance;Lance;Lance;weapon;150;2.5;;15;0.4
+katana;Katana;Katana;weapon;250;2.5;;20;0.3
+sword_long;Long sword;Long sword;weapon;250;3.0;;30;0.5
+rapier;Rapier;Rapier;weapon;;;;;0.1
+sword_short;Short sword;Short sword;weapon;;;;15;0.1
+sai;Sai;Sai;weapon;20;;;;0.1
+golden_coin;Golden coin;Golden coin;money;1000;0.02;;;
+gem_small_green;Green small gem;Green small gem;gem;10;;;;
+gem_crystal_green;Green crystal gem;Green crystal gem;gem;20;2.0;;;
+gem_big_green;Green big gem;Green big gem;gem;30;3.0;;;
+gem_small_purple;Purple small gem;Purple small gem;gem;20;;;;
+gem_crystal_purple;Purple crystal gem;Purple crystal gem;gem;40;2.0;;;
+gem_big_purple;Purple big gem;Purple big gem;gem;60;3.0;;;
+gem_small_blue;Blue small gem;Blue small gem;gem;40;;;;
+gem_crystal_blue;Blue crystal gem;Blue crystal gem;gem;60;2.0;;;
+gem_big_blue;Blue big gem;Blue big gem;gem;80;3.0;;;
+gem_small_orange;Orange small gem;Orange small gem;gem;60;;;;
+gem_crystal_orange;Orange crystal gem;Orange crystal gem;gem;80;2.0;;;
+gem_big_orange;Orange big gem;Orange big gem;gem;90;3.0;;;
+silver_key;Silver key;Silver key;key;500;0.01;;;
+golden_key;Golden key;Golden key;key;500;0.01;;;
+beef;Baked beef;Baked beef;consumable;30;2.0;50;;
+honey;Bee honey;Bee honey;consumable;20;;40;;
+empty_pot;Empty pot;Empty pot;consumable;10;0.1;;;
+water_pot;Water pot;Water pot;consumable;20;0.15;5;;
+life_pot;Life potion;Life potion;consumable;300;0.15;100;;
+shashlik;Shashlik;Shashlik;consumable;20;;30;;
+leaf;Tea leaf;Tea leaf;consumable;5;0.01;3;;
+shrimp;Tiger shrimp;Tiger shrimp;consumable;15;0.1;5;;
+fish;Fresh fish;Fresh fish;consumable;15;0.5;15;;
+POTION_CURSE_NO_MORE;Potion curse-no-more;Potion curse-no-more;consumable;1000;0.5;10;;
+GNOMES_WHISKER;Gnome's whisker;Gnome's whisker;key;800;0.1;;;
+MERMAIDS_TEAR;Mermaid's tear;Mermaid's tear;key;800;0.1;;;
+PHOENIX_FEATHER;Phoenix feather;Phoenix feather;key;800;0.1;;;
