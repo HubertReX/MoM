@@ -56,7 +56,7 @@ _WEIGHT_COL = 80      # px reserved on the right of each option row for emote + 
 _EMOTE_SCALE = 1.8    # scale factor for sentiment emotes in the weight indicator column
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
-_BODY_LINES = 3
+_BODY_LINES = 4
 _SEPARATOR_H = 4
 _SEPARATOR_GAP = 4
 _SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01c)
@@ -215,13 +215,30 @@ class DialogPanel(Widget):
             self._visible_count = 0
             return
 
-        # Keep the selected option inside the scroll window (fixed visible count).
+        available_h = self.options_bottom - self.options_top
+
+        # Keep the selected option inside the scroll window.
         self._scroll_offset = max(0, min(self._scroll_offset, n - 1))
         if self.selected_index < self._scroll_offset:
             self._scroll_offset = self.selected_index
-        while self.selected_index >= self._scroll_offset + _OPTION_VISIBLE_COUNT:
+
+        # Dynamic visible count: count how many options fit from _scroll_offset
+        # without exceeding available_h or _OPTION_VISIBLE_COUNT.
+        def _fitting_count(start: int) -> int:
+            h = 0
+            cnt = 0
+            for i in range(start, min(n, start + _OPTION_VISIBLE_COUNT)):
+                row_h = self.option_surfaces[i].get_height() + _OPTION_PAD
+                if cnt > 0 and h + row_h > available_h:
+                    break
+                h += row_h + _OPTION_GAP
+                cnt += 1
+            return cnt
+
+        self._visible_count = _fitting_count(self._scroll_offset)
+        while self.selected_index >= self._scroll_offset + self._visible_count:
             self._scroll_offset += 1
-        self._visible_count = _OPTION_VISIBLE_COUNT
+            self._visible_count = _fitting_count(self._scroll_offset)
 
         start = self._scroll_offset
         end = min(n, start + self._visible_count)
