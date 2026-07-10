@@ -101,7 +101,6 @@ class NPC(pygame.sprite.Sprite):
         # new dialog-system state (T-023).  `dialogs` (str) is the legacy markdown
         # path; `dialog` is the live cursor into the DialogNode graph.
         self.config_key: str = model_name
-        self.dialog_key: str | None = self.model.dialog_key or (self.config_key if self.model.has_dialog else None)
         self.dialog: DialogNode | None = None
         self.dialog_nodes: dict[str, DialogNode] | None = None
         self.selected_options_dict: dict[str, bool] = {}
@@ -322,7 +321,7 @@ class NPC(pygame.sprite.Sprite):
         # new dialog graph path (T-023): if the character config points at a
         # config_key, build the DialogNode graph and set the cursor to START_NODE.
         if self.model.has_dialog:
-            dialog_config: dict[str, Any] = self.game.conf.dialogs.get(self.dialog_key, {})
+            dialog_config: dict[str, Any] = self.game.conf.dialogs.get(self.config_key, {})
             if dialog_config:
                 from settings import IS_DEBUG_MODE
                 nodes = init_dialog(dialog_config, debug=IS_DEBUG_MODE)
@@ -351,7 +350,7 @@ class NPC(pygame.sprite.Sprite):
         Rebuilds the dialog graph if necessary, then applies the saved cursor,
         selected options, visited nodes, sentiment and discovered disposition.
         """
-        if not self.dialog_key:
+        if not self.model.has_dialog:
             return
         if self.dialog_nodes is None:
             self.load_dialogs()
@@ -367,7 +366,7 @@ class NPC(pygame.sprite.Sprite):
             self.dialog = self.dialog_nodes[current_key]
         elif self.dialog is None:
             # Fallback to the graph entry node if the saved cursor is missing.
-            dialog_config = self.game.conf.dialogs.get(self.dialog_key, {})
+            dialog_config = self.game.conf.dialogs.get(self.config_key, {})
             if dialog_config:
                 self.dialog = get_start_node(dialog_config, self.dialog_nodes)
 
@@ -376,7 +375,7 @@ class NPC(pygame.sprite.Sprite):
         if start_key and start_key in self.dialog_nodes:
             self.dialog_start_node = self.dialog_nodes[start_key]
         elif self.dialog_start_node is None:
-            dialog_config = self.game.conf.dialogs.get(self.dialog_key, {})
+            dialog_config = self.game.conf.dialogs.get(self.config_key, {})
             if dialog_config:
                 self.dialog_start_node = get_start_node(dialog_config, self.dialog_nodes)
 

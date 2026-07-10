@@ -530,7 +530,7 @@
  <objectgroup id="9" name="spawn_points">
   <object id="76" name="Snake_01" gid="2955" x="961.372" y="863.896" width="16" height="16">
    <properties>
-    <property name="model_name" value="Snake_01"/>
+    <property name="model_name" value="SNAKE_01"/>
    </properties>
   </object>
   <object id="77" name="FishRed05" gid="2956" x="1080" y="756.8" width="16" height="16"/>
@@ -552,12 +552,12 @@
   <object id="94" name="ChickenCute" gid="2962" x="862.4" y="852.8" width="16" height="16"/>
   <object id="98" name="Dog_orange" type="Dog_orange" gid="2958" x="670.4" y="777.6" width="16" height="16">
    <properties>
-    <property name="model_name" value="Dog_orange"/>
+    <property name="model_name" value="DOG_ORANGE"/>
    </properties>
   </object>
   <object id="99" name="Dog_purple" type="Dog_purple" gid="2959" x="688" y="811.2" width="16" height="16">
    <properties>
-    <property name="model_name" value="Dog_purple"/>
+    <property name="model_name" value="DOG_PURPLE"/>
    </properties>
   </object>
   <object id="101" name="Racoon" gid="2968" x="728" y="592" width="16" height="16"/>
@@ -569,27 +569,27 @@
   <object id="100" name="Fred" gid="2951" x="640" y="832" width="16" height="16"/>
   <object id="103" name="Hammer" x="991.753" y="656.253" width="16" height="16">
    <properties>
-    <property name="model_name" value="Hammer"/>
+    <property name="model_name" value="HAMMER_HOAXHEART"/>
    </properties>
   </object>
   <object id="104" name="Barman Absinthrayner" x="896" y="704" width="16" height="16">
    <properties>
-    <property name="model_name" value="Barman Absinthrayner"/>
+    <property name="model_name" value="BARMAN_ABSINTHRAYNER"/>
    </properties>
   </object>
   <object id="105" name="Potioneer Puzzlemint" x="1040" y="704" width="16" height="16">
    <properties>
-    <property name="model_name" value="Potioneer Puzzlemint"/>
+    <property name="model_name" value="POTIONEER_PUZZLEMINT"/>
    </properties>
   </object>
   <object id="106" name="Clapback Sword" x="944" y="704" width="16" height="16">
    <properties>
-    <property name="model_name" value="Clapback Sword"/>
+    <property name="model_name" value="CLAPBACK_SWORD"/>
    </properties>
   </object>
   <object id="107" name="Madame Sarcasmia" x="992" y="704" width="16" height="16">
    <properties>
-    <property name="model_name" value="Madame Sarcasmia"/>
+    <property name="model_name" value="MADAME_SARCASMIA"/>
    </properties>
   </object>
  </objectgroup>

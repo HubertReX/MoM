@@ -21,7 +21,7 @@
             "name_PL": "Player",
             "has_dialog": false
         },
-        "Johny": {
+        "JOHNY": {
             "sprite": "Villager1",
             "race": "humanoid",
             "attitude": "friendly",
@@ -41,7 +41,7 @@
             "name_PL": "Johny",
             "has_dialog": false
         },
-        "Fred": {
+        "FRED": {
             "sprite": "Villager2",
             "race": "humanoid",
             "attitude": "friendly",
@@ -50,7 +50,7 @@
             "name_PL": "Fred",
             "has_dialog": false
         },
-        "Bart": {
+        "BART": {
             "sprite": "Villager3",
             "race": "humanoid",
             "attitude": "friendly",
@@ -70,7 +70,7 @@
             "name_PL": "Bart",
             "has_dialog": false
         },
-        "Rob": {
+        "ROB": {
             "sprite": "Villager4",
             "race": "humanoid",
             "attitude": "friendly",
@@ -79,7 +79,7 @@
             "name_PL": "Rob",
             "has_dialog": false
         },
-        "Marry": {
+        "MARRY": {
             "sprite": "Woman",
             "race": "humanoid",
             "attitude": "friendly",
@@ -90,7 +90,7 @@
             "name_PL": "Marry",
             "has_dialog": false
         },
-        "FishRed": {
+        "FISH_RED": {
             "sprite": "FishRed",
             "race": "animal",
             "attitude": "friendly",
@@ -102,7 +102,7 @@
             "name_PL": "FishRed",
             "has_dialog": false
         },
-        "Cat": {
+        "CAT": {
             "sprite": "Cat",
             "race": "animal",
             "attitude": "friendly",
@@ -111,7 +111,7 @@
             "name_PL": "Cat",
             "has_dialog": false
         },
-        "Dog_orange": {
+        "DOG_ORANGE": {
             "sprite": "Dog1",
             "race": "animal",
             "attitude": "friendly",
@@ -123,7 +123,7 @@
             "name_PL": "Dog",
             "has_dialog": false
         },
-        "Dog_purple": {
+        "DOG_PURPLE": {
             "sprite": "Dog2",
             "race": "animal",
             "attitude": "friendly",
@@ -135,7 +135,7 @@
             "name_PL": "Dog",
             "has_dialog": false
         },
-        "ChickenBlack": {
+        "CHICKEN_BLACK": {
             "sprite": "ChickenBlack",
             "race": "animal",
             "attitude": "friendly",
@@ -147,7 +147,7 @@
             "name_PL": "Chicken",
             "has_dialog": false
         },
-        "ChickenBrown": {
+        "CHICKEN_BROWN": {
             "sprite": "ChickenBrown",
             "race": "animal",
             "attitude": "friendly",
@@ -159,7 +159,7 @@
             "name_PL": "Chicken",
             "has_dialog": false
         },
-        "ChickenCute": {
+        "CHICKEN_CUTE": {
             "sprite": "ChickenCute",
             "race": "animal",
             "attitude": "friendly",
@@ -171,7 +171,7 @@
             "name_PL": "Chicken",
             "has_dialog": false
         },
-        "ChickenWhite": {
+        "CHICKEN_WHITE": {
             "sprite": "ChickenWhite",
             "race": "animal",
             "attitude": "friendly",
@@ -183,7 +183,7 @@
             "name_PL": "Chicken",
             "has_dialog": false
         },
-        "Pig": {
+        "PIG": {
             "sprite": "Pig",
             "race": "animal",
             "attitude": "friendly",
@@ -195,7 +195,7 @@
             "name_PL": "Pig",
             "has_dialog": false
         },
-        "Cow": {
+        "COW": {
             "sprite": "Cow",
             "race": "animal",
             "attitude": "friendly",
@@ -206,7 +206,7 @@
             "name_PL": "Cow",
             "has_dialog": false
         },
-        "Horse": {
+        "HORSE": {
             "sprite": "Horse",
             "race": "animal",
             "attitude": "friendly",
@@ -217,7 +217,7 @@
             "name_PL": "Horse",
             "has_dialog": false
         },
-        "Frog": {
+        "FROG": {
             "sprite": "Frog",
             "race": "animal",
             "attitude": "afraid",
@@ -229,7 +229,7 @@
             "name_PL": "Frog",
             "has_dialog": false
         },
-        "Racoon": {
+        "RACOON": {
             "sprite": "Racoon",
             "race": "animal",
             "attitude": "afraid",
@@ -238,7 +238,7 @@
             "name_PL": "Racoon",
             "has_dialog": false
         },
-        "Boar": {
+        "BOAR": {
             "sprite": "Boar",
             "race": "animal",
             "attitude": "afraid",
@@ -247,7 +247,7 @@
             "name_PL": "Boar",
             "has_dialog": false
         },
-        "Snake_01": {
+        "SNAKE_01": {
             "sprite": "Snake",
             "race": "monster",
             "attitude": "enemy",
@@ -262,7 +262,7 @@
             "name_PL": "Snake",
             "has_dialog": false
         },
-        "Spirit_01": {
+        "SPIRIT_01": {
             "sprite": "Spirit",
             "race": "monster",
             "attitude": "enemy",
@@ -270,7 +270,7 @@
             "name_PL": "Spirit",
             "has_dialog": false
         },
-        "Slime_01": {
+        "SLIME_01": {
             "sprite": "Slime",
             "race": "monster",
             "attitude": "enemy",
@@ -280,7 +280,7 @@
             "name_PL": "Slime",
             "has_dialog": false
         },
-        "Spider_01": {
+        "SPIDER_01": {
             "sprite": "SpiderRed",
             "race": "monster",
             "attitude": "enemy",
@@ -291,7 +291,7 @@
             "name_PL": "Spider",
             "has_dialog": false
         },
-        "CaveLion": {
+        "CAVE_LION": {
             "sprite": "CaveLion",
             "race": "monster",
             "attitude": "enemy",
@@ -302,7 +302,7 @@
             "name_PL": "CaveLion",
             "has_dialog": false
         },
-        "CaveLion2": {
+        "CAVE_LION2": {
             "sprite": "CaveLion2",
             "race": "monster",
             "attitude": "enemy",
@@ -313,7 +313,7 @@
             "name_PL": "CaveLion",
             "has_dialog": false
         },
-        "LionYellow": {
+        "LION_YELLOW": {
             "sprite": "LionYellow",
             "race": "monster",
             "attitude": "enemy",
@@ -324,7 +324,7 @@
             "name_PL": "LionYellow",
             "has_dialog": false
         },
-        "Flam": {
+        "FLAM": {
             "sprite": "Flam",
             "race": "monster",
             "attitude": "enemy",
@@ -335,7 +335,7 @@
             "name_PL": "Flam",
             "has_dialog": false
         },
-        "Hammer": {
+        "HAMMER_HOAXHEART": {
             "sprite": "Villager2",
             "race": "humanoid",
             "attitude": "friendly",
@@ -351,10 +351,9 @@
             "money": 30,
             "name_EN": "Hammer",
             "name_PL": "Hammer",
-            "has_dialog": true,
-            "dialog_key": "HAMMER_HOAXHEART"
+            "has_dialog": true
         },
-        "Barman Absinthrayner": {
+        "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
             "race": "humanoid",
             "attitude": "friendly",
@@ -370,10 +369,9 @@
             "money": 100,
             "name_EN": "Barman Absinthrayner",
             "name_PL": "Barman Absinthrayner",
-            "has_dialog": true,
-            "dialog_key": "BARMAN_ABSINTHRAYNER"
+            "has_dialog": true
         },
-        "Clapback Sword": {
+        "CLAPBACK_SWORD": {
             "sprite": "Knight",
             "race": "humanoid",
             "attitude": "friendly",
@@ -389,10 +387,9 @@
             "money": 100,
             "name_EN": "Clapback Sword",
             "name_PL": "Clapback Sword",
-            "has_dialog": true,
-            "dialog_key": "CLAPBACK_SWORD"
+            "has_dialog": true
         },
-        "Potioneer Puzzlemint": {
+        "POTIONEER_PUZZLEMINT": {
             "sprite": "EggGirl",
             "race": "humanoid",
             "attitude": "friendly",
@@ -408,10 +405,9 @@
             "money": 100,
             "name_EN": "Potioneer Puzzlemint",
             "name_PL": "Potioneer Puzzlemint",
-            "has_dialog": true,
-            "dialog_key": "POTIONEER_PUZZLEMINT"
+            "has_dialog": true
         },
-        "Madame Sarcasmia": {
+        "MADAME_SARCASMIA": {
             "sprite": "SorcererBlack",
             "race": "humanoid",
             "attitude": "friendly",
@@ -430,8 +426,7 @@
             ],
             "name_EN": "Madame Sarcasmia",
             "name_PL": "Madame Sarcasmia",
-            "has_dialog": true,
-            "dialog_key": "MADAME_SARCASMIA"
+            "has_dialog": true
         }
     },
     "chests": {
@@ -831,9 +826,9 @@
     "maze_configs": {
         "1": {
             "monsters_list": [
-                "Spirit_01"
+                "SPIRIT_01"
             ],
-            "boss_monster": "CaveLion",
+            "boss_monster": "CAVE_LION",
             "monsters_count": 4,
             "small_chest_count": 2,
             "small_chest_template": "SmallChest_Maze_01",
@@ -843,10 +838,10 @@
         },
         "2": {
             "monsters_list": [
-                "Spirit_01",
-                "Slime_01"
+                "SPIRIT_01",
+                "SLIME_01"
             ],
-            "boss_monster": "CaveLion2",
+            "boss_monster": "CAVE_LION2",
             "monsters_count": 5,
             "small_chest_count": 3,
             "small_chest_template": "SmallChest_Maze_02",
@@ -856,11 +851,11 @@
         },
         "3": {
             "monsters_list": [
-                "Spirit_01",
-                "Slime_01",
-                "Spider_01"
+                "SPIRIT_01",
+                "SLIME_01",
+                "SPIDER_01"
             ],
-            "boss_monster": "LionYellow",
+            "boss_monster": "LION_YELLOW",
             "monsters_count": 6,
             "small_chest_count": 4,
             "small_chest_template": "SmallChest_Maze_03",
@@ -870,12 +865,12 @@
         },
         "4": {
             "monsters_list": [
-                "Spirit_01",
-                "Slime_01",
-                "Spider_01",
-                "Snake_01"
+                "SPIRIT_01",
+                "SLIME_01",
+                "SPIDER_01",
+                "SNAKE_01"
             ],
-            "boss_monster": "Flam",
+            "boss_monster": "FLAM",
             "monsters_count": 7,
             "small_chest_count": 5,
             "small_chest_template": "SmallChest_Maze_04",

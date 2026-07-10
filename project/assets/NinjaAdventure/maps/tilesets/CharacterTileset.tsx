@@ -7,45 +7,45 @@
   </properties>
   <image source="../../characters/GreenNinja/SpriteSheet.png" width="80" height="112"/>
  </tile>
- <tile id="1" x="0" y="0" width="16" height="16" type="Johny">
+ <tile id="1" x="0" y="0" width="16" height="16" type="JOHNY">
   <properties>
-   <property name="model_name" value="Johny"/>
+   <property name="model_name" value="JOHNY"/>
   </properties>
   <image source="../../characters/Villager1/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="2" x="0" y="0" width="16" height="16" type="Fred">
+ <tile id="2" x="0" y="0" width="16" height="16" type="FRED">
   <properties>
-   <property name="model_name" value="Fred"/>
+   <property name="model_name" value="FRED"/>
   </properties>
   <image source="../../characters/Villager2/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="3" x="0" y="0" width="16" height="16" type="Bart">
+ <tile id="3" x="0" y="0" width="16" height="16" type="BART">
   <properties>
-   <property name="model_name" value="Bart"/>
+   <property name="model_name" value="BART"/>
   </properties>
   <image source="../../characters/Villager3/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="4" x="0" y="0" width="16" height="16" type="Rob">
+ <tile id="4" x="0" y="0" width="16" height="16" type="ROB">
   <properties>
-   <property name="model_name" value="Rob"/>
+   <property name="model_name" value="ROB"/>
   </properties>
   <image source="../../characters/Villager4/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="5" x="0" y="0" width="16" height="16" type="Marry">
+ <tile id="5" x="0" y="0" width="16" height="16" type="MARRY">
   <properties>
-   <property name="model_name" value="Marry"/>
+   <property name="model_name" value="MARRY"/>
   </properties>
   <image source="../../characters/Woman/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="7" x="0" y="0" width="16" height="16" type="FishRed">
+ <tile id="7" x="0" y="0" width="16" height="16" type="FISH_RED">
   <properties>
-   <property name="model_name" value="FishRed"/>
+   <property name="model_name" value="FISH_RED"/>
   </properties>
   <image source="../../characters/FishRed/SpriteSheet.png" width="48" height="48"/>
  </tile>
- <tile id="8" x="0" y="0" width="16" height="16" type="Cat">
+ <tile id="8" x="0" y="0" width="16" height="16" type="CAT">
   <properties>
-   <property name="model_name" value="Cat"/>
+   <property name="model_name" value="CAT"/>
   </properties>
   <image source="../../characters/Cat/SpriteSheet.png" width="32" height="16"/>
  </tile>
@@ -61,63 +61,63 @@
   </properties>
   <image source="../../characters/Dog2/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="11" x="0" y="0" width="16" height="16" type="ChickenBlack">
+ <tile id="11" x="0" y="0" width="16" height="16" type="CHICKEN_BLACK">
   <properties>
-   <property name="model_name" value="ChickenBlack"/>
+   <property name="model_name" value="CHICKEN_BLACK"/>
   </properties>
   <image source="../../characters/ChickenBlack/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="12" x="0" y="0" width="16" height="16" type="ChickenBrown">
+ <tile id="12" x="0" y="0" width="16" height="16" type="CHICKEN_BROWN">
   <properties>
-   <property name="model_name" value="ChickenBrown"/>
+   <property name="model_name" value="CHICKEN_BROWN"/>
   </properties>
   <image source="../../characters/ChickenBrown/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="13" x="0" y="0" width="16" height="16" type="ChickenCute">
+ <tile id="13" x="0" y="0" width="16" height="16" type="CHICKEN_CUTE">
   <properties>
-   <property name="model_name" value="ChickenCute"/>
+   <property name="model_name" value="CHICKEN_CUTE"/>
   </properties>
   <image source="../../characters/ChickenCute/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="14" x="0" y="0" width="16" height="16" type="ChickenWhite">
+ <tile id="14" x="0" y="0" width="16" height="16" type="CHICKEN_WHITE">
   <properties>
-   <property name="model_name" value="ChickenWhite"/>
+   <property name="model_name" value="CHICKEN_WHITE"/>
   </properties>
   <image source="../../characters/ChickenWhite/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="15" x="0" y="0" width="16" height="16" type="Pig">
+ <tile id="15" x="0" y="0" width="16" height="16" type="PIG">
   <properties>
-   <property name="model_name" value="Pig"/>
+   <property name="model_name" value="PIG"/>
   </properties>
   <image source="../../characters/Pig/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="16" x="0" y="0" width="23" height="16" type="Cow">
+ <tile id="16" x="0" y="0" width="23" height="16" type="COW">
   <properties>
-   <property name="model_name" value="Cow"/>
+   <property name="model_name" value="COW"/>
   </properties>
   <image source="../../characters/Cow/SpriteSheet.png" width="46" height="32"/>
  </tile>
- <tile id="17" x="0" y="0" width="23" height="16" type="Horse">
+ <tile id="17" x="0" y="0" width="23" height="16" type="HORSE">
   <properties>
-   <property name="model_name" value="Horse"/>
+   <property name="model_name" value="HORSE"/>
   </properties>
   <image source="../../characters/Horse/SpriteSheet.png" width="46" height="32"/>
  </tile>
- <tile id="18" x="0" y="0" width="16" height="16" type="Frog">
+ <tile id="18" x="0" y="0" width="16" height="16" type="FROG">
   <properties>
-   <property name="model_name" value="Frog"/>
+   <property name="model_name" value="FROG"/>
   </properties>
   <image source="../../characters/Frog/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="19" x="0" y="0" width="16" height="16" type="Racoon">
+ <tile id="19" x="0" y="0" width="16" height="16" type="RACOON">
   <properties>
-   <property name="model_name" value="Racoon"/>
+   <property name="model_name" value="RACOON"/>
   </properties>
   <image source="../../characters/Racoon/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="20" x="0" y="0" width="16" height="16" type="Boar">
+ <tile id="20" x="0" y="0" width="16" height="16" type="BOAR">
   <properties>
-   <property name="model_name" value="Boar"/>
+   <property name="model_name" value="BOAR"/>
   </properties>
   <image source="../../characters/Boar/SpriteSheet.png" width="32" height="16"/>
  </tile>
@@ -145,27 +145,27 @@
   </properties>
   <image source="../../characters/SpiderRed/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="24" x="0" y="0" width="16" height="16" type="CaveLion">
+ <tile id="24" x="0" y="0" width="16" height="16" type="CAVE_LION">
   <properties>
-   <property name="model_name" value="CaveLion"/>
+   <property name="model_name" value="CAVE_LION"/>
   </properties>
   <image source="../../characters/CaveLion/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="25" x="0" y="0" width="16" height="16" type="CaveLion2">
+ <tile id="25" x="0" y="0" width="16" height="16" type="CAVE_LION2">
   <properties>
-   <property name="model_name" value="CaveLion2"/>
+   <property name="model_name" value="CAVE_LION2"/>
   </properties>
   <image source="../../characters/CaveLion2/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="26" x="0" y="0" width="16" height="16" type="LionYellow">
+ <tile id="26" x="0" y="0" width="16" height="16" type="LION_YELLOW">
   <properties>
-   <property name="model_name" value="LionYellow"/>
+   <property name="model_name" value="LION_YELLOW"/>
   </properties>
   <image source="../../characters/LionYellow/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="27" x="0" y="0" width="16" height="16" type="Flam">
+ <tile id="27" x="0" y="0" width="16" height="16" type="FLAM">
   <properties>
-   <property name="model_name" value="Flam"/>
+   <property name="model_name" value="FLAM"/>
   </properties>
   <image source="../../characters/Flam/SpriteSheet.png" width="64" height="112"/>
  </tile>

@@ -272,9 +272,9 @@ class SaveManager:
 
     def _build_npc_dialog_state(self, npc: Any) -> NPCDialogState | None:
         """Capture the conversation state for an NPC, if it has a dialog graph."""
-        dialog_key = getattr(npc, "dialog_key", None)
+        has_dialog = getattr(npc.model, "has_dialog", False) if hasattr(npc, "model") else False
         dialog_nodes = getattr(npc, "dialog_nodes", None)
-        if not dialog_key or dialog_nodes is None:
+        if not has_dialog or dialog_nodes is None:
             return None
         current_node_key = npc.dialog.key if npc.dialog else ""
         visited_nodes = {key: True for key, node in dialog_nodes.items() if node.visited}

@@ -72,7 +72,6 @@ class Character(BaseModel):
     speed_walk:    Annotated[int,          Field(30, gr=0, description="walking speed", repr=False)]
     speed_run:     Annotated[int,          Field(40, gr=0, description="walking speed", repr=False)]
     has_dialog:    Annotated[bool,         Field(False, description="Whether this character has a dialog graph", repr=False)]
-    dialog_key:    Annotated[str | None,   Field(None, description="Transitional: key into Config.dialogs; replaced by UPPER_SNAKE config key in step 2", repr=False)]
     disposition:   Annotated[int | dict[str, int], Field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS), description="Per-sentiment weights that shift NPC sentiment when a dialog option is chosen; legacy int is converted to default weights", repr=False)]
 
     @field_validator("disposition", mode="before")
@@ -137,7 +136,7 @@ class Config(BaseModel):
     items:        dict[str, Item]
     maze_configs: dict[int, MazeLevelProperties]
     dialogs:      Annotated[dict[str, Any], Field(default_factory=dict, repr=False,
-                                                  description="Character dialog graphs keyed by dialog_key")]
+                                                   description="Character dialog graphs keyed by character config key")]
     messages:     Annotated[dict[str, dict[str, str]], Field(default_factory=dict, repr=False,
                                                              description="Localized UI strings keyed by language")]
 
