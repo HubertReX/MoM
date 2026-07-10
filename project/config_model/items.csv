@@ -10,31 +10,31 @@ empty_pot;Empty pot;Empty pot;consumable;10;0.1;;;
 fish;Fresh fish;Świeża ryba;consumable;15;0.5;15;;
 gem_big_blue;Blue big gem;Niebieski duży klejnot;gem;80;3.0;;;
 gem_big_green;Green big gem;Zielony duży klejnot;gem;30;3.0;;;
-gem_big_orange;Orange big gem;Orange duży klejnot;gem;90;3.0;;;
+gem_big_orange;Orange big gem;Pomarańczowy duży klejnot;gem;90;3.0;;;
 gem_big_purple;Purple big gem;Purpurowy duży klejnot;gem;60;3.0;;;
 gem_crystal_blue;Blue crystal;Niebieski krzyształ;gem;60;2.0;;;
 gem_crystal_green;Green crystal;Zielony krzyształ;gem;20;2.0;;;
-gem_crystal_orange;Orange crystal;Orange krzyształ;gem;80;2.0;;;
+gem_crystal_orange;Orange crystal;Pomarańczowy krzyształ;gem;80;2.0;;;
 gem_crystal_purple;Purple crystal;Purpurowy krzyształ;gem;40;2.0;;;
 gem_small_blue;Blue small gem;Niebieski mały klejnot;gem;40;;;;
 gem_small_green;Green small gem;Zielony mały klejnot;gem;10;;;;
-gem_small_orange;Orange small gem;Orange mały klejnot;gem;60;;;;
+gem_small_orange;Orange small gem;Pomarańczowy mały klejnot;gem;60;;;;
 gem_small_purple;Purple small gem;Purpurowy mały klejnot;gem;20;;;;
-golden_coin;Golden coin;Golden coin;money;1000;0.02;;;
-golden_key;Golden key;Golden key;key;500;0.01;;;
+golden_coin;Golden coin;Złota moneta;money;1000;0.02;;;
+golden_key;Golden key;Złoty klucz;key;500;0.01;;;
 hammer;War hammer;Młot wojenny;weapon;70;5.0;;25;0.5
 honey;Bee honey;Miód;consumable;20;;40;;
 katana;Katana;Katana;weapon;250;2.5;;20;0.3
 lance;Lance;Lanca;weapon;150;2.5;;15;0.4
 leaf;Tea leaf;Liść herbaty;consumable;5;0.01;3;;
-life_pot;Life potion;Life potion;consumable;300;0.15;100;;
+life_pot;Life potion;Mikstura zdrowia;consumable;300;0.15;100;;
 pitchfork;Pitchfork;Widły;weapon;;2.5;;;0.4
 rapier;Rapier;Rapier;weapon;;;;;0.1
 sai;Sai;Sztylet;weapon;20;;;;0.1
 shashlik;Shashlik;Szaszłyk;consumable;20;;30;;
 shrimp;Tiger shrimp;Krewetka tygrysia;consumable;15;0.1;5;;
-silver_key;Silver key;Silver key;key;500;0.01;;;
+silver_key;Silver key;Srebrny klucz;key;500;0.01;;;
 stick;Stick;Kij;weapon;20;;;5;0.2
 sword_long;Long sword;Długi miecz;weapon;250;3.0;;30;0.5
-sword_short;Krótki miecz;Short sword;weapon;;;;15;0.1
-water_pot;Water pot;Water pot;consumable;20;0.15;5;;
+sword_short;Krótki miecz;Krótki miecz;weapon;;;;15;0.1
+water_pot;Water pot;Fiolka wody;consumable;20;0.15;5;;
