@@ -825,7 +825,9 @@
     },
     "maze_configs": {
         "1": {
-            "monsters_list": "['SPIRIT_01']",
+            "monsters_list": [
+                "SPIRIT_01"
+            ],
             "boss_monster": "CAVE_LION",
             "monsters_count": 4,
             "small_chest_count": 2,
@@ -835,7 +837,10 @@
             "maze_rows": 6
         },
         "2": {
-            "monsters_list": "['SPIRIT_01', 'SLIME_01']",
+            "monsters_list": [
+                "SPIRIT_01",
+                "SLIME_01"
+            ],
             "boss_monster": "CAVE_LION2",
             "monsters_count": 5,
             "small_chest_count": 3,
@@ -845,7 +850,11 @@
             "maze_rows": 7
         },
         "3": {
-            "monsters_list": "['SPIRIT_01', 'SLIME_01', 'SPIDER_01']",
+            "monsters_list": [
+                "SPIRIT_01",
+                "SLIME_01",
+                "SPIDER_01"
+            ],
             "boss_monster": "LION_YELLOW",
             "monsters_count": 6,
             "small_chest_count": 4,
@@ -855,7 +864,12 @@
             "maze_rows": 8
         },
         "4": {
-            "monsters_list": "['SPIRIT_01', 'SLIME_01', 'SPIDER_01', 'SNAKE_01']",
+            "monsters_list": [
+                "SPIRIT_01",
+                "SLIME_01",
+                "SPIDER_01",
+                "SNAKE_01"
+            ],
             "boss_monster": "FLAM",
             "monsters_count": 7,
             "small_chest_count": 5,

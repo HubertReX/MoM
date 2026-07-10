@@ -24,6 +24,14 @@ def _strip_nulls(obj: object) -> object:
     return obj
 
 
+def _cell_to_json(raw: str) -> object:
+    """Try parsing a CSV cell as JSON (for lists/dicts), fallback to raw string."""
+    try:
+        return json.loads(raw)
+    except (json.JSONDecodeError, ValueError):
+        return raw
+
+
 def parse_value(raw: str, current: object) -> object:
     """Parse a CSV cell value to match the type of the current value."""
     if raw == "":
@@ -34,6 +42,16 @@ def parse_value(raw: str, current: object) -> object:
         return int(raw)
     if isinstance(current, float):
         return float(raw)
+    if isinstance(current, list):
+        parsed = _cell_to_json(raw)
+        if isinstance(parsed, list):
+            return parsed
+        return current  # failed to parse as list, leave unchanged
+    if isinstance(current, dict):
+        parsed = _cell_to_json(raw)
+        if isinstance(parsed, dict):
+            return parsed
+        return current
     return raw
 
 
@@ -79,10 +97,62 @@ def import_csv(entity_name: str, data: dict) -> dict:
     return data
 
 
+def _export_csv(entity_name: str, data: dict) -> None:
+    """Export *entity_name* section from *data* back to ``<name>.csv``."""
+    import csv, io
+
+    section = data.get(entity_name, {})
+    if not section:
+        return
+
+    # Collect all fields in insertion order from the first entity
+    fields = ["key"]
+    for v in section.values():
+        for k in v:
+            if k not in fields:
+                fields.append(k)
+
+    csv_path = HERE / f"{entity_name}.csv"
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";", lineterminator="\n")
+    w.writerow(fields)
+    for key in sorted(section.keys()):
+        obj = section[key]
+        row = [key]
+        for f in fields[1:]:
+            v = obj.get(f)
+            if v is None:
+                row.append("")
+            elif isinstance(v, bool):
+                row.append("true" if v else "false")
+            elif isinstance(v, (list, dict)):
+                row.append(json.dumps(v, ensure_ascii=False))
+            else:
+                row.append(str(v))
+        w.writerow(row)
+    csv_path.write_text(buf.getvalue())
+    print(f"  {entity_name}: {len(section)} rows exported")
+
+
+def export_csvs() -> None:
+    """Export all config sections to CSV files."""
+    if not CONFIG_FILE.exists():
+        print(f"[ERROR] {CONFIG_FILE} not found")
+        sys.exit(1)
+    data = json.loads(CONFIG_FILE.read_text())
+    for entity_name in CONF_ENTITIES_TO_STORE:
+        _export_csv(entity_name, data)
+    print(f"\n[OK] CSV files saved to {HERE}")
+
+
 def main() -> None:
     if not CONFIG_FILE.exists():
         print(f"[ERROR] {CONFIG_FILE} not found")
         sys.exit(1)
+
+    if "--export" in sys.argv:
+        export_csvs()
+        return
 
     data = json.loads(CONFIG_FILE.read_text())
 
