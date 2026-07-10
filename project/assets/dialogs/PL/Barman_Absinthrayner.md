@@ -20,27 +20,27 @@ translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
 
 * Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [[BARMAN_ABSINTHRAYNER]]. A kogo tu do mnie los sprowadził?
 
-* [001](#001) 1😇: Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:
-* [001](#001) 2😢: Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...
-* [001](#001) 3😉: Jak chcesz, no mogę zostać **Twoim** najlepszym klientem :happy:
+* [[#001]] 1😇: Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:
+* [[#001]] 2😢: Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...
+* [[#001]] 3😉: Jak chcesz, no mogę zostać **Twoim** najlepszym klientem :happy:
 
 ### 001
 
 * To jak mogę Ci pomóc:red_question:
 
-* [002](#002) 1😐: Co Cię tu sprowadziło:question:
-* [003](#003) 2😐: Jak Ci się podoba to miejsce:red_question:
-* [004](#004) 3😐: Jest tu coś ciekawego w [dark]okolicy[/dark]:red_question_anim:
-* [005](#005) 4😐: Znasz kogoś, kto zna się na [b]zaklęciach[/b]:question:
-* [006](#006) 5😐: Gdzie mógłbym zdobyć wiedzę o **zaklęciach**:question:
-* [990](#990-end) 9😐: To tyle, do następnego razu :walk:
+* [[#002]] 1😐: Co Cię tu sprowadziło:question:
+* [[#003]] 2😐: Jak Ci się podoba to miejsce:red_question:
+* [[#004]] 3😐: Jest tu coś ciekawego w [dark]okolicy[/dark]:red_question_anim:
+* [[#005]] 4😐: Znasz kogoś, kto zna się na [b]zaklęciach[/b]:question:
+* [[#006]] 5😐: Gdzie mógłbym zdobyć wiedzę o **zaklęciach**:question:
+* [[#990-end]] 9😐: To tyle, do następnego razu :walk:
 
 ### 002
 
 * Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. 
 Mój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki :blink:
 
-* [001](#001) 1😐: Dzięki, to mi wystarczy
+* [[#001]] 1😐: Dzięki, to mi wystarczy
 
 ### 003
 
@@ -49,67 +49,67 @@ Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałaga
 
 Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki:shocked:. Ponoć użyli swojej **magii**. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów:evil:.
 
-* [007](#007) 1😇: Czary? Tutaj? To niesłychane! Co stało się dalej?
-* [008](#008) 2😢: Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar:miserable:
-* [007](#007) 3😉: [char]Miecz[/char]: _Chyba już słyszałem tę historię..._ A co z tymi czarownikami?
+* [[#007]] 1😇: Czary? Tutaj? To niesłychane! Co stało się dalej?
+* [[#008]] 2😢: Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar:miserable:
+* [[#007]] 3😉: [char]Miecz[/char]: _Chyba już słyszałem tę historię..._ A co z tymi czarownikami?
 
 ### 007
 
 * Zatruwają spokój strudzonym mieszkańcom. Całe szczęście **czarodzieje** szybko się oddalili. Już by oni na pewno nie dostali u nas noclegu. Mój ojciec z chłopami szybko by ich pogonili:angry:.
 
-* [001](#001) 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ### 008
 
 * To Ty byłeś? A to Ci dopiero historia! Nic Ci się nie stało?
 
-* [009](#009) 1😢: To już chyba koniec przygód dla mnie - rzucili na mnie [quest]Odwieczna klątwą nieszczęścia[/quest]
-* [009](#009) 2😉: No cóż, jeśli masz do sprzedania coś na [quest]Odwieczną klątwę nieszczęścia[/quest] to jestem żywo zainteresowany
-* [009](#009) 3🧠: Potrzebuję kogoś kto może odczarować [quest]Odwieczną klątwę nieszczęścia[/quest]
+* [[#009]] 1😢: To już chyba koniec przygód dla mnie - rzucili na mnie [quest]Odwieczna klątwą nieszczęścia[/quest]
+* [[#009]] 2😉: No cóż, jeśli masz do sprzedania coś na [quest]Odwieczną klątwę nieszczęścia[/quest] to jestem żywo zainteresowany
+* [[#009]] 3🧠: Potrzebuję kogoś kto może odczarować [quest]Odwieczną klątwę nieszczęścia[/quest]
 
 ### 009
 
 * Ach! [quest]Odwieczna klątwą nieszczęścia[/quest]? Poważnie? Myślałem, że to tylko gadanie mojej matki...
 No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma **magii**. Popytaj [[PL/Potioneer_Puzzlemint|POTIONEER_PUZZLEMINT]], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.
 
-* [007](#007) 2🧠: A gdzie są teraz ci **czarodzieje**?
-* [001](#001) 9😐: Dzięki, to mi wystarczy
+* [[#007]] 2🧠: A gdzie są teraz ci **czarodzieje**?
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ### 004
 
 * No jest tu trochę wiosek w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?
 
-* [010](#010) 1[Potioneer_Puzzlemint.004.not_visited and Hammer_Hoaxheart.004.not_visited]😐: Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?
-* [011](#011) 2[Hammer_Hoaxheart.004.visited]😐: Co wiesza na temat miasta [loc]Porażkowo[/loc]?
-* [018](#018) 3[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Bagna niedogodności[/loc]
-* [019](#019) 4[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Splątanego lasu irytacji[/loc]
-* [020](#020) 5[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Jaskini zagmatwania[/loc]
-* [001](#001) 9[Potioneer_Puzzlemint.004.visited or Hammer_Hoaxheart.004.visited]😐: Dzięki, to mi wystarczy
+* [[#010]] 1[Potioneer_Puzzlemint.004.not_visited and Hammer_Hoaxheart.004.not_visited]😐: Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?
+* [[#011]] 2[Hammer_Hoaxheart.004.visited]😐: Co wiesza na temat miasta [loc]Porażkowo[/loc]?
+* [[#018]] 3[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Bagna niedogodności[/loc]
+* [[#019]] 4[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Splątanego lasu irytacji[/loc]
+* [[#020]] 5[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Jaskini zagmatwania[/loc]
+* [[#001]] 9[Potioneer_Puzzlemint.004.visited or Hammer_Hoaxheart.004.visited]😐: Dzięki, to mi wystarczy
 
 ### 010
 
 * Tak ogólnie to wszędzie czyha jakieś licho i lepiej siedzieć w wiosce.
 Wróć jak będziesz chciał zapytać o jakieś konkretne miejsce.
 
-* [001](#001) 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ### 018
 
 * [loc]Bagna niedogodności[/loc] to jedno wielkie... no bagno. Nie ma tam niczego ciekawego.
 
-* [004](#004) 9😐: Dzięki, to mi wystarczy
+* [[#004]] 9😐: Dzięki, to mi wystarczy
 
 ### 019
 
 * [loc]Splątany las irytacji[/loc] bywa interesujący. Szczególnie po zmroku. Prócz tego co można spotkać w zwykłych lasach, jak **wilki**, **niedźwiedzie** i **leśne pumy**, są tam **trolle**, **wilkołaki** a nawet **wampiry**. Tak mówią.
 
-* [004](#004) 9😐: Dzięki, to mi wystarczy
+* [[#004]] 9😐: Dzięki, to mi wystarczy
 
 ### 020
 
 * W [loc]Jaskini zagmatwania[/loc] nikt sam nie byłem. Nie lubię takich miejsc - ciemno, zimno, zero piwa:blink:.
 
-* [004](#004) 9😐: Dzięki, to mi wystarczy
+* [[#004]] 9😐: Dzięki, to mi wystarczy
 
 ### 011
 
@@ -117,71 +117,71 @@ Wróć jak będziesz chciał zapytać o jakieś konkretne miejsce.
 To pewno przez te **książki**, bo oni tam nawet [loc]bibliotekę[/loc] mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o **czarach** i innych głupotach. 
 Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!
 
-* [017](#017) 1😇: A wiesz może jak tam trafić?
-* [017](#017) 2🧠: To musi być daleko stąd, prawda?
-* [017](#017) 3😉: A jak bym chciał spróbować ich lokalnego piwa to gdzie mam wypatrywać tych _kolorowych kubraczków_?
+* [[#017]] 1😇: A wiesz może jak tam trafić?
+* [[#017]] 2🧠: To musi być daleko stąd, prawda?
+* [[#017]] 3😉: A jak bym chciał spróbować ich lokalnego piwa to gdzie mam wypatrywać tych _kolorowych kubraczków_?
 
 ### 017
 
 * To ze [num]2[/num] dni drogi na północ. Za [loc]Splątanym lasem irytacji[/loc] trzeba skręcić na wschód.
 
-* [001](#001) 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ### 005
 
 * Na **zaklęciach**? A, tfu! Na diabła urok:angry:. Po co miałby ktoś się tym interesować? To jest czyste [shadow]zło[/shadow]. Po co Ci to wiedzieć?
 
-* [012](#012) 1😢: A nie, nic, wiesz, mam taką wstydliwą **przypadłość**. Szukam kogoś, kto mógłby mi pomóc:dots:
-* [013](#013) 2😡: Ech, co Ty tam wiesz, świata poza tą wioską nie widziałeś. Gadaj jak pytam!
-* [012](#012) 3😉: A nie, to kolega pyta
-* [001](#001) 9😐: Dzięki, to mi wystarczy
+* [[#012]] 1😢: A nie, nic, wiesz, mam taką wstydliwą **przypadłość**. Szukam kogoś, kto mógłby mi pomóc:dots:
+* [[#013]] 2😡: Ech, co Ty tam wiesz, świata poza tą wioską nie widziałeś. Gadaj jak pytam!
+* [[#012]] 3😉: A nie, to kolega pyta
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ### 012
 
 * Ach, rozumiem. Hmmm, no to może jedynie stara [char]Zielarka Zmora[/char] mogła by co pomóc. Ona potrafi przygotować taką [item]miksturę[/item], że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. 
 Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu.
 
-* [001](#001) 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ### 013
 
 * Halo:red_exclamation: Nie tym tonem! Jak się nie podoba, to do widzenia
 
-* [001](#001) 9😐: Porozmawiajmy o czymś innym
+* [[#001]] 9😐: Porozmawiajmy o czymś innym
 
 ### 006
 
 * Słuchaj, czy Ty aby nie chcesz sam nauczyć się **czarować**? Jakiego typu **magia** interesuje Cię konkretnie?
 
-* [014](#014) 1😐: Coś co pomoże mi w rozmowach z kobietami:blink:
-* [015](#015) 2😐: Coś co sprawi, że będę bogaty:$:
-* [016](#016) 3😐: To tak bardziej leczniczo:cross:
-* [001](#001) 9😐: Nie, no coś Ty. Nieważne, porozmawiajmy o czymś innym
+* [[#014]] 1😐: Coś co pomoże mi w rozmowach z kobietami:blink:
+* [[#015]] 2😐: Coś co sprawi, że będę bogaty:$:
+* [[#016]] 3😐: To tak bardziej leczniczo:cross:
+* [[#001]] 9😐: Nie, no coś Ty. Nieważne, porozmawiajmy o czymś innym
 
 ### 014
 
 * [SENTIMENT-10]Co:red_question: Dziewki z naszej wsi [shadow]czarami[shadow] chcesz uwodzić?
 
-* [991-end](#991-end) 1😐: Nie, nie, to nie tak...
+* [[#991-end]] 1😐: Nie, nie, to nie tak...
 
 ### 015
 
 * [SENTIMENT-10]I co? Będziesz chciał oszukiwać w kartach? Albo lepiej, [shadow]czarami[/shadow] chcesz mnie omamić podczas handlu! O Ty!:engry:
 
-* [991-end](#991-end) 1😐: Nie, nie, to nie tak...
+* [[#991-end]] 1😐: Nie, nie, to nie tak...
 
 ### 016
 
 * [SENTIMENT-10]A co to za **choroba**, co ją chcesz leczyć [shadow]czarami[/shadow]? To pewno jakaś **zaraza**! Świństwo jakieś przyniosłeś do naszej wioski:red_exclamation:
 
-* [991-end](#991-end) 1😐: Nie, nie, to nie tak...
+* [[#991-end]] 1😐: Nie, nie, to nie tak...
 
 ### 990-end
-[001](#001)
+[[#001]]
 
 * Do zobaczenia:exclamation:
 
 ### 991-end
-[001](#001)
+[[#001]]
 
 * Wynocha:red_exclamation:

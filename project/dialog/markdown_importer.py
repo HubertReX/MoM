@@ -102,10 +102,14 @@ _TAG_CONVERSIONS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 # one regex with named groups (Decision D6)
+# Supports both old [anchor](#target) and new [[#target]] formats.
 _OPTION_RE = re.compile(
     r"^\*\s*"
-    r"\[(?P<anchor>[^\]]+)\]"
-    r"\(#(?P<target>[^)]+)\)"
+    r"(?:"
+    r"\[\[#(?P<new_target>[^]]+)\]\]"
+    r"|"
+    r"\[(?P<anchor>[^\]]+)\]\(#(?P<target>[^)]+)\)"
+    r")"
     r"\s*(?P<order>\d+)"
     r"(?:\[(?P<condition>[^\]]+)\])?"
     r"(?P<sentiment>[^\s:]+)"
@@ -119,8 +123,11 @@ _NODE_HEADING_RE = re.compile(
     r"(?:\s*\[(?P<resume_anchor>[^\]]+)\]\(#(?P<resume_target>[^)]+)\))?\s*$"
 )
 
-# standalone resume link on its own line: "[011](#011)"
-_RESUME_LINK_RE = re.compile(r"^\[(?P<anchor>[^\]]+)\]\(#(?P<target>[^)]+)\)\s*$")
+# standalone resume link on its own line: "[011](#011)" or "[[#011]]"
+_RESUME_LINK_RE = re.compile(
+    r"^\[(?:\[#(?P<new_target>[^]]+)\]\]|"
+    r"(?P<anchor>[^\]]+)\]\(#(?P<target>[^)]+)\))\s*$"
+)
 
 # bullet that carries node text: "* Some text..."
 _NODE_TEXT_RE = re.compile(r"^\*\s+(?P<text>.+)$")
@@ -591,7 +598,11 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
             if resume_node is None and is_final and idx < len(lines):
                 peek_match = _RESUME_LINK_RE.match(lines[idx].rstrip())
                 if peek_match:
-                    resume_node = peek_match.group("target").replace("-end", "")
+                    resume_target = (
+                        peek_match.group("new_target")
+                        or peek_match.group("target")
+                    )
+                    resume_node = resume_target.replace("-end", "")
                     idx += 1  # consume the resume link line
 
             current_node = _ParsedNode(
@@ -615,16 +626,24 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
         option_match = _OPTION_RE.match(line)
         if option_match:
             opt_text = option_match.group("text").strip()
+            # Resolve anchor/target from whichever format matched.
+            new_target = option_match.group("new_target")
+            if new_target is not None:
+                opt_target = new_target
+                opt_anchor = new_target
+            else:
+                opt_target = option_match.group("target")
+                opt_anchor = option_match.group("anchor")
             # "technical loop back" is a directive, not a real option — it
             # sets the resume_node for backward-compat heading format.
             if opt_text == "technical loop back" and current_node.is_final:
                 if current_node.resume_node is None:
-                    current_node.resume_node = option_match.group("target").replace("-end", "")
+                    current_node.resume_node = opt_target.replace("-end", "")
                 continue
             current_node.options.append(
                 _ParsedOption(
-                    anchor=option_match.group("anchor"),
-                    target=option_match.group("target").replace("-end", ""),
+                    anchor=opt_anchor,
+                    target=opt_target.replace("-end", ""),
                     order=option_match.group("order"),
                     condition=option_match.group("condition"),
                     sentiment=option_match.group("sentiment"),

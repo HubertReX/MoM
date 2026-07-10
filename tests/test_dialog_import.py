@@ -19,6 +19,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
 from dialog import init_dialog
 from dialog.markdown_importer import (
     DialogImportError,
+    _OPTION_RE,
+    _RESUME_LINK_RE,
     _convert_text,
     _make_name_resolver,
     import_character_dialog,
@@ -211,6 +213,42 @@ def test_convert_text_resolve_pipe_format() -> None:
     assert_eq(result, "Pytaj [char]Kowal Klamca[/char].")
 
 
+def test_option_re_new_format() -> None:
+    """[[#KEY]] option format is parsed correctly."""
+    line = "* [[#001]] 1😐: Some text"
+    m = _OPTION_RE.match(line)
+    assert m is not None, "new format matches"
+    assert_eq(m.group("new_target"), "001", "new_target extracted")
+    assert_eq(m.group("order"), "1", "order extracted")
+    assert_eq(m.group("sentiment"), "😐", "sentiment extracted")
+    assert_eq(m.group("text"), "Some text", "text extracted")
+
+
+def test_option_re_new_format_with_condition() -> None:
+    """[[#KEY]] with condition bracket is parsed."""
+    line = '* [[#010]] 2[visited("003")]😐: Conditional option'
+    m = _OPTION_RE.match(line)
+    assert m is not None, "new format with condition matches"
+    assert_eq(m.group("new_target"), "010", "target extracted")
+    assert_eq(m.group("condition"), 'visited("003")', "condition extracted")
+
+
+def test_option_re_new_format_end_node() -> None:
+    """[[#KEY-end]] format targets an end node."""
+    line = "* [[#990-end]] 9😐: Farewell"
+    m = _OPTION_RE.match(line)
+    assert m is not None, "end node format matches"
+    assert_eq(m.group("new_target"), "990-end", "end target extracted")
+
+
+def test_resume_link_re_new_format() -> None:
+    """Standalone [[#KEY]] resume link is parsed."""
+    line = "[[#011]]"
+    m = _RESUME_LINK_RE.match(line)
+    assert m is not None, "new resume format matches"
+    assert_eq(m.group("new_target"), "011", "target extracted")
+
+
 def test_convert_text_with_markup_and_wikilink() -> None:
     chars = {"HAMMER_HOAXHEART": {"name_EN": "Hammer Hoaxheart"}}
     resolve = _make_name_resolver(chars, "EN")
@@ -250,6 +288,10 @@ def main() -> None:
         ("test_convert_text_resolve_unknown", test_convert_text_resolve_unknown),
         ("test_convert_text_with_markup_and_wikilink", test_convert_text_with_markup_and_wikilink),
         ("test_convert_text_resolve_pipe_format", test_convert_text_resolve_pipe_format),
+        ("test_option_re_new_format", test_option_re_new_format),
+        ("test_option_re_new_format_with_condition", test_option_re_new_format_with_condition),
+        ("test_option_re_new_format_end_node", test_option_re_new_format_end_node),
+        ("test_resume_link_re_new_format", test_resume_link_re_new_format),
     ]
     tests.extend(self_contained_tests)
     for name, func in tests:
