@@ -6,11 +6,13 @@ import pygame
 from settings import (
     BLACK_COLOR,
     CHAR_NAME_COLOR,
+    FONT_SIZE_TINY,
     HUD_DIR,
     IS_WEB,
     PANEL_BG_COLOR,
     TILE_SIZE,
     TRANSPARENT_COLOR,
+    entity_name,
     load_image,
 )
 from enums import AttitudeEnum, ItemTypeEnum, NotificationTypeEnum
@@ -216,10 +218,10 @@ class HealthBar(pygame.sprite.Sprite):
 
         # render name of the character
         self.render_text(
-            self.name,
+            entity_name(self.model),
             (int(self.rect.width // 2), y),
             self.color,
-            font_size=5,
+            font_size=FONT_SIZE_TINY,
             shadow=(84, 135, 137),
             centred=True,
             surface=self.image
