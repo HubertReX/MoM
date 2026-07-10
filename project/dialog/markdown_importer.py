@@ -51,7 +51,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 # Allow running this file directly from project/dialog/ as a CLI tool.
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -207,11 +207,33 @@ def _find_markdown_file(src_dir: Path, lang: str, character_name: str) -> Path:
     return bare if bare.exists() else default
 
 
+def _make_name_resolver(
+    characters: dict[str, Any], lang: str
+) -> Callable[[str], str] | None:
+    """Build a wikilink resolver for the given language.
+
+    Returns a callable ``(key: str) -> str`` that looks up the entity name
+    in *characters*, or ``None`` when *characters* is empty (no resolution).
+    """
+    if not characters:
+        return None
+    field = "name_PL" if lang == "PL" else "name_EN"
+
+    def _resolve(key: str) -> str:
+        ch = characters.get(key)
+        if ch is None:
+            return f"[[{key}]]"  # leave as-is if not found
+        return ch.get(field, ch.get("name_EN", key))
+
+    return _resolve
+
+
 def import_character_dialog(
     src_dir: Path,
     character_name: str,
     *,
     valid_items: set[str] | None = None,
+    characters: dict[str, Any] | None = None,
 ) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
     """Import one character from RPG Markdown source.
 
@@ -227,6 +249,8 @@ def import_character_dialog(
         character_name: canonical character name, e.g. ``"Hammer Hoaxheart"``.
         valid_items: optional set of item keys (from ``items.csv``) used to
             validate item names referenced by ``[ITEMS+...]`` node results.
+        characters: optional dict of character config data (key -> props)
+            used to resolve ``[[KEY]]`` wikilinks to entity names.
 
     Returns:
         A tuple ``(messages, character_dialogs)`` where ``messages`` has the
@@ -240,6 +264,9 @@ def import_character_dialog(
     _validate_language_consistency(
         pl_nodes, en_nodes, character_name, str(src_dir)
     )
+
+    resolve_pl = _make_name_resolver(characters, "PL") if characters else None
+    resolve_en = _make_name_resolver(characters, "EN") if characters else None
 
     messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     dialog_config: dict[str, Any] = {
@@ -268,8 +295,8 @@ def import_character_dialog(
             en_node.text, node_key, character_key, valid_items
         )
 
-        messages["PL"][node_message_key] = _convert_text(pl_text)
-        messages["EN"][node_message_key] = _convert_text(en_text)
+        messages["PL"][node_message_key] = _convert_text(pl_text, resolve_pl)
+        messages["EN"][node_message_key] = _convert_text(en_text, resolve_en)
 
         node_config = {
             "is_final": pl_node.is_final,
@@ -307,8 +334,8 @@ def import_character_dialog(
                 pl_opt.line_no,
             )
 
-            messages["PL"][option_message_key] = _convert_text(pl_opt.text)
-            messages["EN"][option_message_key] = _convert_text(en_opt.text)
+            messages["PL"][option_message_key] = _convert_text(pl_opt.text, resolve_pl)
+            messages["EN"][option_message_key] = _convert_text(en_opt.text, resolve_en)
 
             dialog_config[character_key]["DIALOG_OPTIONS"][option_key] = {
                 "next_node": pl_opt.target,
@@ -460,10 +487,12 @@ def build_dialog_config(
     imported: list[str] = []
     errors: list[str] = []
 
+    characters_config: dict[str, Any] = config.get("characters", {})
+
     for name in character_names:
         try:
             char_messages, char_dialog = import_character_dialog(
-                src_dir, name, valid_items=valid_items
+                src_dir, name, valid_items=valid_items, characters=characters_config
             )
             for lang in ("PL", "EN"):
                 new_messages[lang].update(char_messages[lang])
@@ -659,8 +688,19 @@ def _convert_sentiment(emoji: str) -> str:
     return SENTIMENT_EMOJI_TO_EMOTE[emoji]
 
 
-def _convert_text(text: str) -> str:
-    """Apply D3 markup/emoji conversion to a node or option text."""
+# wikilink [[KEY]] -> entity name
+_WIKILINK_RE = re.compile(r"\[\[([A-Z][A-Z0-9_]+)\]\]")
+
+
+def _convert_text(
+    text: str,
+    resolve_name: Callable[[str], str] | None = None,
+) -> str:
+    """Apply D3 markup/emoji conversion to a node or option text.
+
+    If *resolve_name* is a callable ``(key: str) -> str``, wikilinks
+    ``[[KEY]]`` are replaced by its return value.
+    """
     # bold -> shadow (RPG calls it reverse)
     text = re.sub(
         r"\*\*([^\*]+)\*\*",
@@ -714,6 +754,10 @@ def _convert_text(text: str) -> str:
     # inline emoji -> :emote:
     for emoji, tag in _EMOJI_TO_EMOTE_TAG.items():
         text = text.replace(emoji, tag)
+
+    # wikilinks [[KEY]] -> entity name
+    if resolve_name is not None:
+        text = _WIKILINK_RE.sub(lambda m: resolve_name(m.group(1)), text)
 
     return text
 
@@ -983,12 +1027,14 @@ def build_dialog_config(
     items_csv = config_path.parent / "items.csv"
     valid_items = load_valid_items(items_csv) if items_csv.exists() else None
 
+    characters_config: dict[str, Any] = config.get("characters", {})
+
     new_messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     new_dialogs: dict[str, Any] = {}
 
     for name in character_names:
         char_messages, char_dialog = import_character_dialog(
-            src_dir, name, valid_items=valid_items
+            src_dir, name, valid_items=valid_items, characters=characters_config
         )
         for lang in ("PL", "EN"):
             new_messages[lang].update(char_messages[lang])
