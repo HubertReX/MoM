@@ -189,6 +189,8 @@ class DialogPanel(Widget):
         for display_idx, opt in enumerate(self._options):
             text = get_msg(self.game.conf.messages, opt.text)
             rich_text = f"{display_idx + 1}. {text}"
+            if opt.next_node and opt.next_node.is_final:
+                rich_text += " :walk:"
             surf = render_rich_text_surface(
                 rich_text, max_w, self.scene.icons,
                 base_size=_OPTION_FONT,
@@ -320,8 +322,10 @@ class DialogPanel(Widget):
         self.npc.selected_options_dict[opt.key] = True
         shift = self.npc.apply_option_sentiment(opt.sentiment) if is_new_selection else 0
         if shift != 0:
+            emote_key = opt.sentiment
+            msg = f":{emote_key}: {_('notify.sentiment', amount=shift)}"
             self.scene.add_notification(
-                _("notify.sentiment", amount=shift),
+                msg,
                 NotificationTypeEnum.success if shift > 0 else NotificationTypeEnum.info,
             )
             self._sentiment_flash_timer = 0.5
@@ -495,17 +499,21 @@ class DialogPanel(Widget):
         self.tooltip.draw(surface)
 
     def _draw_scroll_hints(self, surface: pygame.Surface, start: int, end: int, n: int) -> None:
-        """Draw small up/down triangles when options extend past the visible window."""
+        """Draw up/down triangles when options extend past the visible window."""
         if n <= self._visible_count:
             return
-        x = self.body_rect.right - 6
+        x = self.body_rect.right - 8
         color = CHAR_NAME_COLOR
         if start > 0:
             top = self.options_top
-            pygame.draw.polygon(surface, color, [(x - 5, top + 6), (x + 1, top + 6), (x - 2, top)])
+            pygame.draw.polygon(surface, color, [
+                (x - 8, top + 10), (x + 4, top + 10), (x - 2, top),
+            ])
         if end < n:
             bot = self.options_bottom
-            pygame.draw.polygon(surface, color, [(x - 5, bot - 6), (x + 1, bot - 6), (x - 2, bot)])
+            pygame.draw.polygon(surface, color, [
+                (x - 8, bot - 10), (x + 4, bot - 10), (x - 2, bot),
+            ])
 
     def _draw_sentiment_indicator(self, surface: pygame.Surface) -> None:
         """Draw a small sentiment bar above the NPC name (only when known)."""
