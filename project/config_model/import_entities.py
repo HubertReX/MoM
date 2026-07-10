@@ -15,6 +15,15 @@ sys.path.insert(0, str(HERE.parent))
 from settings import CONF_ENTITIES_TO_STORE  # noqa: E402
 
 
+def _strip_nulls(obj: object) -> object:
+    """Recursively remove dict entries with ``None`` values."""
+    if isinstance(obj, dict):
+        return {k: _strip_nulls(v) for k, v in obj.items() if v is not None}
+    if isinstance(obj, list):
+        return [_strip_nulls(v) for v in obj]
+    return obj
+
+
 def parse_value(raw: str, current: object) -> object:
     """Parse a CSV cell value to match the type of the current value."""
     if raw == "":
@@ -58,8 +67,11 @@ def import_csv(entity_name: str, data: dict) -> dict:
         obj = section[key]
         for i, field in enumerate(fields):
             if i < len(values):
+                raw = values[i]
+                if raw == "":
+                    continue  # pusta komórka = nie nadpisuj → model użyje wartości domyślnej
                 current = obj.get(field)
-                obj[field] = parse_value(values[i], current)
+                obj[field] = parse_value(raw, current)
         updated += 1
 
     data[entity_name] = section
@@ -76,6 +88,10 @@ def main() -> None:
 
     for entity_name in CONF_ENTITIES_TO_STORE:
         data = import_csv(entity_name, data)
+
+    for entity_name in CONF_ENTITIES_TO_STORE:
+        if entity_name in data:
+            data[entity_name] = _strip_nulls(data[entity_name])
 
     CONFIG_FILE.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n")
     print(f"\n[OK] Config saved to {CONFIG_FILE}")

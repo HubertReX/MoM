@@ -19,10 +19,7 @@
             "money": 20,
             "name_EN": "Player",
             "name_PL": "Player",
-            "has_dialog": false,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "has_dialog": false
         },
         "JOHNY": {
             "sprite": "Villager1",
@@ -41,12 +38,8 @@
             "max_carry_weight": 100.0,
             "money": 3000,
             "name_EN": "Johny",
-            "name_PL": "Johny",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Jaś",
+            "has_dialog": false
         },
         "FRED": {
             "sprite": "Villager2",
@@ -54,12 +47,8 @@
             "attitude": "friendly",
             "money": 20,
             "name_EN": "Fred",
-            "name_PL": "Fred",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Franek",
+            "has_dialog": false
         },
         "BART": {
             "sprite": "Villager3",
@@ -78,12 +67,8 @@
             "max_carry_weight": 30.0,
             "money": 200,
             "name_EN": "Bart",
-            "name_PL": "Bart",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Bartuś",
+            "has_dialog": false
         },
         "ROB": {
             "sprite": "Villager4",
@@ -91,12 +76,8 @@
             "attitude": "friendly",
             "money": 20,
             "name_EN": "Rob",
-            "name_PL": "Rob",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Kuba",
+            "has_dialog": false
         },
         "MARRY": {
             "sprite": "Woman",
@@ -106,11 +87,8 @@
             "max_health": 120,
             "money": 25,
             "name_EN": "Marry",
-            "name_PL": "Marry",
-            "has_dialog": false,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Marysia",
+            "has_dialog": false
         },
         "FISH_RED": {
             "sprite": "FishRed",
@@ -120,12 +98,9 @@
                 "water"
             ],
             "speed_walk": 10,
-            "name_EN": "FishRed",
-            "name_PL": "FishRed",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_EN": "red fish",
+            "name_PL": "Czerwona rybka",
+            "has_dialog": false
         },
         "CAT": {
             "sprite": "Cat",
@@ -133,11 +108,8 @@
             "attitude": "friendly",
             "speed_walk": 15,
             "name_EN": "Cat",
-            "name_PL": "Cat",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Kotek",
+            "has_dialog": false
         },
         "DOG_ORANGE": {
             "sprite": "Dog1",
@@ -148,11 +120,8 @@
             ],
             "speed_walk": 15,
             "name_EN": "Dog",
-            "name_PL": "Dog",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Piesek",
+            "has_dialog": false
         },
         "DOG_PURPLE": {
             "sprite": "Dog2",
@@ -163,11 +132,8 @@
             ],
             "speed_walk": 15,
             "name_EN": "Dog",
-            "name_PL": "Dog",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Piesek",
+            "has_dialog": false
         },
         "CHICKEN_BLACK": {
             "sprite": "ChickenBlack",
@@ -178,11 +144,8 @@
             ],
             "speed_walk": 15,
             "name_EN": "Chicken",
-            "name_PL": "Chicken",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Kurczak",
+            "has_dialog": false
         },
         "CHICKEN_BROWN": {
             "sprite": "ChickenBrown",
@@ -193,11 +156,8 @@
             ],
             "speed_walk": 15,
             "name_EN": "Chicken",
-            "name_PL": "Chicken",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Kurczak",
+            "has_dialog": false
         },
         "CHICKEN_CUTE": {
             "sprite": "ChickenCute",
@@ -208,11 +168,8 @@
             ],
             "speed_walk": 15,
             "name_EN": "Chicken",
-            "name_PL": "Chicken",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Kurczak",
+            "has_dialog": false
         },
         "CHICKEN_WHITE": {
             "sprite": "ChickenWhite",
@@ -223,11 +180,8 @@
             ],
             "speed_walk": 15,
             "name_EN": "Chicken",
-            "name_PL": "Chicken",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Kurczak",
+            "has_dialog": false
         },
         "PIG": {
             "sprite": "Pig",
@@ -238,11 +192,8 @@
             ],
             "speed_walk": 20,
             "name_EN": "Pig",
-            "name_PL": "Pig",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Świnka",
+            "has_dialog": false
         },
         "COW": {
             "sprite": "Cow",
@@ -252,12 +203,8 @@
                 "plains"
             ],
             "name_EN": "Cow",
-            "name_PL": "Cow",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Krówka",
+            "has_dialog": false
         },
         "HORSE": {
             "sprite": "Horse",
@@ -267,12 +214,8 @@
                 "plains"
             ],
             "name_EN": "Horse",
-            "name_PL": "Horse",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Konik",
+            "has_dialog": false
         },
         "FROG": {
             "sprite": "Frog",
@@ -283,11 +226,8 @@
             ],
             "speed_walk": 10,
             "name_EN": "Frog",
-            "name_PL": "Frog",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Żabcia",
+            "has_dialog": false
         },
         "RACOON": {
             "sprite": "Racoon",
@@ -295,11 +235,8 @@
             "attitude": "afraid",
             "speed_walk": 10,
             "name_EN": "Racoon",
-            "name_PL": "Racoon",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Szop",
+            "has_dialog": false
         },
         "BOAR": {
             "sprite": "Boar",
@@ -307,11 +244,8 @@
             "attitude": "afraid",
             "speed_walk": 20,
             "name_EN": "Boar",
-            "name_PL": "Boar",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_run": null
+            "name_PL": "Dzik",
+            "has_dialog": false
         },
         "SNAKE_01": {
             "sprite": "Snake",
@@ -325,21 +259,16 @@
             "damage": 20,
             "speed_run": 75,
             "name_EN": "Snake",
-            "name_PL": "Snake",
-            "has_dialog": false,
-            "speed_walk": null
+            "name_PL": "Wąż",
+            "has_dialog": false
         },
         "SPIRIT_01": {
             "sprite": "Spirit",
             "race": "monster",
             "attitude": "enemy",
             "name_EN": "Spirit",
-            "name_PL": "Spirit",
-            "has_dialog": false,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Duszek",
+            "has_dialog": false
         },
         "SLIME_01": {
             "sprite": "Slime",
@@ -348,11 +277,8 @@
             "health": 40,
             "max_health": 40,
             "name_EN": "Slime",
-            "name_PL": "Slime",
-            "has_dialog": false,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Śluzak",
+            "has_dialog": false
         },
         "SPIDER_01": {
             "sprite": "SpiderRed",
@@ -362,10 +288,8 @@
             "max_health": 60,
             "damage": 20,
             "name_EN": "Spider",
-            "name_PL": "Spider",
-            "has_dialog": false,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Pająk",
+            "has_dialog": false
         },
         "CAVE_LION": {
             "sprite": "CaveLion",
@@ -375,10 +299,8 @@
             "max_health": 60,
             "damage": 20,
             "name_EN": "CaveLion",
-            "name_PL": "CaveLion",
-            "has_dialog": false,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Lew jaskiniowy",
+            "has_dialog": false
         },
         "CAVE_LION2": {
             "sprite": "CaveLion2",
@@ -388,10 +310,8 @@
             "max_health": 60,
             "damage": 20,
             "name_EN": "CaveLion",
-            "name_PL": "CaveLion",
-            "has_dialog": false,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Lew jaskiniowy",
+            "has_dialog": false
         },
         "LION_YELLOW": {
             "sprite": "LionYellow",
@@ -401,10 +321,8 @@
             "max_health": 60,
             "damage": 20,
             "name_EN": "LionYellow",
-            "name_PL": "LionYellow",
-            "has_dialog": false,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Żółty lew",
+            "has_dialog": false
         },
         "FLAM": {
             "sprite": "Flam",
@@ -413,11 +331,9 @@
             "health": 60,
             "max_health": 60,
             "damage": 20,
-            "name_EN": "Flam",
-            "name_PL": "Flam",
-            "has_dialog": false,
-            "speed_walk": null,
-            "speed_run": null
+            "name_EN": "Flame",
+            "name_PL": "Płomień",
+            "has_dialog": false
         },
         "HAMMER_HOAXHEART": {
             "sprite": "Villager2",
@@ -434,12 +350,8 @@
             },
             "money": 30,
             "name_EN": "Hammer",
-            "name_PL": "Hammer",
-            "has_dialog": true,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Kowal Kłamca",
+            "has_dialog": true
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
@@ -456,12 +368,8 @@
             },
             "money": 100,
             "name_EN": "Barman Absinthrayner",
-            "name_PL": "Barman Absinthrayner",
-            "has_dialog": true,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Barman Asynthnent",
+            "has_dialog": true
         },
         "CLAPBACK_SWORD": {
             "sprite": "Knight",
@@ -478,12 +386,8 @@
             },
             "money": 100,
             "name_EN": "Clapback Sword",
-            "name_PL": "Clapback Sword",
-            "has_dialog": true,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Miecz Ciętej-riposty",
+            "has_dialog": true
         },
         "POTIONEER_PUZZLEMINT": {
             "sprite": "EggGirl",
@@ -500,12 +404,8 @@
             },
             "money": 100,
             "name_EN": "Potioneer Puzzlemint",
-            "name_PL": "Potioneer Puzzlemint",
-            "has_dialog": true,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Zielarka Zmora",
+            "has_dialog": true
         },
         "MADAME_SARCASMIA": {
             "sprite": "SorcererBlack",
@@ -525,12 +425,8 @@
                 "POTION_CURSE_NO_MORE"
             ],
             "name_EN": "Madame Sarcasmia",
-            "name_PL": "Madame Sarcasmia",
-            "has_dialog": true,
-            "health": null,
-            "damage": null,
-            "speed_walk": null,
-            "speed_run": null
+            "name_PL": "Madame Sarkażmijka",
+            "has_dialog": true
         }
     },
     "chests": {
@@ -541,8 +437,7 @@
                 "gem_small_green",
                 "gem_crystal_green",
                 "shrimp"
-            ],
-            "is_small": null
+            ]
         },
         "BigChest_Maze_01": {
             "name": "BigChest_Maze_01",
@@ -564,8 +459,7 @@
                 "gem_small_purple",
                 "gem_crystal_purple",
                 "shrimp"
-            ],
-            "is_small": null
+            ]
         },
         "BigChest_Maze_02": {
             "name": "BigChest_Maze_02",
@@ -587,8 +481,7 @@
                 "gem_small_blue",
                 "gem_crystal_blue",
                 "shrimp"
-            ],
-            "is_small": null
+            ]
         },
         "BigChest_Maze_03": {
             "name": "BigChest_Maze_03",
@@ -610,8 +503,7 @@
                 "gem_small_orange",
                 "gem_crystal_orange",
                 "shrimp"
-            ],
-            "is_small": null
+            ]
         },
         "BigChest_Maze_04": {
             "name": "BigChest_Maze_04",
@@ -630,9 +522,7 @@
             "name": "SmallChest_VillageHouse",
             "items": [
                 "golden_coin"
-            ],
-            "is_small": null,
-            "total_items_count": null
+            ]
         },
         "BigChest_Village": {
             "name": "BigChest_Village",
@@ -641,8 +531,7 @@
                 "sai",
                 "beef",
                 "shrimp"
-            ],
-            "total_items_count": null
+            ]
         }
     },
     "items": {
@@ -653,8 +542,7 @@
             "damage": 25,
             "cooldown_time": 0.5,
             "name_EN": "War hammer",
-            "name_PL": "War hammer",
-            "health_impact": null
+            "name_PL": "Młot wojenny"
         },
         "club": {
             "type": "weapon",
@@ -662,9 +550,7 @@
             "damage": 30,
             "cooldown_time": 0.6,
             "name_EN": "War hammer",
-            "name_PL": "War hammer",
-            "value": null,
-            "health_impact": null
+            "name_PL": "Maczuga"
         },
         "axe": {
             "type": "weapon",
@@ -673,8 +559,7 @@
             "damage": 35,
             "cooldown_time": 0.5,
             "name_EN": "War Axe",
-            "name_PL": "War Axe",
-            "health_impact": null
+            "name_PL": "Topór wojenny"
         },
         "stick": {
             "type": "weapon",
@@ -682,19 +567,14 @@
             "damage": 5,
             "cooldown_time": 0.2,
             "name_EN": "Stick",
-            "name_PL": "Stick",
-            "weight": null,
-            "health_impact": null
+            "name_PL": "Kij"
         },
         "pitchfork": {
             "type": "weapon",
             "weight": 2.5,
             "cooldown_time": 0.4,
             "name_EN": "Pitchfork",
-            "name_PL": "Pitchfork",
-            "value": null,
-            "health_impact": null,
-            "damage": null
+            "name_PL": "Widły"
         },
         "lance": {
             "type": "weapon",
@@ -703,8 +583,7 @@
             "damage": 15,
             "cooldown_time": 0.4,
             "name_EN": "Lance",
-            "name_PL": "Lance",
-            "health_impact": null
+            "name_PL": "Lanca"
         },
         "katana": {
             "type": "weapon",
@@ -713,8 +592,7 @@
             "damage": 20,
             "cooldown_time": 0.3,
             "name_EN": "Katana",
-            "name_PL": "Katana",
-            "health_impact": null
+            "name_PL": "Katana"
         },
         "sword_long": {
             "type": "weapon",
@@ -723,188 +601,128 @@
             "damage": 30,
             "cooldown_time": 0.5,
             "name_EN": "Long sword",
-            "name_PL": "Long sword",
-            "health_impact": null
+            "name_PL": "Długi miecz"
         },
         "rapier": {
             "type": "weapon",
             "cooldown_time": 0.1,
             "name_EN": "Rapier",
-            "name_PL": "Rapier",
-            "value": null,
-            "weight": null,
-            "health_impact": null,
-            "damage": null
+            "name_PL": "Rapier"
         },
         "sword_short": {
             "type": "weapon",
             "damage": 15,
             "cooldown_time": 0.1,
-            "name_EN": "Short sword",
-            "name_PL": "Short sword",
-            "value": null,
-            "weight": null,
-            "health_impact": null
+            "name_EN": "Krótki miecz",
+            "name_PL": "Short sword"
         },
         "sai": {
             "type": "weapon",
             "value": 20,
             "cooldown_time": 0.1,
             "name_EN": "Sai",
-            "name_PL": "Sai",
-            "weight": null,
-            "health_impact": null,
-            "damage": null
+            "name_PL": "Sztylet"
         },
         "golden_coin": {
             "type": "money",
             "value": 1000,
             "weight": 0.02,
             "name_EN": "Golden coin",
-            "name_PL": "Golden coin",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Golden coin"
         },
         "gem_small_green": {
             "type": "gem",
             "value": 10,
             "name_EN": "Green small gem",
-            "name_PL": "Green small gem",
-            "weight": null,
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Zielony mały klejnot"
         },
         "gem_crystal_green": {
             "type": "gem",
             "value": 20,
             "weight": 2.0,
-            "name_EN": "Green crystal gem",
-            "name_PL": "Green crystal gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_EN": "Green crystal",
+            "name_PL": "Zielony krzyształ"
         },
         "gem_big_green": {
             "type": "gem",
             "value": 30,
             "weight": 3.0,
             "name_EN": "Green big gem",
-            "name_PL": "Green big gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Zielony duży klejnot"
         },
         "gem_small_purple": {
             "type": "gem",
             "value": 20,
             "name_EN": "Purple small gem",
-            "name_PL": "Purple small gem",
-            "weight": null,
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Purpurowy mały klejnot"
         },
         "gem_crystal_purple": {
             "type": "gem",
             "value": 40,
             "weight": 2.0,
-            "name_EN": "Purple crystal gem",
-            "name_PL": "Purple crystal gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_EN": "Purple crystal",
+            "name_PL": "Purpurowy krzyształ"
         },
         "gem_big_purple": {
             "type": "gem",
             "value": 60,
             "weight": 3.0,
             "name_EN": "Purple big gem",
-            "name_PL": "Purple big gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Purpurowy duży klejnot"
         },
         "gem_small_blue": {
             "type": "gem",
             "value": 40,
             "name_EN": "Blue small gem",
-            "name_PL": "Blue small gem",
-            "weight": null,
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Niebieski mały klejnot"
         },
         "gem_crystal_blue": {
             "type": "gem",
             "value": 60,
             "weight": 2.0,
-            "name_EN": "Blue crystal gem",
-            "name_PL": "Blue crystal gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_EN": "Blue crystal",
+            "name_PL": "Niebieski krzyształ"
         },
         "gem_big_blue": {
             "type": "gem",
             "value": 80,
             "weight": 3.0,
             "name_EN": "Blue big gem",
-            "name_PL": "Blue big gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Niebieski duży klejnot"
         },
         "gem_small_orange": {
             "type": "gem",
             "value": 60,
             "name_EN": "Orange small gem",
-            "name_PL": "Orange small gem",
-            "weight": null,
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Orange mały klejnot"
         },
         "gem_crystal_orange": {
             "type": "gem",
             "value": 80,
             "weight": 2.0,
-            "name_EN": "Orange crystal gem",
-            "name_PL": "Orange crystal gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_EN": "Orange crystal",
+            "name_PL": "Orange krzyształ"
         },
         "gem_big_orange": {
             "type": "gem",
             "value": 90,
             "weight": 3.0,
             "name_EN": "Orange big gem",
-            "name_PL": "Orange big gem",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Orange duży klejnot"
         },
         "silver_key": {
             "type": "key",
             "value": 500,
             "weight": 0.01,
             "name_EN": "Silver key",
-            "name_PL": "Silver key",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Silver key"
         },
         "golden_key": {
             "type": "key",
             "value": 500,
             "weight": 0.01,
             "name_EN": "Golden key",
-            "name_PL": "Golden key",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Golden key"
         },
         "beef": {
             "type": "consumable",
@@ -912,29 +730,21 @@
             "weight": 2.0,
             "health_impact": 50,
             "name_EN": "Baked beef",
-            "name_PL": "Baked beef",
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Baked beef"
         },
         "honey": {
             "type": "consumable",
             "value": 20,
             "health_impact": 40,
             "name_EN": "Bee honey",
-            "name_PL": "Bee honey",
-            "weight": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Miód"
         },
         "empty_pot": {
             "type": "consumable",
             "value": 10,
             "weight": 0.1,
             "name_EN": "Empty pot",
-            "name_PL": "Empty pot",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Empty pot"
         },
         "water_pot": {
             "type": "consumable",
@@ -942,9 +752,7 @@
             "weight": 0.15,
             "health_impact": 5,
             "name_EN": "Water pot",
-            "name_PL": "Water pot",
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Water pot"
         },
         "life_pot": {
             "type": "consumable",
@@ -952,19 +760,14 @@
             "weight": 0.15,
             "health_impact": 100,
             "name_EN": "Life potion",
-            "name_PL": "Life potion",
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Life potion"
         },
         "shashlik": {
             "type": "consumable",
             "value": 20,
             "health_impact": 30,
             "name_EN": "Shashlik",
-            "name_PL": "Shashlik",
-            "weight": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Szaszłyk"
         },
         "leaf": {
             "type": "consumable",
@@ -972,9 +775,7 @@
             "weight": 0.01,
             "health_impact": 3,
             "name_EN": "Tea leaf",
-            "name_PL": "Tea leaf",
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Liść herbaty"
         },
         "shrimp": {
             "type": "consumable",
@@ -982,9 +783,7 @@
             "weight": 0.1,
             "health_impact": 5,
             "name_EN": "Tiger shrimp",
-            "name_PL": "Tiger shrimp",
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Krewetka tygrysia"
         },
         "fish": {
             "type": "consumable",
@@ -992,9 +791,7 @@
             "weight": 0.5,
             "health_impact": 15,
             "name_EN": "Fresh fish",
-            "name_PL": "Fresh fish",
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Świeża ryba"
         },
         "POTION_CURSE_NO_MORE": {
             "type": "consumable",
@@ -1002,39 +799,28 @@
             "weight": 0.5,
             "health_impact": 10,
             "name_EN": "Potion curse-no-more",
-            "name_PL": "Potion curse-no-more",
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Potion curse-no-more"
         },
         "GNOMES_WHISKER": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Gnome's whisker",
-            "name_PL": "Gnome's whisker",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Wąs gnoma"
         },
         "MERMAIDS_TEAR": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Mermaid's tear",
-            "name_PL": "Mermaid's tear",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Łza syrenki"
         },
         "PHOENIX_FEATHER": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Phoenix feather",
-            "name_PL": "Phoenix feather",
-            "health_impact": null,
-            "damage": null,
-            "cooldown_time": null
+            "name_PL": "Pióro feniksa"
         }
     },
     "maze_configs": {
@@ -3686,7 +3472,7 @@
             "M_MADAME_SARCASMIA_DO_000to011_4": "I'm back. Any leads for me yet?"
         },
         "PL": {
-            "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barmanem Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
+            "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char][[PL/Barman_Absinthrayner|Barman_Absinthrayner]][/char]. A kogo tu do mnie los sprowadził?",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_1": "Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_2": "Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_3": "Jak chcesz, no mogę zostać [shadow]Twoim[/shadow] najlepszym klientem :happy:",
@@ -3698,7 +3484,7 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to006_5": "Gdzie mógłbym zdobyć wiedzę o [shadow]zaklęciach[/shadow]:question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to990_9": "To tyle, do następnego razu :walk:",
             "M_BARMAN_ABSINTHRAYNER_DN_002": "Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu.\nMój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki :blink:",
-            "M_BARMAN_ABSINTHRAYNER_DN_003": "[loc]Gafowo Kolonia[/]? Może to nie jest [shadow]Rzym[/shadow], ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają.\nNa co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych [shadow]czarodziei[/shadow] i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty:angry:.\n\nNie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki:shocked:. Ponoć użyli swojej [shadow]magii[/shadow]. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów:evil:.",
+            "M_BARMAN_ABSINTHRAYNER_DN_003": "[loc]Gafowo Kolonia[/loc]? Może to nie jest [shadow]Rzym[/shadow], ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają.\nNa co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych [shadow]czarodziei[/shadow] i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty:angry:.\n\nNie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki:shocked:. Ponoć użyli swojej [shadow]magii[/shadow]. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów:evil:.",
             "M_BARMAN_ABSINTHRAYNER_DO_003to007_1": "Czary? Tutaj? To niesłychane! Co stało się dalej?",
             "M_BARMAN_ABSINTHRAYNER_DO_003to008_2": "Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar:miserable:",
             "M_BARMAN_ABSINTHRAYNER_DO_003to007_3": "[char]Miecz[/char]: [italic]Chyba już słyszałem tę historię...[/italic] A co z tymi czarownikami?",
@@ -3708,7 +3494,7 @@
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_1": "To już chyba koniec przygód dla mnie - rzucili na mnie [quest]Odwieczna klątwą nieszczęścia[/quest]",
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_2": "No cóż, jeśli masz do sprzedania coś na [quest]Odwieczną klątwę nieszczęścia[/quest] to jestem żywo zainteresowany",
             "M_BARMAN_ABSINTHRAYNER_DO_008to009_3": "Potrzebuję kogoś kto może odczarować [quest]Odwieczną klątwę nieszczęścia[/quest]",
-            "M_BARMAN_ABSINTHRAYNER_DN_009": "Ach! [quest]Odwieczna klątwą nieszczęścia[/quest]? Poważnie? Myślałem, że to tylko gadanie mojej matki...\nNo cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma [shadow]magii[/shadow]. Popytaj [char]Zielarki Zmory[/char], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.",
+            "M_BARMAN_ABSINTHRAYNER_DN_009": "Ach! [quest]Odwieczna klątwą nieszczęścia[/quest]? Poważnie? Myślałem, że to tylko gadanie mojej matki...\nNo cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma [shadow]magii[/shadow]. Popytaj [char] [[EN/Potioneer_Puzzlemint|Potioneer_Puzzlemint]] [/char], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.",
             "M_BARMAN_ABSINTHRAYNER_DO_009to007_2": "A gdzie są teraz ci [shadow]czarodzieje[/shadow]?",
             "M_BARMAN_ABSINTHRAYNER_DO_009to001_9": "Dzięki, to mi wystarczy",
             "M_BARMAN_ABSINTHRAYNER_DN_004": "No jest tu trochę wiosek w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?",
@@ -3752,9 +3538,9 @@
             "M_BARMAN_ABSINTHRAYNER_DO_015to991_1": "Nie, nie, to nie tak...",
             "M_BARMAN_ABSINTHRAYNER_DN_016": "A co to za [shadow]choroba[/shadow], co ją chcesz leczyć [shadow]czarami[/shadow]? To pewno jakaś [shadow]zaraza[/shadow]! Świństwo jakieś przyniosłeś do naszej wioski:red_exclamation:",
             "M_BARMAN_ABSINTHRAYNER_DO_016to991_1": "Nie, nie, to nie tak...",
-            "M_BARMAN_ABSINTHRAYNER_DN_990": "Do zobaczenia!",
+            "M_BARMAN_ABSINTHRAYNER_DN_990": "Do zobaczenia:exclamation:",
             "M_BARMAN_ABSINTHRAYNER_DN_991": "Wynocha:red_exclamation:",
-            "M_CLAPBACK_SWORD_DN_000": "O! Jesteś!\nHalooooo?\nHej, słyszysz mnie?",
+            "M_CLAPBACK_SWORD_DN_000": "O:red_exclamation: Jesteś!\nHalooooo:red_question:\nHej, słyszysz mnie?",
             "M_CLAPBACK_SWORD_DO_000to001_1": "Uhh...",
             "M_CLAPBACK_SWORD_DO_000to001_2": "Ała, moja głowa",
             "M_CLAPBACK_SWORD_DO_000to001_3": "[italic]<mrugnij powoli na potwierdzenie, aby oszczędzać siły>[/italic]",
@@ -3815,7 +3601,7 @@
             "M_CLAPBACK_SWORD_DN_015": "No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne. Jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz dowód na potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha.\nA teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [location]Tawerny[/].",
             "M_CLAPBACK_SWORD_DN_100": "Na razie nie mam Ci nic nowego do powiedzenia.",
             "M_POTIONEER_PUZZLEMINT_DN_016": "Ktoś Ty? Kto Cię tu przysłał?",
-            "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[shadow]Barman Absyntnent[/shadow] powiedział mi o Tobie.",
+            "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[char][[Barman_Absinthrayner|Barman_Absinthrayner]][/char] powiedział mi o Tobie.",
             "M_POTIONEER_PUZZLEMINT_DO_016to992_2": "Nikt, ja sam tu trafiłem.",
             "M_POTIONEER_PUZZLEMINT_DN_000": "Ach, tak, tak. Proszę, wejdź chłopcze to domu najlepszej zielarki w okolicy.",
             "M_POTIONEER_PUZZLEMINT_DO_000to001_1": "Dzień dobry, jestem Malachi, straszny pechowiec. Potrzebuję pomocy.",
@@ -3828,21 +3614,21 @@
             "M_POTIONEER_PUZZLEMINT_DO_001to005_4": "Czy prócz zielarstwa zna się Pani również na zaklęciach?",
             "M_POTIONEER_PUZZLEMINT_DO_001to006_5": "Ma Pani może jakąś książkę o zaklęciach?",
             "M_POTIONEER_PUZZLEMINT_DO_001to990_9": "To tyle, do następnego razu.",
-            "M_POTIONEER_PUZZLEMINT_DN_002": "Ostatnimi laty rzeczywiście nie ruszam się poza [shadow]Gafowo Kolonię[/shadow], ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.\nA Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku?",
+            "M_POTIONEER_PUZZLEMINT_DN_002": "Ostatnimi laty rzeczywiście nie ruszam się poza [loc]Gafowo Kolonię[/loc], ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.\nA Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku?",
             "M_POTIONEER_PUZZLEMINT_DO_002to008_1": "Jestem wagą - to najmilszy znak zodiaku, nie sądzisz?",
             "M_POTIONEER_PUZZLEMINT_DO_002to007_2": "Znaki zodiaku to bzdura. Każdy sam decyduje jakim człowiekiem jest.",
             "M_POTIONEER_PUZZLEMINT_DO_002to008_3": "Jokerem! Jestem jak kameleon - staję się kimś innym zależnie od potrzeby chwili.",
             "M_POTIONEER_PUZZLEMINT_DN_007": "O, młody jesteś jeszcze i jak widać naiwny. Oby los nie zadrwił z Twojej pychy.",
             "M_POTIONEER_PUZZLEMINT_DO_007to001_9": "To może zmieńmy temat.",
             "M_POTIONEER_PUZZLEMINT_DN_008": "Taaaak, ciekawe. Opowiedz mi więcej o sobie. Masz za pewne jakiś problem, skor tu trafiłeś. Co Ci się przytrafiło?",
-            "M_POTIONEER_PUZZLEMINT_DO_008to009_1": "Aż wstyd mówić. Nabroiłem i czarodzieje rzucili na mnie [shadow]Odwieczna klątwą nieszczęścia[/shadow].",
+            "M_POTIONEER_PUZZLEMINT_DO_008to009_1": "Aż wstyd mówić. Nabroiłem i czarodzieje rzucili na mnie [quest]Odwieczna klątwą nieszczęścia[/quest].",
             "M_POTIONEER_PUZZLEMINT_DO_008to009_2": "Jacyś podli czarodzieje zakleli mnie i ciągle prześladuje mnie pech.",
-            "M_POTIONEER_PUZZLEMINT_DO_008to009_3": "Z tego co udało mi się ustalić, jestem pod wpływem [shadow]Odwiecznej klątwy nieszczęścia[/shadow].",
-            "M_POTIONEER_PUZZLEMINT_DN_009": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać [shadow]Miksturę Zapomnienia[/shadow], ale to raczej nie rozwiąże problemu.",
+            "M_POTIONEER_PUZZLEMINT_DO_008to009_3": "Z tego co udało mi się ustalić, jestem pod wpływem [quest]Odwiecznej klątwy nieszczęścia[/quest].",
+            "M_POTIONEER_PUZZLEMINT_DN_009": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać [item]Miksturę Zapomnienia[/item], ale to raczej nie rozwiąże problemu.",
             "M_POTIONEER_PUZZLEMINT_DO_009to001_9": "Szkoda. Porozmawiajmy w takim razie o czymś innym.",
-            "M_POTIONEER_PUZZLEMINT_DN_003": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [shadow]Kowal Kłamca[/shadow] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
+            "M_POTIONEER_PUZZLEMINT_DN_003": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [char] [[Hammer_Hoaxheart]] [/char] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
             "M_POTIONEER_PUZZLEMINT_DO_003to001_9": "Dzięki, to mi wystarczy.",
-            "M_POTIONEER_PUZZLEMINT_DN_004": "Jest trochę tego, pytanie co dla kogo jest ciekawe:\n1 [shadow]Bagno niedogodności[/shadow] jest bogate w zioła i różnego rodzaju ropuchy\n2 w [shadow]Splątanym lesie irytacji[/shadow] można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej\n3 [shadow]Jaskinie zagmatwania[/shadow] to też źródło grzybów, ale dużo bardziej niebezpieczne",
+            "M_POTIONEER_PUZZLEMINT_DN_004": "Jest trochę tego, pytanie co dla kogo jest ciekawe:\n1 [loc]Bagno niedogodności[/loc] jest bogate w zioła i różnego rodzaju ropuchy\n2 w [loc]Splątanym lesie irytacji[/loc] można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej\n3 [loc]Jaskinie zagmatwania[/loc] to też źródło grzybów, ale dużo bardziej niebezpieczne",
             "M_POTIONEER_PUZZLEMINT_DO_004to001_9": "Dzięki, to mi wystarczy.",
             "M_POTIONEER_PUZZLEMINT_DN_005": "Nie, nie, nic z tych rzeczy. Magia to jakiś diabelski wynalazek. Ja ufam temu co daje nam natura. Wszystko czego nam trzeba można wydobyć z ziół i ekstraktów zwierzęcych. Trzeba tylko się na tym znać.\nTak jak ja.",
             "M_POTIONEER_PUZZLEMINT_DO_005to010_1": "To może zlituje się Pani nade mną, i sprawi, że przestanę być wiecznym pechowcem?",
@@ -3864,11 +3650,11 @@
             "M_POTIONEER_PUZZLEMINT_DO_012to001_9": "Dzięki, to mi wystarczy.",
             "M_POTIONEER_PUZZLEMINT_DN_013": "Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej bibliotece.",
             "M_POTIONEER_PUZZLEMINT_DO_013to012_1": "Dzięki!",
-            "M_POTIONEER_PUZZLEMINT_DN_015": "Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [shadow]Kowal Kłamca[/shadow] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.",
+            "M_POTIONEER_PUZZLEMINT_DN_015": "Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [char] [[Hammer_Hoaxheart]] [/char] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.",
             "M_POTIONEER_PUZZLEMINT_DO_015to012_1": "Dziękuję, to cenne informacje.",
-            "M_POTIONEER_PUZZLEMINT_DN_014": "Kiedy była u mnie wołali na nią [shadow]Mariolka[/shadow], ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać [shadow]Bibliofilistka des Informacja[/shadow].",
+            "M_POTIONEER_PUZZLEMINT_DN_014": "Kiedy była u mnie wołali na nią [char]Mariolka[/char], ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać [char]Bibliofilistka des Informacja[/char].",
             "M_POTIONEER_PUZZLEMINT_DO_014to012_1": "ok, dzięki.",
-            "M_POTIONEER_PUZZLEMINT_DN_017": "Po odejściu ode mnie ludzie zaczęli na nią wołać [shadow]Bibliofilistka des Informacja[/shadow].",
+            "M_POTIONEER_PUZZLEMINT_DN_017": "Po odejściu ode mnie ludzie zaczęli na nią wołać [char]Bibliofilistka des Informacja[/char].",
             "M_POTIONEER_PUZZLEMINT_DO_017to012_1": "ok, dzięki.",
             "M_POTIONEER_PUZZLEMINT_DN_990": "Powodzenia!",
             "M_POTIONEER_PUZZLEMINT_DN_991": "Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - wynocha!",
