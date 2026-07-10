@@ -14,168 +14,174 @@ translation: [**Barman Absyntnent**](../PL/char-Barman_Absinthrayner.md)
 * 🧠smart-
 * 😉funny++
 
-## EN TODO
+## EN
 
 ### 000
 
-* Hej! Witaj w naszej **Karczmie**! Jestem **Barmanem Absynthraynerem**. A kogo tu do mnie los sprowadził?
+* Hey :red_exclamation: Welcome to our [loc]Tavern[/loc]! I'm [[BARMAN_ABSINTHRAYNER]]. And who might fortune have brought my way?
 
-* [[#001]] 1😇: Jestem Malachi, Twój nowy przyjaciel
-* [[#001]] 2😢: Ech, szkoda gadać, jestem przeklęty przez los
-* [[#001]] 3😉: Jak chcesz, no mogę zostać Twoim najlepszym klientem
+* [[#001]] 1😇: I'm [char]Malachi[/char], [bold]your[/bold] new friend :blink:
+* [[#001]] 2😢: Oh, don't ask, I'm [u]cursed[/u] by fate...
+* [[#001]] 3😉: If you want, I could become **your** best customer :happy:
 
 ### 001
 
-* To jak mogę Ci pomóc?
+* So how can I help you:red_question:
 
-* [[#002]] 1😐: Co Cię tu sprowadziło?
-* [[#003]] 2😐: Jak Ci się podoba to miejsce?
-* [[#004]] 3😐: Jest tu coś ciekawego w okolicy?
-* [[#005]] 4😐: Znasz kogoś kto zna się na zaklęciach?
-* [[#006]] 5😐: Gdzie mógłbym zdobyć wiedzę o zaklęciach?
-* [[#990-end]] 9😐: To tyle, do następnego razu.
+* [[#002]] 1😐: What brought you here:question:
+* [[#003]] 2😐: How do you like this place:red_question:
+* [[#004]] 3😐: Anything interesting in the [dark]area[/dark]:red_question_anim:
+* [[#005]] 4😐: Do you know anyone who knows about [b]spells[/b]:question:
+* [[#006]] 5😐: Where could I learn about **spells**:question:
+* [[#990-end]] 9😐: That's all, until next time :walk:
 
 ### 002
 
-* Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjeła mój poród na tamtym stole w rogu. Mój ojciec jest właścicielem tej karczmy, a ja od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy.
-Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki.
+* I practically grew up in this tavern. To be precise, the midwife delivered me right on that table in the corner.
+My father owns this tavern, and I've been helping him since I was a kid. I know practically everyone around here. For the right price, I can arrange this and that, and for friends I have preferential rates :blink:
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 1😐: Thanks, that's enough for me
 
 ### 003
 
-* **Gafowo Kolonia**? Może to nie jest Rzym, ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych czarodziei i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty. Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki. Ponoć użyli swojej magii. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów.
+* [loc]Gafowo Kolonia[/loc]? It may not be **Rome**, but we have everything we need here. People know each other and help one another.
+On a daily basis it's peaceful here, though sometimes outsiders cause quite a mess. Just like yesterday - we had three unknown **wizards** here and everything would've been fine if it weren't for some slicker who tried to cheat them at cards:angry:.
 
-* [[#007]] 1😇: Czary? Tutaj? To niesłychane! Co stało się dalej?
-* [[#008]] 2😢: Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar
-* [[#007]] 3😉: **Miecz**: _Chyba już słyszałem tę historię... A co z tymi czarownikami?_
+I don't know exactly what happened at that table since the serving girl was handling it, but by the end things got heated. I heard some bang and screams:shocked:. Apparently they used their **magic**. Tsk, what a yokel - who ever heard of using spells at a card table:evil:.
+
+* [[#007]] 1😇: Spells? Here? That's unheard of! What happened next?
+* [[#008]] 2😢: I'm afraid I'm the unfortunate one they cast a spell on:miserable:
+* [[#007]] 3😉: [char]Sword[/char]: _I think I've heard this story already..._ But what about those wizards?
 
 ### 007
 
-* Zatruwają spokój strudzonym mieszkańcom. Całe szczęście czarodzieje szybko się oddalili. Już by oni na pewno nie dostali u nas noclegu. Mój ojciec by ich z chłopami szybko pogonił.
+* They're spoiling the peace for weary locals. Thankfully the **wizards** left quickly. They certainly wouldn't have gotten a room here. My father and the boys would've chased them off in no time:angry:.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 008
 
-* To Ty byłeś? A to Ci dopiero historia! Nic Ci się nie stało?
+* It was you? Now that's quite the story! You're not hurt, are you?
 
-* [[#009]] 1😢: To już chyba koniec przygód dla mnie - rzucili na mnie **Odwieczna klątwą nieszczęścia**
-* [[#009]] 2😉: No cóż, jeśli masz do sprzedania coś na **Odwieczną klątwę nieszczęścia** to jestem żywo zainteresowany
-* [[#009]] 3🧠: Potrzebuję kogoś kto może odczarować **Odwieczną klątwę nieszczęścia**
+* [[#009]] 1😢: I think my adventuring days are over - they cast the [quest]Eternal Curse of Misfortune[/quest] on me
+* [[#009]] 2😉: Well, if you have anything for sale against the [quest]Eternal Curse of Misfortune[/quest], I'm very interested
+* [[#009]] 3🧠: I need someone who can break the [quest]Eternal Curse of Misfortune[/quest]
 
 ### 009
 
-* Ach! **Odwieczna klątwą nieszczęścia**? Poważnie? Myślałem, że to tylko gadanie mojej matki. No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj [[EN/Potioneer_Puzzlemint|POTIONEER_PUZZLEMINT]], ona sama nic nie zdziała, ale może coś będzie wiedziała.
+* Ah! [quest]Eternal Curse of Misfortune[/quest]? Seriously? I thought that was just my mother's bedtime stories...
+Well then. Tough luck. Nobody here will really help you. We don't have **magic**. Try asking [[EN/Potioneer_Puzzlemint|POTIONEER_PUZZLEMINT]], she can't do much herself, but she might know something. She's distrustful of outsiders, so tell her I sent you.
 
-* [[#007]] 2🧠: A gdzie są teraz ci czarodzieje?
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#007]] 2🧠: Where are those **wizards** now?
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 004
 
-* No jest tu trochę wniosek w okolicy, ale nasza jest największa, reszta do dziadostwo. Interesuje Cię jakieś konkretne miejsce?
+* Well, there are a few villages around here, but ours is the biggest, the rest is rubbish. Are you interested in any particular place?
 
-* [[#010]] 1[Potioneer_Puzzlemint.004.not_visited and Hammer_Hoaxheart.004.not_visited]😐: Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?
-* [[#011]] 2[Hammer_Hoaxheart.004.visited]😐: Co wiesza na temat miasta **Porażkowo**?
-* [[#018]] 3[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat **Bagna niedogodności**?
-* [[#019]] 4[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat **Splątanego lasu irytacji**?
-* [[#020]] 5[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat **Jaskini zagmatwania**?
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#010]] 1[Potioneer_Puzzlemint.004.not_visited and Hammer_Hoaxheart.004.not_visited]😐: I don't know any specific places around here. Can you tell me more generally?
+* [[#011]] 2[Hammer_Hoaxheart.004.visited]😐: What can you tell me about the city of [loc]Porażkowo[/loc]?
+* [[#018]] 3[Potioneer_Puzzlemint.004.visited]😐: What can you tell me about [loc]Bagna niedogodności[/loc]?
+* [[#019]] 4[Potioneer_Puzzlemint.004.visited]😐: What can you tell me about [loc]Splątany las irytacji[/loc]?
+* [[#020]] 5[Potioneer_Puzzlemint.004.visited]😐: What can you tell me about [loc]Jaskinia zagmatwania[/loc]?
+* [[#001]] 9[Potioneer_Puzzlemint.004.visited or Hammer_Hoaxheart.004.visited]😐: Thanks, that's enough for me
 
 ### 010
 
-* Tak ogólnie to wszędzie czyha jakieś licho i lepiej siedzieć w wiosce.
-Wróć jak będziesz miał chciał zapytać o jakieś konkretne miejsce.
+* Generally speaking, trouble lurks everywhere and it's better to stay in the village.
+Come back when you want to ask about a specific place.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 018
 
-* **Bagna niedogodności**
+* [loc]Bagna niedogodności[/loc] is one big... well, marsh. There's nothing interesting there.
 
-* [[#004]] 9😐: Dzięki, to mi wystarczy
+* [[#004]] 9😐: Thanks, that's enough for me
 
 ### 019
 
-* **Bagna niedogodności**
+* [loc]Splątany las irytacji[/loc] can be interesting. Especially after dark. Besides what you'd find in ordinary forests - **wolves**, **bears**, and **forest pumas** - there are **trolls**, **werewolves**, and even **vampires**. Or so they say.
 
-* [[#004]] 9😐: Dzięki, to mi wystarczy
+* [[#004]] 9😐: Thanks, that's enough for me
 
 ### 020
 
-* **Bagna niedogodności**
+* I've never been to [loc]Jaskinia zagmatwania[/loc] myself. I don't like such places - dark, cold, no beer:blink:.
 
-* [[#004]] 9😐: Dzięki, to mi wystarczy
+* [[#004]] 9😐: Thanks, that's enough for me
 
 ### 011
 
-* A tak, no to jest jak by nie było miasto. Nie powiem, mają ze 3 karczmy i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej. To pewno przez te książki, bo oni tam nawet bibliotekę mają. Ponoć z książek można się dużo dowiedzieć. Tylko to pewnie same zakazane rzeczy piszą o czarach i innych głupotach. Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!
+* Oh yes, well, it's a proper city, I'll give them that. They have [num]3[/num] taverns, bigger than ours. And there's no manure on the streets. People walk around in funny colorful little jackets, and they talk a bit differently too.
+It's probably because of all those **books** - they even have a [loc]library[/loc]. Apparently you can learn a lot from books. Though they probably write only forbidden things about **spells** and other nonsense.
+Who has time to read books? Better to sit outside with a beer. That's the life!
 
-* [[#017]] 1😇: A wiesz może jak tam trafić?
-* [[#017]] 2🧠: To musi być daleko stąd, prawda?
-* [[#017]] 3😉: A jak bym chciał spróbować ich lokalnego piwa to gdzie mam wypatrywać tych kolorowych kubraczków?
+* [[#017]] 1😇: Do you know how to get there?
+* [[#017]] 2🧠: It must be far from here, right?
+* [[#017]] 3😉: And if I wanted to try their local beer, where should I look for those _colorful little jackets_?
 
 ### 017
 
-* To ze 2 dni drogi na północ. Za **Splątanym lasem irytacji** trzeba skręcić na wschód.
+* It's about [num]2[/num] days' journey north. Past [loc]Splątany las irytacji[/loc] you turn east.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 005
 
-* Na zaklęciach? A, tfu! Na diabła urok. Po co miałby ktoś się tym interesować? To jest czyste zło. Po co Ci to wiedzieć?
+* **Spells**? Ah, tsk! The devil's charm:angry:. Why would anyone be interested in that? It's pure [shadow]evil[/shadow]. Why do you need to know?
 
-* [[#012]] 1😢: A nie, nic, wiesz, mam taką wstydliwą przypadłość. Szukam kogoś, kto mógłby mi pomóc
-* [[#013]] 2😡: Ech, co Ty tam wiesz, świata poza tą wioską nie widziałeś. Gadaj jak pytam!
-* [[#012]] 3😉: A nie, to kolega pyta
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#012]] 1😢: Oh, no, nothing, you know, I have this embarrassing **affliction**. I'm looking for someone who could help me:dots:
+* [[#013]] 2😡: What do you even know, you haven't seen the world beyond this village. Talk when I ask!
+* [[#012]] 3😉: Oh no, a friend is asking
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 012
 
-* Ach, rozumiem. Hmmm, no to może jedynie stara **Zielarka Zmora** mogła by co pomóc. Ona potrafi przygotować taką miksturę, że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. Czasami to ludziskom gorzej się robi po tych miksturach. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu.
+* Ah, I see. Hmmm, well, maybe only old [char]Potioneer Puzzlemint[/char] could help. She can prepare a [item]potion[/item] that'll get you back on your feet in no time. Unless she mixes something up, because she's old and sometimes blind.
+Sometimes people get even worse after those [item]potions[/item]. If you're desperate, you can try. She lives in a hut at the edge of the village, near the forest.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 013
 
-* Halo! Nie tym tonem! Jak się nie podoba, to do widzenia
+* Hey:red_exclamation: None of that tone! If you don't like it, good riddance
 
-* [[#001]] 9😐: Porozmawiajmy o czym innym
+* [[#001]] 9😐: Let's talk about something else
 
 ### 006
 
-* Słuchaj, czy Ty aby nie chcesz sam nauczyć się czarować? Jakiego typu magia interesuje Cię konkretnie?
+* Listen, don't you want to learn **magic** yourself? What type of **magic** specifically interests you?
 
-* [[#014]] 1😐: Coś co pomoże mi w rozmowach z kobietami
-* [[#015]] 2😐: Coś co sprawi, że będę bogaty
-* [[#016]] 3😐: To tak bardziej leczniczo
-
-* [[#001]] 9😐: Nie, no coś Ty. Nieważne, porozmawiajmy o czymś innym
+* [[#014]] 1😐: Something that helps me talk to women:blink:
+* [[#015]] 2😐: Something that makes me rich:$:
+* [[#016]] 3😐: Something more on the healing side:cross:
+* [[#001]] 9😐: No, forget it. Never mind, let's talk about something else
 
 ### 014
 
-* [SENTIMENT-10]Co? Dziewki z naszej wsi chcesz czarami uwodzić?
+* [SENTIMENT-10]What:red_question: You want to seduce village girls with [shadow]spells[/shadow]?
 
-* [[#991-end]] 1😐: Nie, nie, to nie tak...
+* [[#991-end]] 1😐: No, no, it's not like that...
 
 ### 015
 
-* [SENTIMENT-10]I co? Będziesz chciał oszukiwać w kartach? Albo lepiej, czarami chcesz mnie omamić podczas handlu! O Ty!
+* [SENTIMENT-10]And what? You want to cheat at cards? Or even better, use [shadow]spells[/shadow] to enchant me during trades! Oh you!:angry:
 
-* [[#991-end]] 1😐: Nie, nie, to nie tak...
+* [[#991-end]] 1😐: No, no, it's not like that...
 
 ### 016
 
-* [SENTIMENT-10]A co to za choroba, co ją chcesz leczyć czarami? To pewno jakaś zaraza! Świństwo jakieś przyniosłeś do naszej wioski!
+* [SENTIMENT-10]And what **disease** do you want to cure with [shadow]spells[/shadow]? It must be some kind of **plague**! You've brought some filth to our village:red_exclamation:
 
-* [[#991-end]] 1😐: Nie, nie, to nie tak...
+* [[#991-end]] 1😐: No, no, it's not like that...
 
 ### 990-end
 [[#001]]
 
-* Do zobaczenia!
+* See you around:exclamation:
 
 ### 991-end
 [[#001]]
 
-* Wynocha!
+* Get lost:red_exclamation:

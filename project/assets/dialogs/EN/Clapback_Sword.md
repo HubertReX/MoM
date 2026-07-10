@@ -14,25 +14,25 @@ translation: [**Miecz Ciętej-riposty**](../PL/char-Clapback_Sword.md)
 * 🧠smart+
 * 😉funny++
 
-## EN TODO
+## EN
 
 ### 000
 
-* O:red_exclamation: Jesteś!
+* Oh:red_exclamation: There you are!
 
-* [[#017]] 1🧠: _<mrugnij powoli na potwierdzenie, aby oszczędzać siły>_
+* [[#017]] 1🧠: _<slowly blinks in acknowledgement, conserving energy>_
 
 ### 017
 
-* Halooooo:red_question:
+* Helloooo:red_question:
 
 * [[#018]] 1😇: Uhh...
 
 ### 018
 
-* Hej, słyszysz mnie?
+* Hey, can you hear me?
 
-* [[#001]] 1😢: Ała, moja głowa
+* [[#001]] 1😢: Ouch, my head
 
 ### 001
 
@@ -69,7 +69,7 @@ translation: [**Miecz Ciętej-riposty**](../PL/char-Clapback_Sword.md)
 
 ### 005
 
-* We are in the splendid kingdom of filth and stench called **Knaveshire**. Most people here are poor villagers, with a few craftsmen and some magicians. Although most are charlatans, herbalists, quacks, and other frauds who don't know real magic. Occasionally, you might encounter remnants of the **Blue Knighthood** on the roads, but it's not what it used to be. In the forests, caves, and dark alleys, various bloodthirsty masqueraders lurk, craving blood, money, or both. The rest are adventurers like you.
+* We are in the splendid kingdom of filth and stench called [loc]Knaveshire[/loc]. Most people here are poor villagers, with a few craftsmen and some magicians. Although most are charlatans, herbalists, quacks, and other frauds who don't know real magic. Occasionally, you might encounter remnants of the **Blue Knighthood** on the roads, but it's not what it used to be. In the forests, caves, and dark alleys, various bloodthirsty masqueraders lurk, craving blood, money, or both. The rest are adventurers like you.
 And I guess me too.
 
 * [[#016]] 1😇: Alright, that's all well and good, but what place is this exactly?
@@ -78,7 +78,7 @@ And I guess me too.
 
 ### 016
 
-* Oh, right. For reasons unknown to me, you dragged us to the ruined village of **Blunderhaven** in the county of **Muckshire**. Yesterday, you were causing a scene in the local tavern, and now, judging by the smell, we're probably in a stable.
+* Oh, right. For reasons unknown to me, you dragged us to the ruined village of [loc]Blunderhaven[/loc] in the county of [loc]Muckshire[/loc]. Yesterday, you were causing a scene in the local [loc]tavern[/loc], and now, judging by the smell, we're probably in a [loc]stable[/loc].
 
 * [[#008]] 1😇: Alright, thanks - it clears up the fog in my head a bit.
 * [[#008]] 2😢: I must say, that doesn't sound too inviting.
@@ -111,22 +111,22 @@ And I guess me too.
 
 ### 009
 
-* To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin. 
+* Then look around. Look there, by the wall! It's some kind of scroll.
 
-* [[#019]] 1😐: O nie! Patrz co tu jest napisane?
+* [[#019]] 1😐: Oh no! Look what's written here?
 
 ### 019
 
-* _"He who plays with fate shall meet with punishment,_ 
+* _"He who plays with fate shall meet with punishment,_
 _henceforth you shall be a scoundrel and a wretch,_
-_instead of the expected fullness of life,_ 
-_you shall be touched by the **Eternal curse of misfortune**."_
+_until the day you leave this earth,_
+_you are touched by the [quest]Eternal Curse of Misfortune[/quest]."_
 
-* [[#010]] 1😐: To chyba jakiś żart! Prawda?
+* [[#010]] 1😐: This has got to be a joke! Right?
 
 ### 010
 
-* No, no, no! Anything but that! **Eternal curse of misfortune** is some serious business. I'm the last one to defend you, but that's not a proportional punishment.
+* No, no, no! Anything but that! [quest]Eternal Curse of Misfortune[/quest] is some serious business. I'm the last one to defend you, but that's not a proportional punishment.
 
 * [[#011]] 1😢: Seriously? Is it that bad?
 * [[#011]] 2😡: Hey! Stop shaking and get to the point.
@@ -142,7 +142,7 @@ _you shall be touched by the **Eternal curse of misfortune**."_
 
 ### 012
 
-* You really took a hard blow to the head. **Eternal curse** - the matter seems clear.
+* You really took a hard blow to the head. [quest]Eternal Curse[/quest] - the matter seems clear.
 
 * [[#015-end]] 1😐: So what? Am I supposed to lie down and wait for death?
 
@@ -162,8 +162,8 @@ _you shall be touched by the **Eternal curse of misfortune**."_
 [[#100]]
 
 * Alright, let's think. What we know so far about this curse is a mix of children's tales and bard's nonsense songs. We need to find out more specifics. One thing is certain. If you've always thought deep down that you're special, now you have proof to confirm it. You're special - you are exceptionally good at getting into trouble.
-Now let's hit the road! We need ask people around. I would start in the [location]Tavern[/].
+Now let's hit the road! We need to ask people around. I would start in the [loc]Tavern[/loc].
 
 ### 100
 
-* I have nothing to tell you right now
+* I have nothing to tell you right now.

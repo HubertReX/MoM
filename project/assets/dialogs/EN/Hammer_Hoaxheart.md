@@ -7,97 +7,97 @@ aliases:
 translation: [**Kowal Kłamca**](../PL/char-Hammer_Hoaxheart.md)
 
 * friendly=0.3
-* 😇kind+
-* 😢week--
+* 😇kind-
+* 😢week+
 * 😐neutral
-* 😡angry-
-* 🧠smart+
-* 😉funny++
+* 😡angry++
+* 🧠smart-
+* 😉funny--
 
-## PL
+## EN
 
 ### 000
 
-* Po coś tu przylazł? Co z Ciebie za jeden?
+* What do you want here? Who do you think you are?
 
-* [[#001]] 1😇: Spokojnie, nazywam się Malachi, nie chcę problemów.
-* [[#001]] 2😡: Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!
-* [[#001]] 3🧠: To zależy co masz do zaoferowania - rozegraj to dobrze, a zarobisz.
+* [[#001]] 1😇: Easy, name's Malachi, no trouble.
+* [[#001]] 2😡: Show some manners or I'll have the mayor revoke your blacksmithing license!
+* [[#001]] 3🧠: Depends on what you're offering - play your cards right and you'll profit.
 
 ### 001
 
-* Czego chcesz?
+* What do you want?
 
-* [[#002]] 1😐: Od zawsze byłeś kowalem?
-* [[#003]] 2😐: Jak Ci idą interesy w tej wiosce?
-* [[#004]] 3😐: Masz trochę klientów z okolicznych wsi?
-* [[#005]] 4😐: Potrafisz wykuwać magiczne przedmioty?
-* [[#006]] 5😐: Kto tu jest najmądrzejszy w okolicy?
-* [[#990-end]] 9😐: To tyle, do następnego razu.
+* [[#002]] 1😐: Have you always been a blacksmith?
+* [[#003]] 2😐: How's business in this village?
+* [[#004]] 3😐: Do you have any customers from the surrounding villages?
+* [[#005]] 4😐: Can you forge magical items?
+* [[#006]] 5😐: Who's the smartest person around here?
+* [[#990-end]] 9😐: That's all, until next time.
 
 ### 002
 
-* Od kiedy pamiętam.
+* For as long as I can remember.
 
-* [[#007]] 1😇: A wcześniej?
-* [[#007]] 2😡: Hejże, gadaj jak człowiek! Co robiłeś wcześniej?
-* [[#007]] 3😉: A wcześniej to chyba byłeś elokwentnym pisarzem?
+* [[#007]] 1😇: And before that?
+* [[#007]] 2😡: Hey, speak like a human! What did you do before?
+* [[#007]] 3😉: And before that you were probably an eloquent writer?
 
 ### 007
 
-* A wcześniej nie pamiętam.
+* Before that I don't remember.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 003
 
-* Raz lepiej, raz gorzej.
+* Sometimes better, sometimes worse.
 
-* [[#008]] 1😢: Wioska wygląda biednie, współczuję... Nikt tu pewnie nie docenia Twojej pracy?
-* [[#008]] 2😡: Słuchaj, jak masz zły dzień, to nie moja wina. Pytam czy dużo osób u Ciebie kupuje, bo to byłby dowód jakości Twojej pracy.
-* [[#008]] 3🧠: Widzę, tu kawał dobrej roboty, ale w tej wiosce raczej nikt nie odróżni porządnego miecza dwuręcznego od bastardowego?
+* [[#008]] 1😢: The village looks poor, I'm sorry... Nobody here probably appreciates your work?
+* [[#008]] 2😡: Listen, if you're having a bad day, that's not my fault. I'm asking if lots of people buy from you, because that would be proof of your work's quality.
+* [[#008]] 3🧠: I can see some fine work here, but in this village nobody can probably tell a proper two-handed sword from a bastard sword?
 
 ### 008
 
-* Broń, którą tu robię nie ma sobie równych w całym **Królestwie Pomylenia**. Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.
+* The weapons I make here are unmatched in all of **Knaveshire**. Locals only buy sickles and horseshoes. Nothing but poverty around.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 004
 
-* Pozostałe wsie są tak samo biedne. Broń i zbroje kupują jedynie zarozumiali panicze z miasta **Porażkowo**.
+* The other villages are just as poor. Only the arrogant fops from the city of **Porażkowo** buy weapons and armor.
 
-* [[#009]] 1😇: No to oni pewnie dadzą zarobić? Znasz tam kogoś?
-* [[#009]] 2😢: Pewnie Cię poniżają ci _wielcy panicze_. Często musisz masz z nimi do czynienia?
-* [[#009]] 3😉: A po co tym _francuskim pieskom_ dobra broń? Polują kuszami na kury karczmarza?
+* [[#009]] 1😇: Then they must be good customers? Do you know anyone there?
+* [[#009]] 2😢: Those _grand gentlemen_ probably look down on you. Do you deal with them often?
+* [[#009]] 3😉: What would those _French poodles_ need good weapons for? Hunting the tavern keeper's chickens with crossbows?
 
 ### 009
 
-* Nie lubię miasta, nie jeżdżę tam. Pytaj [[EN/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] - on gada ze wszystkimi przybyszami.
+* I don't like the city, I don't go there. Ask [[EN/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] - he talks to all the newcomers.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 005
 
-* Moja broń jest tak dobra, że nie potrzeba mi czarów.
+* My weapons are so good I don't need magic.
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 006
 
-* Kto mądry to nie zostaje tu za długo. **Barman Absyntnent** nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.
+* Smart people don't stay here long. **Barman Absyntnent** isn't too bright, but he likes to talk. Just like you.
 
-* [[#010]] 1😇: Że, co? Ja dużo gadam?
-* [[#010]] 2🧠: Mam rozumieć, że Ty nie bardzo lubisz rozmawiać?
-* [[#010]] 3😉: No i tak jak Ty!
+* [[#010]] 1😇: What, what? I talk a lot?
+* [[#010]] 2🧠: Are you saying you don't really enjoy conversation?
+* [[#010]] 3😉: Just like you!
 
 ### 010
 
 * ...
 
-* [[#001]] 9😐: Dzięki, to mi wystarczy
+* [[#001]] 9😐: Thanks, that's enough for me
 
 ### 990-end
 [[#001]]
 
-* Żegnam
+* Goodbye
