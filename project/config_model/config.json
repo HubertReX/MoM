@@ -614,7 +614,7 @@
             "damage": 15,
             "cooldown_time": 0.1,
             "name_EN": "Krótki miecz",
-            "name_PL": "Short sword"
+            "name_PL": "Krótki miecz"
         },
         "sai": {
             "type": "weapon",
@@ -628,7 +628,7 @@
             "value": 1000,
             "weight": 0.02,
             "name_EN": "Golden coin",
-            "name_PL": "Golden coin"
+            "name_PL": "Złota moneta"
         },
         "gem_small_green": {
             "type": "gem",
@@ -694,35 +694,35 @@
             "type": "gem",
             "value": 60,
             "name_EN": "Orange small gem",
-            "name_PL": "Orange mały klejnot"
+            "name_PL": "Pomarańczowy mały klejnot"
         },
         "gem_crystal_orange": {
             "type": "gem",
             "value": 80,
             "weight": 2.0,
             "name_EN": "Orange crystal",
-            "name_PL": "Orange krzyształ"
+            "name_PL": "Pomarańczowy krzyształ"
         },
         "gem_big_orange": {
             "type": "gem",
             "value": 90,
             "weight": 3.0,
             "name_EN": "Orange big gem",
-            "name_PL": "Orange duży klejnot"
+            "name_PL": "Pomarańczowy duży klejnot"
         },
         "silver_key": {
             "type": "key",
             "value": 500,
             "weight": 0.01,
             "name_EN": "Silver key",
-            "name_PL": "Silver key"
+            "name_PL": "Srebrny klucz"
         },
         "golden_key": {
             "type": "key",
             "value": 500,
             "weight": 0.01,
             "name_EN": "Golden key",
-            "name_PL": "Golden key"
+            "name_PL": "Złoty klucz"
         },
         "beef": {
             "type": "consumable",
@@ -752,7 +752,7 @@
             "weight": 0.15,
             "health_impact": 5,
             "name_EN": "Water pot",
-            "name_PL": "Water pot"
+            "name_PL": "Fiolka wody"
         },
         "life_pot": {
             "type": "consumable",
@@ -760,7 +760,7 @@
             "weight": 0.15,
             "health_impact": 100,
             "name_EN": "Life potion",
-            "name_PL": "Life potion"
+            "name_PL": "Mikstura zdrowia"
         },
         "shashlik": {
             "type": "consumable",

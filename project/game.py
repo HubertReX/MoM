@@ -31,6 +31,7 @@ from settings import (  # LOGO_IMG,; ColorValue,
     DEFAULT_SHADER,
     FONT_COLOR,
     FONT_SIZE_DEFAULT,
+    FONT_SIZE_EXTRA_TINY,
     FONT_SIZE_HUGE,
     FONT_SIZE_LARGE,
     FONT_SIZE_MEDIUM,
@@ -164,7 +165,7 @@ class Game:
 
         self.fonts: dict[int, pygame.font.Font] = {}
         self.thin_fonts: dict[int, pygame.font.Font] = {}
-        font_sizes = [FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM, FONT_SIZE_LARGE, FONT_SIZE_HUGE]
+        font_sizes = [FONT_SIZE_EXTRA_TINY, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM, FONT_SIZE_LARGE, FONT_SIZE_HUGE]
         for font_size in font_sizes:
             self.fonts[font_size] = pygame.font.Font(MAIN_FONT, font_size)
             self.thin_fonts[font_size] = pygame.font.Font(MENU_FONT, font_size)

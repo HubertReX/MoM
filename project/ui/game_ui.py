@@ -18,7 +18,15 @@ from typing import TYPE_CHECKING, cast
 
 import pygame
 
-from settings import INPUTS
+from settings import (
+    INPUTS,
+    MAX_HOTBAR_ITEMS,
+    _,
+    entity_name,
+    get_buy_price_multiplier,
+    get_sell_price_multiplier,
+)
+from objects import NotificationTypeEnum
 
 from .panels.dialog import DialogPanel
 from .panels.hud import HUD
@@ -163,6 +171,77 @@ class GameUI:
                 else:
                     dialog.scroll_top()
                 INPUTS["talk"] = False
+
+        if self.is_open(TradePanel):
+            if INPUTS["end_trade"]:
+                self.close(TradePanel)
+                self.scene.player.is_talking = False
+                if self.scene.player.npc_met:
+                    self.scene.player.npc_met.is_talking = False
+                INPUTS["end_trade"] = False
+            if INPUTS["toggle"]:
+                self.toggle_trade_side()
+                INPUTS["toggle"] = False
+            if INPUTS["buy"]:
+                player = self.scene.player
+                if player.npc_met and self.is_buying:
+                    if player.can_buy():
+                        item_to_buy = player.npc_met.drop_item(show=False)
+                        if item_to_buy:
+                            price = int(round(
+                                item_to_buy.model.value * get_buy_price_multiplier(player.npc_met.sentiment)))
+                            player.model.money -= price
+                            player.npc_met.model.money += price
+                            player.pick_up(item_to_buy)
+                            self.scene.add_notification(
+                                _("notify.bought", name=entity_name(item_to_buy.model), price=price),
+                                NotificationTypeEnum.info)
+                INPUTS["buy"] = False
+            if INPUTS["sell"]:
+                player = self.scene.player
+                if player.npc_met and not self.is_buying:
+                    if player.can_sell():
+                        item_to_sell = player.drop_item(show=False)
+                        if item_to_sell:
+                            price = int(round(
+                                item_to_sell.model.value * get_sell_price_multiplier(player.npc_met.sentiment)))
+                            player.model.money += price
+                            player.npc_met.model.money -= price
+                            player.npc_met.pick_up(item_to_sell)
+                            self.scene.add_notification(
+                                _("notify.sold", name=entity_name(item_to_sell.model), price=price),
+                                NotificationTypeEnum.info)
+                INPUTS["sell"] = False
+
+            # item selection during trade
+            for idx in range(1, MAX_HOTBAR_ITEMS + 1):
+                if INPUTS[f"item_{idx}"]:
+                    player = self.scene.player
+                    if self.is_buying and player.npc_met and player.npc_met.model.is_merchant:
+                        npc = player.npc_met
+                    else:
+                        npc = player
+                    if idx - 1 < len(npc.items):
+                        npc.selected_item_idx = idx - 1
+                    INPUTS[f"item_{idx}"] = False
+
+            if INPUTS["next_item"]:
+                player = self.scene.player
+                if self.is_buying and player.npc_met and player.npc_met.model.is_merchant:
+                    player.npc_met.select_next_item()
+                else:
+                    filtered = player.get_tradable_items()
+                    player.select_next_item(filtered)
+                INPUTS["next_item"] = False
+
+            if INPUTS["prev_item"]:
+                player = self.scene.player
+                if self.is_buying and player.npc_met and player.npc_met.model.is_merchant:
+                    player.npc_met.select_prev_item()
+                else:
+                    filtered = player.get_tradable_items()
+                    player.select_prev_item(filtered)
+                INPUTS["prev_item"] = False
 
         # route raw events to HUD first (e.g. help panel scroll), then to the topmost open panel
         for event in events:

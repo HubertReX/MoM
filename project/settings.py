@@ -586,14 +586,15 @@ MAIN_FONT = FONTS_PATH / f"{font_name}.ttf"
 MENU_FONT = FONTS_PATH / f"{font_name}.ttf"
 
 FONT_SIZES_DICT = {
-    "font": [8, 24, 38, 42, 55],
-    "font_pixel": [10, 14, 16, 24, 155],
+    "font": [6, 8, 24, 38, 42, 55],
+    "font_pixel": [8, 10, 14, 16, 24, 155],
 }
-FONT_SIZE_TINY = FONT_SIZES_DICT[font_name][0]
-FONT_SIZE_SMALL = FONT_SIZES_DICT[font_name][1]
-FONT_SIZE_MEDIUM = FONT_SIZES_DICT[font_name][2]
-FONT_SIZE_LARGE = FONT_SIZES_DICT[font_name][3]
-FONT_SIZE_HUGE = FONT_SIZES_DICT[font_name][4]
+FONT_SIZE_EXTRA_TINY = FONT_SIZES_DICT[font_name][0]
+FONT_SIZE_TINY = FONT_SIZES_DICT[font_name][1]
+FONT_SIZE_SMALL = FONT_SIZES_DICT[font_name][2]
+FONT_SIZE_MEDIUM = FONT_SIZES_DICT[font_name][3]
+FONT_SIZE_LARGE = FONT_SIZES_DICT[font_name][4]
+FONT_SIZE_HUGE = FONT_SIZES_DICT[font_name][5]
 FONT_SIZE_DEFAULT = FONT_SIZE_MEDIUM
 TEXT_ROW_SPACING = 1.4
 
@@ -640,7 +641,17 @@ PARTICLES = {
 }
 
 CONF_ENTITIES_TO_STORE: dict[str, list[str]] = {
-    "characters": ["name_EN", "name_PL", "attitude", "race", "health", "damage", "speed_walk", "speed_run", "has_dialog"],
+    "characters": [
+        "name_EN",
+        "name_PL",
+        "attitude",
+        "race",
+        "health",
+        "damage",
+        "speed_walk",
+        "speed_run",
+        "has_dialog",
+    ],
     "chests": ["name", "is_small", "total_items_count"],
     "items": ["name_EN", "name_PL", "type", "value", "weight", "health_impact", "damage", "cooldown_time"],
     "maze_configs": [

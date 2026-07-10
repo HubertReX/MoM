@@ -6,9 +6,10 @@ import pygame
 from settings import (
     BLACK_COLOR,
     CHAR_NAME_COLOR,
-    FONT_SIZE_TINY,
+    FONT_SIZE_EXTRA_TINY,
     HUD_DIR,
     IS_WEB,
+    MAIN_FONT,
     PANEL_BG_COLOR,
     TILE_SIZE,
     TRANSPARENT_COLOR,
@@ -171,7 +172,7 @@ class HealthBar(pygame.sprite.Sprite):
                  #  translate_pos: Callable
                  ) -> None:
         super().__init__(groups)
-        self.image: pygame.Surface = pygame.Surface((100, 20)).convert_alpha()
+        self.image: pygame.Surface = pygame.Surface((125, 43)).convert_alpha()
         self.image.fill(TRANSPARENT_COLOR)
         self.visible: bool = True
         self.name = name
@@ -216,16 +217,52 @@ class HealthBar(pygame.sprite.Sprite):
 
             y += 5
 
-        # render name of the character
-        self.render_text(
-            entity_name(self.model),
-            (int(self.rect.width // 2), y),
-            self.color,
-            font_size=FONT_SIZE_TINY,
-            shadow=(84, 135, 137),
-            centred=True,
-            surface=self.image
-        )
+        # render name of the character (wrap at space if too wide)
+        name = entity_name(self.model)
+        fs = FONT_SIZE_EXTRA_TINY
+        max_w = self.image.get_width() - 4
+        _font = pygame.font.Font(MAIN_FONT, fs)
+        line_h = fs + 4
+
+        if _font.size(name)[0] <= max_w:
+            self.render_text(
+                name,
+                (int(self.rect.width // 2), y),
+                self.color,
+                font_size=fs,
+                shadow=(84, 135, 137),
+                centred=True,
+                surface=self.image
+            )
+        else:
+            words = name.split()
+            line1: list[str] = []
+            for w in words:
+                if _font.size(" ".join(line1 + [w]))[0] > max_w:
+                    break
+                line1.append(w)
+            line2 = " ".join(words[len(line1):])
+            s1 = " ".join(line1)
+            cy = y if not line2 else y + line_h // 2
+            self.render_text(
+                s1,
+                (int(self.rect.width // 2), cy - line_h // 2),
+                self.color,
+                font_size=fs,
+                shadow=(84, 135, 137),
+                centred=True,
+                surface=self.image
+            )
+            if line2:
+                self.render_text(
+                    line2,
+                    (int(self.rect.width // 2), cy + line_h // 2),
+                    self.color,
+                    font_size=fs,
+                    shadow=(84, 135, 137),
+                    centred=True,
+                    surface=self.image
+                )
 
 #################################################################################################################
     def show(self) -> None:
