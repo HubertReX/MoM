@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import pygame
 
-from settings import HEIGHT, WIDTH, _
+from settings import HEIGHT, WIDTH, _, entity_name
 
 from .. import theme
 from ..widget import Widget
@@ -43,7 +43,7 @@ def draw_item_details(hud: "HUD", surface: pygame.Surface, props_top_left: tuple
     value_label = _("inv.price") if price is not None else _("inv.value")
     value_text = f"{price:4d}" if price is not None else f"{item_model.value:4d}"
     left_properties = [
-        {"icon_name": "", "label": "", "value": f"{item_model.name}"},
+        {"icon_name": "", "label": "", "value": entity_name(item_model)},
         {"icon_name": "pan_balance", "label": _("inv.weight"), "value": f"{item_model.weight:4.2f}"},
         {"icon_name": "golden_coin", "label": value_label, "value": value_text},
         {"icon_name": "abacus2", "label": _("inv.amount"), "value": f"{item_model.count:4d}"},
