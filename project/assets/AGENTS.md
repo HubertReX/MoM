@@ -33,15 +33,30 @@ Autor edytuje/tworzy assety w **Aseprite** (baza = paczki licencjonowane + włas
   odczytuje wszystkie postacie z `IMPORTABLE_CHARACTERS`, merge'uje do istniejącego
   `config.json`, usuwa osierocone klucze `messages`. Postacie spoza listy (np. Madame
   Sarcamia) są zachowane bez zmian.
-- **Wybór języka** w runtime przez zmienną `LANG` w `settings.py:21`:
+- **Wybór języka** w runtime przez zmienną `LANG` w `settings.py:22`:
   ```python
-  LANG = "EN"                                   # settings.py:21 — mutable, zmieniane z UI
+  LANG = "PL"                                   # settings.py:22 — mutable, zmieniane z UI
   ```
   Zmiana `LANG` jest sterowana z panelu Settings w grze (przełącznik `Language: PL`/`Language: EN`)
   i persistowana w `save_load/display_settings.py` (`settings.json` / localStorage).
   Dodając nowy dialog, utwórz odpowiedniki w **obu** językach (`assets/dialogs/{PL,EN}/`).
 - Format rich-text (tagi `[bold]`, `[link plik.md]…[/link]`, inline `:emoji:`) renderowany
   przez SFText / `rich_text.py`.
+
+## UI strings (lokalizacja interfejsu)
+
+Teksty interfejsu (menu, powiadomienia, akcje) znajdują się w `locale/{PL,EN}.toml`.
+Pliki TOML używają zagnieżdżonych tabel — klucze z kropkami w JSON odpowiadają
+sekcjom TOML (np. `"menu.continue"` → `[menu]` + `continue`).
+
+Ładowanie: `settings.load_ui_strings()` → `tomllib.load()` → `_flatten_toml()`
+zagnieżdżony dict → flat dict z kluczami `"section.key"`. Funkcja `_()` czyta
+z cache `UI_STRINGS[LANG]`.
+
+**Walidacja:** `just validate-locale` (sprawdza symetrię kluczów PL/EN + spójność
+placeholderów). Uruchamiane też przez `just check`.
+
+Dodając nowy klucz: wpisz w **oba** pliki TOML, uruchom `just validate-locale`.
 
 ## Sprite-sheety postaci
 
