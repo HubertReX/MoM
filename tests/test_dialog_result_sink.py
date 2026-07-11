@@ -64,7 +64,7 @@ class FakeSink:
     def lose_health(self, amount: int) -> None:
         self.calls.append(("lose_health", amount))
 
-    def shift_sentiment(self, amount: int) -> None:
+    def shift_sentiment(self, amount: int, emote_key: str = "") -> None:
         self.calls.append(("shift_sentiment", amount))
 
 
@@ -209,7 +209,8 @@ class _FakeScene:
         return _FakeItem(name, _FakeItemModel())
 
     def add_notification(
-        self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info
+        self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info,
+        emote_key: str = "",
     ) -> None:
         self.notifications.append(_FakeNotification(message=text))
 

@@ -299,11 +299,12 @@ class Scene(State):
 
     #############################################################################################################
 
-    def add_notification(self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info) -> None:
+    def add_notification(self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info,
+                         emote_key: str = "") -> None:
         # message is raw markup; the HUD renders and caches it via the new RichText engine
         icon = NOTIFICATION_TYPE_ICONS[type]
         message = f":{icon}: {text}"
-        notification = Notification(type, message, "", 0, 0, self.game.time_elapsed)
+        notification = Notification(type, message, "", 0, 0, self.game.time_elapsed, emote_key)
         self.notifications.append(notification)
 
     #############################################################################################################

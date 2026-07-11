@@ -367,13 +367,35 @@ class HUD(Widget):
 
         text_surf = self._notification_surface(notification)
         tw, th = text_surf.get_size()
+
+        # Sentiment emote drawn separately to the left of the text.
+        emote_surf: pygame.Surface | None = None
+        emote_w = 0
+        if notification.emote_key:
+            frames = self.icons.get(notification.emote_key, [])
+            if frames:
+                font_h = theme.get_font(14).get_height()
+                target_h = round(font_h * 1.35)
+                src = frames[0]
+                sw, sh = src.get_size()
+                s = target_h / sh if sh else 1.0
+                emote_surf = pygame.transform.scale(src, (max(1, round(sw * s)), target_h))
+                emote_w = emote_surf.get_width() + 4  # 4px gap
+
+        total_w = tw + emote_w
         pad_x, pad_y = 20, 10
-        bg = theme.nine_patch("nine_patch_04c.png", tw + 2 * pad_x, th + 2 * pad_y, border=3)
+        bg = theme.nine_patch("nine_patch_04c.png", total_w + 2 * pad_x, th + 2 * pad_y, border=3)
         surface.blit(bg, (TILE_SIZE, y))
-        # centre the text inside the panel (both axes), then shift down 3px so it
-        # doesn't ride up into the border.
-        surface.blit(text_surf, (TILE_SIZE + (bg.get_width() - tw) // 2,
-                                 y + (bg.get_height() - th) // 2 + 3))
+        # Centre the text+emote block inside the panel (both axes), then shift
+        # down 3px so it doesn't ride up into the border.
+        text_x = TILE_SIZE + (bg.get_width() - total_w) // 2 + (emote_w - 8 if emote_w else 0)
+        text_y = y + (bg.get_height() - th) // 2 + 3
+        surface.blit(text_surf, (text_x, text_y))
+
+        if emote_surf is not None:
+            emote_x = text_x - emote_w + 24
+            emote_y = text_y + (th - emote_surf.get_height()) // 2 - 3
+            surface.blit(emote_surf, (emote_x, emote_y))
 
     #############################################################################################################
     # MARK: compose

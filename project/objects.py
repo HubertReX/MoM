@@ -514,3 +514,4 @@ class Notification():
     width: int
     height: int
     create_time: float
+    emote_key: str = ""

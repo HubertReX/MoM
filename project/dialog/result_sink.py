@@ -42,12 +42,12 @@ class ResultSink(Protocol):
         """Damage the hero."""
         ...
 
-    def shift_sentiment(self, amount: int) -> None:
+    def shift_sentiment(self, amount: int, emote_key: str = "") -> None:
         """Shift the current NPC's sentiment toward the hero."""
         ...
 
 
-def apply_result(result: NodeVisitResult, sink: ResultSink) -> None:
+def apply_result(result: NodeVisitResult, sink: ResultSink, emote_key: str = "") -> None:
     """Dispatch ``result`` to ``sink`` based on its category.
 
     The numeric fields inside :class:`NodeVisitResult` are expected to be
@@ -67,13 +67,13 @@ def apply_result(result: NodeVisitResult, sink: ResultSink) -> None:
     elif category is NodeVisitResultCategory.HEALTH_LOST:
         sink.lose_health(result.health)
     elif category is NodeVisitResultCategory.SENTIMENT_SHIFT:
-        sink.shift_sentiment(result.value)
+        sink.shift_sentiment(result.value, emote_key)
     else:
         # unreachable unless a new category is added without a handler
         raise ValueError(f"unhandled NodeVisitResultCategory: {category!r}")
 
 
-def visit_node(node: DialogNode, sink: ResultSink) -> bool:
+def visit_node(node: DialogNode, sink: ResultSink, emote_key: str = "") -> bool:
     """Mark ``node`` visited and apply its side effect exactly once.
 
     Returns ``True`` when this call actually applied the result (first visit),
@@ -83,7 +83,7 @@ def visit_node(node: DialogNode, sink: ResultSink) -> bool:
         return False
     node.visited = True
     if node.result is not None:
-        apply_result(node.result, sink)
+        apply_result(node.result, sink, emote_key)
     return True
 
 

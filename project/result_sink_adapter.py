@@ -74,12 +74,13 @@ class GameResultSink(ResultSink):
             self.player.model.health - max(0, amount),
         )
 
-    def shift_sentiment(self, amount: int) -> None:
+    def shift_sentiment(self, amount: int, emote_key: str = "") -> None:
         self.npc.sentiment = max(0, min(100, self.npc.sentiment + amount))
         if amount != 0:
             self.player.scene.add_notification(
                 _("notify.sentiment", amount=amount),
                 NotificationTypeEnum.success if amount > 0 else NotificationTypeEnum.info,
+                emote_key=emote_key,
             )
 
     def _remove_one_item(self, key: str) -> str | None:

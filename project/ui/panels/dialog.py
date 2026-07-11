@@ -147,12 +147,12 @@ class DialogPanel(Widget):
         elif not self._options:
             self._on_final_node = True
 
-    def _visit_current_node(self) -> None:
+    def _visit_current_node(self, emote_key: str = "") -> None:
         """Apply the current node's side effect exactly once (first visit)."""
         if self.npc is None or self.npc.dialog is None:
             return
         sink = GameResultSink(self.scene.player, self.npc)
-        visit_node(self.npc.dialog, sink)
+        visit_node(self.npc.dialog, sink, emote_key)
 
     def _refresh_options(self) -> None:
         """Rebuild the filtered, numbered option list for the current node.
@@ -323,14 +323,15 @@ class DialogPanel(Widget):
         shift = self.npc.apply_option_sentiment(opt.sentiment) if is_new_selection else 0
         if shift != 0:
             emote_key = opt.sentiment
-            msg = f":{emote_key}: {_('notify.sentiment', amount=shift)}"
+            msg = _('notify.sentiment', amount=shift)
             self.scene.add_notification(
                 msg,
                 NotificationTypeEnum.success if shift > 0 else NotificationTypeEnum.info,
+                emote_key=emote_key,
             )
             self._sentiment_flash_timer = 0.5
         self.npc.dialog = opt.next_node
-        self._visit_current_node()
+        self._visit_current_node(emote_key=opt.sentiment)
         if self.npc.dialog.is_final:
             # Refresh the body text/options for the final node so the player
             # sees the farewell text. The panel stays open until the player
