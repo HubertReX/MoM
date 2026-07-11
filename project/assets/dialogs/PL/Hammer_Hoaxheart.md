@@ -1,8 +1,38 @@
 ---
 aliases:
   - HAMMER_HOAXHEART
+  - Kowal Kłamca
+alternative:
+EN: "[[Blunderhaven]]"
+inspirations:
+  - 
+location: "[[Gafowo Kolonia]]"
+kind: -1
+weak: 1
+angry: 2
+smart: -1
+funny: -2
 ---
-# **Kowal Kłamca**
+# Info
+
+## Cechy charakteru
+
+  * grubiański
+  * opryskliwy
+  * mruk
+  * introwertyk
+  * utalentowany
+  * dobry rzemieślnik
+
+## Konflikt wewnętrzny
+
+Czuje, że stać go na więcej niż [[Gafowo Kolonia]], gardzi prostotą tutejszych ludzi. Bywał w szerokim świecie, nie jedno widział i dużo wie, ale czuje się niedoceniany. Zamknął się sobie i przestało mu zależeć na kontakcie z innymi.
+
+## Tło historyczne
+
+Kowal, który twierdzi, że jego miecze mogą przeciąć cień i że jego zbroje są nieprzeniknione.  W rzeczywistości nie są najlepsze w królestwie, ale zaskakująco dobre jak na wiejskiego kowala.
+
+# Kowal Kłamca
 
 translation: [**HAMMER_HOAXHEART**](../EN/char-Hammer_Hoaxheart.md)
 
@@ -73,7 +103,7 @@ translation: [**HAMMER_HOAXHEART**](../EN/char-Hammer_Hoaxheart.md)
 
 ### 009
 
-* Nie lubię miasta, nie jeżdżę tam. Pytaj [[PL/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] - on gada ze wszystkimi przybyszami.
+* Nie lubię miasta, nie jeżdżę tam. Pytaj [[PL/Barman_Absinthrayner|Barmana Absyntnenta]] - on gada ze wszystkimi przybyszami.
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy
 
@@ -85,7 +115,7 @@ translation: [**HAMMER_HOAXHEART**](../EN/char-Hammer_Hoaxheart.md)
 
 ### 006
 
-* Kto mądry to nie zostaje tu za długo. [[PL/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.
+* Kto mądry to nie zostaje tu za długo. [[PL/Barman_Absinthrayner|Barman Absyntnent]] nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.
 
 * [[#010]] 1😇: Że, co? Ja dużo gadam?
 * [[#010]] 2🧠: Mam rozumieć, że Ty nie bardzo lubisz rozmawiać?

@@ -1,8 +1,39 @@
 ---
 aliases:
   - POTIONEER_PUZZLEMINT
+  - Zielarka Zmora
+  - 
+alternative:
+EN: "[[EN/Potioneer_Puzzlemint|Potioneer Puzzlemint]]"
+inspirations:
+  - 
+location: "[[Gafowo Kolonia]]"
+kind: 1
+weak: 1
+angry: 1
+smart: 1
+funny: 1
 ---
-# **Zielarka Zmora**
+# Info
+
+## Cechy charakteru
+
+  * staroświecka
+  * zabobonna
+  * nieufna
+  * cwana
+  * wścibska
+
+## Konflikt wewnętrzny
+
+## Tło historyczne
+
+Tajemnicza kobieta, która sprzedaje mikstury i eliksiry, ale nigdy nie ujawnia ich składu. Klienci nigdy nie wiedzą, czy dostaną lekarstwo, czy truciznę.
+Jej ziołowe mikstury to wszystko na co mogą liczyć mieszkańcy [[Gafowo Kolonia]] - to musi wystarczyć zamiast lekarstw i magii.
+
+Szkoliła kiedyś [[PL/MISS_INFORMATION|Bibliofilistka des Informacja]] na zielarkę.
+
+# Zielarka Zmora
 
 translation: [**POTIONEER_PUZZLEMINT**](../EN/char-Potioneer_Puzzlemint.md)
 
@@ -44,7 +75,7 @@ translation: [**POTIONEER_PUZZLEMINT**](../EN/char-Potioneer_Puzzlemint.md)
 
 ### 002
 
-* Ostatnimi laty rzeczywiście nie ruszam się poza **Gafowo Kolonię**, ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.
+* Ostatnimi laty rzeczywiście nie ruszam się poza [loc]Gafowo Kolonię[/loc], ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.
 A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku?
 
 * [[#008]] 1😇: Jestem wagą - to najmilszy znak zodiaku, nie sądzisz?
@@ -73,7 +104,7 @@ A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś
 
 ### 003
 
-* Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.
+* Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. [[PL/Hammer_Hoaxheart|Kowal Kłamca]] nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy.
 
@@ -134,7 +165,7 @@ Tak jak ja.
 
 ### 015
 
-* Ona pracuje teraz w ukrytej [loc]bibliotece[/loc], pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
+* Ona pracuje teraz w ukrytej [loc]bibliotece[/loc], pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [[PL/Hammer_Hoaxheart|Kowal Kłamca]] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
 
 * [[#012]] 1😐: Dziękuję, to cenne informacje.
 

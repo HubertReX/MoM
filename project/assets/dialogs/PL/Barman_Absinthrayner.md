@@ -1,10 +1,40 @@
 ---
 aliases:
   - BARMAN_ABSINTHRAYNER
+  - Barman Absyntnent
+  - bb
+alternative:
+EN: "[[EN/Barman_Absinthrayner|Barman_Absinthrayner]]"
+inspirations:
+  - Absynt, Abstynent
+location: "[[Gafowo Kolonia]]"
+kind: 1
+weak: 1
+angry: 1
+smart: 1
+funny: 1
 ---
-# **Barman Absyntnent**
+# Info
 
-translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
+`= "![[" + this.aliases[0] + ".png|300]]"`
+
+## Cechy charakteru
+
+  * żartobliwy
+  * rozmowny
+  * obrotny
+  * prosty
+  * nie wykształcony
+
+## Konflikt wewnętrzny
+
+chciałby być postrzegany jako światły i bywały, ale tak na prawdę jest prostym chłopem, który boi się wyjechać dalej niż 2 wioski od domu.
+
+## Tło historyczne
+
+Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to początek nowej historii, a każda nalewka to intrygująca zagadka. Rozmowny, towarzyski, zna wiele osób i miejsca, ale tylko w najbliższej okolicy. Całe życie pracuje w [[Tawerna Brakująca klepka]] gdzie też się urodził. Jest prostym człowiekiem, który nie widział wielkiego świata bo trochę się go boi, ale tego nie przyzna. Wierzy w zabobony, brzydzi się magią
+
+# **Barman Absyntnent**
 
 * friendly=60
 * 😇kind+
@@ -18,7 +48,7 @@ translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
 
 ### 000
 
-* Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [[BARMAN_ABSINTHRAYNER]]. A kogo tu do mnie los sprowadził?
+* Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [[PL/Barman_Absinthrayner|Barman Absyntnent]]. A kogo tu do mnie los sprowadził?
 
 * [[#001]] 1😇: Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:
 * [[#001]] 2😢: Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...
@@ -37,14 +67,14 @@ translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
 
 ### 002
 
-* Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. 
-Mój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki :blink:
+* Ja się praktycznie urodziłem w tej [loc]karczmie[/loc]. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. 
+Mój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki:blink:
 
 * [[#001]] 1😐: Dzięki, to mi wystarczy
 
 ### 003
 
-* [loc]Gafowo Kolonia[/loc]? Może to nie jest **Rzym**, ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. 
+* [loc]Gafowo Kolonia[/loc]? Może to nie jest [loc]Rzym[/loc], ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. 
 Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych **czarodziei** i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty:angry:. 
 
 Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki:shocked:. Ponoć użyli swojej **magii**. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów:evil:.
@@ -70,7 +100,7 @@ Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, 
 ### 009
 
 * Ach! [quest]Odwieczna klątwą nieszczęścia[/quest]? Poważnie? Myślałem, że to tylko gadanie mojej matki...
-No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma **magii**. Popytaj [[PL/Potioneer_Puzzlemint|POTIONEER_PUZZLEMINT]], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.
+No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma **magii**. Popytaj [[PL/Potioneer_Puzzlemint|Zielarka Zmora]], ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.
 
 * [[#007]] 2🧠: A gdzie są teraz ci **czarodzieje**?
 * [[#001]] 9😐: Dzięki, to mi wystarczy
@@ -138,7 +168,7 @@ Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu po
 
 ### 012
 
-* Ach, rozumiem. Hmmm, no to może jedynie stara [char]Zielarka Zmora[/char] mogła by co pomóc. Ona potrafi przygotować taką [item]miksturę[/item], że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. 
+* Ach, rozumiem. Hmmm, no to może jedynie stara [[PL/Potioneer_Puzzlemint|Zielarka Zmora]] mogła by co pomóc. Ona potrafi przygotować taką [item]miksturę[/item], że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. 
 Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu.
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy

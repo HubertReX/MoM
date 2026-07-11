@@ -1,10 +1,28 @@
 ---
 aliases:
   - HAMMER_HOAXHEART
+  - Hammer Hoaxheart
+  - 
+alternative:
+PL: "[[PL/Hammer_Hoaxheart|Kowal Kłamca]]"
+inspirations:
+  - 
+location: "[[Blunderhaven]]"
+kind: -1
+weak: 1
+angry: 2
+smart: -1
+funny: -2
 ---
-# **Hammer Hoaxheart**
+# # Info
 
-translation: [**Kowal Kłamca**](../PL/char-Hammer_Hoaxheart.md)
+## Traits
+
+## Conflict
+
+## Backstory
+
+He is a blacksmith who claims that his swords can cut through shadows and that his armors are impenetrable.
 
 * friendly=0.3
 * 😇kind-

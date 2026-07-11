@@ -1,10 +1,40 @@
 ---
 aliases:
   - MADAME_SARCASMIA
+  - Madame Sarkażmijka
+alternative: Madame Sarkasmia
+EN: "[[EN/Madame_Sarcasmia|Madame Sarcasmia]]"
+inspirations:
+  - Sarkastyczna Czarodziejka
+  - Dowcipna Czarodziejka
+location: "[[Porażkowo]]"
+kind: 1
+weak: -2
+angry: -1
+smart: 1
+funny: 2
 ---
-# **Madame Sarcasmia**
+# Info
 
-translation: [**Madame Sarcasmia**](../EN/Madame_Sarcasmia.md)
+
+## Cechy charakteru
+
+- sarkastyczna
+- zmanierowana
+- chaotyczna
+- zdystansowana do siebie
+
+## Konflikt wewnętrzny
+
+Ciągłe żarty to tylko fasada.
+
+## Tło historyczne
+
+Czarodziejka z ostrym językiem i zamiłowaniem do kąśliwego sarkazmu.  Posiada księgę zaklęć wypełnioną czarami, które łączą magiczną sprawność z złośliwymi uwagami.  Potrafi wyczarować ogniste kule za pomocą bezczelnego żartu i przywołać podmuchy wiatru za pomocą uszczypliwej uwagi. Chociaż jej magia jest potężna, jej sarkastyczna natura często wpędza ją w kłopoty, prowokując wrogów i irytując sojuszników. Niemniej jej zjadliwy humor wnosi do przygody wyjątkową mieszankę dowcipu i magii.
+
+Sarkazm to jej sposób radzenia sobie z przyziemnymi i nudnymi sprawami, bo jej zdaniem życie jest za krótkie, żeby być cały czas poważnym.
+
+# Madame Sarkażmijka
 
 * friendly=0.5
 * 😇kind+
@@ -20,21 +50,21 @@ translation: [**Madame Sarcasmia**](../EN/Madame_Sarcasmia.md)
 
 * No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukającą jakiegoś cudownego lekarstwa? Unosi brwi :wondering:.
 
-* [[#001]] 1[not visited("005")]😇: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.
+* [[#001]] 1[not visited("005")]😇: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… [quest]odwieczną klątwę ciągłego pecha[/quest].
 * [[#001]] 2[not visited("005")]😉: Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.
 * [[#007]] 3[not visited("005")]🧠: Czy możesz mi powiedzieć coś więcej o sobie?
 * [[#011]] 4[visited("005")]😐: Wracam. Masz już dla mnie jakieś wskazówki?
 
 ### 001
 
-* Wzdycha dramatycznie: Ach, odwieczna klątwa nieszczęścia. Jakie oryginalne :dots:. Dobra, pewnie mogłabym ci pomóc, ale wiedz, że magia nie jest tania.
+* Wzdycha dramatycznie: Ach, [quest]Odwieczna klątwa nieszczęścia[/quest]. Ta jasne, właśnie Tobie przytrafiła się legendarna kłatwa :doubt: :dots:. To prawdopodobnie zwykły pech. No ale dobra, pewnie mogłabym ci jakoś pomóc, ale wiedz, że magia nie jest tania.
 
 * [[#002]] 1😇: Zrobię wszystko, co trzeba. Po prostu podaj swoją cenę.
 * [[#002]] 2😉: Cóż, a to pech, bo miałem zamiar ci zapłacić wyrazami wdzięczności.
 
 ### 002
 
-* Och, zrobię to, nie martw się. Widzisz kochanieńki, potrzebuję kilku drobiazgów do mojego małego… projektu. Zdobądź je dla mnie, a być może przygotuję Ci eliksir, który teoretycznie może złamać twoją klątwę. Albo zamieni Cię w traszkę. To się jeszcze zobaczy.
+* Och, zrobię to, nie martw się. Widzisz kochanieńki, potrzebuję jedynie kilku drobiazgów do mojego małego… projektu. Zdobądź je dla mnie, a być może przygotuję Ci eliksir, który _teoretycznie_ może złamać twoją klątwę. Albo zamieni Cię w traszkę. To się jeszcze zobaczy:blink:
 
 * [[#003]] 1😇: Drobiazgi, mówisz? O czym konkretnie mówimy?
 * [[#003]] 2😉: To będzie bułka z masłem, prawda?

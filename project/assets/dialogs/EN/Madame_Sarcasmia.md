@@ -1,8 +1,29 @@
 ---
 aliases:
   - MADAME_SARCASMIA
+  - Madame Sarcasmia
+alternative:
+PL: "[[PL/Madame_Sarcasmia|Madame Sarkażmijka]]"
+inspirations:
+  - 
+location: "[[Quirkshire]]"
+kind: 1
+weak: 1
+angry: 1
+smart: 1
+funny: 1
 ---
-# **Madame Sarcasmia**
+# Info
+
+==TODO==
+
+## Traits
+
+## Conflict
+
+## Backstory
+
+# Madame Sarcasmia
 
 translation: [**Madame Sarcasmia**](../PL/Madame_Sarcasmia.md)
 

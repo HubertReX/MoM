@@ -1,10 +1,36 @@
 ---
 aliases:
   - CLAPBACK_SWORD
+  - Miecz Ciętej-riposty
+alternative:
+EN: "[[EN/Clapback_Sword|Clapback_Sword]]"
+inspirations:
+  - 
+location:
+kind: 1
+weak: -2
+angry: -1
+smart: 1
+funny: 2
 ---
-# **Miecz Ciętej-riposty**
+# Info
 
-translation: [**CLAPBACK_SWORD**](../EN/char-Clapback_Sword.md)
+`= "![[" + this.aliases[0] + ".png|300]]"`
+
+## Cechy charakteru
+
+  * dramatyzujący
+  * idealista
+  * chętny do pomocy w skrytości
+  * zawsze jest sarkastyczny i uszczypliwy, ale w zabawny i życzliwy sposób
+
+## Konflikt wewnętrzny
+
+  * gardzi swoim właścicielem za jego prostactwo, ale jednocześnie jego dobre serce każe mu pomagać
+
+## Tło historyczne
+
+Pierwszy i stały towarzysz **Malachiego** to rozmawiający miecz. Bardziej interesuje go dokuczenie swojemu właścicielowi niż pomaganie, ale wciąż jest cennym źródłem informacji na temat otaczającego świata na początku gry. Można go również traktować jako swoistego nauczyciela, uczącego podstaw mechaniki gry. Zawsze jest sarkastyczny i uszczypliwy, ale w zabawny i życzliwy sposób.
 
 * friendly=0.7
 * 😇kind+
@@ -68,7 +94,7 @@ Wtedy straciłem przytomność i obudziliśmy się tutaj.
 
 * Serio?
 Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. 
-Ja, proszę ja Ciebie, jestem **Twoim** jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich **Twoich** _wyczynów_. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [[PL/Clapback_Sword|CLAPBACK_SWORD]] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.
+Ja, proszę ja Ciebie, jestem **Twoim** jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich **Twoich** _wyczynów_. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [[PL/Clapback_Sword|Miecz Ciętej-riposty]] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.
 
 * [[#008]] 1😇: Och, rozumiem. Dzięki za rozjaśnienie sytuacji. Co ja bym bez Ciebie zrobił?
 * [[#008]] 2😡: Mówisz, jak byś był moją matką. Jestem dorosły mogę robić co chcę.

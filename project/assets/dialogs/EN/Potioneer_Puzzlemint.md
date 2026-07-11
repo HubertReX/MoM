@@ -1,8 +1,29 @@
 ---
 aliases:
   - POTIONEER_PUZZLEMINT
+  - Potioneer Puzzlemint
+alternative:
+PL: "[[PL/Potioneer_Puzzlemint|Zielarka Zmora]]"
+inspirations:
+  - 
+location: "[[Blunderhaven]]"
+kind: 1
+weak: 1
+angry: 1
+smart: 1
+funny: 1
 ---
-# **Potioneer Puzzlemint**
+# Info
+
+==TODO==
+
+## Traits
+
+## Conflict
+
+## Backstory
+
+# Potioneer Puzzlemint
 
 translation: [**Zielarka Zmora**](../PL/char-Potioneer_Puzzlemint.md)
 
