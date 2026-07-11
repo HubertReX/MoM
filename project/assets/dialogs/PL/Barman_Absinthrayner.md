@@ -33,7 +33,7 @@ translation: [**BARMAN_ABSINTHRAYNER**](../EN/char-Barman_Absinthrayner.md)
 * [[#004]] 3😐: Jest tu coś ciekawego w [dark]okolicy[/dark]:red_question_anim:
 * [[#005]] 4😐: Znasz kogoś, kto zna się na [b]zaklęciach[/b]:question:
 * [[#006]] 5😐: Gdzie mógłbym zdobyć wiedzę o **zaklęciach**:question:
-* [[#990-end]] 9😐: To tyle, do następnego razu :walk:
+* [[#990-end]] 9😐: To tyle, do następnego razu
 
 ### 002
 
@@ -166,7 +166,7 @@ Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś
 
 ### 015
 
-* [SENTIMENT-10]I co? Będziesz chciał oszukiwać w kartach? Albo lepiej, [shadow]czarami[/shadow] chcesz mnie omamić podczas handlu! O Ty!:engry:
+* [SENTIMENT-10]I co? Będziesz chciał oszukiwać w kartach? Albo lepiej, [shadow]czarami[/shadow] chcesz mnie omamić podczas handlu! O Ty!:angry:
 
 * [[#991-end]] 1😐: Nie, nie, to nie tak...
 

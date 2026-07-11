@@ -36,7 +36,8 @@ translation: [**Miecz Ciętej-riposty**](../PL/char-Clapback_Sword.md)
 
 ### 001
 
-* So you're still alive, barely. At this rate, I'll rust next to your skeleton soon. What a mess. You really made a scene yesterday. Playing cards with wizards and their marked cards! You brought it upon yourself, so suffer now. I won't help you. Don't even ask.
+* So you're still alive, barely...frounce: 
+At this rate, I'll rust next to your skeleton soon. What a mess. You really made a scene yesterday. Playing cards with wizards and their marked cards! You brought it upon yourself, so suffer now. I won't help you. Don't even ask.
 
 * [[#002]] 1😇: Come on, don't be like that. Can't you see I'm suffering here?
 * [[#002]] 2😡: Tell me what you know! I don't have the strength for games right now.

@@ -36,7 +36,7 @@ translation: [**CLAPBACK_SWORD**](../EN/char-Clapback_Sword.md)
 
 ### 001
 
-* Czyli jednak żyjesz, jeszcze.
+* Czyli jednak żyjesz, jeszcze...:frounce:
 Jak tak dalej pójdzie to niedługo zardzewieję u boku [shadow]Twojego[/shadow] szkieletu. No ładny bajzel. Nieźle dałeś wczoraj do wiwatu. Żeby grać w karty z czarodziejami i to znaczonymi kartami! Sam się o to prosiłeś, to teraz cierp.
 Nie będę Ci pomagał.
 Nawet mnie nie proś.
@@ -56,8 +56,8 @@ Nawet mnie nie proś.
 
 ### 003
 
-* Poniosła Cię ułańska fantazja! Po raz kolejny!
-Chciałeś ograć w karty nowoprzybyłych czarodziei, spiłeś się, przestałeś mnie słuchać, przyłapali Cię na próbie oszustwa, rzucili jakieś zaklęcie, potem był jeden wielki huk i błysk.
+* Poniosła Cię _ułańska fantazja_! Po raz kolejny!
+Chciałeś ograć w karty nowoprzybyłych **czarodziei**, spiłeś się, przestałeś mnie słuchać, przyłapali Cię na próbie oszustwa, rzucili jakieś zaklęcie, potem był jeden wielki huk i błysk.
 Wtedy straciłem przytomność i obudziliśmy się tutaj.
 
 * [[#008]] 1😇: He he, no to była niezła zabawa.
@@ -67,7 +67,8 @@ Wtedy straciłem przytomność i obudziliśmy się tutaj.
 ### 004
 
 * Serio?
-Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich **Twoich** _wyczynów_. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [[PL/Clapback_Sword|CLAPBACK_SWORD]] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.
+Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. 
+Ja, proszę ja Ciebie, jestem **Twoim** jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich **Twoich** _wyczynów_. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się [[PL/Clapback_Sword|CLAPBACK_SWORD]] i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.
 
 * [[#008]] 1😇: Och, rozumiem. Dzięki za rozjaśnienie sytuacji. Co ja bym bez Ciebie zrobił?
 * [[#008]] 2😡: Mówisz, jak byś był moją matką. Jestem dorosły mogę robić co chcę.
@@ -75,8 +76,10 @@ Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc taki
 
 ### 005
 
-* Jesteśmy we wspaniałej krainie brudu i smrodu zwanym [loc]Królestwem Pomylenia[/loc] Większość ludzi to biedni wieśniacy, jest tu trochę rzemieślników i trochę magików. Choć większość to znachorzy, zielarki, szarlatani i inni oszuści nie znający prawdziwej magii. Na szlakach spotkać można czasami resztki przedstawicieli **Błękitnego Rycerstwa**, ale to już nie to samo co kiedyś. W lasach, jaskiniach i ciemnych zaułkach czają się różne maszkary żądne krwi, pieniędzy lub jednego i drugiego. Reszta to poszukiwacze przygód, jak Ty.
-No i chyba ja też.
+* Jesteśmy we wspaniałej krainie brudu i smrodu zwanym [loc]Królestwem Pomylenia[/loc] Większość ludzi to biedni wieśniacy, jest tu trochę rzemieślników i trochę magików. Choć większość to znachorzy, zielarki, szarlatani i inni oszuści nie znający prawdziwej magii. 
+Na szlakach spotkać można czasami resztki przedstawicieli **Błękitnego Rycerstwa**, ale to już nie to samo co kiedyś. 
+W lasach, jaskiniach i ciemnych zaułkach czają się różne maszkary żądne krwi, pieniędzy lub jednego i drugiego. Reszta to poszukiwacze przygód, jak **Ty**.
+No i chyba ja siłą rzeczy też.
 
 * [[#016]] 1😇: Ok, to tak globalnie, ale co to za miejsce?
 * [[#016]] 2😡: Nie wiem po co mi ten wykład. Pytałem gdzie **teraz** jesteśmy.
@@ -88,7 +91,7 @@ No i chyba ja też.
 
 * [[#008]] 1😇: Ok, dzięki - trochę to rozwiewa tę mgłę, którą mam w głowie.
 * [[#008]] 2😢: No powiem szczerze, nie brzmi to zbyt zachęcająco.
-* [[#008]] 3😉: Ach, tak - ten swojski zapach, hmmm, podusia.
+* [[#008]] 3😉: Ach, tak - ten swojski zapach, hmmm, jak miło.
 
 ### 008
 
@@ -97,11 +100,11 @@ No i chyba ja też.
 * [[#003]] 1[003.not_visited]😐: Co się wczoraj wydarzyło?
 * [[#004]] 2[004.not_visited]😐: Kim Ty jesteś?
 * [[#005]] 3[005.not_visited]😐: Gdzie my jesteśmy?
-* [[#006]] 4[003.visited and 004.visited and 005.visited]😐: To co teraz?
+* [[#006]] 4[003.visited and 004.visited and 005.visited]😐: To co teraz zrobimy?
 
 ### 006
 
-* Obawiam się, że sprawa jest poważniejsza. Ci czarodzieje nie tylko zabrali nam pieniądze i ogłuszyli, ale też rzucili na Ciebie jakąś klątwę.
+* Obawiam się, że sprawa jest poważniejsza. Ci czarodzieje nie tylko zabrali nam pieniądze i ogłuszyli, ale też rzucili na **Ciebie** jakąś klątwę.
 
 * [[#007]] 1😐: Hmm, nic sobie nie przypominam. O jaką klątwę chodzi?
 * [[#007]] 2😡: Przestań mnie ciągle straszyć. Jestem trochę poturbowany, ale nic wielkiego się nie stało.
@@ -125,7 +128,7 @@ No i chyba ja też.
 
 * _"Kto z losem igra, tego spotka kara,_
 _odtąd będziesz łajza i ślamazara,_
-_aż do czasu z ziemi tej odejścia_,_ 
+_aż do czasu z ziemi tej odejścia,_
 _dotyka Cię [quest]Odwieczna klątwą nieszczęścia[/quest]."_
 
 * [[#010]] 1😐: To chyba jakiś żart! Prawda?

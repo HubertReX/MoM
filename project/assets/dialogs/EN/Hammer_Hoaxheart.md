@@ -20,7 +20,7 @@ translation: [**Kowal Kłamca**](../PL/char-Hammer_Hoaxheart.md)
 
 * What do you want here? Who do you think you are?
 
-* [[#001]] 1😇: Easy, name's Malachi, no trouble.
+* [[#001]] 1😇: Easy, name's [char]Malachi[/char], no trouble.
 * [[#001]] 2😡: Show some manners or I'll have the mayor revoke your blacksmithing license!
 * [[#001]] 3🧠: Depends on what you're offering - play your cards right and you'll profit.
 

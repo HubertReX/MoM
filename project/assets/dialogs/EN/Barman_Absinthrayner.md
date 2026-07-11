@@ -33,7 +33,7 @@ translation: [**Barman Absyntnent**](../PL/char-Barman_Absinthrayner.md)
 * [[#004]] 3😐: Anything interesting in the [dark]area[/dark]:red_question_anim:
 * [[#005]] 4😐: Do you know anyone who knows about [b]spells[/b]:question:
 * [[#006]] 5😐: Where could I learn about **spells**:question:
-* [[#990-end]] 9😐: That's all, until next time :walk:
+* [[#990-end]] 9😐: That's all, until next time
 
 ### 002
 

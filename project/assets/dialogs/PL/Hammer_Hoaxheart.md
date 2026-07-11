@@ -20,7 +20,7 @@ translation: [**HAMMER_HOAXHEART**](../EN/char-Hammer_Hoaxheart.md)
 
 * Po coś tu przylazł? Co z Ciebie za jeden?
 
-* [[#001]] 1😇: Spokojnie, nazywam się Malachi, nie chcę problemów.
+* [[#001]] 1😇: Spokojnie, nazywam się [char]Malachi[/char], nie chcę problemów.
 * [[#001]] 2😡: Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!
 * [[#001]] 3🧠: To zależy co masz do zaoferowania - rozegraj to dobrze, a zarobisz.
 
@@ -59,13 +59,13 @@ translation: [**HAMMER_HOAXHEART**](../EN/char-Hammer_Hoaxheart.md)
 
 ### 008
 
-* Broń, którą tu robię nie ma sobie równych w całym **Królestwie Pomylenia**. Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.
+* Broń, którą tu robię nie ma sobie równych w całym [loc]Królestwie Pomylenia[/loc] Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ### 004
 
-* Pozostałe wsie są tak samo biedne. Broń i zbroje kupują jedynie zarozumiali panicze z miasta **Porażkowo**.
+* Pozostałe wsie są tak samo biedne. Broń i zbroje kupują jedynie zarozumiali panicze z miasta [loc]Porażkowo[/loc]
 
 * [[#009]] 1😇: No to oni pewnie dadzą zarobić? Znasz tam kogoś?
 * [[#009]] 2😢: Pewnie Cię poniżają ci _wielcy panicze_. Często musisz masz z nimi do czynienia?
@@ -85,7 +85,7 @@ translation: [**HAMMER_HOAXHEART**](../EN/char-Hammer_Hoaxheart.md)
 
 ### 006
 
-* Kto mądry to nie zostaje tu za długo. **Barman Absyntnent** nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.
+* Kto mądry to nie zostaje tu za długo. [[PL/Barman_Absinthrayner|BARMAN_ABSINTHRAYNER]] nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.
 
 * [[#010]] 1😇: Że, co? Ja dużo gadam?
 * [[#010]] 2🧠: Mam rozumieć, że Ty nie bardzo lubisz rozmawiać?

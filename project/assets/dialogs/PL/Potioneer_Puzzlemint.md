@@ -59,15 +59,15 @@ A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś
 
 ### 008
 
-* Taaaak, ciekawe. Opowiedz mi więcej o sobie. Masz za pewne jakiś problem, skor tu trafiłeś. Co Ci się przytrafiło?
+* Taaaak, ciekawe. Opowiedz mi więcej o sobie. Masz za pewne jakiś problem, skoro tu trafiłeś. Co Ci się przytrafiło?
 
-* [[#009]] 1😢: Aż wstyd mówić. Nabroiłem i czarodzieje rzucili na mnie **Odwieczna klątwą nieszczęścia**.
+* [[#009]] 1😢: Aż wstyd mówić. Nabroiłem i czarodzieje rzucili na mnie [quest]Odwieczna klątwą nieszczęścia[quest].
 * [[#009]] 2😡: Jacyś podli czarodzieje zakleli mnie i ciągle prześladuje mnie pech.
-* [[#009]] 3🧠: Z tego co udało mi się ustalić, jestem pod wpływem **Odwiecznej klątwy nieszczęścia**.
+* [[#009]] 3🧠: Z tego co udało mi się ustalić, jestem pod wpływem [quest]Odwiecznej klątwy nieszczęścia[quest].
 
 ### 009
 
-* O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać **Miksturę Zapomnienia**, ale to raczej nie rozwiąże problemu.
+* O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać [item]Miksturę Zapomnienia[/item], ale to raczej nie rozwiąże problemu.
 
 * [[#001]] 9😐: Szkoda. Porozmawiajmy w takim razie o czymś innym.
 
@@ -80,9 +80,9 @@ A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś
 ### 004
 
 * Jest trochę tego, pytanie co dla kogo jest ciekawe:
-1 **Bagno niedogodności** jest bogate w zioła i różnego rodzaju ropuchy
-2 w **Splątanym lesie irytacji** można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej
-3 **Jaskinie zagmatwania** to też źródło grzybów, ale dużo bardziej niebezpieczne
+1 [loc]Bagno niedogodności[/loc] jest bogate w zioła i różnego rodzaju ropuchy
+2 w [loc]Splątanym lesie irytacji[/loc] można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej
+3 [loc]Jaskinie zagmatwania[/loc] to też źródło grzybów, ale dużo bardziej niebezpieczne
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy.
 
@@ -91,7 +91,7 @@ A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś
 * Nie, nie, nic z tych rzeczy. Magia to jakiś diabelski wynalazek. Ja ufam temu co daje nam natura. Wszystko czego nam trzeba można wydobyć z ziół i ekstraktów zwierzęcych. Trzeba tylko się na tym znać.
 Tak jak ja.
 
-* [[#010]] 1😢: To może zlituje się Pani nade mną, i sprawi, że przestanę być wiecznym pechowcem?
+* [[#010]] 1😢: To może zlituje się **Pani** nade mną, i sprawi, że przestanę być wiecznym pechowcem?
 * [[#010]] 2😇: Na prawdę? To ja poproszę coś co odwróci moje pechowe życie.
 * [[#010]] 3😉: Czyli jak zjem czterolistną koniczynkę to nigdy nie będę miał już pecha?
 
@@ -105,13 +105,13 @@ Tak jak ja.
 
 * Książki? O magii? Mi to do niczego nie jest potrzebne. Latami eksperymentowałam z roślinami i ekstraktami aż udało mi się uzyskać oczekiwany efekt. Książki mogą kłamać, natura nigdy.
 
-* [[#011]] 1😇: Tak, tak, naturalnie. Może jednak słyszała Pani o takich księgach?
-* [[#991-end]] 2😡: To znaczy, że eksperymentowała Pani na ludzi, biorąc od nich zapłatę, choć czasami kończyło się to tragicznie?
+* [[#011]] 1😇: Tak, tak, naturalnie. Może jednak słyszała **Pani** o takich księgach?
+* [[#991-end]] 2😡: To znaczy, że eksperymentowała **Pani** na ludzi, biorąc od nich zapłatę, choć czasami kończyło się to tragicznie?
 * [[#011]] 3😢: Szkoda, bardzo potrzebuję dowiedzieć się czegoś więcej o zaklęciach.
 
 ### 011
 
-* Hmm, teraz jak o tym mówisz to przypomniało mi się, że miałam kiedyś taką pomocnicę. Miała się szkolić u mnie na zielarkę, ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce. Ją też interesowały książki, szczególnie te o magii. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może mogła by Tobie pomóc.
+* Hmm, teraz jak o tym mówisz to przypomniało mi **się**, że miałam kiedyś taką pomocnicę. Miała się szkolić u mnie na zielarkę, ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce. Ją też interesowały książki, szczególnie te o magii. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może mogła by Tobie pomóc.
 
 * [[#012]] 1😐: To brzmi interesująco, powiedz mi o niej coś więcej.
 
@@ -128,25 +128,25 @@ Tak jak ja.
 
 ### 013
 
-* Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej bibliotece.
+* Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej [loc]bibliotece[/loc].
 
 * [[#012]] 1😐: Dzięki!
 
 ### 015
 
-* Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
+* Ona pracuje teraz w ukrytej [loc]bibliotece[/loc], pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
 
 * [[#012]] 1😐: Dziękuję, to cenne informacje.
 
 ### 014
 
-* Kiedy była u mnie wołali na nią **Mariolka**, ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać **Bibliofilistka des Informacja**.
+* Kiedy była u mnie wołali na nią [char]Mariolka[/char], ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać [char]Bibliofilistka des Informacja[/char].
 
 * [[#012]] 1😐: ok, dzięki.
 
 ### 017
 
-* Po odejściu ode mnie ludzie zaczęli na nią wołać **Bibliofilistka des Informacja**.
+* Po odejściu ode mnie ludzie zaczęli na nią wołać [char]Bibliofilistka des Informacja[/char].
 
 * [[#012]] 1😐: ok, dzięki.
 
