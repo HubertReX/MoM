@@ -12,7 +12,10 @@ from pathlib import Path
 from typing import Any, Sequence, Union
 
 import pygame
-from pygame.colordict import THECOLORS as COLORS
+# pygame.color (core C module) exposes THECOLORS in both native and pygbag/emscripten
+# builds; the pure-python pygame.colordict submodule is not importable under pygbag
+# (its import hook tries to pip-install "pygame.colordict" from PyPI -> ModuleNotFoundError)
+from pygame.color import THECOLORS as COLORS
 from pygame.math import Vector2 as vec
 from pygame.math import Vector3 as vec3
 from pytmx.pytmx import Point as pytmxPoint
