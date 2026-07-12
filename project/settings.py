@@ -12,10 +12,13 @@ from pathlib import Path
 from typing import Any, Sequence, Union
 
 import pygame
-# pygame.color (core C module) exposes THECOLORS in both native and pygbag/emscripten
-# builds; the pure-python pygame.colordict submodule is not importable under pygbag
-# (its import hook tries to pip-install "pygame.colordict" from PyPI -> ModuleNotFoundError)
-from pygame.color import THECOLORS as COLORS
+import importlib
+# THECOLORS lives in pygame.colordict (pure-python, bundled inside the pygame-ce wheel).
+# pygbag's static import scanner mistakes "from pygame.colordict import ..." for an external
+# PyPI dependency and tries to pip-install it (https://pypi.org/simple/pygame.colordict/ ->
+# 404 -> ModuleNotFoundError), crashing the web build. A dynamic importlib import is invisible
+# to that scanner, so the module loads normally from the installed wheel - native and web.
+COLORS = importlib.import_module("pygame.colordict").THECOLORS
 from pygame.math import Vector2 as vec
 from pygame.math import Vector3 as vec3
 from pytmx.pytmx import Point as pytmxPoint
