@@ -25,7 +25,6 @@ from settings import (
     AVATAR_SCALE,
     _,
     CHARACTERS_DIR,
-    DIALOGS_DIR,
     HEIGHT,
     INPUTS,
     IS_WEB,
@@ -95,17 +94,17 @@ class NPC(pygame.sprite.Sprite):
         self.scene = scene
         self.model: Character = game.conf.characters[model_name]
         self.current_map = self.scene.current_map
-        self.dialogs: str | None = None
         self.has_dialog: bool = False
 
-        # new dialog-system state (T-023).  `dialogs` (str) is the legacy markdown
-        # path; `dialog` is the live cursor into the DialogNode graph.
+        # dialog-system state (T-023): `dialog` is the live cursor into the
+        # DialogNode graph built from config.json.
         self.config_key: str = model_name
         self.dialog: DialogNode | None = None
         self.dialog_nodes: dict[str, DialogNode] | None = None
         self.selected_options_dict: dict[str, bool] = {}
         self.dialog_start_node: DialogNode | None = None
-        self.sentiment: int = 50
+        # base sentiment comes from the character's `friendly` (0..1) config field
+        self.sentiment: int = round(self.model.friendly * 100)
         self.disposition: dict[str, int] = dict(self.model.disposition)
         self.known_disposition: dict[str, int] = {}
 
@@ -312,13 +311,7 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
 
     def load_dialogs(self) -> None:
-        if self.model.attitude == AttitudeEnum.friendly:
-            modal_panel_file = DIALOGS_DIR / f"{self.model.name_EN}.md"
-            if modal_panel_file.exists():
-                self.dialogs = modal_panel_file.read_text()
-                self.has_dialog = True
-
-        # new dialog graph path (T-023): if the character config points at a
+        # dialog graph path (T-023): if the character config points at a
         # config_key, build the DialogNode graph and set the cursor to START_NODE.
         if self.model.has_dialog:
             dialog_config: dict[str, Any] = self.game.conf.dialogs.get(self.config_key, {})
@@ -1065,10 +1058,6 @@ class NPC(pygame.sprite.Sprite):
             # show health bar (for PUSHED_TIME ms)
             # self.health_bar.set_bar(self.model.health / self.model.max_health, self.game)
             oponent.health_bar.show()
-            # if oponent.has_dialog and oponent.dialogs:
-            #     self.npc_met = oponent
-            #     self.scene.ui.dialog_panel.set_text(oponent.dialogs)
-            #     self.scene.ui.dialog_panel.formatted_text.scroll_top()
 
     #############################################################################################################
     # MARK: hit
@@ -1445,14 +1434,10 @@ class Player(NPC):
             print(f"[DEBUG talk] npc_met={getattr(self.npc_met, 'name', None)}, has_dialog={getattr(self.npc_met, 'has_dialog', None) if self.npc_met else None}, is_talking={self.is_talking}, dialog={getattr(self.npc_met, 'dialog', None) is not None if self.npc_met else None}")
             if self.npc_met and (self.npc_met.has_dialog or self.npc_met.model.is_merchant) and not self.is_talking:
                 # dialog or trading?
-                if self.npc_met.has_dialog:
-                    if self.npc_met.dialog is not None:
-                        text = get_msg(self.game.conf.messages, self.npc_met.dialog.text)
-                        self.scene.ui.open(DialogPanel, npc=self.npc_met, text=text)
-                        print(f"[DEBUG talk] opened DialogPanel for {self.npc_met.name} at node {self.npc_met.dialog.key}")
-                    else:
-                        self.scene.ui.open(DialogPanel, npc=self.npc_met, text=self.npc_met.dialogs or "")
-                        print(f"[DEBUG talk] opened DialogPanel (legacy) for {self.npc_met.name}")
+                if self.npc_met.has_dialog and self.npc_met.dialog is not None:
+                    text = get_msg(self.game.conf.messages, self.npc_met.dialog.text)
+                    self.scene.ui.open(DialogPanel, npc=self.npc_met, text=text)
+                    print(f"[DEBUG talk] opened DialogPanel for {self.npc_met.name} at node {self.npc_met.dialog.key}")
                 else:
                     # since trader might accept only selected types of items
                     # selected item index needs to be initiated again

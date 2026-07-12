@@ -1,34 +1,34 @@
-key;name_EN;name_PL;attitude;race;health;damage;speed_walk;speed_run;has_dialog
-BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Asynthnent;friendly;humanoid;;;;;true
-BART;Bart;Bartuś;friendly;humanoid;;;;;false
-BOAR;Boar;Dzik;afraid;animal;;;20;;false
-CAT;Cat;Kotek;friendly;animal;;;15;;false
-CAVE_LION;CaveLion;Lew jaskiniowy;enemy;monster;60;20;;;false
-CAVE_LION2;CaveLion;Lew jaskiniowy;enemy;monster;60;20;;;false
-CHICKEN_BLACK;Chicken;Kurczak;friendly;animal;;;15;;false
-CHICKEN_BROWN;Chicken;Kurczak;friendly;animal;;;15;;false
-CHICKEN_CUTE;Chicken;Kurczak;friendly;animal;;;15;;false
-CHICKEN_WHITE;Chicken;Kurczak;friendly;animal;;;15;;false
-CLAPBACK_SWORD;Clapback Sword;Miecz Ciętej-riposty;friendly;humanoid;;;;;true
-COW;Cow;Krówka;friendly;animal;;;;;false
-DOG_ORANGE;Dog;Piesek;friendly;animal;;;15;;false
-DOG_PURPLE;Dog;Piesek;friendly;animal;;;15;;false
-FISH_RED;red fish;Czerwona rybka;friendly;animal;;;10;;false
-FLAM;Flame;Płomień;enemy;monster;60;20;;;false
-FRED;Fred;Franek;friendly;humanoid;;;;;false
-FROG;Frog;Żabcia;afraid;animal;;;10;;false
-HAMMER_HOAXHEART;Hammer;Kowal Kłamca;friendly;humanoid;;;;;true
-HORSE;Horse;Konik;friendly;animal;;;;;false
-JOHNY;Johny;Jaś;friendly;humanoid;;;;;false
-LION_YELLOW;LionYellow;Żółty lew;enemy;monster;60;20;;;false
-MADAME_SARCASMIA;Madame Sarcasmia;Madame Sarkażmijka;friendly;humanoid;;;;;true
-MARRY;Marry;Marysia;friendly;humanoid;120;;;;false
-PIG;Pig;Świnka;friendly;animal;;;20;;false
-POTIONEER_PUZZLEMINT;Potioneer Puzzlemint;Zielarka Zmora;friendly;humanoid;;;;;true
-Player;Player;Player;friendly;humanoid;80;;;;false
-RACOON;Racoon;Szop;afraid;animal;;;10;;false
-ROB;Rob;Kuba;friendly;humanoid;;;;;false
-SLIME_01;Slime;Śluzak;enemy;monster;40;;;;false
-SNAKE_01;Snake;Wąż;enemy;monster;50;20;;75;false
-SPIDER_01;Spider;Pająk;enemy;monster;60;20;;;false
-SPIRIT_01;Spirit;Duszek;enemy;monster;;;;;false
+key;name_EN;name_PL;attitude;race;health;damage;speed_walk;speed_run;has_dialog;sprite;friendly;kind;weak;angry;smart;funny
+BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;friendly;humanoid;;;;;true;Hunter;0.6;1;1;1;1;1
+BART;Bart;Bartuś;friendly;humanoid;;;;;false;;;;;;;
+BOAR;Boar;Dzik;afraid;animal;;;20;;false;;;;;;;
+CAT;Cat;Kotek;friendly;animal;;;15;;false;;;;;;;
+CAVE_LION;CaveLion;Lew jaskiniowy;enemy;monster;60;20;;;false;;;;;;;
+CAVE_LION2;CaveLion;Lew jaskiniowy;enemy;monster;60;20;;;false;;;;;;;
+CHICKEN_BLACK;Chicken;Kurczak;friendly;animal;;;15;;false;;;;;;;
+CHICKEN_BROWN;Chicken;Kurczak;friendly;animal;;;15;;false;;;;;;;
+CHICKEN_CUTE;Chicken;Kurczak;friendly;animal;;;15;;false;;;;;;;
+CHICKEN_WHITE;Chicken;Kurczak;friendly;animal;;;15;;false;;;;;;;
+CLAPBACK_SWORD;Clapback Sword;Miecz Ciętej-riposty;friendly;humanoid;;;;;true;Knight;0.7;1;-2;-1;1;2
+COW;Cow;Krówka;friendly;animal;;;;;false;;;;;;;
+DOG_ORANGE;Dog;Piesek;friendly;animal;;;15;;false;;;;;;;
+DOG_PURPLE;Dog;Piesek;friendly;animal;;;15;;false;;;;;;;
+FISH_RED;red fish;Czerwona rybka;friendly;animal;;;10;;false;;;;;;;
+FLAM;Flame;Płomień;enemy;monster;60;20;;;false;;;;;;;
+FRED;Fred;Franek;friendly;humanoid;;;;;false;;;;;;;
+FROG;Frog;Żabcia;afraid;animal;;;10;;false;;;;;;;
+HAMMER_HOAXHEART;Hammer;Kowal Kłamca;friendly;humanoid;;;;;true;Villager2;0.3;-1;1;2;-1;-2
+HORSE;Horse;Konik;friendly;animal;;;;;false;;;;;;;
+JOHNY;Johny;Jaś;friendly;humanoid;;;;;false;;;;;;;
+LION_YELLOW;LionYellow;Żółty lew;enemy;monster;60;20;;;false;;;;;;;
+MADAME_SARCASMIA;Madame Sarcasmia;Madame Sarkażmijka;friendly;humanoid;;;;;true;SorcererBlack;0.5;1;-2;-1;1;2
+MARRY;Marry;Marysia;friendly;humanoid;120;;;;false;;;;;;;
+PIG;Pig;Świnka;friendly;animal;;;20;;false;;;;;;;
+POTIONEER_PUZZLEMINT;Potioneer Puzzlemint;Zielarka Zmora;friendly;humanoid;;;;;true;EggGirl;0.4;1;1;1;1;1
+Player;Player;Player;friendly;humanoid;80;;;;false;;;;;;;
+RACOON;Racoon;Szop;afraid;animal;;;10;;false;;;;;;;
+ROB;Rob;Kuba;friendly;humanoid;;;;;false;;;;;;;
+SLIME_01;Slime;Śluzak;enemy;monster;40;;;;false;;;;;;;
+SNAKE_01;Snake;Wąż;enemy;monster;50;20;;75;false;;;;;;;
+SPIDER_01;Spider;Pająk;enemy;monster;60;20;;;false;;;;;;;
+SPIRIT_01;Spirit;Duszek;enemy;monster;;;;;false;;;;;;;

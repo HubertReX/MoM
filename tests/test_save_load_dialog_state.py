@@ -37,9 +37,10 @@ def test_build_npc_dialog_state_captures_state() -> None:
     opt.selected = True
 
     npc = SimpleNamespace(
-        dialog_key="DIALOG_HAMMER",
+        model=SimpleNamespace(has_dialog=True),
         dialog_nodes={"N1": node1, "N2": node2},
         dialog=node2,
+        dialog_start_node=node1,
         selected_options_dict={"OPT1": True},
         sentiment=73,
         known_disposition={"neutral": 0},
@@ -50,6 +51,7 @@ def test_build_npc_dialog_state_captures_state() -> None:
 
     assert state is not None
     assert state.current_node_key == "N2"
+    assert state.dialog_start_node_key == "N1"
     assert state.selected_options == {"OPT1": True}
     assert state.visited_nodes == {"N1": True}
     assert state.sentiment == 73
@@ -58,7 +60,7 @@ def test_build_npc_dialog_state_captures_state() -> None:
 
 def test_build_npc_dialog_state_returns_none_without_graph() -> None:
     """NPCs without a dialog graph produce no dialog state."""
-    npc = SimpleNamespace(dialog_key=None, dialog_nodes=None)
+    npc = SimpleNamespace(model=SimpleNamespace(has_dialog=False), dialog_nodes=None)
     mgr = SaveManager.__new__(SaveManager)
     assert mgr._build_npc_dialog_state(npc) is None
 
@@ -71,6 +73,7 @@ def test_restore_dialog_state_rebuilds_conversation() -> None:
 
     state = NPCDialogState(
         current_node_key="N2",
+        dialog_start_node_key="N1",
         selected_options={"OPT1": True},
         visited_nodes={"N1": True},
         sentiment=81,
@@ -80,9 +83,11 @@ def test_restore_dialog_state_rebuilds_conversation() -> None:
     # Simulate a fresh graph rebuild after load: new node/option objects, default flags.
     new_node1, new_node2, new_opt = _make_graph()
     npc = NPC.__new__(NPC)
-    npc.dialog_key = "DIALOG_HAMMER"
+    npc.model = SimpleNamespace(has_dialog=True)
+    npc.config_key = "DIALOG_HAMMER"
     npc.dialog_nodes = {"N1": new_node1, "N2": new_node2}
     npc.dialog = new_node1  # would normally be the start node
+    npc.dialog_start_node = new_node1
     npc.selected_options_dict = {}
     npc.sentiment = 50
     npc.known_disposition = {}
@@ -108,11 +113,14 @@ def test_restore_dialog_state_falls_back_to_start() -> None:
     state = NPCDialogState(current_node_key="MISSING")
 
     npc = NPC.__new__(NPC)
-    npc.dialog_key = "DIALOG_HAMMER"
+    npc.model = SimpleNamespace(has_dialog=True)
+    npc.config_key = "DIALOG_HAMMER"
     npc.dialog_nodes = {"N1": node1, "N2": node2}
     npc.dialog = None
+    npc.dialog_start_node = None
     npc.selected_options_dict = {}
     npc.sentiment = 50
+    npc.known_disposition = {}
     npc.game = SimpleNamespace(
         conf=SimpleNamespace(dialogs={"DIALOG_HAMMER": {"START_NODE": "N1"}})
     )
@@ -122,10 +130,10 @@ def test_restore_dialog_state_falls_back_to_start() -> None:
     assert npc.dialog is node1
 
 
-def test_restore_dialog_state_is_noop_without_dialog_key() -> None:
+def test_restore_dialog_state_is_noop_without_dialog() -> None:
     """NPCs that cannot converse ignore restore_dialog_state."""
     npc = NPC.__new__(NPC)
-    npc.dialog_key = None
+    npc.model = SimpleNamespace(has_dialog=False)
     npc.selected_options_dict = {}
     npc.sentiment = 50
 
@@ -142,7 +150,7 @@ if __name__ == "__main__":
         ("build returns None without graph", test_build_npc_dialog_state_returns_none_without_graph),
         ("restore rebuilds conversation", test_restore_dialog_state_rebuilds_conversation),
         ("restore falls back to start", test_restore_dialog_state_falls_back_to_start),
-        ("restore no-op without dialog key", test_restore_dialog_state_is_noop_without_dialog_key),
+        ("restore no-op without dialog", test_restore_dialog_state_is_noop_without_dialog),
     ]
     failures = 0
     for name, func in tests:

@@ -94,27 +94,42 @@ update-config-schema:
 import-entities:
     .venv/bin/python project/config_model/import_entities.py
 
-# Import dialog Markdown sources from project/assets/dialogs/ into config.json.
+# Import dialog Markdown sources from the doc/ vault into config.json.
+# Pipeline: MD frontmatter -> characters.csv -> config.json (import-entities
+# is the sole writer of the `characters` section, hence the cascade).
 # By default imports all compatible characters; pass a character name to import one.
 [unix]
 import-dialogs *name:
     #!/usr/bin/env bash
+    set -e
     if [ -z "{{name}}" ]; then
         .venv/bin/python project/dialog/markdown_importer.py
     else
         .venv/bin/python project/dialog/markdown_importer.py "{{name}}"
     fi
+    just import-entities
 
-# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/img/ from real MoM modules
+# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/_attachements/ from real MoM modules
 [unix]
 gen-dialog-docs:
-    .venv/bin/python doc/gen_dialog_doc_assets.py
+    .venv/bin/python scripts/gen_dialog_doc_assets.py
 
-# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/img/ from real MoM modules
+# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/_attachements/ from real MoM modules
 [windows]
 gen-dialog-docs:
     #!powershell
-    .venv\Scripts\python.exe doc\gen_dialog_doc_assets.py
+    .venv\Scripts\python.exe scripts\gen_dialog_doc_assets.py
+
+# Regenerate character faceset copies in doc/_attachements/ (<KEY>.png) from the sprite column of characters.csv
+[unix]
+gen-faces:
+    .venv/bin/python scripts/gen_face_attachments.py
+
+# Regenerate character faceset copies in doc/_attachements/ (<KEY>.png) from the sprite column of characters.csv
+[windows]
+gen-faces:
+    #!powershell
+    .venv\Scripts\python.exe scripts\gen_face_attachments.py
 
 # Run mypy static type checker on the project directory
 [unix]

@@ -1296,7 +1296,7 @@ class Scene(State):
                 if distance_from_player < FRIENDLY_WAKE_DISTANCE**2:
                     npc.health_bar.show()
 
-                    if (npc.has_dialog and (npc.dialogs or npc.dialog is not None)) or (npc.model.is_merchant):
+                    if (npc.has_dialog and npc.dialog is not None) or (npc.model.is_merchant):
                         self.player.npc_met = npc
                         npc.npc_met = self.player
                         break

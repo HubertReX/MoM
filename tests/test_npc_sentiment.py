@@ -2,9 +2,10 @@
 """Unit tests for NPC sentiment / dialog model fields (T-023 / T-035).
 
 Pure logic (no pygame / SDL). Verifies that both config backends
-(Pydantic desktop and dataclass web) expose the new Character fields
-(dialog_key, disposition as a per-sentiment dict) and that Config carries
-the optional dialogs section used to build DialogNode graphs at NPC load time.
+(Pydantic desktop and dataclass web) expose the Character fields
+(has_dialog, friendly, disposition as a per-sentiment dict with canonical
+author-facing names) and that Config carries the optional dialogs section
+used to build DialogNode graphs at NPC load time.
 
 Run from the project root:
     .venv/bin/python tests/test_npc_sentiment.py
@@ -25,13 +26,13 @@ def assert_true(cond: bool, msg: str = "") -> None:
 
 
 _CUSTOM_DISPOSITION: dict[str, int] = {
-    "blessed": 15,
-    "blink": 5,
-    "wondering": 2,
+    "kind": 2,
+    "funny": 1,
+    "smart": 1,
     "neutral": 0,
-    "human": 0,
-    "offended": -5,
-    "angry": -15,
+    "technical": 0,
+    "weak": -1,
+    "angry": -2,
 }
 
 
@@ -39,14 +40,17 @@ def test_pydantic_character_has_new_fields() -> None:
     from config_model.config_pydantic import Character
 
     npc = Character(
-        name="TestNpc",
+        name_EN="TestNpc",
+        name_PL="TestNpc",
         sprite="Villager1",
         race="humanoid",
         attitude="friendly",
-        dialog_key="TEST_DIALOG",
+        has_dialog=True,
+        friendly=0.7,
         disposition=dict(_CUSTOM_DISPOSITION),
     )
-    assert_eq(npc.dialog_key, "TEST_DIALOG", "dialog_key stored")
+    assert_true(npc.has_dialog, "has_dialog stored")
+    assert_eq(npc.friendly, 0.7, "friendly stored")
     assert_eq(npc.disposition, _CUSTOM_DISPOSITION, "disposition stored")
 
 
@@ -55,12 +59,14 @@ def test_pydantic_character_defaults() -> None:
     from settings import DEFAULT_DISPOSITION_WEIGHTS
 
     npc = Character(
-        name="TestNpc",
+        name_EN="TestNpc",
+        name_PL="TestNpc",
         sprite="Villager1",
         race="humanoid",
         attitude="friendly",
     )
-    assert npc.dialog_key is None
+    assert_true(not npc.has_dialog, "has_dialog defaults to False")
+    assert_eq(npc.friendly, 0.5, "friendly defaults to 0.5")
     assert_eq(npc.disposition, DEFAULT_DISPOSITION_WEIGHTS, "disposition default")
 
 
@@ -69,15 +75,18 @@ def test_web_character_has_new_fields() -> None:
 
     npc = Character.from_dict(
         {
-            "name": "TestNpc",
+            "name_EN": "TestNpc",
+            "name_PL": "TestNpc",
             "sprite": "Villager1",
             "race": "humanoid",
             "attitude": "friendly",
-            "dialog_key": "TEST_DIALOG",
+            "has_dialog": True,
+            "friendly": 0.7,
             "disposition": _CUSTOM_DISPOSITION,
         }
     )
-    assert_eq(npc.dialog_key, "TEST_DIALOG", "web dialog_key stored")
+    assert_true(npc.has_dialog, "web has_dialog stored")
+    assert_eq(npc.friendly, 0.7, "web friendly stored")
     assert_eq(npc.disposition, _CUSTOM_DISPOSITION, "web disposition stored")
 
 
@@ -87,13 +96,15 @@ def test_web_character_defaults() -> None:
 
     npc = Character.from_dict(
         {
-            "name": "TestNpc",
+            "name_EN": "TestNpc",
+            "name_PL": "TestNpc",
             "sprite": "Villager1",
             "race": "humanoid",
             "attitude": "friendly",
         }
     )
-    assert npc.dialog_key is None
+    assert_true(not npc.has_dialog, "web has_dialog defaults to False")
+    assert_eq(npc.friendly, 0.5, "web friendly defaults to 0.5")
     assert_eq(npc.disposition, DEFAULT_DISPOSITION_WEIGHTS, "web disposition default")
 
 
@@ -115,19 +126,18 @@ def test_web_config_carries_dialogs() -> None:
 def test_npc_apply_option_sentiment_clamps() -> None:
     """Choosing an option shifts NPC sentiment by its disposition weight (T-035)."""
     from characters import NPC
-    from dialog.entities import DialogNode, DialogOption
 
     npc = NPC.__new__(NPC)
     npc.sentiment = 50
-    npc.disposition = {"blessed": 25, "angry": -60}
+    npc.disposition = {"kind": 25, "angry": -60}
     npc.known_disposition = {}
 
-    assert_eq(npc.apply_option_sentiment("blessed"), 25, "blessed shift returned")
+    assert_eq(npc.apply_option_sentiment("kind"), 25, "kind shift returned")
     assert_eq(npc.sentiment, 75, "sentiment increased")
-    assert_eq(npc.known_disposition, {"blessed": 25}, "blessed weight discovered")
+    assert_eq(npc.known_disposition, {"kind": 25}, "kind weight discovered")
 
     # clamp at 100
-    assert_eq(npc.apply_option_sentiment("blessed"), 25, "blessed shift returned again")
+    assert_eq(npc.apply_option_sentiment("kind"), 25, "kind shift returned again")
     assert_eq(npc.sentiment, 100, "sentiment clamped to 100")
 
     # negative shift clamped at 0
@@ -163,6 +173,23 @@ def test_trade_price_multipliers() -> None:
     assert_true(get_sell_price_multiplier(0) < 1.0, "low sentiment sell penalty")
 
 
+def test_sentiment_name_maps_are_consistent() -> None:
+    """Emoji map, emote map and default weights share the canonical name set."""
+    from settings import (
+        DEFAULT_DISPOSITION_WEIGHTS,
+        SENTIMENT_EMOJI_TO_NAME,
+        SENTIMENT_NAME_TO_EMOTE,
+        SENTIMENT_NAMES,
+    )
+
+    names = set(SENTIMENT_NAMES)
+    assert_eq(set(SENTIMENT_EMOJI_TO_NAME.values()), names, "emoji map covers names")
+    assert_eq(set(SENTIMENT_NAME_TO_EMOTE.keys()), names, "emote map covers names")
+    assert_eq(set(DEFAULT_DISPOSITION_WEIGHTS.keys()), names, "default weights cover names")
+    assert_eq(DEFAULT_DISPOSITION_WEIGHTS["neutral"], 0, "neutral always 0")
+    assert_eq(DEFAULT_DISPOSITION_WEIGHTS["technical"], 0, "technical always 0")
+
+
 def main() -> None:
     tests = [
         test_pydantic_character_has_new_fields,
@@ -173,6 +200,7 @@ def main() -> None:
         test_npc_apply_option_sentiment_clamps,
         test_npc_apply_unknown_sentiment_defaults_to_zero,
         test_trade_price_multipliers,
+        test_sentiment_name_maps_are_consistent,
     ]
     for t in tests:
         t()

@@ -28,6 +28,7 @@ from settings import (
     FONT_SIZE_SMALL,
     HEIGHT,
     MAIN_FONT,
+    SENTIMENT_NAME_TO_EMOTE,
     TILE_SIZE,
     WIDTH,
     _,
@@ -256,8 +257,9 @@ class DialogPanel(Widget):
     def _build_weight_indicator(self, opt: DialogOption) -> pygame.Surface:
         """Return the sentiment-weight surface for an option (position set on layout).
 
-        Shows the emote sprite for ``opt.sentiment`` (e.g. ``:blessed:``) followed by
-        the numeric weight or ``?`` for undiscovered sentiment.
+        Shows the emote sprite mapped from ``opt.sentiment`` (e.g. ``kind`` ->
+        ``:blessed:``) followed by the numeric weight or ``?`` for
+        undiscovered sentiment.
         """
         if self.npc is None:
             return pygame.Surface((0, 0), pygame.SRCALPHA)
@@ -267,7 +269,8 @@ class DialogPanel(Widget):
         color = theme.DEFAULT_TEXT_COLOR
 
         text_surf = self._weight_font.render(text, False, color)
-        emote = self.scene.icons.get(opt.sentiment, [self.key_icon])[0]
+        emote_key = SENTIMENT_NAME_TO_EMOTE.get(opt.sentiment, opt.sentiment)
+        emote = self.scene.icons.get(emote_key, [self.key_icon])[0]
         # Scale emote up for readability
         if _EMOTE_SCALE != 1.0:
             w, h = emote.get_size()
@@ -321,17 +324,17 @@ class DialogPanel(Widget):
         opt.selected = True
         self.npc.selected_options_dict[opt.key] = True
         shift = self.npc.apply_option_sentiment(opt.sentiment) if is_new_selection else 0
+        sentiment_emote = SENTIMENT_NAME_TO_EMOTE.get(opt.sentiment, opt.sentiment)
         if shift != 0:
-            emote_key = opt.sentiment
             msg = _('notify.sentiment', amount=shift)
             self.scene.add_notification(
                 msg,
                 NotificationTypeEnum.success if shift > 0 else NotificationTypeEnum.info,
-                emote_key=emote_key,
+                emote_key=sentiment_emote,
             )
             self._sentiment_flash_timer = 0.5
         self.npc.dialog = opt.next_node
-        self._visit_current_node(emote_key=opt.sentiment)
+        self._visit_current_node(emote_key=sentiment_emote)
         if self.npc.dialog.is_final:
             # Refresh the body text/options for the final node so the player
             # sees the farewell text. The panel stays open until the player

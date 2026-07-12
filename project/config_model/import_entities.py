@@ -12,7 +12,13 @@ HERE = Path(__file__).resolve().parent
 CONFIG_FILE = HERE / "config.json"
 
 sys.path.insert(0, str(HERE.parent))
-from settings import CONF_ENTITIES_TO_STORE  # noqa: E402
+from settings import CONF_ENTITIES_TO_STORE, DEFAULT_DISPOSITION_WEIGHTS  # noqa: E402
+
+# characters.csv keeps per-sentiment weight columns (author-facing names,
+# filled from Markdown frontmatter by `just import-dialogs`); they are
+# aggregated into the `disposition` dict of the characters section here.
+# `neutral` and `technical` always weigh 0 and have no CSV columns.
+SENTIMENT_COLUMNS = ("kind", "weak", "angry", "smart", "funny")
 
 
 def _strip_nulls(obj: object) -> object:
@@ -83,13 +89,26 @@ def import_csv(entity_name: str, data: dict) -> dict:
             continue
 
         obj = section[key]
+        sentiment_updates: dict[str, int] = {}
         for i, field in enumerate(fields):
             if i < len(values):
                 raw = values[i]
                 if raw == "":
                     continue  # pusta komórka = nie nadpisuj → model użyje wartości domyślnej
+                if entity_name == "characters" and field in SENTIMENT_COLUMNS:
+                    sentiment_updates[field] = int(raw)
+                    continue
+                if entity_name == "characters" and field == "friendly":
+                    obj[field] = float(raw)
+                    continue
                 current = obj.get(field)
                 obj[field] = parse_value(raw, current)
+        if sentiment_updates:
+            # fresh dict from defaults: stale keys (e.g. pre-rename emote
+            # names) are dropped, neutral/technical come from the defaults
+            disposition = dict(DEFAULT_DISPOSITION_WEIGHTS)
+            disposition.update(sentiment_updates)
+            obj["disposition"] = disposition
         updated += 1
 
     data[entity_name] = section
@@ -112,6 +131,12 @@ def _export_csv(entity_name: str, data: dict) -> None:
             if k not in fields:
                 fields.append(k)
 
+    # characters: disposition dict is exported as per-sentiment columns
+    # (round-trip with import_csv's aggregation)
+    if entity_name == "characters" and "disposition" in fields:
+        fields.remove("disposition")
+        fields.extend(c for c in SENTIMENT_COLUMNS if c not in fields)
+
     csv_path = HERE / f"{entity_name}.csv"
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";", lineterminator="\n")
@@ -120,6 +145,10 @@ def _export_csv(entity_name: str, data: dict) -> None:
         obj = section[key]
         row = [key]
         for f in fields[1:]:
+            if entity_name == "characters" and f in SENTIMENT_COLUMNS:
+                weight = (obj.get("disposition") or {}).get(f)
+                row.append("" if weight is None else str(weight))
+                continue
             v = obj.get(f)
             if v is None:
                 row.append("")

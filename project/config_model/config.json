@@ -340,84 +340,88 @@
             "race": "humanoid",
             "attitude": "friendly",
             "disposition": {
-                "blessed": 8,
-                "blink": 4,
-                "wondering": 2,
+                "kind": -1,
+                "funny": -2,
+                "smart": -1,
                 "neutral": 0,
-                "human": 0,
-                "offended": -4,
-                "angry": -8
+                "technical": 0,
+                "weak": 1,
+                "angry": 2
             },
             "money": 30,
             "name_EN": "Hammer",
             "name_PL": "Kowal Kłamca",
-            "has_dialog": true
+            "has_dialog": true,
+            "friendly": 0.3
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
             "race": "humanoid",
             "attitude": "friendly",
             "disposition": {
-                "blessed": 1,
-                "blink": 2,
-                "wondering": -1,
+                "kind": 1,
+                "funny": 1,
+                "smart": 1,
                 "neutral": 0,
-                "human": 0,
-                "offended": -1,
-                "angry": -2
+                "technical": 0,
+                "weak": 1,
+                "angry": 1
             },
             "money": 100,
             "name_EN": "Barman Absinthrayner",
-            "name_PL": "Barman Asynthnent",
-            "has_dialog": true
+            "name_PL": "Barman Absyntnent",
+            "has_dialog": true,
+            "friendly": 0.6
         },
         "CLAPBACK_SWORD": {
             "sprite": "Knight",
             "race": "humanoid",
             "attitude": "friendly",
             "disposition": {
-                "blessed": 1,
-                "blink": 2,
-                "wondering": 1,
+                "kind": 1,
+                "funny": 2,
+                "smart": 1,
                 "neutral": 0,
-                "human": 0,
-                "offended": -2,
+                "technical": 0,
+                "weak": -2,
                 "angry": -1
             },
             "money": 100,
             "name_EN": "Clapback Sword",
             "name_PL": "Miecz Ciętej-riposty",
-            "has_dialog": true
+            "has_dialog": true,
+            "friendly": 0.7
         },
         "POTIONEER_PUZZLEMINT": {
             "sprite": "EggGirl",
             "race": "humanoid",
             "attitude": "friendly",
             "disposition": {
-                "blessed": 1,
-                "blink": -1,
-                "wondering": -1,
+                "kind": 1,
+                "funny": 1,
+                "smart": 1,
                 "neutral": 0,
-                "human": 0,
-                "offended": 2,
-                "angry": -2
+                "technical": 0,
+                "weak": 1,
+                "angry": 1
             },
             "money": 100,
             "name_EN": "Potioneer Puzzlemint",
             "name_PL": "Zielarka Zmora",
-            "has_dialog": true
+            "has_dialog": true,
+            "friendly": 0.4
         },
         "MADAME_SARCASMIA": {
             "sprite": "SorcererBlack",
             "race": "humanoid",
             "attitude": "friendly",
             "disposition": {
-                "blessed": 1,
-                "blink": 2,
-                "wondering": 1,
+                "kind": 1,
+                "funny": 2,
+                "smart": 1,
                 "neutral": 0,
-                "human": 0,
-                "offended": -2,
+                "technical": 0,
+                "weak": -2,
                 "angry": -1
             },
             "money": 100,
@@ -426,7 +430,8 @@
             ],
             "name_EN": "Madame Sarcasmia",
             "name_PL": "Madame Sarkażmijka",
-            "has_dialog": true
+            "has_dialog": true,
+            "friendly": 0.5
         }
     },
     "chests": {
@@ -948,7 +953,7 @@
                 "000to001_1": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_HAMMER_HOAXHEART_DO_000to001_1"
                 },
@@ -962,7 +967,7 @@
                 "000to001_3": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_HAMMER_HOAXHEART_DO_000to001_3"
                 },
@@ -1011,7 +1016,7 @@
                 "002to007_1": {
                     "next_node": "007",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_HAMMER_HOAXHEART_DO_002to007_1"
                 },
@@ -1025,7 +1030,7 @@
                 "002to007_3": {
                     "next_node": "007",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_HAMMER_HOAXHEART_DO_002to007_3"
                 },
@@ -1039,7 +1044,7 @@
                 "003to008_1": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_HAMMER_HOAXHEART_DO_003to008_1"
                 },
@@ -1053,7 +1058,7 @@
                 "003to008_3": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_HAMMER_HOAXHEART_DO_003to008_3"
                 },
@@ -1067,21 +1072,21 @@
                 "004to009_1": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_HAMMER_HOAXHEART_DO_004to009_1"
                 },
                 "004to009_2": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 2,
                     "text": "M_HAMMER_HOAXHEART_DO_004to009_2"
                 },
                 "004to009_3": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_HAMMER_HOAXHEART_DO_004to009_3"
                 },
@@ -1102,21 +1107,21 @@
                 "006to010_1": {
                     "next_node": "010",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_HAMMER_HOAXHEART_DO_006to010_1"
                 },
                 "006to010_2": {
                     "next_node": "010",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 2,
                     "text": "M_HAMMER_HOAXHEART_DO_006to010_2"
                 },
                 "006to010_3": {
                     "next_node": "010",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_HAMMER_HOAXHEART_DO_006to010_3"
                 },
@@ -1306,21 +1311,21 @@
                 "000to001_1": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_000to001_1"
                 },
                 "000to001_2": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 2,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_000to001_2"
                 },
                 "000to001_3": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_000to001_3"
                 },
@@ -1376,21 +1381,21 @@
                 "003to007_1": {
                     "next_node": "007",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_003to007_1"
                 },
                 "003to008_2": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 2,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_003to008_2"
                 },
                 "003to007_3": {
                     "next_node": "007",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_003to007_3"
                 },
@@ -1404,28 +1409,28 @@
                 "008to009_1": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_008to009_1"
                 },
                 "008to009_2": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 2,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_008to009_2"
                 },
                 "008to009_3": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_008to009_3"
                 },
                 "009to007_2": {
                     "next_node": "007",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 2,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_009to007_2"
                 },
@@ -1509,21 +1514,21 @@
                 "011to017_1": {
                     "next_node": "017",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_011to017_1"
                 },
                 "011to017_2": {
                     "next_node": "017",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 2,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_011to017_2"
                 },
                 "011to017_3": {
                     "next_node": "017",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_011to017_3"
                 },
@@ -1537,7 +1542,7 @@
                 "005to012_1": {
                     "next_node": "012",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_005to012_1"
                 },
@@ -1551,7 +1556,7 @@
                 "005to012_3": {
                     "next_node": "012",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_005to012_3"
                 },
@@ -1856,28 +1861,28 @@
                 "000to017_1": {
                     "next_node": "017",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_000to017_1"
                 },
                 "017to018_1": {
                     "next_node": "018",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_017to018_1"
                 },
                 "018to001_1": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_018to001_1"
                 },
                 "001to002_1": {
                     "next_node": "002",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_001to002_1"
                 },
@@ -1891,7 +1896,7 @@
                 "001to002_3": {
                     "next_node": "002",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_001to002_3"
                 },
@@ -1926,7 +1931,7 @@
                 "003to008_1": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_003to008_1"
                 },
@@ -1940,14 +1945,14 @@
                 "003to008_3": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_003to008_3"
                 },
                 "004to008_1": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_004to008_1"
                 },
@@ -1961,14 +1966,14 @@
                 "004to008_3": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_004to008_3"
                 },
                 "005to016_1": {
                     "next_node": "016",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_005to016_1"
                 },
@@ -1982,28 +1987,28 @@
                 "005to016_3": {
                     "next_node": "016",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_005to016_3"
                 },
                 "016to008_1": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_016to008_1"
                 },
                 "016to008_2": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 2,
                     "text": "M_CLAPBACK_SWORD_DO_016to008_2"
                 },
                 "016to008_3": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_016to008_3"
                 },
@@ -2052,28 +2057,28 @@
                 "006to007_3": {
                     "next_node": "007",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_006to007_3"
                 },
                 "007to009_1": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_007to009_1"
                 },
                 "007to009_2": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 2,
                     "text": "M_CLAPBACK_SWORD_DO_007to009_2"
                 },
                 "007to009_3": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_007to009_3"
                 },
@@ -2094,7 +2099,7 @@
                 "010to011_1": {
                     "next_node": "011",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_010to011_1"
                 },
@@ -2108,14 +2113,14 @@
                 "010to011_3": {
                     "next_node": "011",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_010to011_3"
                 },
                 "011to012_1": {
                     "next_node": "012",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 1,
                     "text": "M_CLAPBACK_SWORD_DO_011to012_1"
                 },
@@ -2129,7 +2134,7 @@
                 "011to014_3": {
                     "next_node": "014",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_CLAPBACK_SWORD_DO_011to014_3"
                 },
@@ -2372,7 +2377,7 @@
                 "000to001_1": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_000to001_1"
                 },
@@ -2386,7 +2391,7 @@
                 "000to001_3": {
                     "next_node": "001",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_000to001_3"
                 },
@@ -2435,21 +2440,21 @@
                 "002to008_1": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_002to008_1"
                 },
                 "002to007_2": {
                     "next_node": "007",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 2,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_002to007_2"
                 },
                 "002to008_3": {
                     "next_node": "008",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_002to008_3"
                 },
@@ -2463,7 +2468,7 @@
                 "008to009_1": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_008to009_1"
                 },
@@ -2477,7 +2482,7 @@
                 "008to009_3": {
                     "next_node": "009",
                     "condition": "True",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_008to009_3"
                 },
@@ -2505,21 +2510,21 @@
                 "005to010_1": {
                     "next_node": "010",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_005to010_1"
                 },
                 "005to010_2": {
                     "next_node": "010",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 2,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_005to010_2"
                 },
                 "005to010_3": {
                     "next_node": "010",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_005to010_3"
                 },
@@ -2533,7 +2538,7 @@
                 "006to011_1": {
                     "next_node": "011",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_006to011_1"
                 },
@@ -2547,7 +2552,7 @@
                 "006to011_3": {
                     "next_node": "011",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 3,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_006to011_3"
                 },
@@ -2834,21 +2839,21 @@
                 "000to001_1": {
                     "next_node": "001",
                     "condition": "not visited(\"005\")",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_000to001_1"
                 },
                 "000to001_2": {
                     "next_node": "001",
                     "condition": "not visited(\"005\")",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 2,
                     "text": "M_MADAME_SARCASMIA_DO_000to001_2"
                 },
                 "000to007_3": {
                     "next_node": "007",
                     "condition": "not visited(\"005\")",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_MADAME_SARCASMIA_DO_000to007_3"
                 },
@@ -2862,42 +2867,42 @@
                 "001to002_1": {
                     "next_node": "002",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_001to002_1"
                 },
                 "001to002_2": {
                     "next_node": "002",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 2,
                     "text": "M_MADAME_SARCASMIA_DO_001to002_2"
                 },
                 "002to003_1": {
                     "next_node": "003",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_002to003_1"
                 },
                 "002to003_2": {
                     "next_node": "003",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 2,
                     "text": "M_MADAME_SARCASMIA_DO_002to003_2"
                 },
                 "003to004_1": {
                     "next_node": "004",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_003to004_1"
                 },
                 "003to004_2": {
                     "next_node": "004",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 2,
                     "text": "M_MADAME_SARCASMIA_DO_003to004_2"
                 },
@@ -2911,35 +2916,35 @@
                 "004to005_2": {
                     "next_node": "005",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 2,
                     "text": "M_MADAME_SARCASMIA_DO_004to005_2"
                 },
                 "004to006_3": {
                     "next_node": "006",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 3,
                     "text": "M_MADAME_SARCASMIA_DO_004to006_3"
                 },
                 "007to008_1": {
                     "next_node": "008",
                     "condition": "not selected(\"007to008_1\")",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_007to008_1"
                 },
                 "007to009_2": {
                     "next_node": "009",
                     "condition": "not selected(\"007to009_2\")",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 2,
                     "text": "M_MADAME_SARCASMIA_DO_007to009_2"
                 },
                 "007to010_3": {
                     "next_node": "010",
                     "condition": "not selected(\"007to010_3\")",
-                    "sentiment": "wondering",
+                    "sentiment": "smart",
                     "order": 3,
                     "text": "M_MADAME_SARCASMIA_DO_007to010_3"
                 },
@@ -3002,28 +3007,28 @@
                 "011to013_2": {
                     "next_node": "013",
                     "condition": "not has_item(\"MERMAIDS_TEAR\") and (has_item(\"GNOMES_WHISKER\") or has_item(\"PHOENIX_FEATHER\"))",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 2,
                     "text": "M_MADAME_SARCASMIA_DO_011to013_2"
                 },
                 "011to014_3": {
                     "next_node": "014",
                     "condition": "not has_item(\"GNOMES_WHISKER\") and (has_item(\"MERMAIDS_TEAR\") or has_item(\"PHOENIX_FEATHER\"))",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 3,
                     "text": "M_MADAME_SARCASMIA_DO_011to014_3"
                 },
                 "011to015_4": {
                     "next_node": "015",
                     "condition": "not has_item(\"PHOENIX_FEATHER\") and (has_item(\"GNOMES_WHISKER\") or has_item(\"MERMAIDS_TEAR\"))",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 4,
                     "text": "M_MADAME_SARCASMIA_DO_011to015_4"
                 },
                 "011to016_5": {
                     "next_node": "016",
                     "condition": "not has_item(\"MERMAIDS_TEAR\") and not has_item(\"GNOMES_WHISKER\") and not has_item(\"PHOENIX_FEATHER\")",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 5,
                     "text": "M_MADAME_SARCASMIA_DO_011to016_5"
                 },
@@ -3037,21 +3042,21 @@
                 "013to018_1": {
                     "next_node": "018",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_013to018_1"
                 },
                 "014to018_1": {
                     "next_node": "018",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_014to018_1"
                 },
                 "015to018_1": {
                     "next_node": "018",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_015to018_1"
                 },
@@ -3065,7 +3070,7 @@
                 "017to020_1": {
                     "next_node": "020",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_017to020_1"
                 },
@@ -3079,14 +3084,14 @@
                 "017to020_3": {
                     "next_node": "020",
                     "condition": "True",
-                    "sentiment": "blessed",
+                    "sentiment": "kind",
                     "order": 3,
                     "text": "M_MADAME_SARCASMIA_DO_017to020_3"
                 },
                 "018to021_1": {
                     "next_node": "021",
                     "condition": "True",
-                    "sentiment": "offended",
+                    "sentiment": "weak",
                     "order": 1,
                     "text": "M_MADAME_SARCASMIA_DO_018to021_1"
                 },
@@ -3100,7 +3105,7 @@
                 "018to021_3": {
                     "next_node": "021",
                     "condition": "True",
-                    "sentiment": "blink",
+                    "sentiment": "funny",
                     "order": 3,
                     "text": "M_MADAME_SARCASMIA_DO_018to021_3"
                 }
@@ -3362,7 +3367,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_008to009_3": "From what I've managed to establish, I'm under the influence of the [shadow]Eternal Curse of Misfortune[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DN_009": "Oh dear, you must have really offended them. That's a very old curse and rarely anyone resorts to it. I don't have a remedy for that. The only thing I can give you is the [shadow]Potion of Oblivion[/shadow], but that probably won't solve the problem.",
             "M_POTIONEER_PUZZLEMINT_DO_009to001_9": "Pity. Let's talk about something else then.",
-            "M_POTIONEER_PUZZLEMINT_DN_003": "What can I say? A village is a village, they all look alike around here. People have learned to rely on themselves. True, we don't have a miller or a woodcutter, but our blacksmith is better than in many a city. [char]Hammer[/char] isn't the life of the party, but he claims his armaments are excellent.",
+            "M_POTIONEER_PUZZLEMINT_DN_003": "What can I say? A village is a village, they all look alike around here. People have learned to rely on themselves. True, we don't have a miller or a woodcutter, but our blacksmith is better than in many a city. [[Hammer Hoaxheart]] isn't the life of the party, but he claims his armaments are excellent.",
             "M_POTIONEER_PUZZLEMINT_DO_003to001_9": "Thanks, that's enough for me.",
             "M_POTIONEER_PUZZLEMINT_DN_004": "There are a few, depends on what interests you:\n1 [shadow]Bagno niedogodności[/shadow] is rich in herbs and various kinds of toads\n2 in [shadow]Splątany las irytacji[/shadow] you can find rare mushrooms and all kinds of medicinal bark\n3 [shadow]Jaskinia zagmatwania[/shadow] is also a source of mushrooms, but much more dangerous",
             "M_POTIONEER_PUZZLEMINT_DO_004to001_9": "Thanks, that's enough for me.",
@@ -3386,7 +3391,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_012to001_9": "Thanks, that's enough for me.",
             "M_POTIONEER_PUZZLEMINT_DN_013": "I don't know exactly, we never met again. I heard she focused on working with books. They say she became a specialist in forbidden magical tomes in a secret library.",
             "M_POTIONEER_PUZZLEMINT_DO_013to012_1": "Thanks!",
-            "M_POTIONEER_PUZZLEMINT_DN_015": "She works now in a hidden library, somewhere under a larger city. I haven't heard anything more. But you know, [char]Hammer[/char] sometimes has customers from faraway places. Maybe you can squeeze something out of that grumpy liar.",
+            "M_POTIONEER_PUZZLEMINT_DN_015": "She works now in a hidden library, somewhere under a larger city. I haven't heard anything more. But you know, [[Hammer Hoaxheart]] sometimes has customers from faraway places. Maybe you can squeeze something out of that grumpy liar.",
             "M_POTIONEER_PUZZLEMINT_DO_015to012_1": "Thank you, that's valuable information.",
             "M_POTIONEER_PUZZLEMINT_DN_014": "When she was with me they called her [shadow]Mariolka[/shadow], but then something went wrong in her head. She started talking like a madwoman, as if every sentence were a riddle. Or maybe that's just a way to hide the secrets she's sworn to protect. Either way, people started calling her [shadow]Bibliofilistka des Informacja[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DO_014to012_1": "ok, thanks.",
@@ -3505,7 +3510,7 @@
             "M_CLAPBACK_SWORD_DO_019to010_1": "This has got to be a joke! Right?"
         },
         "PL": {
-            "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barman Asynthnent[/char]. A kogo tu do mnie los sprowadził?",
+            "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_1": "Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_2": "Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...",
             "M_BARMAN_ABSINTHRAYNER_DO_000to001_3": "Jak chcesz, no mogę zostać [shadow]Twoim[/shadow] najlepszym klientem :happy:",
@@ -3516,8 +3521,8 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to005_4": "Znasz kogoś, kto zna się na [b]zaklęciach[/b]:question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to006_5": "Gdzie mógłbym zdobyć wiedzę o [shadow]zaklęciach[/shadow]:question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to990_9": "To tyle, do następnego razu",
-            "M_BARMAN_ABSINTHRAYNER_DN_002": "Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu.\nMój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki :blink:",
-            "M_BARMAN_ABSINTHRAYNER_DN_003": "[loc]Gafowo Kolonia[/loc]? Może to nie jest [shadow]Rzym[/shadow], ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają.\nNa co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych [shadow]czarodziei[/shadow] i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty:angry:.\n\nNie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki:shocked:. Ponoć użyli swojej [shadow]magii[/shadow]. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów:evil:.",
+            "M_BARMAN_ABSINTHRAYNER_DN_002": "Ja się praktycznie urodziłem w tej [loc]karczmie[/loc]. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu.\nMój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki:blink:",
+            "M_BARMAN_ABSINTHRAYNER_DN_003": "[loc]Gafowo Kolonia[/loc]? Może to nie jest [loc]Rzym[/loc], ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają.\nNa co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych [shadow]czarodziei[/shadow] i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty:angry:.\n\nNie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki:shocked:. Ponoć użyli swojej [shadow]magii[/shadow]. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów:evil:.",
             "M_BARMAN_ABSINTHRAYNER_DO_003to007_1": "Czary? Tutaj? To niesłychane! Co stało się dalej?",
             "M_BARMAN_ABSINTHRAYNER_DO_003to008_2": "Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar:miserable:",
             "M_BARMAN_ABSINTHRAYNER_DO_003to007_3": "[char]Miecz[/char]: [italic]Chyba już słyszałem tę historię...[/italic] A co z tymi czarownikami?",
@@ -3583,7 +3588,7 @@
             "M_CLAPBACK_SWORD_DO_002to004_2": "Kim Ty jesteś?",
             "M_CLAPBACK_SWORD_DO_002to005_3": "Gdzie my jesteśmy?",
             "M_CLAPBACK_SWORD_DO_002to006_4": "To co teraz?",
-            "M_CLAPBACK_SWORD_DN_003": "Poniosła Cię *ułańska fantazja*! Po raz kolejny!\nChciałeś ograć w karty nowoprzybyłych [shadow]czarodziei[/shadow], spiłeś się, przestałeś mnie słuchać, przyłapali Cię na próbie oszustwa, rzucili jakieś zaklęcie, potem był jeden wielki huk i błysk.\nWtedy straciłem przytomność i obudziliśmy się tutaj.",
+            "M_CLAPBACK_SWORD_DN_003": "Poniosła Cię [italic]ułańska fantazja[/italic]! Po raz kolejny!\nChciałeś ograć w karty nowoprzybyłych [shadow]czarodziei[/shadow], spiłeś się, przestałeś mnie słuchać, przyłapali Cię na próbie oszustwa, rzucili jakieś zaklęcie, potem był jeden wielki huk i błysk.\nWtedy straciłem przytomność i obudziliśmy się tutaj.",
             "M_CLAPBACK_SWORD_DO_003to008_1": "He he, no to była niezła zabawa.",
             "M_CLAPBACK_SWORD_DO_003to008_2": "Wielkie mi rzeczy, dzień jak co dzień. Po co ta drama?",
             "M_CLAPBACK_SWORD_DO_003to008_3": "Czyli nic nie wygrałem, hmmm. Może dzisiaj się odkuję.",
@@ -3630,7 +3635,7 @@
             "M_CLAPBACK_SWORD_DN_015": "No, dobra, pomyślmy:wondering:. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów.\nJedno jest pewne  - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha!\nA teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [loc]Tawerny[/loc].",
             "M_CLAPBACK_SWORD_DN_100": "Na razie nie mam Ci nic nowego do powiedzenia.",
             "M_POTIONEER_PUZZLEMINT_DN_016": "Ktoś Ty? Kto Cię tu przysłał?",
-            "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[char]Barman Asynthnent[/char] powiedział mi o Tobie.",
+            "M_POTIONEER_PUZZLEMINT_DO_016to000_1": "[char]Barman Absyntnent[/char] powiedział mi o Tobie.",
             "M_POTIONEER_PUZZLEMINT_DO_016to992_2": "Nikt, ja sam tu trafiłem.",
             "M_POTIONEER_PUZZLEMINT_DN_000": "Ach, tak, tak. Proszę, wejdź chłopcze to domu najlepszej zielarki w okolicy.",
             "M_POTIONEER_PUZZLEMINT_DO_000to001_1": "Dzień dobry, jestem Malachi, straszny pechowiec. Potrzebuję pomocy.",
@@ -3643,7 +3648,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_001to005_4": "Czy prócz zielarstwa zna się Pani również na zaklęciach?",
             "M_POTIONEER_PUZZLEMINT_DO_001to006_5": "Ma Pani może jakąś książkę o zaklęciach?",
             "M_POTIONEER_PUZZLEMINT_DO_001to990_9": "To tyle, do następnego razu.",
-            "M_POTIONEER_PUZZLEMINT_DN_002": "Ostatnimi laty rzeczywiście nie ruszam się poza [shadow]Gafowo Kolonię[/shadow], ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.\nA Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku?",
+            "M_POTIONEER_PUZZLEMINT_DN_002": "Ostatnimi laty rzeczywiście nie ruszam się poza [loc]Gafowo Kolonię[/loc], ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.\nA Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku?",
             "M_POTIONEER_PUZZLEMINT_DO_002to008_1": "Jestem wagą - to najmilszy znak zodiaku, nie sądzisz?",
             "M_POTIONEER_PUZZLEMINT_DO_002to007_2": "Znaki zodiaku to bzdura. Każdy sam decyduje jakim człowiekiem jest.",
             "M_POTIONEER_PUZZLEMINT_DO_002to008_3": "Jokerem! Jestem jak kameleon - staję się kimś innym zależnie od potrzeby chwili.",
@@ -3715,11 +3720,11 @@
             "M_HAMMER_HOAXHEART_DO_004to009_1": "No to oni pewnie dadzą zarobić? Znasz tam kogoś?",
             "M_HAMMER_HOAXHEART_DO_004to009_2": "Pewnie Cię poniżają ci [italic]wielcy panicze[/italic]. Często musisz masz z nimi do czynienia?",
             "M_HAMMER_HOAXHEART_DO_004to009_3": "A po co tym [italic]francuskim pieskom[/italic] dobra broń? Polują kuszami na kury karczmarza?",
-            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [char]Barman Asynthnent[/char] - on gada ze wszystkimi przybyszami.",
+            "M_HAMMER_HOAXHEART_DN_009": "Nie lubię miasta, nie jeżdżę tam. Pytaj [char]Barmana Absyntnenta[/char] - on gada ze wszystkimi przybyszami.",
             "M_HAMMER_HOAXHEART_DO_009to001_9": "Dzięki, to mi wystarczy",
             "M_HAMMER_HOAXHEART_DN_005": "Moja broń jest tak dobra, że nie potrzeba mi czarów.",
             "M_HAMMER_HOAXHEART_DO_005to001_9": "Dzięki, to mi wystarczy",
-            "M_HAMMER_HOAXHEART_DN_006": "Kto mądry to nie zostaje tu za długo. [char]Barman Asynthnent[/char] nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.",
+            "M_HAMMER_HOAXHEART_DN_006": "Kto mądry to nie zostaje tu za długo. [char]Barman Absyntnent[/char] nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.",
             "M_HAMMER_HOAXHEART_DO_006to010_1": "Że, co? Ja dużo gadam?",
             "M_HAMMER_HOAXHEART_DO_006to010_2": "Mam rozumieć, że Ty nie bardzo lubisz rozmawiać?",
             "M_HAMMER_HOAXHEART_DO_006to010_3": "No i tak jak Ty!",
@@ -3728,13 +3733,13 @@
             "M_HAMMER_HOAXHEART_DN_990": "Żegnam",
             "M_BARMAN_ABSINTHRAYNER_DO_002to001_1": "Dzięki, to mi wystarczy",
             "M_MADAME_SARCASMIA_DN_000": "No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukającą jakiegoś cudownego lekarstwa? Unosi brwi :wondering:.",
-            "M_MADAME_SARCASMIA_DO_000to001_1": "Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.",
+            "M_MADAME_SARCASMIA_DO_000to001_1": "Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… [quest]odwieczną klątwę ciągłego pecha[/quest].",
             "M_MADAME_SARCASMIA_DO_000to001_2": "Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.",
             "M_MADAME_SARCASMIA_DO_000to007_3": "Czy możesz mi powiedzieć coś więcej o sobie?",
-            "M_MADAME_SARCASMIA_DN_001": "Wzdycha dramatycznie: Ach, odwieczna klątwa nieszczęścia. Jakie oryginalne :dots:. Dobra, pewnie mogłabym ci pomóc, ale wiedz, że magia nie jest tania.",
+            "M_MADAME_SARCASMIA_DN_001": "Wzdycha dramatycznie: Ach, [quest]Odwieczna klątwa nieszczęścia[/quest]. Ta jasne, właśnie Tobie przytrafiła się legendarna kłatwa :doubt: :dots:. To prawdopodobnie zwykły pech. No ale dobra, pewnie mogłabym ci jakoś pomóc, ale wiedz, że magia nie jest tania.",
             "M_MADAME_SARCASMIA_DO_001to002_1": "Zrobię wszystko, co trzeba. Po prostu podaj swoją cenę.",
             "M_MADAME_SARCASMIA_DO_001to002_2": "Cóż, a to pech, bo miałem zamiar ci zapłacić wyrazami wdzięczności.",
-            "M_MADAME_SARCASMIA_DN_002": "Och, zrobię to, nie martw się. Widzisz kochanieńki, potrzebuję kilku drobiazgów do mojego małego… projektu. Zdobądź je dla mnie, a być może przygotuję Ci eliksir, który teoretycznie może złamać twoją klątwę. Albo zamieni Cię w traszkę. To się jeszcze zobaczy.",
+            "M_MADAME_SARCASMIA_DN_002": "Och, zrobię to, nie martw się. Widzisz kochanieńki, potrzebuję jedynie kilku drobiazgów do mojego małego… projektu. Zdobądź je dla mnie, a być może przygotuję Ci eliksir, który [italic]teoretycznie[/italic] może złamać twoją klątwę. Albo zamieni Cię w traszkę. To się jeszcze zobaczy:blink:",
             "M_MADAME_SARCASMIA_DO_002to003_1": "Drobiazgi, mówisz? O czym konkretnie mówimy?",
             "M_MADAME_SARCASMIA_DO_002to003_2": "To będzie bułka z masłem, prawda?",
             "M_MADAME_SARCASMIA_DN_003": "Och, nic wielkiego:\n[act]*[/act] [item]łza[/item] [char]Melancholijnej Syrenki[/char],\n[act]*[/act] [item]pióro[/item] [char]Przygnębionego Feniksa[/char] wyrwane podczas zaćmienia słońca,\n[act]*[/act] oraz [item]wąsik[/item] [char]Gniewnego Gnoma[/char].\n\nTo powinna być bułka z masłem — przewraca oczami :dots:.",

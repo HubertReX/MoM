@@ -3,7 +3,7 @@
 Replaces the monolithic legacy ``UI`` class and its loose boolean flags. Panels are
 addressed by type:
 
-    ui.open(DialogPanel, npc=npc, text=npc.dialogs)
+    ui.open(DialogPanel, npc=npc, text=node_text)
     ui.open(TradePanel)
     ui.toggle(InventoryPanel)
     ui.close(DialogPanel)

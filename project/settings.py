@@ -22,7 +22,9 @@ help = partial(inspect, help=True, methods=True)
 pretty.install()
 
 
-VERSION = 0.1
+# 0.2: sentiment keys renamed to author-facing names (kind/weak/...) - older
+# saves are incompatible and rejected on load with a terminal message.
+VERSION = 0.2
 GAME_NAME = "Misadventures of Malachi"
 LANG = "PL"
 UI_STRINGS: dict[str, dict[str, str]] = {}
@@ -136,29 +138,52 @@ def reload_ui_strings() -> None:
 # Sentiment / disposition
 # ---------------------------------------------------------------------------
 
-# Source RPG emoji -> MoM emote key (without colons).  Shared with the
-# markdown importer and the dialog graph builder so both can normalise
-# option sentiment to the same canonical keys.
-SENTIMENT_EMOJI_TO_EMOTE: dict[str, str] = {
-    "😇": "blessed",
-    "😢": "offended",
+# Canonical, author-facing sentiment names.  These are the keys used in
+# character Markdown frontmatter, characters.csv, config.json and the
+# Character/NPC models.  Mapping to MoM emote sprites happens only at
+# UI-render time via SENTIMENT_NAME_TO_EMOTE.
+SENTIMENT_NAMES: tuple[str, ...] = (
+    "kind", "weak", "neutral", "angry", "smart", "funny", "technical",
+)
+
+# Source Markdown emoji (dialog option lines) -> canonical sentiment name.
+# Shared with the markdown importer and the dialog graph builder so both
+# can normalise option sentiment to the same canonical keys.
+SENTIMENT_EMOJI_TO_NAME: dict[str, str] = {
+    "😇": "kind",
+    "😢": "weak",
     "😐": "neutral",
     "😡": "angry",
-    "🧠": "wondering",
-    "😉": "blink",
-    "🤖": "human",
+    "🧠": "smart",
+    "😉": "funny",
+    "🤖": "technical",
 }
 
-# Default per-emoji sentiment shift applied when a dialog option is chosen.
-# Characters can override individual entries via ``Character.disposition``.
+# Canonical sentiment name -> MoM emote sprite key (without colons).
+# Used ONLY when rendering UI (option rows, sentiment notifications) -
+# data files keep the author-facing names (migration plan, ch. 7 D3b).
+SENTIMENT_NAME_TO_EMOTE: dict[str, str] = {
+    "kind": "blessed",
+    "weak": "offended",
+    "neutral": "neutral",
+    "angry": "angry",
+    "smart": "wondering",
+    "funny": "blink",
+    "technical": "human",
+}
+
+# Default per-sentiment shift applied when a dialog option is chosen.
+# Characters can override individual entries via ``Character.disposition``
+# (frontmatter of the PL character Markdown).  Weights stay in the -2..2
+# range; ``neutral`` and ``technical`` are always 0.
 DEFAULT_DISPOSITION_WEIGHTS: dict[str, int] = {
-    "blessed": 10,
-    "blink": 5,
-    "wondering": 2,
+    "kind": 1,
+    "funny": 1,
+    "smart": 1,
     "neutral": 0,
-    "human": 0,
-    "offended": -5,
-    "angry": -10,
+    "technical": 0,
+    "weak": -1,
+    "angry": -2,
 }
 
 # Trade price sentiment multipliers.  At sentiment 50 (neutral) both are 1.0;
@@ -186,13 +211,13 @@ def entity_name(model: Any, lang: str | None = None) -> str:
 
 
 def normalise_sentiment(sentiment: str) -> str:
-    """Return the canonical emote name for a sentiment value.
+    """Return the canonical sentiment name for a sentiment value.
 
-    Accepts either a source RPG emoji (e.g. ``"😐"``) or an already-normalised
-    MoM emote name (e.g. ``"neutral"``).  Unknown values are returned as-is so
-    they can still be used as custom keys.
+    Accepts either a source Markdown emoji (e.g. ``"😐"``) or an
+    already-normalised name (e.g. ``"neutral"``).  Unknown values are
+    returned as-is so they can still be used as custom keys.
     """
-    return SENTIMENT_EMOJI_TO_EMOTE.get(sentiment, sentiment)
+    return SENTIMENT_EMOJI_TO_NAME.get(sentiment, sentiment)
 
 
 TILE_SIZE = 16
@@ -620,7 +645,6 @@ TEXT_ROW_SPACING = 1.4
 
 ASSET_PACK = "NinjaAdventure"
 RESOURCES_DIR = ASSETS_DIR / ASSET_PACK
-DIALOGS_DIR = ASSETS_DIR / "dialogs" / LANG
 MAPS_DIR = RESOURCES_DIR / "maps"
 ITEMS_DIR = RESOURCES_DIR / "items"
 ITEMS_SHEET_FILE = ITEMS_DIR / "items_trans_weapons.png"

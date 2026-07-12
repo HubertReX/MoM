@@ -11,6 +11,13 @@ i podpowiada pola.
 
 Pliki **CSV** (`characters.csv`, `items.csv`, `chests.csv`, `maze_configs.csv`) to
 **pomocnicze narzędzie do masowego tuningu liczbowego** w arkuszu — **nie źródło prawdy**.
+
+> **Wyjątek — metadane postaci z dialogami:** kolumny `sprite`, `friendly` oraz wagi
+> sentymentów (`kind/weak/angry/smart/funny`) w `characters.csv` pochodzą z frontmatter
+> plików Markdown w vaultcie `doc/` (PL = źródło prawdy). Pipeline:
+> `just import-dialogs` → frontmatter → `characters.csv` → `just import-entities`
+> (kaskada; import-entities jako jedyny pisze sekcję `characters` w `config.json`,
+> agregując kolumny wag do dicta `disposition`). Nie edytuj tych kolumn ręcznie.
 Obsługa przez CLI (`project/main.py`, podkomendy Click, desktop-only):
 
 ```bash
@@ -64,7 +71,10 @@ Config {
 
 - `Character.dialog_key` — opcjonalny klucz do `Config.dialogs`; gdy ustawiony, NPC
   buduje graf `DialogNode` przy ładowaniu i ustawia kursor na `START_NODE` (`characters.py:load_dialogs`).
-- `Character.disposition` — bazowa skłonność postaci do gracza, 0–100 (domyślnie 50).
+- `Character.friendly` — bazowy sentyment do gracza, 0..1 (startowy `NPC.sentiment = friendly*100`, domyślnie 0.5).
+- `Character.disposition` — wagi sentymentów opcji dialogowych (klucze autorskie:
+  `kind/weak/neutral/angry/smart/funny/technical`, wartości -2..2); mapowanie na ikony
+  emote dopiero w UI (`SENTIMENT_NAME_TO_EMOTE` w `settings.py`).
 - `Config.dialogs` — opcjonalna sekcja z grafami dialogowymi (domyślnie pusta).
   Format sekcji: [`project/dialog/graph.py`](./dialog/graph.py).
 

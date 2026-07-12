@@ -10,12 +10,17 @@ in isolation, but it is intended as a **build-time** tool: it reads source
 Markdown and emits the ``messages`` / ``character_dialogs`` sections that
 can be merged into ``config.json``.
 
-Source MD files live in ``project/assets/dialogs/{EN,PL}/`` (naming
-convention: ``Name_Surname.md``). Run ``just import-dialogs`` (or invoke
+Source MD files live in the ``doc/`` Obsidian vault under ``PL/Postacie/``
+and ``EN/Characters/`` (file name = localized display name, e.g.
+``Barman Absyntnent.md``; the config key lives in the frontmatter
+``aliases``). The **PL file is the source of truth** for character metadata
+(``sprite``, ``friendly``, sentiment weights); EN copies are synced by the
+dialog-en-sync skill. Run ``just import-dialogs`` (or invoke
 ``python project/dialog/markdown_importer.py`` directly) to rebuild
-``config_model/config.json`` from them. Characters whose format the importer
-can parse are listed in ``IMPORTABLE_CHARACTERS``; non-compatible dialogs
-(e.g. Madame Sarcasmia) are preserved untouched.
+``config_model/config.json`` and the metadata columns of
+``config_model/characters.csv`` from them (``import-entities`` then merges
+the CSV into the ``characters`` section). Characters whose format the
+importer can parse are listed in ``IMPORTABLE_CHARACTERS``.
 
 Output shape matches ``dialog.graph.init_dialog`` expectations:
 
@@ -35,7 +40,7 @@ Output shape matches ``dialog.graph.init_dialog`` expectations:
                 "text": message_key,
                 "order": int,
                 "condition": mini_dsl_string,
-                "sentiment": emote_name,  # e.g. "blessed", "neutral"
+                "sentiment": sentiment_name,  # e.g. "kind", "neutral"
             }
         },
         "NODES_OPTIONS": {node_key: [option_key, ...]},
@@ -81,13 +86,23 @@ class DialogImportError(ValueError):
 # Conversion tables (Decision D3)
 # ---------------------------------------------------------------------------
 
-from settings import SENTIMENT_EMOJI_TO_EMOTE
+from settings import (
+    SENTIMENT_EMOJI_TO_NAME,
+    SENTIMENT_NAME_TO_EMOTE,
+)
 
 # emoji appearing inside node/option text -> inline :emote: tag
+# (author emoji -> canonical name -> MoM emote sprite key)
 _EMOJI_TO_EMOTE_TAG: dict[str, str] = {
-    emoji: f":{name}:"
-    for emoji, name in SENTIMENT_EMOJI_TO_EMOTE.items()
+    emoji: f":{SENTIMENT_NAME_TO_EMOTE[name]}:"
+    for emoji, name in SENTIMENT_EMOJI_TO_NAME.items()
 }
+
+# sentiment weights that may appear in character frontmatter (PL is the
+# source of truth); ``neutral`` and ``technical`` are implicit with weight 0.
+_FRONTMATTER_WEIGHT_KEYS: tuple[str, ...] = (
+    "kind", "weak", "angry", "smart", "funny",
+)
 
 # RPG rich tags -> MoM RichText tags
 _TAG_CONVERSIONS: dict[str, str] = {
@@ -117,9 +132,11 @@ _OPTION_RE = re.compile(
     r"(?P<text>.*)$"
 )
 
-# heading that starts a node: "### 000", "### 990-end", or "### 990-end [011](#011)"
+# heading that starts a node: "## 000", "## 990-end" (preferred) or the
+# legacy "### 000" / "### 990-end [011](#011)".  Node keys are digits only,
+# so prose headings inside the "# Info" section never collide.
 _NODE_HEADING_RE = re.compile(
-    r"^###\s*(?P<key>[A-Za-z0-9_\-]+)"
+    r"^#{2,3}\s*(?P<key>\d+(?:-end)?)"
     r"(?:\s*\[(?P<resume_anchor>[^\]]+)\]\(#(?P<resume_target>[^)]+)\))?\s*$"
 )
 
@@ -186,54 +203,174 @@ class _ParsedNode:
         return "\n\n".join(self.text_lines)
 
 
+@dataclass
+class _Frontmatter:
+    """Parsed character-file frontmatter (the subset the importer cares about)."""
+
+    aliases: list[str] = field(default_factory=list)
+    sprite: str = ""
+    friendly: float | None = None
+    weights: dict[str, int] = field(default_factory=dict)
+
+
+def _unquote(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
+def _parse_frontmatter(text: str, *, path: str = "") -> _Frontmatter:
+    """Parse the YAML frontmatter block with a minimal, dependency-free parser.
+
+    Supports the flat ``key: value`` entries and one-level ``- item`` lists
+    used by character files. Unknown keys are ignored (the file may carry
+    Obsidian-only metadata like ``location`` or ``inspirations``).
+    """
+    fm = _Frontmatter()
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return fm
+
+    current_list: list[str] | None = None
+    for idx in range(1, len(lines)):
+        stripped = lines[idx].strip()
+        if stripped == "---":
+            break
+        if not stripped:
+            continue
+        if stripped.startswith("- "):
+            if current_list is not None:
+                item = _unquote(stripped[2:].strip())
+                if item:
+                    current_list.append(item)
+            continue
+        if ":" not in stripped:
+            continue
+        key, _sep, raw_value = stripped.partition(":")
+        key = key.strip()
+        value = _unquote(raw_value.strip())
+        current_list = None
+        if key == "aliases":
+            fm.aliases = []
+            current_list = fm.aliases
+            if value:
+                fm.aliases.append(value)
+        elif key == "sprite":
+            fm.sprite = value
+        elif key == "friendly":
+            if value:
+                try:
+                    fm.friendly = float(value)
+                except ValueError:
+                    raise DialogImportError(
+                        f"frontmatter 'friendly' expects a number, got {value!r}",
+                        file=path,
+                        line=idx + 1,
+                    )
+        elif key in _FRONTMATTER_WEIGHT_KEYS:
+            if value:
+                try:
+                    fm.weights[key] = int(value)
+                except ValueError:
+                    raise DialogImportError(
+                        f"frontmatter {key!r} expects an integer weight, got {value!r}",
+                        file=path,
+                        line=idx + 1,
+                    )
+    return fm
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
 
-def _find_markdown_file(src_dir: Path, lang: str, character_name: str) -> Path:
-    lang_dir = src_dir / lang
-    if not lang_dir.exists():
-        raise DialogImportError(f"Language directory not found: {lang_dir}", file=str(lang_dir))
+# Preferred vault layout (doc/ Obsidian vault) with fallback to the legacy
+# flat {PL,EN} directories used before the doc/ migration.
+_LANG_SUBDIRS: dict[str, tuple[str, ...]] = {
+    "PL": ("PL/Postacie", "PL"),
+    "EN": ("EN/Characters", "EN"),
+}
 
-    # Try case-insensitive matching: char-<name>.md, chara-<name>.md, <name>.md
-    normalized_name = character_name.replace(" ", "_").lower()
-    candidates = (
-        f"char-{normalized_name}.md",
-        f"chara-{normalized_name}.md",
-        f"{normalized_name}.md",
+
+def _lang_dir(src_dir: Path, lang: str) -> Path:
+    for sub in _LANG_SUBDIRS.get(lang, (lang,)):
+        candidate = src_dir / sub
+        if candidate.exists():
+            return candidate
+    raise DialogImportError(
+        f"Language directory not found under {src_dir} for {lang!r}",
+        file=str(src_dir),
     )
-    for p in lang_dir.iterdir():
-        if p.is_file() and p.suffix == ".md":
-            name_lower = p.name.lower()
-            if name_lower in candidates:
-                return p
 
-    # Fallback to char- prefixed default
+
+def _find_markdown_file(src_dir: Path, lang: str, character_name: str) -> Path:
+    """Locate the character's Markdown file by its frontmatter aliases.
+
+    File names are localized display names (e.g. ``Barman Absyntnent.md``);
+    the dictionary key lives only in the frontmatter ``aliases`` list.
+    """
+    lang_dir = _lang_dir(src_dir, lang)
     character_key = _character_name_to_key(character_name)
-    default = lang_dir / f"char-{character_key}.md"
-    # Also try bare <KEY>.md as last resort
-    bare = lang_dir / f"{character_key.lower()}.md"
-    return bare if bare.exists() else default
+    for p in sorted(lang_dir.glob("*.md")):
+        fm = _parse_frontmatter(p.read_text(encoding="utf-8"), path=str(p))
+        if character_key in fm.aliases:
+            return p
+    raise DialogImportError(
+        f"no Markdown file with alias {character_key!r} in {lang_dir}",
+        file=str(lang_dir),
+    )
 
 
 def _make_name_resolver(
     characters: dict[str, Any], lang: str
-) -> Callable[[str], str] | None:
+) -> Callable[[str, str | None], str | None] | None:
     """Build a wikilink resolver for the given language.
 
-    Returns a callable ``(key: str) -> str`` that looks up the entity name
-    in *characters*, or ``None`` when *characters* is empty (no resolution).
+    Returns a callable ``(target, display) -> str | None``: *target* is the
+    wikilink target (character key, localized file name, or a legacy
+    ``lang/File_Name`` path), *display* is the optional pipe text (used for
+    grammatical declension, e.g. ``[[Barman Absyntnent|Barmana Absyntnenta]]``).
+    The callable returns the text to render inside ``[char]...[/char]``, or
+    ``None`` when the target is not a known character (link left as-is).
+    Returns ``None`` when *characters* is empty (no resolution at all).
     """
     if not characters:
         return None
     field = "name_PL" if lang == "PL" else "name_EN"
 
-    def _resolve(key: str) -> str:
-        ch = characters.get(key)
+    # Lookup by config key and by display names in BOTH languages, so links
+    # in PL files to EN-named files (and vice versa) still resolve.
+    lookup: dict[str, dict[str, Any]] = {}
+    for key, ch in characters.items():
+        lookup[key] = ch
+        for name_field in ("name_PL", "name_EN"):
+            name = ch.get(name_field, "")
+            if name:
+                lookup.setdefault(name, ch)
+
+    def _resolve(target: str, display: str | None) -> str | None:
+        # strip legacy "PL/"/"EN/" path prefix and normalise underscores
+        candidate = target.rsplit("/", 1)[-1].strip()
+        ch = lookup.get(candidate) or lookup.get(candidate.replace("_", " "))
+        if ch is None and display:
+            # legacy links carried the config key in the pipe part
+            # (e.g. ``[[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]]``)
+            d = display.strip()
+            ch = lookup.get(d) or lookup.get(d.replace("_", " "))
+            if ch is not None:
+                display = None  # the pipe was an identifier, not display text
         if ch is None:
-            return f"[[{key}]]"  # leave as-is if not found
-        return ch.get(field, ch.get("name_EN", key))
+            return None
+        canonical = ch.get(field, ch.get("name_EN", candidate))
+        if display:
+            # Legacy links used the config key / file stem as pipe text
+            # (e.g. ``[[EN/Clapback_Sword|Clapback_Sword]]``) - treat an
+            # identifier-like pipe as a reference, not display text.
+            if display in characters or "_" in display:
+                return str(canonical)
+            return display
+        return str(canonical)
 
     return _resolve
 
@@ -244,32 +381,50 @@ def import_character_dialog(
     *,
     valid_items: set[str] | None = None,
     characters: dict[str, Any] | None = None,
-) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
-    """Import one character from RPG Markdown source.
+) -> tuple[dict[str, dict[str, str]], dict[str, Any], dict[str, Any]]:
+    """Import one character from its Markdown source.
 
-    Reads ``PL/<Name>.md`` and ``EN/<Name>.md`` under ``src_dir``,
-    validates the graph, converts markup and conditions, and returns
-    ``(messages, character_dialogs)``.
+    Locates the PL and EN files by the frontmatter ``aliases`` (the file
+    names themselves are localized display names), validates the graph,
+    converts markup and conditions, and returns
+    ``(messages, character_dialogs, character_meta)``.
 
-    The importer looks for files in this order (case-insensitive):
-    ``char-<name>.md``, ``chara-<name>.md``, ``<name>.md``.
+    The **PL file is the source of truth** for character metadata: the
+    frontmatter ``sprite``, ``friendly`` and sentiment weights
+    (``kind/weak/angry/smart/funny``) are read from PL only; the EN copies
+    exist for the author's convenience (synced by the dialog-en-sync skill).
 
     Args:
-        src_dir: directory containing ``PL/`` and ``EN/`` subdirectories.
+        src_dir: vault root containing ``PL/Postacie`` and ``EN/Characters``
+            (or legacy flat ``PL``/``EN``) subdirectories.
         character_name: canonical character name, e.g. ``"Hammer Hoaxheart"``.
         valid_items: optional set of item keys (from ``items.csv``) used to
             validate item names referenced by ``[ITEMS+...]`` node results.
         characters: optional dict of character config data (key -> props)
-            used to resolve ``[[KEY]]`` wikilinks to entity names.
+            used to resolve ``[[...]]`` wikilinks to entity names.
 
     Returns:
-        A tuple ``(messages, character_dialogs)`` where ``messages`` has the
-        shape ``{lang: {key: text}}`` and ``character_dialogs`` has the shape
-        described in the module docstring.
+        A tuple ``(messages, character_dialogs, character_meta)`` where
+        ``messages`` has the shape ``{lang: {key: text}}``,
+        ``character_dialogs`` has the shape described in the module
+        docstring, and ``character_meta`` is
+        ``{"sprite": str, "friendly": float | None, "disposition": dict}``
+        built from the PL frontmatter (empty/None values mean "not set").
     """
     character_key = _character_name_to_key(character_name)
-    pl_nodes = _parse_file(_find_markdown_file(src_dir, "PL", character_name))
-    en_nodes = _parse_file(_find_markdown_file(src_dir, "EN", character_name))
+    pl_path = _find_markdown_file(src_dir, "PL", character_name)
+    en_path = _find_markdown_file(src_dir, "EN", character_name)
+    pl_nodes = _parse_file(pl_path)
+    en_nodes = _parse_file(en_path)
+
+    frontmatter = _parse_frontmatter(
+        pl_path.read_text(encoding="utf-8"), path=str(pl_path)
+    )
+    character_meta: dict[str, Any] = {
+        "sprite": frontmatter.sprite,
+        "friendly": frontmatter.friendly,
+        "disposition": dict(frontmatter.weights),
+    }
 
     _validate_language_consistency(
         pl_nodes, en_nodes, character_name, str(src_dir)
@@ -340,7 +495,7 @@ def import_character_dialog(
             condition = _convert_condition(
                 pl_opt.condition or "True",
                 option_key,
-                str(src_dir / "PL" / f"char-{character_key}.md"),
+                str(pl_path),
                 pl_opt.line_no,
             )
 
@@ -361,10 +516,10 @@ def import_character_dialog(
     _validate_graph(
         pl_nodes,
         dialog_config[character_key],
-        str(src_dir / "PL" / f"char-{character_key}.md"),
+        str(pl_path),
     )
 
-    return messages, dialog_config
+    return messages, dialog_config, character_meta
 
 
 def import_dialogs(
@@ -372,29 +527,33 @@ def import_dialogs(
     character_names: list[str],
     *,
     valid_items: set[str] | None = None,
-) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
+) -> tuple[dict[str, dict[str, str]], dict[str, Any], dict[str, Any]]:
     """Import several characters and merge their configs.
 
     Args:
-        src_dir: directory containing ``PL/`` and ``EN/`` subdirectories.
+        src_dir: vault root containing the per-language subdirectories.
         character_names: list of canonical character names.
         valid_items: optional set of valid item keys.
 
     Returns:
-        A tuple ``(messages, character_dialogs)`` with all characters merged.
+        A tuple ``(messages, character_dialogs, character_meta)`` with all
+        characters merged; ``character_meta`` maps character key to the
+        frontmatter metadata (sprite/friendly/disposition).
     """
     messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     character_dialogs: dict[str, Any] = {}
+    character_meta: dict[str, Any] = {}
 
     for name in character_names:
-        char_messages, char_dialog = import_character_dialog(
+        char_messages, char_dialog, char_meta = import_character_dialog(
             src_dir, name, valid_items=valid_items
         )
         for lang in ("PL", "EN"):
             messages[lang].update(char_messages[lang])
         character_dialogs.update(char_dialog)
+        character_meta[_character_name_to_key(name)] = char_meta
 
-    return messages, character_dialogs
+    return messages, character_dialogs, character_meta
 
 
 def load_valid_items(csv_path: Path) -> set[str]:
@@ -413,10 +572,14 @@ def load_valid_items(csv_path: Path) -> set[str]:
 # Full-config rebuild
 # ---------------------------------------------------------------------------
 
-# Default source directory for dialog Markdown files
-_DEFAULT_DIALOG_SRC = _PROJECT_ROOT / "assets" / "dialogs"
+# Default source directory for dialog Markdown files: the doc/ Obsidian
+# vault (PL/Postacie + EN/Characters subdirectories via _lang_dir).
+_DEFAULT_DIALOG_SRC = _PROJECT_ROOT.parent / "doc"
 # Default config.json path
 _DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config_model" / "config.json"
+# characters.csv - the author-facing intermediate of the
+# MD -> CSV -> config.json pipeline
+_DEFAULT_CHARACTERS_CSV = _PROJECT_ROOT / "config_model" / "characters.csv"
 
 # Characters whose Markdown format is supported by the importer.
 IMPORTABLE_CHARACTERS: list[str] = [
@@ -426,6 +589,56 @@ IMPORTABLE_CHARACTERS: list[str] = [
     "Potioneer Puzzlemint",
     "Madame Sarcasmia",
 ]
+
+# CSV columns owned by this importer (filled from the PL frontmatter).
+_CSV_META_COLUMNS: tuple[str, ...] = ("sprite", "friendly") + _FRONTMATTER_WEIGHT_KEYS
+
+
+def _update_characters_csv(csv_path: Path, character_meta: dict[str, Any]) -> bool:
+    """Upsert sprite/friendly/sentiment columns in ``characters.csv``.
+
+    Only the metadata columns of imported characters are touched; other rows
+    and columns stay as-is. ``import_entities.py`` remains the sole writer of
+    the ``characters`` section in ``config.json`` (run via just cascade).
+    """
+    if not csv_path.exists():
+        print(f"characters.csv not found: {csv_path}", file=sys.stderr)
+        return False
+
+    with csv_path.open("r", encoding="utf-8", newline="") as f:
+        rows = list(csv.reader(f, delimiter=";"))
+    if not rows:
+        return False
+
+    header = rows[0]
+    for column in _CSV_META_COLUMNS:
+        if column not in header:
+            header.append(column)
+    col_idx = {name: i for i, name in enumerate(header)}
+
+    updated = 0
+    for row in rows[1:]:
+        while len(row) < len(header):
+            row.append("")
+        meta = character_meta.get(row[0])
+        if not meta:
+            continue
+        if meta.get("sprite"):
+            row[col_idx["sprite"]] = meta["sprite"]
+        if meta.get("friendly") is not None:
+            row[col_idx["friendly"]] = f"{meta['friendly']:g}"
+        for sentiment, weight in meta.get("disposition", {}).items():
+            if sentiment in col_idx:
+                row[col_idx[sentiment]] = str(weight)
+        updated += 1
+
+    import io
+    buf = io.StringIO()
+    writer = csv.writer(buf, delimiter=";", lineterminator="\n")
+    writer.writerows(rows)
+    csv_path.write_text(buf.getvalue(), encoding="utf-8")
+    print(f"Updated {updated} character row(s) in {csv_path}")
+    return True
 
 
 def _collect_text_references(dialogs: dict[str, Any]) -> set[str]:
@@ -494,6 +707,7 @@ def build_dialog_config(
 
     new_messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     new_dialogs: dict[str, Any] = {}
+    new_meta: dict[str, Any] = {}
     imported: list[str] = []
     errors: list[str] = []
 
@@ -501,12 +715,13 @@ def build_dialog_config(
 
     for name in character_names:
         try:
-            char_messages, char_dialog = import_character_dialog(
+            char_messages, char_dialog, char_meta = import_character_dialog(
                 src_dir, name, valid_items=valid_items, characters=characters_config
             )
             for lang in ("PL", "EN"):
                 new_messages[lang].update(char_messages[lang])
             new_dialogs.update(char_dialog)
+            new_meta[_character_name_to_key(name)] = char_meta
             imported.append(name)
         except DialogImportError as exc:
             errors.append(f"  {exc}")
@@ -549,6 +764,13 @@ def build_dialog_config(
         f.write("\n")
 
     print(f"Written: {config_path}")
+
+    # MD -> CSV: surface frontmatter metadata (sprite/friendly/weights) in
+    # characters.csv; `just import-dialogs` then cascades import-entities
+    # which merges the CSV into config.json's `characters` section.
+    if new_meta:
+        _update_characters_csv(config_path.parent / "characters.csv", new_meta)
+
     return 0 if not errors else 1
 
 
@@ -571,7 +793,6 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
 
     nodes: dict[str, _ParsedNode] = {}
     current_node: _ParsedNode | None = None
-    in_language_section = False
 
     idx = 0
     while idx < len(lines):
@@ -579,13 +800,6 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
         line_no = idx + 1  # 1-based for error messages
         line = raw_line.rstrip()
         idx += 1
-
-        # skip everything before the "## PL" / "## EN" section
-        if line.startswith("## "):
-            in_language_section = True
-            continue
-        if not in_language_section:
-            continue
 
         node_match = _NODE_HEADING_RE.match(line)
         if node_match:
@@ -672,7 +886,7 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
 
     if not nodes:
         raise DialogImportError(
-            "no dialog nodes found (missing '## PL'/'## EN' section?)",
+            "no dialog nodes found (missing '## <number>' node headings?)",
             file=str(path),
         )
 
@@ -714,28 +928,33 @@ def _validate_language_consistency(
 
 
 def _convert_sentiment(emoji: str) -> str:
-    if emoji not in SENTIMENT_EMOJI_TO_EMOTE:
+    """Map an option-line emoji to its canonical sentiment name (D3b)."""
+    if emoji not in SENTIMENT_EMOJI_TO_NAME:
         raise DialogImportError(
             f"unknown sentiment emoji {emoji!r}; expected one of "
-            f"{sorted(SENTIMENT_EMOJI_TO_EMOTE)}"
+            f"{sorted(SENTIMENT_EMOJI_TO_NAME)}"
         )
-    return SENTIMENT_EMOJI_TO_EMOTE[emoji]
+    return SENTIMENT_EMOJI_TO_NAME[emoji]
 
 
-# wikilink [[KEY]] or [[lang_folder/file|CHAR_KEY]] -> entity name
+# wikilink [[Target]] or [[Target|display text]] - target may be a config
+# key (``BARMAN_ABSINTHRAYNER``), a localized file name with spaces and
+# diacritics (``Miecz Ciętej-riposty``) or a legacy ``lang/File_Name`` path.
+# ``[[#001]]`` option/resume links are excluded (target cannot start with #).
 _WIKILINK_RE = re.compile(
-    r"\[\[(?:[A-Za-z]{2}/)?(?P<key>[A-Za-z0-9_\-]+?)(?:\|(?P<pipe_key>[A-Za-z0-9_]+))?\]\]"
+    r"\[\[(?P<target>[^\]|#][^\]|]*?)(?:\|(?P<display>[^\]]+))?\]\]"
 )
 
 
 def _convert_text(
     text: str,
-    resolve_name: Callable[[str], str] | None = None,
+    resolve_name: Callable[[str, str | None], str | None] | None = None,
 ) -> str:
     """Apply D3 markup/emoji conversion to a node or option text.
 
-    If *resolve_name* is a callable ``(key: str) -> str``, wikilinks
-    ``[[KEY]]`` are replaced by its return value.
+    If *resolve_name* is a callable ``(target, display) -> str | None``,
+    character wikilinks are replaced by ``[char]...[/char]`` with its
+    return value; unknown targets are left as-is.
     """
     # bold -> shadow (RPG calls it reverse)
     text = re.sub(
@@ -791,14 +1010,15 @@ def _convert_text(
     for emoji, tag in _EMOJI_TO_EMOTE_TAG.items():
         text = text.replace(emoji, tag)
 
-    # wikilinks [[KEY]] or [[lang/file|KEY]] -> [char]entity name[/char]
+    # wikilinks [[Target]] / [[Target|display]] -> [char]display name[/char]
     if resolve_name is not None:
         def _resolve_wikilink(m: re.Match[str]) -> str:
-            key = m.group("pipe_key") or m.group("key")
-            resolved = resolve_name(key)
-            # If resolved == "[[KEY]]" it wasn't found — leave as-is
-            if resolved.startswith("[["):
-                return resolved
+            display = m.group("display")
+            resolved = resolve_name(
+                m.group("target"), display.strip() if display else None
+            )
+            if resolved is None:
+                return m.group(0)  # unknown target - leave as-is
             return f"[char]{resolved}[/char]"
 
         text = _WIKILINK_RE.sub(_resolve_wikilink, text)
@@ -1011,114 +1231,13 @@ def _validate_graph(
         )
 
 
-# Characters whose dialog format the importer can parse
-IMPORTABLE_CHARACTERS: list[str] = [
-    "Hammer Hoaxheart",
-    "Barman Absinthrayner",
-    "Clapback Sword",
-    "Potioneer Puzzlemint",
-    "Madame Sarcasmia",
-]
-
-# Default paths (relative to project root)
-_DEFAULT_DIALOG_SRC = _PROJECT_ROOT / "assets" / "dialogs"
-_DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config_model" / "config.json"
-
-
-def build_dialog_config(
-    src_dir: Path | None = None,
-    config_path: Path | None = None,
-    character_names: list[str] | None = None,
-) -> None:
-    """Rebuild dialog sections of ``config.json`` from Markdown sources.
-
-    Reads existing ``config.json``, imports each character from its Markdown
-    files under ``src_dir``, merges results, preserves dialogs for non-imported
-    characters (e.g. ``Madame Sarcasmia`` which uses a custom format), removes
-    orphaned message keys no longer referenced by any dialog, and writes back.
-
-    Args:
-        src_dir: directory with ``PL/`` and ``EN/`` subdirectories of Markdown
-            source files.  Defaults to ``project/assets/dialogs/``.
-        config_path: path to ``config.json``.  Defaults to
-            ``project/config_model/config.json``.
-        character_names: character names to import.  Defaults to
-            ``IMPORTABLE_CHARACTERS``.
-    """
-    import json
-
-    if src_dir is None:
-        src_dir = _DEFAULT_DIALOG_SRC
-    if config_path is None:
-        config_path = _DEFAULT_CONFIG_PATH
-    if character_names is None:
-        character_names = list(IMPORTABLE_CHARACTERS)
-
-    # Suppress the pygame-ce banner on import
-    import os
-    os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
-
-    with config_path.open("r", encoding="utf-8") as f:
-        config: dict[str, Any] = json.load(f)
-
-    existing_dialogs: dict[str, Any] = config.get("dialogs", {})
-    existing_messages: dict[str, dict[str, str]] = config.get(
-        "messages", {"PL": {}, "EN": {}}
-    )
-    for lang in ("PL", "EN"):
-        existing_messages.setdefault(lang, {})
-
-    items_csv = config_path.parent / "items.csv"
-    valid_items = load_valid_items(items_csv) if items_csv.exists() else None
-
-    characters_config: dict[str, Any] = config.get("characters", {})
-
-    new_messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
-    new_dialogs: dict[str, Any] = {}
-
-    for name in character_names:
-        char_messages, char_dialog = import_character_dialog(
-            src_dir, name, valid_items=valid_items, characters=characters_config
-        )
-        for lang in ("PL", "EN"):
-            new_messages[lang].update(char_messages[lang])
-        new_dialogs.update(char_dialog)
-
-    for lang in ("PL", "EN"):
-        existing_messages[lang].update(new_messages[lang])
-
-    existing_dialogs.update(new_dialogs)
-
-    # Remove orphaned message keys (not referenced by any dialog)
-    referenced_keys: set[str] = set()
-    for dlg in existing_dialogs.values():
-        for node in dlg.get("DIALOG_NODES", {}).values():
-            if node.get("text"):
-                referenced_keys.add(node["text"])
-        for opt in dlg.get("DIALOG_OPTIONS", {}).values():
-            if opt.get("text"):
-                referenced_keys.add(opt["text"])
-
-    for lang in ("PL", "EN"):
-        orphaned = set(existing_messages[lang]) - referenced_keys
-        for key in orphaned:
-            del existing_messages[lang][key]
-
-    config["messages"] = existing_messages
-    config["dialogs"] = existing_dialogs
-
-    with config_path.open("w", encoding="utf-8") as f:
-        json.dump(config, f, ensure_ascii=False, indent=4)
-        f.write("\n")
-
-
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point.
 
     Usage:
         .venv/bin/python project/dialog/markdown_importer.py
-            Build all compatible characters from
-            ``project/assets/dialogs/`` into ``config.json``.
+            Build all compatible characters from the dialog vault
+            (``doc/``) into ``config.json`` + ``characters.csv``.
 
         .venv/bin/python project/dialog/markdown_importer.py "Hammer Hoaxheart"
             Build a single character (or space-separated list).
@@ -1151,12 +1270,13 @@ def main(argv: list[str] | None = None) -> None:
         character_name = argv[1]
         items_csv = Path("project/config_model/items.csv")
         valid_items = load_valid_items(items_csv) if items_csv.exists() else None
-        messages, character_dialogs = import_character_dialog(
+        messages, character_dialogs, character_meta = import_character_dialog(
             src_dir, character_name, valid_items=valid_items
         )
         output = {
             "messages": messages,
             "character_dialogs": character_dialogs,
+            "character_meta": character_meta,
         }
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:

@@ -72,6 +72,7 @@ class Character(BaseModel):
     speed_walk:    Annotated[int,          Field(30, gr=0, description="walking speed", repr=False)]
     speed_run:     Annotated[int,          Field(40, gr=0, description="walking speed", repr=False)]
     has_dialog:    Annotated[bool,         Field(False, description="Whether this character has a dialog graph", repr=False)]
+    friendly:      Annotated[float,        Field(0.5, ge=0.0, le=1.0, description="Base sentiment towards the player (0..1, maps to initial NPC sentiment 0..100)", repr=False)]
     disposition:   Annotated[int | dict[str, int], Field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS), description="Per-sentiment weights that shift NPC sentiment when a dialog option is chosen; legacy int is converted to default weights", repr=False)]
 
     @field_validator("disposition", mode="before")
