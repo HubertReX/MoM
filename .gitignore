@@ -163,4 +163,10 @@ screenshots/agent/
 profiling/
 _temp/**
 .aider*
-/project/assets/dialogs/.obsidian
+# Obsidian vault (doc/): keep base config + plugin manifests/settings in the
+# repo, ignore plugin/theme sources (Obsidian re-downloads them from
+# community-plugins.json) and the per-machine workspace state
+/doc/.obsidian/workspace.json
+/doc/.obsidian/plugins/*/main.js
+/doc/.obsidian/plugins/*/styles.css
+/doc/.obsidian/themes/*/theme.css

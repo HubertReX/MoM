@@ -4,9 +4,8 @@
 **Created:** 7/1/2026, 6:52:15 PM
 **Updated:** 7/3/2026, 6:39:26 PM
 
----
 
-User:
+## User:
 
 Ta gra działa jednocześnie w trybie desktop i przez web. Sprawdź, czy obecny mechanizm testów automatycznych przez Agentów AI obsługuje również tryb web? Czy poprawnie generowane są screenshoty, czy obecny zestaw scenariuszy testowych działa również dla trybu web?
 Zbadam ten problem. Przejrzę kod testowy i infrastrukturę z obu trybów.
@@ -14,7 +13,8 @@ Zbadam ten problem. Przejrzę kod testowy i infrastrukturę z obu trybów.
 Odpowiedź: Tryb web NIE jest obsługiwany przez obecny mechanizm testów automatycznych
 Krótko: Cały harness scenariuszowy jest desktop-only. Żaden test nie jest uruchamiany w trybie web, screenshoty z weba nie są możliwe do pobrania przez runner, a sam agent control jest w trybie web jawne wyłączony.
 
-Dowody (file:line)
+## Dowody (file:line)
+
 1. Runner jest desktop-only, brak ścieżki web
 
 tests/automate_display_test.py:17 — polecenie startu gry to dosłownie SDL_VIDEODRIVER=dummy ... .venv/bin/python3 project/main.py. Brak jakiejkolwiek gałęzi emscripten/pygbag/--web.

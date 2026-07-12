@@ -24,22 +24,24 @@ Autor edytuje/tworzy assety w **Aseprite** (baza = paczki licencjonowane + włas
 
 ## Dialogi i lokalizacja
 
-- Teksty źródłowe w `dialogs/EN/` i `dialogs/PL/` (+ `game_economy.md`, `rich_text_sample.md`).
-  **Pliki Markdown są źródłem prawdy** dla `config_model/config.json`.
-- **Konwencja nazw:** `<Name_Surname>.md` (np. `Hammer_Hoaxheart.md`). Importer znajduje
-  je przez `_find_markdown_file()` — najpierw szuka `char-<name>.md`, potem `chara-<name>.md`,
-  na końcu `<name>.md` (wszystkie case-insensitive).
-- **Regeneracja configu:** `just import-dialogs` uruchamia `markdown_importer.py`, który
-  odczytuje wszystkie postacie z `IMPORTABLE_CHARACTERS`, merge'uje do istniejącego
-  `config.json`, usuwa osierocone klucze `messages`. Postacie spoza listy (np. Madame
-  Sarcamia) są zachowane bez zmian.
+- Teksty źródłowe dialogów mieszkają w vaultcie Obsidian **`doc/`** (poza `project/assets`,
+  żeby nie trafiały do bundla web): `doc/PL/Postacie/` i `doc/EN/Characters/`.
+  **Pliki Markdown (PL = źródło prawdy) są źródłem prawdy** dla `config_model/config.json`.
+  Szczegóły formatu: [`../dialog/AGENTS.md`](../dialog/AGENTS.md).
+- **Konwencja nazw:** nazwa pliku = zlokalizowana nazwa postaci (np. `Barman Absyntnent.md`);
+  klucz słownikowy tylko w polu `aliases` frontmattera — importer znajduje pliki po aliasie.
+- **Regeneracja configu:** `just import-dialogs` uruchamia `markdown_importer.py`
+  (postacie z `IMPORTABLE_CHARACTERS`, merge do `config.json`, usuwanie osieroconych
+  kluczy `messages`, upsert kolumn sprite/friendly/sentymentów w `characters.csv`),
+  a następnie kaskadowo `just import-entities` (jedyny writer sekcji `characters`).
 - **Wybór języka** w runtime przez zmienną `LANG` w `settings.py:22`:
   ```python
   LANG = "PL"                                   # settings.py:22 — mutable, zmieniane z UI
   ```
   Zmiana `LANG` jest sterowana z panelu Settings w grze (przełącznik `Language: PL`/`Language: EN`)
   i persistowana w `save_load/display_settings.py` (`settings.json` / localStorage).
-  Dodając nowy dialog, utwórz odpowiedniki w **obu** językach (`assets/dialogs/{PL,EN}/`).
+  Dodając nowy dialog, utwórz odpowiedniki w **obu** językach
+  (`doc/PL/Postacie/` + `doc/EN/Characters/`; szablony w `doc/_templates/`).
 - Format rich-text (tagi `[bold]`, `[link plik.md]…[/link]`, inline `:emoji:`) renderowany
   przez SFText / `rich_text.py`.
 

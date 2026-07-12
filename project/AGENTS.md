@@ -54,7 +54,7 @@ powierzchnię** (dirty-flag) — statyczne UI = jeden blit/klatkę, zero alokacj
 **Czyste API** (`Scene.ui` to `GameUI`): `ui.open(PanelType, **kw)`, `ui.close(PanelType)`,
 `ui.toggle(PanelType)`, `ui.is_open(PanelType)`, `ui.update(dt, events)`, `ui.draw()`,
 `ui.reset()`. Stan paneli jest wewnątrz nich (np. `TradePanel.is_buying`) — bez luźnych
-boolean-flag. Dialogi w `assets/dialogs/**/*.md` używają tagów `[bold]`/`[link URL]`/`:emoji:`
+boolean-flag. Dialogi w vaultcie `doc/{PL,EN}/**/*.md` używają tagów `[bold]`/`[link URL]`/`:emoji:`
 (tabela `STYLE_TAGS_DICT` w `settings.py`).
 
 ## System dialogów (`dialog/`)
@@ -76,17 +76,24 @@ w pygbag/WASM, bez Pydantic). Renderowanie i wpięcie w rozgrywkę robi `ui/pane
 | `result_sink_adapter.py`      | `GameResultSink(ResultSink)` — adapter do `Inventory`, HP, złota i sentymentu NPC                      | T-034   |
 | `dialog/markdown_importer.py` | Build-time importer Markdown -> `messages` + `character_dialogs` (regex opcji, walidacja grafu, D3/D7)  | T-024   |
 
-``dialog/markdown_importer.py`` reads source Markdown from
-``project/assets/dialogs/{EN,PL}/`` (the single source of truth for dialogs)
-and emits the machine-generated ``messages`` and ``character_dialogs`` sections
-consumed by ``dialog.graph.init_dialog``. It uses a single named-group regex
+``dialog/markdown_importer.py`` reads source Markdown from the ``doc/``
+Obsidian vault (``doc/PL/Postacie/`` + ``doc/EN/Characters/``; **PL is the
+single source of truth**, files found by frontmatter ``aliases``) and emits
+the machine-generated ``messages`` and ``character_dialogs`` sections
+consumed by ``dialog.graph.init_dialog``, plus the character metadata
+columns (``sprite``/``friendly``/sentiment weights) of
+``config_model/characters.csv``. It uses a single named-group regex
 for option lines, validates dangling references, orphan nodes, anchor/target
 agreement and START presence with ``file:line`` errors, converts RPG rich
 markup / emoji to MoM ``RichText`` tags (D3), and rewrites RPG conditions to
-the mini-DSL understood by ``dialog.conditions``.
+the mini-DSL understood by ``dialog.conditions``. Option sentiment is stored
+under canonical author-facing names (``kind/weak/neutral/angry/smart/funny/
+technical``); mapping to emote sprites (``SENTIMENT_NAME_TO_EMOTE``) happens
+only at UI render time.
 
-**Regeneracja:** ``just import-dialogs`` (nie trzeba zmieniać `config.json` ręcznie).
-Smoke tests: ``.venv/bin/python tests/test_dialog_import.py``.
+**Regeneracja:** ``just import-dialogs`` — kaskada MD → ``characters.csv`` →
+``config.json`` (na końcu odpala ``just import-entities``, jedynego writera
+sekcji ``characters``). Smoke tests: ``.venv/bin/python tests/test_dialog_import.py``.
 
 ### Silnik warunków (mini-DSL, decyzja D1)
 
@@ -438,7 +445,7 @@ SS_REVIEW_TIMEOUT = 60.0
   (`characters.py:647`) → `a_star_cached` z `maze_generator` (`characters.py:11`).
 - **Dialog i sentyment (T-023):** instancja `NPC` (`characters.py`) rozszerzona o:
   `dialog_key` (z modelu), `dialog` (bieżący `DialogNode` / kursor w grafie),
-  `selected_options_dict`, `sentiment` (0–100, domyślnie 50), `disposition`
+  `selected_options_dict`, `sentiment` (0–100, start = `model.friendly * 100`), `disposition`
   (z modelu) oraz `known_disposition` (odkrywana przez gracza, pusta na start).
   Przy ładowaniu `load_dialogs()` buduje graf z `Config.dialogs[dialog_key]`
   przez `dialog.graph.init_dialog` i ustawia `dialog` na `START_NODE`.
