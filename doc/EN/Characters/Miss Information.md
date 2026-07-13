@@ -1,9 +1,8 @@
 ---
 aliases:
   - MISS_INFORMATION
-  - Miss Information
 alternative:
-PL: "[[MISS_INFORMATION|Bibliofilistka des Informacja]]"
+PL: "[[Miss Information|Bibliofilistka des Informacja]]"
 inspirations:
   - 
 location: "[[Quirkshire]]"

@@ -2,7 +2,7 @@
 aliases:
   - CLAPBACK_SWORD
 alternative:
-EN: "[[Clapback Sword]]"
+EN: "[[EN/Characters/Clapback Sword]]"
 inspirations:
   - 
 location:

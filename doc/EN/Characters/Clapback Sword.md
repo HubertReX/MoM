@@ -30,7 +30,7 @@ funny: 2
 
 ## 001
 
-* So you're still alive, barely...frounce: 
+* So you're still alive, barely...:frounce: 
 At this rate, I'll rust next to your skeleton soon. What a mess. You really made a scene yesterday. Playing cards with wizards and their marked cards! You brought it upon yourself, so suffer now. I won't help you. Don't even ask.
 
 * [[#002]] 1😇: Come on, don't be like that. Can't you see I'm suffering here?
@@ -56,11 +56,11 @@ At this rate, I'll rust next to your skeleton soon. What a mess. You really made
 
 ## 004
 
-* Really? You got so wasted that you don't even remember me? It's odd that a fool like you managed to survive this long. I, of all, am your only and most faithful companion. Not that I have much choice - you keep me by your side, and I can't walk on my own. Thus, I'm an involuntary witness to all of your _exploits_. I'm a sword, forged from the soul of fire, and besides a sharp edge, I have an equally sharp tongue. My name is [[Clapback Sword]], and if only you could wield me skillfully, we would be invincible.
+* Really? You got so wasted that you don't even remember me? It's odd that a fool like you managed to survive this long. I, of all, am your only and most faithful companion. Not that I have much choice - you keep me by your side, and I can't walk on my own. Thus, I'm an involuntary witness to all of your _exploits_. I'm a sword, forged from the soul of fire, and besides a sharp edge, I have an equally sharp tongue. My name is [[EN/Characters/Clapback Sword]], and if only you could wield me skillfully, we would be invincible.
 
 * [[#008]] 1😇: Oh, I see. Thanks for clearing that up. What would I do without you?
 * [[#008]] 2😡: You talk as if you were my mother. I'm an adult, I can do whatever I want.
-* [[#008]] 3😉: [[Clapback Sword]] isn't just your name, but also your specialty - you're a real riot.
+* [[#008]] 3😉: [[EN/Characters/Clapback Sword]] isn't just your name, but also your specialty - you're a real riot.
 
 ## 005
 

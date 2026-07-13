@@ -1,14 +1,15 @@
 ---
 aliases:
   - MISS_INFORMATION
-  - Bibliofilistka des Informacja
   - Mariolka
 alternative: Dezinformacja
-EN: "[[MISS_INFORMATION|Miss Information]]"
+EN: "[[Bibliofilistka des Informacja|Miss Information]]"
 inspirations:
   - Szarada
   - Szaradka
 location: "[[Porażkowo]]"
+sprite: SorcererBlack
+friendly: 0.5
 kind: 1
 weak: 1
 angry: 1
@@ -18,6 +19,7 @@ funny: 1
 # Info
 
 `= "![[" + this.aliases[0] + ".png|300]]"`
+
 
 ## Cechy charakteru
 

@@ -75,7 +75,7 @@ TODO
 TODO [char]Mopey Phoenix[/] frequents the [location]Cliffside Clamor[/], because of course, it does.
 
 
-[[MISS_INFORMATION]]
+[[Bibliofilistka des Informacja]]
 
 ---------------------------------------------------------------------------------------------------
 
