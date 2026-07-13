@@ -5,10 +5,10 @@ PL: "[[Barman Absyntnent]]"
 sprite: Hunter
 friendly: 0.6
 kind: 1
-weak: 1
-angry: 1
-smart: 1
-funny: 1
+weak: -1
+angry: -2
+smart: -1
+funny: 2
 ---
 ## 000
 
