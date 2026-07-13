@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.0" name="CharacterTileset" tilewidth="64" tileheight="112" tilecount="28" columns="0" tilerendersize="grid" fillmode="preserve-aspect-fit">
+<tileset version="1.10" tiledversion="1.12.1" name="CharacterTileset" tilewidth="23" tileheight="16" tilecount="33" columns="0" tilerendersize="grid" fillmode="preserve-aspect-fit">
  <grid orientation="orthogonal" width="16" height="16"/>
  <tile id="0" x="0" y="0" width="16" height="16" type="GreenNinja">
   <properties>
@@ -13,9 +13,9 @@
   </properties>
   <image source="../../characters/Villager1/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="2" x="0" y="0" width="16" height="16" type="FRED">
+ <tile id="2" x="0" y="0" width="16" height="16" type="HAMMER_HOAXHEART">
   <properties>
-   <property name="model_name" value="FRED"/>
+   <property name="model_name" value="HAMMER_HOAXHEART"/>
   </properties>
   <image source="../../characters/Villager2/SpriteSheet.png" width="64" height="112"/>
  </tile>
@@ -168,5 +168,35 @@
    <property name="model_name" value="FLAM"/>
   </properties>
   <image source="../../characters/Flam/SpriteSheet.png" width="64" height="112"/>
+ </tile>
+ <tile id="28" x="0" y="0" width="16" height="16" type="MADAME_SARCASMIA">
+  <properties>
+   <property name="model_name" value="MADAME_SARCASMIA"/>
+  </properties>
+  <image source="../../characters/SorcererBlack/SpriteSheet.png" width="64" height="112"/>
+ </tile>
+ <tile id="29" x="0" y="0" width="16" height="16" type="MISS_INFORMATION">
+  <properties>
+   <property name="model_name" value="MISS_INFORMATION"/>
+  </properties>
+  <image source="../../characters/SorcererOrange/SpriteSheet.png" width="64" height="112"/>
+ </tile>
+ <tile id="30" x="0" y="0" width="16" height="16" type="BARMAN_ABSINTHRAYNER">
+  <properties>
+   <property name="model_name" value="BARMAN_ABSINTHRAYNER"/>
+  </properties>
+  <image source="../../characters/Hunter/SpriteSheet.png" width="64" height="112"/>
+ </tile>
+ <tile id="31" x="0" y="0" width="16" height="16" type="CLAPBACK_SWORD">
+  <properties>
+   <property name="model_name" value="CLAPBACK_SWORD"/>
+  </properties>
+  <image source="../../characters/Knight/SpriteSheet.png" width="64" height="112"/>
+ </tile>
+ <tile id="32" x="0" y="0" width="16" height="16" type="POTIONEER_PUZZLEMINT">
+  <properties>
+   <property name="model_name" value="POTIONEER_PUZZLEMINT"/>
+  </properties>
+  <image source="../../characters/EggGirl/SpriteSheet.png" width="64" height="112"/>
  </tile>
 </tileset>
