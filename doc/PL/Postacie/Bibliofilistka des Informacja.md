@@ -8,7 +8,7 @@ inspirations:
   - Szarada
   - Szaradka
 location: "[[Porażkowo]]"
-sprite: SorcererBlack
+sprite: SorcererOrange
 friendly: 0.5
 kind: 1
 weak: 1
@@ -39,3 +39,13 @@ Zmieniła imię na [char]Bibliofilistka des Informacja[/char] odkąd zaczęła n
 
 zna [[Madame Sarkażmijka]].
 
+## 000
+
+* Witaj :exclamation:
+
+* [[#099-end]] 1😐: W sumie to nie mam pytań
+
+## 099-end
+[[#000]]
+
+* Do zobaczenia :exclamation:

@@ -11,3 +11,13 @@ To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą nale
 A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku :red_question:
 
 
+## 000
+
+* Witaj :exclamation:
+
+* [[#099-end]] 1😐: W sumie to nie mam pytań
+
+## 099-end
+[[#000]]
+
+* Do zobaczenia :exclamation:

@@ -26,6 +26,11 @@ funny: 1
 
 ## 000
 
-* 
+* Hi :exclamation:
 
-* [[#001]] 1😐: 
+* [[#099-end]] 1😐: Actually I have nothing to say
+
+## 099-end
+[[#000]]
+
+* See ya :exclamation:
