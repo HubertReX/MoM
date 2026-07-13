@@ -79,6 +79,15 @@
             "name_PL": "Kuba",
             "has_dialog": false
         },
+        "ROBIN": {
+            "sprite": "Villager4",
+            "race": "humanoid",
+            "attitude": "friendly",
+            "money": 20,
+            "name_EN": "Robin",
+            "name_PL": "Robin",
+            "has_dialog": false
+        },
         "MARRY": {
             "sprite": "Woman",
             "race": "humanoid",
@@ -349,7 +358,7 @@
                 "angry": 2
             },
             "money": 30,
-            "name_EN": "Hammer",
+            "name_EN": "Hammer Hoaxheart",
             "name_PL": "Kowal Kłamca",
             "has_dialog": true,
             "friendly": 0.3
@@ -360,12 +369,12 @@
             "attitude": "friendly",
             "disposition": {
                 "kind": 1,
-                "funny": 1,
-                "smart": 1,
+                "funny": 2,
+                "smart": -1,
                 "neutral": 0,
                 "technical": 0,
-                "weak": 1,
-                "angry": 1
+                "weak": -1,
+                "angry": -2
             },
             "money": 100,
             "name_EN": "Barman Absinthrayner",
@@ -398,12 +407,12 @@
             "attitude": "friendly",
             "disposition": {
                 "kind": 1,
-                "funny": 1,
-                "smart": 1,
+                "funny": -1,
+                "smart": -1,
                 "neutral": 0,
                 "technical": 0,
-                "weak": 1,
-                "angry": 1
+                "weak": 2,
+                "angry": -2
             },
             "money": 100,
             "name_EN": "Potioneer Puzzlemint",
@@ -432,6 +441,24 @@
             "name_PL": "Madame Sarkażmijka",
             "has_dialog": true,
             "friendly": 0.5
+        },
+        "MISS_INFORMATION": {
+            "name_EN": "Miss Information",
+            "name_PL": "Bibliofilistka des Informacja",
+            "attitude": "friendly",
+            "race": "humanoid",
+            "has_dialog": true,
+            "sprite": "SorcererOrange",
+            "friendly": 0.5,
+            "disposition": {
+                "kind": 1,
+                "funny": 1,
+                "smart": 1,
+                "neutral": 0,
+                "technical": 0,
+                "weak": 1,
+                "angry": 1
+            }
         }
     },
     "chests": {
@@ -3213,6 +3240,38 @@
                 }
             },
             "START_NODE": "000"
+        },
+        "MISS_INFORMATION": {
+            "DIALOG_NODES": {
+                "000": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_MISS_INFORMATION_DN_000"
+                },
+                "099": {
+                    "is_final": true,
+                    "result": null,
+                    "text": "M_MISS_INFORMATION_DN_099",
+                    "resume_node": "000"
+                }
+            },
+            "DIALOG_OPTIONS": {
+                "000to099_1": {
+                    "next_node": "099",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 1,
+                    "text": "M_MISS_INFORMATION_DO_000to099_1"
+                }
+            },
+            "NODES_OPTIONS": {
+                "000": [
+                    "000to099_1"
+                ],
+                "099": []
+            },
+            "NODE_RESULTS": {},
+            "START_NODE": "000"
         }
     },
     "messages": {
@@ -3286,7 +3345,7 @@
             "M_BARMAN_ABSINTHRAYNER_DN_990": "See you around:exclamation:",
             "M_BARMAN_ABSINTHRAYNER_DN_991": "Get lost:red_exclamation:",
             "M_CLAPBACK_SWORD_DN_000": "Oh:red_exclamation: There you are!",
-            "M_CLAPBACK_SWORD_DN_001": "So you're still alive, barely...frounce:\nAt this rate, I'll rust next to your skeleton soon. What a mess. You really made a scene yesterday. Playing cards with wizards and their marked cards! You brought it upon yourself, so suffer now. I won't help you. Don't even ask.",
+            "M_CLAPBACK_SWORD_DN_001": "So you're still alive, barely...:frounce:\nAt this rate, I'll rust next to your skeleton soon. What a mess. You really made a scene yesterday. Playing cards with wizards and their marked cards! You brought it upon yourself, so suffer now. I won't help you. Don't even ask.",
             "M_CLAPBACK_SWORD_DO_001to002_1": "Come on, don't be like that. Can't you see I'm suffering here?",
             "M_CLAPBACK_SWORD_DO_001to002_2": "Tell me what you know! I don't have the strength for games right now.",
             "M_CLAPBACK_SWORD_DO_001to002_3": "Since you didn't help me yesterday, here we are. Shall we start over?",
@@ -3367,7 +3426,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_008to009_3": "From what I've managed to establish, I'm under the influence of the [shadow]Eternal Curse of Misfortune[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DN_009": "Oh dear, you must have really offended them. That's a very old curse and rarely anyone resorts to it. I don't have a remedy for that. The only thing I can give you is the [shadow]Potion of Oblivion[/shadow], but that probably won't solve the problem.",
             "M_POTIONEER_PUZZLEMINT_DO_009to001_9": "Pity. Let's talk about something else then.",
-            "M_POTIONEER_PUZZLEMINT_DN_003": "What can I say? A village is a village, they all look alike around here. People have learned to rely on themselves. True, we don't have a miller or a woodcutter, but our blacksmith is better than in many a city. [[Hammer Hoaxheart]] isn't the life of the party, but he claims his armaments are excellent.",
+            "M_POTIONEER_PUZZLEMINT_DN_003": "What can I say? A village is a village, they all look alike around here. People have learned to rely on themselves. True, we don't have a miller or a woodcutter, but our blacksmith is better than in many a city. [char]Hammer Hoaxheart[/char] isn't the life of the party, but he claims his armaments are excellent.",
             "M_POTIONEER_PUZZLEMINT_DO_003to001_9": "Thanks, that's enough for me.",
             "M_POTIONEER_PUZZLEMINT_DN_004": "There are a few, depends on what interests you:\n1 [shadow]Bagno niedogodności[/shadow] is rich in herbs and various kinds of toads\n2 in [shadow]Splątany las irytacji[/shadow] you can find rare mushrooms and all kinds of medicinal bark\n3 [shadow]Jaskinia zagmatwania[/shadow] is also a source of mushrooms, but much more dangerous",
             "M_POTIONEER_PUZZLEMINT_DO_004to001_9": "Thanks, that's enough for me.",
@@ -3391,7 +3450,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_012to001_9": "Thanks, that's enough for me.",
             "M_POTIONEER_PUZZLEMINT_DN_013": "I don't know exactly, we never met again. I heard she focused on working with books. They say she became a specialist in forbidden magical tomes in a secret library.",
             "M_POTIONEER_PUZZLEMINT_DO_013to012_1": "Thanks!",
-            "M_POTIONEER_PUZZLEMINT_DN_015": "She works now in a hidden library, somewhere under a larger city. I haven't heard anything more. But you know, [[Hammer Hoaxheart]] sometimes has customers from faraway places. Maybe you can squeeze something out of that grumpy liar.",
+            "M_POTIONEER_PUZZLEMINT_DN_015": "She works now in a hidden library, somewhere under a larger city. I haven't heard anything more. But you know, [char]Hammer Hoaxheart[/char] sometimes has customers from faraway places. Maybe you can squeeze something out of that grumpy liar.",
             "M_POTIONEER_PUZZLEMINT_DO_015to012_1": "Thank you, that's valuable information.",
             "M_POTIONEER_PUZZLEMINT_DN_014": "When she was with me they called her [shadow]Mariolka[/shadow], but then something went wrong in her head. She started talking like a madwoman, as if every sentence were a riddle. Or maybe that's just a way to hide the secrets she's sworn to protect. Either way, people started calling her [shadow]Bibliofilistka des Informacja[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DO_014to012_1": "ok, thanks.",
@@ -3507,7 +3566,10 @@
             "M_CLAPBACK_SWORD_DO_018to001_1": "Ouch, my head",
             "M_CLAPBACK_SWORD_DO_009to019_1": "Oh no! Look what's written here?",
             "M_CLAPBACK_SWORD_DN_019": "[italic]\"He who plays with fate shall meet with punishment,[/italic]\n[italic]henceforth you shall be a scoundrel and a wretch,[/italic]\n[italic]until the day you leave this earth,[/italic]\n[italic]you are touched by the [quest]Eternal Curse of Misfortune[/quest].\"[/italic]",
-            "M_CLAPBACK_SWORD_DO_019to010_1": "This has got to be a joke! Right?"
+            "M_CLAPBACK_SWORD_DO_019to010_1": "This has got to be a joke! Right?",
+            "M_MISS_INFORMATION_DN_000": "Witaj :exclamation:",
+            "M_MISS_INFORMATION_DO_000to099_1": "W sumie to nie mam pytań",
+            "M_MISS_INFORMATION_DN_099": "[[#000]]\n\nDo zobaczenia :exclamation:"
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
@@ -3800,7 +3862,10 @@
             "M_CLAPBACK_SWORD_DO_018to001_1": "Ała, moja głowa",
             "M_CLAPBACK_SWORD_DO_009to019_1": "O nie! Patrz co tu jest napisane?",
             "M_CLAPBACK_SWORD_DN_019": "[italic]\"Kto z losem igra, tego spotka kara,[/italic]\n[italic]odtąd będziesz łajza i ślamazara,[/italic]\n[italic]aż do czasu z ziemi tej odejścia,[/italic]\n[italic]dotyka Cię [quest]Odwieczna klątwą nieszczęścia[/quest].\"[/italic]",
-            "M_CLAPBACK_SWORD_DO_019to010_1": "To chyba jakiś żart! Prawda?"
+            "M_CLAPBACK_SWORD_DO_019to010_1": "To chyba jakiś żart! Prawda?",
+            "M_MISS_INFORMATION_DN_000": "Witaj :exclamation:",
+            "M_MISS_INFORMATION_DO_000to099_1": "W sumie to nie mam pytań",
+            "M_MISS_INFORMATION_DN_099": "Do zobaczenia :exclamation:"
         }
     }
 }

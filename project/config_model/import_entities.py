@@ -20,6 +20,12 @@ from settings import CONF_ENTITIES_TO_STORE, DEFAULT_DISPOSITION_WEIGHTS  # noqa
 # `neutral` and `technical` always weigh 0 and have no CSV columns.
 SENTIMENT_COLUMNS = ("kind", "weak", "angry", "smart", "funny")
 
+# Minimal columns that must be present (non-empty) in a characters.csv row
+# before a brand-new character entity may be created from it. These are the
+# only fields of the character model without a default (see config_pydantic);
+# every other field falls back to its model default.
+REQUIRED_CHARACTER_FIELDS = ("name_EN", "name_PL", "sprite", "race", "attitude")
+
 
 def _strip_nulls(obj: object) -> object:
     """Recursively remove dict entries with ``None`` values."""
@@ -58,6 +64,11 @@ def parse_value(raw: str, current: object) -> object:
         if isinstance(parsed, dict):
             return parsed
         return current
+    if current is None:
+        # New field with no existing value to match (e.g. a freshly created
+        # character row) - infer the JSON type so booleans/ints/lists don't
+        # land as strings (e.g. has_dialog "true" -> True).
+        return _cell_to_json(raw)
     return raw
 
 
@@ -78,6 +89,7 @@ def import_csv(entity_name: str, data: dict) -> dict:
 
     section = data.get(entity_name, {})
     updated = 0
+    created = 0
 
     for line in lines[1:]:
         parts = line.split(";")
@@ -85,8 +97,20 @@ def import_csv(entity_name: str, data: dict) -> dict:
         values = parts[1:]
 
         if key not in section:
-            print(f"  [WARN] '{key}' not in config.json, skipping")
-            continue
+            # A new character discovered by `just import-dialogs` (its row was
+            # auto-appended to characters.csv) is created here from the row, so
+            # long as it carries the model's required fields. For any other
+            # entity type - or a row missing required fields (likely a typo in
+            # an existing key) - keep the safe warn-and-skip.
+            row = dict(zip(fields, values))
+            can_create = entity_name == "characters" and all(
+                row.get(f, "").strip() for f in REQUIRED_CHARACTER_FIELDS
+            )
+            if not can_create:
+                print(f"  [WARN] '{key}' not in config.json, skipping")
+                continue
+            section[key] = {}
+            created += 1
 
         obj = section[key]
         sentiment_updates: dict[str, int] = {}
@@ -112,7 +136,8 @@ def import_csv(entity_name: str, data: dict) -> dict:
         updated += 1
 
     data[entity_name] = section
-    print(f"  {entity_name}: {updated} rows imported")
+    created_note = f" ({created} created)" if created else ""
+    print(f"  {entity_name}: {updated} rows imported{created_note}")
     return data
 
 

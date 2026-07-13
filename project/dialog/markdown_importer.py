@@ -19,8 +19,11 @@ dialog-en-sync skill. Run ``just import-dialogs`` (or invoke
 ``python project/dialog/markdown_importer.py`` directly) to rebuild
 ``config_model/config.json`` and the metadata columns of
 ``config_model/characters.csv`` from them (``import-entities`` then merges
-the CSV into the ``characters`` section). Characters whose format the
-importer can parse are listed in ``IMPORTABLE_CHARACTERS``.
+the CSV into the ``characters`` section). By default **every** character
+file in ``PL/Postacie/`` is discovered and imported (see
+``_discover_character_keys``); files whose format the importer cannot parse
+yet (work-in-progress) are skipped with a warning. A newly imported
+character with no ``characters.csv`` row yet is appended automatically.
 
 Output shape matches ``dialog.graph.init_dialog`` expectations:
 
@@ -228,11 +231,17 @@ def _parse_frontmatter(text: str, *, path: str = "") -> _Frontmatter:
     """
     fm = _Frontmatter()
     lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
+    # Tolerate leading blank lines before the opening `---` (some vault files
+    # start with an empty line); otherwise the whole frontmatter - including
+    # the config-key alias - would be silently ignored.
+    start = 0
+    while start < len(lines) and not lines[start].strip():
+        start += 1
+    if start >= len(lines) or lines[start].strip() != "---":
         return fm
 
     current_list: list[str] | None = None
-    for idx in range(1, len(lines)):
+    for idx in range(start + 1, len(lines)):
         stripped = lines[idx].strip()
         if stripped == "---":
             break
@@ -322,6 +331,38 @@ def _find_markdown_file(src_dir: Path, lang: str, character_name: str) -> Path:
     )
 
 
+# A config key is UPPER_SNAKE (e.g. ``MISS_INFORMATION``). Used to pick the
+# key out of a frontmatter ``aliases`` list that may also carry display-name
+# aliases (e.g. ``[MISS_INFORMATION, Mariolka]``).
+_KEY_ALIAS_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
+
+
+def _discover_character_keys(src_dir: Path) -> list[str]:
+    """Discover character config keys from the PL source files.
+
+    Globs the PL character directory (``doc/PL/Postacie``, legacy ``PL/``),
+    reads each file's frontmatter and returns the config key of every file
+    that declares one. The key is the alias matching the UPPER_SNAKE pattern
+    (falling back to the first alias), so display-name aliases don't shadow
+    it. Files without aliases are skipped; the result is sorted for stable
+    output.
+    """
+    try:
+        pl_dir = _lang_dir(src_dir, "PL")
+    except DialogImportError:
+        return []
+    keys: list[str] = []
+    for p in sorted(pl_dir.glob("*.md")):
+        fm = _parse_frontmatter(p.read_text(encoding="utf-8"), path=str(p))
+        if not fm.aliases:
+            continue
+        key = next(
+            (a for a in fm.aliases if _KEY_ALIAS_RE.match(a)), fm.aliases[0]
+        )
+        keys.append(key)
+    return sorted(keys)
+
+
 def _make_name_resolver(
     characters: dict[str, Any], lang: str
 ) -> Callable[[str, str | None], str | None] | None:
@@ -408,8 +449,9 @@ def import_character_dialog(
         ``messages`` has the shape ``{lang: {key: text}}``,
         ``character_dialogs`` has the shape described in the module
         docstring, and ``character_meta`` is
-        ``{"sprite": str, "friendly": float | None, "disposition": dict}``
-        built from the PL frontmatter (empty/None values mean "not set").
+        ``{"sprite": str, "friendly": float | None, "disposition": dict,
+        "name_PL": str, "name_EN": str}`` built from the PL frontmatter and
+        the localized file names (empty/None values mean "not set").
     """
     character_key = _character_name_to_key(character_name)
     pl_path = _find_markdown_file(src_dir, "PL", character_name)
@@ -424,6 +466,10 @@ def import_character_dialog(
         "sprite": frontmatter.sprite,
         "friendly": frontmatter.friendly,
         "disposition": dict(frontmatter.weights),
+        # Localized display names (file stems) - used when a new character
+        # row is auto-appended to characters.csv.
+        "name_PL": pl_path.stem,
+        "name_EN": en_path.stem,
     }
 
     _validate_language_consistency(
@@ -581,25 +627,41 @@ _DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config_model" / "config.json"
 # MD -> CSV -> config.json pipeline
 _DEFAULT_CHARACTERS_CSV = _PROJECT_ROOT / "config_model" / "characters.csv"
 
-# Characters whose Markdown format is supported by the importer.
-IMPORTABLE_CHARACTERS: list[str] = [
-    "Hammer Hoaxheart",
-    "Barman Absinthrayner",
-    "Clapback Sword",
-    "Potioneer Puzzlemint",
-    "Madame Sarcasmia",
-]
-
 # CSV columns owned by this importer (filled from the PL frontmatter).
 _CSV_META_COLUMNS: tuple[str, ...] = ("sprite", "friendly") + _FRONTMATTER_WEIGHT_KEYS
 
 
-def _update_characters_csv(csv_path: Path, character_meta: dict[str, Any]) -> bool:
-    """Upsert sprite/friendly/sentiment columns in ``characters.csv``.
+# Defaults for columns that the importer cannot derive from the dialog
+# frontmatter when auto-appending a brand-new character row.
+_CSV_APPEND_DEFAULTS: dict[str, str] = {
+    "attitude": "friendly",
+    "race": "humanoid",
+    "has_dialog": "true",
+}
 
-    Only the metadata columns of imported characters are touched; other rows
-    and columns stay as-is. ``import_entities.py`` remains the sole writer of
-    the ``characters`` section in ``config.json`` (run via just cascade).
+
+def _apply_meta_to_row(
+    row: list[str], meta: dict[str, Any], col_idx: dict[str, int]
+) -> None:
+    """Write the importer-owned metadata columns (sprite/friendly/weights)."""
+    if meta.get("sprite"):
+        row[col_idx["sprite"]] = meta["sprite"]
+    if meta.get("friendly") is not None:
+        row[col_idx["friendly"]] = f"{meta['friendly']:g}"
+    for sentiment, weight in meta.get("disposition", {}).items():
+        if sentiment in col_idx:
+            row[col_idx[sentiment]] = str(weight)
+
+
+def _update_characters_csv(csv_path: Path, character_meta: dict[str, Any]) -> bool:
+    """Upsert imported characters into ``characters.csv``.
+
+    Existing rows have their sprite/friendly/sentiment columns refreshed from
+    the frontmatter (other rows and columns stay as-is). Characters discovered
+    from the dialog vault that have no row yet are **appended** with their
+    localized names, the metadata columns and sensible defaults
+    (attitude/race/has_dialog). ``import_entities.py`` remains the sole writer
+    of the ``characters`` section in ``config.json`` (run via just cascade).
     """
     if not csv_path.exists():
         print(f"characters.csv not found: {csv_path}", file=sys.stderr)
@@ -616,6 +678,8 @@ def _update_characters_csv(csv_path: Path, character_meta: dict[str, Any]) -> bo
             header.append(column)
     col_idx = {name: i for i, name in enumerate(header)}
 
+    existing_keys = {row[0] for row in rows[1:] if row}
+
     updated = 0
     for row in rows[1:]:
         while len(row) < len(header):
@@ -623,21 +687,32 @@ def _update_characters_csv(csv_path: Path, character_meta: dict[str, Any]) -> bo
         meta = character_meta.get(row[0])
         if not meta:
             continue
-        if meta.get("sprite"):
-            row[col_idx["sprite"]] = meta["sprite"]
-        if meta.get("friendly") is not None:
-            row[col_idx["friendly"]] = f"{meta['friendly']:g}"
-        for sentiment, weight in meta.get("disposition", {}).items():
-            if sentiment in col_idx:
-                row[col_idx[sentiment]] = str(weight)
+        _apply_meta_to_row(row, meta, col_idx)
         updated += 1
+
+    appended = 0
+    for key, meta in character_meta.items():
+        if key in existing_keys:
+            continue
+        row = [""] * len(header)
+        row[0] = key  # the ``key`` column is always first
+        if "name_EN" in col_idx and meta.get("name_EN"):
+            row[col_idx["name_EN"]] = meta["name_EN"]
+        if "name_PL" in col_idx and meta.get("name_PL"):
+            row[col_idx["name_PL"]] = meta["name_PL"]
+        for column, default in _CSV_APPEND_DEFAULTS.items():
+            if column in col_idx:
+                row[col_idx[column]] = default
+        _apply_meta_to_row(row, meta, col_idx)
+        rows.append(row)
+        appended += 1
 
     import io
     buf = io.StringIO()
     writer = csv.writer(buf, delimiter=";", lineterminator="\n")
     writer.writerows(rows)
     csv_path.write_text(buf.getvalue(), encoding="utf-8")
-    print(f"Updated {updated} character row(s) in {csv_path}")
+    print(f"Updated {updated}, appended {appended} character row(s) in {csv_path}")
     return True
 
 
@@ -673,19 +748,28 @@ def build_dialog_config(
         config_path: path to ``config.json``.
             Defaults to ``project/config_model/config.json``.
         character_names: list of canonical character names to import.
-            Defaults to ``IMPORTABLE_CHARACTERS``.
+            Defaults to **every** character discovered in the vault's PL
+            directory (via ``_discover_character_keys``).
 
     Returns:
-        0 on success, 1 if any import failed.
+        0 on success. When importing an explicit ``character_names`` list,
+        returns 1 if any import failed. When auto-discovering (default),
+        files that fail to parse (e.g. work-in-progress characters) are
+        skipped with a warning and the return code stays 0 so the
+        ``import-entities`` cascade proceeds.
     """
     import json
+
+    # Whether we import the whole vault (default) or an explicit list. Auto
+    # discovery tolerates unparseable/WIP files (skip + warn, exit 0).
+    auto_discovered = character_names is None
 
     if src_dir is None:
         src_dir = _DEFAULT_DIALOG_SRC
     if config_path is None:
         config_path = _DEFAULT_CONFIG_PATH
     if character_names is None:
-        character_names = list(IMPORTABLE_CHARACTERS)
+        character_names = _discover_character_keys(src_dir)
 
     if not config_path.exists():
         print(
@@ -732,6 +816,12 @@ def build_dialog_config(
         print(f"Imported {len(imported)} character(s): {', '.join(imported)}")
 
     if errors:
+        if auto_discovered:
+            # Expected for WIP/incomplete files - skip loudly, don't fail.
+            print(
+                f"Skipped {len(errors)} incomplete/unimportable file(s):",
+                file=sys.stderr,
+            )
         for err in errors:
             print(err, file=sys.stderr)
         print(
@@ -771,6 +861,10 @@ def build_dialog_config(
     if new_meta:
         _update_characters_csv(config_path.parent / "characters.csv", new_meta)
 
+    # Auto-discovery tolerates WIP files: skipped imports are warnings, not
+    # failures, so the just cascade to import-entities still runs.
+    if auto_discovered:
+        return 0
     return 0 if not errors else 1
 
 

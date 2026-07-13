@@ -25,6 +25,7 @@ from dialog.markdown_importer import (
     _OPTION_RE,
     _RESUME_LINK_RE,
     _convert_text,
+    _discover_character_keys,
     _make_name_resolver,
     _parse_frontmatter,
     import_character_dialog,
@@ -76,6 +77,24 @@ def test_frontmatter_meta() -> None:
         meta["disposition"],
         {"kind": -1, "weak": 1, "angry": 2, "smart": -1, "funny": -2},
         "disposition weights from frontmatter",
+    )
+
+
+def test_discover_character_keys() -> None:
+    """Auto-discovery finds every character key in PL/Postacie by alias."""
+    keys = _discover_character_keys(VAULT)
+    assert_true(all(isinstance(k, str) and k for k in keys), "non-empty strings")
+    assert_eq(keys, sorted(keys), "sorted output")
+    assert_true("MISS_INFORMATION" in keys, "Miss Information discovered")
+    assert_true("POTIONEER_PUZZLEMINT" in keys, "Potioneer discovered")
+
+
+def test_frontmatter_meta_carries_names() -> None:
+    """character_meta carries localized display names for CSV auto-append."""
+    _, _, meta = import_character_dialog(VAULT, "Miss Information")
+    assert_eq(meta["name_EN"], "Miss Information", "EN name from file stem")
+    assert_eq(
+        meta["name_PL"], "Bibliofilistka des Informacja", "PL name from file stem"
     )
 
 
@@ -355,6 +374,8 @@ def main() -> None:
         tests = [
             ("test_import_hammer_shape", test_import_hammer_shape),
             ("test_frontmatter_meta", test_frontmatter_meta),
+            ("test_discover_character_keys", test_discover_character_keys),
+            ("test_frontmatter_meta_carries_names", test_frontmatter_meta_carries_names),
             ("test_hammer_graph_builds", test_hammer_graph_builds),
             ("test_sentiment_conversion", test_sentiment_conversion),
             ("test_markup_conversion", test_markup_conversion),

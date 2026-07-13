@@ -31,9 +31,11 @@ Autor edytuje/tworzy assety w **Aseprite** (baza = paczki licencjonowane + włas
 - **Konwencja nazw:** nazwa pliku = zlokalizowana nazwa postaci (np. `Barman Absyntnent.md`);
   klucz słownikowy tylko w polu `aliases` frontmattera — importer znajduje pliki po aliasie.
 - **Regeneracja configu:** `just import-dialogs` uruchamia `markdown_importer.py`
-  (postacie z `IMPORTABLE_CHARACTERS`, merge do `config.json`, usuwanie osieroconych
-  kluczy `messages`, upsert kolumn sprite/friendly/sentymentów w `characters.csv`),
-  a następnie kaskadowo `just import-entities` (jedyny writer sekcji `characters`).
+  (domyślnie wszystkie postacie wykryte w `PL/Postacie/` — pliki WIP/nieparsowalne
+  pomijane z ostrzeżeniem; merge do `config.json`, usuwanie osieroconych kluczy
+  `messages`, upsert kolumn sprite/friendly/sentymentów w `characters.csv` z
+  auto-dopisaniem brakujących wierszy), a następnie kaskadowo `just import-entities`
+  (jedyny writer sekcji `characters`).
 - **Wybór języka** w runtime przez zmienną `LANG` w `settings.py:22`:
   ```python
   LANG = "PL"                                   # settings.py:22 — mutable, zmieniane z UI
