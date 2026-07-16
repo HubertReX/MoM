@@ -12,10 +12,16 @@
         "Character": {
             "additionalProperties": false,
             "properties": {
-                "name": {
-                    "description": "Unique character name",
-                    "minLength": 3,
-                    "title": "Name",
+                "name_EN": {
+                    "description": "English character name",
+                    "minLength": 1,
+                    "title": "Name En",
+                    "type": "string"
+                },
+                "name_PL": {
+                    "description": "Polish character name",
+                    "minLength": 1,
+                    "title": "Name Pl",
                     "type": "string"
                 },
                 "sprite": {
@@ -111,18 +117,19 @@
                     "title": "Speed Run",
                     "type": "integer"
                 },
-                "dialog_key": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Key into Config.dialogs for this character's dialog graph",
-                    "title": "Dialog Key"
+                "has_dialog": {
+                    "default": false,
+                    "description": "Whether this character has a dialog graph",
+                    "title": "Has Dialog",
+                    "type": "boolean"
+                },
+                "friendly": {
+                    "default": 0.5,
+                    "description": "Base sentiment towards the player (0..1, maps to initial NPC sentiment 0..100)",
+                    "maximum": 1.0,
+                    "minimum": 0.0,
+                    "title": "Friendly",
+                    "type": "number"
                 },
                 "disposition": {
                     "anyOf": [
@@ -141,7 +148,8 @@
                 }
             },
             "required": [
-                "name",
+                "name_EN",
+                "name_PL",
                 "sprite",
                 "race",
                 "attitude"
@@ -199,13 +207,29 @@
             "title": "Chest",
             "type": "object"
         },
+        "CompletionMode": {
+            "description": "How a quest decides it is finished (decision D5).\n\nExplicit rather than inferred — this enum is the whole reason the\n``Q01_S07`` class of bug cannot be expressed any more.",
+            "enum": [
+                "all_subquests",
+                "test",
+                "manual"
+            ],
+            "title": "CompletionMode",
+            "type": "string"
+        },
         "Item": {
             "additionalProperties": false,
             "properties": {
-                "name": {
-                    "description": "Item display name",
-                    "minLength": 3,
-                    "title": "Name",
+                "name_EN": {
+                    "description": "English item name",
+                    "minLength": 1,
+                    "title": "Name En",
+                    "type": "string"
+                },
+                "name_PL": {
+                    "description": "Polish item name",
+                    "minLength": 1,
+                    "title": "Name Pl",
                     "type": "string"
                 },
                 "type": {
@@ -262,7 +286,8 @@
                 }
             },
             "required": [
-                "name",
+                "name_EN",
+                "name_PL",
                 "type"
             ],
             "title": "Item",
@@ -345,6 +370,146 @@
             "title": "MazeLevelProperties",
             "type": "object"
         },
+        "Quest": {
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "description": "`messages` key of the quest title",
+                    "minLength": 1,
+                    "title": "Name",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "`messages` key of the quest description",
+                    "minLength": 1,
+                    "title": "Description",
+                    "type": "string"
+                },
+                "success": {
+                    "description": "`messages` key of the completion text; plain prose, the reward label is appended by the engine",
+                    "minLength": 1,
+                    "title": "Success",
+                    "type": "string"
+                },
+                "completion": {
+                    "$ref": "#/$defs/CompletionMode",
+                    "description": "How the quest completes: all_subquests / test / manual"
+                },
+                "test": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Mini-DSL condition; required by (and only by) completion='test'",
+                    "title": "Test"
+                },
+                "progress": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Mini-DSL numeric expression for the progress bar; pairs with progress_total",
+                    "title": "Progress"
+                },
+                "progress_total": {
+                    "default": 0,
+                    "description": "Denominator of the progress bar; 0 means no explicit progress",
+                    "minimum": 0,
+                    "title": "Progress Total",
+                    "type": "integer"
+                },
+                "requires": {
+                    "description": "Quest keys that must be done before this one unlocks (DAG edges)",
+                    "items": {
+                        "type": "string"
+                    },
+                    "title": "Requires",
+                    "type": "array"
+                },
+                "parent": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Umbrella quest this one is a subquest of",
+                    "title": "Parent"
+                },
+                "rewards": {
+                    "description": "Effects applied on completion; ALL of them, in order",
+                    "items": {
+                        "$ref": "#/$defs/QuestReward"
+                    },
+                    "title": "Rewards",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "name",
+                "description",
+                "success",
+                "completion"
+            ],
+            "title": "Quest",
+            "type": "object"
+        },
+        "QuestReward": {
+            "additionalProperties": false,
+            "properties": {
+                "category": {
+                    "$ref": "#/$defs/QuestRewardCategory",
+                    "description": "Which stat/resource the reward grants"
+                },
+                "value": {
+                    "default": 0,
+                    "description": "Amount granted; unused by the 'items' category",
+                    "minimum": 0,
+                    "title": "Value",
+                    "type": "integer"
+                },
+                "items": {
+                    "description": "Item keys granted; 'items' category only",
+                    "items": {
+                        "type": "string"
+                    },
+                    "title": "Items",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "category"
+            ],
+            "title": "QuestReward",
+            "type": "object"
+        },
+        "QuestRewardCategory": {
+            "description": "What a reward gives. Maps 1:1 onto a ``ResultSink`` call in Q-05.\n\nPer decision D11 the SSiS stats were remapped onto stats MoM actually has:\n``hp`` -> :attr:`damage`, ``eloquence`` -> :attr:`sentiment`; ``agility``\nwas dropped (MoM has no such stat) and ``max_items`` needs\n``MAX_HOTBAR_ITEMS`` promoted from a module constant to a player field.",
+            "enum": [
+                "money",
+                "items",
+                "health",
+                "max_health",
+                "damage",
+                "max_items",
+                "sentiment"
+            ],
+            "title": "QuestRewardCategory",
+            "type": "string"
+        },
         "RaceEnum": {
             "enum": [
                 "humanoid",
@@ -386,8 +551,16 @@
             "type": "object"
         },
         "dialogs": {
-            "description": "Character dialog graphs keyed by dialog_key",
+            "description": "Character dialog graphs keyed by character config key",
             "title": "Dialogs",
+            "type": "object"
+        },
+        "quests": {
+            "additionalProperties": {
+                "$ref": "#/$defs/Quest"
+            },
+            "description": "Quest definitions keyed by quest key",
+            "title": "Quests",
             "type": "object"
         },
         "messages": {
@@ -397,7 +570,7 @@
                 },
                 "type": "object"
             },
-            "description": "Localized dialog texts keyed by language",
+            "description": "Localized UI strings keyed by language",
             "title": "Messages",
             "type": "object"
         },

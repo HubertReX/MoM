@@ -8,12 +8,16 @@ from pydantic import BaseModel, ConfigDict, Field, PositiveInt, ValidationError,
 try:
     from settings import DEFAULT_DISPOSITION_WEIGHTS, SCHEMA_FILE
     from enums import AttitudeEnum, ItemTypeEnum, RaceEnum
+    from quest.entities import CompletionMode, QuestRewardCategory
+    from quest.graph import init_quests
 except Exception:
     # when script run as stand alone to update config schema
     import sys
     sys.path.append("..")
     from settings import DEFAULT_DISPOSITION_WEIGHTS, SCHEMA_FILE
     from enums import AttitudeEnum, ItemTypeEnum, RaceEnum
+    from quest.entities import CompletionMode, QuestRewardCategory
+    from quest.graph import init_quests
 
 
 # https://docs.python.org/3/library/enum.html#enum.Enum
@@ -129,6 +133,46 @@ class Chest(BaseModel):
 
 
 ###################################################################################################################
+# MARK: Quest
+# Decision D4: quests are validated with Pydantic at *import* time (desktop only).
+# The runtime — including web, where Pydantic is absent — reads the plain dict via
+# `quest.graph.init_quests`. These models mirror the `quest.entities` dataclasses;
+# the dataclasses are the runtime shape, these are the gatekeeper at the door.
+
+
+class QuestReward(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    category: Annotated[QuestRewardCategory, Field(description="Which stat/resource the reward grants")]
+    value:    Annotated[int,       Field(0, ge=0, repr=False,
+                                         description="Amount granted; unused by the 'items' category")]
+    items:    Annotated[list[str], Field(default_factory=list, repr=False,
+                                         description="Item keys granted; 'items' category only")]
+
+
+class Quest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name:        Annotated[str, Field(min_length=1, description="`messages` key of the quest title")]
+    description: Annotated[str, Field(min_length=1, repr=False, description="`messages` key of the quest description")]
+    success:     Annotated[str, Field(min_length=1, repr=False,
+                                      description="`messages` key of the completion text; plain prose, the reward label is appended by the engine")]  # noqa E501
+    completion:  Annotated[CompletionMode, Field(description="How the quest completes: all_subquests / test / manual")]
+    test:        Annotated[str | None, Field(None, repr=False,
+                                             description="Mini-DSL condition; required by (and only by) completion='test'")]  # noqa E501
+    progress:    Annotated[str | None, Field(None, repr=False,
+                                             description="Mini-DSL numeric expression for the progress bar; pairs with progress_total")]  # noqa E501
+    progress_total: Annotated[int, Field(0, ge=0, repr=False,
+                                         description="Denominator of the progress bar; 0 means no explicit progress")]
+    requires:    Annotated[list[str], Field(default_factory=list, repr=False,
+                                            description="Quest keys that must be done before this one unlocks (DAG edges)")]  # noqa E501
+    parent:      Annotated[str | None, Field(None, repr=False,
+                                             description="Umbrella quest this one is a subquest of")]
+    rewards:     Annotated[list[QuestReward], Field(default_factory=list, repr=False,
+                                                    description="Effects applied on completion; ALL of them, in order")]
+
+
+###################################################################################################################
 # MARK: Config
 class Config(BaseModel):
     # this class is used only for crating instances of the config class
@@ -138,6 +182,8 @@ class Config(BaseModel):
     maze_configs: dict[int, MazeLevelProperties]
     dialogs:      Annotated[dict[str, Any], Field(default_factory=dict, repr=False,
                                                    description="Character dialog graphs keyed by character config key")]
+    quests:       Annotated[dict[str, Quest], Field(default_factory=dict, repr=False,
+                                                    description="Quest definitions keyed by quest key")]
     messages:     Annotated[dict[str, dict[str, str]], Field(default_factory=dict, repr=False,
                                                              description="Localized UI strings keyed by language")]
 
@@ -172,6 +218,23 @@ class Config(BaseModel):
             if maze_config.big_chest_template not in self.chests:
                 raise ValueError(f"big_chest_template '{maze_config.big_chest_template}' from '{
                                  key}' maze_config does not exist")
+
+        return self
+
+    @model_validator(mode='after')
+    def check_quests(self) -> Self:
+        for key, quest in self.quests.items():
+            for reward in quest.rewards:
+                for item in reward.items:
+                    if item not in self.items:
+                        raise ValueError(f"item '{item}' from '{key}' quest reward does not exist")
+
+        # Graph semantics (dangling requires/parent, completion modes that can never
+        # be satisfied) are checked by the runtime builder rather than duplicated here.
+        # Delegating keeps one source of truth AND guarantees the property we actually
+        # want: a config.json that passes desktop validation cannot break the web
+        # runtime, which runs the very same init_quests() without Pydantic.
+        init_quests({key: quest.model_dump(mode="json") for key, quest in self.quests.items()})
 
         return self
 
