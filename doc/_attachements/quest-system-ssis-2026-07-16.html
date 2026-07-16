@@ -359,7 +359,1021 @@
   <div class="callout err"><strong>7. Literówka w kluczu.</strong> <code>Q03_SO3_HOW_TO_GET_THERE</code> — w <code>quests_hierarchy</code> i <code>quests</code> figuruje jako <code>SO3</code> (powinno być <code>S03</code>). Działa tylko dlatego, że obie strony używają tej samej literówki. Przy porcie ujednolić.</div>
   <div class="callout warn"><strong>8. Clamp zdrowia zawsze.</strong> Po aplikacji nagrody <code>hero.health</code> jest zawsze ucinane do <code>[0, max_health]</code>, niezależnie od tego, czy nagroda dotyczyła zdrowia.</div>
 
-  <h2>5 · Eksport do planowania portu</h2>
+  <h2>4b · Co jeszcze wyszło przy analizie źródeł</h2>
+  <p class="prose">Ustalenia spoza pierwotnych sekcji 1-4, znalezione przy porównywaniu <code>config.json</code> SSiS
+    z kodem MoM. Dotyczą wyłącznie <strong>zakresu migracji</strong> (rodzina <code>Q*</code>).</p>
+
+  <div class="callout err"><strong>1. <code>Q01_S07_..._FIND_A_SAFE_PLACE</code> jest martwy - i blokuje główny wątek.</strong>
+    Ma <code>test: "False"</code>, ale <strong>nie jest kluczem w <code>quests_hierarchy</code></strong>, więc pętla agregacji
+    nigdy go nie dotyka (iteruje tylko po kluczach hierarchii). Nie ukończy się nigdy. A ponieważ jest podquestem
+    <code>Q01_S00_BREAK_THE_CURSE</code>, warunek "wszystkie podquesty zrobione" nigdy nie zapadnie - <strong>cały wątek
+    klątwy jest nieosiągalny</strong>. Do zaprojektowania od zera (D15).</div>
+
+  <div class="callout warn"><strong>2. Dług treści: 6 z 14 questów nie ma napisanych tekstów.</strong>
+    <code>Q01_S06</code>, <code>Q01_S07</code>, <code>Q02_S00</code>, <code>Q02_S01</code>, <code>Q02_S02</code>,
+    <code>Q02_S03</code> mają w <code>messages</code> PL dosłowne <code>&lt;&lt;PLACEHOLDER&gt;&gt;</code> zamiast treści.
+    To cały łańcuch "Drobiazgi dla Sarkażmijki" plus zdobycie mikstury.</div>
+
+  <div class="callout ok"><strong>3. Mini-DSL MoM już wystarcza dla całego zakresu <code>Q*</code>.</strong>
+    Rozkład 14 questów: <strong>6</strong> testuje <code>dialog.key ==</code> → istniejący <code>visited(npc, node)</code>,
+    <strong>4</strong> testuje przedmiot → istniejący <code>has_item(key)</code>, <strong>4</strong> to agregaty
+    (<code>test: "False"</code>). <em>Zero</em> nowych predykatów w warstwie testów. Rozszerzenie potrzebne tylko
+    do zależności DAG (<code>quest_done()</code>) - patrz D7.</div>
+
+  <div class="callout err"><strong>4. Nagrody 9 z 14 questów nie mają gdzie trafić w MoM.</strong>
+    Rozkład bonusów w <code>Q*</code>: <code>agility</code> ×9, <code>eloquence</code> ×1, <code>hp</code> ×1,
+    <code>max_health</code> ×1, <code>health</code> ×1, zerowe ×2. MoM <strong>nie ma</strong> statów
+    <code>agility</code> ani <code>eloquence</code> - to cechy konfrontacji z SSiS (💪 siłowanie / 🐍 obezwładnienie /
+    💬 perswazja), gry tekstowej. Mapują się 1:1 tylko <code>Q01_S00</code> (max_health) i <code>Q01_S06</code> (health).
+    To jest najpoważniejsza decyzja portu (D11).</div>
+
+  <div class="callout warn"><strong>5. <code>test_progress</code> jest w <code>Q*</code> martwym polem.</strong>
+    Wszystkie 14 questów ma <code>test_progress: "False"</code> i <code>test_total: 1</code> →
+    <code>int(eval("False"))</code> = 0, czyli pasek postępu zawsze pokazuje 0/1. Mechanika paska realnie działała tylko
+    w legacy (<code>hero.searched_loc</code>, <code>unique_loc_visited_cnt</code>), które są poza zakresem. Patrz D9.</div>
+
+  <div class="callout violet"><strong>6. Wyścig w teście <code>dialog.key == "015"</code>.</strong>
+    Test sprawdza, czy kursor rozmowy <strong>stoi teraz</strong> na węźle, a nie czy węzeł był kiedykolwiek odwiedzony.
+    Działa tylko dlatego, że <code>check_quests_done()</code> jest wołane tuż po zakończeniu dialogu
+    (<code>main.py:2784</code>). Dotyczy 6 z 14 questów. MoM ma już <code>visited()</code> o trwałej semantyce - patrz D8.</div>
+
+  <div class="callout ok"><strong>7. Postacie i przedmioty questowe są już w MoM.</strong>
+    <code>config.json["items"]</code> zawiera <code>POTION_CURSE_NO_MORE</code>, <code>MERMAIDS_TEAR</code>,
+    <code>GNOMES_WHISKER</code>, <code>PHOENIX_FEATHER</code>; <code>config.json["dialogs"]</code> ma wszystkie
+    postacie z testów <code>Q*</code> (<code>BARMAN_ABSINTHRAYNER</code>, <code>CLAPBACK_SWORD</code>,
+    <code>MADAME_SARCASMIA</code>, <code>POTIONEER_PUZZLEMINT</code>, <code>HAMMER_HOAXHEART</code>).
+    Dlatego zakres <code>Q*</code> jest przenośny bez dorabiania treści świata.</div>
+
+  <h2>5 · Decyzje do podjęcia</h2>
+  <div class="prose">
+    <p><strong>Zakres portu: 14 questów rodziny <code>Q*</code></strong> (fabuła klątwy). Poza zakresem:
+      <code>01_main_01</code>, <code>03_speed_run</code>, 6× <code>coc</code> oraz 9 legacy
+      (<code>gloves</code>, <code>fairy_001</code>, <code>solitary_001</code>, <code>searched_loc</code>,
+      <code>unique_loc_visited_cnt</code>, <code>MAP08_MAZE_06x11</code> - bytów tych w MoM nie ma).</p>
+    <p>Każda decyzja: opcje z plusami i minusami plus rekomendacja. Wzorzec z
+      <a href="dialog-migration-plan.html">migracji dialogów</a> (D1-D11).</p>
+  </div>
+
+  <div class="callout ok"><strong>Wszystkie 15 decyzji zamkniętych (2026-07-16).</strong> Poniżej rejestr ustaleń;
+    szczegóły opcji i uzasadnienia zostają rozwijalne pod spodem jako ślad rozumowania.</div>
+
+  <table>
+    <thead><tr><th>#</th><th>Temat</th><th>Wybór</th><th>Co to znaczy w praktyce</th></tr></thead>
+    <tbody>
+      <tr><td><strong>D1</strong></td><td>Granulacja plików MD</td><td><span class="badge ok">A</span></td>
+        <td>1 plik = 1 łańcuch: <code>doc/PL/Misje/Q01_przelamac_klatwe.md</code>, podquesty jako sekcje
+          <code>## S01</code> - kształt bliźniaczy do plików postaci</td></tr>
+      <tr><td><strong>D2</strong></td><td>Frontmatter czy treść</td><td><span class="badge ok">B</span></td>
+        <td>Wszystko w treści - podquesty w jednym pliku nie zmieszczą się sensownie w YAML-u</td></tr>
+      <tr><td><strong>D3</strong></td><td>Teksty i <code>{value}</code></td><td><span class="badge ok">A</span></td>
+        <td><code>messages</code> w <code>config.json</code> jak dialogi; <code>success</code> bez dziur,
+          silnik dokleja auto-etykietę nagród</td></tr>
+      <tr><td><strong>D4</strong></td><td>Ujednolicenie typów</td><td><span class="badge ok">A</span></td>
+        <td>Pydantic waliduje przy imporcie (desktop), runtime czyta goły dict (web) - jak w dialogach</td></tr>
+      <tr><td><strong>D5</strong></td><td>Agregacja</td><td><span class="badge ok">A</span></td>
+        <td>Jawny enum <code>completion: all_subquests | test | manual</code>; koniec magicznego <code>"False"</code></td></tr>
+      <tr><td><strong>D6</strong></td><td>Zapis DAG</td><td><span class="badge ok">B</span></td>
+        <td><code>requires: [klucze]</code> + osobny <code>parent</code>; <code>is_unlocked</code> znika ze stanu</td></tr>
+      <tr><td><strong>D7</strong></td><td>Predykaty DSL</td><td><span class="badge ok">A</span></td>
+        <td>Wąskie predykaty na żądanie; start: <code>quest_done()</code>. Whitelist zostaje mała</td></tr>
+      <tr><td><strong>D8</strong></td><td>Semantyka dialog.key</td><td><span class="badge ok">A</span></td>
+        <td><code>visited(npc, node)</code> - trwały fakt fabularny zamiast wyścigu z kursorem</td></tr>
+      <tr><td><strong>D9</strong></td><td>Pasek postępu</td><td><span class="badge ok">A</span></td>
+        <td><code>eval_number(expr, ctx) -> int</code> - questów będzie dużo więcej, mechanizm się przyda</td></tr>
+      <tr><td><strong>D10</strong></td><td>Nagrody</td><td><span class="badge ok">B</span></td>
+        <td>Lista efektów przez istniejący <code>ResultSink</code> - jedna droga dla dialogu i questa</td></tr>
+      <tr><td><strong>D11</strong></td><td>Mapowanie statów</td><td><span class="badge ok">C + D</span></td>
+        <td>Mechanika przemapowana (<code>hp→damage</code>, <code>eloquence→sentyment</code>,
+          <code>max_items→</code> pole gracza), <code>agility</code> porzucone, wartości zaprojektowane od nowa</td></tr>
+      <tr><td><strong>D12</strong></td><td>Kiedy sprawdzać</td><td><span class="badge ok">C</span></td>
+        <td>Event-driven + sweep jako siatka - dojdą warunki od lokalizacji i inne zdarzenia</td></tr>
+      <tr><td><strong>D13</strong></td><td>Persystencja</td><td><span class="badge ok">A</span></td>
+        <td>Osobny <code>QuestState</code> w save; <code>config.json</code> zostaje niemutowalną definicją</td></tr>
+      <tr><td><strong>D14</strong></td><td>UI dziennika</td><td><span class="badge ok">A</span></td>
+        <td><code>QuestPanel</code> pod <strong>J</strong> (alias <code>F10</code>) + toasty przez istniejące
+          <code>add_notification()</code>. Projekt w <a href="#panel">sekcji 6</a></td></tr>
+      <tr><td><strong>D15</strong></td><td>Dług treści</td><td><span class="badge ok">C</span></td>
+        <td>1. iteracja = 8 questów z treścią; łańcuch <code>Q02</code> i <code>Q01_S06/S07</code> na potem</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout violet"><strong>D6=B uratowało D15=C.</strong> Pierwotny zarzut wobec wycinania questów brzmiał
+    "zostaje kikut z krawędziami w próżnię" - ale to była prawda tylko dla <code>unlocks</code>, gdzie krawędź mieszka
+    u <em>poprzednika</em>. Przy <code>requires</code> krawędź deklaruje quest, który jej potrzebuje, więc wycięcie
+    questa zabiera jego krawędzie ze sobą. Nic nie dangluje.</div>
+
+  <div class="callout warn"><strong>Konsekwencja D15=C, domknięta trybem z D5.</strong>
+    <code>Q01_S00_BREAK_THE_CURSE</code> ma 4 podquesty, z czego C wycina <code>S06</code> i <code>S07</code>.
+    Przy <code>all_subquests</code> "Przełamać klątwę" zaliczyłoby się po samym spotkaniu Sarkażmijki - bez mikstury.
+    Dlatego w 1. iteracji dostaje <code>completion: manual</code>: parasol zostaje otwarty i czeka na dopisanie
+    <code>S06</code>/<code>S07</code>. Dokładnie po to jest tryb <code>manual</code> z D5.</div>
+
+  <h3>Zakres 1. iteracji: 8 questów</h3>
+  <table>
+    <thead><tr><th>Klucz</th><th>Tytuł (PL)</th><th>Ukończenie</th><th>Warunek / uwaga</th></tr></thead>
+    <tbody>
+      <tr><td><code>Q00_S00_WHAT_IS_GOING_ON</code></td><td>O co tu chodzi?</td>
+        <td><span class="badge info">test</span></td><td><code>visited("CLAPBACK_SWORD", "015")</code></td></tr>
+      <tr><td><code>Q01_S00_BREAK_THE_CURSE</code></td><td>Przełamać klątwę</td>
+        <td><span class="badge warn">manual</span></td><td>parasol - czeka na <code>S06</code>/<code>S07</code></td></tr>
+      <tr><td><code>Q01_S01_LEARN_ABOUT_CURSE</code></td><td>Dowiedz się więcej o klątwie</td>
+        <td><span class="badge info">test</span></td><td><code>visited("BARMAN_ABSINTHRAYNER", "012")</code></td></tr>
+      <tr><td><code>Q01_S05_..._MEET_MADAME_SARCASMIA</code></td><td>Spotkaj się z Madame Sarkażmijką</td>
+        <td><span class="badge info">test</span></td><td><code>visited("MADAME_SARCASMIA", "SARCASMIA_AA_BACK_SO_SOON")</code></td></tr>
+      <tr><td><code>Q03_S00_LEARN_ABOUT_CURSE</code></td><td>Znajdź kogoś kto wie coś więcej o klątwach</td>
+        <td><span class="badge ok">all_subquests</span></td><td>3 podquesty poniżej</td></tr>
+      <tr><td><code>Q03_S01_WHO_HAS_MORE_KNOWLEDGE</code></td><td>Kto ma wiedzę na temat magii i zaklęć?</td>
+        <td><span class="badge info">test</span></td><td><code>visited("POTIONEER_PUZZLEMINT", "014") or visited("POTIONEER_PUZZLEMINT", "017")</code></td></tr>
+      <tr><td><code>Q03_S02_WHERE_TO_FIND_THIS_PERSON</code></td><td>Gdzie można znaleźć tę osobę?</td>
+        <td><span class="badge info">test</span></td><td><code>visited("HAMMER_HOAXHEART", "009")</code></td></tr>
+      <tr><td><code>Q03_SO3_HOW_TO_GET_THERE</code></td><td>Jak tam dotrzeć?</td>
+        <td><span class="badge info">test</span></td><td><code>visited("BARMAN_ABSINTHRAYNER", "017")</code>; przy okazji poprawić
+          literówkę <code>SO3</code> → <code>S03</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout"><strong>Wszystkie 8 warunków to <code>visited()</code>, który już istnieje.</strong>
+    Cała 1. iteracja nie potrzebuje ani jednego nowego predykatu w warstwie testów - <code>quest_done()</code> jest
+    potrzebny wyłącznie do <code>requires</code>.</div>
+
+  <h3>A · Autorstwo i dane</h3>
+
+  <details>
+    <summary>D1 · Granulacja plików Markdown <span class="badge info">autorstwo</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">Ustalone: źródłem jest Markdown w vault (<code>doc/PL/Misje/</code> = źródło prawdy,
+      <code>doc/EN/Quests/</code> generowane LLM-em), a <code>just</code> waliduje i importuje do <code>config.json</code>.
+      Otwarte: ile questów w jednym pliku. Zakres to 4 łańcuchy: <code>Q00</code> (1 quest),
+      <code>Q01</code> (główny + 4 podquesty), <code>Q02</code> (główny + 3), <code>Q03</code> (główny + 3).</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · 1 plik = 1 łańcuch</td>
+          <td><code>doc/PL/Misje/Q01_przelamac_klatwe.md</code>; główny quest w frontmatterze, podquesty jako sekcje
+            <code>## S01</code>, <code>## S05</code> - dokładnie tak, jak węzły dialogu (<code>## 000</code>) w plikach postaci.</td>
+          <td>Identyczna mentalnie struktura co pliki postaci (<code>doc/PL/Postacie/*.md</code>), którą już znasz.
+            Cały wątek fabularny widoczny w jednym miejscu. 4 pliki zamiast 14.</td>
+          <td>Krawędzie między łańcuchami (<code>Q01_S05 → Q02_S00</code>) i tak przecinają pliki, więc plik nie jest
+            samowystarczalny.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · 1 plik = 1 quest</td>
+          <td><code>doc/PL/Misje/what_is_going_on.md</code> - tak jak w Twojej pierwotnej propozycji.</td>
+          <td>Najmniejsza jednostka zmiany - czysty diff, brak konfliktów przy równoległej edycji. Łatwo dodać quest.</td>
+          <td>14 plików dla 4 wątków; czytając jeden nie widzisz sąsiadów w łańcuchu. Dużo powtórzonego frontmattera.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · 1 plik = wszystko</td>
+          <td>Jeden <code>doc/PL/misje.md</code> (plik już istnieje, dziś jest zalążkiem na 3 nagłówki).</td>
+          <td>Cały DAG w jednym widoku. Zero pytań o nazewnictwo plików.</td>
+          <td>Rośnie w nieczytelną ścianę; konflikty przy równoległej edycji; nie skaluje się poza obecne 14.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: A.</strong> Największa dźwignia to powtórzenie wzorca, który
+      w dialogach już działa i który znasz - <code>## klucz</code> jako sekcja, wikilinki jako krawędzie.
+      Importer questów będzie wtedy bliskim krewnym <code>markdown_importer.py</code>, a nie osobnym parserem.</div>
+  </details>
+
+  <details>
+    <summary>D2 · Podział pól: frontmatter czy treść <span class="badge info">autorstwo</span><span class="badge ok">wybrane: B</span></summary>
+    <p class="prose">Quest ma pola maszynowe (<code>test</code>, <code>unlocks</code>, <code>bonus</code>,
+      <code>test_total</code>) i prozę (<code>name</code>, <code>description</code>, <code>success</code>).
+      Proza jest tłumaczona, pola maszynowe <strong>nie</strong> - i to jest oś podziału.</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · maszyna w FM, proza w treści</td>
+          <td>YAML frontmatter: <code>key</code>, <code>test</code>, <code>unlocks</code>, <code>bonus</code>.
+            Treść: <code>### Nazwa</code> / <code>### Opis</code> / <code>### Sukces</code> z rich-textem.</td>
+          <td>Pola nietłumaczone są <strong>tylko w PL</strong> - plik EN nie może się z nimi rozjechać, bo ich nie ma.
+            Walidator porównuje wyłącznie klucze prozy. Frontmatter renderuje się w Obsidianie jako properties.</td>
+          <td>Dwa miejsca na jeden quest. Przy opcji D1/A frontmatter musi unieść też podquesty (zagnieżdżony YAML).</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · wszystko w treści</td>
+          <td>Także <code>test</code> i <code>bonus</code> jako sekcje MD, np. <code>**Test**: has_item("X")</code> -
+            tak jak dziś wygląda <code>doc/EN/quests.md</code> w SSiS.</td>
+          <td>Jeden spójny widok; zero YAML-a. Blisko obecnego <code>quests.md</code>.</td>
+          <td>Pozycyjny parser prozy = ryzyko #6 z migracji dialogów ("kruchy pozycyjny parser Markdown").
+            <code>test</code> musiałby być duplikowany w PL i EN albo czytany tylko z PL - niespójność wraca kuchennymi drzwiami.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · wszystko w frontmatterze</td>
+          <td>Proza też w YAML: <code>name: "Przełamać klątwę"</code>.</td>
+          <td>Jeden parser (YAML), zero pozycyjności, trywialna walidacja.</td>
+          <td>Wielolinijkowe opisy z rich-textem i emoji w YAML-u są koszmarem do pisania i czytania.
+            Zabija sens trzymania tego w vaultzie.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: A.</strong> Kluczowa własność: <em>pola nietłumaczone istnieją tylko
+      w źródle PL</em>, więc generowanie EN LLM-em nie może zepsuć logiki - najgorsze co zrobi, to zły tekst,
+      nigdy zły <code>test</code>.</div>
+  </details>
+
+  <details>
+    <summary>D3 · Mechanizm tłumaczeń <span class="badge ok">ustalone</span><span class="badge ok">wybrane: A</span></summary>
+    <div class="callout warn"><strong>Sprostowanie.</strong> Dialogi <strong>nie</strong> używają TOML.
+      Teksty dialogów siedzą w <code>config.json["messages"][lang][key]</code> (294 klucze na język),
+      czytane przez <code>get_msg()</code> (<code>project/settings.py:87</code>). Pliki TOML
+      (<code>project/assets/locale/{LANG}.toml</code>) to wyłącznie stringi UI, czytane przez <code>_()</code>.
+      "Tak samo jak dialogi" oznacza więc <code>messages</code>, nie TOML.</div>
+    <p class="prose">Ustalenie: klucze <code>M_QUEST_&lt;KEY&gt;_{NAME,DESCRIPTION,SUCCESS}</code> lądują w
+      <code>config.json["messages"]</code>, dokładnie jak <code>M_&lt;CHAR&gt;_DN_&lt;NODE&gt;</code> dla dialogów.
+      Zero nowego kodu runtime - <code>get_msg()</code> już to obsługuje. <code>config.json</code> pozostaje
+      artefaktem generowanym maszynowo (zgodne z zasadą "JSON tylko generowany, nie do ręcznej edycji").</p>
+    <p class="prose">Do przeniesienia z pipeline'u dialogów: walidacja spójności PL/EN
+      (<code>_validate_language_consistency</code>, <code>markdown_importer.py:475</code>) - ten sam zestaw kluczy
+      w obu językach, głośny błąd przy imporcie zamiast cichego fallbacku na klucz.</p>
+    <div class="callout"><strong>Otwarte:</strong> czy <code>{value}</code> w <code>success</code> (podstawiana wartość
+      bonusu) przetrwa decyzję D10 - przy wielu bonusach jedna dziura <code>{value}</code> przestaje wystarczać.</div>
+  </details>
+
+  <h3>B · Model danych</h3>
+
+  <details>
+    <summary>D4 · Ujednolicenie typów <span class="badge err">niespójne w SSiS</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">Realne typy w <code>config.json</code> SSiS (policzone po wszystkich 31 questach) - cztery pola
+      z czterech różnych typów, bo "brak wartości" zapisywano raz jako <code>null</code>, raz jako <code>false</code>,
+      raz jako string <code>"False"</code>:</p>
+    <table>
+      <thead><tr><th>Pole</th><th>Typy dziś</th><th>Propozycja</th><th>Uwaga</th></tr></thead>
+      <tbody>
+        <tr><td><code>test</code></td><td><span class="badge err">str | bool</span></td><td><code>str | null</code></td>
+          <td><code>null</code> = brak własnego testu (agregat) - patrz D5</td></tr>
+        <tr><td><code>test_progress</code></td><td><span class="badge err">null | bool | str</span></td><td>usunąć</td>
+          <td>w całym <code>Q*</code> zawsze <code>"False"</code> - martwe pole (D9)</td></tr>
+        <tr><td><code>test_total</code></td><td><span class="badge err">null | bool | int</span></td><td>wyliczane</td>
+          <td>dla agregatu = liczba podquestów (D9)</td></tr>
+        <tr><td><code>unlocks</code></td><td><span class="badge err">null | bool | str</span></td><td><code>list[str]</code></td>
+          <td>domyślnie <code>[]</code>; DAG wymaga listy (D6)</td></tr>
+        <tr><td><code>bonus</code></td><td><span class="badge warn">dict[str,int]</span></td><td>zależy od D10</td>
+          <td>raz 1-kluczowy (legacy), raz 6-kluczowy (<code>Q*</code>)</td></tr>
+        <tr><td><code>is_done</code>, <code>is_unlocked</code></td><td><span class="badge ok">bool</span></td><td>poza configiem</td>
+          <td>to stan gry, nie definicja - patrz D13</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · jak dialogi: Pydantic desktop + goły dict web</td>
+          <td>Model w <code>config_pydantic.py</code> waliduje przy imporcie (desktop), a runtime czyta zwykły dict -
+            dokładnie ten podział, który dialogi już mają (ryzyko #2: "brak Pydantic na web").</td>
+          <td>Zero nowych zależności na web (pygbag/WASM). Walidacja tam, gdzie ma sens - przy imporcie, głośno.
+            Spójne z tym, co w repo działa.</td>
+          <td>Model opisany dwa razy (schema + runtime dict).</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · <code>@dataclass</code> wszędzie</td>
+          <td>Jeden <code>QuestDef</code> jako dataclass, używany i przy imporcie, i w runtime.</td>
+          <td>Jedno źródło prawdy o kształcie. Działa na web (stdlib). Spójne z <code>dialog/entities.py</code>.</td>
+          <td>Brak walidacji typów za darmo - trzeba dopisać ręcznie to, co Pydantic daje gratis.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · <code>TypedDict</code></td>
+          <td>Tylko adnotacja typu nad zwykłym dictem.</td>
+          <td>Zero kosztu runtime, mypy sprawdza statycznie.</td>
+          <td>Nic nie waliduje danych z JSON-a w czasie działania. Literówka w kluczu przechodzi.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: A.</strong> Powtarza rozstrzygnięcie z dialogów zamiast otwierać je
+      od nowa - a to samo ryzyko (Pydantic nie wchodzi na web).</div>
+  </details>
+
+  <details>
+    <summary>D5 · Agregacja zamiast magicznego <code>"False"</code> <span class="badge warn">4 z 14 questów</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">W SSiS <code>test: "False"</code> to umowny znacznik "ten quest kończy się, gdy wszystkie
+      podquesty są zrobione". Nie jest to nigdzie zapisane - trzeba wiedzieć. Kosztowało to już jednego zabitego questa
+      (<code>Q01_S07</code> ma <code>"False"</code>, ale nie ma podquestów, więc nie kończy się nigdy - ustalenie 4b.1).
+      W zakresie dotyczy: <code>Q01_S00</code>, <code>Q02_S00</code>, <code>Q03_S00</code> (prawdziwe agregaty)
+      i <code>Q01_S07</code> (pomyłka).</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · jawny enum <code>completion</code></td>
+          <td><code>completion: all_subquests | test | manual</code>, a <code>test</code> tylko dla <code>test</code>.</td>
+          <td>Intencja napisana wprost. Walidator wyłapie <code>all_subquests</code> bez podquestów - czyli dokładnie
+            błąd <code>Q01_S07</code> - i <code>test</code> bez wyrażenia. <code>manual</code> daje miejsce na questy
+            domykane skryptem/cutscenką.</td>
+          <td>Nowe pole; trzeba pilnować zgodności <code>completion</code> z obecnością <code>test</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · <code>test: null</code> = agregacja</td>
+          <td>Brak testu znaczy "licz podquesty".</td>
+          <td>Zero nowych pól. Naturalnie wypada z D4.</td>
+          <td>Nadal domyślne, tylko ładniej zapisane. <code>null</code> bez podquestów = ten sam cichy trup
+            co <code>Q01_S07</code>. Nie ma gdzie wcisnąć <code>manual</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · predykat DSL <code>all_subquests_done()</code></td>
+          <td><code>test: "all_subquests_done()"</code> - agregacja przestaje być trybem, staje się zwykłym warunkiem.</td>
+          <td>Jednolitość: jedna ścieżka wykonania dla wszystkich questów, zero specjalnego trybu w silniku.
+            Komponuje się: <code>all_subquests_done() and has_item("X")</code>.</td>
+          <td>Predykat sięga po stan innych questów, nie po stan świata - inna kategoria niż reszta DSL.
+            Ryzyko rekurencji (agregat agregatów) - trzeba pilnować acykliczności.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: A</strong>, ewentualnie A+C (enum jako kanoniczny zapis,
+      <code>all_subquests_done()</code> dostępne w DSL do przypadków mieszanych). Decydujący argument: to jedyna opcja,
+      w której walidator importu <em>wykryje</em> pomyłkę typu <code>Q01_S07</code>, zamiast ją wiernie przenieść.</div>
+  </details>
+
+  <details>
+    <summary>D6 · Jak zapisać DAG <span class="badge violet">rdzeń</span><span class="badge ok">wybrane: B</span></summary>
+    <p class="prose">W grze są <strong>dwie różne relacje</strong>, a SSiS trzyma je w dwóch miejscach o mylących nazwach:
+      <strong>przynależność</strong> (<code>quests_hierarchy</code>: główny → podquesty) i
+      <strong>odblokowywanie</strong> (<code>unlocks</code>: ukończenie A zapala <code>is_unlocked</code> na B).
+      Te krawędzie krzyżują się między łańcuchami - w samym zakresie <code>Q*</code>:
+      <code>Q01_S05 → Q02_S00</code>, <code>Q02_S00 → Q01_S06</code>, <code>Q01_S01 → Q03_S00</code>.
+      Stąd DAG, nie drzewo. (W legacy jest nawet węzeł o dwóch rodzicach: <code>02_fight_fairy</code>
+      odblokowywany przez <code>01_get_gloves</code> <em>i</em> <code>talk_to_solitary</code>.)</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · <code>unlocks: [klucze]</code></td>
+          <td>Zachowuje kierunek z SSiS, tylko lista zamiast pojedynczego stringa.</td>
+          <td>Najmniejsza zmiana wobec SSiS - migracja danych to <code>str → [str]</code>, <code>null/false → []</code>.
+            Odpowiada mentalnie "co się odpali, gdy to skończę".</td>
+          <td>Żeby odpowiedzieć "czego potrzebuje quest X", trzeba przeskanować wszystkie questy.
+            Zależności rozproszone po plikach - przy D1/A między plikami.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · <code>requires: [klucze]</code></td>
+          <td>Odwrócenie krawędzi: quest deklaruje swoje warunki wstępne.</td>
+          <td>Quest jest samoopisowy - czytając go widzisz, od czego zależy. Wiele rodziców to naturalnie lista.
+            Nie trzeba pola <code>is_unlocked</code> jako stanu: odblokowanie = funkcja stanu innych questów, liczona na żądanie.</td>
+          <td>Odwraca zapis wobec SSiS - jednorazowa konwersja danych. Trudniej odpowiedzieć "co odblokuję", ale to
+            pytanie narzędzia (graf), nie autora.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · <code>unlock_when: "&lt;DSL&gt;"</code></td>
+          <td>Warunek odblokowania jako wyrażenie: <code>quest_done("Q01_S05")</code>,
+            <code>quest_done("A") or quest_done("B")</code>.</td>
+          <td>Najbardziej wyraziste - <code>and</code>/<code>or</code>/<code>not</code> za darmo, można mieszać ze stanem
+            świata (<code>quest_done("X") and has_item("Y")</code>). Jeden silnik dla <code>test</code> i odblokowania.</td>
+          <td>Graf przestaje być odczytywalny statycznie - narzędzie (wizualizacja DAG, walidator cykli) musi parsować
+            AST, żeby wyciągnąć krawędzie. Łatwo przypadkiem napisać warunek niebędący DAG-iem.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: B</strong> (<code>requires</code>) + <code>parent</code> jako osobne,
+      jawne pole przynależności. Powody: (1) usuwa <code>is_unlocked</code> ze stanu zapisu - jedno pole mniej do
+      zepsucia w save (D13); (2) krawędzie dają się odczytać bez parsowania wyrażeń, więc walidacja cykli i graf
+      w Obsidianie są trywialne - a graf dialogów już masz; (3) wiele rodziców przestaje być przypadkiem szczególnym.
+      C zostawiamy jako furtkę, gdyby pojawił się warunek "albo-albo".</div>
+  </details>
+
+  <h3>C · Silnik warunków</h3>
+
+  <details>
+    <summary>D7 · Rozszerzenie mini-DSL <span class="badge ok">mniejsze niż się wydaje</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">MoM ma już whitelistujący interpreter AST bez <code>eval()</code>
+      (<code>project/dialog/conditions.py</code>): predykaty <code>selected()</code>, <code>visited()</code>,
+      <code>has_item()</code>, nazwa <code>sentiment</code>, operatory logiczne i porównania.
+      Dane wchodzą wyłącznie przez <code>ConditionContext</code> (Protocol). Zderzenie z testami <code>Q*</code>:</p>
+    <table>
+      <thead><tr><th>Wyrażenie SSiS</th><th>Ile questów</th><th>Odpowiednik w MoM</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><code>characters["K"].dialog.key == "015"</code></td><td>6</td>
+          <td><code>visited("K", "015")</code></td><td><span class="badge ok">już jest</span></td></tr>
+        <tr><td><code>'ITEM' in hero.inventory.items</code></td><td>4</td>
+          <td><code>has_item("ITEM")</code></td><td><span class="badge ok">już jest</span></td></tr>
+        <tr><td><code>test: "False"</code> (agregat)</td><td>4</td>
+          <td>tryb <code>completion</code> (D5)</td><td><span class="badge info">nie DSL</span></td></tr>
+        <tr><td>zależności DAG</td><td>-</td>
+          <td><code>quest_done("KEY")</code></td><td><span class="badge warn">do dodania</span></td></tr>
+        <tr><td><code>len(hero.inventory.items) >= 3</code></td><td>0 <span class="badge info">legacy</span></td>
+          <td><code>item_count() >= 3</code></td><td><span class="badge info">gdy potrzebne</span></td></tr>
+        <tr><td><code>characters["K"].is_met == True</code></td><td>0 <span class="badge info">legacy</span></td>
+          <td><code>met("K")</code></td><td><span class="badge info">gdy potrzebne</span></td></tr>
+        <tr><td><code>curr_loc.name_key == "X"</code></td><td>0 <span class="badge info">legacy</span></td>
+          <td><code>at_location("X")</code></td><td><span class="badge violet">patrz D15</span></td></tr>
+      </tbody>
+    </table>
+    <p class="prose"><strong>Wniosek:</strong> dla zakresu <code>Q*</code> warstwa testów wymaga <em>zera</em> nowych
+      predykatów. Realnie potrzebny jest tylko <code>quest_done()</code> (do D6) i - jeśli D15 pójdzie w stronę
+      lokacji - <code>at_location()</code>.</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · wąskie predykaty, dodawane na żądanie</td>
+          <td>Dokładamy tylko to, czego realnie używa quest. Start: <code>quest_done()</code>.</td>
+          <td>Whitelist zostaje mała, więc audytowalna. Każdy predykat ma jasną semantykę i test.
+            Zgodne z tym, jak DSL zaprojektowano dla dialogów.</td>
+          <td>Każdy nowy warunek scenariuszowy = zmiana w kodzie (predykat + metoda w kontekście).</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · generyczny <code>stat("hero.health")</code></td>
+          <td>Jeden predykat z tekstową ścieżką do atrybutu.</td>
+          <td>Zero zmian w kodzie przy nowych statach - scenarzysta sam sięga po co chce.</td>
+          <td>Wraca ścieżka atrybutu jako string, czyli dokładnie to, od czego uciekamy porzucając <code>eval</code>:
+            literówka nie do wyłapania przy imporcie, sprzężenie treści z wewnętrznymi nazwami pól, i znów szeroki
+            dostęp do stanu gry.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · mieszane</td>
+          <td>Wąskie predykaty dla logiki + <code>hero_stat("nazwa")</code> z zamkniętą listą dozwolonych statów.</td>
+          <td>Kompromis: staty bez dopisywania predykatu na każdy, ale whitelist wciąż zamknięta.</td>
+          <td>Dwie konwencje w jednym DSL. W zakresie <code>Q*</code> nie ma ani jednego testu na stat -
+            czyli rozwiązywałoby problem, którego nie mamy.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: A.</strong> Skoro zakres wymaga jednego nowego predykatu,
+      nie ma powodu projektować mechanizmu ogólnego. <code>ConditionContext</code> trzeba będzie rozszerzyć
+      o <code>quest_done()</code> - albo dorobić <code>QuestConditionContext</code> (kontekst questa nie ma
+      "bieżącego NPC", więc <code>selected()</code> i <code>sentiment</code> nie mają dla niego sensu).</div>
+  </details>
+
+  <details>
+    <summary>D8 · Semantyka <code>dialog.key == "015"</code> <span class="badge violet">6 z 14 questów</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">SSiS pyta "czy kursor rozmowy <strong>stoi teraz</strong> na węźle 015". MoM ma
+      <code>visited(npc, node)</code> - "czy węzeł <strong>był kiedykolwiek</strong> odwiedzony". To nie to samo
+      i różnica jest istotna przy zmianie modelu odpytywania (D12).</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · <code>visited(npc, node)</code></td>
+          <td>Quest zalicza się, gdy gracz kiedykolwiek dotarł do węzła.</td>
+          <td>Predykat już istnieje i jest przetestowany. Odporny na moment sprawdzenia - działa i przy odpytywaniu
+            co klatkę, i po dialogu, i po wczytaniu save'a. <code>DialogNode.visited</code> jest już trwały
+            i zapisywany. Semantycznie to jest to, co quest naprawdę znaczy ("dowiedziałeś się X").</td>
+          <td>Nie odtwarza SSiS 1:1: gdyby quest miał się zaliczać <em>tylko</em> w trakcie stania na węźle,
+            zachowa się inaczej. W <code>Q*</code> nie ma takiego przypadku.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · nowy <code>at_node(npc, node)</code></td>
+          <td>Wierna kopia: sprawdza <code>npc.dialog.key</code>.</td>
+          <td>Zachowanie identyczne z SSiS - zero niespodzianek przy porównywaniu z oryginałem.</td>
+          <td>Przenosi wyścig (ustalenie 4b.6): warunek jest prawdziwy tylko w wąskim oknie czasowym, więc
+            wymusza sprawdzanie questów dokładnie po dialogu. Po wczytaniu save'a warunek jest fałszywy,
+            choć gracz dawno tam był.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · oba</td>
+          <td><code>visited()</code> domyślnie, <code>at_node()</code> gdy scenariusz naprawdę chce "teraz".</td>
+          <td>Pełna wyrazistość.</td>
+          <td>Dwa podobne predykaty = pewne pomylenie ich przez autora. Płacimy za przypadek, którego nie ma.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: A.</strong> Wszystkie 6 questów to w istocie "gracz dowiedział się X"
+      - trwały fakt fabularny, nie chwilowa pozycja kursora. To jedna z tych rzeczy, gdzie wierność oryginałowi
+      przeniosłaby błąd zamiast zachowania.</div>
+  </details>
+
+  <details>
+    <summary>D9 · Pasek postępu <span class="badge warn">dziś martwy</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">Dwa fakty: (1) <code>check_condition()</code> zwraca <code>bool</code>, a postęp to liczba;
+      (2) w całym zakresie <code>Q*</code> <code>test_progress</code> to zawsze <code>"False"</code>,
+      czyli pasek zawsze pokazuje 0/1 (ustalenie 4b.5). Mechanika działała tylko w legacy, poza zakresem.</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · <code>eval_number(expr, ctx) -> int</code></td>
+          <td>Drugie wejście do tego samego interpretera, zwracające liczbę zamiast boola.</td>
+          <td>Wierne SSiS, pełna dowolność wyrażeń, ta sama whitelist.</td>
+          <td>Buduje mechanizm pod zerowe obecne użycie. Trzeba dodać <code>item_count()</code> itp., żeby miał
+            czym liczyć - a to predykaty, których zakres nie potrzebuje (D7).</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · deklaratywnie <code>progress: {...}</code></td>
+          <td>Np. <code>progress: {items: [MERMAIDS_TEAR, GNOMES_WHISKER, PHOENIX_FEATHER]}</code> → 2/3.</td>
+          <td>Bez wyrażeń liczbowych w DSL. Czytelne dla autora. Ładnie obsługuje "zbierz N rzeczy"
+            (czyli łańcuch <code>Q02</code>).</td>
+          <td>Kolejny mini-język obok DSL. Każdy nowy rodzaj postępu = nowy kształt pola.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · postęp z podquestów</td>
+          <td><code>test_progress</code> znika; dla agregatu postęp = zrobione podquesty / wszystkie.</td>
+          <td>Zero nowego kodu w DSL, zero pól w danych. Dokładnie pasuje do zakresu: <code>Q01_S00</code> pokaże 2/4,
+            <code>Q02_S00</code> 1/3 - a to jest właśnie ta informacja, którą gracz chce widzieć.
+            Liczba bierze się ze stanu, więc nie może się rozjechać z definicją.</td>
+          <td>Questy-liście nie mają paska (są 0/1 - ale dziś i tak są). Nie wyrazi "odwiedź 50 lokacji" -
+            gdyby taki quest kiedyś wrócił, dochodzi A lub B.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: C.</strong> Usuwa dwa pola (<code>test_progress</code>,
+      <code>test_total</code>), nie wymaga <code>eval_number()</code> ani nowych predykatów, a jako jedyna
+      <em>daje</em> działający pasek w miejscu, gdzie dziś go nie ma. A i B zostają w zanadrzu, gdyby wróciły
+      questy licznikowe.</div>
+  </details>
+
+  <h3>D · Nagrody</h3>
+
+  <details>
+    <summary>D10 · Bonus: wszystkie zamiast pierwszego <span class="badge err">bug w SSiS</span><span class="badge ok">wybrane: B</span></summary>
+    <p class="prose">Potwierdzone w kodzie: <code>apply_quest_bonus</code> (<code>quests.py:50</code>) robi
+      <code>break</code> po pierwszej niezerowej wartości w kolejności
+      <code>money → health → max_health → hp → agility → eloquence → max_items</code>. Zakomentowana pod spodem
+      pętla <code>for feature, value in bonuses.items()</code> pokazuje, że intencją było aplikować wszystkie.
+      Realne ofiary w danych to dokładnie dwa questy (jedyne z >1 niezerowym bonusem):
+      <code>02_game_mechanics</code> <code>{max_health:20, agility:1}</code> → wpada tylko max_health, oraz
+      <code>Q01_S07</code> <code>{agility:100, hp:50}</code> → wpada tylko hp, a +100 zwinności ginie.</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · <code>dict[str,int]</code>, pętla bez <code>break</code></td>
+          <td>Zachowuje kształt danych z SSiS, usuwa tylko <code>break</code>.</td>
+          <td>Minimalna zmiana, migracja danych 1:1. Naprawia błąd dokładnie tam, gdzie jest.</td>
+          <td>Zostaje płaski dict statów, który zakłada, że nagroda = zmiana staty. Nie wyrazi "dostajesz przedmiot"
+            ani "Sarkażmijka zmienia nastawienie" - a to naturalne nagrody w MoM.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · lista wyników jak w dialogach</td>
+          <td>Nagroda to lista efektów w stylu <code>NodeVisitResult</code>, aplikowana przez istniejący
+            <code>ResultSink</code> (<code>project/dialog/result_sink.py</code>).</td>
+          <td>Reuse działającego mechanizmu: <code>add_money</code>, <code>add_items</code>, <code>restore_health</code>,
+            <code>shift_sentiment</code> już istnieją i są przetestowane. Jedna droga dla efektów dialogu i questa -
+            jeden zestaw testów. Naturalnie unosi nagrody rzeczowe i sentymentalne, których dict statów nie unosi.
+            <code>visit_node()</code> ma już semantykę "zastosuj dokładnie raz".</td>
+          <td>Trzeba rozszerzyć <code>ResultSink</code> o <code>max_health</code> (i cokolwiek wyjdzie z D11) -
+            dziś ma <code>restore_health</code>/<code>lose_health</code>, ale nie ruszanie maksimum.
+            Konwersja danych z SSiS nie jest już przepisaniem 1:1.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="prose">Przy okazji dwie sprawy do rozstrzygnięcia razem z tą decyzją:</p>
+    <ul>
+      <li><strong>Podwójna nagroda</strong> (pułapka #8): pętla w <code>main.py</code> nie odróżnia głównych
+        od podquestów, więc quest-agregat daje swój bonus <em>ponad</em> bonusami wszystkich podquestów.
+        Zamierzone (premia za domknięcie wątku) czy błąd? Wartości sugerują zamiar - <code>Q01_S00</code> ma
+        <code>max_health: 100</code>, wyraźnie więcej niż podquesty.</li>
+      <li><strong>Clamp zdrowia zawsze</strong>: <code>hero.health</code> jest ucinane do
+        <code>[0, max_health]</code> po każdej nagrodzie, także niezwiązanej ze zdrowiem. Efekt uboczny czy reguła?</li>
+      <li><strong>Szablon <code>{value}</code></strong> w <code>success</code> zakłada dokładnie jedną liczbę
+        (bo bonus był jeden). Przy wielu nagrodach trzeba albo listy nazwanych dziur, albo doklejanej etykiety
+        bonusów (dziś robi to <code>get_quest_bonus_label</code> - też z <code>break</code>-iem).</li>
+    </ul>
+    <div class="callout ok"><strong>Rekomendacja: B.</strong> D11 i tak wymusza przemyślenie, czym jest nagroda w MoM -
+      a skoro tak, lepiej wpiąć się w mechanizm efektów, który w dialogach już działa, niż utrwalać płaski dict statów
+      z gry tekstowej. Jeśli D11 pójdzie w stronę "okroić do tego, co MoM ma", B staje się właściwie darmowe.</div>
+  </details>
+
+  <details>
+    <summary>D11 · Mapowanie statów SSiS → MoM <span class="badge err">najpoważniejsza</span><span class="badge ok">wybrane: C + D</span></summary>
+    <p class="prose">SSiS to gra tekstowa z trzema typami konfrontacji: 💪 siłowanie (<code>hp</code>),
+      🐍 obezwładnienie (<code>agility</code>), 💬 perswazja (<code>eloquence</code>). MoM to action RPG w czasie
+      rzeczywistym - te staty nie mają odpowiednika, bo nie ma mechaniki, która by je czytała.</p>
+    <table>
+      <thead><tr><th>Stat SSiS</th><th>Znaczenie</th><th>W MoM</th><th>Ile questów <code>Q*</code></th></tr></thead>
+      <tbody>
+        <tr><td><code>money</code></td><td>grosze</td><td><span class="badge ok">jest</span> <code>model.money</code></td><td>0</td></tr>
+        <tr><td><code>health</code></td><td>zdrowie</td><td><span class="badge ok">jest</span> <code>model.health</code></td><td>1 <span class="badge info">Q01_S06</span></td></tr>
+        <tr><td><code>max_health</code></td><td>maks. zdrowie</td><td><span class="badge ok">jest</span> <code>model.max_health</code></td><td>1 <span class="badge info">Q01_S00</span></td></tr>
+        <tr><td><code>hp</code></td><td>siła w walce 💪</td><td><span class="badge warn">≈ <code>model.damage</code></span></td><td>1 <span class="badge info">Q01_S07</span></td></tr>
+        <tr><td><code>agility</code></td><td>zwinność 🐍</td><td><span class="badge err">brak</span></td><td><strong>9</strong></td></tr>
+        <tr><td><code>eloquence</code></td><td>elokwencja 💬</td><td><span class="badge err">brak</span></td><td>1 <span class="badge info">Q01_S05</span></td></tr>
+        <tr><td><code>max_items</code></td><td>pojemność torby 🎒</td><td><span class="badge err"><code>MAX_HOTBAR_ITEMS=6</code> - stała</span></td><td>0</td></tr>
+      </tbody>
+    </table>
+    <div class="callout err"><strong>Skala problemu.</strong> 9 z 14 questów nagradza wyłącznie <code>agility</code>,
+      1 wyłącznie <code>eloquence</code>, 2 nie nagradzają niczym. Mapują się bez decyzji tylko <code>Q01_S00</code>
+      i <code>Q01_S06</code>. Bez rozstrzygnięcia tej decyzji <strong>11 z 14 questów kończy się bez żadnej nagrody</strong>.
+      Uwaga też na <code>max_items</code>: <code>MAX_HOTBAR_ITEMS</code> to stała modułowa
+      (<code>project/settings.py:317</code>), nie stan gracza - żeby quest mógł ją podnieść, musi stać się polem
+      <code>Player</code>.</div>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · okroić do tego, co MoM ma</td>
+          <td>Zostają <code>money</code>, <code>health</code>, <code>max_health</code>, <code>damage</code>.
+            <code>agility</code>/<code>eloquence</code> wypadają.</td>
+          <td>Zero nowych mechanik. Model gracza bez martwych pól, których nic nie czyta.</td>
+          <td>11 questów trzeba przenagradzać ręcznie - czyli i tak projektowanie od nowa, tylko bez nazwania tego wprost.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · dodać <code>agility</code> i <code>eloquence</code> do MoM</td>
+          <td>Nowe pola w <code>config_pydantic.py</code> + <code>Player</code>, wierne wartości z SSiS.</td>
+          <td>Migracja danych 1:1, zero decyzji projektowych teraz. Zachowuje balans wymyślony w SSiS.</td>
+          <td>Staty, których <strong>żadna mechanika MoM nie czyta</strong> - martwe liczby w UI. Albo trzeba dorobić
+            pod nie mechanikę (uniki? checki perswazji w dialogach?), a to nowa gra, nie migracja.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · przemapować na najbliższe mechaniki</td>
+          <td><code>hp → damage</code>, <code>agility → speed_walk/speed_run</code>,
+            <code>eloquence → </code> globalny modyfikator sentymentu (MoM ma <code>sentiment</code>
+            i <code>disposition</code> per NPC), <code>max_items → </code> nowe pole <code>Player</code>.</td>
+          <td>Każda nagroda coś realnie robi. <code>eloquence → sentyment</code> jest zaskakująco wierne:
+            w SSiS elokwencja otwierała opcje perswazji, w MoM sentyment otwiera opcje dialogowe -
+            <strong>ta sama rola w fikcji</strong>. Wartości z SSiS dają punkt startowy.</td>
+          <td><code>agility → speed</code> jest naciągane (+100 zwinności z <code>Q01_S07</code> = biegasz 3× szybciej?).
+            Skale się nie zgadzają - trzeba przeskalować każdą wartość, czyli i tak balansować.
+            Globalny modyfikator sentymentu to nowa mechanika (dziś sentyment jest per NPC).</td>
+        </tr>
+        <tr>
+          <td><strong>D</strong> · zaprojektować nagrody pod MoM</td>
+          <td>Ignorujemy wartości z SSiS. Nagrody z waluty MoM: <code>money</code>, przedmioty, <code>max_health</code>,
+            <code>damage</code>, sentyment konkretnego NPC.</td>
+          <td>Nagrody pasują do gry, w której lądują. Fabularnie mocniejsze - łańcuch <code>Q02</code> może nagradzać
+            sentymentem Sarkażmijki, a nie abstrakcyjną zwinnością. Wpina się wprost w <code>ResultSink</code> (D10/B).</td>
+          <td>Najwięcej pracy scenarzysty: 14 questów × decyzja. Zrywa porównywalność z oryginałem.
+            Wchodzi w balans ekonomii (<code>doc/game_economy.md</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: C dla mechaniki, D dla wartości.</strong> Czyli:
+      <code>hp → damage</code> i <code>max_items →</code> pole gracza (bo to czyste przeniesienie),
+      <code>eloquence → sentyment</code> (bo pełni tę samą rolę fabularną), a <code>agility</code>
+      <strong>porzucić</strong> - 9 questów, które je dawały, przenagrodzić świadomie
+      (<code>money</code>/przedmiot/sentyment). Argument: <code>agility</code> jest jedyną staty bez roli w MoM,
+      a jednocześnie tą, którą trzeba by przeskalować najbardziej - czyli i tak nie przenosimy jej wartości,
+      tylko nazwę.</div>
+    <div class="callout warn"><strong>Zależność:</strong> ta decyzja przesądza D10 (kształt nagrody)
+      i częściowo D15 (czym nagrodzić questy z <code>&lt;&lt;PLACEHOLDER&gt;&gt;</code>, skoro i tak piszemy je od zera).</div>
+  </details>
+
+  <h3>E · Integracja z grą</h3>
+
+  <details>
+    <summary>D12 · Kiedy sprawdzać questy <span class="badge info">runtime</span><span class="badge ok">wybrane: C</span></summary>
+    <p class="prose">SSiS jest turowy - <code>check_quests_done()</code> woła się co tick pętli
+      (<code>main.py:2022</code>) i po dialogu (<code>main.py:2784</code>), a "tick" to jedna akcja gracza.
+      MoM jest real-time: "co tick" znaczy 60×/s. Przy zakresie <code>Q*</code> testy to
+      <code>visited()</code> i <code>has_item()</code>, więc zmieniają się tylko po dialogu i po zmianie ekwipunku.</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · co klatkę</td>
+          <td>Wiernie jak SSiS, w pętli gry.</td>
+          <td>Zero zastanawiania się nad zdarzeniami - nic nie umknie. Trywialne.</td>
+          <td>14 questów × parsowanie warunku, 60×/s. AST jest cache'owany (<code>@lru_cache</code>
+            w <code>conditions.py:124</code>), więc to nie tragedia, ale to praca zupełnie bez powodu -
+            zwłaszcza że web (pygbag/WASM) ma dużo mniejszy budżet klatki.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · event-driven</td>
+          <td>Sprawdzaj po zdarzeniach, które mogą zmienić wynik: koniec dialogu, zmiana ekwipunku,
+            ukończenie innego questa (kaskada odblokowań).</td>
+          <td>Praca dokładnie wtedy, gdy ma sens. Dla zakresu <code>Q*</code> zdarzenia są dokładnie dwa
+            (dialog, ekwipunek) plus kaskada. Naturalnie łączy się z <code>ResultSink</code> - to już jest
+            punkt, w którym ekwipunek się zmienia.</td>
+          <td>Nowe zdarzenie w grze = łatwo zapomnieć podpiąć, quest cicho nie zapala się.
+            Kaskada (quest A odblokowuje B, B natychmiast spełnia warunek) wymaga pętli do stabilizacji.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · hybryda</td>
+          <td>Event-driven + tani sweep co N klatek (np. co sekundę) jako siatka bezpieczeństwa.</td>
+          <td>Zapomniane zdarzenie kosztuje sekundę opóźnienia, a nie zepsuty przebieg. Koszt pomijalny.</td>
+          <td>Dwie ścieżki robiące to samo - trudniej odtworzyć błąd (czy zapaliło się z eventu czy ze sweepa?).
+            Może maskować brakujące podpięcia zamiast je ujawniać.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: B</strong>, ewentualnie C na czas developmentu (sweep z
+      ostrzeżeniem w logu "quest zapalił się ze sweepa, brakuje eventu" - siatka, która nie maskuje, tylko donosi).
+      Przy zakresie <code>Q*</code> punktów zaczepienia jest naprawdę mało.</div>
+  </details>
+
+  <details>
+    <summary>D13 · Persystencja i rozdzielenie definicji od stanu <span class="badge err">config = save</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">SSiS mutuje <code>cfg["quests"][k]["is_done"] = True</code> <em>w miejscu</em> -
+      czyli plik konfiguracyjny pełni jednocześnie rolę zapisu gry. Dlatego <code>is_done</code> i
+      <code>is_unlocked</code> w ogóle siedzą w <code>config.json</code>. W MoM <code>config.json</code> jest
+      artefaktem generowanym z vaultu przez importer - <strong>nadpisywanym przy każdym imporcie</strong>.
+      Trzymanie tam stanu gry oznaczałoby, że <code>just import-quests</code> kasuje postęp gracza.</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · osobny <code>QuestState</code> w save</td>
+          <td><code>config.json</code> = tylko definicje (niemutowalne w runtime).
+            Stan: <code>{klucz: {done: bool}}</code> w zapisie gry.</td>
+          <td>Definicja i stan rozdzielone - import nie dotyka postępu, save nie dubluje treści.
+            Save jest mały (14 kluczy). Przy D6/B <code>is_unlocked</code> w ogóle znika ze stanu
+            (liczymy je z <code>requires</code> na żądanie), więc zostaje jedno pole do zepsucia.</td>
+          <td>Trzeba obsłużyć rozjazd: quest w save, którego już nie ma w definicjach (i odwrotnie) -
+            po zmianie treści przez scenarzystę.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · mutować config jak SSiS</td>
+          <td>Wierne 1:1.</td>
+          <td>Zero nowych struktur.</td>
+          <td>Kolizja z pipeline'em importu - <code>just import-quests</code> nadpisze postęp.
+            Sprzeczne z rolą <code>config.json</code> w MoM. Praktycznie nie do utrzymania.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · stan w <code>Player</code></td>
+          <td><code>player.quests_done: set[str]</code>, zapisywane razem z graczem.</td>
+          <td>Jedzie z istniejącą persystencją gracza - zero nowego formatu.
+            Naturalne przy save-per-postać.</td>
+          <td>Miesza dane gracza ze stanem świata. Questy o zasięgu globalnym (nie związane z bohaterem)
+            nie mają gdzie mieszkać.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: A.</strong> To ta sama linia podziału, którą dialogi już mają:
+      graf z <code>config.json</code>, a <code>visited</code>/<code>selected_options_dict</code> jako stan na NPC.
+      Warto od razu ustalić zachowanie przy nieznanym kluczu w save (ignorować z ostrzeżeniem)
+      - to samo ryzyko #5 "persystencja + flaga visited" z migracji dialogów.</div>
+  </details>
+
+  <details>
+    <summary>D14 · UI dziennika questów <span class="badge info">zakres 1. iteracji</span><span class="badge ok">wybrane: A</span></summary>
+    <p class="prose">SSiS ma listę zadań w <code>ui.py:415</code> (grupowaną po <code>quests_hierarchy</code>).
+      MoM ma <code>project/ui/panels/</code> z <code>DialogPanel</code> jako wzorcem panelu.</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · nowy <code>QuestPanel</code></td>
+          <td>Panel obok <code>dialog.py</code>: lista wątków, podquesty, postęp (D9/C), opisy.</td>
+          <td>Gracz widzi, po co biega - bez tego 14 questów jest niewidzialne. Wzorzec panelu już jest.
+            Naturalne miejsce na pasek N/M z D9.</td>
+          <td>Największy kawałek pracy w całym porcie. Potrzebuje klawiszologii, scrolla, rich-textu, layoutu.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · tylko toast + dźwięk</td>
+          <td>Powiadomienie "Quest ukończony" z tekstem <code>success</code>, bez dziennika.</td>
+          <td>Minimalna 1. iteracja - pozwala domknąć i przetestować silnik, zanim wejdzie UI.
+            Cała reszta portu (D1-D13) da się zweryfikować bez panelu.</td>
+          <td>Gracz nie ma jak sprawdzić, co jest w toku - a przy 4 wątkach równoległych to realny problem.
+            Opisy questów (napisane w vaultzie!) nigdzie się nie pokazują.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · dziennik w Obsidianie</td>
+          <td>Zero UI w grze; graf questów generowany do vaultu jak <code>just dialog-graph</code>.</td>
+          <td>Reuse świeżego mechanizmu grafów dialogów (<code>scripts/dialog_graph.py</code>, vis-network).
+            Świetne dla Ciebie jako autora - widok całego DAG-u.</td>
+          <td>To narzędzie autorskie, nie UI gracza. Nie zastępuje A, uzupełnia je.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: B → A</strong> etapami (B domyka 1. iterację i odblokowuje testy
+      silnika, A jako osobny task), plus <strong>C</strong> niemal za darmo - <code>scripts/dialog_graph.py</code> jest
+      świeży, a quest-DAG to ten sam kształt problemu (węzły + krawędzie + vis-network).
+      Graf questów w vaultzie będzie przy okazji najlepszym narzędziem do wyłapania kolejnego
+      <code>Q01_S07</code>.</div>
+  </details>
+
+  <h3>F · Dług treści</h3>
+
+  <details>
+    <summary>D15 · Martwy <code>Q01_S07</code> i placeholdery <span class="badge err">6 z 14 questów</span><span class="badge ok">wybrane: C</span></summary>
+    <p class="prose">Dwa zrosłe problemy. <strong>(1)</strong> <code>Q01_S07_..._FIND_A_SAFE_PLACE</code> nie ma
+      warunku ukończenia (<code>test: "False"</code> + brak podquestów = trup, ustalenie 4b.1) i blokuje główny wątek
+      klątwy. <strong>(2)</strong> Sześć questów ma <code>&lt;&lt;PLACEHOLDER&gt;&gt;</code> zamiast tekstów:
+      <code>Q01_S06</code>, <code>Q01_S07</code>, <code>Q02_S00</code>, <code>Q02_S01</code>, <code>Q02_S02</code>,
+      <code>Q02_S03</code> - czyli cały łańcuch Sarkażmijki. To nie jest dług techniczny do przeniesienia,
+      tylko treść do napisania.</p>
+    <p class="prose">Fabularnie <code>Q01_S07</code> to "znajdź bezpieczne miejsce i wypij miksturę"
+      (z <code>doc/EN/quests.md</code>: <em>"Find to a safe place and drink the potion to break the curse"</em>).
+      Możliwe warunki: <code>at_location("X") and has_item("POTION_CURSE_NO_MORE")</code> (wymaga
+      <code>at_location()</code> - D7), albo zdarzenie konsumpcji mikstury (MoM ma
+      <code>health_impact</code> na przedmiotach), albo węzeł dialogowy domykający wątek
+      (czyli <code>visited()</code> - zero nowych predykatów).</p>
+    <table>
+      <thead><tr><th>Opcja</th><th>Na czym polega</th><th>Plusy</th><th>Minusy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong> · napisać treść teraz</td>
+          <td>6 opisów PL + warunek <code>Q01_S07</code> przed pierwszym importem.</td>
+          <td>Port kończy się grywalnym, domkniętym wątkiem klątwy. Pisząc w nowym formacie MD od razu go weryfikujesz.</td>
+          <td>Blokuje kod pracą scenarzysty. Miesza dwa rodzaje ryzyka w jednym kroku.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong> · zaimportować z placeholderami</td>
+          <td><code>&lt;&lt;PLACEHOLDER&gt;&gt;</code> przechodzi, walidator zgłasza ostrzeżenie i listę do uzupełnienia.</td>
+          <td>Odblokowuje pracę nad silnikiem natychmiast. Placeholdery są widoczne, więc nie zgniją po cichu.
+            Pipeline i tak musi umieć zgłaszać braki.</td>
+          <td>Gra pokazuje graczowi <code>&lt;&lt;PLACEHOLDER&gt;&gt;</code>, dopóki ktoś nie napisze.
+            <code>Q01_S07</code> i tak wymaga <em>decyzji projektowej</em>, nie tylko tekstu - a ta nie zniknie.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong> · wyciąć z 1. iteracji</td>
+          <td>Portujemy 8 questów z treścią (<code>Q00</code>, <code>Q01_S01</code>, <code>Q01_S05</code>,
+            <code>Q03_*</code>), łańcuch <code>Q02</code> i <code>Q01_S06/S07</code> zostają na potem.</td>
+          <td>Najmniejszy zakres, wszystko grywalne od pierwszego dnia.</td>
+          <td>Rozcina DAG w poprzek: <code>Q01_S05</code> odblokowuje <code>Q02_S00</code>, a
+            <code>Q02_S00</code> odblokowuje <code>Q01_S06</code>. Zostaje kikut z krawędziami w próżnię -
+            czyli trzeba dopisać kod na nieistniejące cele, co jest gorsze niż placeholder.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><strong>Rekomendacja: B na start, A przed domknięciem.</strong> Placeholder w opisie
+      to kosmetyka i widać go od razu; brakujący warunek <code>Q01_S07</code> to zepsuta gra i widać go dopiero
+      po godzinie grania. Warto je rozdzielić: <strong>warunek <code>Q01_S07</code> ustalamy teraz</strong>
+      (to decyzja projektowa, wpływa na D7 - czy potrzebny <code>at_location()</code>), a
+      <strong>teksty dopisujemy równolegle do kodu</strong>. C odpada - tnie DAG w najgorszym możliwym miejscu.</div>
+    <div class="callout"><strong>Do rozstrzygnięcia przy tej decyzji:</strong> czy <code>Q01_S07</code> domyka się
+      dialogiem (<code>visited()</code> - zero nowych predykatów, spójne z 6 innymi questami), czy lokacją
+      (<code>at_location()</code> - nowy predykat + pojęcie "bezpiecznego miejsca" w MoM).
+      Pierwsze jest tańsze, drugie ciekawsze fabularnie.</div>
+  </details>
+
+  <h2 id="panel">6 · Projekt panelu questów (D14)</h2>
+  <div class="prose">
+    <p>Projekt na realnych parametrach MoM, nie na oko: kanwa <strong>1280×720</strong>
+      (<code>X_TILES 80 × Y_TILES 45 × TILE_SIZE 16</code>), tło <code>theme.nine_patch()</code>,
+      paleta prosto z <code>project/settings.py</code>. Panel otwiera <strong>J</strong> (journal).</p>
+  </div>
+
+  <div class="grid cols-3" style="margin:var(--s5) 0">
+    <div class="card metric"><div class="num">J</div><div class="label">journal - klawisz wolny</div></div>
+    <div class="card metric"><div class="num">0</div><div class="label">nowego kodu na toasty</div></div>
+    <div class="card metric"><div class="num">1280×720</div><div class="label">kanwa logiczna</div></div>
+  </div>
+
+  <div class="callout ok"><strong>Toasty już istnieją - nie piszemy ich od nowa.</strong>
+    <code>scene.add_notification(tekst, NotificationTypeEnum)</code> jest w MoM używane przez zapis gry
+    (<code>ui/panels/save_load.py:275</code>) i dialogi (<code>ui/panels/dialog.py:330</code>).
+    <code>NotificationTypeEnum</code> ma już <code>success</code>, <code>info</code>, <code>warning</code>,
+    <code>error</code>, <code>failure</code>, <code>debug</code>. Questy tylko z tego korzystają.</div>
+
+  <div class="callout"><strong>Dlaczego J.</strong> <code>K_j</code> jest w MoM nieużywane (zero trafień w
+    <code>project/</code>). Zajęte litery to <code>a b d e f h i n q r s w x z</code> - <code>j</code> i
+    <code>t</code> są wolne. <code>J</code> jak <em>journal</em> paruje z <code>I</code> jak <em>inventory</em>:
+    oba panele pod literą, jeden nawyk. <code>F10</code> zostaje jako alias - dokładnie tak, jak pomoc ma
+    równolegle <code>F1</code> i <code>H</code>
+    (<code>"help": {"keys": [pygame.K_F1, pygame.K_h]}</code>).</div>
+
+  <div class="callout"><strong>Gdyby jednak F10.</strong> Wśród klawiszy funkcyjnych wolne są tylko F10 i F11
+    (F1-F9 zajmują pomoc, menu, UI, intro, quick save, screenshot, text demo, pauza, quick load), a
+    <strong>F11 to fullscreen w przeglądarce</strong> - MoM chodzi też na web (pygbag), więc odpada.</div>
+
+  <h3>Panel - układ główny</h3>
+  <p class="prose">Stan pokazany na makiecie: gracz jest w trakcie wątku <code>Q03</code>, ma 2 z 3 kroków.
+    Dane 1:1 z zakresu 1. iteracji.</p>
+
+  <div id="mockWrap" style="overflow-x:auto;max-width:100%">
+  <svg viewBox="0 0 1280 720" style="width:100%;min-width:720px;height:auto;display:block;border-radius:var(--radius);border:1px solid var(--border)" role="img" aria-label="Makieta panelu questów">
+    <defs>
+      <pattern id="tiles" width="16" height="16" patternUnits="userSpaceOnUse">
+        <rect width="16" height="16" fill="#2a3320"/>
+        <path d="M16 0 L0 0 0 16" fill="none" stroke="#313d26" stroke-width="1"/>
+      </pattern>
+    </defs>
+
+    <rect width="1280" height="720" fill="url(#tiles)"/>
+    <rect width="1280" height="720" fill="#000" opacity="0.55"/>
+
+    <g>
+      <rect x="90" y="60" width="1100" height="600" rx="6" fill="#1e1e1e" fill-opacity="0.94"
+            stroke="#FFD700" stroke-width="3"/>
+
+      <text x="118" y="106" fill="#FFFC67" font-family="ui-monospace,Menlo,monospace" font-size="24" font-weight="700" letter-spacing="2">DZIENNIK ZADAŃ</text>
+      <text x="378" y="106" fill="#8a8a86" font-family="ui-monospace,Menlo,monospace" font-size="14">8 zadań · 3 ukończone</text>
+
+      <text x="875" y="106" fill="#FFFC67" font-family="ui-monospace,Menlo,monospace" font-size="15" font-weight="700">Aktywne</text>
+      <line x1="873" y1="114" x2="948" y2="114" stroke="#FFD700" stroke-width="2"/>
+      <text x="970" y="106" fill="#8a8a86" font-family="ui-monospace,Menlo,monospace" font-size="15">Ukończone</text>
+      <text x="1078" y="106" fill="#8a8a86" font-family="ui-monospace,Menlo,monospace" font-size="15">Wszystkie</text>
+
+      <line x1="90" y1="128" x2="1190" y2="128" stroke="#444" stroke-width="2"/>
+      <line x1="470" y1="128" x2="470" y2="628" stroke="#444" stroke-width="2"/>
+
+      <!-- LEWA KOLUMNA: lista -->
+      <text x="118" y="152" fill="#6b6b66" font-family="ui-monospace,Menlo,monospace" font-size="11" letter-spacing="1">WĄTKI</text>
+
+      <text x="118" y="182" fill="#6ECF68" font-family="ui-monospace,Menlo,monospace" font-size="15">✔</text>
+      <text x="142" y="182" fill="#9a9a96" font-family="ui-monospace,Menlo,monospace" font-size="14">O co tu chodzi?</text>
+
+      <text x="118" y="216" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="13">▾</text>
+      <text x="142" y="216" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="14">Przełamać klątwę</text>
+      <text x="392" y="216" fill="#e8920c" font-family="ui-monospace,Menlo,monospace" font-size="11">manual</text>
+
+      <text x="160" y="244" fill="#6ECF68" font-family="ui-monospace,Menlo,monospace" font-size="14">✔</text>
+      <text x="182" y="244" fill="#9a9a96" font-family="ui-monospace,Menlo,monospace" font-size="13">Dowiedz się o klątwie</text>
+      <text x="160" y="270" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="14">●</text>
+      <text x="182" y="270" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="13">Spotkaj Sarkażmijkę</text>
+
+      <rect x="94" y="290" width="372" height="30" fill="#FFD700" fill-opacity="0.14"/>
+      <rect x="94" y="290" width="3" height="30" fill="#FFD700"/>
+      <text x="118" y="311" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="13">▾</text>
+      <text x="142" y="311" fill="#FFFC67" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">Znajdź kogoś o klątwach</text>
+      <text x="416" y="311" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="12">2/3</text>
+
+      <text x="160" y="341" fill="#6ECF68" font-family="ui-monospace,Menlo,monospace" font-size="14">✔</text>
+      <text x="182" y="341" fill="#9a9a96" font-family="ui-monospace,Menlo,monospace" font-size="13">Kto ma wiedzę o magii</text>
+      <text x="160" y="367" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="14">●</text>
+      <text x="182" y="367" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="13">Gdzie znaleźć tę osobę</text>
+      <text x="160" y="393" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="14">○</text>
+      <text x="182" y="393" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="13">Jak tam dotrzeć</text>
+
+      <!-- PRAWA KOLUMNA: szczegoly -->
+      <text x="500" y="152" fill="#6b6b66" font-family="ui-monospace,Menlo,monospace" font-size="11" letter-spacing="1">SZCZEGÓŁY</text>
+
+      <text x="500" y="184" fill="#FFFC67" font-family="ui-monospace,Menlo,monospace" font-size="19" font-weight="700">Znajdź kogoś kto wie coś więcej o klątwach</text>
+
+      <text x="500" y="222" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="13">Popytaj ludzi w okolicy aby dowiedzieć się kto wie coś</text>
+      <text x="500" y="244" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="13">więcej o klątwie. <tspan fill="#FFFC67">Zielarka Zmora</tspan> powinna coś wiedzieć.</text>
+
+      <text x="500" y="296" fill="#6b6b66" font-family="ui-monospace,Menlo,monospace" font-size="11" letter-spacing="1">KROKI</text>
+      <text x="1140" y="296" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="13" text-anchor="end">2 / 3</text>
+      <rect x="500" y="308" width="660" height="8" rx="4" fill="#333"/>
+      <rect x="500" y="308" width="440" height="8" rx="4" fill="#00C5C7"/>
+
+      <text x="500" y="352" fill="#6ECF68" font-family="ui-monospace,Menlo,monospace" font-size="14">✔</text>
+      <text x="524" y="352" fill="#9a9a96" font-family="ui-monospace,Menlo,monospace" font-size="13">Kto ma wiedzę na temat magii i zaklęć?</text>
+      <text x="500" y="380" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="14">●</text>
+      <text x="524" y="380" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="13">Gdzie można znaleźć tę osobę?</text>
+      <text x="500" y="408" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="14">○</text>
+      <text x="524" y="408" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="13">Jak tam dotrzeć?</text>
+
+      <text x="500" y="466" fill="#6b6b66" font-family="ui-monospace,Menlo,monospace" font-size="11" letter-spacing="1">NAGRODA</text>
+      <rect x="500" y="480" width="118" height="30" rx="4" fill="#FFD700" fill-opacity="0.12" stroke="#FFD700" stroke-opacity="0.5"/>
+      <text x="516" y="500" fill="#FFFC67" font-family="ui-monospace,Menlo,monospace" font-size="13">+50 💰</text>
+      <rect x="630" y="480" width="290" height="30" rx="4" fill="#00C5C7" fill-opacity="0.12" stroke="#00C5C7" stroke-opacity="0.5"/>
+      <text x="646" y="500" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="13">+10 sentymentu · Sarkażmijka</text>
+      <text x="500" y="536" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="11">auto-etykieta z listy efektów (D3=A, D10=B) - tekst success jej nie zna</text>
+
+      <!-- STOPKA -->
+      <line x1="90" y1="628" x2="1190" y2="628" stroke="#444" stroke-width="2"/>
+      <text x="118" y="651" fill="#8a8a86" font-family="ui-monospace,Menlo,monospace" font-size="13">↑↓ wybór     ←→ filtr     Enter rozwiń/zwiń     J / Esc zamknij</text>
+    </g>
+  </svg>
+  </div>
+
+  <div class="legend">
+    <span class="item"><span class="sw" style="background:#6ECF68"></span> ✔ ukończone</span>
+    <span class="item"><span class="sw" style="background:#00C5C7"></span> ● aktywne (requires spełnione)</span>
+    <span class="item"><span class="sw" style="background:#5a5a56"></span> ○ zablokowane (requires niespełnione)</span>
+    <span class="item"><span class="sw" style="background:#FFD700"></span> zaznaczenie / ramka aktywna</span>
+  </div>
+
+  <div class="callout ok"><strong>Ustalone: zablokowane kroki (<code>○</code>) są widoczne.</strong>
+    Wewnątrz odblokowanego questu gracz widzi wszystkie kroki, także te niedostępne - lista nie skacze,
+    a gracz wie, ile go czeka. <strong>Dawkowanie fabuły to zadanie autora</strong>, nie UI: jeśli krok
+    zdradza za dużo, należy przeredagować jego tytuł albo przebudować strukturę questa - a nie chować go
+    przed graczem. Panel niczego nie ukrywa i nie musi znać intencji scenarzysty.</div>
+
+  <div class="callout"><strong>Konsekwencja dla autora:</strong> tytuł kroku jest widoczny, zanim krok
+    stanie się dostępny - więc musi działać jako zapowiedź, nie jako spoiler. "Jak tam dotrzeć?" jest dobre,
+    "Wypij miksturę w kryjówce Sarkażmijki" byłoby złe. Warto to sprawdzać przy pisaniu treści (D15).</div>
+
+  <h3>Toasty - powiadomienia w rogu</h3>
+  <p class="prose">Bez nowego mechanizmu: <code>scene.add_notification()</code>. Dźwięk dochodzi później
+    (MoM ma już kanał dźwiękowy, SSiS wołał <code>quest</code> przy ukończeniu).</p>
+
+  <div style="overflow-x:auto;max-width:100%">
+  <svg viewBox="0 0 660 220" style="width:100%;min-width:420px;height:auto;display:block" role="img" aria-label="Makiety powiadomień toast">
+    <rect width="660" height="220" fill="none"/>
+
+    <rect x="10" y="10" width="640" height="56" rx="5" fill="#1e1e1e" fill-opacity="0.94" stroke="#6ECF68" stroke-width="2"/>
+    <text x="30" y="36" fill="#6ECF68" font-family="ui-monospace,Menlo,monospace" font-size="15">✔</text>
+    <text x="54" y="36" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">Zadanie ukończone: Kto ma wiedzę na temat magii i zaklęć?</text>
+    <text x="54" y="56" fill="#FFFC67" font-family="ui-monospace,Menlo,monospace" font-size="12">+50 💰   ·   +10 sentymentu · Sarkażmijka</text>
+    <text x="600" y="36" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="11">success</text>
+
+    <rect x="10" y="82" width="640" height="42" rx="5" fill="#1e1e1e" fill-opacity="0.94" stroke="#00C5C7" stroke-width="2"/>
+    <text x="30" y="108" fill="#00C5C7" font-family="ui-monospace,Menlo,monospace" font-size="15">●</text>
+    <text x="54" y="108" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="14">Nowe zadanie: Gdzie można znaleźć tę osobę?</text>
+    <text x="608" y="108" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="11">info</text>
+
+    <rect x="10" y="140" width="640" height="42" rx="5" fill="#1e1e1e" fill-opacity="0.94" stroke="#FFD700" stroke-width="2"/>
+    <text x="30" y="166" fill="#FFD700" font-family="ui-monospace,Menlo,monospace" font-size="15">★</text>
+    <text x="54" y="166" fill="#ffffff" font-family="ui-monospace,Menlo,monospace" font-size="14">Wątek ukończony: Znajdź kogoś kto wie coś więcej o klątwach</text>
+    <text x="596" y="166" fill="#5a5a56" font-family="ui-monospace,Menlo,monospace" font-size="11">success</text>
+
+    <text x="10" y="206" fill="#6b6b66" font-family="ui-monospace,Menlo,monospace" font-size="11">Domknięcie wątku (parasol) warto odróżnić wizualnie od zwykłego kroku - inaczej gracz nie zauważy, że skończył rozdział.</text>
+  </svg>
+  </div>
+
+  <h3>Klawiszologia</h3>
+  <table>
+    <thead><tr><th>Klawisz</th><th>Akcja</th><th>Uwaga</th></tr></thead>
+    <tbody>
+      <tr><td><code>J</code></td><td>otwórz / zamknij dziennik</td><td><em>journal</em>; wolne, paruje z <code>I</code> jak inventory</td></tr>
+      <tr><td><code>F10</code></td><td>to samo (alias)</td><td>jak <code>F1</code>/<code>H</code> dla pomocy; F11 odpada przez fullscreen w przeglądarce</td></tr>
+      <tr><td><code>↑</code> <code>↓</code></td><td>wybór pozycji</td><td>przez <code>_fired()</code> w <code>game_ui.py</code> - rising edge, jak w dialogu</td></tr>
+      <tr><td><code>←</code> <code>→</code></td><td>filtr: Aktywne / Ukończone / Wszystkie</td><td></td></tr>
+      <tr><td><code>Enter</code></td><td>rozwiń / zwiń wątek</td><td></td></tr>
+      <tr><td><code>Esc</code></td><td>zamknij</td><td>spójne z <code>end_trade</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Co trzeba dopisać (wiring)</h3>
+  <table>
+    <thead><tr><th>Plik</th><th>Zmiana</th></tr></thead>
+    <tbody>
+      <tr><td><code>project/ui/panels/quest.py</code></td><td><strong>nowy</strong> - <code>QuestPanel(Widget)</code>,
+        tło przez <code>theme.nine_patch()</code>, wzorzec z <code>panels/inventory.py</code></td></tr>
+      <tr><td><code>project/settings.py</code></td><td><code>"quest_log": {"show": ["key_J"], "msg": "action.quest_log",
+        "keys": [pygame.K_j, pygame.K_F10]}</code> w słowniku akcji</td></tr>
+      <tr><td><code>project/ui/game_ui.py</code></td><td><code>if INPUTS["quest_log"]: self.toggle(QuestPanel)</code> -
+        dokładnie jak <code>InventoryPanel</code> (linia 136)</td></tr>
+      <tr><td><code>project/assets/locale/{PL,EN}.toml</code></td><td><code>action.quest_log</code> + sekcja
+        <code>[quest]</code> na etykiety UI (Wątki, Szczegóły, Kroki, Nagroda, filtry)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout"><strong>Uwaga na podział i18n:</strong> etykiety <em>panelu</em> (Wątki, Kroki, Nagroda) to
+    stringi UI → TOML przez <code>_()</code>. Tytuły i opisy <em>questów</em> to treść → <code>messages</code>
+    w <code>config.json</code> przez <code>get_msg()</code> (D3). Te dwa mechanizmy nie mieszają się ze sobą.</div>
+
+  <h2>7 · Eksport do planowania portu</h2>
   <p class="prose">Skopiuj dane, by wkleić je z powrotem do konwersacji i zaplanować przeniesienie logiki.</p>
   <div class="row">
     <button class="btn primary" onclick="exportJSON()">Copy as JSON</button>
