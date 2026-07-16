@@ -1,0 +1,733 @@
+{
+ "meta": {
+  "character": "Madame Sarkażmijka",
+  "dialog_key": "MADAME_SARCASMIA",
+  "source": "PL/Postacie/Madame Sarkażmijka.md",
+  "start_node": "000",
+  "counts": {
+   "nodes": 22,
+   "options": 39
+  },
+  "global_problems": [],
+  "palette": {
+   "kind": {
+    "bg": "#b2f2bb",
+    "fg": "#2f9e44"
+   },
+   "weak": {
+    "bg": "#a5d8ff",
+    "fg": "#1971c2"
+   },
+   "neutral": {
+    "bg": "#e9ecef",
+    "fg": "#868e96"
+   },
+   "angry": {
+    "bg": "#ffc9c9",
+    "fg": "#e03131"
+   },
+   "smart": {
+    "bg": "#d0bfff",
+    "fg": "#7048e8"
+   },
+   "funny": {
+    "bg": "#ffd8a8",
+    "fg": "#f08c00"
+   },
+   "technical": {
+    "bg": "#c3fae8",
+    "fg": "#0ca678"
+   }
+  }
+ },
+ "nodes": [
+  {
+   "id": "000",
+   "level": 0,
+   "text": "No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukającą jakiegoś cudownego lekarstwa? Unosi brwi .",
+   "is_start": true,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [
+    "wszystkie opcje warunkowe (możliwy dead-end)"
+   ],
+   "link": "Madame Sarkażmijka#000"
+  },
+  {
+   "id": "001",
+   "level": 1,
+   "text": "Wzdycha dramatycznie: Ach, Odwieczna klątwa nieszczęścia. Ta jasne, właśnie Tobie przytrafiła się legendarna kłatwa . To prawdopodobnie zwykły pech. No ale dobra, pewnie mogłabym ci jakoś pomóc, ale wiedz, że magia nie jest tania.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#001"
+  },
+  {
+   "id": "002",
+   "level": 2,
+   "text": "Och, zrobię to, nie martw się. Widzisz kochanieńki, potrzebuję jedynie kilku drobiazgów do mojego małego… projektu. Zdobądź je dla mnie, a być może przygotuję Ci eliksir, który teoretycznie może złamać twoją klątwę. Albo zamieni Cię w traszkę. To się jeszcze zobaczy",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#002"
+  },
+  {
+   "id": "003",
+   "level": 3,
+   "text": "Och, nic wielkiego: * łza Melancholijnej Syrenki, * pióro Przygnębionego Feniksa wyrwane podczas zaćmienia słońca, * oraz wąsik Gniewnego Gnoma. To powinna być bułka z masłem — przewraca oczami .",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#003"
+  },
+  {
+   "id": "004",
+   "level": 4,
+   "text": "Rzeczywiście, kiwa głową: * Plotka głosi, że Melancholijna Syrenka spędza czas łkając na samotnej skale w pobliżu Mglistego Bagna. * Przygnębiony Feniks często odwiedza Urwiska Jęków, bo czemu nie. * A Gniewny Gnom, cóż, powiedzmy po prostu, że możesz go znaleźć gdzieś na Bagnie Ruchomych Piasków. Powodzenia, kochanieńki.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#004"
+  },
+  {
+   "id": "005",
+   "level": 5,
+   "text": "A teraz idź już. Raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa\", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "011",
+   "problems": [],
+   "link": "Madame Sarkażmijka#005"
+  },
+  {
+   "id": "006",
+   "level": 5,
+   "text": "Och, nie bądź taką księżniczką . A teraz idź już, raz, raz. A jeśli uda ci się przeżyć, rozważę uwarzenie tego „lekarstwa\", którego tak pragniesz. Jednak pamiętaj, że nie przyjmuję żadnych zwrotów. Ta-da!",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "011",
+   "problems": [],
+   "link": "Madame Sarkażmijka#006"
+  },
+  {
+   "id": "007",
+   "level": 1,
+   "text": "Och, brawo! Pytania! Wal śmiało, tylko spróbuj mnie nie zanudzić .",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#007"
+  },
+  {
+   "id": "008",
+   "level": 2,
+   "text": "Sarkazm to mój sposób radzenia sobie z przyziemnymi i nudnymi sprawami. Życie jest za krótkie, żeby być cały czas poważnym.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#008"
+  },
+  {
+   "id": "009",
+   "level": 2,
+   "text": "Ostatnie zmiany? Cóż, lokalna społeczność goblinów planuje program „Goblin Ma Talent\". Nie mogę się doczekać, żeby zobaczyć ich autorskie numery taneczne.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#009"
+  },
+  {
+   "id": "010",
+   "level": 2,
+   "text": "Moja ulubiona rzecz? Zdecydowanie sposób, w jaki światło księżyca odbija się od zbocza Urwiska Jęków, rzucając niesamowity blask, który doskonale uzupełnia dramatyzm tego świata.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#010"
+  },
+  {
+   "id": "011",
+   "level": 1,
+   "text": "Ach, wracasz tak szybko, jak widzę. Powiedz, czy udało Ci się zebrać moją małą kolekcję bibelotów?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [
+    "wszystkie opcje warunkowe (możliwy dead-end)"
+   ],
+   "link": "Madame Sarkażmijka#011"
+  },
+  {
+   "id": "012",
+   "level": 2,
+   "text": "Och, ale mnie zaskoczyłeś. Wygląda na to, że udało ci się oszukać sam los i zebrać wszystkie trzy absurdalne przedmioty. Dawaj je teraz, a zobaczymy, czy moja magia jest w stanie wyczarować to cudeńko, którego tak desperacko pragniesz.",
+   "is_start": false,
+   "is_final": false,
+   "result": "[ ITEMS_RETURNED  GNOMES_WHISKER, MERMAIDS_TEAR, PHOENIX_FEATHER ]",
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#012"
+  },
+  {
+   "id": "013",
+   "level": 2,
+   "text": "No proszę, jakie to typowe. Nigdy nie słynąłeś z doprowadzania spraw do końca, co?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#013"
+  },
+  {
+   "id": "014",
+   "level": 2,
+   "text": "Żałosne. Gnomy są rzeczywiście całkiem zwinne. Może następnym razem rozważysz sztukę negocjacji?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#014"
+  },
+  {
+   "id": "015",
+   "level": 2,
+   "text": "Och, ależ to kompletnie nie zaskakuje. Pióro Feniksa cię przerasta, powiadasz?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#015"
+  },
+  {
+   "id": "016",
+   "level": 2,
+   "text": "Och, moja biedna, nieszczęsna duszo. Widzę, że lepiej ci wracać z pustymi rękami niż z czymkolwiek. Chyba jesteś skazany na zagładę.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#016"
+  },
+  {
+   "id": "017",
+   "level": 3,
+   "text": "O wy małej wiary! Dawaj je tutaj i zobaczmy, czy twoje wysiłki poszły na marne, czy nie.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#017"
+  },
+  {
+   "id": "018",
+   "level": 3,
+   "text": "Och, jakież to urocze! Zrobię, co mogę, z tą niekompletną kolekcją, którą udało ci się zgromadzić.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Madame Sarkażmijka#018"
+  },
+  {
+   "id": "019",
+   "level": 3,
+   "text": "Pogodzenie się z własnym losem, jakże to rozkosznie odświeżające. Mistrzowsko opanowałeś sztukę akceptowania nieuchronnego. Idź w pokoju.",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "011",
+   "problems": [],
+   "link": "Madame Sarkażmijka#019"
+  },
+  {
+   "id": "020",
+   "level": 4,
+   "text": "Niech magia tka swoje misteria. Weź tę miksturę i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.",
+   "is_start": false,
+   "is_final": true,
+   "result": "[ ITEMS_RECEIVED  POTION_CURSE_NO_MORE ]",
+   "resume": "011",
+   "problems": [],
+   "link": "Madame Sarkażmijka#020"
+  },
+  {
+   "id": "021",
+   "level": 4,
+   "text": "No cóż, trudno, jakoś to ogarnę. Zobaczę, co da się zrobić z tym, co przyniosłeś… . .. ... Psssssssst…. Obawiam się, że to bez sensu. Musisz wrócić ze wszystkimi składnikami.",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "011",
+   "problems": [],
+   "link": "Madame Sarkażmijka#021"
+  }
+ ],
+ "edges": [
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… odwieczną klątwę ciągłego pecha.",
+   "condition": "not visited(\"005\")"
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_2",
+   "order": 2,
+   "sentiment": "funny",
+   "text": "Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.",
+   "condition": "not visited(\"005\")"
+  },
+  {
+   "from": "000",
+   "to": "007",
+   "kind": "option",
+   "key": "000to007_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "Czy możesz mi powiedzieć coś więcej o sobie?",
+   "condition": "not visited(\"005\")"
+  },
+  {
+   "from": "000",
+   "to": "011",
+   "kind": "option",
+   "key": "000to011_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "Wracam. Masz już dla mnie jakieś wskazówki?",
+   "condition": "visited(\"005\")"
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Zrobię wszystko, co trzeba. Po prostu podaj swoją cenę.",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_2",
+   "order": 2,
+   "sentiment": "funny",
+   "text": "Cóż, a to pech, bo miałem zamiar ci zapłacić wyrazami wdzięczności.",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "003",
+   "kind": "option",
+   "key": "002to003_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Drobiazgi, mówisz? O czym konkretnie mówimy?",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "003",
+   "kind": "option",
+   "key": "002to003_2",
+   "order": 2,
+   "sentiment": "funny",
+   "text": "To będzie bułka z masłem, prawda?",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "004",
+   "kind": "option",
+   "key": "003to004_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Och, ja jestem tu nowy. Czy możesz mi powiedzieć, gdzie to wszystko mam znaleźć?",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "004",
+   "kind": "option",
+   "key": "003to004_2",
+   "order": 2,
+   "sentiment": "funny",
+   "text": "Serio?",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "005",
+   "kind": "option",
+   "key": "004to005_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "łza Melancholijnej Syrenki, pióro Przygnębionego Feniksa i wąsik Zrzędliwego Gnoma. Zrozumiano.",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "005",
+   "kind": "option",
+   "key": "004to005_2",
+   "order": 2,
+   "sentiment": "funny",
+   "text": "Wrócę z twoimi bibelotami, ale oczekuję, że będziesz mieć gotowy eliksir — puszczasz oczko.",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "006",
+   "kind": "option",
+   "key": "004to006_3",
+   "order": 3,
+   "sentiment": "weak",
+   "text": "To brzmi… okropnie.",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "011",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "011",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  },
+  {
+   "from": "007",
+   "to": "008",
+   "kind": "option",
+   "key": "007to008_1",
+   "order": 1,
+   "sentiment": "smart",
+   "text": "O co chodzi z tym całym sarkazmem? Nie możesz przez chwilę być poważna?",
+   "condition": "not selected(\"007to008_1\")"
+  },
+  {
+   "from": "007",
+   "to": "009",
+   "kind": "option",
+   "key": "007to009_2",
+   "order": 2,
+   "sentiment": "smart",
+   "text": "Czy masz jakieś najnowsze wiadomości o tym co się dzieje w okolicy?",
+   "condition": "not selected(\"007to009_2\")"
+  },
+  {
+   "from": "007",
+   "to": "010",
+   "kind": "option",
+   "key": "007to010_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "Jeszcze jedno pytanie. Co najbardziej lubisz w tej krainie?",
+   "condition": "not selected(\"007to010_3\")"
+  },
+  {
+   "from": "007",
+   "to": "000",
+   "kind": "option",
+   "key": "007to000_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "W porządku, dowiedziałem się wystarczająco wiele.",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "000",
+   "kind": "option",
+   "key": "008to000_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "W porządku, dowiedziałem się wystarczająco wiele.",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "007",
+   "kind": "option",
+   "key": "008to007_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Rozumiem, dziękuję.",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "000",
+   "kind": "option",
+   "key": "009to000_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "W porządku, dowiedziałem się wystarczająco wiele.",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "007",
+   "kind": "option",
+   "key": "009to007_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Rozumiem, dziękuję.",
+   "condition": null
+  },
+  {
+   "from": "010",
+   "to": "000",
+   "kind": "option",
+   "key": "010to000_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "W porządku, dowiedziałem się wystarczająco wiele.",
+   "condition": null
+  },
+  {
+   "from": "010",
+   "to": "007",
+   "kind": "option",
+   "key": "010to007_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Rozumiem, dziękuję.",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "012",
+   "kind": "option",
+   "key": "011to012_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Rzeczywiście, mam wszystkie trzy przedmioty. Łzę Syrenki, pióro Feniksa i wąsik Gnoma.",
+   "condition": "has_item(\"MERMAIDS_TEAR\") and has_item(\"GNOMES_WHISKER\") and has_item(\"PHOENIX_FEATHER\")"
+  },
+  {
+   "from": "011",
+   "to": "013",
+   "kind": "option",
+   "key": "011to013_2",
+   "order": 2,
+   "sentiment": "weak",
+   "text": "Cóż, nie mam łzy Syrenki.",
+   "condition": "not has_item(\"MERMAIDS_TEAR\") and (has_item(\"GNOMES_WHISKER\") or has_item(\"PHOENIX_FEATHER\"))"
+  },
+  {
+   "from": "011",
+   "to": "014",
+   "kind": "option",
+   "key": "011to014_3",
+   "order": 3,
+   "sentiment": "weak",
+   "text": "Cóż, nie mam wąsika Gnoma.",
+   "condition": "not has_item(\"GNOMES_WHISKER\") and (has_item(\"MERMAIDS_TEAR\") or has_item(\"PHOENIX_FEATHER\"))"
+  },
+  {
+   "from": "011",
+   "to": "015",
+   "kind": "option",
+   "key": "011to015_4",
+   "order": 4,
+   "sentiment": "weak",
+   "text": "Cóż, nie mam pióra Feniksa.",
+   "condition": "not has_item(\"PHOENIX_FEATHER\") and (has_item(\"GNOMES_WHISKER\") or has_item(\"MERMAIDS_TEAR\"))"
+  },
+  {
+   "from": "011",
+   "to": "016",
+   "kind": "option",
+   "key": "011to016_5",
+   "order": 5,
+   "sentiment": "weak",
+   "text": "Niestety, wracam z pustymi rękoma. Jak się okazuje, Syrenki są dość opiekuńcze wobec swoich łez, Feniksy nie lubią być skubane, a Gnomy są zaskakująco zwinne.",
+   "condition": "not has_item(\"MERMAIDS_TEAR\") and not has_item(\"GNOMES_WHISKER\") and not has_item(\"PHOENIX_FEATHER\")"
+  },
+  {
+   "from": "012",
+   "to": "017",
+   "kind": "option",
+   "key": "012to017_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Proszę bardzo, w całej ich psotliwej chwale. Ufam, że twoje umiejętności eliksirowe nie zawiodą?",
+   "condition": null
+  },
+  {
+   "from": "013",
+   "to": "018",
+   "kind": "option",
+   "key": "013to018_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.",
+   "condition": null
+  },
+  {
+   "from": "014",
+   "to": "018",
+   "kind": "option",
+   "key": "014to018_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.",
+   "condition": null
+  },
+  {
+   "from": "015",
+   "to": "018",
+   "kind": "option",
+   "key": "015to018_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.",
+   "condition": null
+  },
+  {
+   "from": "016",
+   "to": "019",
+   "kind": "option",
+   "key": "016to019_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Kto w ogóle potrzebuje lekarstwa, prawda?",
+   "condition": null
+  },
+  {
+   "from": "017",
+   "to": "020",
+   "kind": "option",
+   "key": "017to020_1",
+   "order": 1,
+   "sentiment": "funny",
+   "text": "Mam schować się za tą wielką skrzynią?",
+   "condition": null
+  },
+  {
+   "from": "017",
+   "to": "020",
+   "kind": "option",
+   "key": "017to020_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Zobaczmy…",
+   "condition": null
+  },
+  {
+   "from": "017",
+   "to": "020",
+   "kind": "option",
+   "key": "017to020_3",
+   "order": 3,
+   "sentiment": "kind",
+   "text": "Nie mogę się doczekać!",
+   "condition": null
+  },
+  {
+   "from": "018",
+   "to": "021",
+   "kind": "option",
+   "key": "018to021_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Z drugiej strony, może jednak powinienem był zebrać je wszystkie…",
+   "condition": null
+  },
+  {
+   "from": "018",
+   "to": "021",
+   "kind": "option",
+   "key": "018to021_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "To musi działać, to musi działać, to musi działać…",
+   "condition": null
+  },
+  {
+   "from": "018",
+   "to": "021",
+   "kind": "option",
+   "key": "018to021_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "To było takie sprytne z mojej strony, żeby nie zawracać sobie głowy zbieraniem wszystkich przedmiotów…",
+   "condition": null
+  },
+  {
+   "from": "019",
+   "to": "011",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  },
+  {
+   "from": "020",
+   "to": "011",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  },
+  {
+   "from": "021",
+   "to": "011",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  }
+ ]
+}

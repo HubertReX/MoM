@@ -1,0 +1,782 @@
+{
+ "meta": {
+  "character": "Barman Absyntnent",
+  "dialog_key": "BARMAN_ABSINTHRAYNER",
+  "source": "PL/Postacie/Barman Absyntnent.md",
+  "start_node": "000",
+  "counts": {
+   "nodes": 23,
+   "options": 46
+  },
+  "global_problems": [],
+  "palette": {
+   "kind": {
+    "bg": "#b2f2bb",
+    "fg": "#2f9e44"
+   },
+   "weak": {
+    "bg": "#a5d8ff",
+    "fg": "#1971c2"
+   },
+   "neutral": {
+    "bg": "#e9ecef",
+    "fg": "#868e96"
+   },
+   "angry": {
+    "bg": "#ffc9c9",
+    "fg": "#e03131"
+   },
+   "smart": {
+    "bg": "#d0bfff",
+    "fg": "#7048e8"
+   },
+   "funny": {
+    "bg": "#ffd8a8",
+    "fg": "#f08c00"
+   },
+   "technical": {
+    "bg": "#c3fae8",
+    "fg": "#0ca678"
+   }
+  }
+ },
+ "nodes": [
+  {
+   "id": "000",
+   "level": 0,
+   "text": "Hej Witaj w naszej Karczmie! Jestem Barman Absyntnent. A kogo tu do mnie los sprowadził?",
+   "is_start": true,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#000"
+  },
+  {
+   "id": "001",
+   "level": 1,
+   "text": "To jak mogę Ci pomóc",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#001"
+  },
+  {
+   "id": "002",
+   "level": 2,
+   "text": "Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. Mój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#002"
+  },
+  {
+   "id": "003",
+   "level": 2,
+   "text": "Gafowo Kolonia? Może to nie jest Rzym, ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych czarodziei i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty. Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki. Ponoć użyli swojej magii. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#003"
+  },
+  {
+   "id": "007",
+   "level": 3,
+   "text": "Zatruwają spokój strudzonym mieszkańcom. Całe szczęście czarodzieje szybko się oddalili. Już by oni na pewno nie dostali u nas noclegu. Mój ojciec z chłopami szybko by ich pogonili.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#007"
+  },
+  {
+   "id": "008",
+   "level": 3,
+   "text": "To Ty byłeś? A to Ci dopiero historia! Nic Ci się nie stało?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#008"
+  },
+  {
+   "id": "009",
+   "level": 4,
+   "text": "Ach! Odwieczna klątwą nieszczęścia? Poważnie? Myślałem, że to tylko gadanie mojej matki... No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj Zielarka Zmora, ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#009"
+  },
+  {
+   "id": "004",
+   "level": 2,
+   "text": "No jest tu trochę wiosek w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [
+    "wszystkie opcje warunkowe (możliwy dead-end)"
+   ],
+   "link": "Barman Absyntnent#004"
+  },
+  {
+   "id": "010",
+   "level": 3,
+   "text": "Tak ogólnie to wszędzie czyha jakieś licho i lepiej siedzieć w wiosce. Wróć jak będziesz chciał zapytać o jakieś konkretne miejsce.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#010"
+  },
+  {
+   "id": "018",
+   "level": 3,
+   "text": "Bagna niedogodności to jedno wielkie... no bagno. Nie ma tam niczego ciekawego.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#018"
+  },
+  {
+   "id": "019",
+   "level": 3,
+   "text": "Splątany las irytacji bywa interesujący. Szczególnie po zmroku. Prócz tego co można spotkać w zwykłych lasach, jak wilki, niedźwiedzie i leśne pumy, są tam trolle, wilkołaki a nawet wampiry. Tak mówią.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#019"
+  },
+  {
+   "id": "020",
+   "level": 3,
+   "text": "W Jaskini zagmatwania nikt sam nie byłem. Nie lubię takich miejsc - ciemno, zimno, zero piwa.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#020"
+  },
+  {
+   "id": "011",
+   "level": 3,
+   "text": "A tak, no to jest jak by nie było miasto. Nie powiem, mają ze 3 karczmy i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej. To pewno przez te książki, bo oni tam nawet bibliotekę mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o czarach i innych głupotach. Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#011"
+  },
+  {
+   "id": "017",
+   "level": 4,
+   "text": "To ze 2 dni drogi na północ. Za Splątanym lasem irytacji trzeba skręcić na wschód.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#017"
+  },
+  {
+   "id": "005",
+   "level": 2,
+   "text": "Na zaklęciach? A, tfu! Na diabła urok. Po co miałby ktoś się tym interesować? To jest czyste zło. Po co Ci to wiedzieć?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#005"
+  },
+  {
+   "id": "012",
+   "level": 3,
+   "text": "Ach, rozumiem. Hmmm, no to może jedynie stara Zielarka Zmora mogła by co pomóc. Ona potrafi przygotować taką miksturę, że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. Czasami to ludziskom gorzej się robi po tych miksturach. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#012"
+  },
+  {
+   "id": "013",
+   "level": 3,
+   "text": "Halo Nie tym tonem! Jak się nie podoba, to do widzenia",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#013"
+  },
+  {
+   "id": "006",
+   "level": 2,
+   "text": "Słuchaj, czy Ty aby nie chcesz sam nauczyć się czarować? Jakiego typu magia interesuje Cię konkretnie?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#006"
+  },
+  {
+   "id": "014",
+   "level": 3,
+   "text": "Co Dziewki z naszej wsi czarami chcesz uwodzić?",
+   "is_start": false,
+   "is_final": false,
+   "result": "[ SENTIMENT_SHIFT  sentiment -10 ]",
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#014"
+  },
+  {
+   "id": "015",
+   "level": 3,
+   "text": "I co? Będziesz chciał oszukiwać w kartach? Albo lepiej, czarami chcesz mnie omamić podczas handlu! O Ty!",
+   "is_start": false,
+   "is_final": false,
+   "result": "[ SENTIMENT_SHIFT  sentiment -10 ]",
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#015"
+  },
+  {
+   "id": "016",
+   "level": 3,
+   "text": "A co to za choroba, co ją chcesz leczyć czarami? To pewno jakaś zaraza! Świństwo jakieś przyniosłeś do naszej wioski",
+   "is_start": false,
+   "is_final": false,
+   "result": "[ SENTIMENT_SHIFT  sentiment -10 ]",
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#016"
+  },
+  {
+   "id": "990",
+   "level": 2,
+   "text": "Do zobaczenia",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "001",
+   "problems": [],
+   "link": "Barman Absyntnent#990"
+  },
+  {
+   "id": "991",
+   "level": 4,
+   "text": "Wynocha",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "001",
+   "problems": [],
+   "link": "Barman Absyntnent#991"
+  }
+ ],
+ "edges": [
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Jestem Malachi, Twój nowy przyjaciel",
+   "condition": null
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_2",
+   "order": 2,
+   "sentiment": "weak",
+   "text": "Ech, szkoda gadać, jestem przeklęty przez los...",
+   "condition": null
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Jak chcesz, no mogę zostać Twoim najlepszym klientem",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Co Cię tu sprowadziło",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "003",
+   "kind": "option",
+   "key": "001to003_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Jak Ci się podoba to miejsce",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "004",
+   "kind": "option",
+   "key": "001to004_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "Jest tu coś ciekawego w okolicy",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "005",
+   "kind": "option",
+   "key": "001to005_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "Znasz kogoś, kto zna się na zaklęciach",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "006",
+   "kind": "option",
+   "key": "001to006_5",
+   "order": 5,
+   "sentiment": "neutral",
+   "text": "Gdzie mógłbym zdobyć wiedzę o zaklęciach",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "990",
+   "kind": "option",
+   "key": "001to990_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "To tyle, do następnego razu",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "001",
+   "kind": "option",
+   "key": "002to001_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "007",
+   "kind": "option",
+   "key": "003to007_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Czary? Tutaj? To niesłychane! Co stało się dalej?",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "008",
+   "kind": "option",
+   "key": "003to008_2",
+   "order": 2,
+   "sentiment": "weak",
+   "text": "Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "007",
+   "kind": "option",
+   "key": "003to007_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Miecz: Chyba już słyszałem tę historię... A co z tymi czarownikami?",
+   "condition": null
+  },
+  {
+   "from": "007",
+   "to": "001",
+   "kind": "option",
+   "key": "007to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "009",
+   "kind": "option",
+   "key": "008to009_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "To już chyba koniec przygód dla mnie - rzucili na mnie Odwieczna klątwą nieszczęścia",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "009",
+   "kind": "option",
+   "key": "008to009_2",
+   "order": 2,
+   "sentiment": "funny",
+   "text": "No cóż, jeśli masz do sprzedania coś na Odwieczną klątwę nieszczęścia to jestem żywo zainteresowany",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "009",
+   "kind": "option",
+   "key": "008to009_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "Potrzebuję kogoś kto może odczarować Odwieczną klątwę nieszczęścia",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "007",
+   "kind": "option",
+   "key": "009to007_2",
+   "order": 2,
+   "sentiment": "smart",
+   "text": "A gdzie są teraz ci czarodzieje?",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "001",
+   "kind": "option",
+   "key": "009to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "010",
+   "kind": "option",
+   "key": "004to010_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?",
+   "condition": "not visited(\"POTIONEER_PUZZLEMINT\", \"004\") and not visited(\"HAMMER_HOAXHEART\", \"004\")"
+  },
+  {
+   "from": "004",
+   "to": "011",
+   "kind": "option",
+   "key": "004to011_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Co wiesza na temat miasta Porażkowo?",
+   "condition": "visited(\"HAMMER_HOAXHEART\", \"004\")"
+  },
+  {
+   "from": "004",
+   "to": "018",
+   "kind": "option",
+   "key": "004to018_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "Co wiesza na temat Bagna niedogodności",
+   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"004\")"
+  },
+  {
+   "from": "004",
+   "to": "019",
+   "kind": "option",
+   "key": "004to019_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "Co wiesza na temat Splątanego lasu irytacji",
+   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"004\")"
+  },
+  {
+   "from": "004",
+   "to": "020",
+   "kind": "option",
+   "key": "004to020_5",
+   "order": 5,
+   "sentiment": "neutral",
+   "text": "Co wiesza na temat Jaskini zagmatwania",
+   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"004\")"
+  },
+  {
+   "from": "004",
+   "to": "001",
+   "kind": "option",
+   "key": "004to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"004\") or visited(\"HAMMER_HOAXHEART\", \"004\")"
+  },
+  {
+   "from": "010",
+   "to": "001",
+   "kind": "option",
+   "key": "010to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "018",
+   "to": "004",
+   "kind": "option",
+   "key": "018to004_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "019",
+   "to": "004",
+   "kind": "option",
+   "key": "019to004_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "020",
+   "to": "004",
+   "kind": "option",
+   "key": "020to004_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "017",
+   "kind": "option",
+   "key": "011to017_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "A wiesz może jak tam trafić?",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "017",
+   "kind": "option",
+   "key": "011to017_2",
+   "order": 2,
+   "sentiment": "smart",
+   "text": "To musi być daleko stąd, prawda?",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "017",
+   "kind": "option",
+   "key": "011to017_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "A jak bym chciał spróbować ich lokalnego piwa to gdzie mam wypatrywać tych kolorowych kubraczków?",
+   "condition": null
+  },
+  {
+   "from": "017",
+   "to": "001",
+   "kind": "option",
+   "key": "017to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "012",
+   "kind": "option",
+   "key": "005to012_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "A nie, nic, wiesz, mam taką wstydliwą przypadłość. Szukam kogoś, kto mógłby mi pomóc",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "013",
+   "kind": "option",
+   "key": "005to013_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Ech, co Ty tam wiesz, świata poza tą wioską nie widziałeś. Gadaj jak pytam!",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "012",
+   "kind": "option",
+   "key": "005to012_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "A nie, to kolega pyta",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "001",
+   "kind": "option",
+   "key": "005to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "012",
+   "to": "001",
+   "kind": "option",
+   "key": "012to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "013",
+   "to": "001",
+   "kind": "option",
+   "key": "013to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Porozmawiajmy o czymś innym",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "014",
+   "kind": "option",
+   "key": "006to014_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Coś co pomoże mi w rozmowach z kobietami",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "015",
+   "kind": "option",
+   "key": "006to015_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Coś co sprawi, że będę bogaty:$:",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "016",
+   "kind": "option",
+   "key": "006to016_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "To tak bardziej leczniczo",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "001",
+   "kind": "option",
+   "key": "006to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Nie, no coś Ty. Nieważne, porozmawiajmy o czymś innym",
+   "condition": null
+  },
+  {
+   "from": "014",
+   "to": "991",
+   "kind": "option",
+   "key": "014to991_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Nie, nie, to nie tak...",
+   "condition": null
+  },
+  {
+   "from": "015",
+   "to": "991",
+   "kind": "option",
+   "key": "015to991_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Nie, nie, to nie tak...",
+   "condition": null
+  },
+  {
+   "from": "016",
+   "to": "991",
+   "kind": "option",
+   "key": "016to991_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Nie, nie, to nie tak...",
+   "condition": null
+  },
+  {
+   "from": "990",
+   "to": "001",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  },
+  {
+   "from": "991",
+   "to": "001",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  }
+ ]
+}

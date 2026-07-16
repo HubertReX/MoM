@@ -1,0 +1,724 @@
+{
+ "meta": {
+  "character": "Miecz Ciętej-riposty",
+  "dialog_key": "CLAPBACK_SWORD",
+  "source": "PL/Postacie/Miecz Ciętej-riposty.md",
+  "start_node": "000",
+  "counts": {
+   "nodes": 21,
+   "options": 43
+  },
+  "global_problems": [],
+  "palette": {
+   "kind": {
+    "bg": "#b2f2bb",
+    "fg": "#2f9e44"
+   },
+   "weak": {
+    "bg": "#a5d8ff",
+    "fg": "#1971c2"
+   },
+   "neutral": {
+    "bg": "#e9ecef",
+    "fg": "#868e96"
+   },
+   "angry": {
+    "bg": "#ffc9c9",
+    "fg": "#e03131"
+   },
+   "smart": {
+    "bg": "#d0bfff",
+    "fg": "#7048e8"
+   },
+   "funny": {
+    "bg": "#ffd8a8",
+    "fg": "#f08c00"
+   },
+   "technical": {
+    "bg": "#c3fae8",
+    "fg": "#0ca678"
+   }
+  }
+ },
+ "nodes": [
+  {
+   "id": "000",
+   "level": 0,
+   "text": "O Jesteś!",
+   "is_start": true,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#000"
+  },
+  {
+   "id": "017",
+   "level": 1,
+   "text": "Halooooo",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#017"
+  },
+  {
+   "id": "018",
+   "level": 2,
+   "text": "Hej, słyszysz mnie?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#018"
+  },
+  {
+   "id": "001",
+   "level": 3,
+   "text": "Czyli jednak żyjesz, jeszcze... Jak tak dalej pójdzie to niedługo zardzewieję u boku Twojego szkieletu. No ładny bajzel. Nieźle dałeś wczoraj do wiwatu. Żeby grać w karty z czarodziejami i to znaczonymi kartami! Sam się o to prosiłeś, to teraz cierp. Nie będę Ci pomagał. Nawet mnie nie proś.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#001"
+  },
+  {
+   "id": "002",
+   "level": 4,
+   "text": "No już, już, dobrze. Pytaj. Co chcesz wiedzieć?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [
+    "wszystkie opcje warunkowe (możliwy dead-end)"
+   ],
+   "link": "Miecz Ciętej-riposty#002"
+  },
+  {
+   "id": "003",
+   "level": 5,
+   "text": "Poniosła Cię ułańska fantazja! Po raz kolejny! Chciałeś ograć w karty nowoprzybyłych czarodziei, spiłeś się, przestałeś mnie słuchać, przyłapali Cię na próbie oszustwa, rzucili jakieś zaklęcie, potem był jeden wielki huk i błysk. Wtedy straciłem przytomność i obudziliśmy się tutaj.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#003"
+  },
+  {
+   "id": "004",
+   "level": 5,
+   "text": "Serio? Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich Twoich wyczynów. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się Miecz Ciętej-riposty i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#004"
+  },
+  {
+   "id": "005",
+   "level": 5,
+   "text": "Jesteśmy we wspaniałej krainie brudu i smrodu zwanym Królestwem Pomylenia Większość ludzi to biedni wieśniacy, jest tu trochę rzemieślników i trochę magików. Choć większość to znachorzy, zielarki, szarlatani i inni oszuści nie znający prawdziwej magii. Na szlakach spotkać można czasami resztki przedstawicieli Błękitnego Rycerstwa, ale to już nie to samo co kiedyś. W lasach, jaskiniach i ciemnych zaułkach czają się różne maszkary żądne krwi, pieniędzy lub jednego i drugiego. Reszta to poszukiwacze przygód, jak Ty. No i chyba ja siłą rzeczy też.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#005"
+  },
+  {
+   "id": "016",
+   "level": 6,
+   "text": "Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski Gafowo Kolonia powiat Łękołody. Wczoraj dokazywałeś w lokalnej karczmie, a teraz, sądząc po zapachu jesteśmy chyba w stajni.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#016"
+  },
+  {
+   "id": "008",
+   "level": 6,
+   "text": "Co jeszcze chcesz wiedzieć?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [
+    "wszystkie opcje warunkowe (możliwy dead-end)"
+   ],
+   "link": "Miecz Ciętej-riposty#008"
+  },
+  {
+   "id": "006",
+   "level": 5,
+   "text": "Obawiam się, że sprawa jest poważniejsza. Ci czarodzieje nie tylko zabrali nam pieniądze i ogłuszyli, ale też rzucili na Ciebie jakąś klątwę.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#006"
+  },
+  {
+   "id": "007",
+   "level": 6,
+   "text": "Ja też nie pamiętam wszystkiego. Sprawdź kieszenie i torbę, może znajdziemy jakiś trop.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#007"
+  },
+  {
+   "id": "009",
+   "level": 7,
+   "text": "To może rozejrzyj się dookoła. Patrz tam, pod ścianą! To jakiś pergamin.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#009"
+  },
+  {
+   "id": "019",
+   "level": 8,
+   "text": "\"Kto z losem igra, tego spotka kara, odtąd będziesz łajza i ślamazara, aż do czasu z ziemi tej odejścia, dotyka Cię Odwieczna klątwą nieszczęścia.\"",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#019"
+  },
+  {
+   "id": "010",
+   "level": 9,
+   "text": "Nie, nie, nie! Tylko nie to! Odwieczna klątwa nieszczęścia to jakaś masakra. Ja tam jestem ostatni żeby Cię bronić, ale kara to gruba przesada.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#010"
+  },
+  {
+   "id": "011",
+   "level": 10,
+   "text": "No dobrze, po kolei. To jest bardzo stara klątwa. Matki straszą nią niegrzeczne dzieci, karciarze przed nią ostrzegają, ale nie znam nikogo kto by padł jej ofiarą. Mówi się, że osoba nią dotknięta ma w życiu ciągłego pecha - w kartach dostajesz same blotki, wiatr Ci wieje zawsze w oczy, a w czasie burzy piorun trafia właśnie ciebie. No generalnie masz prze... przechlapane.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#011"
+  },
+  {
+   "id": "012",
+   "level": 11,
+   "text": "Ty to jednak mocno oberwałeś po tej głowie. Odwieczna klątwa - sprawa chyba jest jasna.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#012"
+  },
+  {
+   "id": "013",
+   "level": 11,
+   "text": "O, macierzy wszystkich mieczy duszy ognia! Jak Ty to sobie niby wyobrażasz? Ich jest trzech, Ty nie umiesz mną władać lepiej niż byle smarkacz w kalesonach, a najpewniej oni już dawno odjechali.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#013"
+  },
+  {
+   "id": "014",
+   "level": 11,
+   "text": "Ha, ha, ha. No boki zrywać. Teraz zebrało Ci się na żarty?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#014"
+  },
+  {
+   "id": "015",
+   "level": 12,
+   "text": "No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha! A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od Tawerny.",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "100",
+   "problems": [],
+   "link": "Miecz Ciętej-riposty#015"
+  },
+  {
+   "id": "100",
+   "level": 13,
+   "text": "Na razie nie mam Ci nic nowego do powiedzenia.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [
+    "ślepy zaułek (brak opcji, brak -end)"
+   ],
+   "link": "Miecz Ciętej-riposty#100"
+  }
+ ],
+ "edges": [
+  {
+   "from": "000",
+   "to": "017",
+   "kind": "option",
+   "key": "000to017_1",
+   "order": 1,
+   "sentiment": "smart",
+   "text": "<mrugnij powoli na potwierdzenie, aby oszczędzać siły>",
+   "condition": null
+  },
+  {
+   "from": "017",
+   "to": "018",
+   "kind": "option",
+   "key": "017to018_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Uhh...",
+   "condition": null
+  },
+  {
+   "from": "018",
+   "to": "001",
+   "kind": "option",
+   "key": "018to001_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Ała, moja głowa",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "No weź, nie bądź taki. Nie widzisz, że ja tu cierpię?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Gadaj co wiesz! Nie mam teraz siły na gierki.",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "Skoro mi wczoraj nie pomogłeś to teraz masz. Może zacznijmy od początku?",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "003",
+   "kind": "option",
+   "key": "002to003_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Co się wczoraj wydarzyło?",
+   "condition": "not visited(\"003\")"
+  },
+  {
+   "from": "002",
+   "to": "004",
+   "kind": "option",
+   "key": "002to004_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Kim Ty jesteś?",
+   "condition": "not visited(\"004\")"
+  },
+  {
+   "from": "002",
+   "to": "005",
+   "kind": "option",
+   "key": "002to005_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "Gdzie my jesteśmy?",
+   "condition": "not visited(\"005\")"
+  },
+  {
+   "from": "002",
+   "to": "006",
+   "kind": "option",
+   "key": "002to006_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "To co teraz?",
+   "condition": "visited(\"003\") and visited(\"004\") and visited(\"005\")"
+  },
+  {
+   "from": "003",
+   "to": "008",
+   "kind": "option",
+   "key": "003to008_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "He he, no to była niezła zabawa.",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "008",
+   "kind": "option",
+   "key": "003to008_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Wielkie mi rzeczy, dzień jak co dzień. Po co ta drama?",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "008",
+   "kind": "option",
+   "key": "003to008_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Czyli nic nie wygrałem, hmmm. Może dzisiaj się odkuję.",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "008",
+   "kind": "option",
+   "key": "004to008_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Och, rozumiem. Dzięki za rozjaśnienie sytuacji. Co ja bym bez Ciebie zrobił?",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "008",
+   "kind": "option",
+   "key": "004to008_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Mówisz, jak byś był moją matką. Jestem dorosły mogę robić co chcę.",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "008",
+   "kind": "option",
+   "key": "004to008_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Cięta riposta to nie tylko Twoje imię, ale i Twoja specjalność - no boki zrywać.",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "016",
+   "kind": "option",
+   "key": "005to016_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Ok, to tak globalnie, ale co to za miejsce?",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "016",
+   "kind": "option",
+   "key": "005to016_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Nie wiem po co mi ten wykład. Pytałem gdzie teraz jesteśmy.",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "016",
+   "kind": "option",
+   "key": "005to016_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "No spoko, ale w jakim dokładnie śmierdzącym zakątku tego cudownego królestwa jesteśmy?",
+   "condition": null
+  },
+  {
+   "from": "016",
+   "to": "008",
+   "kind": "option",
+   "key": "016to008_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Ok, dzięki - trochę to rozwiewa tę mgłę, którą mam w głowie.",
+   "condition": null
+  },
+  {
+   "from": "016",
+   "to": "008",
+   "kind": "option",
+   "key": "016to008_2",
+   "order": 2,
+   "sentiment": "weak",
+   "text": "No powiem szczerze, nie brzmi to zbyt zachęcająco.",
+   "condition": null
+  },
+  {
+   "from": "016",
+   "to": "008",
+   "kind": "option",
+   "key": "016to008_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Ach, tak - ten swojski zapach, hmmm, jak miło.",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "003",
+   "kind": "option",
+   "key": "008to003_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Co się wczoraj wydarzyło?",
+   "condition": "not visited(\"003\")"
+  },
+  {
+   "from": "008",
+   "to": "004",
+   "kind": "option",
+   "key": "008to004_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Kim Ty jesteś?",
+   "condition": "not visited(\"004\")"
+  },
+  {
+   "from": "008",
+   "to": "005",
+   "kind": "option",
+   "key": "008to005_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "Gdzie my jesteśmy?",
+   "condition": "not visited(\"005\")"
+  },
+  {
+   "from": "008",
+   "to": "006",
+   "kind": "option",
+   "key": "008to006_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "To co teraz zrobimy?",
+   "condition": "visited(\"003\") and visited(\"004\") and visited(\"005\")"
+  },
+  {
+   "from": "006",
+   "to": "007",
+   "kind": "option",
+   "key": "006to007_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Hmm, nic sobie nie przypominam. O jaką klątwę chodzi?",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "007",
+   "kind": "option",
+   "key": "006to007_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Przestań mnie ciągle straszyć. Jestem trochę poturbowany, ale nic wielkiego się nie stało.",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "007",
+   "kind": "option",
+   "key": "006to007_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Konieczność słuchania Twoich narzekań to jedyna klątwa jaka mnie spotkała.",
+   "condition": null
+  },
+  {
+   "from": "007",
+   "to": "009",
+   "kind": "option",
+   "key": "007to009_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Miałeś rację - ograbili nas ze wszystkiego.",
+   "condition": null
+  },
+  {
+   "from": "007",
+   "to": "009",
+   "kind": "option",
+   "key": "007to009_2",
+   "order": 2,
+   "sentiment": "weak",
+   "text": "Pusto - co my teraz zrobimy?",
+   "condition": null
+  },
+  {
+   "from": "007",
+   "to": "009",
+   "kind": "option",
+   "key": "007to009_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Wiatr hula po kieszeniach. Czyli to będzie jedna z tych historii 'od zera do bohatera'?",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "019",
+   "kind": "option",
+   "key": "009to019_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "O nie! Patrz co tu jest napisane?",
+   "condition": null
+  },
+  {
+   "from": "019",
+   "to": "010",
+   "kind": "option",
+   "key": "019to010_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "To chyba jakiś żart! Prawda?",
+   "condition": null
+  },
+  {
+   "from": "010",
+   "to": "011",
+   "kind": "option",
+   "key": "010to011_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Serio? Aż tak źle?",
+   "condition": null
+  },
+  {
+   "from": "010",
+   "to": "011",
+   "kind": "option",
+   "key": "010to011_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Ej! Przestań się trząść i zacznij mówić do rzeczy!",
+   "condition": null
+  },
+  {
+   "from": "010",
+   "to": "011",
+   "kind": "option",
+   "key": "010to011_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "Hej, powoli, co to konkretnie oznacza?",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "012",
+   "kind": "option",
+   "key": "011to012_1",
+   "order": 1,
+   "sentiment": "smart",
+   "text": "A jak długo trwa ta klątwa?",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "013",
+   "kind": "option",
+   "key": "011to013_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Musimy złapać tych czarodziei - muszą odwołać to zaklęcie.",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "014",
+   "kind": "option",
+   "key": "011to014_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "To może zbijemy majątek na obwoźnych pokazach słynnej klątwy na żywo?",
+   "condition": null
+  },
+  {
+   "from": "012",
+   "to": "015",
+   "kind": "option",
+   "key": "012to015_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "To co? Mam położyć się i czekać na śmierć?",
+   "condition": null
+  },
+  {
+   "from": "013",
+   "to": "015",
+   "kind": "option",
+   "key": "013to015_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "To co? Mam położyć się i czekać na śmierć?",
+   "condition": null
+  },
+  {
+   "from": "014",
+   "to": "015",
+   "kind": "option",
+   "key": "014to015_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "To co? Mam położyć się i czekać na śmierć?",
+   "condition": null
+  },
+  {
+   "from": "015",
+   "to": "100",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  }
+ ]
+}

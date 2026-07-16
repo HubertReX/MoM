@@ -208,6 +208,40 @@ Importer automatycznie stripuje `-end` z targetu (`#005-end` → node key `005`)
 
 Node #012 Madame Sarcasmii używa `[ITEMS-GNOMES_WHISKER,MERMAIDS_TEAR,PHOENIX_FEATHER]` → `_remove_one_item()` też używa `item.name`, więc poprawnie usuwa przedmioty z inventory po spełnieniu questu.
 
+## Interaktywne grafy dialogów (diagnostyka)
+
+Generator `scripts/dialog_graph.py --format json` rysuje graf dialogu jako
+interaktywną sieć w Obsidianie (DataviewJS + vis-network). Służy do diagnostyki:
+większość bugów z historii niżej to **własności grafu** (orphan, ślepy zaułek,
+warunek nie do spełnienia) — na rysunku widać je w sekundę, w tekście wcale.
+
+Wyjście (wszystko w vaultcie `doc/`):
+
+- `doc/_graphs/<Nazwa postaci> - graf.md` — notatka z blokiem ```dataviewjs``` (nie edytować ręcznie).
+- `doc/_graphs/data/<DIALOG_KEY>.json` — dane grafu (węzły, krawędzie, problemy).
+- `doc/_graphs/lib/vis-network.min.js` — biblioteka wvendorowana offline (raz, w repo).
+
+Wymóg jednorazowy: w Obsidianie **Dataview → Enable JavaScript Queries = on**.
+
+Kodowanie wizualne:
+
+- Węzły okrągłe: zielony START, czerwony `-end`, żółty z efektem (`result`), niebieski zwykły; różowa przerywana obwódka = problem.
+- Krawędzie cienkie, szare; **etykieta w kolorze sentymentu** (`3 smart`, `2 angry`...); przerywana = warunkowa (`?`); kropkowana cyjanowa = `resume`.
+- Interakcje: klik = podświetl sąsiadów, podwójny klik = otwórz węzeł w źródłowym `.md`, hover = treść/warunek/efekt, węzły przeciągalne.
+
+Layout liczy sam vis-network (force-directed, solver barnesHut — jak pyvis), więc
+warstwy `layout`/`render` skryptu są tu pomijane. Reużywane są tylko `read`
+(import z MD) i `analyze` (te same diagnozy co walidator importera).
+
+Regeneracja — **po każdej edycji dialogów**, już po `just import-dialogs`:
+
+```bash
+just dialog-graph            # wszystkie postacie
+just dialog-graph BARMAN_ABSINTHRAYNER   # jedna (dialog_key)
+```
+
+Pełna instrukcja krok-po-kroku dla autora: `doc/Aktualizacja dialogów - checklist.md`.
+
 ## Znane pułapki (bug history)
 
 1. **Bug visited() — bieżący węzeł zamiast historii** (fix 2026-07-08):

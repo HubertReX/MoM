@@ -1,0 +1,690 @@
+{
+ "meta": {
+  "character": "Zielarka Zmora",
+  "dialog_key": "POTIONEER_PUZZLEMINT",
+  "source": "PL/Postacie/Zielarka Zmora.md",
+  "start_node": "016",
+  "counts": {
+   "nodes": 21,
+   "options": 38
+  },
+  "global_problems": [],
+  "palette": {
+   "kind": {
+    "bg": "#b2f2bb",
+    "fg": "#2f9e44"
+   },
+   "weak": {
+    "bg": "#a5d8ff",
+    "fg": "#1971c2"
+   },
+   "neutral": {
+    "bg": "#e9ecef",
+    "fg": "#868e96"
+   },
+   "angry": {
+    "bg": "#ffc9c9",
+    "fg": "#e03131"
+   },
+   "smart": {
+    "bg": "#d0bfff",
+    "fg": "#7048e8"
+   },
+   "funny": {
+    "bg": "#ffd8a8",
+    "fg": "#f08c00"
+   },
+   "technical": {
+    "bg": "#c3fae8",
+    "fg": "#0ca678"
+   }
+  }
+ },
+ "nodes": [
+  {
+   "id": "016",
+   "level": 0,
+   "text": "Ktoś Ty? Kto Cię tu przysłał?",
+   "is_start": true,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [
+    "wszystkie opcje warunkowe (możliwy dead-end)"
+   ],
+   "link": "Zielarka Zmora#016"
+  },
+  {
+   "id": "000",
+   "level": 1,
+   "text": "Ach, tak, tak. Proszę, wejdź chłopcze to domu najlepszej zielarki w okolicy.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#000"
+  },
+  {
+   "id": "001",
+   "level": 2,
+   "text": "Czego potrzebujesz?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#001"
+  },
+  {
+   "id": "002",
+   "level": 3,
+   "text": "Ostatnimi laty rzeczywiście nie ruszam się poza Gafowo Kolonię, ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek. A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#002"
+  },
+  {
+   "id": "007",
+   "level": 4,
+   "text": "O, młody jesteś jeszcze i jak widać naiwny. Oby los nie zadrwił z Twojej pychy.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#007"
+  },
+  {
+   "id": "008",
+   "level": 4,
+   "text": "Taaaak, ciekawe. Opowiedz mi więcej o sobie. Masz za pewne jakiś problem, skoro tu trafiłeś. Co Ci się przytrafiło?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#008"
+  },
+  {
+   "id": "009",
+   "level": 5,
+   "text": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać Miksturę Zapomnienia, ale to raczej nie rozwiąże problemu.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#009"
+  },
+  {
+   "id": "003",
+   "level": 3,
+   "text": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdanie sami na siebie. Co prawda nie mamy młyna ani drwala, ale za to nasz kowal jest lepszy niż w niejednym mieście. Kowal Kłamca nie jest duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#003"
+  },
+  {
+   "id": "004",
+   "level": 3,
+   "text": "Jest trochę tego, pytanie co dla kogo jest ciekawe: 1 Bagno niedogodności jest bogate w zioła i różnego rodzaju ropuchy 2 w Splątanym lesie irytacji można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej 3 Jaskinie zagmatwania to też źródło grzybów, ale dużo bardziej niebezpieczne",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#004"
+  },
+  {
+   "id": "005",
+   "level": 3,
+   "text": "Nie, nie, nic z tych rzeczy. Magia to jakiś diabelski wynalazek. Ja ufam temu co daje nam natura. Wszystko czego nam trzeba można wydobyć z ziół i ekstraktów zwierzęcych. Trzeba tylko się na tym znać. Tak jak ja.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#005"
+  },
+  {
+   "id": "010",
+   "level": 4,
+   "text": "To nie takie proste, mój chłopcze. Szczęście mamy zapisane w gwiazdach i nic już tego nie zmieni. Pokornie pogódź się ze swoim losem.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#010"
+  },
+  {
+   "id": "006",
+   "level": 3,
+   "text": "Książki? O magii? Mi to do niczego nie jest potrzebne. Latami eksperymentowałam z roślinami i ekstraktami aż udało mi się uzyskać oczekiwany efekt. Książki mogą kłamać, natura nigdy.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#006"
+  },
+  {
+   "id": "011",
+   "level": 4,
+   "text": "Hmm, teraz jak o tym mówisz to przypomniało mi się, że miałam kiedyś taką pomocnicę. Miała się szkolić u mnie na zielarkę, ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce. Ją też interesowały książki, szczególnie te o magii. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może mogła by Tobie pomóc.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#011"
+  },
+  {
+   "id": "012",
+   "level": 5,
+   "text": "Co jeszcze chciałbyś wiedzieć?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#012"
+  },
+  {
+   "id": "013",
+   "level": 6,
+   "text": "Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej bibliotece.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#013"
+  },
+  {
+   "id": "015",
+   "level": 6,
+   "text": "Ona pracuje teraz w ukrytej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, Kowal Kłamca miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#015"
+  },
+  {
+   "id": "014",
+   "level": 6,
+   "text": "Kiedy była u mnie wołali na nią Mariolka, ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać Bibliofilistka des Informacja.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#014"
+  },
+  {
+   "id": "017",
+   "level": 6,
+   "text": "Po odejściu ode mnie ludzie zaczęli na nią wołać Bibliofilistka des Informacja.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Zielarka Zmora#017"
+  },
+  {
+   "id": "990",
+   "level": 3,
+   "text": "Powodzenia!",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "001",
+   "problems": [],
+   "link": "Zielarka Zmora#990"
+  },
+  {
+   "id": "991",
+   "level": 4,
+   "text": "Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - wynocha!",
+   "is_start": false,
+   "is_final": true,
+   "result": "[ SENTIMENT_SHIFT  sentiment -10 ]",
+   "resume": "001",
+   "problems": [],
+   "link": "Zielarka Zmora#991"
+  },
+  {
+   "id": "992",
+   "level": 1,
+   "text": "Nie rozmawiam z obcymi, żegnam.",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "016",
+   "problems": [],
+   "link": "Zielarka Zmora#992"
+  }
+ ],
+ "edges": [
+  {
+   "from": "016",
+   "to": "000",
+   "kind": "option",
+   "key": "016to000_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Barman Absyntnent powiedział mi o Tobie.",
+   "condition": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\")"
+  },
+  {
+   "from": "016",
+   "to": "992",
+   "kind": "option",
+   "key": "016to992_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Nikt, ja sam tu trafiłem.",
+   "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"012\")"
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Dzień dobry, jestem Malachi, straszny pechowiec. Potrzebuję pomocy.",
+   "condition": null
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Nie jestem chłopcem, tylko dorosłym facetem - mów do mnie Malachi!",
+   "condition": null
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "To Pani hoduje tu jakieś ziółka?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Pani tu chyba mieszka od dawna?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "003",
+   "kind": "option",
+   "key": "001to003_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Ta wioska zawsze była w tak opłakanym stanie?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "004",
+   "kind": "option",
+   "key": "001to004_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "Może są tu w okolicy ciekawsze miejsca?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "005",
+   "kind": "option",
+   "key": "001to005_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "Czy prócz zielarstwa zna się Pani również na zaklęciach?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "006",
+   "kind": "option",
+   "key": "001to006_5",
+   "order": 5,
+   "sentiment": "neutral",
+   "text": "Ma Pani może jakąś książkę o zaklęciach?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "990",
+   "kind": "option",
+   "key": "001to990_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "To tyle, do następnego razu.",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "008",
+   "kind": "option",
+   "key": "002to008_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Jestem wagą - to najmilszy znak zodiaku, nie sądzisz?",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "007",
+   "kind": "option",
+   "key": "002to007_2",
+   "order": 2,
+   "sentiment": "smart",
+   "text": "Znaki zodiaku to bzdura. Każdy sam decyduje jakim człowiekiem jest.",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "008",
+   "kind": "option",
+   "key": "002to008_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Jokerem! Jestem jak kameleon - staję się kimś innym zależnie od potrzeby chwili.",
+   "condition": null
+  },
+  {
+   "from": "007",
+   "to": "001",
+   "kind": "option",
+   "key": "007to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "To może zmieńmy temat.",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "009",
+   "kind": "option",
+   "key": "008to009_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Aż wstyd mówić. Nabroiłem i czarodzieje rzucili na mnie Odwieczna klątwą nieszczęścia.",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "009",
+   "kind": "option",
+   "key": "008to009_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Jacyś podli czarodzieje zakleli mnie i ciągle prześladuje mnie pech.",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "009",
+   "kind": "option",
+   "key": "008to009_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "Z tego co udało mi się ustalić, jestem pod wpływem Odwiecznej klątwy nieszczęścia.",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "001",
+   "kind": "option",
+   "key": "009to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Szkoda. Porozmawiajmy w takim razie o czymś innym.",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "001",
+   "kind": "option",
+   "key": "003to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy.",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "001",
+   "kind": "option",
+   "key": "004to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy.",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "010",
+   "kind": "option",
+   "key": "005to010_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "To może zlituje się Pani nade mną, i sprawi, że przestanę być wiecznym pechowcem?",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "010",
+   "kind": "option",
+   "key": "005to010_2",
+   "order": 2,
+   "sentiment": "kind",
+   "text": "Na prawdę? To ja poproszę coś co odwróci moje pechowe życie.",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "010",
+   "kind": "option",
+   "key": "005to010_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Czyli jak zjem czterolistną koniczynkę to nigdy nie będę miał już pecha?",
+   "condition": null
+  },
+  {
+   "from": "010",
+   "to": "001",
+   "kind": "option",
+   "key": "010to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Rozumiem, przejdźmy do czegoś innego.",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "011",
+   "kind": "option",
+   "key": "006to011_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Tak, tak, naturalnie. Może jednak słyszała Pani o takich księgach?",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "991",
+   "kind": "option",
+   "key": "006to991_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "To znaczy, że eksperymentowała Pani na ludzi, biorąc od nich zapłatę, choć czasami kończyło się to tragicznie?",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "011",
+   "kind": "option",
+   "key": "006to011_3",
+   "order": 3,
+   "sentiment": "weak",
+   "text": "Szkoda, bardzo potrzebuję dowiedzieć się czegoś więcej o zaklęciach.",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "012",
+   "kind": "option",
+   "key": "011to012_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "To brzmi interesująco, powiedz mi o niej coś więcej.",
+   "condition": null
+  },
+  {
+   "from": "012",
+   "to": "013",
+   "kind": "option",
+   "key": "012to013_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Co się z nią później stało?",
+   "condition": null
+  },
+  {
+   "from": "012",
+   "to": "014",
+   "kind": "option",
+   "key": "012to014_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Jak się ona nazywa?",
+   "condition": "sentiment>=42"
+  },
+  {
+   "from": "012",
+   "to": "017",
+   "kind": "option",
+   "key": "012to017_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Jak się ona nazywa?",
+   "condition": "sentiment<42"
+  },
+  {
+   "from": "012",
+   "to": "015",
+   "kind": "option",
+   "key": "012to015_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "Gdzie mogę ją znaleźć?",
+   "condition": null
+  },
+  {
+   "from": "012",
+   "to": "001",
+   "kind": "option",
+   "key": "012to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy.",
+   "condition": null
+  },
+  {
+   "from": "013",
+   "to": "012",
+   "kind": "option",
+   "key": "013to012_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Dzięki!",
+   "condition": null
+  },
+  {
+   "from": "015",
+   "to": "012",
+   "kind": "option",
+   "key": "015to012_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Dziękuję, to cenne informacje.",
+   "condition": null
+  },
+  {
+   "from": "014",
+   "to": "012",
+   "kind": "option",
+   "key": "014to012_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "ok, dzięki.",
+   "condition": null
+  },
+  {
+   "from": "017",
+   "to": "012",
+   "kind": "option",
+   "key": "017to012_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "ok, dzięki.",
+   "condition": null
+  },
+  {
+   "from": "990",
+   "to": "001",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  },
+  {
+   "from": "991",
+   "to": "001",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  },
+  {
+   "from": "992",
+   "to": "016",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  }
+ ]
+}

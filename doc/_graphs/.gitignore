@@ -1,0 +1,6 @@
+# eksperymenty Excalidraw (zaparkowany wariant) - nie commituj
+prototypes/
+
+# główny .gitignore ma `lib/`; ta biblioteka jest celowo wvendorowana offline
+# (notatki grafu ładują ją bez CDN), więc jawnie ją tu przywracamy
+!lib/

@@ -1,0 +1,449 @@
+{
+ "meta": {
+  "character": "Kowal Kłamca",
+  "dialog_key": "HAMMER_HOAXHEART",
+  "source": "PL/Postacie/Kowal Kłamca.md",
+  "start_node": "000",
+  "counts": {
+   "nodes": 12,
+   "options": 26
+  },
+  "global_problems": [],
+  "palette": {
+   "kind": {
+    "bg": "#b2f2bb",
+    "fg": "#2f9e44"
+   },
+   "weak": {
+    "bg": "#a5d8ff",
+    "fg": "#1971c2"
+   },
+   "neutral": {
+    "bg": "#e9ecef",
+    "fg": "#868e96"
+   },
+   "angry": {
+    "bg": "#ffc9c9",
+    "fg": "#e03131"
+   },
+   "smart": {
+    "bg": "#d0bfff",
+    "fg": "#7048e8"
+   },
+   "funny": {
+    "bg": "#ffd8a8",
+    "fg": "#f08c00"
+   },
+   "technical": {
+    "bg": "#c3fae8",
+    "fg": "#0ca678"
+   }
+  }
+ },
+ "nodes": [
+  {
+   "id": "000",
+   "level": 0,
+   "text": "Po coś tu przylazł? Co z Ciebie za jeden?",
+   "is_start": true,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#000"
+  },
+  {
+   "id": "001",
+   "level": 1,
+   "text": "Czego chcesz?",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#001"
+  },
+  {
+   "id": "002",
+   "level": 2,
+   "text": "Od kiedy pamiętam.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#002"
+  },
+  {
+   "id": "007",
+   "level": 3,
+   "text": "A wcześniej nie pamiętam.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#007"
+  },
+  {
+   "id": "003",
+   "level": 2,
+   "text": "Raz lepiej, raz gorzej.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#003"
+  },
+  {
+   "id": "008",
+   "level": 3,
+   "text": "Broń, którą tu robię nie ma sobie równych w całym Królestwie Pomylenia Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#008"
+  },
+  {
+   "id": "004",
+   "level": 2,
+   "text": "Pozostałe wsie są tak samo biedne. Broń i zbroje kupują jedynie zarozumiali panicze z miasta Porażkowo",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#004"
+  },
+  {
+   "id": "009",
+   "level": 3,
+   "text": "Nie lubię miasta, nie jeżdżę tam. Pytaj Barmana Absyntnenta - on gada ze wszystkimi przybyszami.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#009"
+  },
+  {
+   "id": "005",
+   "level": 2,
+   "text": "Moja broń jest tak dobra, że nie potrzeba mi czarów.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#005"
+  },
+  {
+   "id": "006",
+   "level": 2,
+   "text": "Kto mądry to nie zostaje tu za długo. Barman Absyntnent nie jest zbyt mądry, ale lubi gadać. Tak jak Ty.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#006"
+  },
+  {
+   "id": "010",
+   "level": 3,
+   "text": "...",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#010"
+  },
+  {
+   "id": "990",
+   "level": 2,
+   "text": "Żegnam",
+   "is_start": false,
+   "is_final": true,
+   "result": null,
+   "resume": "001",
+   "problems": [],
+   "link": "Kowal Kłamca#990"
+  }
+ ],
+ "edges": [
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Spokojnie, nazywam się Malachi, nie chcę problemów.",
+   "condition": null
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!",
+   "condition": null
+  },
+  {
+   "from": "000",
+   "to": "001",
+   "kind": "option",
+   "key": "000to001_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "To zależy co masz do zaoferowania - rozegraj to dobrze, a zarobisz.",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "002",
+   "kind": "option",
+   "key": "001to002_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Od zawsze byłeś kowalem?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "003",
+   "kind": "option",
+   "key": "001to003_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Jak Ci idą interesy w tej wiosce?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "004",
+   "kind": "option",
+   "key": "001to004_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "Masz trochę klientów z okolicznych wsi?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "005",
+   "kind": "option",
+   "key": "001to005_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "Potrafisz wykuwać magiczne przedmioty?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "006",
+   "kind": "option",
+   "key": "001to006_5",
+   "order": 5,
+   "sentiment": "neutral",
+   "text": "Kto tu jest najmądrzejszy w okolicy?",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "990",
+   "kind": "option",
+   "key": "001to990_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "To tyle, do następnego razu.",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "007",
+   "kind": "option",
+   "key": "002to007_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "A wcześniej?",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "007",
+   "kind": "option",
+   "key": "002to007_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Hejże, gadaj jak człowiek! Co robiłeś wcześniej?",
+   "condition": null
+  },
+  {
+   "from": "002",
+   "to": "007",
+   "kind": "option",
+   "key": "002to007_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "A wcześniej to chyba byłeś elokwentnym pisarzem?",
+   "condition": null
+  },
+  {
+   "from": "007",
+   "to": "001",
+   "kind": "option",
+   "key": "007to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "008",
+   "kind": "option",
+   "key": "003to008_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "Wioska wygląda biednie, współczuję... Nikt tu pewnie nie docenia Twojej pracy?",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "008",
+   "kind": "option",
+   "key": "003to008_2",
+   "order": 2,
+   "sentiment": "angry",
+   "text": "Słuchaj, jak masz zły dzień, to nie moja wina. Pytam czy dużo osób u Ciebie kupuje, bo to byłby dowód jakości Twojej pracy.",
+   "condition": null
+  },
+  {
+   "from": "003",
+   "to": "008",
+   "kind": "option",
+   "key": "003to008_3",
+   "order": 3,
+   "sentiment": "smart",
+   "text": "Widzę, tu kawał dobrej roboty, ale w tej wiosce raczej nikt nie odróżni porządnego miecza dwuręcznego od bastardowego?",
+   "condition": null
+  },
+  {
+   "from": "008",
+   "to": "001",
+   "kind": "option",
+   "key": "008to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "009",
+   "kind": "option",
+   "key": "004to009_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "No to oni pewnie dadzą zarobić? Znasz tam kogoś?",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "009",
+   "kind": "option",
+   "key": "004to009_2",
+   "order": 2,
+   "sentiment": "weak",
+   "text": "Pewnie Cię poniżają ci wielcy panicze. Często musisz masz z nimi do czynienia?",
+   "condition": null
+  },
+  {
+   "from": "004",
+   "to": "009",
+   "kind": "option",
+   "key": "004to009_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "A po co tym francuskim pieskom dobra broń? Polują kuszami na kury karczmarza?",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "001",
+   "kind": "option",
+   "key": "009to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "005",
+   "to": "001",
+   "kind": "option",
+   "key": "005to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "010",
+   "kind": "option",
+   "key": "006to010_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Że, co? Ja dużo gadam?",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "010",
+   "kind": "option",
+   "key": "006to010_2",
+   "order": 2,
+   "sentiment": "smart",
+   "text": "Mam rozumieć, że Ty nie bardzo lubisz rozmawiać?",
+   "condition": null
+  },
+  {
+   "from": "006",
+   "to": "010",
+   "kind": "option",
+   "key": "006to010_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "No i tak jak Ty!",
+   "condition": null
+  },
+  {
+   "from": "010",
+   "to": "001",
+   "kind": "option",
+   "key": "010to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
+   "condition": null
+  },
+  {
+   "from": "990",
+   "to": "001",
+   "kind": "resume",
+   "key": null,
+   "order": 0,
+   "sentiment": null,
+   "text": null,
+   "condition": null
+  }
+ ]
+}

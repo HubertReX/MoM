@@ -131,6 +131,30 @@ gen-faces:
     #!powershell
     .venv\Scripts\python.exe scripts\gen_face_attachments.py
 
+# Regenerate interactive dialog graphs (DataviewJS + vis-network) in doc/_graphs/.
+# Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
+# (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
+[unix]
+dialog-graph *key:
+    #!/usr/bin/env bash
+    set -e
+    if [ -z "{{key}}" ]; then
+        .venv/bin/python scripts/dialog_graph.py --all --format json
+    else
+        .venv/bin/python scripts/dialog_graph.py -c "{{key}}" --format json
+    fi
+
+# Regenerate interactive dialog graphs (DataviewJS + vis-network) in doc/_graphs/.
+# Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one.
+[windows]
+dialog-graph *key:
+    #!powershell
+    if ("{{key}}" -eq "") {
+        .venv\Scripts\python.exe scripts\dialog_graph.py --all --format json
+    } else {
+        .venv\Scripts\python.exe scripts\dialog_graph.py -c "{{key}}" --format json
+    }
+
 # Run mypy static type checker on the project directory
 [unix]
 mypy:
