@@ -107,7 +107,8 @@ def import_csv(entity_name: str, data: dict) -> dict:
                 row.get(f, "").strip() for f in REQUIRED_CHARACTER_FIELDS
             )
             if not can_create:
-                print(f"  [WARN] '{key}' not in config.json, skipping")
+                missing = [f for f in REQUIRED_CHARACTER_FIELDS if not row.get(f, "").strip()]
+                print(f"  [WARN] '{key}' not in config.json, skipping (missing required: {', '.join(missing)})")
                 continue
             section[key] = {}
             created += 1
