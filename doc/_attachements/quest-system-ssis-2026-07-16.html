@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSiS — Wizualizacja logiki questów</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6; --violet: #7048e8;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff; --violet-soft:#f3f0ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f; --violet-soft:#2a2147;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6;
+    font-size: 16px; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: var(--s7) var(--s5); }
+  .prose { max-width: 72ch; }
+
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.4rem; line-height: 1.25; margin: var(--s7) 0 var(--s3); letter-spacing: -.01em; }
+  h3 { font-size: 1.1rem; margin: var(--s5) 0 var(--s2); }
+  p { margin: 0 0 var(--s4); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.1rem; color: var(--muted); }
+
+  .grid { display: grid; gap: var(--s4); }
+  .cols-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .cols-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .row { display: flex; gap: var(--s3); align-items: center; flex-wrap: wrap; }
+
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: var(--s5); box-shadow: var(--shadow); }
+  .card h3:first-child { margin-top: 0; }
+
+  .metric .num { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
+  .metric .label { color: var(--muted); font-size: .85rem; }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: .75rem;
+    font-weight: 600; padding: 2px 10px; border-radius: 999px; line-height: 1.6; }
+  .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .badge.err{background:var(--err-soft);color:var(--err)}
+  .badge.info{background:var(--info-soft);color:var(--info)}
+  .badge.violet{background:var(--violet-soft);color:var(--violet)}
+
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { text-align: left; padding: var(--s2) var(--s3); border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { position: sticky; top: 0; background: var(--surface);
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  tbody tr:hover { background: var(--surface-2); }
+  code { font-family: var(--mono); font-size: .88em; background: var(--surface-2);
+    padding: 1px 5px; border-radius: 5px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: var(--s4); overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: var(--s3) var(--s4); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: var(--s4) 0; }
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .callout.err{border-color:var(--err);background:var(--err-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .callout.violet{border-color:var(--violet);background:var(--violet-soft)}
+
+  .tabs { display: flex; gap: var(--s1); border-bottom: 1px solid var(--border); margin-bottom: var(--s4); flex-wrap: wrap; }
+  .tab { padding: var(--s2) var(--s4); cursor: pointer; border: none; background: none;
+    color: var(--muted); font: inherit; font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab[aria-selected="true"] { color: var(--accent); border-color: var(--accent); }
+  .tabpanel[hidden] { display: none; }
+
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s3) var(--s4); margin-bottom: var(--s2); background: var(--surface); }
+  details[open] { box-shadow: var(--shadow); }
+  summary { cursor: pointer; font-weight: 600; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; display: inline-block; margin-right: var(--s2);
+    transition: transform .15s; color: var(--muted); }
+  details[open] summary::before { transform: rotate(90deg); }
+
+  button.btn { font: inherit; font-weight: 600; cursor: pointer; border-radius: var(--radius-sm);
+    padding: var(--s2) var(--s4); border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+  button.btn:hover { background: var(--surface-2); }
+  button.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+    font-size: .85rem; font-weight: 600; opacity: 0; transition: all .25s; pointer-events: none; z-index: 50; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  #dagWrap { overflow-x: auto; max-width: 100%; border-radius: var(--radius); }
+  #dag { width: 100%; min-width: 1180px; height: auto; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); display: block; }
+  #dag .node { cursor: pointer; transition: opacity .15s; }
+  #dag .node rect, #dag .node circle { transition: stroke .15s, fill .15s; }
+  #dag .node text { font-family: var(--sans); font-size: 11px; fill: var(--text); pointer-events: none; }
+  #dag .node:hover rect, #dag .node:hover circle { stroke-width: 2.5; }
+  #dag .edge { fill: none; }
+  #dag.dim .node:not(.hl) { opacity: .18; }
+  #dag.dim .edge:not(.hl) { opacity: .12; }
+  .legend { display: flex; gap: var(--s3); flex-wrap: wrap; font-size: .8rem; margin: var(--s3) 0; }
+  .legend .item { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .sw { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--border); }
+
+  #detail .kv { font-size: .9rem; }
+  #detail .kv dt { font-weight: 600; color: var(--muted); margin-top: var(--s3); }
+  #detail .kv dd { margin: 0 0 var(--s1); }
+  .pill-type { font-size: .72rem; padding: 1px 8px; border-radius: 999px; font-weight: 600; }
+  .pill-eval{background:var(--info-soft);color:var(--info)}
+  .pill-item{background:var(--ok-soft);color:var(--ok)}
+  .pill-char{background:var(--violet-soft);color:var(--violet)}
+  .pill-agg{background:var(--warn-soft);color:var(--warn)}
+  .pill-coc{background:var(--accent-soft);color:var(--accent)}
+
+  .bonus-card { text-align: center; }
+  .bonus-card .emoji { font-size: 1.8rem; }
+  .bonus-card .key { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
+
+  .step { display: flex; gap: var(--s3); align-items: flex-start; padding: var(--s3) 0; border-bottom: 1px dashed var(--border); }
+  .step .n { flex: 0 0 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff;
+    display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+  .step .body { flex: 1; }
+  .step code { display: inline-block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">SSiS · ANALIZA LOGIKI QUESTÓW · 2026-07-16</p>
+  <h1>Wizualizacja systemu questów</h1>
+  <p class="lead">Interaktywny przegląd mechaniki zleceń w grze <strong>SSiS</strong> (Strong, Sneaky and Silver-tongued),
+    przygotowany jako baza do przeniesienia tej logiki do innej gry. Kliknij węzeł na diagramie, aby zobaczyć szczegóły questa.</p>
+
+  <div class="grid cols-3" style="margin:var(--s5) 0">
+    <div class="card metric"><div class="num">31</div><div class="label">questów łącznie</div></div>
+    <div class="card metric"><div class="num">7 <span class="delta up">▲</span> / 24</div><div class="label">głównych / podquestów</div></div>
+    <div class="card metric"><div class="num">2</div><div class="label">tryby ukończenia</div></div>
+    <div class="card metric"><div class="num">7</div><div class="label">typów nagród (bonus)</div></div>
+    <div class="card metric"><div class="num">DAG</div><div class="label">graf zależności (nie drzewo)</div></div>
+    <div class="card metric"><div class="num">1</div><div class="label">aktywna nagroda na quest</div></div>
+  </div>
+
+  <div class="callout"><strong>Skąd to wiemy.</strong> Dane pochodzą bezpośrednio z <code>quests.py</code>, <code>config.json</code>
+    (sekcje <code>quests</code> i <code>quests_hierarchy</code>), <code>utils.py</code> (<code>QUEST_BONUSES_MESSAGES</code>) oraz
+    <code>main.py</code> (funkcja <code>check_quests_done</code>, linie 1891-1935). To realny kod, nie zarys.</div>
+
+  <h2>1 · Graf zależności questów (DAG)</h2>
+  <div class="prose">
+    <p><strong>DAG</strong> (Directed Acyclic Graph — skierowany graf acykliczny) to graf zależności: węzły to questy, a strzałki pokazują kierunek odblokowywania. Uwaga: nazwa <code>quests_hierarchy</code> w kodzie jest myląca — zależności krzyżują się między głównymi questami, więc to graf, nie drzewo.</p>
+    <p>Strzałki <strong>ciągłe</strong> to łańcuch <code>unlocks</code> (ukończenie A odblokowuje B),
+      strzałki <strong>przerywane</strong> to relacja "należy do" z <code>quests_hierarchy</code> (główny → jego podquesty).
+      Węzły główne są wypełnione kolorem akcentu, podquesty mają tylko obwódkę. <strong>Najedź myszą</strong>, by zobaczyć szczegóły questa, lub <strong>kliknij</strong>, by otworzyć panel poniżej.</p>
+  </div>
+
+  <div id="dagWrap">
+    <svg id="dag" viewBox="0 0 1240 800" role="img" aria-label="Graf zależności questów"></svg>
+  </div>
+  <div id="tooltip" style="position:fixed;z-index:60;max-width:320px;background:var(--text);color:var(--bg);padding:10px 12px;border-radius:8px;font-size:.8rem;line-height:1.4;box-shadow:var(--shadow);pointer-events:none;opacity:0;transition:opacity .12s;display:none"></div>
+
+  <div class="legend">
+    <span class="item"><span class="sw" style="background:var(--accent)"></span> quest główny</span>
+    <span class="item"><span class="sw" style="background:var(--surface);border-color:var(--border)"></span> podquest</span>
+    <span class="item"><span class="sw" style="background:var(--info-soft)"></span> test: eval (hero/curr_loc)</span>
+    <span class="item"><span class="sw" style="background:var(--ok-soft)"></span> test: przedmiot w ekwipunku</span>
+    <span class="item"><span class="sw" style="background:var(--violet-soft)"></span> test: postać/dialog.key</span>
+    <span class="item"><span class="sw" style="background:var(--warn-soft)"></span> test: agregacja ("False")</span>
+    <span class="item"><span class="sw" style="background:var(--accent-soft)"></span> test: ciąg coc</span>
+  </div>
+
+  <div id="detail" class="card" hidden>
+    <div class="row" style="justify-content:space-between">
+      <h3 id="d-title" style="margin:0"></h3>
+      <button class="btn" onclick="document.getElementById('detail').hidden=true">Zamknij</button>
+    </div>
+    <div class="row" style="margin-bottom:var(--s3)">
+      <span id="d-type" class="pill-type"></span>
+      <span id="d-role" class="badge info"></span>
+    </div>
+    <dl class="kv">
+      <dt>Klucz (id)</dt><dd><code id="d-key"></code></dd>
+      <dt>Tytuł (message key)</dt><dd><code id="d-name"></code></dd>
+      <dt>Test ukończenia (test)</dt><dd><code id="d-test"></code></dd>
+      <dt>Pasek postępu (test_progress / test_total)</dt><dd><code id="d-prog"></code></dd>
+      <dt>Odblokowuje (unlocks)</dt><dd><code id="d-unlocks"></code></dd>
+      <dt>Nagroda (bonus)</dt><dd><code id="d-bonus"></code></dd>
+      <dt>Startowo odblokowany?</dt><dd><code id="d-unlocked"></code></dd>
+      <dt>Nazwa (PL)</dt><dd id="d-namepl"></dd>
+      <dt>Opis (PL)</dt><dd id="d-descpl"></dd>
+      <dt>Sukces (PL)</dt><dd id="d-succpl"></dd>
+    </dl>
+  </div>
+
+  <h2>2 · Mechanika krok po kroku</h2>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="t-struct">Struktura questa</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="t-bonus">System nagród</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="t-eval">Testy / eval</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="t-hier">Hierarchia</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="t-flow">Runtime flow</button>
+  </div>
+
+  <div class="tabpanel" data-panel="t-struct">
+    <p class="prose">Każdy quest to słownik w <code>config["quests"][klucz]</code> z następującymi polami:</p>
+    <table>
+      <thead><tr><th>Pole</th><th>Typ</th><th>Znaczenie</th><th>Przykład</th></tr></thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>str</td><td>klucz do <code>messages</code> — tytuł questa</td><td><code>M_GET_GLOVES_NAME</code></td></tr>
+        <tr><td><code>description</code></td><td>str</td><td>klucz do długiego opisu (panel szczegółów)</td><td><code>M_GET_GLOVES_DESCRIPTION</code></td></tr>
+        <tr><td><code>success</code></td><td>str</td><td>klucz do komunikatu po ukończeniu (szablon <code>{value}</code>)</td><td><code>M_GET_GLOVES_SUCCESS</code></td></tr>
+        <tr><td><code>is_done</code></td><td>bool</td><td>flaga postępu, mutowana w runtime, zapisywana w save</td><td><code>false</code></td></tr>
+        <tr><td><code>is_unlocked</code></td><td>bool</td><td>czy <code>check_quest</code> w ogóle eval-uje <code>test</code></td><td><code>true</code></td></tr>
+        <tr><td><code>test</code></td><td>str / bool</td><td>wyrażenie Pythona eval-owane z <code>cfg</code> w scope; prawda = zrobione</td><td><code>'gloves' in hero.inventory.items</code></td></tr>
+        <tr><td><code>test_progress</code></td><td>str / bool</td><td>wyrażenie → licznik (licznik paska)</td><td><code>hero.unique_loc_visited_cnt</code></td></tr>
+        <tr><td><code>test_total</code></td><td>int / bool</td><td>mianownik paska; czytany z JSON, używany tylko gdy <code>test_progress</code> aktywne</td><td><code>50</code></td></tr>
+        <tr><td><code>unlocks</code></td><td>str / false / null</td><td>klucz questa, który staje się <code>is_unlocked=true</code> po zrobieniu tego</td><td><code>02_fight_fairy</code></td></tr>
+        <tr><td><code>bonus</code></td><td>dict[str,int]</td><td>nagroda; TYLKO pierwsza niezerowa w kolejności jest aplikowana</td><td><code>{"eloquence":15}</code></td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><strong>Idiosynkrazje.</strong> Kolejność pól w JSON jest niespójna (stare questy zaczynają od <code>bonus</code>, nowe <code>Q*</code> od <code>name</code>). <code>unlocks</code> bywa <code>false</code>, <code>null</code> lub stringiem. <code>bonus</code> bywa 1-kluczowy (legacy) lub 6-kluczowy (rodzina <code>Q*</code>) — dlatego logika <code>break</code> na pierwszej niezerowej wartości ma znaczenie.</div>
+  </div>
+
+  <div class="tabpanel" data-panel="t-bonus" hidden>
+    <p class="prose">Mapowanie <code>QUEST_BONUSES_MESSAGES</code> (z <code>utils.py</code>). Iterowane w tej kolejności —
+      pierwsza niezerowa wygrywa, reszta jest ignorowana (nawet jeśli inne są niezerowe).</p>
+    <div class="grid cols-3" id="bonusGrid"></div>
+    <h3>Jak działa aplikacja (quests.py:50)</h3>
+    <pre><code>def apply_quest_bonus(quest, cfg):
+    bonuses = quest["bonus"]
+    hero = cfg["hero"]
+    value = 0
+    for bonus_key in QUEST_BONUSES_MESSAGES.keys():  # money→health→max_health→hp→agility→eloquence→max_items
+        value = bonuses.get(bonus_key, 0)
+        if value != 0:
+            if bonus_key != "max_items":
+                setattr(hero, bonus_key, getattr(hero, bonus_key) + value)
+            else:
+                hero.inventory.max_items += value   # specjalny przypadek: torba
+            break                                    # ← tylko jedna nagroda na quest
+    hero.health = max(0, min(hero.health, hero.max_health))  # clamp zdrowia
+    return value</code></pre>
+    <div class="callout warn"><strong>Konsekwencja portowania.</strong> Jeśli quest ma <code>{"agility":5,"eloquence":5}</code>,
+      gracz dostanie TYLKO +5 zwinności. <code>max_items</code> leży na <code>hero.inventory</code>, nie na <code>hero</code> —
+      w innej grze musisz wskazać odpowiednią lokację atrybutu. Clamp <code>health</code> dzieje się zawsze, nawet przy nagrodzie niezwiązanej ze zdrowiem.</div>
+  </div>
+
+  <div class="tabpanel" data-panel="t-eval" hidden>
+    <p class="prose">Zarówno <code>test</code>, jak i <code>test_progress</code> są <strong>eval-owane jako Python</strong> z całym <code>cfg</code> w scope (funkcje <code>check_quest</code> i <code>check_quest_progress</code>).</p>
+    <h3>Co jest w scope eval-a</h3>
+    <div class="grid cols-2">
+      <div class="card"><strong>Zmienne</strong><ul style="margin:var(--s2) 0">
+        <li><code>hero</code> — postać gracza (atrybuty, <code>inventory.items</code>, <code>unique_loc_visited_cnt</code>, <code>searched_loc</code>, <code>coc_for/until/cmd</code>)</li>
+        <li><code>characters["klucz"]</code> — <code>is_met</code>, <code>hp</code>, <code>dialog.key</code></li>
+        <li><code>curr_loc</code> — <code>name_key</code>, <code>is_searched</code></li>
+        <li><code>coc</code> — łańcuch komend (replay)</li>
+        <li><code>len</code> — dodane jawnie</li>
+      </ul></div>
+      <div class="card"><strong>Blokady bezpieczeństwa</strong><ul style="margin:var(--s2) 0">
+        <li><code>cfg["__builtins__"] = {}</code></li>
+        <li><code>cfg["__import__"] = {}</code></li>
+        <li>skutek: brak <code>import</code>, brak wbudowanych funkcji</li>
+      </ul>
+      <div class="callout err" style="margin-bottom:0"><strong>Ryzyko.</strong> Scope to cały <code>cfg</code> — test ma dostęp do całego stanu gry. W nowej grze pomyśl o jawnym, węższym słowniku kontekstu zamiast <code>eval(globals=cfg)</code>.</div>
+      </div>
+    </div>
+    <h3>Cztery rodzaje testów (kolorowane na diagramie)</h3>
+    <table>
+      <thead><tr><th>Rodzaj</th><th>Wzorzec</th><th>Przykład</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill-type pill-eval">eval</span></td><td>wyrażenie na <code>hero</code>/<code>curr_loc</code></td><td><code>curr_loc.name_key=="MAP08_MAZE_06x11" and curr_loc.is_searched</code></td></tr>
+        <tr><td><span class="pill-type pill-item">item</span></td><td>przedmiot w ekwipunku</td><td><code>'gloves' in hero.inventory.items</code></td></tr>
+        <tr><td><span class="pill-type pill-char">char</span></td><td>postać / <code>dialog.key</code></td><td><code>characters["fairy_001"].is_met==True and characters["fairy_001"].hp&lt;=0</code></td></tr>
+        <tr><td><span class="pill-type pill-agg">agg</span></td><td>string <code>"False"</code> — zlecenie główne kończone licznikiem</td><td><code>test: "False"</code></td></tr>
+        <tr><td><span class="pill-type pill-coc">coc</span></td><td>ciąg komend replay</td><td><code>len(coc) &gt; 0</code>, <code>coc != coc.upper()</code>, <code>"_" in coc</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tabpanel" data-panel="t-hier" hidden>
+    <p class="prose">Po pętli po zwykłych questach, <code>check_quests</code> przechodzi <code>quests_hierarchy</code>. Główne questy mają dwa tryby ukończenia:</p>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Kind 1 · Agregacja</h3>
+        <p class="badge warn">test == "False" / False</p>
+        <p>Główny quest kończy się, gdy <strong>wszystkie</strong> jego podquesty mają <code>is_done</code>.
+          Liczy je <code>count_done_quests</code>.</p>
+        <p>Przykłady: <code>02_game_mechanics</code>, <code>03_speed_run</code>, <code>Q01_S00_BREAK_THE_CURSE</code>, <code>Q02_S00_TRINKETS_FOR_SARCASMIA</code>, <code>Q03_S00_LEARN_ABOUT_CURSE</code>.</p>
+      </div>
+      <div class="card">
+        <h3>Kind 2 · Self-test</h3>
+        <p class="badge info">test = prawdziwe wyrażenie</p>
+        <p>Główny quest kończy się przez własny <code>test</code> (obsłużony już w pierwszej pętli).
+          Pętla hierarchii to tylko sieć bezpieczeństwa (idempotentny <code>mark_quest_done</code>).</p>
+        <p>Przykłady: <code>01_main_01</code> (<code>characters["troll_001"].is_met</code>), <code>Q00_S00_WHAT_IS_GOING_ON</code> (puste podquesty).</p>
+      </div>
+    </div>
+    <pre><code>for main_quest_key, sub_quest_keys in cfg["quests_hierarchy"].items():
+    main_quest = cfg["quests"][main_quest_key]
+    if main_quest["is_done"] == False:
+        if main_quest["test"] in (False, "False"):          # Kind 1
+            if count_done_quests(sub_quest_keys, cfg) == len(sub_quest_keys):
+                mark_quest_done(...)                         # wszystkie podquesty zrobione
+    else:                                                    # Kind 2 (sieć)
+        if main_quest["test"] not in (False,"False") and main_quest_key in done_quests_keys:
+            mark_quest_done(...)</code></pre>
+    <div class="callout violet"><strong>DAG, nie drzewo.</strong> <code>Q01_S05_..._MEET_MADAME_SARCASMIA</code> ma
+      <code>unlocks: "Q02_S00_TRINKETS_FOR_SARCASMIA"</code> — podquest z jednego łańcucha odblokowuje główny quest z INNEGO łańcucha.
+      Międzyłańcuchowe <code>unlocks</code> działają od razu, zanim główny quest zostanie sfinalizowany. Autor modelował fabułę jako graf skierowany, mimo nazwy "hierarchy".</div>
+  </div>
+
+  <div class="tabpanel" data-panel="t-flow" hidden>
+    <p class="prose"><code>check_quests_done()</code> odpala się w dwóch miejscach w <code>main.py</code>:</p>
+    <ul>
+      <li><code>main.py:2022</code> — w pętli gry, po <code>find_items()</code>, przed <code>check_level_up()</code> (co tick)</li>
+      <li><code>main.py:2784</code> — po zakończeniu dialogu (testy oparte na <code>dialog.key</code> zapalają się natychmiast)</li>
+    </ul>
+    <div class="card">
+      <div class="step"><div class="n">1</div><div class="body">Wstrzyknuj <code>curr_loc</code> i <code>hero</code> do <code>cfg</code> (live state dla eval-a).</div></div>
+      <div class="step"><div class="n">2</div><div class="body">Wywołaj <code>check_quests(cfg, console)</code> → pętla po <code>quests</code> (eval <code>test</code>), potem pętla hierarchii (<code>mark_quest_done</code>). Zwraca <code>(done_keys, unlocked_keys)</code>.</div></div>
+      <div class="step"><div class="n">3</div><div class="body">Dla każdego zrobionego questa: <code>apply_quest_bonus</code> + kolejka komunikatu "Quest ukończony" z sformatowanym <code>success</code> i etykietą bonusu.</div></div>
+      <div class="step"><div class="n">4</div><div class="body">Jeśli <code>unlocked_keys</code> niepuste: kolejka osobnego komunikatu z listą odblokowanych.</div></div>
+      <div class="step"><div class="n">5</div><div class="body">Zwróć <code>True</code> jeśli coś się zmieniło → odśwież UI, dźwięk <code>quest</code>, wpis do historii.</div></div>
+    </div>
+    <div class="callout err"><strong>Podwójna nagroda.</strong> Pętla w <code>main.py</code> nie rozróżnia głównych od podquestów — <code>apply_quest_bonus</code> aplikuje się do <em>każdego</em> zrobionego questa. Gdy główny quest kończy się agregacją, jego własny bonus (np. <code>01_main_01</code>: +50 max_health) dodaje się do bonusów wszystkich podquestów.</div>
+  </div>
+
+  <h2>3 · Szczegóły wszystkich questów</h2>
+  <p class="prose">Rozwiń główny quest, by zobaczyć jego podquesty z testami i nagrodami (dane 1:1 z <code>config.json</code>).</p>
+  <div id="acc"></div>
+
+  <h2>4 · Pułapki przy portowaniu do innej gry</h2>
+  <div class="callout err"><strong>1. eval na całym <code>cfg</code>.</strong> Testy mają dostęp do całego stanu gry i są blokowane tylko płytko (<code>__builtins__={}</code>). W nowej grze użyj jawnego, wąskiego kontekstu lub dedykowanego DSL zamiast <code>eval</code>.</div>
+  <div class="callout warn"><strong>2. Tylko pierwsza niezerowa nagroda.</strong> <code>apply_quest_bonus</code> robi <code>break</code> na pierwszym niezerowym kluczu (kolejność: money→health→max_health→hp→agility→eloquence→max_items). Reszta bonusów w słowniku jest cicho ignorowana.</div>
+  <div class="callout warn"><strong>3. <code>test_total</code> działa tylko z <code>test_progress</code>.</strong> Mianownik paska jest czytany z JSON wyłącznie gdy <code>test_progress</code> jest ustawione i nie jest <code>"False"</code>. W przeciwnym razie UI trzyma domyślne <code>1</code>.</div>
+  <div class="callout warn"><strong>4. Niespójne typowanie <code>unlocks</code>.</strong> Występuje jako <code>false</code> (bool), <code>null</code> i string. <code>check_quest</code> chroni się przez <code>if unlocks_key:</code>, ale <code>mark_quest_done</code> robi lookup bez ochrony — tam <code>unlocks</code> musi być stringiem lub <code>null</code>.</div>
+  <div class="callout violet"><strong>5. Graf to DAG, nie drzewo.</strong> Międzyłańcuchowe <code>unlocks</code> (np. <code>Q01_S05</code> → <code>Q02_S00</code>) sprawiają, że zależności krzyżują się między głównymi questami. Planując port, nie zakładaj czystej hierarchii.</div>
+  <div class="callout warn"><strong>6. <code>max_items</code> poza <code>hero</code>.</strong> Trzymane na <code>hero.inventory.max_items</code> i obsługiwane osobnym <code>if</code>. W innej grze wskaż właściwą lokację.</div>
+  <div class="callout err"><strong>7. Literówka w kluczu.</strong> <code>Q03_SO3_HOW_TO_GET_THERE</code> — w <code>quests_hierarchy</code> i <code>quests</code> figuruje jako <code>SO3</code> (powinno być <code>S03</code>). Działa tylko dlatego, że obie strony używają tej samej literówki. Przy porcie ujednolić.</div>
+  <div class="callout warn"><strong>8. Clamp zdrowia zawsze.</strong> Po aplikacji nagrody <code>hero.health</code> jest zawsze ucinane do <code>[0, max_health]</code>, niezależnie od tego, czy nagroda dotyczyła zdrowia.</div>
+
+  <h2>5 · Eksport do planowania portu</h2>
+  <p class="prose">Skopiuj dane, by wkleić je z powrotem do konwersacji i zaplanować przeniesienie logiki.</p>
+  <div class="row">
+    <button class="btn primary" onclick="exportJSON()">Copy as JSON</button>
+    <button class="btn" onclick="exportMD()">Copy as Markdown</button>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const QUESTS = {
+  "01_main_01": {name:"M_MAIN_01_NAME", desc:"M_MAIN_01_DESCRIPTION", succ:"M_MAIN_01_SUCCESS", done:false, unlocked:false, test:'characters["troll_001"].is_met == True', prog:["False",1], unlocks:null, bonus:{max_health:50,agility:1,eloquence:0,hp:0,health:0,max_items:0}, type:"eval"},
+  "01_get_gloves": {name:"M_GET_GLOVES_NAME", desc:"M_GET_GLOVES_DESCRIPTION", succ:"M_GET_GLOVES_SUCCESS", done:false, unlocked:true, test:"'gloves' in hero.inventory.items", prog:[null,null], unlocks:"02_fight_fairy", bonus:{eloquence:15}, type:"item"},
+  "02_fight_fairy": {name:"M_FIGHT_FAIRY_NAME", desc:"M_FIGHT_FAIRY_DESCRIPTION", succ:"M_FIGHT_FAIRY_SUCCESS", done:false, unlocked:false, test:'characters["fairy_001"].is_met == True and characters["fairy_001"].hp <= 0', prog:[null,null], unlocks:"03_tomb_rider", bonus:{hp:15}, type:"char"},
+  "03_tomb_rider": {name:"M_TOMB_RIDER_NAME", desc:"M_TOMB_RIDER_DESCRIPTION", succ:"M_TOMB_RIDER_SUCCESS", done:false, unlocked:false, test:'curr_loc.name_key=="MAP08_MAZE_06x11" and curr_loc.is_searched', prog:[null,null], unlocks:false, bonus:{health:100}, type:"eval"},
+  "02_game_mechanics": {name:"M_GAME_MECHANICS_NAME", desc:"M_GAME_MECHANICS_DESCRIPTION", succ:"M_GAME_MECHANICS_SUCCESS", done:false, unlocked:false, test:"False", prog:["False",1], unlocks:null, bonus:{max_health:20,agility:1,eloquence:0,hp:0,health:0,max_items:0}, type:"agg"},
+  "01_johnny_walker": {name:"M_JOHNNY_WALKER_NAME", desc:"M_JOHNNY_WALKER_DESCRIPTION", succ:"M_JOHNNY_WALKER_SUCCESS", done:false, unlocked:true, test:"hero.unique_loc_visited_cnt >= 100", prog:["hero.unique_loc_visited_cnt",50], unlocks:false, bonus:{max_items:2}, type:"eval"},
+  "02_items_collector": {name:"M_ITEMS_COLLECTOR_NAME", desc:"M_ITEMS_COLLECTOR_DESCRIPTION", succ:"M_ITEMS_COLLECTOR_SUCCESS", done:false, unlocked:true, test:"len(hero.inventory.items) >= 3", prog:["len(hero.inventory.items)",3], unlocks:"03_speed_run", bonus:{hp:20}, type:"eval"},
+  "03_lucky_luke_beginner": {name:"M_LUCKY_LUKE_BEGINNER_NAME", desc:"M_LUCKY_LUKE_BEGINNER_DESCRIPTION", succ:"M_LUCKY_LUKE_BEGINNER_SUCCESS", done:false, unlocked:true, test:"hero.searched_loc >= 5", prog:["hero.searched_loc",5], unlocks:"04_lucky_luke_master", bonus:{agility:5}, type:"eval"},
+  "04_lucky_luke_master": {name:"M_LUCKY_LUKE_MASTER_NAME", desc:"M_LUCKY_LUKE_MASTER_DESCRIPTION", succ:"M_LUCKY_LUKE_MASTER_SUCCESS", done:false, unlocked:false, test:"hero.searched_loc >= 10", prog:["hero.searched_loc",10], unlocks:false, bonus:{agility:15}, type:"eval"},
+  "03_speed_run": {name:"M_SPEED_RUN_NAME", desc:"M_SPEED_RUN_DESCRIPTION", succ:"M_SPEED_RUN_SUCCESS", done:false, unlocked:false, test:false, prog:[null,null], unlocks:false, bonus:{max_health:20}, type:"agg"},
+  "01_coc_long": {name:"M_COC_LONG_NAME", desc:"M_COC_LONG_DESCRIPTION", succ:"M_COC_LONG_SUCCESS", done:false, unlocked:true, test:"len(coc) > 0", prog:[false,false], unlocks:"02_coc_2in1", bonus:{agility:5}, type:"coc"},
+  "02_coc_2in1": {name:"M_COC_2IN1_NAME", desc:"M_COC_2IN1_DESCRIPTION", succ:"M_COC_2IN1_SUCCESS", done:false, unlocked:false, test:"coc != coc.upper()", prog:[false,false], unlocks:"03_coc_comment", bonus:{agility:5}, type:"coc"},
+  "03_coc_comment": {name:"M_COC_COMMENT_NAME", desc:"M_COC_COMMENT_DESCRIPTION", succ:"M_COC_COMMENT_SUCCESS", done:false, unlocked:false, test:'"_" in coc', prog:[false,false], unlocks:"04_coc_for", bonus:{agility:5}, type:"coc"},
+  "04_coc_for": {name:"M_COC_FOR_NAME", desc:"M_COC_FOR_DESCRIPTION", succ:"M_COC_FOR_SUCCESS", done:false, unlocked:false, test:"hero.coc_for", prog:[false,false], unlocks:"05_coc_until", bonus:{agility:5}, type:"coc"},
+  "05_coc_until": {name:"M_COC_UNTIL_NAME", desc:"M_COC_UNTIL_DESCRIPTION", succ:"M_COC_UNTIL_SUCCESS", done:false, unlocked:false, test:"hero.coc_until", prog:[false,false], unlocks:"06_coc_cmd", bonus:{agility:5}, type:"coc"},
+  "06_coc_cmd": {name:"M_COC_CMD_NAME", desc:"M_COC_CMD_DESCRIPTION", succ:"M_COC_CMD_SUCCESS", done:false, unlocked:false, test:"hero.coc_cmd", prog:[false,false], unlocks:false, bonus:{agility:5}, type:"coc"},
+  "talk_to_solitary": {name:"M_PERSUADE_TO_SOLITARY_NAME", desc:"M_PERSUADE_TO_SOLITARY_DESCRIPTION", succ:"M_PERSUADE_TO_SOLITARY_SUCCESS", done:false, unlocked:false, test:'characters["solitary_001"].is_met == True and characters["solitary_001"].eloquence == 0', prog:[null,null], unlocks:"02_fight_fairy", bonus:{eloquence:15}, type:"char"},
+  "Q00_S00_WHAT_IS_GOING_ON": {name:"M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME", desc:"M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION", succ:"M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS", done:false, unlocked:true, test:'characters["CLAPBACK_SWORD_001"].dialog.key == "015"', prog:["False",1], unlocks:"Q01_S00_BREAK_THE_CURSE", bonus:{agility:10}, type:"char"},
+  "Q01_S00_BREAK_THE_CURSE": {name:"M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME", desc:"M_QUEST_Q01_S00_BREAK_THE_CURSE_DESCRIPTION", succ:"M_QUEST_Q01_S00_BREAK_THE_CURSE_SUCCESS", done:false, unlocked:false, test:"False", prog:["False",1], unlocks:null, bonus:{max_health:100}, type:"agg"},
+  "Q01_S01_LEARN_ABOUT_CURSE": {name:"M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_NAME", desc:"M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION", succ:"M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS", done:false, unlocked:true, test:'characters["BARMAN_ABSINTHRAYNER_001"].dialog.key == "012"', prog:["False",1], unlocks:"Q03_S00_LEARN_ABOUT_CURSE", bonus:{agility:10}, type:"char"},
+  "Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA": {name:"M_QUEST_Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA_NAME", desc:"M_QUEST_Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA_DESCRIPTION", succ:"M_QUEST_Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA_SUCCESS", done:false, unlocked:false, test:'characters["MADAME_SARCASMIA_001"].dialog.key == "SARCASMIA_AA_BACK_SO_SOON"', prog:["False",1], unlocks:"Q02_S00_TRINKETS_FOR_SARCASMIA", bonus:{eloquence:50}, type:"char"},
+  "Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE": {name:"M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_NAME", desc:"M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_DESCRIPTION", succ:"M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_SUCCESS", done:false, unlocked:false, test:'"POTION_CURSE_NO_MORE" in hero.inventory.items', prog:["False",1], unlocks:"Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE", bonus:{health:70}, type:"item"},
+  "Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE": {name:"M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_NAME", desc:"M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_DESCRIPTION", succ:"M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_SUCCESS", done:false, unlocked:false, test:"False", prog:["False",1], unlocks:null, bonus:{agility:100,hp:50}, type:"agg"},
+  "Q02_S00_TRINKETS_FOR_SARCASMIA": {name:"M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_NAME", desc:"M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_DESCRIPTION", succ:"M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_SUCCESS", done:false, unlocked:false, test:"False", prog:["False",1], unlocks:"Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE", bonus:{agility:50}, type:"agg"},
+  "Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR": {name:"M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_NAME", desc:"M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_DESCRIPTION", succ:"M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_SUCCESS", done:false, unlocked:true, test:'"MERMAIDS_TEAR" in hero.inventory.items', prog:["False",1], unlocks:null, bonus:{agility:10}, type:"item"},
+  "Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER": {name:"M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_NAME", desc:"M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_DESCRIPTION", succ:"M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_SUCCESS", done:false, unlocked:true, test:'"GNOMES_WHISKER" in hero.inventory.items', prog:["False",1], unlocks:null, bonus:{agility:10}, type:"item"},
+  "Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER": {name:"M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_NAME", desc:"M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_DESCRIPTION", succ:"M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_SUCCESS", done:false, unlocked:true, test:'"PHOENIX_FEATHER" in hero.inventory.items', prog:["False",1], unlocks:null, bonus:{agility:10}, type:"item"},
+  "Q03_S00_LEARN_ABOUT_CURSE": {name:"M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_NAME", desc:"M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION", succ:"M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS", done:false, unlocked:false, test:"False", prog:["False",1], unlocks:null, bonus:{agility:10}, type:"agg"},
+  "Q03_S01_WHO_HAS_MORE_KNOWLEDGE": {name:"M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME", desc:"M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION", succ:"M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS", done:false, unlocked:true, test:'characters["POTIONEER_PUZZLEMINT_001"].dialog.key == "014" or characters["POTIONEER_PUZZLEMINT_001"].dialog.key == "017"', prog:["False",1], unlocks:null, bonus:{max_health:0}, type:"char"},
+  "Q03_S02_WHERE_TO_FIND_THIS_PERSON": {name:"M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME", desc:"M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION", succ:"M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS", done:false, unlocked:true, test:'characters["HAMMER_HOAXHEART_001"].dialog.key == "009"', prog:["False",1], unlocks:null, bonus:{agility:10}, type:"char"},
+  "Q03_SO3_HOW_TO_GET_THERE": {name:"M_QUEST_Q03_SO3_HOW_TO_GET_THERE_NAME", desc:"M_QUEST_Q03_SO3_HOW_TO_GET_THERE_DESCRIPTION", succ:"M_QUEST_Q03_SO3_HOW_TO_GET_THERE_SUCCESS", done:false, unlocked:true, test:'characters["BARMAN_ABSINTHRAYNER_001"].dialog.key == "017"', prog:["False",1], unlocks:null, bonus:{max_health:0}, type:"char"}
+};
+const QUEST_MSGS = {"M_MAIN_01_NAME":"[bold]<Wątek główny>[/bold] Przejdź przez [location]Most Mgieł[/location]","M_MAIN_01_DESCRIPTION":"Gdzieś tam daleko, jest [location]Most Mgieł[/location] strzeżony przez [char]Trola Zbigniewa[/char]. Jak już go spotkasz, będziesz musiał znaleźć sposób, aby Cię przepuścił.","M_MAIN_01_SUCCESS":"Brawo 👏! Udało Ci się minąć [char]Trola Zbigniewa[/char] i przejść na drugą stronę [location]Mostu Mgieł[/location]. Twój maksymalny poziom zdrowia ❤️  rośnie o [number]{value}[/] punktów.","M_GET_GLOVES_NAME":"Zdobądź [item]Rękawice Rycerskie[/item]","M_GET_GLOVES_DESCRIPTION":"W prastarych ruinach, skrywa się od lat [char]Pustelnik-Strażnik[/char]. Strzeże on stalowe [item]Rękawice Rycerskie[/item], które mogą być bardzo przydatne w walce 💪.","M_GET_GLOVES_SUCCESS":"Ćwicząc mowę w praktyce podniosłeś swój poziom elokwencji 💬 o [number]{value}[/] punktów.","M_FIGHT_FAIRY_NAME":"Pokonaj siłując się 💪 [char]Wróżkę-zębuszkę[/char] 🧚","M_FIGHT_FAIRY_DESCRIPTION":"Jak prawdziwy barbarzyńca pokonaj siłą młodą i słodką [char]Wróżkę-zębuszkę[/char] 🧚. Co poradzić, skoro stoi Ci na drodze do wielkeigo skarbu 🤷?","M_FIGHT_FAIRY_SUCCESS":"Ćwicząc perswazję podniosłeś swój poziom elokwencji 💬 o [number]{value}[/] punktów.","M_TOMB_RIDER_NAME":"Odszukaj ukryty skarb 💰","M_TOMB_RIDER_DESCRIPTION":"Gdzieś na południe od [location]Jeziora Czarów[/location] znajduje się [location]Prastary Cmentarz[/location]. Jeśli masz odwagę, możesz zejść do [location]Lochu-Labiryntu[/location] gdzie znajdziesz olbrzymi skarb 💰.","M_TOMB_RIDER_SUCCESS":"Brawo 👏! Udało Ci się odnaleźć ukryty skarb 💰. Twój poziom zdrowia ❤️ rośnie o [number]{value}[/] punktów.","M_GAME_MECHANICS_NAME":"[bold]<Wątek poboczny>[/bold] Odkryj co kryje się dookoła","M_GAME_MECHANICS_DESCRIPTION":"Ukończenie [btext]<Wątku pobocznego>[/btext], pozwoli Ci lepiej poznać otaczający świat, a przy okazji podniesie Twoje cechy: siłę 💪, zwinność 🐍 i elokwencję 💬.\nRealizacja niektórych kroków, odblokowuje kolejne, które na razie pozostają niedostępne. Realizacja zadań [btext]<Wątku głównego>[/btext] pomaga w przejściu kolejnych etapów gry :video_game:.","M_GAME_MECHANICS_SUCCESS":"Nosząc trochę więcej ciężaru w plecaku, poprawiłeś swoją formę i teraz Twój maksymalny poziom zdrowia rośnie o [number]{value}[/] punktów.","M_JOHNNY_WALKER_NAME":"Odwiedź [number]50[/number] [location]lokalizacji[/location]","M_JOHNNY_WALKER_DESCRIPTION":"Dokładne eksplorowanie mapy 🧭 to przepis na sukces w każdej grze 👍","M_JOHNNY_WALKER_SUCCESS":"Podróżując po świecie nauczyłeś się optymalizować zapasy w torbie 🎒 - możesz zmieścić [number]{value}[/] przedmiotów więcej.","M_ITEMS_COLLECTOR_NAME":"Posiadaj co najmniej [number]3[/number] [item]przedmioty[/item]","M_ITEMS_COLLECTOR_DESCRIPTION":"[item]Przedmioty[/item] są bardzo użyteczne. Każdy wpływa pozytywnie na jedną z Twoich cech, a negatywnie na inną - tym samy, jest neutralny dla trzeciej cechy. Efekty przedmiotów, są jednak aktywne, tylko gdy są założone. Możesz z nimi eksperymentować otwierając swoją torbę.","M_ITEMS_COLLECTOR_SUCCESS":"Nosząc trochę więcej ciężaru w plecaku, poprawiłeś swoją formę twoja siła w walce 💪 rośnie o [number]{value}[/].","M_LUCKY_LUKE_BEGINNER_NAME":"Przeszukaj 🔍 [number]5[/number] lokalizacji 🍀","M_LUCKY_LUKE_BEGINNER_DESCRIPTION":"W różnych rejonach przeszukiwanie bywa mniej lub bardziej niebezpieczne - przekonaj się sam. Czasami przeszukanie może być konieczne do postępów w [bold]<Wątku głównym>[/bold].","M_LUCKY_LUKE_BEGINNER_SUCCESS":"Dzięki ćwiczeniu się w reakcji na różne niespodzianki stałeś się bardziej zwinny 🐍 - zyskujesz [number]{value}[/] punktów.","M_LUCKY_LUKE_MASTER_NAME":"Przeszukaj 🔍 [number]10[/number] lokalizacji 🍀","M_LUCKY_LUKE_MASTER_DESCRIPTION":"Jeśli lubisz więcej ryzyka, śmiało przeszukuj również te mniej bezpieczne lokalizacje.","M_LUCKY_LUKE_MASTER_SUCCESS":"Dzięki ćwiczeniu się w reakcji na różne niespodzianki stałeś się bardziej zwinny 🐍 - zyskujesz [number]{value}[/] punktów.","M_SPEED_RUN_NAME":"[bold]<Wątek poboczny>[/bold] Idealny przebieg 🏃","M_SPEED_RUN_DESCRIPTION":"Postaraj się przejść grę 🎮 zyskując maksymalną ilość punktów.","M_SPEED_RUN_SUCCESS":"Po niezliczonej ilości prób, jesteś w szczytowej formie - Twoja maksymalna ilość zdrowia ❤️ wzrasta o [number]{value}[/] punktów.","M_COC_LONG_NAME":"Dłuuuga lista poleceń","M_COC_LONG_DESCRIPTION":"[bold]Składnia:[/bold] [action]AkcjaAkcja...[/action]\n[bold]Przykład:[/bold] [action]www[/action]\n\nPokonałeś bardzo długi labirynt, ale okazało się, że to ślepa uliczka? No a teraz trzeba wracać do oryginalnej lokalizacji 😟. Można to sobie ułatwić. Włącz tryb wprowadzania serii akcji (\"[action]~[/action]\" lub \"[action]`[/action]\") i wpiszesz od razu kilka poleceń (np.: [action]www[/action]) aby przejść [number]3[/number] lokalizacje na północ. Możesz kolejkować tak też inne polecenia.\n\n[bold]Uwaga:[/bold] Kiedy podasz długą listę poleceń, gra 🎮 pokaże jedynie efekt ostatniej akcji. Między innymi zaliczenie [quest]zadań[/quest] tego wątku może Ci umknąć. Sprawdzaj postęp tego wątku w menu \"lista zadań\".","M_COC_LONG_SUCCESS":"Dzięki ćwiczeniu szybszego przechodzenia gry zyskujesz [number]{value}[/] punktów zwinności 🐍.","M_COC_2IN1_NAME":"Idź i przeszukaj jednym poleceniem","M_COC_2IN1_DESCRIPTION":"[bold]Składnia:[/bold] [action]Kierunek_wielką_literą[/action]\n[bold]Przykład:[/bold] [action]W[/action]\n\nZauważ, że jeżeli podasz kierunek w którym chcesz iść wielką literą (np.: [action]W[/action] zamiast [action]w[/action]), to jednym poleceniem wykonasz ruch i od razu przeszukasz lokalizację. Tak jakbyś podał [number]2[/number] polecenia ([action]W[/action] => [action]wp[/action]).","M_COC_2IN1_SUCCESS":"Dzięki ćwiczeniu szybszego przechodzenia gry zyskujesz [number]{value}[/] punktów zwinności 🐍.","M_COC_COMMENT_NAME":"Bez komentarza... byłoby ciężko","M_COC_COMMENT_DESCRIPTION":"[bold]Składnia:[/bold] [action]Akcja[/action]_[action]Akcja[/action]_[action]Akcja[/action]\n[bold]Przykład:[/bold] [action]wwwaaw[/action]_[action]tet[/action]_[action]sddss[/action]\n\nŁącząc wszystkie wcześniej poznane techniki w ramach zadania \"Idealny przebieg 🏃\" możesz zbudować całkiem długie sekwencje poleceń, które będą stawały się coraz bardziej nieczytelne. W dwolnej sekwencji poleceń, możesz dodać znak \"[bold]_[/bold]\", który niczego nie wykona i zostanie pominięty (np.: \"[action]wwwaaw[/action]_[action]tet[/action]_[action]sddss[/action]\" =>  \"[action]wwwaawtetsddss[/action]\"). Możesz go użyć do oddzielania pewnych bloków poleceń (tak jak komentarz w programowaniu) aby były bardziej czytelne i łatwiejsze do korekty.","M_COC_COMMENT_SUCCESS":"Dzięki ćwiczeniu szybszego przechodzenia gry zyskujesz [number]{value}[/] punktów zwinności 🐍.","M_COC_FOR_NAME":"Powtarzaj wiele razy","M_COC_FOR_DESCRIPTION":"[bold]Składnia: #[/bold][number]Liczba[/number][action]Akcja[/action]\n[bold]Przykład:[/bold] #[number]5[/number][action]w[/action]\n\nDla wygody i skrócenia długości listy poleceń, zamist pisać wiele razy to samo polecenie możesz najpierw podać znak \"[bold]#[/bold]\", potem liczbę powtórzeń a następnie właściwe polecenie (np.: zamiast [action]wwwww[/action] podaj [bold]#[/bold][number]5[/number][action]w[/action]). Ma to sens głównie dla sekwencji poleceń poruszania się, ale działa ze wszystkimi akcjami.","M_COC_FOR_SUCCESS":"Dzięki ćwiczeniu szybszego przechodzenia gry zyskujesz [number]{value}[/] punktów zwinności 🐍.","M_COC_UNTIL_NAME":"Powtarzaj do skutku","M_COC_UNTIL_DESCRIPTION":"[bold]Składnia: ~[/bold][action]Akcja_konfrontacji[/action]\n[bold]Przykład: ~[/bold][action]F[/action]\n\nMając już tak pokaźny arsenał narzędzi do automatyzacji wykonywania poleceń, można napisać gotowe zestawy do przechodzenia dużych fragmentów gry 🎮. Aby jednak móc napisać jeden ciąg do przejścia całości pozostaje rozwiązanie problemu z konfrontacją (siłowanie się 💪, obezwładnienie 🐍 lub perswazja 💬) z postaciami. Nie zawsze mamy [number]100%[/number] szans powodzenia, przez co czasami trzeba użyć walki 💪 raz, dwa, lub wiele więcej razy. Poprzedź polecenie konfrontacji znakiem \"[action]~[/action]\". Polecenie będzie powtarzane, aż konfrontacja się powiedzie, lub ekhm... zabraknie Ci zdrowia ❤️ .","M_COC_UNTIL_SUCCESS":"Dzięki ćwiczeniu szybszego przechodzenia gry zyskujesz [number]{value}[/] punktów zwinności 🐍.","M_COC_CMD_NAME":"Stara, dobra linia komend","M_COC_CMD_DESCRIPTION":"[bold]Składnia:[/bold] n[char]Twoje_imię[/char] [bold]litera_avatara[/bold][number]Poziom_trudności[/number][action]AkcjaAkcjaAkcja...[/action]\n[bold]Przykład:[/bold] n[char]Zbigniew[/char] [bold]a[/bold][number]2[/number][action]pWWWe[/action]\n\nTo już ostatni krok do napisania \"idealnego przebiegu 🏃\". Sekwencję poleceń możesz przekazać jako parametr linii komend. Zacznij od \"n[char]Twoje_imię[/char] [bold]litera_avatara[/bold][number]Poziom_trudności[/number]\", aby przejść przez menu początkowe (np.: \"n[char]Zbigniew[/char] [bold]a[/bold][number]2[/number]\"). Teraz możesz dużo łatwiej testować i poprawiać serię akcji, aż stworzysz \"Idealny przebieg 🏃\" i trafisz na szczyt listy najlepszych wyników 🏆.","M_COC_CMD_SUCCESS":"Brawo 👏 - możesz czuć się jak programista. Zyskujesz [number]{value}[/] punktów zwinności 🐍.","M_PERSUADE_TO_SOLITARY_NAME":"Pokonaj perswazją 💬 [char]Pustelnika Strażnika[/char]","M_PERSUADE_TO_SOLITARY_DESCRIPTION":"W prastarych ruinach, skrywa się od lat Pustelnik-Strażnik. Strzeże on nie tylko ruin, ale też tajemnicę pewnego skarbu 💰.","M_PERSUADE_TO_SOLITARY_SUCCESS":"Ćwicząc mowę w praktyce podniosłeś swój poziom elokwencji 💬 o [number]{value}[/] punktów.","M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME":"O co tu chodzi?","M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION":"Odkryj o co tu chodzi.","M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS":"Jesteś przeklęty i musisz znaleźć sposób aby się uzdrowić.","M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME":"Przełamać kłątwę","M_QUEST_Q01_S00_BREAK_THE_CURSE_DESCRIPTION":"Znajdź sposób aby przełamać klątwę.","M_QUEST_Q01_S00_BREAK_THE_CURSE_SUCCESS":"Dobra, to do roboty.","M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_NAME":"Dowiedz się więcej o klątwie.","M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION":"Popytaj ludzi w okolicy aby dowiedzieć się czegoś więcej o klątwie. Może zacznij w [location]Tawernie[/].","M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS":"Dowiedz się co wie [char]Zielarka Zmora[/].","M_QUEST_Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA_NAME":"Spotkaj się z [char]Madame Sarkażmijka[/]","M_QUEST_Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA_DESCRIPTION":"Gdzieś tam, można spotkać potężną czarodziejkę, która być może będzie w stanie Ci pomóc.","M_QUEST_Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA_SUCCESS":"Dobra robota! Podążaj za [quest]zadaniem[/], które Ci dała.","M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_NAME":"M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_NAME PL <<PLACEHOLDER>>","M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_DESCRIPTION":"M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_DESCRIPTION PL <<PLACEHOLDER>>","M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_SUCCESS":"M_QUEST_Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE_SUCCESS PL <<PLACEHOLDER>>","M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_NAME":"M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_NAME PL <<PLACEHOLDER>>","M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_DESCRIPTION":"M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_DESCRIPTION PL <<PLACEHOLDER>>","M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_SUCCESS":"M_QUEST_Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE_SUCCESS PL <<PLACEHOLDER>>","M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_NAME":"M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_NAME PL <<PLACEHOLDER>>","M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_DESCRIPTION":"M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_DESCRIPTION PL <<PLACEHOLDER>>","M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_SUCCESS":"M_QUEST_Q02_S00_TRINKETS_FOR_SARCASMIA_SUCCESS PL <<PLACEHOLDER>>","M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_NAME":"M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_NAME PL <<PLACEHOLDER>>","M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_DESCRIPTION":"M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_DESCRIPTION PL <<PLACEHOLDER>>","M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_SUCCESS":"M_QUEST_Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR_SUCCESS PL <<PLACEHOLDER>>","M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_NAME":"M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_NAME PL <<PLACEHOLDER>>","M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_DESCRIPTION":"M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_DESCRIPTION PL <<PLACEHOLDER>>","M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_SUCCESS":"M_QUEST_Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER_SUCCESS PL <<PLACEHOLDER>>","M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_NAME":"M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_NAME PL <<PLACEHOLDER>>","M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_DESCRIPTION":"M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_DESCRIPTION PL <<PLACEHOLDER>>","M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_SUCCESS":"M_QUEST_Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER_SUCCESS PL <<PLACEHOLDER>>","M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_NAME":"Znajdź kogoś kto wie coś więcej o klątwach","M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION":"Popytaj ludzi w okolicy aby dowiedzieć się kto wie coś więcej o klątwie. [char]Zielarka Zmora[/] powinna coś wiedzieć.","M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS":"Ok, to teraz do roboty.","M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME":"Kto ma wiedzę na temat magii i zaklęć?","M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION":"Dowiedz się kto ma większą wiedzę na temat magii i zaklęć, rozmawiając z różnymi osobami w wiosce.","M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS":"Dobra robota!","M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME":"Gdzie można znaleźć tę osobę?","M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION":"Dowiedz się, gdzie może być osoba, która ma wiedzę na temat magii i zaklęć.","M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS":"Brawo! Znajdzię kolejny trop.","M_QUEST_Q03_SO3_HOW_TO_GET_THERE_NAME":"Jak tam dotrzeć?","M_QUEST_Q03_SO3_HOW_TO_GET_THERE_DESCRIPTION":"Dowiedz się jak dotrzeć do miejsca gdzie przebywa ta osoba z wiedzą.","M_QUEST_Q03_SO3_HOW_TO_GET_THERE_SUCCESS":"Teraz pora ruszać w drogę!"};
+
+
+const MAINS = ["01_main_01","02_game_mechanics","03_speed_run","Q00_S00_WHAT_IS_GOING_ON","Q01_S00_BREAK_THE_CURSE","Q02_S00_TRINKETS_FOR_SARCASMIA","Q03_S00_LEARN_ABOUT_CURSE"];
+
+const HIERARCHY = {
+  "01_main_01": ["01_get_gloves","02_fight_fairy","03_tomb_rider"],
+  "02_game_mechanics": ["01_johnny_walker","02_items_collector","03_lucky_luke_beginner","04_lucky_luke_master"],
+  "03_speed_run": ["01_coc_long","02_coc_2in1","03_coc_comment","04_coc_for","05_coc_until","06_coc_cmd"],
+  "Q00_S00_WHAT_IS_GOING_ON": [],
+  "Q01_S00_BREAK_THE_CURSE": ["Q01_S01_LEARN_ABOUT_CURSE","Q01_S05_BREAK_THE_CURSE_MEET_MADAME_SARCASMIA","Q01_S06_BREAK_THE_CURSE_GAIN_POTION_CURSE_NO_MORE","Q01_S07_BREAK_THE_CURSE_FIND_A_SAFE_PLACE"],
+  "Q02_S00_TRINKETS_FOR_SARCASMIA": ["Q02_S01_TRINKETS_FOR_SARCASMIA_MERMAIDS_TEAR","Q02_S02_TRINKETS_FOR_SARCASMIA_GNOMES_WHISKER","Q02_S03_TRINKETS_FOR_SARCASMIA_PHOENIX_FEATHER"],
+  "Q03_S00_LEARN_ABOUT_CURSE": ["Q03_S01_WHO_HAS_MORE_KNOWLEDGE","Q03_S02_WHERE_TO_FIND_THIS_PERSON","Q03_SO3_HOW_TO_GET_THERE"]
+};
+
+const BONUS_META = [
+  {key:"money", emoji:"💰", en:"pennies", pl:"groszy"},
+  {key:"health", emoji:"❤️", en:"health points", pl:"punktów zdrowia"},
+  {key:"max_health", emoji:"❤️", en:"max health", pl:"punktów maksymalnego zdrowia"},
+  {key:"hp", emoji:"💪", en:"strength", pl:"punktów siły"},
+  {key:"agility", emoji:"🐍", en:"agility", pl:"punktów zwinności"},
+  {key:"eloquence", emoji:"💬", en:"eloquence", pl:"punktów elokwencji"},
+  {key:"max_items", emoji:"🎒", en:"bag capacity", pl:"do pojemności torby"}
+];
+
+const TYPE_COLOR = {
+  eval: "var(--info-soft)",
+  item: "var(--ok-soft)",
+  char: "var(--violet-soft)",
+  agg: "var(--warn-soft)",
+  coc: "var(--accent-soft)"
+};
+const TYPE_LABEL = { eval:"eval", item:"item", char:"char", agg:"agg", coc:"coc" };
+
+/* strip noisy prefix for the on-node label */
+function prettyKey(k) {
+  let s = k.replace(/^M_QUEST_/, "").replace(/^M_/, "")
+            .replace(/^Q\d+_S\d+_/, "").replace(/^Q\d+_S\d+_/, "")
+            .replace(/^\d+_/, "");
+  return s.length > 19 ? s.slice(0,18) + "…" : s;
+}
+/* human title derived from the message key */
+function prettyName(q) {
+  let s = (q.name || "").replace(/^M_QUEST_/, "").replace(/^M_/, "")
+                        .replace(/_NAME$/, "").replace(/_/g, " ").toLowerCase();
+  return s.replace(/\b\w/g, c => c.toUpperCase());
+}
+/* convert Rich markup [tag]...[/tag] (or shortened [/]) to <b>...</b> for plain HTML display */
+function stripRich(s) {
+  if (!s) return "";
+  return s
+    .replace(/\[(?:\/)?(?:bold|item|char|location|quest|number|btext|num|i|b|u)\]|\[\/\]/g, (m) => m === "[/]" ? "</b>" : (m.indexOf("/") >= 0 ? "</b>" : "<b>"))
+    .replace(/\{value\}/g, "X");
+}
+
+/* ---------- helpers ---------- */
+function el(tag, attrs, text) {
+  const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in (attrs||{})) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  return e;
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---------- DAG layout ---------- */
+// column assignment: each main on its own column; subs stacked under their main
+const COLS = {
+  "01_main_01": 0, "02_game_mechanics": 1, "03_speed_run": 2,
+  "Q00_S00_WHAT_IS_GOING_ON": 3, "Q01_S00_BREAK_THE_CURSE": 4,
+  "Q02_S00_TRINKETS_FOR_SARCASMIA": 5, "Q03_S00_LEARN_ABOUT_CURSE": 6
+};
+const COL_X = [80, 250, 420, 590, 760, 930, 1100];
+const NODE_W = 118, NODE_H = 34;
+
+function buildDAG() {
+  const svg = document.getElementById("dag");
+  svg.innerHTML = "";
+  const pos = {}; // key -> {x,y}
+  // mains
+  MAINS.forEach((m, i) => {
+    pos[m] = { x: COL_X[COLS[m]], y: 40, main: true };
+  });
+  // subs under each main
+  MAINS.forEach(m => {
+    const subs = HIERARCHY[m];
+    subs.forEach((s, i) => {
+      pos[s] = { x: COL_X[COLS[m]], y: 110 + i * 46, main: false };
+    });
+  });
+  // orphans (talk_to_solitary) at bottom
+  const orphans = Object.keys(QUESTS).filter(k => !pos[k]);
+  orphans.forEach((k, i) => { pos[k] = { x: 120 + i * 160, y: 690, main: false }; });
+
+  /* edges: unlocks (solid) */
+  const edges = [];
+  Object.keys(QUESTS).forEach(k => {
+    const u = QUESTS[k].unlocks;
+    if (u && QUESTS[u]) edges.push({ from:k, to:u, dash:false });
+  });
+  /* edges: hierarchy containment (dashed) */
+  MAINS.forEach(m => HIERARCHY[m].forEach(s => {
+    if (pos[s]) edges.push({ from:m, to:s, dash:true });
+  }));
+
+  // draw edges first
+  edges.forEach((e, idx) => {
+    const a = pos[e.from], b = pos[e.to];
+    if (!a || !b) return;
+    const x1 = a.x, y1 = a.y + (a.main ? NODE_H/2 : NODE_H/2);
+    const x2 = b.x, y2 = b.y - NODE_H/2;
+    const my = (y1 + y2) / 2;
+    const d = `M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`;
+    const path = el("path", { d, class:"edge", id:"edge-"+idx,
+      stroke:"var(--muted)", "stroke-width": e.dash ? 1.2 : 1.8,
+      "stroke-dasharray": e.dash ? "4 4" : "none",
+      fill:"none" });
+    path.dataset.from = e.from; path.dataset.to = e.to;
+    svg.appendChild(path);
+  });
+
+  // draw nodes
+  Object.keys(pos).forEach(k => {
+    const p = pos[k], q = QUESTS[k];
+    const g = el("g", { class:"node", id:"node-"+k });
+    g.dataset.key = k;
+    const fill = q.main ? "var(--accent)" : "var(--surface)";
+    const stroke = TYPE_COLOR[q.type] || "var(--border)";
+    const r = el(q.main ? "rect" : "rect", {
+      x: p.x - NODE_W/2, y: p.y - NODE_H/2, width: NODE_W, height: NODE_H,
+      rx: 8, fill, stroke, "stroke-width": 2
+    });
+    g.appendChild(r);
+    const t = el("text", { x: p.x, y: p.y + 4, "text-anchor":"middle" });
+    t.textContent = prettyKey(k);
+    if (q.main) t.setAttribute("fill", "#fff");
+    g.appendChild(t);
+    g.addEventListener("click", () => showDetail(k));
+    g.addEventListener("mouseenter", (ev) => { highlight(k); showTooltip(k, ev); });
+    g.addEventListener("mousemove", moveTooltip);
+    g.addEventListener("mouseleave", () => { highlight(null); hideTooltip(); });
+    svg.appendChild(g);
+  });
+}
+
+function highlight(key) {
+  const svg = document.getElementById("dag");
+  if (!key) { svg.classList.remove("dim");
+    svg.querySelectorAll(".node,.edge").forEach(n => n.classList.remove("hl")); return; }
+  svg.classList.add("dim");
+  svg.querySelectorAll(".node").forEach(n => {
+    const k = n.dataset.key;
+    const rel = k === key || QUESTS[key].unlocks === k ||
+      (HIERARCHY[key] && HIERARCHY[key].includes(k));
+    n.classList.toggle("hl", rel);
+  });
+  svg.querySelectorAll(".edge").forEach(e => {
+    const on = e.dataset.from === key || e.dataset.to === key;
+    e.classList.toggle("hl", on);
+  });
+}
+
+function showDetail(k) {
+  const q = QUESTS[k];
+  document.getElementById("d-title").textContent = k;
+  const tp = document.getElementById("d-type");
+  tp.textContent = TYPE_LABEL[q.type];
+  tp.className = "pill-type pill-"+q.type;
+  document.getElementById("d-role").textContent = MAINS.includes(k) ? "quest główny" : "podquest";
+  document.getElementById("d-key").textContent = k;
+  document.getElementById("d-name").textContent = q.name;
+  document.getElementById("d-test").textContent = (typeof q.test === "string" && (q.test==="False"||q.test==="false")) ? q.test+"  (sentinel: agregacja)" : q.test;
+  const prog = (q.prog[0]===false||q.prog[0]==="False"||q.prog[0]===null) ? "brak (1/1 lub przez is_done)" : (q.prog[0]+" / "+q.prog[1]);
+  document.getElementById("d-prog").textContent = prog;
+  document.getElementById("d-unlocks").textContent = q.unlocks ? q.unlocks : "— (brak)";
+  const bk = Object.keys(q.bonus).find(b => q.bonus[b] !== 0);
+  document.getElementById("d-bonus").textContent = bk ? JSON.stringify({[bk]:q.bonus[bk]}) + "  (tylko pierwsza niezerowa)" : JSON.stringify(q.bonus);
+  document.getElementById("d-unlocked").textContent = q.unlocked ? "tak" : "nie";
+  document.getElementById("d-namepl").innerHTML = stripRich(QUEST_MSGS[q.name] || "") || "—";
+  document.getElementById("d-descpl").innerHTML = stripRich(QUEST_MSGS[q.desc] || "") || "—";
+  document.getElementById("d-succpl").innerHTML = stripRich((QUEST_MSGS[q.succ] || "").replace("{value}", bk ? q.bonus[bk] : "X")) || "—";
+  document.getElementById("detail").hidden = false;
+  document.getElementById("detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+/* ---------- tooltip ---------- */
+function showTooltip(k, ev) {
+  const q = QUESTS[k];
+  const bk = Object.keys(q.bonus).find(b => q.bonus[b] !== 0);
+  const bkk = BONUS_META.find(b => b.key === bk);
+  const tip = document.getElementById("tooltip");
+  const namePL = stripRich(QUEST_MSGS[q.name] || "");
+  const descPL = stripRich(QUEST_MSGS[q.desc] || "");
+  const succPL = stripRich((QUEST_MSGS[q.succ] || "").replace("{value}", bk ? q.bonus[bk] : "X"));
+  tip.innerHTML =
+    `<div style="font-weight:700;margin-bottom:4px">${prettyName(q)}</div>` +
+    `<div style="opacity:.8">${MAINS.includes(k) ? "Quest główny" : "Podquest"} · test: <code style="background:rgba(255,255,255,.15);padding:0 3px;border-radius:3px">${TYPE_LABEL[q.type]}</code></div>` +
+    (namePL ? `<div style="margin-top:4px"><strong>Nazwa (PL):</strong> ${namePL}</div>` : "") +
+    (descPL ? `<div style="margin-top:4px"><strong>Opis (PL):</strong> ${descPL.slice(0,170)}${descPL.length>170?"…":""}</div>` : "") +
+    (succPL ? `<div style="margin-top:4px"><strong>Sukces (PL):</strong> ${succPL.slice(0,170)}${succPL.length>170?"…":""}</div>` : "") +
+    `<div style="margin-top:4px"><strong>test:</strong> <code style="background:rgba(255,255,255,.15);padding:0 3px;border-radius:3px;font-size:.72rem">${esc(q.test)}</code></div>` +
+    `<div style="margin-top:4px"><strong>nagroda:</strong> ${bk ? bkk.emoji+" "+bk+":"+q.bonus[bk] : "—"}</div>` +
+    `<div style="margin-top:4px;opacity:.8">klucz: <code style="background:rgba(255,255,255,.15);padding:0 3px;border-radius:3px;font-size:.7rem">${k}</code></div>`;
+  tip.style.display = "block";
+  tip.style.opacity = "1";
+  moveTooltip(ev);
+}
+function moveTooltip(ev) {
+  const tip = document.getElementById("tooltip");
+  if (tip.style.display === "none") return;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  const r = tip.getBoundingClientRect();
+  if (x + r.width > window.innerWidth) x = ev.clientX - r.width - 14;
+  if (y + r.height > window.innerHeight) y = ev.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTooltip() {
+  const tip = document.getElementById("tooltip");
+  tip.style.opacity = "0"; tip.style.display = "none";
+}
+
+/* ---------- bonus grid ---------- */
+function buildBonus() {
+  const grid = document.getElementById("bonusGrid");
+  BONUS_META.forEach(b => {
+    const c = document.createElement("div");
+    c.className = "card bonus-card";
+    c.innerHTML = `<div class="emoji">${b.emoji}</div><div class="key">${b.key}</div><div>${b.pl}</div>`;
+    grid.appendChild(c);
+  });
+}
+
+/* ---------- accordions ---------- */
+function buildAcc() {
+  const acc = document.getElementById("acc");
+  MAINS.forEach(m => {
+    const q = QUESTS[m];
+    const d = document.createElement("details");
+    const bk = Object.keys(q.bonus).find(b => q.bonus[b] !== 0);
+    d.innerHTML = `<summary>${m} <span class="badge ${q.type==='agg'?'warn':'info'}">${TYPE_LABEL[q.type]}</span></summary>`;
+    const tbl = document.createElement("table");
+    tbl.innerHTML = `<thead><tr><th>Quest</th><th>Test</th><th>Bonus</th><th>Unlocks</th></tr></thead><tbody>`;
+    const rows = [m, ...HIERARCHY[m]];
+    rows.forEach(k => {
+      const qq = QUESTS[k];
+      const bkk = Object.keys(qq.bonus).find(b => qq.bonus[b] !== 0);
+      const bonusTxt = bkk ? `${bkk}:${qq.bonus[bkk]}` : "—";
+      tbl.innerHTML += `<tr><td><code>${k}</code>${MAINS.includes(k)?' <span class="badge info">główny</span>':''}</td>`+
+        `<td><code>${esc(qq.test)}</code></td><td><code>${bonusTxt}</code></td>`+
+        `<td><code>${qq.unlocks?qq.unlocks:'—'}</code></td></tr>`;
+    });
+    tbl.innerHTML += `</tbody>`;
+    d.appendChild(tbl);
+    acc.appendChild(d);
+  });
+}
+
+/* ---------- export ---------- */
+function exportJSON() {
+  const data = { quests: QUESTS, hierarchy: HIERARCHY, mains: MAINS,
+    bonus_messages: BONUS_META };
+  copyToClipboard(JSON.stringify(data, null, 2), "Skopiowano JSON");
+}
+function exportMD() {
+  let md = "# SSiS — struktura questów\n\n";
+  md += "## Questy główne i podquesty\n\n";
+  MAINS.forEach(m => {
+    const q = QUESTS[m];
+    const bk = Object.keys(q.bonus).find(b=>q.bonus[b]!==0);
+    md += `### ${m} (${TYPE_LABEL[q.type]})\n`;
+    md += `- test: \`${q.test}\`\n- bonus: \`${bk?bk+':'+q.bonus[bk]:'-'}\`\n- unlocks: ${q.unlocks||'—'}\n`;
+    md += `- podquesty:\n`;
+    HIERARCHY[m].forEach(s => {
+      const sq = QUESTS[s];
+      const sbk = Object.keys(sq.bonus).find(b=>sq.bonus[b]!==0);
+      md += `  - ${s}: test=\`${sq.test}\`, bonus=\`${sbk?sbk+':'+sq.bonus[sbk]:'-'}\`, unlocks=${sq.unlocks||'—'}\n`;
+    });
+    md += "\n";
+  });
+  md += "## Pułapki portowania\n";
+  md += "1. eval na całym cfg (płytka blokada __builtins__)\n";
+  md += "2. tylko pierwsza niezerowa nagroda (break w apply_quest_bonus)\n";
+  md += "3. test_total działa tylko gdy test_progress aktywne\n";
+  md += "4. unlocks niespójnie typowane (false/null/string)\n";
+  md += "5. graf to DAG, nie drzewo (międzyłańcuchowe unlocks)\n";
+  md += "6. max_items trzymane na hero.inventory\n";
+  md += "7. literówka klucza Q03_SO3_ (powinno być S03)\n";
+  md += "8. clamp health zawsze po nagrodzie\n";
+  copyToClipboard(md, "Skopiowano Markdown");
+}
+
+/* ---------- copy + toast ---------- */
+function copyToClipboard(text, msg = "Skopiowano") {
+  navigator.clipboard.writeText(text).then(() => showToast(msg))
+    .catch(() => {
+      const ta = document.createElement("textarea"); ta.value = text;
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy");
+      ta.remove(); showToast(msg);
+    });
+}
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    const id = tab.dataset.tab;
+    document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t === tab));
+    document.querySelectorAll(".tabpanel").forEach(p => {
+      p.hidden = p.dataset.panel !== id;
+    });
+  });
+});
+
+/* ---------- init ---------- */
+buildDAG();
+buildBonus();
+buildAcc();
+</script>
+</body>
+</html>
