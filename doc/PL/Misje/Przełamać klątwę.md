@@ -28,8 +28,9 @@ Klątwa nie zdejmie się sama. Ktoś pewnie wie jak to działa, ktoś pewnie umi
 Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W [loc]karczmie[/loc] mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.
 
 **Completion**: test
-**Test**: visited("BARMAN_ABSINTHRAYNER", "012")
+**Test**: visited("BARMAN_ABSINTHRAYNER", "012") or visited("BARMAN_ABSINTHRAYNER", "009")
 **Sukces**: [char]Barman[/char] zna kogoś od mikstur. Stara, ślepa, mieszka koło lasu i czasem ludziom robi się po jej miksturach gorzej. Rekomendacja jak marzenie.
+**Nagroda**: health=20
 
 ## Q01_S05_MEET_MADAME_SARCASMIA
 

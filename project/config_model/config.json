@@ -3948,7 +3948,13 @@
             "description": "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION",
             "success": "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS",
             "completion": "test",
-            "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\")",
+            "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\") or visited(\"BARMAN_ABSINTHRAYNER\", \"009\")",
+            "rewards": [
+                {
+                    "category": "health",
+                    "value": 20
+                }
+            ],
             "parent": "Q01_S00_BREAK_THE_CURSE"
         },
         "Q01_S05_MEET_MADAME_SARCASMIA": {
