@@ -3569,7 +3569,31 @@
             "M_CLAPBACK_SWORD_DO_019to010_1": "This has got to be a joke! Right?",
             "M_MISS_INFORMATION_DN_000": "Witaj :exclamation:",
             "M_MISS_INFORMATION_DO_000to099_1": "W sumie to nie mam pytań",
-            "M_MISS_INFORMATION_DN_099": "[[#000]]\n\nDo zobaczenia :exclamation:"
+            "M_MISS_INFORMATION_DN_099": "[[#000]]\n\nDo zobaczenia :exclamation:",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME": "What is going on?",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION": "You woke up in a stable, in a village whose name you would rather not know, and your sword will not stop talking. Apparently that is not normal. Apparently neither is the rest of it.",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS": "The sword has a diagnosis: this is not plain bad luck, it is a curse. The details are with the locals, and at this hour the locals are in the tavern.",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME": "Break the curse",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_DESCRIPTION": "A curse will not lift itself. Someone has to know how, someone has to be able to, and someone - that would be you - has to put the two together.",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_SUCCESS": "The curse is broken. The sword maintains this was mostly its own doing.",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_NAME": "Learn more about the curse",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION": "Children's tales and bards' ramblings are not enough to act on. In a tavern everything gets said about everyone - you only need to ask the right person about the right thing.",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS": "The barman knows someone who does potions. Old, blind, lives by the forest, and people occasionally get worse after her remedies. A glowing recommendation.",
+            "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_NAME": "Meet Madame Sarcasmia",
+            "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_DESCRIPTION": "Knowing about a curse is one thing; getting rid of it is an entirely different kettle of fish. Apparently there is someone who dabbles in exactly that - and who apparently thinks very highly of herself.",
+            "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_SUCCESS": "Sarcasmia listened, sighed theatrically, and concluded it is probably just bad luck. She can help, though. For a small favour.",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_NAME": "Find someone who knows about curses",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION": "Nobody around here has opened a book since the tavern still had a whole roof. Still, someone, somewhere, must know more about curses than the gossip does.",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS": "You now know who is an expert, where to look for her and which way to walk. Three answers and not one gram of magic.",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME": "Who knows about magic?",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION": "The herbalist brews potions and clearly remembers more than she says. She may also remember someone who knows about the officially forbidden things.",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS": "They used to call her Mariolka. Now it is Miss Information, and she reportedly guards forbidden books in a secret library.",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME": "Where to find this person?",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION": "You have the name. That leaves the small matter of an address. The smith sees more of the world than the rest of the village, so he might just know something.",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS": "The smith does not go to the city and has no plans to start. He does know exactly who in this village talks to every stranger passing through.",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME": "How to get there?",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION": "The city is somewhere to the north. \"Somewhere\" is decidedly not enough to set off on.",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Two days north, past the Tangled Forest of Irritation, then turn east. The barman has never been to the city, but he knows the route by heart."
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
@@ -3865,7 +3889,117 @@
             "M_CLAPBACK_SWORD_DO_019to010_1": "To chyba jakiś żart! Prawda?",
             "M_MISS_INFORMATION_DN_000": "Witaj :exclamation:",
             "M_MISS_INFORMATION_DO_000to099_1": "W sumie to nie mam pytań",
-            "M_MISS_INFORMATION_DN_099": "Do zobaczenia :exclamation:"
+            "M_MISS_INFORMATION_DN_099": "Do zobaczenia :exclamation:",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME": "O co tu chodzi?",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a twój miecz nie przestaje mówić. Podobno to nie jest normalne. Podobno reszta też nie.",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS": "Miecz postawił diagnozę: to nie zwykły pech, to klątwa. Konkretów trzeba poszukać u ludzi, a ludzie o tej porze są w karczmie.",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME": "Przełamać klątwę",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_DESCRIPTION": "Klątwa nie zdejmie się sama. Ktoś musi wiedzieć jak, ktoś musi umieć, a ktoś - czyli ty - musi pozbierać jedno z drugim do kupy.",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_SUCCESS": "Klątwa złamana. Miecz twierdzi, że to była głównie jego zasługa.",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_NAME": "Dowiedz się więcej o klątwie",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W karczmie mówi się wszystko i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS": "Barman zna kogoś od mikstur. Stara, ślepa, mieszka koło lasu i czasem ludziom robi się po jej miksturach gorzej. Rekomendacja jak marzenie.",
+            "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_NAME": "Spotkaj się z Sarkażmijką",
+            "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_DESCRIPTION": "Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para - i podobno ma o sobie bardzo wysokie mniemanie.",
+            "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_SUCCESS": "Sarkażmijka wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak może. Za drobną przysługę.",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_NAME": "Znajdź kogoś kto wie o klątwach",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION": "W tej okolicy nikt nie zaglądał do książki od czasów, gdy karczma miała jeszcze cały dach. Ale ktoś, gdzieś, musi wiedzieć o klątwach coś więcej niż plotki.",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS": "Wiesz już, kto się na tym zna, gdzie jej szukać i którędy tam dojść. Trzy odpowiedzi i ani grama magii.",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME": "Kto ma wiedzę o magii?",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION": "Zielarka warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może pamięta też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS": "Kiedyś wołali na nią Mariolka. Teraz mówią Bibliofilistka des Informacja i podobno pilnuje zakazanych ksiąg w tajnej bibliotece.",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME": "Gdzie znaleźć tę osobę?",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION": "Imię już jest. Zostaje drobiazg: adres. Kowal bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS": "Kowal do miasta nie jeździ i nie zamierza zacząć. Wie za to dokładnie, kto w tej wiosce gada ze wszystkimi przybyszami.",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME": "Jak tam dotrzeć?",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION": "Miasto jest gdzieś na północy. \"Gdzieś\" to stanowczo za mało, żeby ruszać w drogę.",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Dwa dni na północ, za Splątanym lasem irytacji skręcić na wschód. Barman w mieście nie był, ale trasę zna na pamięć."
+        }
+    },
+    "quests": {
+        "Q00_S00_WHAT_IS_GOING_ON": {
+            "name": "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME",
+            "description": "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION",
+            "success": "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS",
+            "completion": "test",
+            "test": "visited(\"CLAPBACK_SWORD\", \"015\")"
+        },
+        "Q01_S00_BREAK_THE_CURSE": {
+            "name": "M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME",
+            "description": "M_QUEST_Q01_S00_BREAK_THE_CURSE_DESCRIPTION",
+            "success": "M_QUEST_Q01_S00_BREAK_THE_CURSE_SUCCESS",
+            "completion": "manual",
+            "requires": [
+                "Q00_S00_WHAT_IS_GOING_ON"
+            ],
+            "rewards": [
+                {
+                    "category": "max_health",
+                    "value": 20
+                },
+                {
+                    "category": "damage",
+                    "value": 5
+                }
+            ]
+        },
+        "Q01_S01_LEARN_ABOUT_CURSE": {
+            "name": "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_NAME",
+            "description": "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION",
+            "success": "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS",
+            "completion": "test",
+            "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\")",
+            "parent": "Q01_S00_BREAK_THE_CURSE"
+        },
+        "Q01_S05_MEET_MADAME_SARCASMIA": {
+            "name": "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_NAME",
+            "description": "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_DESCRIPTION",
+            "success": "M_QUEST_Q01_S05_MEET_MADAME_SARCASMIA_SUCCESS",
+            "completion": "test",
+            "test": "visited(\"MADAME_SARCASMIA\", \"001\")",
+            "requires": [
+                "Q01_S01_LEARN_ABOUT_CURSE"
+            ],
+            "parent": "Q01_S00_BREAK_THE_CURSE"
+        },
+        "Q03_S00_LEARN_ABOUT_CURSE": {
+            "name": "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_NAME",
+            "description": "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION",
+            "success": "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS",
+            "completion": "all_subquests",
+            "requires": [
+                "Q01_S01_LEARN_ABOUT_CURSE"
+            ],
+            "rewards": [
+                {
+                    "category": "max_health",
+                    "value": 10
+                }
+            ]
+        },
+        "Q03_S01_WHO_HAS_MORE_KNOWLEDGE": {
+            "name": "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME",
+            "description": "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION",
+            "success": "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS",
+            "completion": "test",
+            "test": "visited(\"POTIONEER_PUZZLEMINT\", \"014\") or visited(\"POTIONEER_PUZZLEMINT\", \"017\")",
+            "parent": "Q03_S00_LEARN_ABOUT_CURSE"
+        },
+        "Q03_S02_WHERE_TO_FIND_THIS_PERSON": {
+            "name": "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME",
+            "description": "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION",
+            "success": "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS",
+            "completion": "test",
+            "test": "visited(\"HAMMER_HOAXHEART\", \"009\")",
+            "parent": "Q03_S00_LEARN_ABOUT_CURSE"
+        },
+        "Q03_S03_HOW_TO_GET_THERE": {
+            "name": "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME",
+            "description": "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION",
+            "success": "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS",
+            "completion": "test",
+            "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"017\")",
+            "parent": "Q03_S00_LEARN_ABOUT_CURSE"
         }
     }
 }

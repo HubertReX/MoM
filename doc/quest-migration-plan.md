@@ -13,7 +13,9 @@ Wszystkie **15 decyzji zamkniętych** (2026-07-16). Kod: **Q-01, Q-02, Q-03 i Q-
 
 Bramka po `parent` w `is_unlocked` (Q-03): **zaakceptowana** 2026-07-16.
 
-**Treści questów nadal nie ma** - `doc/PL/Misje/` jest puste, pipeline stoi gotowy i czeka (Q-10).
+**Treść (Q-10) jest naszkicowana** - 3 łańcuchy, 8 questów, przechodzi importem i silnikiem
+od zera do domknięcia Q03. Proza i nagrody **do przepisania** przez autora; `Q01_S05` używa
+węzła `001`, bo klucz z planu nie istniał w MoM (szczegóły w Q-10).
 
 Po drodze przy Q-02 wyszły **dwa bugi w save/load niezwiązane z questami** - patrz "Bugi save/load
 (znalezione przy Q-02)" niżej. Oba naprawione: pierwszy jako warunek wstępny (bez niego
@@ -101,7 +103,7 @@ Wszystkie warunki to `visited()` - **zero nowych predykatów w warstwie testów*
 | `Q00_S00_WHAT_IS_GOING_ON` | O co tu chodzi? | test | `visited("CLAPBACK_SWORD", "015")` |
 | `Q01_S00_BREAK_THE_CURSE` | Przełamać klątwę | **manual** | parasol - czeka na S06/S07 |
 | `Q01_S01_LEARN_ABOUT_CURSE` | Dowiedz się więcej o klątwie | test | `visited("BARMAN_ABSINTHRAYNER", "012")` |
-| `Q01_S05_..._MEET_MADAME_SARCASMIA` | Spotkaj się z Sarkażmijką | test | `visited("MADAME_SARCASMIA", "SARCASMIA_AA_BACK_SO_SOON")` |
+| `Q01_S05_MEET_MADAME_SARCASMIA` | Spotkaj się z Sarkażmijką | test | `visited("MADAME_SARCASMIA", "001")` ⚠ patrz niżej |
 | `Q03_S00_LEARN_ABOUT_CURSE` | Znajdź kogoś kto wie o klątwach | all_subquests | 3 podquesty |
 | `Q03_S01_WHO_HAS_MORE_KNOWLEDGE` | Kto ma wiedzę o magii? | test | `visited("POTIONEER_PUZZLEMINT","014") or visited("POTIONEER_PUZZLEMINT","017")` |
 | `Q03_S02_WHERE_TO_FIND_THIS_PERSON` | Gdzie znaleźć tę osobę? | test | `visited("HAMMER_HOAXHEART", "009")` |
@@ -434,7 +436,79 @@ Te dwa mechanizmy się nie mieszają.
 
 **DoD:** 3 rodzaje toastów wyglądają jak makieta.
 
-### Q-10 · Treść 8 questów + smoke test `#M`
+### Q-10 · Treść 8 questów + smoke test `#M` 🟡 szkic do przepisania
+
+**Naszkicowane 2026-07-16 przez Claude, PL = źródło prawdy, EN przetłumaczone.**
+Pliki: `doc/PL/Misje/{O co tu chodzi, Przełamać klątwę, Znajdź kogoś kto wie o klątwach}.md`
++ `doc/EN/Quests/*`. 3 łańcuchy, 8 questów, `just import-quests` przechodzi.
+
+**To jest szkic, nie gotowa treść.** Proza jest do przepisania Twoim głosem - najsłabszym
+punktem są nagrody (patrz niżej) i uzasadnienie fabularne `Q01_S05`.
+
+#### ⚠ `SARCASMIA_AA_BACK_SO_SOON` nie istnieje w MoM
+
+Klucz węzła z planu **nie istnieje** w `config.json`. Sarkażmijka ma węzły numeryczne
+`000`-`021`, jak reszta postaci - klucz z planu pochodzi ze schematu nazw SSiS. Sprawdzone:
+7 z 8 węzłów z planu istnieje, ten jeden nie. Gdyby wszedł do treści bez sprawdzenia,
+`Q01_S05` byłby cichym trupem - dokładnie tym, co ten epik miał wyeliminować.
+
+Semantycznie `SARCASMIA_AA_BACK_SO_SOON` ≈ węzeł `011` ("Ach, wracasz tak szybko... czy
+udało Ci się zebrać moją małą listę zakupów?"), ale to jest **powrót** po drobiazgi, a nie
+spotkanie. Dla questa "Spotkaj się z Sarkażmijką" wziąłem **`001`** - tam przyznaje, że to
+klątwa, i deklaruje, że może pomóc. Czyli spotkanie z treścią, a nie samo otwarcie dialogu
+(`000` zapala się od "dzień dobry").
+
+**Do decyzji:** czy `001` to właściwy beat, czy raczej `003` (podaje listę trzech drobiazgów,
+co naturalnie przekazuje pałeczkę do Q02).
+
+#### Fabuła zweryfikowana w dialogach
+
+Łańcuch faktycznie się spina (to nie były domysły, tylko odczyt z `config.json`):
+
+- Miecz `015`: to klątwa, nie pech, rozpytaj ludzi, zacznij od karczmy.
+- Barman `012`: pomóc może **Zielarka Zmora** (`POTIONEER_PUZZLEMINT`), chałupa koło lasu.
+- Zielarka `014`/`017`: dawna **Mariolka**, dziś **Bibliofilistka des Informacja**
+  (`MISS_INFORMATION`), pilnuje zakazanych ksiąg w tajnej bibliotece.
+- Kowal `009`: do miasta nie jeżdżę, pytaj Barmana - on gada z przybyszami.
+- Barman `017`: dwa dni na północ, za Splątanym lasem irytacji na wschód.
+
+#### Nagrody (D11=D) - najsłabszy punkt szkicu
+
+**Ustalone z kodu, nie zgadywane:** żaden dialog nie daje pieniędzy. Jedyne `NODE_RESULTS`
+to kary sentymentu za chamstwo i wymiana u Sarkażmijki (oddajesz drobiazgi w `012`,
+dostajesz `POTION_CURSE_NO_MORE` w `020`). Nie ma więc ryzyka podwójnej wypłaty.
+
+Zasada, którą przyjąłem: **kroki informacyjne nie płacą, płacą parasole.** Nikt ci nie jest
+winien pieniędzy za to, że *ty* się czegoś dowiedziałeś - a gracz dostaje rytm "3 × ✓ postęp,
+potem wypłata za domknięcie wątku".
+
+| Quest | Nagroda | Dlaczego |
+| --- | --- | --- |
+| `Q00_S00` | brak | prolog, miecz daje tylko sarkazm |
+| `Q01_S00` | `max_health=20`, `damage=5` | wypłata za cały łuk; honoruje intencję SSiS (`hp→damage`, D11). `manual`, więc na razie nie odpali |
+| `Q01_S01`, `Q01_S05` | brak | kroki informacyjne |
+| `Q03_S00` | `max_health=10` | domknięcie wątku śledczego |
+| `Q03_S01/S02/S03` | brak | kroki informacyjne |
+
+**To odpowiada przy okazji na Pułapkę 7** (podwójna nagroda): skoro kroki nie płacą, nagroda
+parasola nie jest "ponad" niczym. Ogólną regułę i tak trzeba świadomie zamknąć w Q-05.
+
+Świadomie **nie użyłem** `sentiment` (D11 zostawia otwarte "globalny czy konkretny NPC")
+ani `max_items` (wymaga przerobienia `MAX_HOTBAR_ITEMS` na pole gracza). Obie kategorie
+przejdą walidację, ale nic jeszcze nie robią - do Q-05.
+
+#### Weryfikacja (przejście silnikiem po prawdziwym configu)
+
+Nowa gra → otwarte tylko `Q00_S00`. Miecz → domyka Q00, otwiera wątek klątwy. Barman `012`
+→ domyka `Q01_S01`, otwiera `Q01_S05` **i cały wątek Q03**. Zielarka → 1/3, kowal → 2/3,
+barman `017` → `Q03_S03` **i parasol `Q03_S00` w tym samym przebiegu** (kaskada) → 3/3.
+Sarkażmijka → `Q01_S05`. Koniec: **7 z 8 ukończonych, `Q01_S00` otwarty** (`manual`).
+To jest DoD Q-10.
+
+`just import-dialogs` po `just import-quests`: 24 klucze `M_QUEST_` **przeżywają** (guard z
+Q-04 działa na żywym materiale). `config.json` waliduje się Pydantikiem z 8 questami.
+
+**Zostaje:** smoke test wizualny (`just run` + panel) - dopiero po Q-08, bo panelu jeszcze nie ma.
 
 **Goal:** grywalny wątek.
 
