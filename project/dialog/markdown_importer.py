@@ -729,6 +729,22 @@ def _collect_text_references(dialogs: dict[str, Any]) -> set[str]:
     return refs
 
 
+def _collect_quest_text_references(quests: dict[str, Any]) -> set[str]:
+    """Message keys the *quests* point at — not ours to sweep.
+
+    ``config.json["messages"]`` is shared: dialogs and quests both live there
+    (decision D3). The orphan sweep below deletes every key no dialog references,
+    so without this the first ``just import-dialogs`` after a quest import would
+    silently delete every quest title, description and success line.
+    """
+    refs: set[str] = set()
+    for quest in quests.values():
+        for name in ("name", "description", "success"):
+            if quest.get(name):
+                refs.add(quest[name])
+    return refs
+
+
 def build_dialog_config(
     src_dir: Path | None = None,
     config_path: Path | None = None,
@@ -836,8 +852,10 @@ def build_dialog_config(
 
     existing_dialogs.update(new_dialogs)
 
-    # Remove orphaned message keys
+    # Remove orphaned message keys (dialog keys only — quest keys belong to
+    # quest/markdown_importer.py and are swept there)
     referenced = _collect_text_references(existing_dialogs)
+    referenced |= _collect_quest_text_references(config.get("quests", {}))
     for lang in ("PL", "EN"):
         if lang in existing_messages:
             orphaned = set(existing_messages[lang]) - referenced

@@ -109,6 +109,21 @@ import-dialogs *name:
     fi
     just import-entities
 
+# Import quest Markdown sources from the doc/ vault into config.json.
+# PL (doc/PL/Misje/) is the source of truth: machine fields (Test, Requires,
+# Nagroda) are read from PL only, EN (doc/EN/Quests/) supplies prose. An invalid
+# condition or a broken graph fails the import and leaves config.json untouched.
+# By default imports every chain found; pass a chain key to import one (e.g. Q03).
+[unix]
+import-quests *chain:
+    #!/usr/bin/env bash
+    set -e
+    if [ -z "{{chain}}" ]; then
+        .venv/bin/python project/quest/markdown_importer.py
+    else
+        .venv/bin/python project/quest/markdown_importer.py "{{chain}}"
+    fi
+
 # Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/_attachements/ from real MoM modules
 [unix]
 gen-dialog-docs:
