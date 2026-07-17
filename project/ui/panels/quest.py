@@ -26,6 +26,7 @@ from quest.graph import children_of
 from quest.rewards import format_reward_label
 from settings import (
     FONT_SIZE_LARGE,
+    PANEL_BG_COLOR,
     FONT_SIZE_MEDIUM,
     FONT_SIZE_SMALL,
     FONT_SIZE_TINY,
@@ -44,10 +45,15 @@ if TYPE_CHECKING:
 
 # --- geometry, straight from the mock ---------------------------------------
 PANEL_X, PANEL_Y, PANEL_W, PANEL_H = 90, 60, 1100, 600
+# The nine-patch draws its own frame; rules and text stop short of it instead of
+# running onto the border.
+_INNER_PAD = 22
+_INNER_LEFT = PANEL_X + _INNER_PAD
+_INNER_RIGHT = PANEL_X + PANEL_W - _INNER_PAD
 _HEADER_Y = 88
 _RULE_Y = 128
 _SPLIT_X = 470
-_FOOTER_Y = 628
+_FOOTER_Y = 612
 _LEFT_X = 118
 _RIGHT_X = 500
 _RIGHT_EDGE = 1160
@@ -61,9 +67,11 @@ _GOLD = (255, 215, 0)
 _TITLE = (255, 252, 103)
 _DONE = (110, 207, 104)
 _ACTIVE = (0, 197, 199)
-_LOCKED = (90, 90, 86)
-_MUTED = (138, 138, 134)
-_LABEL = (107, 107, 102)
+# One grey for every muted thing (labels, counter, locked rows, hints). The mock
+# has three separate ones, but they were picked against a flat SVG background;
+# over the game's tiles the darker two sink into the text shadow and stop being
+# readable. Brightest of the three, lifted a little further.
+_GREY = (170, 170, 164)
 _WHITE = (255, 255, 255)
 _RULE = (68, 68, 68)
 _BAR_BG = (51, 51, 51)
@@ -94,6 +102,8 @@ class QuestPanel(Widget):
         # panel that opens on a list of closed folders answers no question.
         self.collapsed: set[str] = set()
         self._rows: list[_Row] = []
+        # reward markup -> rendered surface; the labels are few and never change
+        self._rich_cache: dict[str, pygame.Surface] = {}
 
     # --- data ---------------------------------------------------------------
 
@@ -184,19 +194,21 @@ class QuestPanel(Widget):
         # runs regardless), and a stale list would quietly lie about the state
         self._rebuild()
 
+        # the nine-patch already frames the panel; a second gold rect on top of it
+        # only fights with the border art
         surface.blit(self.bg, self.rect.topleft)
-        pygame.draw.rect(surface, _GOLD, self.rect, width=3, border_radius=6)
         self._draw_header(surface)
-        pygame.draw.line(surface, _RULE, (PANEL_X, _RULE_Y), (PANEL_X + PANEL_W, _RULE_Y), 2)
-        pygame.draw.line(surface, _RULE, (_SPLIT_X, _RULE_Y), (_SPLIT_X, _FOOTER_Y), 2)
+        # rules stop at the inner edge instead of running out onto the frame
+        pygame.draw.line(surface, _RULE, (_INNER_LEFT, _RULE_Y), (_INNER_RIGHT, _RULE_Y), 2)
+        pygame.draw.line(surface, _RULE, (_SPLIT_X, _RULE_Y + 2), (_SPLIT_X, _FOOTER_Y - 2), 2)
         self._draw_list(surface)
         self._draw_details(surface)
-        pygame.draw.line(surface, _RULE, (PANEL_X, _FOOTER_Y), (PANEL_X + PANEL_W, _FOOTER_Y), 2)
-        self._text(surface, _("quest.hints"), (_LEFT_X, _FOOTER_Y + 10), FONT_SIZE_SMALL, _MUTED)
+        pygame.draw.line(surface, _RULE, (_INNER_LEFT, _FOOTER_Y), (_INNER_RIGHT, _FOOTER_Y), 2)
+        self._text(surface, _("quest.hints"), (_LEFT_X, _FOOTER_Y + 10), FONT_SIZE_SMALL, _GREY, shadow=True)
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         title = _("quest.journal")
-        self._text(surface, title, (_LEFT_X, _HEADER_Y), FONT_SIZE_LARGE, _TITLE)
+        self._text(surface, title, (_LEFT_X, _HEADER_Y), FONT_SIZE_LARGE, _TITLE, shadow=True)
 
         # Filters first: they are right-aligned as a block (so the last one cannot
         # fall off the panel) and everything else in the header has to fit in
@@ -224,20 +236,24 @@ class QuestPanel(Widget):
             ),
             (counter_x, _HEADER_Y + 14),
             FONT_SIZE_TINY,
-            _MUTED,
+            _GREY,
+            shadow=True,
         )
 
         x = filters_x
         for idx, label in enumerate(labels):
             active = idx == self.filter_idx
-            self._text(surface, label, (x, _HEADER_Y + 8), FONT_SIZE_SMALL, _TITLE if active else _MUTED)
+            self._text(
+                surface, label, (x, _HEADER_Y + 8), FONT_SIZE_SMALL,
+                _TITLE if active else _GREY, shadow=True,
+            )
             width = font.size(label)[0]
             if active:
                 pygame.draw.line(surface, _GOLD, (x, _HEADER_Y + 28), (x + width, _HEADER_Y + 28), 2)
             x += width + gap
 
     def _draw_list(self, surface: pygame.Surface) -> None:
-        self._text(surface, _("quest.threads"), (_LEFT_X, _LIST_TOP - 26), FONT_SIZE_TINY, _LABEL)
+        self._label(surface, _("quest.threads"), (_LEFT_X, _LIST_TOP - 26))
 
         y = _LIST_TOP
         for idx, row in enumerate(self._rows):
@@ -290,9 +306,9 @@ class QuestPanel(Widget):
 
     def _draw_details(self, surface: pygame.Surface) -> None:
         row = self._current_row()
-        self._text(surface, _("quest.details"), (_RIGHT_X, _LIST_TOP - 26), FONT_SIZE_TINY, _LABEL)
+        self._label(surface, _("quest.details"), (_RIGHT_X, _LIST_TOP - 26))
         if row is None:
-            self._text(surface, _("quest.empty"), (_RIGHT_X, _LIST_TOP + 20), FONT_SIZE_SMALL, _MUTED)
+            self._text(surface, _("quest.empty"), (_RIGHT_X, _LIST_TOP + 20), FONT_SIZE_SMALL, _GREY)
             return
 
         quest = self._defs[row.key]
@@ -313,7 +329,7 @@ class QuestPanel(Widget):
         self._draw_rewards(surface, quest, y + 26)
 
     def _draw_steps(self, surface: pygame.Surface, key: str, children: list[str], y: int) -> int:
-        self._text(surface, _("quest.steps"), (_RIGHT_X, y), FONT_SIZE_TINY, _LABEL)
+        self._label(surface, _("quest.steps"), (_RIGHT_X, y))
         progress = self._progress(key)
         if progress:
             current, total = progress
@@ -327,6 +343,11 @@ class QuestPanel(Widget):
                 if filled:
                     pygame.draw.rect(surface, _ACTIVE, (_RIGHT_X, bar_y, filled, 8), border_radius=4)
             y = bar_y + 26
+        else:
+            # A `manual` umbrella has no progress bar - completing its steps does not
+            # complete it, so a bar would be a lie. Skipping the bar must not also
+            # skip its vertical space, or the first step lands on the KROKI label.
+            y += 24
 
         for child in children:
             self._draw_marker(surface, _RIGHT_X, y, child)
@@ -340,24 +361,47 @@ class QuestPanel(Widget):
     def _draw_rewards(self, surface: pygame.Surface, quest: QuestDef, y: int) -> None:
         if not quest.rewards:
             return
-        self._text(surface, _("quest.reward"), (_RIGHT_X, y), FONT_SIZE_TINY, _LABEL)
-        y += 16
+        self._label(surface, _("quest.reward"), (_RIGHT_X, y))
+        y += 18
 
         x = _RIGHT_X
-        font = self._font(FONT_SIZE_SMALL)
         for reward in quest.rewards:
             label = format_reward_label([reward], self._item_name)
             if not label:
                 continue
-            width = font.size(label)[0] + 32
+            text = self._rich(label)
+            width = text.get_width() + 32
             if x + width > _RIGHT_EDGE:
                 x, y = _RIGHT_X, y + 38
             chip = pygame.Surface((width, 30), pygame.SRCALPHA)
             chip.fill((*_GOLD, 30))
             surface.blit(chip, (x, y))
             pygame.draw.rect(surface, _GOLD, (x, y, width, 30), width=1, border_radius=4)
-            self._text(surface, label, (x + 16, y + 6), FONT_SIZE_SMALL, _TITLE)
+            surface.blit(text, (x + 16, y + (30 - text.get_height()) // 2))
             x += width + 12
+
+    def _rich(self, markup: str) -> pygame.Surface:
+        """Render reward markup — ``[num]+50[/num] :golden_coin:`` — and cache it.
+
+        Reward labels carry tags and inline icons, which plain ``draw_text`` would
+        print literally. They also have to: ``💰`` and friends are not in MoM's
+        pixel font (measured — every one of them renders the same tofu box), so the
+        coin has to be the real sprite rather than an emoji.
+        """
+        surf = self._rich_cache.get(markup)
+        if surf is None:
+            from ..widgets.rich_text import RichText
+
+            # base_color, or the unit ("max HP") falls back to RichText's own
+            # default and stops matching the chip it sits in
+            rt = RichText(markup, (0, 0, 420, 60), self.hud.icons, base_size=FONT_SIZE_SMALL,
+                          base_color=_TITLE, show_scrollbar=False)
+            full = rt.content_surface
+            assert full is not None
+            width = max(1, min(rt.content_width, full.get_width()))
+            surf = full.subsurface((0, 0, width, full.get_height())).copy()
+            self._rich_cache[markup] = surf
+        return surf
 
     # --- helpers ------------------------------------------------------------
 
@@ -382,7 +426,7 @@ class QuestPanel(Widget):
         return "locked"
 
     def _state_colour(self, key: str) -> tuple[int, int, int]:
-        return {"done": _DONE, "active": _ACTIVE, "locked": _LOCKED}[self._state(key)]
+        return {"done": _DONE, "active": _ACTIVE, "locked": _GREY}[self._state(key)]
 
     def _draw_marker(self, surface: pygame.Surface, x: int, y: int, key: str) -> None:
         """Draw the ✔ / ● / ○ marker as shapes, not glyphs.
@@ -423,11 +467,24 @@ class QuestPanel(Widget):
         size: int,
         colour: tuple[int, int, int],
         align: str = "left",
+        *,
+        shadow: bool = False,
     ) -> None:
+        """Draw a line of plain text.
+
+        ``shadow`` is off by default: it earns its keep on the furniture (header,
+        section labels, footer) where it separates chrome from content, but under
+        a paragraph of prose it just thickens every glyph and costs legibility.
+        """
         self.hud.draw_text(
             surface, text, pos, font=self._font(size), color=colour,
             align="right" if align == "right" else "left",  # type: ignore[arg-type]
+            border=PANEL_BG_COLOR if shadow else None,  # type: ignore[arg-type]
         )
+
+    def _label(self, surface: pygame.Surface, text: str, pos: tuple[int, int]) -> None:
+        """A section heading (WĄTKI / SZCZEGÓŁY / KROKI / NAGRODA) — chrome, so shadowed."""
+        self._text(surface, text, pos, FONT_SIZE_TINY, _GREY, shadow=True)
 
     def _truncate(self, text: str, width: int, size: int) -> str:
         """Cut ``text`` to ``width`` with an ellipsis.

@@ -80,7 +80,10 @@ class HUD(Widget):
         super().__init__()
         self.scene = scene
         self.game = scene.game
-        self.icons = scene.icons
+        # annotated explicitly: mypy runs with follow_imports=skip, so it cannot see
+        # Scene's own annotation and every panel reading hud.icons inherits an
+        # "cannot determine type" error
+        self.icons: dict[str, list[pygame.Surface]] = scene.icons
         self.font: pygame.font.Font = self.game.fonts[FONT_SIZE_MEDIUM]
         self.tiny_font: pygame.font.Font = self.game.fonts[FONT_SIZE_SMALL]
         self.show_help_info: bool = SHOW_HELP_INFO

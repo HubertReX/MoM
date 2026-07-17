@@ -198,9 +198,11 @@ def test_toast_for_a_closed_thread_is_louder() -> None:
     assert_true("[h3]" in thread[0], "the thread ending is visually louder than a step")
     # SAMPLE's umbrella pays money + max_health + an item; all three must show,
     # because the label and the payout read the same list (the SSiS `break` bug)
-    assert_true("+100 💰" in thread[0], f"money in the label: {thread[0]}")
-    assert_true("+20 max HP" in thread[0], f"max health in the label: {thread[0]}")
+    assert_true("[num]+100[/num] :golden_coin:" in thread[0], f"money in the label: {thread[0]}")
+    assert_true("[num]+20[/num] max HP" in thread[0], f"max health in the label: {thread[0]}")
     assert_true("MERMAIDS_TEAR" in thread[0], f"item in the label: {thread[0]}")
+    # the labels carry their own tags now; the toast must not wrap them again
+    assert_true("[num][num]" not in thread[0], "no nested [num] markup")
 
 
 def test_unlocked_thread_and_step_read_differently() -> None:

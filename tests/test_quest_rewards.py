@@ -122,13 +122,24 @@ def test_no_rewards_is_quiet() -> None:
 
 
 def test_reward_label() -> None:
+    """Labels are RichText markup, not plain text.
+
+    The numbers carry ``[num]`` so they pop in the panel's reward chips, and money
+    uses the ``:golden_coin:`` sprite rather than 💰 — measured: the emoji is not
+    in MoM's pixel font and renders as a tofu box.
+    """
     label = format_reward_label(
         [
             QuestReward(QuestRewardCategory.money, 50),
             QuestReward(QuestRewardCategory.max_health, 20),
         ]
     )
-    assert_eq(label, "+50 💰 · +20 max HP", "label matches the plan's example shape")
+    assert_eq(
+        label,
+        "[num]+50[/num] :golden_coin: · [num]+20[/num] max HP",
+        "both rewards, numbers tagged, separated by a middle dot",
+    )
+    assert_true("💰" not in label, "no emoji: it would render as tofu in the game font")
 
     assert_eq(format_reward_label([]), "", "no rewards -> empty label, no dangling separator")
 
@@ -150,7 +161,7 @@ def test_success_text_appends_the_label() -> None:
     rewards = [QuestReward(QuestRewardCategory.max_health, 10)]
 
     assert_true(prose in success_text(prose, rewards), "prose kept verbatim")
-    assert_true("+10 max HP" in success_text(prose, rewards), "label appended")
+    assert_true("[num]+10[/num] max HP" in success_text(prose, rewards), "label appended")
     # no rewards -> the prose is the whole line, with no trailing whitespace games
     assert_eq(success_text(prose, []), prose, "rewardless quest reads as plain prose")
     # the prose carries no placeholder, so rebalancing never touches a translation

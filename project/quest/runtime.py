@@ -146,7 +146,9 @@ class QuestRuntime:
 
     @staticmethod
     def _suffix(label: str) -> str:
-        return f"  [num]{label}[/num]" if label else ""
+        # no wrapping tag: the labels carry their own now ("[num]+50[/num] :golden_coin:"),
+        # and nesting [num] inside [num] would just be markup noise
+        return f"  {label}" if label else ""
 
     def _quest_name(self, quest: QuestDef) -> str:
         """The quest's title in the current language (D3: quests hold keys, not text)."""
