@@ -1,6 +1,6 @@
 ---
 aliases:
-  - Q03
+  - Q03_S00_LEARN_ABOUT_CURSE
 ---
 
 # Find someone who knows about curses
@@ -8,7 +8,7 @@ aliases:
 The investigation thread: who knows, where to find her, how to get there. The
 umbrella closes itself once all three steps are done.
 
-## S00_LEARN_ABOUT_CURSE
+## Q03_S00_LEARN_ABOUT_CURSE
 
 **Title**: Find someone who knows about curses
 
@@ -16,7 +16,7 @@ Nobody around here has opened a book since the tavern still had a whole roof. St
 
 **Success**: You now know who is an expert, where to look for her and which way to walk. Three answers and not one gram of magic.
 
-## S01_WHO_HAS_MORE_KNOWLEDGE
+## Q03_S01_WHO_HAS_MORE_KNOWLEDGE
 
 **Title**: Who knows about magic?
 
@@ -24,7 +24,7 @@ The herbalist brews potions and clearly remembers more than she says. She may al
 
 **Success**: They used to call her Mariolka. Now it is Miss Information, and she reportedly guards forbidden books in a secret library.
 
-## S02_WHERE_TO_FIND_THIS_PERSON
+## Q03_S02_WHERE_TO_FIND_THIS_PERSON
 
 **Title**: Where to find this person?
 
@@ -32,7 +32,7 @@ You have the name. That leaves the small matter of an address. The smith sees mo
 
 **Success**: The smith does not go to the city and has no plans to start. He does know exactly who in this village talks to every stranger passing through.
 
-## S03_HOW_TO_GET_THERE
+## Q03_S03_HOW_TO_GET_THERE
 
 **Title**: How to get there?
 

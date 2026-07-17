@@ -9,16 +9,30 @@ Source layout (decision **D1**: one file = one chain)::
     doc/PL/Misje/Znajdz kogos kto wie o klatwach.md   <- source of truth
     doc/EN/Quests/Find someone who knows about curses.md  <- prose only
 
-The file name is the localized chain title; the chain key lives in the
-frontmatter ``aliases`` (e.g. ``Q03``), exactly like characters. Each ``## S01``
-section is one quest, and its config key is ``<chain>_<section>``, so
-``## S01_WHO_HAS_MORE_KNOWLEDGE`` in chain ``Q03`` becomes
-``Q03_S01_WHO_HAS_MORE_KNOWLEDGE``.
+The file name is the localized chain title. **A section heading is the quest's
+config key, verbatim** — globally unique across the vault, so searching for
+``Q03_S01_WHO_HAS_MORE_KNOWLEDGE`` lands on exactly one heading and a wikilink
+to it is unambiguous. Nothing is composed or derived from the file.
+
+The chain's umbrella quest is named by the frontmatter ``aliases``, and every
+other section in the file is one of its steps::
+
+    ---
+    aliases:
+      - Q03_S00_LEARN_ABOUT_CURSE      # the umbrella's own key
+    ---
+
+    ## Q03_S00_LEARN_ABOUT_CURSE       # the umbrella (named by the alias)
+    ## Q03_S01_WHO_HAS_MORE_KNOWLEDGE  # a step: parent = the alias
+
+The alias doubles as Obsidian's link target for the chain, which is what makes a
+cross-chain ``Requires`` both clickable and independent of the localized file
+name (see ``_parse_requires``).
 
 Section body (decision **D2**: machine fields live in the body, not in
 frontmatter, because subquests cannot fit in YAML)::
 
-    ## S01_WHO_HAS_MORE_KNOWLEDGE
+    ## Q03_S01_WHO_HAS_MORE_KNOWLEDGE
 
     **Tytuł**: Kto ma wiedzę o magii?
 
@@ -38,9 +52,9 @@ EN file reads naturally.
 ignored with a warning. This is what makes the EN file safe to regenerate with an
 LLM: the worst it can do is write bad prose, never break the quest logic.
 
-``parent`` is implied by the file (D1): the ``S00`` section is the chain's
-umbrella and every other section in the file is one of its steps. Cross-chain
-edges are explicit, via ``**Requires**:`` with full quest keys.
+``parent`` is implied by the file (D1): the section named by the alias is the
+chain's umbrella and every other section in the file is one of its steps.
+Cross-chain edges are explicit, via ``**Requires**:``.
 
 Nothing here mutates game state: ``config.json`` is a generated artifact and the
 player's progress lives in the save (decision D13).
@@ -108,8 +122,9 @@ _SECTION_RE = re.compile(r"^##\s+(?P<key>[A-Z][A-Z0-9_]*)\s*$")
 _FIELD_RE = re.compile(r"^\*\*(?P<name>[^*]+)\*\*\s*:\s*(?P<value>.*)$")
 _ALIAS_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
-# The umbrella section of a chain. Everything else in the file is its step.
-_UMBRELLA_SECTION = "S00"
+# `[[#KEY]]`, `[[Alias#KEY]]`, `[[Alias#KEY|tekst]]` — the quest key is whatever
+# follows the last '#'. Mirrors `_WIKI_RE` in scripts/dialog_graph.py.
+_WIKI_RE = re.compile(r"^\[\[(?P<target>[^\]|]+)(?:\|[^\]]*)?\]\]$")
 
 # PL or EN spelling -> canonical field name.
 _FIELD_ALIASES: dict[str, str] = {
@@ -132,9 +147,9 @@ _REWARD_TARGET_RE = re.compile(r"\s*@(?P<target>[A-Z][A-Z0-9_]*)\s*$")
 
 @dataclass(slots=True)
 class _ParsedQuest:
-    """One ``## S01`` section, before it becomes config."""
+    """One ``## Q03_S01_...`` section, before it becomes config."""
 
-    section: str
+    key: str  # the quest's config key: the heading, verbatim
     line: int
     title: str = ""
     description: list[str] = field(default_factory=list)
@@ -192,20 +207,27 @@ def _parse_aliases(text: str, path: str) -> list[str]:
     return [a for a in aliases if a]
 
 
-def _chain_key_of(path: Path) -> str:
-    """The chain's config key: the UPPER_SNAKE alias in the frontmatter."""
+def _umbrella_key_of(path: Path) -> str:
+    """The chain's umbrella quest key: the UPPER_SNAKE alias in the frontmatter.
+
+    The alias *is* a quest key (``Q03_S00_LEARN_ABOUT_CURSE``), not a prefix to
+    compose one from. That is what lets a cross-chain ``Requires`` read
+    ``[[Q03_S00_LEARN_ABOUT_CURSE#Q03_S01_...]]``: Obsidian resolves the alias to
+    the file, so the link survives renaming the localized file name.
+    """
     aliases = _parse_aliases(path.read_text(encoding="utf-8"), str(path))
     key = next((a for a in aliases if _ALIAS_RE.match(a)), "")
     if not key:
         raise QuestImportError(
-            "no chain key in frontmatter aliases (expected an UPPER_SNAKE alias, e.g. 'Q03')",
+            "no umbrella key in frontmatter aliases (expected the umbrella quest's own "
+            "key, e.g. 'Q03_S00_LEARN_ABOUT_CURSE')",
             file=str(path),
         )
     return key
 
 
-def _discover_chain_keys(src_dir: Path) -> list[str]:
-    """Every chain key declared in the PL quest directory, sorted."""
+def _discover_umbrella_keys(src_dir: Path) -> list[str]:
+    """Every chain's umbrella key, declared in the PL quest directory, sorted."""
     try:
         pl_dir = _lang_dir(src_dir, "PL")
     except QuestImportError:
@@ -213,23 +235,46 @@ def _discover_chain_keys(src_dir: Path) -> list[str]:
     keys: list[str] = []
     for path in sorted(pl_dir.glob("*.md")):
         try:
-            keys.append(_chain_key_of(path))
+            keys.append(_umbrella_key_of(path))
         except QuestImportError:
             continue
     return sorted(keys)
 
 
-def _find_chain_file(src_dir: Path, lang: str, chain_key: str) -> Path:
+def _find_chain_file(src_dir: Path, lang: str, umbrella_key: str) -> Path:
     lang_dir = _lang_dir(src_dir, lang)
     for path in sorted(lang_dir.glob("*.md")):
         try:
-            if _chain_key_of(path) == chain_key:
+            if _umbrella_key_of(path) == umbrella_key:
                 return path
         except QuestImportError:
             continue
     raise QuestImportError(
-        f"no Markdown file with chain alias {chain_key!r} in {lang_dir}",
+        f"no Markdown file with alias {umbrella_key!r} in {lang_dir}",
         file=str(lang_dir),
+    )
+
+
+def _resolve_umbrella_key(src_dir: Path, wanted: str) -> str:
+    """Accept the full umbrella key, or a bare ``Qxx`` prefix as a shorthand.
+
+    ``just import-quests Q01_S00_BREAK_THE_CURSE`` is exact; ``just import-quests
+    Q01`` is the shorthand nobody has to look up. The shorthand lives only here —
+    no file carries a short alias, so there is one spelling in the vault.
+    """
+    known = _discover_umbrella_keys(src_dir)
+    if wanted in known:
+        return wanted
+
+    matches = [key for key in known if key.startswith(f"{wanted}_")]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise QuestImportError(
+            f"{wanted!r} is ambiguous — it matches {', '.join(matches)}"
+        )
+    raise QuestImportError(
+        f"no chain {wanted!r} (known: {', '.join(known) or 'none'})"
     )
 
 
@@ -255,7 +300,7 @@ def _parse_file(path: Path, *, machine_fields: bool) -> dict[str, _ParsedQuest]:
             key = section.group("key")
             if key in quests:
                 raise QuestImportError(f"duplicate section {key!r}", file=str(path), line=line_no)
-            current = _ParsedQuest(section=key, line=line_no)
+            current = _ParsedQuest(key=key, line=line_no)
             quests[key] = current
             continue
 
@@ -272,7 +317,7 @@ def _parse_file(path: Path, *, machine_fields: bool) -> dict[str, _ParsedQuest]:
 
     if not quests:
         raise QuestImportError(
-            "no quest sections found (expected at least one '## S00_...' heading)",
+            "no quest sections found (expected at least one '## Q00_S00_...' heading)",
             file=str(path),
         )
     return quests
@@ -318,11 +363,52 @@ def _apply_field(
     elif name == "test":
         quest.test = value or None
     elif name == "requires":
-        quest.requires = [r.strip() for r in value.split(",") if r.strip()]
+        quest.requires = _parse_requires(value, path, line_no)
     elif name == "progress":
         quest.progress, quest.progress_total = _parse_progress(value, path, line_no)
     elif name == "reward":
         quest.rewards.append(_parse_reward(value, path, line_no))
+
+
+def _parse_requires(value: str, path: Path, line_no: int) -> list[str]:
+    """Every spelling of a quest reference -> the bare key.
+
+    Which spelling an author reaches for is an Obsidian concern, not ours — all
+    of these are the same edge in the graph:
+
+    - ``[[#Q01_S01_LEARN_ABOUT_CURSE]]`` — same file; the only form Obsidian
+      resolves within a note, so the only one usable inside one chain.
+    - ``[[Q01_S00_BREAK_THE_CURSE#Q01_S01_LEARN_ABOUT_CURSE]]`` — another chain's
+      step. The alias resolves the file, so the link survives renaming it.
+    - ``[[Q00_S00_WHAT_IS_GOING_ON]]`` — another chain's *umbrella*. The alias
+      **is** that quest's key, so naming the note already names the quest and
+      repeating it after a ``#`` would say the same thing twice.
+    - ``Q01_S01_LEARN_ABOUT_CURSE`` — bare key, still accepted.
+
+    The key is whatever follows the last ``#``, or the whole target when there is
+    none. A link to something that is not a quest key (a file name, say) survives
+    parsing and dies in ``init_quests`` as a dangling ``requires`` — which names
+    the offender, and is exactly what should happen.
+    """
+    keys: list[str] = []
+    for raw in value.split(","):
+        item = raw.strip()
+        if not item:
+            continue
+
+        wiki = _WIKI_RE.match(item)
+        if wiki:
+            item = wiki.group("target").rpartition("#")[2].strip() or wiki.group("target").strip()
+        elif "[[" in item or "]]" in item:
+            raise QuestImportError(
+                f"requires {item!r} looks like a broken wikilink",
+                file=str(path),
+                line=line_no,
+            )
+
+        if item:
+            keys.append(item)
+    return keys
 
 
 def _parse_progress(value: str, path: Path, line_no: int) -> tuple[str, int]:
@@ -389,35 +475,32 @@ def _parse_reward(value: str, path: Path, line_no: int) -> dict[str, Any]:
 
 
 def import_quest_chain(
-    src_dir: Path, chain_key: str
+    src_dir: Path, umbrella_key: str
 ) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
     """Import one chain file (PL + EN) into ``(messages, quests)``."""
-    pl_path = _find_chain_file(src_dir, "PL", chain_key)
-    en_path = _find_chain_file(src_dir, "EN", chain_key)
+    pl_path = _find_chain_file(src_dir, "PL", umbrella_key)
+    en_path = _find_chain_file(src_dir, "EN", umbrella_key)
 
     pl_quests = _parse_file(pl_path, machine_fields=True)
     en_quests = _parse_file(en_path, machine_fields=False)
-    _validate_language_consistency(pl_quests, en_quests, chain_key, pl_path, en_path)
+    _validate_language_consistency(pl_quests, en_quests, umbrella_key, pl_path, en_path)
 
-    if _UMBRELLA_SECTION not in {s.split("_")[0] for s in pl_quests}:
+    # The alias names the umbrella, so it has to name a section that exists. A
+    # typo here would otherwise parent every step onto a quest nobody defines,
+    # and the whole chain would fail much later with a duller message.
+    if umbrella_key not in pl_quests:
         raise QuestImportError(
-            f"chain {chain_key!r} has no '{_UMBRELLA_SECTION}' section — every chain needs "
-            f"its umbrella, and the other sections take it as their parent",
+            f"the alias {umbrella_key!r} names no section in this file — the alias is the "
+            f"umbrella quest's own key, so a '## {umbrella_key}' heading must exist "
+            f"(found: {', '.join(pl_quests) or 'none'})",
             file=str(pl_path),
         )
-
-    umbrella_key = next(
-        f"{chain_key}_{section}"
-        for section in pl_quests
-        if section.split("_")[0] == _UMBRELLA_SECTION
-    )
 
     messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     quests: dict[str, Any] = {}
 
-    for section, pl_quest in pl_quests.items():
-        en_quest = en_quests[section]
-        key = f"{chain_key}_{section}"
+    for key, pl_quest in pl_quests.items():
+        en_quest = en_quests[key]
         _validate_parsed(pl_quest, key, pl_path)
 
         name_key = f"{MESSAGE_PREFIX}{key}_NAME"
@@ -490,7 +573,7 @@ def _validate_parsed(quest: _ParsedQuest, key: str, path: Path) -> None:
 def _validate_language_consistency(
     pl_quests: dict[str, _ParsedQuest],
     en_quests: dict[str, _ParsedQuest],
-    chain_key: str,
+    umbrella_key: str,
     pl_path: Path,
     en_path: Path,
 ) -> None:
@@ -498,7 +581,7 @@ def _validate_language_consistency(
     pl_keys, en_keys = set(pl_quests), set(en_quests)
     if pl_keys != en_keys:
         raise QuestImportError(
-            f"PL/EN section mismatch for chain {chain_key!r}: "
+            f"PL/EN section mismatch for chain {umbrella_key!r}: "
             f"missing in PL={sorted(en_keys - pl_keys)}, missing in EN={sorted(pl_keys - en_keys)}",
             file=str(en_path),
         )
@@ -511,7 +594,9 @@ def _validate_language_consistency(
             )
 
 
-def import_quests(src_dir: Path, chain_keys: list[str]) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
+def import_quests(
+    src_dir: Path, umbrella_keys: list[str]
+) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
     """Import several chains and merge them, then validate the whole graph.
 
     The graph check runs on the merged set on purpose: ``requires`` crosses
@@ -520,8 +605,8 @@ def import_quests(src_dir: Path, chain_keys: list[str]) -> tuple[dict[str, dict[
     messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     quests: dict[str, Any] = {}
 
-    for chain_key in chain_keys:
-        chain_messages, chain_quests = import_quest_chain(src_dir, chain_key)
+    for umbrella_key in umbrella_keys:
+        chain_messages, chain_quests = import_quest_chain(src_dir, umbrella_key)
         for lang in ("PL", "EN"):
             messages[lang].update(chain_messages[lang])
         for key, entry in chain_quests.items():
@@ -629,9 +714,12 @@ def collect_message_references(quests: dict[str, Any]) -> set[str]:
 def build_quest_config(
     src_dir: Path | None = None,
     config_path: Path | None = None,
-    chain_keys: list[str] | None = None,
+    chains: list[str] | None = None,
 ) -> int:
     """Rebuild the ``quests`` + quest ``messages`` sections of ``config.json``.
+
+    ``chains`` names umbrella keys, or the ``Qxx`` shorthand — resolution happens
+    here, at the CLI boundary, so :func:`import_quests` stays exact.
 
     Unlike the dialog importer, a broken quest file is never skipped with a
     warning: a quest that fails to import is a quest that silently does not exist
@@ -641,9 +729,17 @@ def build_quest_config(
     src_dir = src_dir or _DEFAULT_QUEST_SRC
     config_path = config_path or _DEFAULT_CONFIG_PATH
 
-    if chain_keys is None:
-        chain_keys = _discover_chain_keys(src_dir)
-    if not chain_keys:
+    try:
+        umbrella_keys = (
+            _discover_umbrella_keys(src_dir)
+            if chains is None
+            else [_resolve_umbrella_key(src_dir, c) for c in chains]
+        )
+    except QuestImportError as error:
+        print(f"Quest import failed: {error}", file=sys.stderr)
+        return 1
+
+    if not umbrella_keys:
         print(f"No quest chains found under {src_dir} — nothing to import.")
         return 0
 
@@ -655,7 +751,7 @@ def build_quest_config(
         config = json.load(f)
 
     try:
-        messages, quests = import_quests(src_dir, chain_keys)
+        messages, quests = import_quests(src_dir, umbrella_keys)
     except QuestImportError as error:
         print(f"Quest import failed: {error}", file=sys.stderr)
         print("config.json left untouched.", file=sys.stderr)
@@ -697,14 +793,17 @@ def build_quest_config(
         json.dump(config, f, ensure_ascii=False, indent=4)
         f.write("\n")
 
-    print(f"Imported {len(quests)} quest(s) from {len(chain_keys)} chain(s): {', '.join(chain_keys)}")
+    print(
+        f"Imported {len(quests)} quest(s) from {len(umbrella_keys)} chain(s): "
+        f"{', '.join(umbrella_keys)}"
+    )
     print(f"Written: {config_path}")
     return 0
 
 
 def main(argv: list[str] | None = None) -> None:
     argv = list(sys.argv[1:] if argv is None else argv)
-    sys.exit(build_quest_config(chain_keys=argv or None))
+    sys.exit(build_quest_config(chains=argv or None))
 
 
 if __name__ == "__main__":

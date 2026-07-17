@@ -1,6 +1,6 @@
 ---
 aliases:
-  - Q01
+  - Q01_S00_BREAK_THE_CURSE
 ---
 
 # Break the curse
@@ -8,7 +8,7 @@ aliases:
 Main story thread. The umbrella is `manual` - it is closed by content that does
 not exist yet (S06/S07, content debt D15), not by a condition.
 
-## S00_BREAK_THE_CURSE
+## Q01_S00_BREAK_THE_CURSE
 
 **Title**: Break the curse
 
@@ -16,7 +16,7 @@ A curse will not lift itself. Someone has to know how, someone has to be able to
 
 **Success**: The curse is broken. The sword maintains this was mostly its own doing.
 
-## S01_LEARN_ABOUT_CURSE
+## Q01_S01_LEARN_ABOUT_CURSE
 
 **Title**: Learn more about the curse
 
@@ -24,7 +24,7 @@ Children's tales and bards' ramblings are not enough to act on. In a tavern ever
 
 **Success**: The barman knows someone who does potions. Old, blind, lives by the forest, and people occasionally get worse after her remedies. A glowing recommendation.
 
-## S05_MEET_MADAME_SARCASMIA
+## Q01_S05_MEET_MADAME_SARCASMIA
 
 **Title**: Meet Madame Sarcasmia
 

@@ -1,13 +1,13 @@
 ---
 aliases:
-  - Q00
+  - Q00_S00_WHAT_IS_GOING_ON
 ---
 
 # O co tu chodzi?
 
 Łańcuch otwierający. Jedyny quest dostępny na starcie nowej gry.
 
-## S00_WHAT_IS_GOING_ON
+## Q00_S00_WHAT_IS_GOING_ON
 
 **Tytuł**: O co tu chodzi?
 

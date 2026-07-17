@@ -122,10 +122,10 @@ def test_reimporting_content_does_not_lose_progress() -> None:
 
     pl = """---
 aliases:
-  - Q00
+  - Q00_S00_WHAT_IS_GOING_ON
 ---
 
-## S00_WHAT_IS_GOING_ON
+## Q00_S00_WHAT_IS_GOING_ON
 
 **Tytuł**: O co tu chodzi?
 
@@ -173,7 +173,7 @@ Miecz gada.
         (root / "PL/Misje/a.md").write_text(
             pl.replace("Miecz gada.", "Miecz gada i nie przestaje."), encoding="utf-8"
         )
-        rc = build_quest_config(src_dir=root, config_path=config_path, chain_keys=["Q00"])
+        rc = build_quest_config(src_dir=root, config_path=config_path, chains=[Q00])
         assert_eq(rc, 0, "re-import succeeded")
 
         assert_eq(save_path.read_text(encoding="utf-8"), before, "save is byte-identical")

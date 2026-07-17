@@ -91,12 +91,12 @@ def read_quests(
 
 
 def source_links(src_dir: Path = DOC_DIR, *, lang: str = "PL") -> dict[str, str]:
-    """``{quest_key: "<file stem>#<section>"}`` for the double-click jump.
+    """``{quest_key: "<file stem>#<quest_key>"}`` for the double-click jump.
 
-    A quest's config key is ``<chain>_<section>`` (D1), so the source note is
-    found by pairing each chain file's frontmatter alias with its ``## SXX``
-    headers. A chain the vault does not have simply gets no link - the graph is
-    still drawable, and config.json is the source of truth for the shape.
+    A section heading *is* the quest's config key, so the link is the heading
+    verbatim - nothing to compose. A chain the vault does not have simply gets no
+    link: the graph is still drawable, and config.json is the source of truth for
+    the shape.
     """
     links: dict[str, str] = {}
     try:
@@ -105,15 +105,11 @@ def source_links(src_dir: Path = DOC_DIR, *, lang: str = "PL") -> dict[str, str]
         return links
 
     for path in sorted(lang_dir.glob("*.md")):
-        try:
-            chain = qi._chain_key_of(path)
-        except qi.QuestImportError:
-            continue
         for line in path.read_text(encoding="utf-8").splitlines():
             section = qi._SECTION_RE.match(line)
             if section:
                 key = section.group("key")
-                links[f"{chain}_{key}"] = f"{path.stem}#{key}"
+                links[key] = f"{path.stem}#{key}"
     return links
 
 

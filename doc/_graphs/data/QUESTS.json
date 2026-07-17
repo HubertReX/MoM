@@ -40,7 +40,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "O co tu chodzi#S00_WHAT_IS_GOING_ON"
+   "link": "O co tu chodzi#Q00_S00_WHAT_IS_GOING_ON"
   },
   {
    "id": "Q01_S00_BREAK_THE_CURSE",
@@ -63,7 +63,7 @@
     "border": "#f08c00"
    },
    "problem": "completion: manual - zamknie ją tylko kod gry (mark_done)",
-   "link": "Przełamać klątwę#S00_BREAK_THE_CURSE"
+   "link": "Przełamać klątwę#Q01_S00_BREAK_THE_CURSE"
   },
   {
    "id": "Q01_S01_LEARN_ABOUT_CURSE",
@@ -83,7 +83,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Przełamać klątwę#S01_LEARN_ABOUT_CURSE"
+   "link": "Przełamać klątwę#Q01_S01_LEARN_ABOUT_CURSE"
   },
   {
    "id": "Q01_S05_MEET_MADAME_SARCASMIA",
@@ -103,7 +103,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Przełamać klątwę#S05_MEET_MADAME_SARCASMIA"
+   "link": "Przełamać klątwę#Q01_S05_MEET_MADAME_SARCASMIA"
   },
   {
    "id": "Q03_S00_LEARN_ABOUT_CURSE",
@@ -125,7 +125,7 @@
     "border": "#2f9e44"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#S00_LEARN_ABOUT_CURSE"
+   "link": "Znajdź kogoś kto wie o klątwach#Q03_S00_LEARN_ABOUT_CURSE"
   },
   {
    "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
@@ -145,7 +145,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#S01_WHO_HAS_MORE_KNOWLEDGE"
+   "link": "Znajdź kogoś kto wie o klątwach#Q03_S01_WHO_HAS_MORE_KNOWLEDGE"
   },
   {
    "id": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
@@ -165,7 +165,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#S02_WHERE_TO_FIND_THIS_PERSON"
+   "link": "Znajdź kogoś kto wie o klątwach#Q03_S02_WHERE_TO_FIND_THIS_PERSON"
   },
   {
    "id": "Q03_S03_HOW_TO_GET_THERE",
@@ -185,7 +185,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#S03_HOW_TO_GET_THERE"
+   "link": "Znajdź kogoś kto wie o klątwach#Q03_S03_HOW_TO_GET_THERE"
   }
  ],
  "edges": [

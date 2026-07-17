@@ -1,24 +1,24 @@
 ---
 aliases:
-  - Q03
+  - Q03_S00_LEARN_ABOUT_CURSE
 ---
 
 # Znajdź kogoś kto wie o klątwach
 
 Wątek śledczy: kto się zna, gdzie jej szukać, którędy tam dojść. Parasol domyka się sam, gdy wszystkie trzy kroki są zrobione.
 
-## S00_LEARN_ABOUT_CURSE
+## Q03_S00_LEARN_ABOUT_CURSE
 
 **Tytuł**: Znajdź kogoś kto wie o klątwach
 
 W tej okolicy nikt nie zaglądał do książki od czasów, gdy [loc]karczma[/loc] miała jeszcze cały dach. Ale ktoś, gdzieś, musi wiedzieć o klątwach coś więcej niż plotki.
 
 **Completion**: all_subquests
-**Requires**: Q01_S01_LEARN_ABOUT_CURSE
+**Requires**: [[Q01_S00_BREAK_THE_CURSE#Q01_S01_LEARN_ABOUT_CURSE]]
 **Sukces**: Wiesz już, kto się na tym zna, gdzie jej szukać i którędy tam dojść. Trzy odpowiedzi i ani grama magii.
 **Nagroda**: max_health=10
 
-## S01_WHO_HAS_MORE_KNOWLEDGE
+## Q03_S01_WHO_HAS_MORE_KNOWLEDGE
 
 **Tytuł**: Kto ma wiedzę o magii?
 
@@ -28,7 +28,7 @@ W tej okolicy nikt nie zaglądał do książki od czasów, gdy [loc]karczma[/loc
 **Test**: visited("POTIONEER_PUZZLEMINT", "014") or visited("POTIONEER_PUZZLEMINT", "017")
 **Sukces**: Kiedyś wołali na nią [char]Mariolka[/char]. Teraz mówią [char]Bibliofilistka des Informacja[/char] i podobno pilnuje zakazanych ksiąg w [loc]tajnej bibliotece[/loc].
 
-## S02_WHERE_TO_FIND_THIS_PERSON
+## Q03_S02_WHERE_TO_FIND_THIS_PERSON
 
 **Tytuł**: Gdzie znaleźć tę osobę?
 
@@ -38,7 +38,7 @@ Imię już jest. Zostaje drobiazg: adres. [char]Kowal[/char] bywa w świecie cz�
 **Test**: visited("HAMMER_HOAXHEART", "009")
 **Sukces**: [char]Kowal[/char] do miasta nie jeździ i nie zamierza zacząć. Wie za to dokładnie, kto w tej wiosce gada ze wszystkimi przybyszami.
 
-## S03_HOW_TO_GET_THERE
+## Q03_S03_HOW_TO_GET_THERE
 
 **Tytuł**: Jak tam dotrzeć?
 

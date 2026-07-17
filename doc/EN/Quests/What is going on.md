@@ -1,13 +1,13 @@
 ---
 aliases:
-  - Q00
+  - Q00_S00_WHAT_IS_GOING_ON
 ---
 
 # What is going on?
 
 Opening chain. The only quest available at the start of a new game.
 
-## S00_WHAT_IS_GOING_ON
+## Q00_S00_WHAT_IS_GOING_ON
 
 **Title**: What is going on?
 
