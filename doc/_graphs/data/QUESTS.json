@@ -1,0 +1,233 @@
+{
+ "meta": {
+  "source": "project/config_model/config.json",
+  "counts": {
+   "quests": 8,
+   "threads": 2,
+   "roots": 1
+  },
+  "modes": {
+   "all_subquests": {
+    "bg": "#b2f2bb",
+    "border": "#2f9e44"
+   },
+   "test": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "manual": {
+    "bg": "#ffd8a8",
+    "border": "#f08c00"
+   }
+  }
+ },
+ "nodes": [
+  {
+   "id": "Q00_S00_WHAT_IS_GOING_ON",
+   "level": 0,
+   "name": "O co tu chodzi?",
+   "description": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a twój miecz nie przestaje mówić. Podobno to nie jest normalne. Podobno reszta też nie.",
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"CLAPBACK_SWORD\", \"015\")",
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": false,
+   "is_root": true,
+   "rewards": [],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "O co tu chodzi#S00_WHAT_IS_GOING_ON"
+  },
+  {
+   "id": "Q01_S00_BREAK_THE_CURSE",
+   "level": 1,
+   "name": "Przełamać klątwę",
+   "description": "Klątwa nie zdejmie się sama. Ktoś musi wiedzieć jak, ktoś musi umieć, a ktoś - czyli ty - musi pozbierać jedno z drugim do kupy.",
+   "completion": "manual",
+   "completion_text": "zamyka ją tylko kod gry",
+   "test": null,
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": true,
+   "is_root": false,
+   "rewards": [
+    "+20 max HP",
+    "+5 obrażeń"
+   ],
+   "colour": {
+    "bg": "#ffd8a8",
+    "border": "#f08c00"
+   },
+   "problem": "completion: manual - zamknie ją tylko kod gry (mark_done)",
+   "link": "Przełamać klątwę#S00_BREAK_THE_CURSE"
+  },
+  {
+   "id": "Q01_S01_LEARN_ABOUT_CURSE",
+   "level": 2,
+   "name": "Dowiedz się więcej o klątwie",
+   "description": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W karczmie mówi się wszystko i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.",
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\")",
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Przełamać klątwę#S01_LEARN_ABOUT_CURSE"
+  },
+  {
+   "id": "Q01_S05_MEET_MADAME_SARCASMIA",
+   "level": 3,
+   "name": "Spotkaj się z Sarkażmijką",
+   "description": "Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para - i podobno ma o sobie bardzo wysokie mniemanie.",
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"MADAME_SARCASMIA\", \"001\")",
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Przełamać klątwę#S05_MEET_MADAME_SARCASMIA"
+  },
+  {
+   "id": "Q03_S00_LEARN_ABOUT_CURSE",
+   "level": 3,
+   "name": "Znajdź kogoś kto wie o klątwach",
+   "description": "W tej okolicy nikt nie zaglądał do książki od czasów, gdy karczma miała jeszcze cały dach. Ale ktoś, gdzieś, musi wiedzieć o klątwach coś więcej niż plotki.",
+   "completion": "all_subquests",
+   "completion_text": "zamyka się, gdy zamkną się jej kroki",
+   "test": null,
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": true,
+   "is_root": false,
+   "rewards": [
+    "+10 max HP"
+   ],
+   "colour": {
+    "bg": "#b2f2bb",
+    "border": "#2f9e44"
+   },
+   "problem": null,
+   "link": "Znajdź kogoś kto wie o klątwach#S00_LEARN_ABOUT_CURSE"
+  },
+  {
+   "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "level": 4,
+   "name": "Kto ma wiedzę o magii?",
+   "description": "Zielarka warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może pamięta też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"POTIONEER_PUZZLEMINT\", \"014\") or visited(\"POTIONEER_PUZZLEMINT\", \"017\")",
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Znajdź kogoś kto wie o klątwach#S01_WHO_HAS_MORE_KNOWLEDGE"
+  },
+  {
+   "id": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
+   "level": 4,
+   "name": "Gdzie znaleźć tę osobę?",
+   "description": "Imię już jest. Zostaje drobiazg: adres. Kowal bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"HAMMER_HOAXHEART\", \"009\")",
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Znajdź kogoś kto wie o klątwach#S02_WHERE_TO_FIND_THIS_PERSON"
+  },
+  {
+   "id": "Q03_S03_HOW_TO_GET_THERE",
+   "level": 4,
+   "name": "Jak tam dotrzeć?",
+   "description": "Miasto jest gdzieś na północy. \"Gdzieś\" to stanowczo za mało, żeby ruszać w drogę.",
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"017\")",
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Znajdź kogoś kto wie o klątwach#S03_HOW_TO_GET_THERE"
+  }
+ ],
+ "edges": [
+  {
+   "from": "Q00_S00_WHAT_IS_GOING_ON",
+   "to": "Q01_S00_BREAK_THE_CURSE",
+   "kind": "requires"
+  },
+  {
+   "from": "Q01_S00_BREAK_THE_CURSE",
+   "to": "Q01_S01_LEARN_ABOUT_CURSE",
+   "kind": "parent"
+  },
+  {
+   "from": "Q01_S01_LEARN_ABOUT_CURSE",
+   "to": "Q01_S05_MEET_MADAME_SARCASMIA",
+   "kind": "requires"
+  },
+  {
+   "from": "Q01_S00_BREAK_THE_CURSE",
+   "to": "Q01_S05_MEET_MADAME_SARCASMIA",
+   "kind": "parent"
+  },
+  {
+   "from": "Q01_S01_LEARN_ABOUT_CURSE",
+   "to": "Q03_S00_LEARN_ABOUT_CURSE",
+   "kind": "requires"
+  },
+  {
+   "from": "Q03_S00_LEARN_ABOUT_CURSE",
+   "to": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "kind": "parent"
+  },
+  {
+   "from": "Q03_S00_LEARN_ABOUT_CURSE",
+   "to": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
+   "kind": "parent"
+  },
+  {
+   "from": "Q03_S00_LEARN_ABOUT_CURSE",
+   "to": "Q03_S03_HOW_TO_GET_THERE",
+   "kind": "parent"
+  }
+ ]
+}

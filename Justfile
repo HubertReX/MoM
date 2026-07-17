@@ -170,6 +170,21 @@ dialog-graph *key:
         .venv\Scripts\python.exe scripts\dialog_graph.py -c "{{key}}" --format json
     }
 
+# Regenerate the interactive quest DAG (DataviewJS + vis-network) in doc/_graphs/.
+# Run AFTER `just import-quests`: the graph is built from config.json, so it shows
+# what the game sees. One note for every chain - the edges that matter cross them.
+# Needs Dataview "Enable JavaScript Queries" in Obsidian.
+[unix]
+quest-graph:
+    .venv/bin/python scripts/quest_graph.py
+
+# Regenerate the interactive quest DAG (DataviewJS + vis-network) in doc/_graphs/.
+# Run AFTER `just import-quests`. Needs Dataview "Enable JavaScript Queries" in Obsidian.
+[windows]
+quest-graph:
+    #!powershell
+    .venv\Scripts\python.exe scripts\quest_graph.py
+
 # Run mypy static type checker on the project directory
 [unix]
 mypy:
