@@ -42,3 +42,4 @@ Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Pod
 **Test**: visited("MADAME_SARCASMIA", "001")
 **Requires**: [[#Q01_S01_LEARN_ABOUT_CURSE]]
 **Sukces**: [char]Sarkażmijka[/char] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak może, ale za drobną przysługę.
+**Nagroda**: money=50

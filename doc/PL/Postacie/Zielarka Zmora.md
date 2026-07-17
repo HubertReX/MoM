@@ -41,8 +41,8 @@ Szkoliła kiedyś [[Bibliofilistka des Informacja|Bibliofilistkę des Informacj�
 
 * Ktoś Ty? Kto Cię tu przysłał?
 
-* [[#000]] 1[Barman_Absinthrayner.012.visited]😐: [[Barman Absyntnent]] powiedział mi o Tobie.
-* [[#992-end]] 2[Barman_Absinthrayner.012.not_visited]😐: Nikt, ja sam tu trafiłem.
+* [[#000]] 1[Barman_Absinthrayner.012.visited or Barman_Absinthrayner.009.visited]😐: [[Barman Absyntnent]] powiedział mi o Tobie.
+* [[#992-end]] 2[Barman_Absinthrayner.012.not_visited and Barman_Absinthrayner.012.not_visited]😐: Nikt, ja sam tu trafiłem.
 
 ## 000
 

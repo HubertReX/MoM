@@ -52,15 +52,15 @@ Każda sekcja poza tą z aliasu jest krokiem parasola - `parent` bierze się z p
 
 ## Lista pól
 
-| Pole | Można też napisać | Obowiązkowe | Skąd czytane |
-| --- | --- | --- | --- |
-| `title` | `title`, `tytul`, `tytuł` | tak | PL i EN |
-| `success` | `success`, `sukces` | tak | PL i EN |
-| `completion` | `completion`, `ukonczenie`, `ukończenie` | tak | **tylko PL** |
-| `test` | `test` | gdy `completion: test` | **tylko PL** |
-| `requires` | `requires`, `wymaga` | nie | **tylko PL** |
-| `progress` | `postep`, `postęp`, `progress` | nie | **tylko PL** |
-| `reward` | `nagroda`, `reward` | nie | **tylko PL** |
+| Pole         | Można też napisać                        | Obowiązkowe            | Skąd czytane |
+| ------------ | ---------------------------------------- | ---------------------- | ------------ |
+| `title`      | `title`, `tytul`, `tytuł`                | **tak**                | PL i EN      |
+| `success`    | `success`, `sukces`                      | **tak**                | PL i EN      |
+| `completion` | `completion`, `ukonczenie`, `ukończenie` | **tak**                | **tylko PL** |
+| `test`       | `test`                                   | gdy `completion: test` | **tylko PL** |
+| `requires`   | `requires`, `wymaga`                     | nie                    | **tylko PL** |
+| `progress`   | `postep`, `postęp`, `progress`           | nie                    | **tylko PL** |
+| `reward`     | `nagroda`, `reward`                      | nie                    | **tylko PL** |
 
 Poza tymi polami obowiązkowa jest też **proza opisu** - akapit, który nie jest linią
 `Pole:`. To on trafia do dziennika jako opis questa.
@@ -85,11 +85,11 @@ Można wymienić kilka naraz, **po przecinku**.
 
 ## Completion - kiedy quest się zamyka
 
-| Wartość | Znaczenie |
-| --- | --- |
+| Wartość         | Znaczenie                                                          |
+| --------------- | ------------------------------------------------------------------ |
 | `all_subquests` | parasol - zamyka się, gdy zamkną się wszystkie jej podrzędne kroki |
-| `test` | zamyka się sama, gdy `Test:` staje się prawdą |
-| `manual` | zamyka ją **wyłącznie kod gry** (`mark_done`) |
+| `test`          | zamyka się sama, gdy `Test:` staje się prawdą                      |
+| `manual`        | zamyka ją **wyłącznie kod gry** (`mark_done`)                      |
 
 Odrzucane przy imporcie (`just import-quests`):
 
@@ -114,7 +114,7 @@ Mini-DSL, nie `eval()`: whitelista dopuszczalnych komend, wszystko inne to błą
 | `visited("BARMAN_ABSINTHRAYNER", "012")` | gracz odwiedził węzeł dialogu `NODE` u postaci `NPC` |
 
 **Łączenie**: `and`, `or`, `not`, nawiasy.
-**Porównania**: `==` `!=` `<` `<=` `>` `>=` `in` `not in`.
+**Porównania**: ` == ` `!=` `<` `<=` `>` `>=` `in` `not in`.
 
 Gołych nazw-wartości nie ma - `sentiment` działa tylko w dialogu, bo quest nie ma kontekstu bieżącej postaci.
 
@@ -158,15 +158,15 @@ nich `Postęp:`.
 Jedna linia `Nagroda:` per bonus dla gracza - **wszystkie są aplikowane**, nie tylko
 pierwsza.
 
-| Kategoria | Znaczenie | Przykład |
-| --- | --- | --- |
-| `money=nn` | złoto | `money=50` |
-| `items=KEY_1,KEY_2` | przedmioty (po przecinku) | `items=MERMAIDS_TEAR, PHOENIX_FEATHER` |
-| `health=nn` | leczy bieżące HP | `health=20` |
-| `max_health=nn` | podnosi max HP **i bieżące o tyle samo** | `max_health=20` |
-| `damage=nn` | zwiększa obrażenia zadawane przez gracza | `damage=5` |
-| `max_items=nn` | sloty w pasku (limit `MAX_HOTBAR_ITEMS_LIMIT=8`) | `max_items=7` |
-| `sentiment=nn @CHAR_KEY` | sympatia NPC - **wymaga `@NPC_KEY`** | `sentiment=10 @BARMAN_ABSINTHRAYNER` |
+| Kategoria                | Znaczenie                                        | Przykład                               |
+| ------------------------ | ------------------------------------------------ | -------------------------------------- |
+| `money=nn`               | złoto                                            | `money=50`                             |
+| `items=KEY_1,KEY_2`      | przedmioty (po przecinku)                        | `items=MERMAIDS_TEAR, PHOENIX_FEATHER` |
+| `health=nn`              | leczy bieżące HP                                 | `health=20`                            |
+| `max_health=nn`          | podnosi max HP **i bieżące o tyle samo**         | `max_health=20`                        |
+| `damage=nn`              | zwiększa obrażenia zadawane przez gracza         | `damage=5`                             |
+| `max_items=nn`           | sloty w pasku (limit `MAX_HOTBAR_ITEMS_LIMIT=8`) | `max_items=7`                          |
+| `sentiment=nn @CHAR_KEY` | sympatia NPC - **wymaga `@NPC_KEY`**             | `sentiment=10 @BARMAN_ABSINTHRAYNER`   |
 
 Odrzucane przy imporcie:
 
