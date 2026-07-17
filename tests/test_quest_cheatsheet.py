@@ -45,9 +45,13 @@ def test_every_completion_mode_is_documented() -> None:
 
 
 def test_every_reward_category_is_documented() -> None:
-    """A category nobody documents is a category nobody uses."""
+    """A category nobody documents is a category nobody uses.
+
+    The reward table leads with the syntax (``money=nn``), not the bare name, so
+    the category value appears as the start of a code span rather than alone.
+    """
     for category in QuestRewardCategory:
-        assert_true(f"`{category.value}`" in PAGE, f"reward {category.value} is on the page")
+        assert_true(f"`{category.value}" in PAGE, f"reward {category.value} is on the page")
 
 
 def test_every_quest_predicate_is_documented() -> None:
@@ -74,6 +78,25 @@ def test_pl_only_fields_are_marked_as_such() -> None:
     assert_true("**tylko PL**" in PAGE, "the PL-only marking exists")
     # the count of marked rows must match the machine fields, not merely be non-zero
     assert_eq(PAGE.count("| **tylko PL** |"), len(_MACHINE_FIELDS), "every machine field marked")
+
+
+def test_the_fields_table_marks_what_is_mandatory() -> None:
+    """The column the author asked for: title/success/completion are required.
+
+    Mirrors what `_validate_parsed` enforces (those three plus the description
+    prose) and `_validate_completion` (test only when completion is test).
+    """
+    assert_true("| Obowiązkowe |" in PAGE, "the table has a mandatory column")
+    # the three always-required fields each sit in a row marked mandatory
+    for field in ("title", "success", "completion"):
+        row = next((line for line in PAGE.splitlines() if line.startswith(f"| `{field}`")), "")
+        assert_true(row.endswith("|"), f"{field} has a table row: {row!r}")
+        assert_true("| tak |" in row, f"{field} is marked mandatory: {row!r}")
+    # test is conditionally required; the page has to say on what
+    test_row = next((line for line in PAGE.splitlines() if line.startswith("| `test`")), "")
+    assert_true("completion: test" in test_row, f"test's condition is stated: {test_row!r}")
+    # and the description prose is called out beyond the field rows
+    assert_true("proza opisu" in PAGE, "the mandatory prose is mentioned too")
 
 
 def test_the_visited_arity_trap_is_spelled_out() -> None:
@@ -165,6 +188,7 @@ def main() -> None:
         test_every_field_spelling_is_documented,
         test_every_tag_is_documented,
         test_pl_only_fields_are_marked_as_such,
+        test_the_fields_table_marks_what_is_mandatory,
         test_the_visited_arity_trap_is_spelled_out,
         test_the_template_matches_the_importer_schema,
         test_the_template_really_imports,
