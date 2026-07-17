@@ -74,7 +74,12 @@ from typing import Any
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
-from dialog.conditions import ConditionError, ConditionScope, validate_condition
+from dialog.conditions import (
+    ConditionError,
+    ConditionScope,
+    validate_condition,
+    validate_number,
+)
 from quest.graph import init_quests
 
 
@@ -557,11 +562,15 @@ def _validate_parsed(quest: _ParsedQuest, key: str, path: Path) -> None:
 
     # Validate conditions here, against the quest scope, so a typo names its file
     # and line instead of evaluating to a silent False for the rest of the game.
-    for label, expression in (("Test", quest.test), ("Postęp", quest.progress)):
+    # Test is a yes/no condition; Postęp drives a bar and must be numeric, so it
+    # gets the stricter check — otherwise `Postęp: has_item("X")` imports fine and
+    # crashes the moment the journal opens (validate_number spells out why).
+    checks = (("Test", quest.test, validate_condition), ("Postęp", quest.progress, validate_number))
+    for label, expression, validator in checks:
         if not expression:
             continue
         try:
-            validate_condition(expression, ConditionScope.quest)
+            validator(expression, ConditionScope.quest)
         except ConditionError as error:
             raise QuestImportError(
                 f"quest {key!r} has an invalid {label}: {error}",

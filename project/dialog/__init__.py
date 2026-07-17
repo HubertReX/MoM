@@ -13,7 +13,8 @@ from dialog.conditions import (
     DialogConditionContext,
     check_condition,
     eval_number,
-    validate_condition
+    validate_condition,
+    validate_number,
     )
 from dialog.entities import (
     DialogNode,
@@ -38,6 +39,7 @@ __all__ = [
     "check_condition",
     "eval_number",
     "validate_condition",
+    "validate_number",
     "ResultSink",
     "apply_result",
     "visit_node",

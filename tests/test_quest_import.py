@@ -306,6 +306,41 @@ def test_quest_scope_is_enforced_at_import() -> None:
             )
 
 
+def test_a_non_numeric_progress_fails_at_import() -> None:
+    """A progress bar counts something, so a yes/no expression is caught here.
+
+    Before this check, `Postęp: has_item("X") / 3` imported fine and crashed the
+    game the moment the journal drew the bar (eval_number rejects a bool result).
+    Now the import names the file and line instead.
+    """
+    with_progress = Q00_PL.replace(
+        '**Test**: visited("CLAPBACK_SWORD", "015")',
+        '**Test**: visited("CLAPBACK_SWORD", "015")\n'
+        '**Postęp**: has_item("CLAPBACK_SWORD") / 3',
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _make_vault(Path(tmp), {"PL/Misje/a.md": with_progress, "EN/Quests/a.md": Q00_EN})
+        _expect_import_error(
+            lambda: import_quests(vault, [Q00_KEY]), "must be a number", "bool progress rejected"
+        )
+
+
+def test_a_numeric_progress_imports() -> None:
+    """The valid shape still passes and lands in the config with its total."""
+    with_progress = Q00_PL.replace(
+        '**Test**: visited("CLAPBACK_SWORD", "015")',
+        '**Test**: visited("CLAPBACK_SWORD", "015")\n'
+        '**Postęp**: item_count("MERMAIDS_TEAR") / 3',
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _make_vault(Path(tmp), {"PL/Misje/a.md": with_progress, "EN/Quests/a.md": Q00_EN})
+        _, quests = import_quests(vault, [Q00_KEY])
+
+    quest = quests["Q00_S00_WHAT_IS_GOING_ON"]
+    assert_eq(quest["progress"], 'item_count("MERMAIDS_TEAR")', "expression kept")
+    assert_eq(quest["progress_total"], 3, "total parsed off the slash")
+
+
 def test_graph_problems_fail_the_import() -> None:
     """init_quests runs on the merged set: dangling requires cannot slip through."""
     dangling = Q03_PL.replace(
@@ -662,6 +697,8 @@ def main() -> None:
         test_machine_fields_are_read_from_pl_only,
         test_invalid_test_names_the_file_and_line,
         test_quest_scope_is_enforced_at_import,
+        test_a_non_numeric_progress_fails_at_import,
+        test_a_numeric_progress_imports,
         test_graph_problems_fail_the_import,
         test_untranslated_section_fails,
         test_missing_pieces_fail_with_a_useful_message,

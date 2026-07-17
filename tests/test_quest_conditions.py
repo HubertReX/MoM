@@ -25,6 +25,7 @@ from dialog import (
     check_condition,
     eval_number,
     validate_condition,
+    validate_number,
 )
 
 
@@ -192,6 +193,33 @@ def test_eval_number_rejects_non_numbers() -> None:
     _expect_condition_error(lambda: eval_number('"nope"', ctx), "string is not a number")
 
 
+def test_validate_number_catches_at_import_what_eval_number_caught_at_runtime() -> None:
+    """The whole point: a non-numeric progress fails at import, not on journal open.
+
+    ``eval_number`` already rejected a yes/no result — but only while drawing the
+    bar. ``validate_number`` is the static twin the importer calls, so
+    ``progress: has_item("X")`` names its line instead of crashing the game later.
+    No context: it decides from the expression's shape alone.
+    """
+    # numeric shapes pass, exactly the ones eval_number would return a number for
+    validate_number('item_count("MERMAIDS_TEAR")', QUEST)
+    validate_number("3", QUEST)
+
+    # yes/no shapes are rejected up front — these were the runtime crashes
+    for bad in (
+        'has_item("X")',
+        'visited("NPC", "012")',
+        'quest_done("Q01")',
+        'item_count("X") >= 3',
+        'not item_count("X")',
+    ):
+        _expect_condition_error(lambda expr=bad: validate_number(expr, QUEST), f"boolean progress {bad!r}")
+
+    # and the whitelist still applies before the numeric check
+    _expect_condition_error(lambda: validate_number("__import__('os')", QUEST), "dunder still blocked")
+    _expect_condition_error(lambda: validate_number('visited("012")', QUEST), "quest arity still enforced")
+
+
 def test_eval_number_uses_the_same_whitelist() -> None:
     """eval_number is check_condition's twin: same parser, same sandbox."""
     ctx = StubQuestContext()
@@ -254,6 +282,7 @@ def main() -> None:
         test_quest_scope_requires_npc_on_visited,
         test_eval_number_and_item_count,
         test_eval_number_rejects_non_numbers,
+        test_validate_number_catches_at_import_what_eval_number_caught_at_runtime,
         test_eval_number_uses_the_same_whitelist,
         test_unknown_names_still_fail_loudly,
         test_whitelist_did_not_grow_beyond_the_plan,

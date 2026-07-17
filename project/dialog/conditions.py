@@ -173,6 +173,14 @@ _VALUE_NAMES_BY_SCOPE: dict[ConditionScope, frozenset[str]] = {
     ConditionScope.quest: frozenset(),
 }
 
+# Predicates that return a *number* rather than a yes/no. Only these (or a
+# numeric literal) make a valid `progress` expression — see `validate_number`.
+# Kept in sync by hand with `_Interpreter._eval_call`: item_count reads a count,
+# every other predicate answers a question. A numeric predicate added there
+# without being added here would still work at runtime but be rejected as
+# progress, which fails loud rather than silent — the safe direction.
+_NUMERIC_PREDICATES: frozenset[str] = frozenset({"item_count"})
+
 # comparison operator node -> concrete function
 _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
     ast.Eq: operator.eq,
@@ -306,6 +314,45 @@ def validate_condition(
     _compile(condition, scope)
 
 
+def _yields_number(node: ast.AST) -> bool:
+    """Would this pre-validated node evaluate to a number rather than a bool?
+
+    A static mirror of :func:`eval_number`'s runtime type check. The whitelist is
+    small enough to decide from shape alone: a numeric literal, a call to a
+    numeric predicate, their unary sign, or an ``and``/``or`` of numeric operands.
+    A comparison, a ``not``, or a call to a yes/no predicate is boolean.
+    """
+    if isinstance(node, ast.Constant):
+        return isinstance(node.value, (int, float)) and not isinstance(node.value, bool)
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+        return node.func.id in _NUMERIC_PREDICATES
+    if isinstance(node, ast.UnaryOp):
+        return isinstance(node.op, (ast.USub, ast.UAdd)) and _yields_number(node.operand)
+    if isinstance(node, ast.BoolOp):
+        return all(_yields_number(value) for value in node.values)
+    return False
+
+
+def validate_number(
+    expression: str, scope: ConditionScope = ConditionScope.quest
+) -> None:
+    """Validate ``expression`` as a numeric one (decision D9 — quest progress).
+
+    Whitelist first, then a static type check: a ``progress`` expression drives a
+    bar, so it must yield a *number*. Without this, ``progress: 'has_item("X")'``
+    passes the plain whitelist (it is a valid *condition*) and only blows up at
+    runtime — the moment the journal opens and draws the bar — instead of naming
+    the offending line at import. Raises :class:`ConditionError`; returns ``None``
+    when valid.
+    """
+    tree = _compile(expression, scope)
+    if not _yields_number(tree.body):
+        raise ConditionError(
+            f"expression {expression!r} must be a number, not a yes/no condition "
+            f"(a progress bar counts something — use e.g. item_count(\"ITEM\"))"
+        )
+
+
 # ---------------------------------------------------------------------------
 # Evaluate against a context
 # ---------------------------------------------------------------------------
@@ -437,4 +484,5 @@ __all__ = [
     "check_condition",
     "eval_number",
     "validate_condition",
+    "validate_number",
 ]
