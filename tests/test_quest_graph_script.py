@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 sys.path.insert(0, os.path.dirname(__file__))
 
 from quest.graph import init_quests
-from quest_graph import graph_to_dict, levels, uncloseable
+from quest_graph import graph_to_dict, levels, markup_runs, uncloseable
 from test_quest_entities import SAMPLE
 
 Q00 = "Q00_S00_WHAT_IS_GOING_ON"
@@ -118,6 +118,46 @@ def test_names_resolve_through_messages() -> None:
     assert_eq(nodes[Q01_S00]["name"], "M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME", "fallback")
 
 
+def test_markup_flattens_to_bold_runs() -> None:
+    """Every kind of styling becomes bold, and nothing prints its own tags.
+
+    The tooltip is an Obsidian note in the reader's theme, with none of MoM's
+    palette. Inventing colours here would imply distinctions the game does not
+    make; bold says "the author marked this" and stops.
+    """
+    runs = markup_runs("[char]Zielarka[/char] warzy [num]3[/num] mikstury")
+
+    assert_eq([r["text"] for r in runs], ["Zielarka", " warzy ", "3", " mikstury"], "split on tags")
+    assert_eq([r["bold"] for r in runs], [True, False, True, False], "any tag -> bold")
+    assert_true(all("[" not in r["text"] for r in runs), "no tag leaks into the text")
+
+
+def test_markup_runs_coalesce() -> None:
+    """One DOM node per run, so runs that read the same must not be split."""
+    assert_eq(markup_runs("zwykła proza bez tagów"),
+              [{"text": "zwykła proza bez tagów", "bold": False}], "one run")
+    # [/] and [/char] mean the same thing, so they must produce the same runs
+    assert_eq(markup_runs("[char]X[/]y"), markup_runs("[char]X[/char]y"), "closers agree")
+
+
+def test_markup_runs_drop_inline_sprites() -> None:
+    """A coin sprite has no tooltip equivalent; dropping beats printing ':name:'."""
+    runs = markup_runs("koszt :heart: dużo")
+    assert_true(all(":heart:" not in r["text"] for r in runs), f"the marker is gone: {runs}")
+
+
+def test_node_labels_are_plain() -> None:
+    """vis-network draws labels on a canvas and knows no markup."""
+    defs = _defs()
+    messages = {"M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME": "[char]Malachi[/char] się budzi"}
+    nodes = {n["id"]: n for n in graph_to_dict(defs, messages, {})["nodes"]}
+
+    assert_eq(nodes[Q00]["name"], "Malachi się budzi", "label is stripped")
+    assert_eq(
+        [r["bold"] for r in nodes[Q00]["name_runs"]], [True, False], "the tooltip keeps the styling"
+    )
+
+
 def test_threads_and_roots_are_marked() -> None:
     data = graph_to_dict(_defs(), {}, {})
     nodes = {n["id"]: n for n in data["nodes"]}
@@ -149,6 +189,10 @@ def main() -> None:
         test_a_healthy_chain_is_not_flagged,
         test_both_gate_kinds_become_edges,
         test_names_resolve_through_messages,
+        test_markup_flattens_to_bold_runs,
+        test_markup_runs_coalesce,
+        test_markup_runs_drop_inline_sprites,
+        test_node_labels_are_plain,
         test_threads_and_roots_are_marked,
         test_rewards_are_labelled_for_the_tooltip,
     ]

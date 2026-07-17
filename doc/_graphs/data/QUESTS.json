@@ -26,7 +26,18 @@
    "id": "Q00_S00_WHAT_IS_GOING_ON",
    "level": 0,
    "name": "O co tu chodzi?",
-   "description": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a Twój miecz nie przestaje do Ciebie gadać. To chyba nie jest normalne...",
+   "name_runs": [
+    {
+     "text": "O co tu chodzi?",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a Twój miecz nie przestaje do Ciebie gadać. To chyba nie jest normalne...",
+     "bold": false
+    }
+   ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"CLAPBACK_SWORD\", \"015\")",
@@ -46,7 +57,26 @@
    "id": "Q01_S00_BREAK_THE_CURSE",
    "level": 1,
    "name": "Przełamać klątwę",
-   "description": "Klątwa nie zdejmie się sama. Ktoś pewnie wie jak to działa, ktoś pewnie umie ją zdjąć, a ktoś - czyli [char]Ty[/char] - musi pozbierać jedno z drugim do kupy.",
+   "name_runs": [
+    {
+     "text": "Przełamać klątwę",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Klątwa nie zdejmie się sama. Ktoś pewnie wie jak to działa, ktoś pewnie umie ją zdjąć, a ktoś - czyli ",
+     "bold": false
+    },
+    {
+     "text": "Ty",
+     "bold": true
+    },
+    {
+     "text": " - musi pozbierać jedno z drugim do kupy.",
+     "bold": false
+    }
+   ],
    "completion": "manual",
    "completion_text": "zamyka ją tylko kod gry",
    "test": null,
@@ -69,7 +99,26 @@
    "id": "Q01_S01_LEARN_ABOUT_CURSE",
    "level": 2,
    "name": "Dowiedz się więcej o klątwie",
-   "description": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W [loc]karczmie[/loc] mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.",
+   "name_runs": [
+    {
+     "text": "Dowiedz się więcej o klątwie",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W ",
+     "bold": false
+    },
+    {
+     "text": "karczmie",
+     "bold": true
+    },
+    {
+     "text": " mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.",
+     "bold": false
+    }
+   ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\")",
@@ -88,8 +137,23 @@
   {
    "id": "Q01_S05_MEET_MADAME_SARCASMIA",
    "level": 3,
-   "name": "Spotkaj się z [char]Sarkażmijką[/char]",
-   "description": "Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para - i podobno ma o sobie bardzo wysokie mniemanie.",
+   "name": "Spotkaj się z Sarkażmijką",
+   "name_runs": [
+    {
+     "text": "Spotkaj się z ",
+     "bold": false
+    },
+    {
+     "text": "Sarkażmijką",
+     "bold": true
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para - i podobno ma o sobie bardzo wysokie mniemanie.",
+     "bold": false
+    }
+   ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"MADAME_SARCASMIA\", \"001\")",
@@ -109,7 +173,26 @@
    "id": "Q03_S00_LEARN_ABOUT_CURSE",
    "level": 3,
    "name": "Znajdź kogoś kto wie o klątwach",
-   "description": "W tej okolicy nikt nie zaglądał do książki od czasów, gdy [loc]karczma[/loc] miała jeszcze cały dach. Ale ktoś, gdzieś, musi wiedzieć o klątwach coś więcej niż plotki.",
+   "name_runs": [
+    {
+     "text": "Znajdź kogoś kto wie o klątwach",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "W tej okolicy nikt nie zaglądał do książki od czasów, gdy ",
+     "bold": false
+    },
+    {
+     "text": "karczma",
+     "bold": true
+    },
+    {
+     "text": " miała jeszcze cały dach. Ale ktoś, gdzieś, musi wiedzieć o klątwach coś więcej niż plotki.",
+     "bold": false
+    }
+   ],
    "completion": "all_subquests",
    "completion_text": "zamyka się, gdy zamkną się jej kroki",
    "test": null,
@@ -131,7 +214,22 @@
    "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
    "level": 4,
    "name": "Kto ma wiedzę o magii?",
-   "description": "[char]Zielarka[/char] warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może pamięta też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
+   "name_runs": [
+    {
+     "text": "Kto ma wiedzę o magii?",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Zielarka",
+     "bold": true
+    },
+    {
+     "text": " warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może pamięta też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
+     "bold": false
+    }
+   ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"POTIONEER_PUZZLEMINT\", \"014\") or visited(\"POTIONEER_PUZZLEMINT\", \"017\")",
@@ -151,7 +249,26 @@
    "id": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
    "level": 4,
    "name": "Gdzie znaleźć tę osobę?",
-   "description": "Imię już jest. Zostaje drobiazg: adres. [char]Kowal[/char] bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
+   "name_runs": [
+    {
+     "text": "Gdzie znaleźć tę osobę?",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Imię już jest. Zostaje drobiazg: adres. ",
+     "bold": false
+    },
+    {
+     "text": "Kowal",
+     "bold": true
+    },
+    {
+     "text": " bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
+     "bold": false
+    }
+   ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"HAMMER_HOAXHEART\", \"009\")",
@@ -171,7 +288,18 @@
    "id": "Q03_S03_HOW_TO_GET_THERE",
    "level": 4,
    "name": "Jak tam dotrzeć?",
-   "description": "Miasto jest gdzieś na północy. \"Gdzieś\" to stanowczo za mało, żeby ruszać w drogę.",
+   "name_runs": [
+    {
+     "text": "Jak tam dotrzeć?",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Miasto jest gdzieś na północy. \"Gdzieś\" to stanowczo za mało, żeby ruszać w drogę.",
+     "bold": false
+    }
+   ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"017\")",

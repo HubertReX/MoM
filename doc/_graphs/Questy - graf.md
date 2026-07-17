@@ -73,12 +73,27 @@ const el = (tag, cls, txt) => {
     return e;
 };
 
+// Znaczniki MoM ([char], [loc], [num]...) sklejone w Pythonie do runow; kazdy
+// wariant formatowania splaszcza sie do pogrubienia. textContent, nie innerHTML:
+// to proza autora i nie ma prawa wstrzykiwac HTML-a do notatki.
+const runs = (cls, list, fallback) => {
+    const e = el("div", cls);
+    if (!list || !list.length) {
+        e.textContent = fallback;
+        return e;
+    }
+    for (const r of list) e.append(el(r.bold ? "b" : "span", null, r.text));
+    return e;
+};
+
 function nodeTip(n) {
     const t = el("div", "mom-tip");
     const role = n.is_thread ? " - WĄTEK" : n.is_root ? " - START" : "";
-    t.append(el("div", "mom-tip-h", `${n.name}${role}`));
+    const head = runs("mom-tip-h", n.name_runs, n.name);
+    if (role) head.append(el("span", null, role));
+    t.append(head);
     t.append(el("div", "mom-tip-k", n.id));
-    t.append(el("div", "mom-tip-q", n.description || "(brak opisu)"));
+    t.append(runs("mom-tip-q", n.description_runs, "(brak opisu)"));
     t.append(el("div", "mom-tip-r", `${n.completion}: ${n.completion_text}`));
     if (n.test) t.append(el("div", "mom-tip-c", `test: ${n.test}`));
     if (n.progress) t.append(el("div", "mom-tip-c", `postęp: ${n.progress} / ${n.progress_total}`));

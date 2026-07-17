@@ -40,6 +40,8 @@ sys.path.insert(0, str(_REPO_ROOT / "project"))
 from quest import markdown_importer as qi  # noqa: E402
 from quest.entities import CompletionMode, QuestDef  # noqa: E402
 from quest.graph import children_of, init_quests  # noqa: E402
+from ui.text.markup import parse, strip_tags  # noqa: E402
+from ui.text.style import Style  # noqa: E402
 
 DOC_DIR = _REPO_ROOT / "doc"
 DEFAULT_OUT = DOC_DIR / "_graphs"
@@ -190,6 +192,33 @@ def uncloseable(defs: dict[str, QuestDef]) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 
+def markup_runs(text: str) -> list[dict[str, Any]]:
+    """MoM markup -> ``[{"text": ..., "bold": ...}]`` for the tooltip.
+
+    Every kind of styling flattens to bold. The graph has none of MoM's palette
+    (the tooltip is an Obsidian note, in the reader's theme), and a tooltip that
+    invented its own colours would imply distinctions the game does not make.
+    Bold says "the author marked this" and stops there.
+
+    Parsed with the game's own parser rather than a regex, so ``[/]``, unknown
+    tags and inline emoji behave here exactly as they do in the game.
+    """
+    base = Style()
+    runs: list[dict[str, Any]] = []
+    for token in parse(text, base):
+        if token.kind == "image":
+            continue  # a sprite has no tooltip equivalent; dropping beats a stray ":name:"
+        value = " " if token.kind == "newline" else token.value
+        if not value:
+            continue
+        bold = token.style != base
+        if runs and runs[-1]["bold"] == bold:
+            runs[-1]["text"] += value  # keep the run count down; the DOM is per-run
+        else:
+            runs.append({"text": value, "bold": bold})
+    return runs
+
+
 def _reward_label(reward: Any) -> str:
     if reward.category == "items":
         return ", ".join(reward.items)
@@ -214,8 +243,13 @@ def graph_to_dict(
         {
             "id": key,
             "level": rank[key],
-            "name": name(key),
-            "description": messages.get(quest.description, quest.description),
+            # plain for the node label (vis-network draws it on a canvas and knows
+            # no markup), runs for the tooltip (which is real DOM)
+            "name": strip_tags(name(key)),
+            "name_runs": markup_runs(name(key)),
+            "description_runs": markup_runs(
+                messages.get(quest.description, quest.description)
+            ),
             "completion": str(quest.completion),
             "completion_text": MODE_LABEL[quest.completion],
             "test": quest.test,
@@ -341,12 +375,27 @@ const el = (tag, cls, txt) => {
     return e;
 };
 
+// Znaczniki MoM ([char], [loc], [num]...) sklejone w Pythonie do runow; kazdy
+// wariant formatowania splaszcza sie do pogrubienia. textContent, nie innerHTML:
+// to proza autora i nie ma prawa wstrzykiwac HTML-a do notatki.
+const runs = (cls, list, fallback) => {
+    const e = el("div", cls);
+    if (!list || !list.length) {
+        e.textContent = fallback;
+        return e;
+    }
+    for (const r of list) e.append(el(r.bold ? "b" : "span", null, r.text));
+    return e;
+};
+
 function nodeTip(n) {
     const t = el("div", "mom-tip");
     const role = n.is_thread ? " - WĄTEK" : n.is_root ? " - START" : "";
-    t.append(el("div", "mom-tip-h", `${n.name}${role}`));
+    const head = runs("mom-tip-h", n.name_runs, n.name);
+    if (role) head.append(el("span", null, role));
+    t.append(head);
     t.append(el("div", "mom-tip-k", n.id));
-    t.append(el("div", "mom-tip-q", n.description || "(brak opisu)"));
+    t.append(runs("mom-tip-q", n.description_runs, "(brak opisu)"));
     t.append(el("div", "mom-tip-r", `${n.completion}: ${n.completion_text}`));
     if (n.test) t.append(el("div", "mom-tip-c", `test: ${n.test}`));
     if (n.progress) t.append(el("div", "mom-tip-c", `postęp: ${n.progress} / ${n.progress_total}`));

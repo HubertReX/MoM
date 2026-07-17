@@ -67,8 +67,11 @@ def _panel(done: set[str] | None = None):  # type: ignore[no-untyped-def]
         quest_state=state,
         quests=SimpleNamespace(defs=defs, ctx=ctx),
         game=SimpleNamespace(conf=SimpleNamespace(messages={}, items={}), fonts=fonts),
+        # RichText resolves its own font through theme.get_font, but it still wants
+        # somewhere to look icons up; the titles under test carry none
+        items_sheet={},
     )
-    hud = SimpleNamespace(draw_text=lambda *a, **k: None)
+    hud = SimpleNamespace(draw_text=lambda *a, **k: None, icons={})
     panel = QuestPanel.__new__(QuestPanel)
     # skip __init__: it builds a nine-patch that needs the real asset pipeline
     from ui.widget import Widget
@@ -80,6 +83,7 @@ def _panel(done: set[str] | None = None):  # type: ignore[no-untyped-def]
     panel.selected = 0
     panel.collapsed = set()
     panel._rows = []
+    panel._rich_cache = {}
     return panel
 
 
@@ -207,12 +211,16 @@ def test_selection_wraps_and_survives_an_empty_list() -> None:
     assert_true(panel._current_row() is None, "no row, no crash")
 
 
+_WHITE = (255, 255, 255)
+
+
 def test_the_reference_step_title_fits_without_truncation() -> None:
     """The agreed contract for how wide the thread column has to be.
 
     "Gdzie znaleźć tę osobę?" must render whole. Authors keep titles short from
     their side; this keeps the column from being narrowed from ours. Measured at
-    the real x a step title starts from, in the real font.
+    the real x a step title starts from, in the real font, on the path the panel
+    really draws titles with.
     """
     from ui.panels.quest import _LEFT_X, _SPLIT_X, _STEP_INDENT
 
@@ -221,7 +229,7 @@ def test_the_reference_step_title_fits_without_truncation() -> None:
     step_x = _LEFT_X + _STEP_INDENT + 24
     room = _SPLIT_X - 16 - step_x
 
-    assert_eq(panel._truncate(title, room, 14), title, "the reference title is not cut")
+    assert_eq(panel._fit_line(title, room, 14, _WHITE), title, "the reference title is not cut")
 
 
 def test_titles_are_truncated_to_their_column() -> None:
@@ -229,13 +237,43 @@ def test_titles_are_truncated_to_their_column() -> None:
     panel = _panel()
     long_title = "Znajdź kogoś kto wie coś więcej o klątwach i innych nieszczęściach"
 
-    cut = panel._truncate(long_title, 200, 14)
+    cut = panel._fit_line(long_title, 200, 14, _WHITE)
 
     assert_true(cut.endswith("..."), f"ellipsised: {cut!r}")
     assert_true(len(cut) < len(long_title), "actually shorter")
-    assert_true(panel._font(14).size(cut)[0] <= 200, "and it fits the room given")
+    assert_true(panel._build_rich(cut, 10_000, 14, _WHITE).content_width <= 200, "fits the room")
     # a title that already fits is left alone
-    assert_eq(panel._truncate("Krótki", 200, 14), "Krótki", "short titles untouched")
+    assert_eq(panel._fit_line("Krótki", 200, 14, _WHITE), "Krótki", "short titles untouched")
+
+
+def test_a_tagged_title_is_cut_without_breaking_its_markup() -> None:
+    """The reason titles no longer go through the plain-text truncate.
+
+    An author writes `[char]Kowal Kłamca[/char]`; cutting the rendered string
+    would either strand an opening tag or leave the ellipsis outside the styling.
+    The tag survives, and the panel prints a name rather than a tag.
+    """
+    panel = _panel()
+    tagged = "[char]Kowal Kłamca Zamaszysty[/char] kuje i kłamie"
+
+    cut = panel._fit_line(tagged, 200, 14, _WHITE)
+
+    assert_true("[char]" in cut, f"opening tag kept: {cut!r}")
+    assert_true(cut.endswith("[/char]"), f"and closed again: {cut!r}")
+    assert_true("..." in cut, "the ellipsis sits inside the styling")
+    # what matters in the end: the drawn line fits, tags costing nothing
+    assert_true(panel._build_rich(cut, 10_000, 14, _WHITE).content_width <= 200, "fits the room")
+
+
+def test_a_tagged_title_renders_as_text_not_markup() -> None:
+    """`draw_text` would print "[char]Kowal[/char]" literally - the bug this fixes."""
+    panel = _panel()
+
+    surface = panel._rich_line("[char]Kowal[/char]", 400, 14, _WHITE)
+    plain = panel._rich_line("Kowal", 400, 14, _WHITE)
+
+    # the tagged one is recoloured, not longer: a literal tag would be far wider
+    assert_eq(surface.get_width(), plain.get_width(), "tags take no room, they style")
 
 
 def main() -> None:
@@ -250,6 +288,8 @@ def main() -> None:
         test_selection_wraps_and_survives_an_empty_list,
         test_the_reference_step_title_fits_without_truncation,
         test_titles_are_truncated_to_their_column,
+        test_a_tagged_title_is_cut_without_breaking_its_markup,
+        test_a_tagged_title_renders_as_text_not_markup,
     ]
     for t in tests:
         t()

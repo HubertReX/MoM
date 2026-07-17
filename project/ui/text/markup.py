@@ -171,3 +171,69 @@ def parse(
 def strip_tags(text: str) -> str:
     """Return ``text`` with all tags and emoji markers removed (for measuring)."""
     return _TOKEN_RE.sub("", text)
+
+
+def cut_markup(markup: str, n_chars: int, ellipsis: str = "...") -> str:
+    """Keep the first ``n_chars`` characters of *text*, then close and ellipsise.
+
+    Tags cost nothing and are copied through; only rendered characters count. Any
+    tag still open at the cut is closed, innermost first, so the result is valid
+    markup and the ellipsis inherits the styling of the text it replaces::
+
+        cut_markup("[char]Kowal Kłamca[/char] kuje", 8) -> "[char]Kowal Kł...[/char]"
+
+    Truncating the *plain* text and re-tagging it is not an option: a cut can land
+    inside a tag, and the ellipsis has to end up inside the styling rather than
+    dangling after a stray ``[/char]``.
+
+    Emoji markers are atomic and free - a title is text, and charging them would
+    only make the caller's search over ``n_chars`` lumpy.
+    """
+    out: list[str] = []
+    stack: list[str] = []
+    used = 0
+    pos = 0
+    truncated = False
+
+    def take(text: str) -> bool:
+        """Append what fits; True when the budget ran out mid-text."""
+        nonlocal used
+        room = n_chars - used
+        chunk = text[:max(0, room)]
+        out.append(chunk)
+        used += len(chunk)
+        return len(chunk) < len(text)
+
+    for m in _TOKEN_RE.finditer(markup):
+        if m.start() > pos and take(markup[pos:m.start()]):
+            truncated = True
+            break
+        pos = m.end()
+
+        if m.group("emoji") is not None:
+            out.append(m.group(0))
+            continue
+
+        if m.group("close_last") is not None:
+            if stack:
+                stack.pop()
+            out.append(m.group(0))
+            continue
+
+        name = m.group("name")
+        if m.group("slash"):
+            for i in range(len(stack) - 1, -1, -1):
+                if stack[i] == name:
+                    del stack[i]
+                    break
+        else:
+            stack.append(name)
+        out.append(m.group(0))
+    else:
+        if pos < len(markup) and take(markup[pos:]):
+            truncated = True
+
+    if truncated:
+        out.append(ellipsis)
+    out.extend(f"[/{name}]" for name in reversed(stack))
+    return "".join(out)

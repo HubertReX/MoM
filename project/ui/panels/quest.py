@@ -37,6 +37,7 @@ from settings import (
 )
 
 from .. import theme
+from ..text.markup import cut_markup, strip_tags
 from ..widget import Widget
 
 if TYPE_CHECKING:
@@ -70,6 +71,9 @@ _STEP_INDENT = 42
 # `:golden_coin:` and friends are item sprites, not emotes, so markup has to be
 # told they are drawable here - see _reward_icons.
 _ITEM_EMOJIS = frozenset(ITEMS_SHEET_DEFINITION)
+# RichText leads at the font's own height (14px at FONT_SIZE_SMALL), which sets
+# prose solid; the mock's rhythm is 24px per line, so the difference is padding.
+_LINE_SPACING = 10
 _LIST_TOP = 168
 _LIST_BOTTOM = _FOOTER_Y - 8
 
@@ -113,8 +117,10 @@ class QuestPanel(Widget):
         # panel that opens on a list of closed folders answers no question.
         self.collapsed: set[str] = set()
         self._rows: list[_Row] = []
-        # reward markup -> rendered surface; the labels are few and never change
-        self._rich_cache: dict[str, pygame.Surface] = {}
+        # (markup, width, size, colour) -> surface. Keyed on all four because the
+        # same title is drawn narrow in the list and wide in the details pane, and
+        # baking it is not free: fitting one to a column costs a handful of probes.
+        self._rich_cache: dict[tuple[str, int, int, tuple[int, ...]], pygame.Surface] = {}
 
     # --- data ---------------------------------------------------------------
 
@@ -297,11 +303,11 @@ class QuestPanel(Widget):
             # reserve room for the badge, or a long title runs under it and on
             # past the divider into the details pane
             name_room = _SPLIT_X - 16 - name_x - (self._font(FONT_SIZE_TINY).size(badge)[0] + 8 if badge else 0)
-            name = self._truncate(get_msg(self._messages, quest.name), name_room, FONT_SIZE_SMALL)
-            self._text(
-                surface, name, (name_x, y + 6), FONT_SIZE_SMALL,
+            name = self._rich_line(
+                get_msg(self._messages, quest.name), name_room, FONT_SIZE_SMALL,
                 _TITLE if idx == self.selected else colour,
             )
+            surface.blit(name, (name_x, y + 6))
 
             if badge:
                 colour = _MANUAL if quest.completion is CompletionMode.manual else _ACTIVE
@@ -324,14 +330,15 @@ class QuestPanel(Widget):
 
         quest = self._defs[row.key]
         y = _LIST_TOP - 6
-        title = self._truncate(get_msg(self._messages, quest.name), _RIGHT_W, FONT_SIZE_MEDIUM)
-        self._text(surface, title, (_RIGHT_X, y), FONT_SIZE_MEDIUM, _TITLE)
+        title = self._rich_line(get_msg(self._messages, quest.name), _RIGHT_W, FONT_SIZE_MEDIUM, _TITLE)
+        surface.blit(title, (_RIGHT_X, y))
 
         y += 34
-        description = get_msg(self._messages, quest.description)
-        for line in self._wrap(description, _RIGHT_W, FONT_SIZE_SMALL):
-            self._text(surface, line, (_RIGHT_X, y), FONT_SIZE_SMALL, _WHITE)
-            y += 24
+        description = self._rich_block(
+            get_msg(self._messages, quest.description), _RIGHT_W, FONT_SIZE_SMALL, _WHITE
+        )
+        surface.blit(description, (_RIGHT_X, y))
+        y += description.get_height()
 
         children = children_of(self._defs, row.key)
         if children:
@@ -362,10 +369,11 @@ class QuestPanel(Widget):
 
         for child in children:
             self._draw_marker(surface, _RIGHT_X, y, child)
-            name = self._truncate(
-                get_msg(self._messages, self._defs[child].name), _RIGHT_W - 24, FONT_SIZE_SMALL
+            name = self._rich_line(
+                get_msg(self._messages, self._defs[child].name), _RIGHT_W - 24,
+                FONT_SIZE_SMALL, self._state_colour(child),
             )
-            self._text(surface, name, (_RIGHT_X + 24, y), FONT_SIZE_SMALL, self._state_colour(child))
+            surface.blit(name, (_RIGHT_X + 24, y))
             y += 28
         return y
 
@@ -380,7 +388,9 @@ class QuestPanel(Widget):
             label = format_reward_label([reward], self._item_name)
             if not label:
                 continue
-            text = self._rich(label)
+            # a chip sizes to its label rather than the other way round, so the
+            # only cap is the pane it has to stay inside
+            text = self._rich_line(label, _RIGHT_W - 32, FONT_SIZE_SMALL, _TITLE)
             width = text.get_width() + 32
             if x + width > _RIGHT_EDGE:
                 x, y = _RIGHT_X, y + 38
@@ -399,31 +409,90 @@ class QuestPanel(Widget):
         """
         return {**self.scene.items_sheet, **self.hud.icons}
 
-    def _rich(self, markup: str) -> pygame.Surface:
-        """Render reward markup — ``[num]+50[/num] :golden_coin:`` — and cache it.
+    def _build_rich(  # type: ignore[no-untyped-def]
+        self, markup: str, width: int, size: int, colour: tuple[int, ...], *, line_spacing: int = 0
+    ):
+        """A RichText over ``markup``, with the panel's icons and whitelist.
 
-        Reward labels carry tags and inline icons, which plain ``draw_text`` would
-        print literally. They also have to: ``💰`` and friends are not in MoM's
-        pixel font (measured — every one of them renders the same tofu box), so the
-        coin has to be the real sprite rather than an emoji.
-
-        The coin lives in the *items* sheet, not the emote sheet, so both the icon
-        dict and the emoji whitelist have to be widened for it — the emote sheet is
-        speech bubbles, and a coin is not something a character says.
+        ``base_color`` matters: without it an untagged run (the unit in "max HP")
+        falls back to RichText's own default and stops matching what it sits in.
         """
-        surf = self._rich_cache.get(markup)
-        if surf is None:
-            from ..widgets.rich_text import RichText
+        from ..widgets.rich_text import RichText
 
-            # base_color, or the unit ("max HP") falls back to RichText's own
-            # default and stops matching the chip it sits in
-            rt = RichText(markup, (0, 0, 420, 60), self._reward_icons(),
-                          base_size=FONT_SIZE_SMALL, base_color=_TITLE, show_scrollbar=False,
-                          extra_emojis=_ITEM_EMOJIS)
+        return RichText(markup, (0, 0, max(1, width), max(size * 4, 64)), self._reward_icons(),
+                        base_size=size, base_color=colour, show_scrollbar=False,
+                        line_spacing=line_spacing, extra_emojis=_ITEM_EMOJIS)
+
+    def _fit_line(self, markup: str, max_width: int, size: int, colour: tuple[int, ...]) -> str:
+        """``markup`` cut to ``max_width``, tags intact.
+
+        Binary search over how many *characters* survive, measured with RichText
+        itself. Deliberately not arithmetic on font widths: ``[bold]`` changes the
+        advance, so a hand-rolled sum would quietly disagree with what is drawn —
+        and the whole point of this is that the drawn line fits.
+
+        ~6 probes, only for a title that actually overflows, and the result is
+        cached by the caller.
+        """
+        if self._build_rich(markup, 10_000, size, colour).content_width <= max_width:
+            return markup
+
+        low, high = 0, len(strip_tags(markup))
+        best = cut_markup(markup, 0)
+        while low <= high:
+            mid = (low + high) // 2
+            candidate = cut_markup(markup, mid)
+            if self._build_rich(candidate, 10_000, size, colour).content_width <= max_width:
+                best, low = candidate, mid + 1
+            else:
+                high = mid - 1
+        return best
+
+    def _rich_line(
+        self, markup: str, max_width: int, size: int, colour: tuple[int, ...]
+    ) -> pygame.Surface:
+        """One line of styled text, ellipsised to ``max_width``. Cached.
+
+        Titles and prose are author markup — ``[char]Zielarka[/char]`` — which
+        plain ``draw_text`` would print tag and all. Reward labels additionally
+        carry an inline sprite: ``💰`` and friends are not in MoM's pixel font
+        (measured; every one renders the same tofu box), so the coin has to be the
+        real thing, and it lives in the *items* sheet rather than the emote sheet.
+        """
+        key = (markup, max_width, size, tuple(colour))
+        surf = self._rich_cache.get(key)
+        if surf is None:
+            rt = self._build_rich(self._fit_line(markup, max_width, size, colour),
+                                  10_000, size, colour)
             full = rt.render_static()
             width = max(1, min(rt.content_width, full.get_width()))
             surf = full.subsurface((0, 0, width, full.get_height())).copy()
-            self._rich_cache[markup] = surf
+            self._rich_cache[key] = surf
+        return surf
+
+    def _rich_block(
+        self, markup: str, width: int, size: int, colour: tuple[int, ...], *, max_lines: int = 6
+    ) -> pygame.Surface:
+        """Word-wrapped styled text, ``width`` wide, at most ``max_lines`` tall. Cached.
+
+        RichText wraps on its own, so the panel does its own wrapping nowhere —
+        and unlike a plain-text wrap, it breaks what is actually drawn rather than
+        the untagged string behind it.
+
+        The cap is what stops a long description from pushing KROKI and NAGRODA
+        off the bottom of the panel; the pane has no scrollbar to fall back on.
+        """
+        key = (markup, width, size, tuple(colour))
+        surf = self._rich_cache.get(key)
+        if surf is None:
+            surf = self._build_rich(
+                markup, width, size, colour, line_spacing=_LINE_SPACING
+            ).render_static()
+            line_h = self._font(size).get_height() + _LINE_SPACING
+            ceiling = line_h * max_lines - _LINE_SPACING
+            if surf.get_height() > ceiling:
+                surf = surf.subsurface((0, 0, surf.get_width(), ceiling)).copy()
+            self._rich_cache[key] = surf
         return surf
 
     # --- helpers ------------------------------------------------------------
@@ -510,10 +579,11 @@ class QuestPanel(Widget):
         self._text(surface, text, pos, FONT_SIZE_TINY, _GREY, shadow=True)
 
     def _truncate(self, text: str, width: int, size: int) -> str:
-        """Cut ``text`` to ``width`` with an ellipsis.
+        """Cut plain ``text`` to ``width`` with an ellipsis.
 
-        Quest titles are authored prose of no fixed length; without this a long one
-        runs straight through the divider and into the details pane.
+        For UI chrome only — the counter in the header, whose wording comes from
+        the locale and carries no tags. Anything the *author* wrote goes through
+        :meth:`_rich_line`, which cuts without breaking the markup.
         """
         font = self._font(size)
         if width <= 0 or font.size(text)[0] <= width:
@@ -521,21 +591,3 @@ class QuestPanel(Widget):
         while text and font.size(f"{text}...")[0] > width:
             text = text[:-1]
         return f"{text.rstrip()}..."
-
-    def _wrap(self, text: str, width: int, size: int) -> list[str]:
-        """Greedy word wrap; quest descriptions are prose and vary in length."""
-        font = self._font(size)
-        lines: list[str] = []
-        current = ""
-        for word in text.split():
-            candidate = f"{current} {word}".strip()
-            if current and font.size(candidate)[0] > width:
-                lines.append(current)
-                current = word
-            else:
-                current = candidate
-        if current:
-            lines.append(current)
-        # The pane is mostly empty below the rewards, and the column got narrower
-        # when the list took its width, so the same prose now needs more lines.
-        return lines[:6]
