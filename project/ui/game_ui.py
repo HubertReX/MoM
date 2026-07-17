@@ -29,6 +29,7 @@ from settings import (
 from objects import NotificationTypeEnum
 
 from .panels.dialog import DialogPanel
+from .panels.quest import QuestPanel
 from .panels.hud import HUD
 from .panels.inventory import InventoryPanel
 from .panels.modal import ModalPanel
@@ -45,10 +46,13 @@ if TYPE_CHECKING:
 # a conversation happened (visited nodes), or items changed hands (trade).
 _QUEST_EVENT_PANELS = (DialogPanel, TradePanel)
 
-_BLOCKING = (DialogPanel, TradePanel)
+# the hotbar is not drawn while one of these is up: it would show through the panel
+_BLOCKING = (DialogPanel, TradePanel, QuestPanel)
 # panels that fully freeze the world while open: input must go to the panel only,
-# not to the scene underneath (otherwise e.g. R renames a slot *and* reloads the map)
-_MODAL = (DialogPanel, TradePanel, LoadPanel, SavePanel)
+# not to the scene underneath (otherwise e.g. R renames a slot *and* reloads the map).
+# The journal is here so its arrow keys drive the list instead of walking the hero
+# around behind it, and so Esc closes it rather than opening the main menu.
+_MODAL = (DialogPanel, TradePanel, LoadPanel, SavePanel, QuestPanel)
 
 
 class GameUI:
@@ -146,6 +150,28 @@ class GameUI:
         if INPUTS["inventory"]:
             self.toggle(InventoryPanel)
             INPUTS["inventory"] = False
+
+        if INPUTS["quest_log"]:
+            self.toggle(QuestPanel)
+            INPUTS["quest_log"] = False
+
+        if self.is_open(QuestPanel):
+            quests = cast(QuestPanel, self._panel(QuestPanel))
+            # rising edge, same as the dialog: a held key must not race the list
+            if self._edge("up"):
+                quests.select_prev()
+            if self._edge("down"):
+                quests.select_next()
+            if self._edge("right"):
+                quests.next_filter()
+            if self._edge("left"):
+                quests.prev_filter()
+            if self._edge("accept"):
+                quests.toggle_expand()
+                INPUTS["accept"] = False
+            if INPUTS["quit"]:
+                self.close(QuestPanel)
+                INPUTS["quit"] = False
 
         if INPUTS["talk"]:
             if self.is_open(ModalPanel):
@@ -290,5 +316,5 @@ class GameUI:
                 continue
             panel.draw(surface)
 
-        # notifications + stats always on top
-        self.hud.draw_overlay(surface)
+        # notifications always on top; the stats box hides behind a full-screen panel
+        self.hud.draw_overlay(surface, stats=not self.is_open(QuestPanel))

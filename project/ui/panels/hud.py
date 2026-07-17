@@ -430,7 +430,11 @@ class HUD(Widget):
         else:
             self.show_available_actions(surface)
 
-    def draw_overlay(self, surface: pygame.Surface) -> None:
+    def draw_overlay(self, surface: pygame.Surface, *, stats: bool = True) -> None:
         for row, notification in enumerate(self.scene.notifications):
             self.show_notification(surface, notification, row)
-        self.show_stats_panel(surface, self.scene.player)
+        # A full-screen panel (the journal) covers the stats box; drawing it on top
+        # would put the hero's HP over the quest title. Notifications stay: they are
+        # transient news and the player should not miss one for having the log open.
+        if stats:
+            self.show_stats_panel(surface, self.scene.player)

@@ -83,6 +83,7 @@ show_shop = "sklep"
 # === Akcje ===
 
 [action]
+quest_log = "Dziennik zadań"
 consume = "zjedz"
 # disarm = "odłóż broń"
 disarm = "odłóż"
@@ -196,6 +197,18 @@ ph_latin = "A-Z a-z"
 # przeważenie ich nie rusza tłumaczeń.
 
 [quest]
+journal = "DZIENNIK ZADAŃ"
+counter = "{total} zadań · {done} ukończone"
+threads = "WĄTKI"
+details = "SZCZEGÓŁY"
+steps = "KROKI"
+reward = "NAGRODA"
+manual = "manual"
+empty = "Brak zadań w tym filtrze."
+filter_active = "Aktywne"
+filter_done = "Ukończone"
+filter_all = "Wszystkie"
+hints = "W/S wybór   ·   A/D filtr   ·   Enter rozwiń/zwiń   ·   J / Esc zamknij"
 reward_money = "+{value} 💰"
 reward_health = "+{value} HP"
 reward_max_health = "+{value} max HP"

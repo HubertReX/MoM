@@ -81,6 +81,7 @@ show_shop = "show shop"
 # === Actions ===
 
 [action]
+quest_log = "Quest log"
 consume = "consume"
 disarm = "disarm"
 equip = "equip"
@@ -192,6 +193,18 @@ ph_latin = "A-Z a-z"
 # rewards, so rebalancing them never touches a translation.
 
 [quest]
+journal = "QUEST LOG"
+counter = "{total} quests · {done} completed"
+threads = "THREADS"
+details = "DETAILS"
+steps = "STEPS"
+reward = "REWARD"
+manual = "manual"
+empty = "No quests match this filter."
+filter_active = "Active"
+filter_done = "Completed"
+filter_all = "All"
+hints = "W/S select   ·   A/D filter   ·   Enter expand/collapse   ·   J / Esc close"
 reward_money = "+{value} 💰"
 reward_health = "+{value} HP"
 reward_max_health = "+{value} max HP"

@@ -460,6 +460,11 @@ ACTIONS: dict[str, dict[str, Any]] = {
     "pick_up": {"show": ["key_E"], "msg": "action.pick_up", "keys": [pygame.K_e]},
     "drop": {"show": ["key_X"], "msg": "action.drop", "keys": [pygame.K_x]},
     "inventory": {"show": ["key_I"], "msg": "action.inventory", "keys": [pygame.K_i]},
+    # J as in journal - free (zero hits for K_j in project/) and it pairs with I for
+    # inventory: two panels, one habit. F10 is the alias, exactly as help has F1/H.
+    # F11 was the only other free function key and it is fullscreen in the browser,
+    # which rules it out because MoM also runs on pygbag.
+    "quest_log": {"show": ["key_J"], "msg": "action.quest_log", "keys": [pygame.K_j, pygame.K_F10]},
     "next_item": {"show": None, "msg": "action.next_item", "keys": [pygame.K_PERIOD]},
     "prev_item": {"show": None, "msg": "action.prev_item", "keys": [pygame.K_COMMA]},
     "item_1": {"show": None, "msg": "action.item_1", "keys": [pygame.K_1]},
