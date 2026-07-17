@@ -127,10 +127,12 @@ class QuestRuntime:
 
             if children_of(self.defs, key):
                 # Closing a thread is a chapter ending, not another tick on a
-                # list. If it looked like every other step the player would scroll
-                # right past the end of the story they just finished.
+                # list, so its headline is set apart — but by weight, not size:
+                # [h3] was size 28, which wrapped the headline and left the toast's
+                # lines uneven. [b] keeps every line the same size and still reads
+                # as the louder of the two.
                 headline = _("quest.toast_thread_done", name=name)
-                notify(f"[h3]{headline}[/h3]\n{body}", NotificationTypeEnum.success)
+                notify(f"[b]{headline}[/b]\n{body}", NotificationTypeEnum.success)
             else:
                 headline = _("quest.toast_done", name=name)
                 notify(f"{headline}\n{body}", NotificationTypeEnum.success)

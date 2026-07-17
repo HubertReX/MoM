@@ -177,11 +177,16 @@ def test_toast_for_a_finished_step() -> None:
     done = [t for t in texts if "Ukończono" in t]
     assert_eq(len(done), 1, f"one completion toast, got {texts}")
     assert_true("[quest]" in done[0], "the quest name is tagged, not bare text")
-    assert_true("[h3]" not in done[0], "a step is not shouted like a thread ending")
+    assert_true("[b]" not in done[0], "a step is not emphasised like a thread ending")
 
 
-def test_toast_for_a_closed_thread_is_louder() -> None:
-    """A chapter ending must not look like another tick on a list."""
+def test_toast_for_a_closed_thread_is_emphasised() -> None:
+    """A chapter ending must not look like another tick on a list.
+
+    Set apart by weight, not size: [h3] was size 28, which wrapped the headline
+    and left the toast's lines uneven, so a thread ending is bold at the body's
+    own size instead.
+    """
     runtime, _ = _runtime(
         {
             "CLAPBACK_SWORD": {"015"},
@@ -195,7 +200,8 @@ def test_toast_for_a_closed_thread_is_louder() -> None:
     texts = [t for t, _type in runtime.scene.toasts]
     thread = [t for t in texts if "Wątek zamknięty" in t]
     assert_eq(len(thread), 1, f"exactly one thread-closed toast, got {texts}")
-    assert_true("[h3]" in thread[0], "the thread ending is visually louder than a step")
+    assert_true("[b]" in thread[0], "the thread ending is set apart from a step")
+    assert_true("[h3]" not in thread[0], "but not by size — every line stays uniform")
     # SAMPLE's umbrella pays money + max_health + an item; all three must show,
     # because the label and the payout read the same list (the SSiS `break` bug)
     assert_true("[num]+100[/num] :golden_coin:" in thread[0], f"money in the label: {thread[0]}")
@@ -265,7 +271,7 @@ def main() -> None:
         test_no_quests_configured_is_a_no_op,
         test_quest_config_flattens_both_loaders,
         test_toast_for_a_finished_step,
-        test_toast_for_a_closed_thread_is_louder,
+        test_toast_for_a_closed_thread_is_emphasised,
         test_unlocked_thread_and_step_read_differently,
         test_the_completion_toast_carries_the_success_prose,
         test_a_quest_without_prose_does_not_toast_a_dangling_line,
