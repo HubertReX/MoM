@@ -176,6 +176,9 @@ class Config():
     items:        dict[str, Item]
     maze_configs: dict[int, MazeLevelProperties]
     dialogs:      dict[str, Any] = field(default_factory=dict)
+    # Quest definitions stay a plain dict here: the web build has no Pydantic
+    # (decision D4), and `quest.graph.init_quests` reads exactly this shape.
+    quests:       dict[str, Any] = field(default_factory=dict)
     messages:     dict[str, dict[str, str]] = field(default_factory=dict)
 
     @classmethod
@@ -201,9 +204,20 @@ class Config():
             maze_configs[int(name)] = maze_config
 
         dialogs = data.get("dialogs", {})
+        quests = data.get("quests", {})
         messages = data.get("messages", {})
 
-        return cls(chars, chests, items, maze_configs, dialogs, messages)
+        # keyword args on purpose: this used to be positional, and inserting a
+        # field in the middle would have silently shifted messages into quests
+        return cls(
+            characters=chars,
+            chests=chests,
+            items=items,
+            maze_configs=maze_configs,
+            dialogs=dialogs,
+            quests=quests,
+            messages=messages,
+        )
 ###################################################################################################################
 
 

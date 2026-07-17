@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from enums import ItemTypeEnum
 from objects import ItemSprite
+from quest.entities import QuestState
 from save_load.backends import FileSaveBackend, LocalStorageSaveBackend, SaveBackend
 from save_load.models import (
     SAVE_VERSION,
@@ -183,7 +184,13 @@ class SaveManager:
             player=player_state,
             clock=clock_state,
             maps=map_states,
+            quests=self._build_quest_state(scene),
         )
+
+    def _build_quest_state(self, scene: Scene) -> dict[str, dict[str, Any]]:
+        """Capture quest progress (decision D13)."""
+        state = getattr(scene, "quest_state", None)
+        return state.to_dict() if state is not None else {}
 
     def _build_player_state(self, scene: Scene) -> PlayerState:
         player = scene.player
@@ -424,6 +431,32 @@ class SaveManager:
         self._apply_player_state(new_scene, save.player)
         self._apply_map_states(new_scene, save.maps)
         self._apply_game_clock(new_scene, save.clock)
+        self._apply_quest_state(new_scene, save.quests)
+
+    def _apply_quest_state(self, scene: Scene, quests: dict[str, dict[str, Any]]) -> None:
+        """Restore quest progress, dropping quests the content no longer defines.
+
+        Content changes between saves: `just import-quests` can rename or delete a
+        quest, and a save written before that still names it. Such a key is
+        ignored with a warning rather than killing the load — but it *is* logged,
+        because a key nobody defines is usually a renamed quest, i.e. progress the
+        player silently lost.
+
+        The reverse (a quest defined but absent from the save) needs no handling:
+        `QuestState.is_done` reads an unknown key as not done, which is exactly
+        right for content added after the save was written.
+        """
+        state = QuestState.from_dict(quests)
+
+        known = set(getattr(self.game.conf, "quests", None) or {})
+        if known:
+            unknown = set(state.entries) - known
+            for key in unknown:
+                del state.entries[key]
+            if unknown:
+                print(f"[save] ignoring {len(unknown)} unknown quest key(s): {sorted(unknown)}")
+
+        scene.quest_state = state
 
     def _apply_player_state(self, scene: Scene, state: PlayerState) -> None:
         player = scene.player

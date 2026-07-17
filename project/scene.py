@@ -34,6 +34,7 @@ from pyscroll.group import PyscrollGroup
 from pytmx import TiledMap, TiledObjectGroup, TiledTileLayer
 from pytmx.util_pygame import load_pygame
 from config_model.config import AttitudeEnum, RaceEnum
+from quest.entities import QuestState
 from settings import (
     _,
     entity_name,
@@ -163,6 +164,10 @@ class Scene(State):
         # when its map is actually built. Deliberately NOT in `self.properties`:
         # this is global, not per-map, and must survive `store_map`/`restore_map`.
         self.pending_map_states: dict[str, Any] = {}
+        # Quest progress (decision D13). Global, not per-map, so it stays out of
+        # `self.properties`. A new game starts with nothing done; loading a save
+        # replaces this wholesale (see SaveManager._apply_quest_state).
+        self.quest_state: QuestState = QuestState()
         self.entry_point = entry_point
         self.new_scene: Collider | None = None
         self.is_maze = is_maze

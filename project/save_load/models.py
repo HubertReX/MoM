@@ -403,17 +403,25 @@ class SaveGame:
     player: PlayerState = field(default_factory=PlayerState)
     clock: GameClockState = field(default_factory=GameClockState)
     maps: dict[str, MapState] = field(default_factory=dict)
+    # Quest progress (decision D13): ``{quest_key: {"done": bool}}``, the
+    # serialized form of ``quest.entities.QuestState``. It lives here rather than
+    # in config.json because config.json is a generated artifact — `just
+    # import-quests` rewrites it, and progress must survive that. Stored flat
+    # (not as a nested QuestState) so the save file stays readable.
+    quests: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return _to_dict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> SaveGame:
+        raw_quests = data.get("quests")
         return cls(
             metadata=SaveMetadata.from_dict(data.get("metadata", {})),
             player=PlayerState.from_dict(data.get("player", {})),
             clock=GameClockState.from_dict(data.get("clock", {})),
             maps={k: MapState.from_dict(v) for k, v in data.get("maps", {}).items()},
+            quests=raw_quests if isinstance(raw_quests, dict) else {},
         )
 
 
