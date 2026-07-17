@@ -48,6 +48,7 @@ def init_quests(quests: dict[str, Any]) -> dict[str, QuestDef]:
     """
     defs = {key: _build_quest(key, data) for key, data in quests.items()}
     _validate_references(defs)
+    _validate_acyclic(defs)
     return defs
 
 
@@ -178,6 +179,49 @@ def _validate_completion(key: str, quest: QuestDef, defs: dict[str, QuestDef]) -
                 f"quest {key!r} has completion 'manual' but also a 'test' condition "
                 f"({quest.test!r}) — the test would never run"
             )
+
+
+def _validate_acyclic(defs: dict[str, QuestDef]) -> None:
+    """The *unlock* graph — ``requires`` plus ``parent`` — must be a DAG.
+
+    A quest depends on everything in its ``requires`` and on its ``parent``
+    thread being open, so a cycle among those edges is a deadlock: nothing in the
+    loop can ever unlock, and `is_unlocked` (which recurses through ``parent``)
+    would not even terminate. Both failures are silent in play and obvious here.
+
+    Only unlock edges count. ``all_subquests`` points the other way (an umbrella
+    waits on its children while its children wait on the umbrella being
+    *unlocked*, not done), so that pairing is not a cycle and must not be flagged.
+
+    Runs after :func:`_validate_references`, so every edge is known to resolve.
+    """
+    visiting: set[str] = set()
+    settled: set[str] = set()
+    path: list[str] = []
+
+    def visit(key: str) -> None:
+        if key in settled:
+            return
+        if key in visiting:
+            cycle = path[path.index(key):] + [key]
+            raise ValueError(
+                f"quests form a dependency cycle (requires/parent): {' -> '.join(cycle)}"
+            )
+        visiting.add(key)
+        path.append(key)
+
+        quest = defs[key]
+        for dependency in quest.requires:
+            visit(dependency)
+        if quest.parent is not None:
+            visit(quest.parent)
+
+        visiting.discard(key)
+        path.pop()
+        settled.add(key)
+
+    for key in defs:
+        visit(key)
 
 
 def _validate_progress(key: str, quest: QuestDef) -> None:
