@@ -489,7 +489,42 @@ load → oba wracają, `quest_done()` przez adapter je widzi. Webowy `load_confi
 
 **DoD:** zapis/odczyt na obu backendach; test korupcji; re-import treści nie gubi postępu.
 
-### Q-07 · Integracja runtime: event-driven + sweep `#M`
+### Q-07 · Integracja runtime: event-driven + sweep `#M` ✅
+
+**Zrobione 2026-07-16.** Pliki: `project/quest/runtime.py`, `Scene.quests`, hooki w
+`scene.py` i `ui/game_ui.py`, testy `tests/test_quest_runtime.py` (7).
+**To jest ten task, który ożywił całość** - silnik był kompletny od Q-05, ale nikt go nie wołał.
+
+#### ⚠ `conf.quests` ma inny kształt na desktopie i na webie
+
+Trzeci raz w tym epiku, tym razem odwrotność luki z Q-06. `game.conf` na desktopie idzie przez
+**Pydantica**, więc `conf.quests` trzyma modele `Quest`; na webie (bez Pydantica) trzyma gołe
+dicty. `init_quests` czyta gołą postać (D4: "Pydantic przy imporcie, goły dict w runtime"), więc
+`init_quests(conf.quests)` **wywalało grę na desktopie przy tworzeniu Sceny**:
+`ValueError: quest 'Q00_...' must be an object, got Quest`.
+
+`quest_config(conf)` spłaszcza to raz, w jednym miejscu, zamiast pozwalać każdemu wołającemu
+zgadywać. Złapane dopiero uruchomieniem prawdziwej gry - żaden test jednostkowy tego nie widział,
+bo wszystkie karmiły runtime gołymi dictami.
+
+Rozstrzygnięcia:
+
+- **Hook na koniec dialogu siedzi w `GameUI.close()`**, nie w miejscach wołania. Dzięki temu
+  liczy się **każdy** sposób zamknięcia (węzeł końcowy, Esc, panel zamykający się sam), a quest
+  nie zależy od tego, którego gracz użył. Ten sam hook łapie `TradePanel` (przedmioty zmieniły
+  właściciela).
+- **Sweep donosi, nie maskuje.** Gdy coś zapali się ze sweepa, leci log z nazwą questa - siatka
+  ma pokazywać brakujący event, a nie po cichu robić za niego robotę. Jest na to test w obie
+  strony: sweep milczy po poprawnym evencie i krzyczy, gdy eventu zabrakło.
+- **Sink wstrzykiwany** (`sink_factory`), bo `__slots__` i tak blokuje podmianę metody w teście,
+  a jawna zależność jest lepsza od lazy importu w środku metody.
+- **Hook na zmianę mapy jest już wpięty**, choć nic go jeszcze nie potrzebuje (`at_location()`
+  to nadal hipoteza - patrz `Q01_S07`). Gdy dojdzie, sweep nie zacznie krzyczeć.
+
+**Weryfikacja na żywej grze:** otwórz dialog z mieczem → odwiedź `015` → zamknij panel → `Q00`
+**zaliczony natychmiast**, sweep **cichy**. Rozmowa z barmanem (`012`+`017`) → `Q01_S01` i
+`Q03_S03` przez kaskadę, sweep dalej cichy. Smoke: "Save and Load Basic" i "Auto Save on Map
+Change" - PASS, zero ostrzeżeń ze sweepa.
 
 **Goal:** sprawdzanie questów wtedy, gdy ma sens (D12=C).
 

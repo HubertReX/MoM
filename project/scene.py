@@ -35,6 +35,7 @@ from pytmx import TiledMap, TiledObjectGroup, TiledTileLayer
 from pytmx.util_pygame import load_pygame
 from config_model.config import AttitudeEnum, RaceEnum
 from quest.entities import QuestState
+from quest.runtime import QuestRuntime
 from settings import (
     _,
     entity_name,
@@ -259,6 +260,10 @@ class Scene(State):
         # self.circle_gradient: pygame.Surface = (CIRCLE_GRADIENT).convert_alpha()
         self.ui = GameUI(self)
         self.display_ui_flag: bool = SHOW_UI
+        # Quest runtime (Q-07). Construction only reads config and keeps a Scene
+        # reference, so it is safe here, before the map exists; nothing is
+        # evaluated until the first event or sweep.
+        self.quests = QuestRuntime(self)
         # self.load_items_def()
         self.load_map()
         if USE_PARTICLES:
@@ -1156,6 +1161,12 @@ class Scene(State):
         if USE_PARTICLES:
             self.start_particles()
 
+        # Quest event: arriving somewhere can satisfy a quest. Nothing uses
+        # location conditions yet (`at_location()` is still hypothetical - see
+        # Q01_S07 in the plan), but the hook is where it will need to be, and
+        # firing it now keeps the sweep quiet when it lands.
+        self.quests.on_event("map_change")
+
         if hasattr(self.game, "save_manager"):
             self.game.save_manager.save(0)
 
@@ -1173,6 +1184,9 @@ class Scene(State):
         # MARK: update
         global INPUTS
         self.remove_old_notifications()
+        # Quest safety net (D12=C). Events do the real work; this only catches a
+        # hook we failed to wire, and complains when it has to.
+        self.quests.update(dt)
 
         # sample this before ui.update() so that on the frame a modal panel closes
         # itself (e.g. Esc in LoadPanel) we still freeze this frame - that keeps the
@@ -1420,6 +1434,8 @@ class Scene(State):
                     self.items.append(item)
                     self.item_sprites.add(item)
                     self.group.add(item, layer=self.sprites_layer - 1)
+                    # inventory changed: has_item()/item_count() conditions may flip
+                    self.quests.on_event("item_dropped")
 
                     # print(f"Dropped '[item]{item.name}[/item]' [[magenta]{item.model.type}[/magenta]]")
                     self.add_notification(
@@ -1444,6 +1460,8 @@ class Scene(State):
                                 self.items.remove(item)
                             if item in self.item_sprites:
                                 self.item_sprites.remove(item)
+                        # inventory changed: has_item()/item_count() conditions may flip
+                        self.quests.on_event("item_picked_up")
                     # else:
                     #     print(f"You can't pick up '{item.model.name}' - it's too heavy.")
             INPUTS["pick_up"] = False

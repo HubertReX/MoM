@@ -23,13 +23,19 @@ _ITEM_NOTIFY_DELAY = 0.5
 
 
 class GameResultSink(ResultSink):
-    """Apply dialog node effects to the hero and the current NPC."""
+    """Apply dialog node effects to the hero and the current NPC.
+
+    ``npc`` is ``None`` when quest rewards are being applied (Q-07): a quest is
+    evaluated by the engine, not during a conversation, so there is no "current
+    NPC". Only :meth:`shift_sentiment` needs one, and quests use the targeted
+    :meth:`shift_sentiment_of` instead.
+    """
 
     __slots__ = ("player", "npc")
 
-    def __init__(self, player: "Player", npc: "NPC") -> None:
+    def __init__(self, player: "Player", npc: "NPC | None") -> None:
         self.player: "Player" = player
-        self.npc: "NPC" = npc
+        self.npc: "NPC | None" = npc
 
     def add_money(self, amount: int) -> None:
         self.player.model.money += max(0, amount)
@@ -75,6 +81,10 @@ class GameResultSink(ResultSink):
         )
 
     def shift_sentiment(self, amount: int, emote_key: str = "") -> None:
+        if self.npc is None:
+            # only reachable if a *dialog* result were applied without a
+            # conversation, which cannot happen; quests use shift_sentiment_of
+            raise ValueError("shift_sentiment needs a current NPC; use shift_sentiment_of")
         self.npc.sentiment = max(0, min(100, self.npc.sentiment + amount))
         if amount != 0:
             self.player.scene.add_notification(

@@ -41,6 +41,10 @@ if TYPE_CHECKING:
     from .widget import Widget
 
 # panels that hide the gameplay HUD overlay (weapon/hotbar/help) while open
+# Closing one of these can have changed the world in a way a quest cares about:
+# a conversation happened (visited nodes), or items changed hands (trade).
+_QUEST_EVENT_PANELS = (DialogPanel, TradePanel)
+
 _BLOCKING = (DialogPanel, TradePanel)
 # panels that fully freeze the world while open: input must go to the panel only,
 # not to the scene underneath (otherwise e.g. R renames a slot *and* reloads the map)
@@ -82,6 +86,13 @@ class GameUI:
             panel.visible = False
             if panel in self._open:
                 self._open.remove(panel)
+            if panel_type in _QUEST_EVENT_PANELS:
+                # The main quest event (D12=C): the conversation that satisfied a
+                # quest has just ended. Hooked here rather than at the call sites
+                # so every way of closing counts - final node, Esc, a panel
+                # closing itself - and so a quest cannot depend on which one the
+                # player used.
+                self.scene.quests.on_event(f"{panel_type.__name__}_closed")
 
     def toggle(self, panel_type: type) -> None:
         if self.is_open(panel_type):
