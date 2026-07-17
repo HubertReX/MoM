@@ -24,8 +24,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 os.environ["SDL_AUDIODRIVER"] = "dummy"
 
+import pygame
+
+from enums import ItemTypeEnum
 from save_load.manager import SaveManager
-from save_load.models import ChestState, MapState, NPCDialogState, NPCState
+from save_load.models import ChestState, GroundItemState, MapState, NPCDialogState, NPCState
 
 
 def assert_eq(a: object, b: object, msg: str = "") -> None:
@@ -229,6 +232,91 @@ def test_live_map_wins_over_pending() -> None:
     assert_true(built["Tavern"].npc_states["Barman"].dialog_state is None, "live state wins")
 
 
+def _real_sprite_scene(current_map: str) -> SimpleNamespace:
+    """A scene stub with real pygame groups, so ItemSprites can actually be built."""
+    pygame.init()
+    pygame.display.set_mode((64, 64))
+    item_conf = {
+        "MERMAIDS_TEAR": SimpleNamespace(
+            type=ItemTypeEnum.gem, count=1, value=50, weight=1.0, damage=0,
+            cooldown_time=1.0, health_impact=0, in_use=False,
+        )
+    }
+    scene = SimpleNamespace(
+        current_map=current_map,
+        loaded_maps={},
+        pending_map_states={},
+        NPCs=[],
+        chests=[],
+        items=[],
+        item_sprites=pygame.sprite.Group(),
+        group=pygame.sprite.LayeredUpdates(),
+        destructibles=[],
+        walls=[],
+        path_finding_grid=[[0, 0], [0, 0]],
+        is_maze=False,
+        sprites_layer=1,
+        items_sheet={},
+        game=SimpleNamespace(conf=SimpleNamespace(items=item_conf)),
+    )
+    scene.store_map = lambda: scene.loaded_maps.__setitem__(scene.current_map, {})
+    return scene
+
+
+def _spawn_tmx_item(scene: SimpleNamespace, name: str) -> object:
+    """Stand in for `Scene.load_items` respawning a TMX-placed ground item."""
+    from objects import ItemSprite
+
+    model = SimpleNamespace(
+        type=ItemTypeEnum.gem, count=1, value=50, weight=1.0, damage=0,
+        cooldown_time=1.0, health_impact=0, in_use=False,
+    )
+    sprite = ItemSprite(scene.item_sprites, (32, 32), name, model)
+    scene.items.append(sprite)
+    scene.group.add(sprite, layer=scene.sprites_layer - 1)
+    return sprite
+
+
+def test_ground_items_are_replaced_not_appended() -> None:
+    """Loading must not stack a second copy of every TMX item onto the map.
+
+    Verified against the real game before fixing: Village went 4 -> 8 -> 12 -> 16
+    ground items over repeated save/load cycles, and a picked-up MERMAIDS_TEAR
+    came back onto the ground while staying in the player's bag.
+    """
+    scene = _real_sprite_scene("Village")
+    mgr = SaveManager.__new__(SaveManager)
+
+    # the map was just rebuilt from its TMX: the item is on the ground again
+    _spawn_tmx_item(scene, "MERMAIDS_TEAR")
+    assert_eq(len(scene.items), 1, "TMX respawned the item")
+
+    # ...but the save says it is still lying there exactly once
+    ms = MapState(
+        name="Village",
+        ground_items=[GroundItemState(name="MERMAIDS_TEAR", type=ItemTypeEnum.gem, count=1,
+                                      pos_x=32, pos_y=32)],
+    )
+    mgr._apply_one_map_state(scene, ms)
+
+    assert_eq(len(scene.items), 1, "exactly one copy after restore, not two")
+    assert_eq(len(scene.item_sprites.sprites()), 1, "sprite groups agree")
+
+
+def test_picked_up_item_stays_picked_up() -> None:
+    """The save is the authority: an item the player took must not respawn."""
+    scene = _real_sprite_scene("Village")
+    mgr = SaveManager.__new__(SaveManager)
+
+    _spawn_tmx_item(scene, "MERMAIDS_TEAR")  # TMX puts it back...
+
+    # ...but the save recorded an empty ground: the player had picked it up
+    mgr._apply_one_map_state(scene, MapState(name="Village", ground_items=[]))
+
+    assert_eq(len(scene.items), 0, "picked-up item does not come back")
+    assert_eq(len(scene.item_sprites.sprites()), 0, "and its sprite is gone too")
+
+
 def main() -> None:
     tests = [
         test_other_maps_are_kept_pending_not_dropped,
@@ -236,6 +324,8 @@ def main() -> None:
         test_applying_is_idempotent_and_scoped,
         test_saving_preserves_unvisited_pending_maps,
         test_live_map_wins_over_pending,
+        test_ground_items_are_replaced_not_appended,
+        test_picked_up_item_stays_picked_up,
     ]
     for t in tests:
         t()

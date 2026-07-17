@@ -483,13 +483,7 @@ class SaveManager:
         if current_name not in maps:
             return
 
-        ms = maps[current_name]
-
-        self._apply_chest_states(scene, ms.chests)
-        self._apply_ground_items(scene, ms.ground_items)
-        self._apply_destroyed_walls(scene, ms.destroyed_walls)
-        self._apply_npc_states(scene, ms)
-        self._apply_maze_mobs(scene, ms)
+        self._apply_one_map_state(scene, maps[current_name])
 
         scene.loaded_maps.clear()
         scene.store_map()
@@ -506,14 +500,36 @@ class SaveManager:
         if ms is None:
             return
 
+        self._apply_one_map_state(scene, ms)
+
+    def _apply_one_map_state(self, scene: Scene, ms: MapState) -> None:
+        """Apply ``ms`` onto a map that has just been built from its TMX.
+
+        Single implementation on purpose: this used to be two copies, and the
+        copy that handled the current map forgot to clear the ground items —
+        which is exactly how the duplication bug below survived.
+        """
         self._apply_chest_states(scene, ms.chests)
-        # The TMX just respawned this map's ground items; the save knows which of
-        # them the player already took. Replace rather than append.
-        self._clear_ground_items(scene)
-        self._apply_ground_items(scene, ms.ground_items)
+        self._restore_ground_items(scene, ms.ground_items)
         self._apply_destroyed_walls(scene, ms.destroyed_walls)
         self._apply_npc_states(scene, ms)
         self._apply_maze_mobs(scene, ms)
+
+    def _restore_ground_items(self, scene: Scene, items: list[GroundItemState]) -> None:
+        """Make the map's ground items exactly what the save recorded.
+
+        The map was just rebuilt from its TMX, which respawns every item the
+        level designer placed — including the ones the player already picked up.
+        The save is the authority on what is actually lying around, so replace
+        rather than append.
+
+        Appending is what shipped before: every save+load added another copy of
+        every TMX item (4 -> 8 -> 12 on Village, compounding per cycle), and a
+        picked-up item reappeared on the ground while staying in the player's
+        bag — free duplication of quest items like MERMAIDS_TEAR.
+        """
+        self._clear_ground_items(scene)
+        self._apply_ground_items(scene, items)
 
     def _clear_ground_items(self, scene: Scene) -> None:
         """Drop every ground item currently on the map (sprites included)."""
