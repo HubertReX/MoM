@@ -57,7 +57,12 @@ def _panel(done: set[str] | None = None):  # type: ignore[no-untyped-def]
         item_count=lambda key: 0,
         quest_done=lambda key: state.is_done(key),
     )
-    fonts = {size: pygame.font.Font(None, max(8, size)) for size in (8, 10, 14, 16, 24)}
+    # the *real* game font, not pygame's default: MoM renders in a pixel font that
+    # is markedly wider, and every width decision in this panel (truncation, the
+    # column contract) is meaningless when measured against something else
+    from settings import MAIN_FONT
+
+    fonts = {size: pygame.font.Font(MAIN_FONT, size) for size in (8, 10, 14, 16, 24)}
     scene = SimpleNamespace(
         quest_state=state,
         quests=SimpleNamespace(defs=defs, ctx=ctx),
@@ -202,6 +207,23 @@ def test_selection_wraps_and_survives_an_empty_list() -> None:
     assert_true(panel._current_row() is None, "no row, no crash")
 
 
+def test_the_reference_step_title_fits_without_truncation() -> None:
+    """The agreed contract for how wide the thread column has to be.
+
+    "Gdzie znaleźć tę osobę?" must render whole. Authors keep titles short from
+    their side; this keeps the column from being narrowed from ours. Measured at
+    the real x a step title starts from, in the real font.
+    """
+    from ui.panels.quest import _LEFT_X, _SPLIT_X, _STEP_INDENT
+
+    panel = _panel()
+    title = "Gdzie znaleźć tę osobę?"
+    step_x = _LEFT_X + _STEP_INDENT + 24
+    room = _SPLIT_X - 16 - step_x
+
+    assert_eq(panel._truncate(title, room, 14), title, "the reference title is not cut")
+
+
 def test_titles_are_truncated_to_their_column() -> None:
     """A long title must not run through the divider into the details pane."""
     panel = _panel()
@@ -226,6 +248,7 @@ def main() -> None:
         test_collapsing_a_thread_hides_its_steps,
         test_collapsing_a_step_does_nothing,
         test_selection_wraps_and_survives_an_empty_list,
+        test_the_reference_step_title_fits_without_truncation,
         test_titles_are_truncated_to_their_column,
     ]
     for t in tests:

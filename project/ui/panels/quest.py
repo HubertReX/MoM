@@ -52,11 +52,18 @@ _INNER_LEFT = PANEL_X + _INNER_PAD
 _INNER_RIGHT = PANEL_X + PANEL_W - _INNER_PAD
 _HEADER_Y = 88
 _RULE_Y = 128
-_SPLIT_X = 470
+# Wider than the mock's 470, and measured rather than guessed: a step title starts
+# at _LEFT_X + _STEP_INDENT + 24 = 184, and "Gdzie znaleźć tę osobę?" is 322px in
+# the pixel font, so the divider has to sit at 522 for it to fit whole. 560 gives
+# that some headroom (and happens to fit "Spotkaj się z Sarkażmijką" too). The
+# details pane pays for it and can afford to: it was mostly empty space.
+_SPLIT_X = 560
 _FOOTER_Y = 612
 _LEFT_X = 118
-_RIGHT_X = 500
+# derived, so moving the divider cannot leave the right column behind
+_RIGHT_X = _SPLIT_X + 30
 _RIGHT_EDGE = 1160
+_RIGHT_W = _RIGHT_EDGE - _RIGHT_X
 _ROW_H = 30
 _STEP_INDENT = 42
 _LIST_TOP = 168
@@ -313,12 +320,12 @@ class QuestPanel(Widget):
 
         quest = self._defs[row.key]
         y = _LIST_TOP - 6
-        title = self._truncate(get_msg(self._messages, quest.name), _RIGHT_EDGE - _RIGHT_X, FONT_SIZE_MEDIUM)
+        title = self._truncate(get_msg(self._messages, quest.name), _RIGHT_W, FONT_SIZE_MEDIUM)
         self._text(surface, title, (_RIGHT_X, y), FONT_SIZE_MEDIUM, _TITLE)
 
         y += 34
         description = get_msg(self._messages, quest.description)
-        for line in self._wrap(description, _RIGHT_EDGE - _RIGHT_X, FONT_SIZE_SMALL):
+        for line in self._wrap(description, _RIGHT_W, FONT_SIZE_SMALL):
             self._text(surface, line, (_RIGHT_X, y), FONT_SIZE_SMALL, _WHITE)
             y += 24
 
@@ -337,9 +344,9 @@ class QuestPanel(Widget):
                 surface, f"{current} / {total}", (_RIGHT_EDGE, y), FONT_SIZE_SMALL, _ACTIVE, align="right"
             )
             bar_y = y + 20
-            pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, 660, 8), border_radius=4)
+            pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, _RIGHT_W, 8), border_radius=4)
             if total:
-                filled = int(660 * current / total)
+                filled = int(_RIGHT_W * current / total)
                 if filled:
                     pygame.draw.rect(surface, _ACTIVE, (_RIGHT_X, bar_y, filled, 8), border_radius=4)
             y = bar_y + 26
@@ -352,7 +359,7 @@ class QuestPanel(Widget):
         for child in children:
             self._draw_marker(surface, _RIGHT_X, y, child)
             name = self._truncate(
-                get_msg(self._messages, self._defs[child].name), _RIGHT_EDGE - _RIGHT_X - 24, FONT_SIZE_SMALL
+                get_msg(self._messages, self._defs[child].name), _RIGHT_W - 24, FONT_SIZE_SMALL
             )
             self._text(surface, name, (_RIGHT_X + 24, y), FONT_SIZE_SMALL, self._state_colour(child))
             y += 28
@@ -513,4 +520,6 @@ class QuestPanel(Widget):
                 current = candidate
         if current:
             lines.append(current)
-        return lines[:4]  # the details pane has room for four; the rest is in the log
+        # The pane is mostly empty below the rewards, and the column got narrower
+        # when the list took its width, so the same prose now needs more lines.
+        return lines[:6]
