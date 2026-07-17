@@ -11,8 +11,8 @@ aliases:
 
 **Tytuł**: O co tu chodzi?
 
-Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a twój miecz nie przestaje mówić. Podobno to nie jest normalne. Podobno reszta też nie.
+Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a Twój miecz nie przestaje do Ciebie gadać. To chyba nie jest normalne...
 
 **Completion**: test
 **Test**: visited("CLAPBACK_SWORD", "015")
-**Sukces**: Miecz postawił diagnozę: to nie zwykły pech, to klątwa. Konkretów trzeba poszukać u ludzi, a ludzie o tej porze są w karczmie.
+**Sukces**: Miecz postawił diagnozę: to nie zwykły pech, to klątwa! Konkretów trzeba poszukać u ludzi, a ludzie o tej porze są w karczmie.
