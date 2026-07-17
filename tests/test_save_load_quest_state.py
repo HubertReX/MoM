@@ -149,7 +149,18 @@ Miecz gada.
         (root / "EN/Quests/a.md").write_text(en, encoding="utf-8")
 
         config_path = root / "config.json"
-        config_path.write_text(json.dumps({"messages": {"PL": {}, "EN": {}}}), encoding="utf-8")
+        # the quest's test names CLAPBACK_SWORD/015, and the importer verifies that
+        # such a dialog node really exists, so the stub config has to carry it
+        config_path.write_text(
+            json.dumps(
+                {
+                    "messages": {"PL": {}, "EN": {}},
+                    "items": {},
+                    "dialogs": {"CLAPBACK_SWORD": {"DIALOG_NODES": {"015": {"text": "M_X"}}}},
+                }
+            ),
+            encoding="utf-8",
+        )
 
         # the player has finished Q00 and their progress is in the save, not the config
         save_path = root / "save.json"

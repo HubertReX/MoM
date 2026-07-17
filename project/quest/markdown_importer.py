@@ -48,6 +48,7 @@ player's progress lives in the save (decision D13).
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import sys
@@ -523,6 +524,77 @@ def import_quests(src_dir: Path, chain_keys: list[str]) -> tuple[dict[str, dict[
     return messages, quests
 
 
+def _predicate_args(expression: str, name: str) -> list[list[str]]:
+    """Every string-literal argument list passed to predicate ``name`` in ``expression``.
+
+    The expression has already been whitelist-validated, so this walk only ever
+    sees the shapes the mini-DSL allows.
+    """
+    calls: list[list[str]] = []
+    for node in ast.walk(ast.parse(expression, mode="eval")):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == name
+            and all(isinstance(a, ast.Constant) and isinstance(a.value, str) for a in node.args)
+        ):
+            calls.append([a.value for a in node.args])  # type: ignore[attr-defined]
+    return calls
+
+
+def validate_references(
+    quests: dict[str, Any], dialogs: dict[str, Any], items: dict[str, Any]
+) -> list[str]:
+    """Check that every key a quest condition names actually exists.
+
+    This is the check that would have caught ``SARCASMIA_AA_BACK_SO_SOON``: a
+    quest whose ``test`` names a dialog node that does not exist parses fine,
+    validates fine, and then sits at ``False`` for the entire game. The mini-DSL
+    cannot catch it (the string is a valid argument) and neither can
+    ``init_quests`` (it never sees the dialogs), so it has to happen here, where
+    the whole config is on the table.
+
+    Returns a list of human-readable problems; empty means clean.
+    """
+    problems: list[str] = []
+
+    for key, quest in quests.items():
+        for label, expression in (("test", quest.get("test")), ("progress", quest.get("progress"))):
+            if not expression:
+                continue
+
+            for args in _predicate_args(expression, "visited"):
+                if len(args) != 2:
+                    continue  # quest scope forces 2; anything else already failed
+                npc, node = args
+                if npc not in dialogs:
+                    problems.append(
+                        f"{key}: {label} names character {npc!r}, which has no dialog "
+                        f"(known: {', '.join(sorted(dialogs)) or 'none'})"
+                    )
+                elif node not in dialogs[npc].get("DIALOG_NODES", {}):
+                    problems.append(
+                        f"{key}: {label} names node {node!r} of {npc!r}, which does not exist "
+                        f"— the quest could never complete"
+                    )
+
+            for args in _predicate_args(expression, "quest_done"):
+                if args and args[0] not in quests:
+                    problems.append(f"{key}: {label} names unknown quest {args[0]!r}")
+
+            for predicate in ("has_item", "item_count"):
+                for args in _predicate_args(expression, predicate):
+                    if args and args[0] not in items:
+                        problems.append(f"{key}: {label} names unknown item {args[0]!r}")
+
+        for reward in quest.get("rewards", []):
+            for item_key in reward.get("items", []):
+                if item_key not in items:
+                    problems.append(f"{key}: reward names unknown item {item_key!r}")
+
+    return problems
+
+
 def collect_message_references(quests: dict[str, Any]) -> set[str]:
     """Every message key the quests point at (used by the orphan sweep)."""
     refs: set[str] = set()
@@ -565,6 +637,16 @@ def build_quest_config(
         messages, quests = import_quests(src_dir, chain_keys)
     except QuestImportError as error:
         print(f"Quest import failed: {error}", file=sys.stderr)
+        print("config.json left untouched.", file=sys.stderr)
+        return 1
+
+    # Cross-section checks: only here is the whole config visible, so only here
+    # can we tell that a quest points at a dialog node or item nobody defines.
+    problems = validate_references(quests, config.get("dialogs", {}), config.get("items", {}))
+    if problems:
+        print(f"Quest import failed: {len(problems)} broken reference(s):", file=sys.stderr)
+        for problem in problems:
+            print(f"  {problem}", file=sys.stderr)
         print("config.json left untouched.", file=sys.stderr)
         return 1
 

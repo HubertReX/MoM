@@ -339,6 +339,29 @@ Rozstrzygnięcia:
   po `just import-quests` skasowałoby **wszystkie** tytuły i opisy questów, a dziennik pokazywałby
   puste wiersze bez śladu błędu. Zweryfikowane: bez guardu test gubi 12 kluczy.
 
+#### `validate_references()` - wykrywacz kolejnego `Q01_S07` (dodane 2026-07-16)
+
+Klucz `SARCASMIA_AA_BACK_SO_SOON` złapałem przy Q-10 **ręcznie** - importer go przepuścił.
+To była luka: quest, którego `test` wskazuje nieistniejący węzeł dialogu, parsuje się dobrze,
+przechodzi whitelistę i **siedzi na `False` przez całą grę**. Mini-DSL tego nie złapie (to
+poprawny string), `init_quests` też nie (nie widzi dialogów). Musi to być sprawdzone tam, gdzie
+widać cały config - czyli w `build_quest_config`.
+
+Sprawdzane jest teraz, czy istnieje wszystko, co quest nazywa po kluczu:
+
+- `visited(npc, node)` → postać ma dialog, a dialog ma ten węzeł;
+- `quest_done(key)` → quest istnieje;
+- `has_item(key)` / `item_count(key)` → przedmiot istnieje w `config["items"]`;
+- klucze przedmiotów w nagrodach.
+
+Błąd zatrzymuje import i zostawia `config.json` nietknięty. Zweryfikowane na żywym materiale:
+wstawiłem z powrotem klucz z planu i import padł komunikatem
+`Q01_S05_MEET_MADAME_SARCASMIA: test names node 'SARCASMIA_AA_BACK_SO_SOON' of 'MADAME_SARCASMIA',
+which does not exist - the quest could never complete`.
+
+To robi robotę, którą plan przypisywał grafowi z Q-11ki ("wykrywacz kolejnego Q01_S07"), tylko
+wcześniej i bez patrzenia na obrazek. Graf zostaje jako narzędzie autorskie.
+
 **Goal:** `doc/PL/Misje/*.md` → `config.json` (D1, D2, D3).
 
 **Plan:**

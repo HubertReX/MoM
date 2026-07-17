@@ -23,6 +23,7 @@ from quest.markdown_importer import (
     QuestImportError,
     build_quest_config,
     import_quests,
+    validate_references,
 )
 
 
@@ -163,6 +164,28 @@ def _full_vault(root: Path) -> Path:
             "EN/Quests/Find someone who knows about curses.md": Q03_EN,
         },
     )
+
+
+def _fixture_config() -> dict[str, object]:
+    """A config carrying every dialog node the fixture quests name.
+
+    validate_references checks quest tests against the real dialogs, so a config
+    stub has to actually contain them — otherwise the import correctly refuses.
+    """
+    def nodes(*keys: str) -> dict[str, object]:
+        return {"DIALOG_NODES": {k: {"text": f"M_DN_{k}"} for k in keys}}
+
+    return {
+        "characters": {},
+        "items": {"MERMAIDS_TEAR": {}},
+        "dialogs": {
+            "CLAPBACK_SWORD": nodes("015"),
+            "POTIONEER_PUZZLEMINT": nodes("014", "017"),
+            "HAMMER_HOAXHEART": nodes("009"),
+            "SOMEONE": {"DIALOG_NODES": {"000": {"text": "M_SOMEONE_DN_000"}}},
+        },
+        "messages": {"PL": {"M_SOMEONE_DN_000": "cześć"}, "EN": {"M_SOMEONE_DN_000": "hi"}},
+    }
 
 
 def _expect_import_error(fn, needle: str, msg: str) -> None:  # type: ignore[no-untyped-def]
@@ -340,16 +363,7 @@ def test_build_writes_config_and_leaves_dialogs_alone() -> None:
         root = Path(tmp)
         vault = _full_vault(root)
         config_path = root / "config.json"
-        config_path.write_text(
-            json.dumps(
-                {
-                    "characters": {},
-                    "dialogs": {"SOMEONE": {"DIALOG_NODES": {"000": {"text": "M_SOMEONE_DN_000"}}}},
-                    "messages": {"PL": {"M_SOMEONE_DN_000": "cześć"}, "EN": {"M_SOMEONE_DN_000": "hi"}},
-                }
-            ),
-            encoding="utf-8",
-        )
+        config_path.write_text(json.dumps(_fixture_config()), encoding="utf-8")
 
         rc = build_quest_config(src_dir=vault, config_path=config_path, chain_keys=["Q00", "Q03"])
         assert_eq(rc, 0, "import succeeded")
@@ -385,18 +399,13 @@ def test_orphaned_quest_messages_are_swept() -> None:
         root = Path(tmp)
         vault = _full_vault(root)
         config_path = root / "config.json"
-        config_path.write_text(
-            json.dumps(
-                {
-                    "messages": {
-                        "PL": {f"{MESSAGE_PREFIX}Q99_GONE_NAME": "usunięty quest"},
-                        "EN": {f"{MESSAGE_PREFIX}Q99_GONE_NAME": "deleted quest"},
-                    },
-                    "quests": {},
-                }
-            ),
-            encoding="utf-8",
-        )
+        config = _fixture_config()
+        config["messages"] = {
+            "PL": {f"{MESSAGE_PREFIX}Q99_GONE_NAME": "usunięty quest"},
+            "EN": {f"{MESSAGE_PREFIX}Q99_GONE_NAME": "deleted quest"},
+        }
+        config["quests"] = {}
+        config_path.write_text(json.dumps(config), encoding="utf-8")
 
         build_quest_config(src_dir=vault, config_path=config_path, chain_keys=["Q00", "Q03"])
 
@@ -422,7 +431,7 @@ def test_dialog_import_does_not_eat_quest_messages() -> None:
         root = Path(tmp)
         vault = _full_vault(root)
         config_path = root / "config.json"
-        config_path.write_text(json.dumps({"messages": {"PL": {}, "EN": {}}}), encoding="utf-8")
+        config_path.write_text(json.dumps(_fixture_config()), encoding="utf-8")
 
         build_quest_config(src_dir=vault, config_path=config_path, chain_keys=["Q00", "Q03"])
         before = json.loads(config_path.read_text(encoding="utf-8"))
@@ -435,6 +444,93 @@ def test_dialog_import_does_not_eat_quest_messages() -> None:
         after = json.loads(config_path.read_text(encoding="utf-8"))
         survivors = {k for k in after["messages"]["PL"] if k.startswith(MESSAGE_PREFIX)}
         assert_eq(survivors, quest_keys, "quest messages survive a dialog import")
+
+
+_DIALOGS = {
+    "CLAPBACK_SWORD": {"DIALOG_NODES": {"015": {"text": "M_X"}}},
+    "MADAME_SARCASMIA": {"DIALOG_NODES": {"001": {"text": "M_Y"}}},
+}
+_ITEMS = {"MERMAIDS_TEAR": {}}
+
+
+def test_validate_references_catches_a_nonexistent_dialog_node() -> None:
+    """The SARCASMIA_AA_BACK_SO_SOON bug, caught automatically.
+
+    That key came from the migration plan, parses fine, whitelists fine, and does
+    not exist in MoM — the quest would have sat at False for the entire game. The
+    mini-DSL cannot see it (it is a valid string) and init_quests cannot either
+    (it never sees the dialogs), so it has to be caught where the whole config is
+    visible.
+    """
+    quests = {
+        "Q01_S05": {
+            "name": "n", "description": "d", "success": "s", "completion": "test",
+            "test": 'visited("MADAME_SARCASMIA", "SARCASMIA_AA_BACK_SO_SOON")',
+        }
+    }
+    problems = validate_references(quests, _DIALOGS, _ITEMS)
+    assert_eq(len(problems), 1, "one problem")
+    assert_true("SARCASMIA_AA_BACK_SO_SOON" in problems[0], "names the offending node")
+    assert_true("could never complete" in problems[0], "explains the consequence")
+
+
+def test_validate_references_catches_unknown_names() -> None:
+    cases = [
+        ('visited("NOBODY", "001")', "no dialog", "unknown character"),
+        ('quest_done("Q99_GHOST")', "unknown quest", "unknown quest key"),
+        ('has_item("NO_SUCH_ITEM")', "unknown item", "unknown item"),
+        ('item_count("NO_SUCH_ITEM") > 1', "unknown item", "unknown item via item_count"),
+    ]
+    for test, needle, label in cases:
+        quests = {
+            "Q_X": {"name": "n", "description": "d", "success": "s", "completion": "test", "test": test}
+        }
+        problems = validate_references(quests, _DIALOGS, _ITEMS)
+        assert_eq(len(problems), 1, f"{label}: expected one problem, got {problems}")
+        assert_true(needle in problems[0], f"{label}: {problems[0]!r} lacks {needle!r}")
+
+
+def test_validate_references_accepts_the_real_thing() -> None:
+    quests = {
+        "Q00_S00": {
+            "name": "n", "description": "d", "success": "s", "completion": "test",
+            "test": 'visited("CLAPBACK_SWORD", "015")',
+            "rewards": [{"category": "items", "items": ["MERMAIDS_TEAR"]}],
+        },
+        "Q01_S05": {
+            "name": "n", "description": "d", "success": "s", "completion": "test",
+            "test": 'visited("MADAME_SARCASMIA", "001") and quest_done("Q00_S00")',
+        },
+    }
+    assert_eq(validate_references(quests, _DIALOGS, _ITEMS), [], "valid references pass clean")
+
+
+def test_validate_references_checks_reward_items() -> None:
+    quests = {
+        "Q_X": {
+            "name": "n", "description": "d", "success": "s", "completion": "manual",
+            "rewards": [{"category": "items", "items": ["GHOST_ITEM"]}],
+        }
+    }
+    problems = validate_references(quests, _DIALOGS, _ITEMS)
+    assert_eq(len(problems), 1, "reward item checked")
+    assert_true("GHOST_ITEM" in problems[0], "names the item")
+
+
+def test_broken_reference_fails_the_build_and_keeps_config() -> None:
+    """End to end: a nonexistent node stops `just import-quests` cold."""
+    broken = Q00_PL.replace('visited("CLAPBACK_SWORD", "015")', 'visited("CLAPBACK_SWORD", "999")')
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        vault = _make_vault(root, {"PL/Misje/a.md": broken, "EN/Quests/a.md": Q00_EN})
+        config_path = root / "config.json"
+        original = json.dumps({"messages": {"PL": {}, "EN": {}}, "dialogs": _DIALOGS, "items": _ITEMS})
+        config_path.write_text(original, encoding="utf-8")
+
+        rc = build_quest_config(src_dir=vault, config_path=config_path, chain_keys=["Q00"])
+
+        assert_eq(rc, 1, "import reports failure")
+        assert_eq(config_path.read_text(encoding="utf-8"), original, "config.json byte-identical")
 
 
 def test_no_sources_is_not_an_error() -> None:
@@ -459,6 +555,11 @@ def main() -> None:
         test_failed_import_leaves_config_untouched,
         test_orphaned_quest_messages_are_swept,
         test_dialog_import_does_not_eat_quest_messages,
+        test_validate_references_catches_a_nonexistent_dialog_node,
+        test_validate_references_catches_unknown_names,
+        test_validate_references_accepts_the_real_thing,
+        test_validate_references_checks_reward_items,
+        test_broken_reference_fails_the_build_and_keeps_config,
         test_no_sources_is_not_an_error,
     ]
     for t in tests:
