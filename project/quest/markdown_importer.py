@@ -126,6 +126,8 @@ _FIELD_ALIASES: dict[str, str] = {
 _MACHINE_FIELDS = frozenset({"completion", "test", "requires", "progress", "reward"})
 
 _REWARD_RE = re.compile(r"^(?P<category>[a-z_]+)\s*=\s*(?P<value>.+)$")
+# `sentiment=10 @BARMAN_ABSINTHRAYNER` — the NPC a sentiment reward applies to
+_REWARD_TARGET_RE = re.compile(r"\s*@(?P<target>[A-Z][A-Z0-9_]*)\s*$")
 
 
 @dataclass(slots=True)
@@ -345,7 +347,7 @@ def _parse_progress(value: str, path: Path, line_no: int) -> tuple[str, int]:
 
 
 def _parse_reward(value: str, path: Path, line_no: int) -> dict[str, Any]:
-    """``money=50`` or ``items=MERMAIDS_TEAR, PHOENIX_FEATHER``."""
+    """``money=50``, ``items=MERMAIDS_TEAR, PHOENIX_FEATHER``, ``sentiment=10 @BARMAN``."""
     match = _REWARD_RE.match(value)
     if not match:
         raise QuestImportError(
@@ -359,14 +361,26 @@ def _parse_reward(value: str, path: Path, line_no: int) -> dict[str, Any]:
     if category == "items":
         return {"category": "items", "items": [i.strip() for i in raw_value.split(",") if i.strip()]}
 
+    # `sentiment=10 @BARMAN_ABSINTHRAYNER` — a quest has no current NPC, so a
+    # sentiment reward has to name the one it means (Q-05).
+    target: str | None = None
+    target_match = _REWARD_TARGET_RE.search(raw_value)
+    if target_match:
+        target = target_match.group("target")
+        raw_value = raw_value[: target_match.start()].strip()
+
     try:
-        return {"category": category, "value": int(raw_value)}
+        reward: dict[str, Any] = {"category": category, "value": int(raw_value)}
     except ValueError:
         raise QuestImportError(
             f"reward {category!r} needs a whole number, got {raw_value!r}",
             file=str(path),
             line=line_no,
         ) from None
+
+    if target:
+        reward["target"] = target
+    return reward
 
 
 # ---------------------------------------------------------------------------
@@ -591,6 +605,13 @@ def validate_references(
             for item_key in reward.get("items", []):
                 if item_key not in items:
                     problems.append(f"{key}: reward names unknown item {item_key!r}")
+
+            target = reward.get("target")
+            if target and target not in dialogs:
+                problems.append(
+                    f"{key}: sentiment reward targets {target!r}, which has no dialog "
+                    f"— nobody would ever like you more"
+                )
 
     return problems
 

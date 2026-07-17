@@ -46,6 +46,32 @@ class ResultSink(Protocol):
         """Shift the current NPC's sentiment toward the hero."""
         ...
 
+    # --- quest rewards (Q-05) ------------------------------------------------
+    # Dialogs never needed these; quest rewards do (decision D11, which remapped
+    # the SSiS stats onto ones MoM actually has). They live on the shared
+    # Protocol so a dialog node could grant them too, should the story want it.
+
+    def raise_max_health(self, amount: int) -> None:
+        """Raise the hero's maximum health."""
+        ...
+
+    def raise_damage(self, amount: int) -> None:
+        """Raise the hero's damage."""
+        ...
+
+    def raise_max_items(self, amount: int) -> None:
+        """Raise the number of item slots the hero can carry."""
+        ...
+
+    def shift_sentiment_of(self, npc_key: str, amount: int) -> None:
+        """Shift a *named* NPC's sentiment, wherever that NPC currently is.
+
+        The targeted twin of :meth:`shift_sentiment`. A quest is evaluated by the
+        engine rather than during a conversation, so it has no current NPC and
+        must say who it means.
+        """
+        ...
+
 
 def apply_result(result: NodeVisitResult, sink: ResultSink, emote_key: str = "") -> None:
     """Dispatch ``result`` to ``sink`` based on its category.

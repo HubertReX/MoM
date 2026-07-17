@@ -218,7 +218,7 @@ class GameUI:
                 INPUTS["sell"] = False
 
             # item selection during trade
-            for idx in range(1, MAX_HOTBAR_ITEMS + 1):
+            for idx in range(1, self.scene.player.max_items + 1):
                 if INPUTS[f"item_{idx}"]:
                     player = self.scene.player
                     if self.is_buying and player.npc_met and player.npc_met.model.is_merchant:

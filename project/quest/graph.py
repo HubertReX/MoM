@@ -110,6 +110,7 @@ def _build_reward(quest_key: str, data: dict[str, Any]) -> QuestReward:
         category,
         value=data.get("value", 0),
         items=list(data.get("items", [])),
+        target=data.get("target"),
     )
 
     # An items reward with no items (or a numeric reward with no amount) is the
@@ -121,6 +122,19 @@ def _build_reward(quest_key: str, data: dict[str, Any]) -> QuestReward:
     elif reward.value == 0:
         raise ValueError(
             f"quest {quest_key!r} has a {category.value!r} reward with no value"
+        )
+
+    # A sentiment reward with nobody to like you more is a no-op that looks like
+    # a reward — the exact shape this epic keeps deleting.
+    if category is QuestRewardCategory.sentiment and not reward.target:
+        raise ValueError(
+            f"quest {quest_key!r} has a 'sentiment' reward with no target NPC "
+            f"(write 'sentiment={reward.value} @NPC_KEY' — a quest has no current character)"
+        )
+    if reward.target and category is not QuestRewardCategory.sentiment:
+        raise ValueError(
+            f"quest {quest_key!r} has a {category.value!r} reward with a target NPC; "
+            f"only 'sentiment' rewards take one"
         )
 
     return reward

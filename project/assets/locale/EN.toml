@@ -185,3 +185,16 @@ ph_any = "type anything"
 ph_digits = "0-9"
 ph_password = "secret"
 ph_latin = "A-Z a-z"
+
+# === Quests ===
+# Reward labels appended to a quest's success line (D3=A). The "Success" text in
+# doc/EN/Quests/ is plain prose with no {value} - the numbers live in the
+# rewards, so rebalancing them never touches a translation.
+
+[quest]
+reward_money = "+{value} 💰"
+reward_health = "+{value} HP"
+reward_max_health = "+{value} max HP"
+reward_damage = "+{value} damage"
+reward_max_items = "+{value} slot(s)"
+reward_sentiment = "+{value} favour"

@@ -488,6 +488,19 @@
                     },
                     "title": "Items",
                     "type": "array"
+                },
+                "target": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "NPC config key a 'sentiment' reward applies to; a quest has no current character",
+                    "title": "Target"
                 }
             },
             "required": [

@@ -26,7 +26,7 @@ from save_load.models import (
     SaveSlotInfo,
     sanitize_slot_name,
 )
-from settings import IS_WEB, MAX_SAVE_SLOTS, USE_WEB_SIMULATOR
+from settings import IS_WEB, MAX_HOTBAR_ITEMS_LIMIT, MAX_SAVE_SLOTS, USE_WEB_SIMULATOR
 
 if TYPE_CHECKING:
     from game import Game
@@ -215,6 +215,8 @@ class SaveManager:
             health=player.model.health,
             max_health=player.model.max_health,
             money=player.model.money,
+            damage=player.model.damage,
+            max_items=player.max_items,
             inventory=inventory,
             selected_weapon=player.selected_weapon.name if player.selected_weapon else None,
             selected_item_idx=player.selected_item_idx,
@@ -466,6 +468,10 @@ class SaveManager:
         player.model.health = state.health
         player.model.max_health = state.max_health
         player.model.money = state.money
+        player.model.damage = state.damage
+        # clamped on the way in as well as on the way out: a save hand-edited to
+        # 99 slots would otherwise draw a hotbar nobody can select from
+        player.max_items = max(1, min(MAX_HOTBAR_ITEMS_LIMIT, state.max_items))
         player.is_flying = state.is_flying
         player.is_jumping = state.is_jumping
         player.is_dead = state.is_dead

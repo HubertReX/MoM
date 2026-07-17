@@ -62,6 +62,19 @@ NOTIFICATION_TYPE_ICONS: dict[str, str] = {
 }
 
 
+def hotbar_topleft(slots: int) -> tuple[int, int]:
+    """Where a hotbar of ``slots`` slots starts, so it stays centred.
+
+    Recomputed rather than cached: a quest can widen the hero's hotbar mid-game
+    (decision D11), and a bar laid out once at construction would stay centred on
+    the old width and drift off to the left.
+    """
+    return (
+        WIDTH // 2 - (INVENTORY_ITEM_WIDTH * slots // 2),
+        HEIGHT - INVENTORY_ITEM_WIDTH - TILE_SIZE,
+    )
+
+
 class HUD(Widget):
     def __init__(self, scene: "Scene") -> None:
         super().__init__()
@@ -74,8 +87,7 @@ class HUD(Widget):
 
         self.inventory_slot = InventorySlot(
             None,
-            (WIDTH // 2 - (INVENTORY_ITEM_WIDTH * MAX_HOTBAR_ITEMS // 2),
-             HEIGHT - INVENTORY_ITEM_WIDTH - TILE_SIZE),
+            hotbar_topleft(MAX_HOTBAR_ITEMS),
             INVENTORY_ITEM_SCALE,
         )
 
@@ -197,7 +209,8 @@ class HUD(Widget):
     def draw_hotbar(self, surface: pygame.Surface, npc: "NPC", top_left: tuple[int, int],
                     show_shortcuts: bool, *, tradable: bool = False) -> None:
         items = npc.get_tradable_items() if tradable else npc.items
-        for i in range(MAX_HOTBAR_ITEMS):
+        # per character, not the module constant: the hero's bar can grow (D11)
+        for i in range(npc.max_items):
             item_model = items[i].model if i < len(items) else None
             if npc.selected_weapon and npc.selected_weapon.model == item_model:
                 image = self.inventory_slot.image_selected
@@ -228,7 +241,7 @@ class HUD(Widget):
             h = 24
             surface.blit(self.icons["key_<"][0], (top_left[0] - 24, top_left[1] + h))
             surface.blit(self.icons["key_>"][0],
-                         (top_left[0] + MAX_HOTBAR_ITEMS * INVENTORY_ITEM_WIDTH - 16, top_left[1] + h))
+                         (top_left[0] + npc.max_items * INVENTORY_ITEM_WIDTH - 16, top_left[1] + h))
 
     #############################################################################################################
     # MARK: weapon
@@ -410,7 +423,8 @@ class HUD(Widget):
         player: Player = self.scene.player
         self.show_weapon_panel(surface, player.selected_weapon, not player.can_switch_weapon,
                                self.game.time_elapsed)
-        self.draw_hotbar(surface, player, self.inventory_slot.rect.topleft, show_shortcuts=True)
+        # recomputed per frame: the hero's bar widens when a quest rewards slots
+        self.draw_hotbar(surface, player, hotbar_topleft(player.max_items), show_shortcuts=True)
         if self.show_help_info:
             self.show_help(surface)
         else:

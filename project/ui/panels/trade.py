@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from characters import NPC
     from scene import Scene
 
-    from .hud import HUD
+    from .hud import HUD, hotbar_topleft
 
 _DIVIDER = (70, 64, 46)
 
@@ -140,11 +140,11 @@ class TradePanel(Widget):
 
         self.hud.draw_hotbar(
             surface, merchant,
-            (self.hud.inventory_slot.rect.left, self.trader_bg_rect.top + 10 + ar.height + 24),
+            (hotbar_topleft(merchant.max_items)[0], self.trader_bg_rect.top + 10 + ar.height + 24),
             show_shortcuts=self.is_buying,
         )
         self.hud.draw_hotbar(
-            surface, player, self.hud.inventory_slot.rect.topleft,
+            surface, player, hotbar_topleft(player.max_items),
             show_shortcuts=not self.is_buying, tradable=True,
         )
 

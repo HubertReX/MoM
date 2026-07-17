@@ -189,3 +189,16 @@ ph_any = "wpisz cokolwiek"
 ph_digits = "0-9"
 ph_password = "tajne"
 ph_latin = "A-Z a-z"
+
+# === Questy ===
+# Etykiety nagród doklejane do tekstu ukończenia questa (D3=A). Tekst "Sukces"
+# w doc/PL/Misje/ jest czystą prozą bez {value} - liczby są w nagrodach, więc
+# przeważenie ich nie rusza tłumaczeń.
+
+[quest]
+reward_money = "+{value} 💰"
+reward_health = "+{value} HP"
+reward_max_health = "+{value} max HP"
+reward_damage = "+{value} obrażeń"
+reward_max_items = "+{value} slot(ów)"
+reward_sentiment = "+{value} sympatii"

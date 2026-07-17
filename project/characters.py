@@ -95,6 +95,12 @@ class NPC(pygame.sprite.Sprite):
         self.model: Character = game.conf.characters[model_name]
         self.current_map = self.scene.current_map
         self.has_dialog: bool = False
+        # How many item slots this character has. Used to be the module constant
+        # MAX_HOTBAR_ITEMS everywhere; it is a per-character field now because a
+        # quest can reward the hero extra slots (decision D11). MAX_HOTBAR_ITEMS
+        # stays as the starting value, MAX_HOTBAR_ITEMS_LIMIT as the ceiling
+        # (bounded by the number of hotbar keys and key icons that exist).
+        self.max_items: int = MAX_HOTBAR_ITEMS
 
         # dialog-system state (T-023): `dialog` is the live cursor into the
         # DialogNode graph built from config.json.
@@ -1213,7 +1219,7 @@ class NPC(pygame.sprite.Sprite):
                     result = True
                 else:
                     # check if there are free slots
-                    if len(self.items) < MAX_HOTBAR_ITEMS:
+                    if len(self.items) < self.max_items:
                         # add new item if not owned
                         self.total_items_weight += item.model.weight
 
@@ -1226,10 +1232,10 @@ class NPC(pygame.sprite.Sprite):
                         result = True
                     else:
                         print(
-                            f"\n[red]ERROR:[/] {self.name} All '[num]{MAX_HOTBAR_ITEMS}[/num]'"
+                            f"\n[red]ERROR:[/] {self.name} All '[num]{self.max_items}[/num]'"
                             " items slots are taken!\n")
                         self.scene.add_notification(
-                            _("notify.all_slots_taken", n=MAX_HOTBAR_ITEMS),
+                            _("notify.all_slots_taken", n=self.max_items),
                             scene.NotificationTypeEnum.failure)
             else:
                 print(
@@ -1280,7 +1286,7 @@ class NPC(pygame.sprite.Sprite):
                 found = True
                 break
 
-        if not found and len(self.items) == MAX_HOTBAR_ITEMS:
+        if not found and len(self.items) == self.max_items:
             self.scene.add_notification(
                 _("notify.cant_buy_slots", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)
@@ -1317,7 +1323,7 @@ class NPC(pygame.sprite.Sprite):
                 found = True
                 break
 
-        if not found and len(self.npc_met.items) == MAX_HOTBAR_ITEMS:
+        if not found and len(self.npc_met.items) == self.npc_met.max_items:
             self.scene.add_notification(
                 _("notify.merchant_cant_buy_slots", name=entity_name(selected_item.model)),
                 scene.NotificationTypeEnum.failure)

@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, cast
 
 from enums import AttitudeEnum, ItemTypeEnum
-from settings import VERSION
+from settings import MAX_HOTBAR_ITEMS, VERSION
 
 
 SAVE_VERSION: float = VERSION
@@ -196,6 +196,11 @@ class PlayerState:
     health: int = 100
     max_health: int = 100
     money: int = 0
+    # Quest-granted stats have to persist, or the reward evaporates on load.
+    # `damage` rides along for the same reason (D11 maps the SSiS `hp` bonus onto
+    # it). Defaults keep saves written before Q-05 loading fine.
+    damage: int = 10
+    max_items: int = MAX_HOTBAR_ITEMS
     inventory: list[ItemState] = field(default_factory=list)
     selected_weapon: str | None = None
     selected_item_idx: int = -1
@@ -216,6 +221,8 @@ class PlayerState:
             health=int(data.get("health", 100)),
             max_health=int(data.get("max_health", 100)),
             money=int(data.get("money", 0)),
+            damage=int(data.get("damage", 10)),
+            max_items=int(data.get("max_items", MAX_HOTBAR_ITEMS)),
             inventory=[ItemState.from_dict(i) for i in data.get("inventory", [])],
             selected_weapon=data.get("selected_weapon"),
             selected_item_idx=int(data.get("selected_item_idx", -1)),

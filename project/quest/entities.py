@@ -72,11 +72,17 @@ class QuestReward:
 
     ``value`` carries the amount for every category except :attr:`items`, which
     uses ``items`` (a list of ``config.json["items"]`` keys).
+
+    ``target`` names the NPC a :attr:`sentiment` reward applies to. A quest is
+    evaluated by the engine, not during a conversation, so unlike a dialog it has
+    no "current NPC" to shift — the reward has to say who it means
+    (``sentiment=10 @BARMAN_ABSINTHRAYNER``). Unused by every other category.
     """
 
     category: QuestRewardCategory
     value: int = 0
     items: list[str] = field(default_factory=list, repr=False)
+    target: str | None = field(default=None, repr=False)
 
 
 @dataclass(slots=True)

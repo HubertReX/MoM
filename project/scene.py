@@ -1366,7 +1366,7 @@ class Scene(State):
                 self.player.use_item()
             INPUTS["use_item"] = False
 
-        for idx in range(1, MAX_HOTBAR_ITEMS + 1):
+        for idx in range(1, self.player.max_items + 1):
             if INPUTS[f"item_{idx}"]:
                 # tradable_items: list[ItemSprite] = []
                 items: list[ItemSprite] = []

@@ -148,6 +148,8 @@ class QuestReward(BaseModel):
                                          description="Amount granted; unused by the 'items' category")]
     items:    Annotated[list[str], Field(default_factory=list, repr=False,
                                          description="Item keys granted; 'items' category only")]
+    target:   Annotated[str | None, Field(None, repr=False,
+                                          description="NPC config key a 'sentiment' reward applies to; a quest has no current character")]  # noqa E501
 
 
 class Quest(BaseModel):

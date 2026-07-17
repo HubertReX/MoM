@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 from enums import NotificationTypeEnum
 from dialog.result_sink import ResultSink
-from settings import _, entity_name
+from settings import _, MAX_HOTBAR_ITEMS_LIMIT, entity_name
 
 if TYPE_CHECKING:
     from characters import NPC, Player
@@ -82,6 +82,66 @@ class GameResultSink(ResultSink):
                 NotificationTypeEnum.success if amount > 0 else NotificationTypeEnum.info,
                 emote_key=emote_key,
             )
+
+    # --- quest rewards (Q-05) ------------------------------------------------
+
+    def raise_max_health(self, amount: int) -> None:
+        """Raise max health, and current health with it.
+
+        Decided in Q-05: the hero feels the reward straight away, and a battered
+        hero (50/80 -> 70/100) gains capacity without being healed for free.
+        """
+        amount = max(0, amount)
+        self.player.model.max_health += amount
+        self.player.model.health = min(
+            self.player.model.max_health, self.player.model.health + amount
+        )
+
+    def raise_damage(self, amount: int) -> None:
+        self.player.model.damage += max(0, amount)
+
+    def raise_max_items(self, amount: int) -> None:
+        """Widen the hero's hotbar, up to the number of slots the UI can drive.
+
+        The ceiling is not cosmetic: each slot needs a `key_<n>` icon and an
+        INPUTS["item_<n>"] binding, and those stop at MAX_HOTBAR_ITEMS_LIMIT.
+        Going past it would draw a slot nobody can select.
+        """
+        self.player.max_items = min(
+            MAX_HOTBAR_ITEMS_LIMIT, self.player.max_items + max(0, amount)
+        )
+
+    def shift_sentiment_of(self, npc_key: str, amount: int) -> None:
+        """Shift a named NPC's sentiment, wherever that NPC currently is.
+
+        A quest has no current NPC, so the reward names one. The NPC may well be
+        on another map (or on none at all yet), which is why this searches the
+        same three tiers as `find_visited_node` rather than only the live scene.
+        """
+        scene = self.player.scene
+        for npc in getattr(scene, "loaded_NPCs", {}).values():
+            if getattr(npc, "config_key", None) == npc_key:
+                npc.sentiment = max(0, min(100, npc.sentiment + amount))
+                return
+
+        for cached in (getattr(scene, "loaded_maps", None) or {}).values():
+            for npc in cached.get("NPCs", None) or []:
+                if getattr(npc, "config_key", None) == npc_key:
+                    npc.sentiment = max(0, min(100, npc.sentiment + amount))
+                    return
+
+        for map_state in (getattr(scene, "pending_map_states", None) or {}).values():
+            for npc_state in map_state.npc_states.values():
+                if npc_state.config_key == npc_key and npc_state.dialog_state is not None:
+                    npc_state.dialog_state.sentiment = max(
+                        0, min(100, npc_state.dialog_state.sentiment + amount)
+                    )
+                    return
+
+        # Never met, never loaded: the NPC will be built from config with its
+        # default sentiment, and this shift has nowhere to land. Say so — silently
+        # dropping a reward is the bug this epic keeps deleting.
+        print(f"[quest] sentiment reward for unknown/unloaded NPC {npc_key!r} was not applied")
 
     def _remove_one_item(self, key: str) -> str | None:
         """Drop one stack-count of ``key`` from the hero's inventory.

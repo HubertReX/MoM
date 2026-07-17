@@ -314,8 +314,15 @@ SHOW_DEBUG_INFO = False
 SHOW_HELP_INFO = False
 SHOW_UI = True
 
-# inventory slots count
+# inventory slots count — the value every character *starts* with. The live count
+# is `NPC.max_items` (per character), because a quest can reward the hero extra
+# slots (decision D11).
 MAX_HOTBAR_ITEMS = 6
+# Hard ceiling for `max_items`. Not arbitrary: the hotbar draws a `key_<n>` icon
+# per slot and reads INPUTS["item_<n>"], and both only exist up to here
+# (`Scene.generate_icons` renders digits 0-8; ACTIONS defines item_1..item_8).
+# Raising it means adding key bindings and icons first.
+MAX_HOTBAR_ITEMS_LIMIT = 8
 # scale items by N to display in hotbar
 INVENTORY_ITEM_SCALE = 4
 # width (with padding) of hotbar slot
@@ -461,6 +468,10 @@ ACTIONS: dict[str, dict[str, Any]] = {
     "item_4": {"show": None, "msg": "action.item_4", "keys": [pygame.K_4]},
     "item_5": {"show": None, "msg": "action.item_5", "keys": [pygame.K_5]},
     "item_6": {"show": None, "msg": "action.item_6", "keys": [pygame.K_6]},
+    # slots 7-8 only exist once a quest has rewarded them (D11); the bindings are
+    # always present so the hotbar loop can read INPUTS["item_7"] unconditionally
+    "item_7": {"show": None, "msg": "action.item_7", "keys": [pygame.K_7]},
+    "item_8": {"show": None, "msg": "action.item_8", "keys": [pygame.K_8]},
     "use_item": {"show": ["key_F"], "msg": "action.use_item", "keys": [pygame.K_f]},
     "select": {"show": None, "msg": "action.select", "keys": [pygame.K_SPACE]},
     "accept": {"show": None, "msg": "action.accept", "keys": [pygame.K_RETURN, pygame.K_KP_ENTER]},
