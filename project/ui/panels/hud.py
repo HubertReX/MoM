@@ -62,6 +62,13 @@ NOTIFICATION_TYPE_ICONS: dict[str, str] = {
     NotificationTypeEnum.failure.value: "shocked_anim",
 }
 
+# vertical gap between two stacked toasts
+_NOTIFICATION_GAP = 8
+# text inset inside a toast box. pad_y has to clear the nine-patch frame art
+# (~12px), or the last line of a tall toast sits under the bottom border.
+_NOTIFICATION_PAD_X = 20
+_NOTIFICATION_PAD_Y = 16
+
 
 def hotbar_topleft(slots: int) -> tuple[int, int]:
     """Where a hotbar of ``slots`` slots starts, so it stays centred.
@@ -377,14 +384,20 @@ class HUD(Widget):
             self._notification_cache[notification.message] = surf
         return surf
 
-    def show_notification(self, surface: pygame.Surface, notification: Notification, row: int) -> None:
-        row_spacing = row * 50
+    def show_notification(
+        self, surface: pygame.Surface, notification: Notification, stack_offset: int
+    ) -> int:
+        """Draw one toast, its top ``stack_offset`` px below the resting anchor.
+
+        Returns the drawn box height so the caller can place the next toast under
+        it — toasts vary in height, so the pitch has to be measured, not assumed.
+        """
         # from show_time, not create_time: a queued toast would otherwise have
         # burned its slide-in while waiting and pop in fully arrived
         time_elapsed = self.game.time_elapsed - notification.show_time
 
         y_bottom = HEIGHT - TILE_SIZE
-        y_stop = 230 + row_spacing
+        y_stop = 230 + stack_offset
         factor = AnimationTransition.in_out_expo(min(1.0, time_elapsed / 1.0))
         y = int(y_bottom + (y_stop - y_bottom) * factor)
 
@@ -406,19 +419,20 @@ class HUD(Widget):
                 emote_w = emote_surf.get_width() + 4  # 4px gap
 
         total_w = tw + emote_w
-        pad_x, pad_y = 20, 10
+        pad_x, pad_y = _NOTIFICATION_PAD_X, _NOTIFICATION_PAD_Y
         bg = theme.nine_patch("nine_patch_04c.png", total_w + 2 * pad_x, th + 2 * pad_y, border=3)
         surface.blit(bg, (TILE_SIZE, y))
-        # Centre the text+emote block inside the panel (both axes), then shift
-        # down 3px so it doesn't ride up into the border.
+        # Centre the text+emote block inside the panel on both axes.
         text_x = TILE_SIZE + (bg.get_width() - total_w) // 2 + (emote_w - 8 if emote_w else 0)
-        text_y = y + (bg.get_height() - th) // 2 + 3
+        text_y = y + (bg.get_height() - th) // 2
         surface.blit(text_surf, (text_x, text_y))
 
         if emote_surf is not None:
             emote_x = text_x - emote_w + 24
             emote_y = text_y + (th - emote_surf.get_height()) // 2 - 3
             surface.blit(emote_surf, (emote_x, emote_y))
+
+        return bg.get_height()
 
     #############################################################################################################
     # MARK: compose
@@ -441,11 +455,13 @@ class HUD(Widget):
             self.show_available_actions(surface)
 
     def draw_overlay(self, surface: pygame.Surface, *, stats: bool = True) -> None:
-        # rows are numbered over the *visible* ones: enumerating the whole list
-        # would reserve a slot for every toast still waiting its turn and leave
-        # a gap on screen
-        for row, notification in enumerate(self.scene.visible_notifications()):
-            self.show_notification(surface, notification, row)
+        # Stack by each toast's real height, not a fixed row pitch: a quest-done
+        # toast can run to four lines (a wrapped [h3] headline plus success prose),
+        # and a fixed 50px step let the tall one overlap the toast below it. Only
+        # the *visible* ones count — a queued toast reserves no space.
+        offset = 0
+        for notification in self.scene.visible_notifications():
+            offset += self.show_notification(surface, notification, offset) + _NOTIFICATION_GAP
         # A full-screen panel (the journal) covers the stats box; drawing it on top
         # would put the hero's HP over the quest title. Notifications stay: they are
         # transient news and the player should not miss one for having the log open.

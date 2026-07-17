@@ -135,6 +135,39 @@ def test_a_later_toast_does_not_wait_for_a_finished_queue() -> None:
     assert_eq(len(scene.visible_notifications()), 1, "shown immediately, nothing to queue behind")
 
 
+def test_toast_padding_clears_the_frame_so_the_last_line_fits() -> None:
+    """The reported bug: a tall toast's last line sat under the bottom frame.
+
+    The box is sized to the text height plus ``_NOTIFICATION_PAD_Y`` each side, but
+    the nine-patch frame art eats into that padding. If the padding is thinner than
+    the frame, the top and bottom lines render under the border. Measured off the
+    real asset so it tracks the art, not a guessed number.
+    """
+    import pygame
+
+    from ui import theme
+    from ui.panels.hud import _NOTIFICATION_PAD_Y
+
+    pygame.init()
+    pygame.display.set_mode((64, 64))
+    box = theme.nine_patch("nine_patch_04c.png", 240, 160, border=3)
+    w, h = box.get_size()
+    mid_x = w // 2
+    interior = tuple(box.get_at((mid_x, h // 2))[:3])
+
+    top_frame = next(y for y in range(h) if tuple(box.get_at((mid_x, y))[:3]) == interior)
+    bottom_frame = next(dy for dy in range(h) if tuple(box.get_at((mid_x, h - 1 - dy))[:3]) == interior)
+
+    assert_true(
+        _NOTIFICATION_PAD_Y >= top_frame,
+        f"pad_y {_NOTIFICATION_PAD_Y} must clear the {top_frame}px top frame",
+    )
+    assert_true(
+        _NOTIFICATION_PAD_Y >= bottom_frame,
+        f"pad_y {_NOTIFICATION_PAD_Y} must clear the {bottom_frame}px bottom frame",
+    )
+
+
 def main() -> None:
     tests = [
         test_a_lone_toast_is_not_delayed,
@@ -142,6 +175,7 @@ def main() -> None:
         test_a_queued_toast_still_gets_the_full_duration,
         test_the_sweep_counts_from_show_time_not_create_time,
         test_a_later_toast_does_not_wait_for_a_finished_queue,
+        test_toast_padding_clears_the_frame_so_the_last_line_fits,
     ]
     for t in tests:
         t()

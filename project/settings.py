@@ -365,12 +365,14 @@ INITIAL_DAY: int = 1
 INITIAL_HOUR: int = 9
 # game time speed (N game hours / 1 real time second)
 GAME_TIME_SPEED: float = 0.25
-# how many seconds a notification will be displayed
-NOTIFICATION_DURATION: float = 5.0
+# how many seconds a notification will be displayed. Long enough to read a
+# quest-done toast, which can run to four lines (headline + success prose).
+NOTIFICATION_DURATION: float = 8.0
 # head start between two notifications appearing. Toasts queue instead of piling
 # up: one quest closing can raise three at once (done + thread opened + first
-# step), and sharing a single window left nothing readable.
-NOTIFICATION_STAGGER: float = 1.2
+# step), and sharing a single window left nothing readable. Wide enough that a
+# tall toast is read before the next slides in under it.
+NOTIFICATION_STAGGER: float = 2.0
 # probability that NPC will rest [%]
 SHOULD_NPC_REST_PROBABILITY: int = 15
 # how long (min) will NPC rest [s]
