@@ -1,0 +1,247 @@
+#!/usr/bin/env python3
+"""Integration tests for multi-map state persistence in save/load.
+
+Run from the project root:
+    .venv/bin/python tests/test_save_load_multi_map.py
+
+Covers the bug that made quest conditions unreliable across maps: on load,
+``_apply_map_states`` applied only the map the player saved on and then cleared
+the cache, so every *other* map's state (conversations, opened chests, dead
+monsters) was written to the save file and then silently dropped. Walking back
+into such a map rebuilt it from the TMX defaults.
+
+The existing dialog-state tests only exercised a single NPC in isolation, which
+is why this went unnoticed — so these tests deliberately work at the map level.
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from types import SimpleNamespace
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+os.environ["SDL_AUDIODRIVER"] = "dummy"
+
+from save_load.manager import SaveManager
+from save_load.models import ChestState, MapState, NPCDialogState, NPCState
+
+
+def assert_eq(a: object, b: object, msg: str = "") -> None:
+    assert a == b, f"{msg}: expected {b!r}, got {a!r}"
+
+
+def assert_true(cond: bool, msg: str = "") -> None:
+    assert cond, msg
+
+
+class FakeGroup:
+    """Stands in for the pyscroll sprite group / sprite sets."""
+
+    def __init__(self) -> None:
+        self.sprites_set: list[object] = []
+
+    def remove(self, sprite: object) -> None:
+        if sprite in self.sprites_set:
+            self.sprites_set.remove(sprite)
+
+    def add(self, sprite: object, layer: int = 0) -> None:
+        self.sprites_set.append(sprite)
+
+    def __contains__(self, sprite: object) -> bool:
+        return sprite in self.sprites_set
+
+
+def _make_npc(name: str, *, visited: dict[str, bool] | None = None) -> SimpleNamespace:
+    """An NPC stub that records what restore_dialog_state was handed."""
+    npc = SimpleNamespace(
+        name=name,
+        model=SimpleNamespace(has_dialog=True, attitude="friendly", health=10, money=0),
+        pos=SimpleNamespace(x=0.0, y=0.0),
+        is_dead=False,
+        items=[],
+        restored_state=None,
+    )
+    npc.restore_dialog_state = lambda state, _npc=npc: setattr(_npc, "restored_state", state)
+    return npc
+
+
+def _make_scene(current_map: str, npcs: list[SimpleNamespace]) -> SimpleNamespace:
+    scene = SimpleNamespace(
+        current_map=current_map,
+        loaded_maps={},
+        pending_map_states={},
+        NPCs=npcs,
+        chests=[],
+        items=[],
+        item_sprites=FakeGroup(),
+        group=FakeGroup(),
+        destructibles=[],
+        walls=[],
+        path_finding_grid=[[0, 0], [0, 0]],
+        is_maze=False,
+        sprites_layer=1,
+        items_sheet={},
+        game=SimpleNamespace(conf=SimpleNamespace(items={})),
+    )
+    scene.store_map = lambda: scene.loaded_maps.__setitem__(scene.current_map, {})
+    return scene
+
+
+def _dialog_state(visited: dict[str, bool], sentiment: int = 77) -> NPCDialogState:
+    return NPCDialogState(
+        current_node_key="012",
+        dialog_start_node_key="001",
+        selected_options={"OPT_ASK": True},
+        visited_nodes=visited,
+        sentiment=sentiment,
+        known_disposition={},
+    )
+
+
+def _barman_map_state() -> MapState:
+    """Map 'Tavern': the player talked to the barman and opened a chest."""
+    return MapState(
+        name="Tavern",
+        npc_states={
+            "Barman": NPCState(
+                name="Barman",
+                attitude="friendly",
+                pos_x=5.0,
+                pos_y=6.0,
+                health=10,
+                money=3,
+                is_dead=False,
+                inventory=[],
+                dialog_state=_dialog_state({"012": True}),
+            )
+        },
+        chests={"TavernChest": ChestState(name="TavernChest", is_closed=False, items=["MERMAIDS_TEAR"])},
+        ground_items=[],
+        destroyed_walls=[],
+        dead_monsters=[],
+    )
+
+
+def test_other_maps_are_kept_pending_not_dropped() -> None:
+    """Loading a save on map A must not discard map B's state."""
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+
+    maps = {
+        "Village": MapState(name="Village"),
+        "Tavern": _barman_map_state(),
+    }
+    mgr._apply_map_states(scene, maps)
+
+    assert_true("Tavern" in scene.pending_map_states, "other map held as pending")
+    assert_true("Village" not in scene.pending_map_states, "current map is applied, not pending")
+
+
+def test_entering_a_map_applies_its_saved_state() -> None:
+    """Walking back into a visited map restores its NPC conversation + chests."""
+    # the player loads on Village...
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+    mgr._apply_map_states(scene, {"Village": MapState(name="Village"), "Tavern": _barman_map_state()})
+
+    # ...then walks into the Tavern, which is rebuilt fresh from its TMX
+    barman = _make_npc("Barman")
+    chest = SimpleNamespace(name="TavernChest", model=SimpleNamespace(is_closed=True, items=[]))
+    scene.current_map = "Tavern"
+    scene.NPCs = [barman]
+    scene.chests = [chest]
+
+    mgr.apply_pending_map_state(scene)
+
+    assert_true(barman.restored_state is not None, "barman got his dialog state back")
+    assert_eq(barman.restored_state.visited_nodes, {"012": True}, "visited node restored")
+    assert_eq(barman.restored_state.sentiment, 77, "sentiment restored")
+    assert_true(not chest.model.is_closed, "chest is still open")
+    # consumed exactly once
+    assert_true("Tavern" not in scene.pending_map_states, "pending entry consumed")
+
+
+def test_applying_is_idempotent_and_scoped() -> None:
+    """A map with no pending state keeps its TMX defaults."""
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+    mgr._apply_map_states(scene, {"Village": MapState(name="Village"), "Tavern": _barman_map_state()})
+
+    # entering a map that was never visited before: nothing to apply
+    fresh_npc = _make_npc("Blacksmith")
+    scene.current_map = "Forge"
+    scene.NPCs = [fresh_npc]
+    mgr.apply_pending_map_state(scene)
+    assert_true(fresh_npc.restored_state is None, "untouched map keeps TMX defaults")
+
+    # entering the Tavern twice must not re-apply stale state over live progress
+    barman = _make_npc("Barman")
+    scene.current_map = "Tavern"
+    scene.NPCs = [barman]
+    mgr.apply_pending_map_state(scene)
+    assert_true(barman.restored_state is not None, "first entry restores")
+
+    barman.restored_state = None
+    mgr.apply_pending_map_state(scene)
+    assert_true(barman.restored_state is None, "second entry is a no-op")
+
+
+def test_saving_preserves_unvisited_pending_maps() -> None:
+    """The autosave on every map change must not drop maps not yet revisited.
+
+    This is the trap in the fix: `_build_map_states` reads live objects, and a
+    pending map has none — so without an explicit pass-through, walking A -> C
+    would quietly erase B's progress from the new save.
+    """
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+    mgr._apply_map_states(scene, {"Village": MapState(name="Village"), "Tavern": _barman_map_state()})
+
+    # the player is on Village and saves (or walks to another map, autosaving)
+    scene.loaded_maps = {}
+    built = mgr._build_map_states(scene)
+
+    assert_true("Tavern" in built, "pending map survives the save")
+    assert_eq(
+        built["Tavern"].npc_states["Barman"].dialog_state.visited_nodes,
+        {"012": True},
+        "pending map's dialog state carried through untouched",
+    )
+    assert_true("Village" in built, "current map still saved")
+
+
+def test_live_map_wins_over_pending() -> None:
+    """Once re-entered, a map is rebuilt from live objects, not the stale pending copy."""
+    scene = _make_scene("Tavern", [])
+    mgr = SaveManager.__new__(SaveManager)
+    # a stale pending entry for the very map we are standing on
+    scene.pending_map_states = {"Tavern": _barman_map_state()}
+
+    barman = _make_npc("Barman")
+    barman.dialog_nodes = None  # no graph -> no dialog state captured
+    scene.NPCs = [barman]
+
+    built = mgr._build_map_states(scene)
+
+    # the live (current) map must not be overwritten by the pending snapshot
+    assert_true(built["Tavern"].npc_states["Barman"].dialog_state is None, "live state wins")
+
+
+def main() -> None:
+    tests = [
+        test_other_maps_are_kept_pending_not_dropped,
+        test_entering_a_map_applies_its_saved_state,
+        test_applying_is_idempotent_and_scoped,
+        test_saving_preserves_unvisited_pending_maps,
+        test_live_map_wins_over_pending,
+    ]
+    for t in tests:
+        t()
+        print(f"  PASS  {t.__name__}")
+    print(f"\nAll {len(tests)} multi-map save/load tests passed.")
+
+
+if __name__ == "__main__":
+    main()

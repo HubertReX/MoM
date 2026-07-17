@@ -9,7 +9,10 @@ T-032) that decides whether an option is available.
 from dialog.conditions import (
     ConditionContext,
     ConditionError,
+    ConditionScope,
+    DialogConditionContext,
     check_condition,
+    eval_number,
     validate_condition
     )
 from dialog.entities import (
@@ -30,7 +33,10 @@ __all__ = [
     "get_start_node",
     "ConditionContext",
     "ConditionError",
+    "ConditionScope",
+    "DialogConditionContext",
     "check_condition",
+    "eval_number",
     "validate_condition",
     "ResultSink",
     "apply_result",

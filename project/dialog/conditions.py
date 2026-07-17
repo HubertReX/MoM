@@ -23,6 +23,8 @@ DSL                          meaning
 ``visited(node)``            node ``node`` was visited by the current character
 ``visited(npc, node)``       node ``node`` was visited by another NPC ``npc``
 ``has_item(key)``            the hero holds item ``key``
+``item_count(key)``          how many of item ``key`` the hero holds (-> int)
+``quest_done(key)``          quest ``key`` is complete
 ``sentiment``                current character's sentiment (bare name -> int)
 ===========================  ================================================
 
@@ -32,10 +34,23 @@ Predicates compose with boolean / unary / comparison operators::
     not visited("003") or has_item("MERMAIDS_TEAR")
     visited("HAMMER_HOAXHEART_001", "004")
 
+**Scopes** (decision D7 — the whitelist stays narrow, and narrows further per
+caller). A dialog condition is evaluated *during a conversation*, so it has a
+"current character"; a quest ``test`` is evaluated from the quest engine and has
+none. :class:`ConditionScope` picks which names are legal:
+
+- ``dialog`` — everything in the table above.
+- ``quest`` — no ``selected()``, no ``sentiment`` (there is no current NPC to
+  ask), and ``visited()`` **requires** its ``npc`` argument, so a quest cannot
+  accidentally ask "did *nobody in particular* visit this node?" and silently
+  get ``False`` forever.
+
 Data reaches the engine through a :class:`ConditionContext` (a ``Protocol`` — the
-game adapter and tests both satisfy it). :func:`validate_condition` checks a
-condition against the whitelist *without* a context, for loud import-time
-failures (decision D6); :func:`check_condition` validates then evaluates.
+game adapter and tests both satisfy it); :class:`DialogConditionContext` adds the
+two conversation-only members. :func:`validate_condition` checks a condition
+against the whitelist *without* a context, for loud import-time failures
+(decision D6); :func:`check_condition` validates then evaluates;
+:func:`eval_number` does the same but yields an ``int`` (decision D9).
 
 Allowed AST nodes: ``Expression`` (root), ``BoolOp`` (and/or), ``UnaryOp``
 (``not`` / unary ``-`` / ``+``), ``Compare``, ``Call`` (predicate whitelist
@@ -48,6 +63,7 @@ from __future__ import annotations
 
 import ast
 import operator
+from enum import StrEnum, auto
 from functools import lru_cache
 from typing import Any, Callable, Protocol, runtime_checkable
 
@@ -62,18 +78,25 @@ class ConditionError(ValueError):
     """
 
 
+class ConditionScope(StrEnum):
+    """Which names a condition may use — see the module docstring."""
+
+    dialog = auto()
+    quest = auto()
+
+
 @runtime_checkable
 class ConditionContext(Protocol):
     """The bridge between the DSL and game data (the only way in).
+
+    This is the part that makes sense *without* a conversation on screen: facts
+    about the world and the hero. Quests use exactly this; dialogs use
+    :class:`DialogConditionContext`, which adds the conversation-only members.
 
     The game supplies an adapter backed by the live character / hero / config
     (see decision D8, task T-023); tests supply a tiny in-memory stub. Every
     predicate in a condition maps to exactly one method / property here.
     """
-
-    def selected(self, option_key: str) -> bool:
-        """Did the current character choose option ``option_key``?"""
-        ...
 
     def visited(self, node_key: str, npc: str | None = None) -> bool:
         """Was node ``node_key`` visited — by ``npc`` if given, else the current character?"""
@@ -81,6 +104,27 @@ class ConditionContext(Protocol):
 
     def has_item(self, item_key: str) -> bool:
         """Does the hero hold item ``item_key``?"""
+        ...
+
+    def item_count(self, item_key: str) -> int:
+        """How many of item ``item_key`` does the hero hold?"""
+        ...
+
+    def quest_done(self, quest_key: str) -> bool:
+        """Is quest ``quest_key`` complete?"""
+        ...
+
+
+@runtime_checkable
+class DialogConditionContext(ConditionContext, Protocol):
+    """A :class:`ConditionContext` evaluated *during a conversation*.
+
+    Only these two need a "current character", which is exactly why quests
+    cannot use them (scope ``quest`` rejects both at validation time).
+    """
+
+    def selected(self, option_key: str) -> bool:
+        """Did the current character choose option ``option_key``?"""
         ...
 
     @property
@@ -93,15 +137,41 @@ class ConditionContext(Protocol):
 # Whitelist tables
 # ---------------------------------------------------------------------------
 
-# predicate name -> (min args, max args). ``visited`` takes 1 (self) or 2 (npc, node).
-_PREDICATES: dict[str, tuple[int, int]] = {
-    "selected": (1, 1),
+# predicate name -> (min args, max args), per scope.
+#
+# Names that make sense with or without a conversation on screen. ``visited``
+# takes 1 (current character) or 2 (npc, node) args here.
+_COMMON_PREDICATES: dict[str, tuple[int, int]] = {
     "visited": (1, 2),
     "has_item": (1, 1),
+    "item_count": (1, 1),
+    "quest_done": (1, 1),
 }
 
-# bare names that resolve to a value (not a call)
-_VALUE_NAMES: frozenset[str] = frozenset({"sentiment"})
+_DIALOG_PREDICATES: dict[str, tuple[int, int]] = {
+    **_COMMON_PREDICATES,
+    "selected": (1, 1),
+}
+
+# A quest has no current NPC, so `visited` MUST name one: arity is exactly 2.
+# Without this, `visited("012")` in a quest would parse, evaluate against
+# nothing, and sit at False forever — the silent-corpse failure mode the whole
+# quest epic exists to prevent (see doc/quest-migration-plan.md, Pułapka 5).
+_QUEST_PREDICATES: dict[str, tuple[int, int]] = {
+    **_COMMON_PREDICATES,
+    "visited": (2, 2),
+}
+
+_PREDICATES_BY_SCOPE: dict[ConditionScope, dict[str, tuple[int, int]]] = {
+    ConditionScope.dialog: _DIALOG_PREDICATES,
+    ConditionScope.quest: _QUEST_PREDICATES,
+}
+
+# bare names that resolve to a value (not a call), per scope
+_VALUE_NAMES_BY_SCOPE: dict[ConditionScope, frozenset[str]] = {
+    ConditionScope.dialog: frozenset({"sentiment"}),
+    ConditionScope.quest: frozenset(),
+}
 
 # comparison operator node -> concrete function
 _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
@@ -122,11 +192,11 @@ _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
 
 
 @lru_cache(maxsize=512)
-def _compile(condition: str) -> ast.Expression:
+def _compile(condition: str, scope: ConditionScope) -> ast.Expression:
     """Parse and whitelist-validate ``condition``; cache the resulting AST.
 
     Conditions are re-checked every frame while a dialog is on screen, so the
-    parse + validation is memoised on the condition string. Raises
+    parse + validation is memoised on the (condition, scope) pair. Raises
     :class:`ConditionError` on syntax or whitelist violations.
     """
     try:
@@ -135,15 +205,15 @@ def _compile(condition: str) -> ast.Expression:
         raise ConditionError(
             f"syntax error in condition {condition!r}: {error.msg}"
         ) from error
-    _validate(tree.body, condition)
+    _validate(tree.body, condition, scope)
     return tree
 
 
-def _validate(node: ast.AST, condition: str) -> None:
-    """Recursively assert ``node`` uses only whitelisted constructs."""
+def _validate(node: ast.AST, condition: str, scope: ConditionScope) -> None:
+    """Recursively assert ``node`` uses only constructs whitelisted for ``scope``."""
     if isinstance(node, ast.BoolOp):
         for value in node.values:
-            _validate(value, condition)
+            _validate(value, condition, scope)
 
     elif isinstance(node, ast.UnaryOp):
         if not isinstance(node.op, (ast.Not, ast.USub, ast.UAdd)):
@@ -151,7 +221,7 @@ def _validate(node: ast.AST, condition: str) -> None:
                 f"unsupported unary operator {type(node.op).__name__} in "
                 f"condition {condition!r}"
             )
-        _validate(node.operand, condition)
+        _validate(node.operand, condition, scope)
 
     elif isinstance(node, ast.Compare):
         for op in node.ops:
@@ -160,18 +230,20 @@ def _validate(node: ast.AST, condition: str) -> None:
                     f"unsupported comparison {type(op).__name__} in "
                     f"condition {condition!r}"
                 )
-        _validate(node.left, condition)
+        _validate(node.left, condition, scope)
         for comparator in node.comparators:
-            _validate(comparator, condition)
+            _validate(comparator, condition, scope)
 
     elif isinstance(node, ast.Call):
-        _validate_call(node, condition)
+        _validate_call(node, condition, scope)
 
     elif isinstance(node, ast.Name):
-        if node.id not in _VALUE_NAMES and node.id not in _PREDICATES:
+        value_names = _VALUE_NAMES_BY_SCOPE[scope]
+        if node.id not in value_names and node.id not in _PREDICATES_BY_SCOPE[scope]:
+            allowed = ", ".join(sorted(value_names)) or "none"
             raise ConditionError(
-                f"unknown name {node.id!r} in condition {condition!r} "
-                f"(allowed: {', '.join(sorted(_VALUE_NAMES))})"
+                f"unknown name {node.id!r} in {scope.value} condition {condition!r} "
+                f"(allowed: {allowed})"
             )
 
     elif isinstance(node, ast.Constant):
@@ -187,28 +259,31 @@ def _validate(node: ast.AST, condition: str) -> None:
         )
 
 
-def _validate_call(node: ast.Call, condition: str) -> None:
+def _validate_call(node: ast.Call, condition: str, scope: ConditionScope) -> None:
     if not isinstance(node.func, ast.Name):
         raise ConditionError(
             f"only bare predicate calls are allowed in condition {condition!r}"
         )
+    predicates = _PREDICATES_BY_SCOPE[scope]
     name = node.func.id
-    if name not in _PREDICATES:
+    if name not in predicates:
+        # Name the scope: `selected()` in a quest is a plausible authoring
+        # mistake, and "unknown predicate" alone would read as a typo.
         raise ConditionError(
-            f"unknown predicate {name!r} in condition {condition!r} "
-            f"(allowed: {', '.join(sorted(_PREDICATES))})"
+            f"unknown predicate {name!r} in {scope.value} condition {condition!r} "
+            f"(allowed: {', '.join(sorted(predicates))})"
         )
     if node.keywords:
         raise ConditionError(
             f"predicate {name!r} takes no keyword arguments in condition "
             f"{condition!r}"
         )
-    lo, hi = _PREDICATES[name]
+    lo, hi = predicates[name]
     if not lo <= len(node.args) <= hi:
         arity = str(lo) if lo == hi else f"{lo}-{hi}"
         raise ConditionError(
             f"predicate {name}() takes {arity} argument(s), got "
-            f"{len(node.args)} in condition {condition!r}"
+            f"{len(node.args)} in {scope.value} condition {condition!r}"
         )
     for arg in node.args:
         if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
@@ -218,15 +293,17 @@ def _validate_call(node: ast.Call, condition: str) -> None:
             )
 
 
-def validate_condition(condition: str) -> None:
-    """Validate ``condition`` against the whitelist without evaluating it.
+def validate_condition(
+    condition: str, scope: ConditionScope = ConditionScope.dialog
+) -> None:
+    """Validate ``condition`` against ``scope``'s whitelist without evaluating it.
 
-    Call this at dialog import time (decision D6) so an unknown name/predicate
-    or a disallowed construct fails loudly with the offending source, rather
-    than silently evaluating to ``False`` during play. Raises
-    :class:`ConditionError` on any problem; returns ``None`` when valid.
+    Call this at import time (decision D6) so an unknown name/predicate or a
+    disallowed construct fails loudly with the offending source, rather than
+    silently evaluating to ``False`` during play. Raises :class:`ConditionError`
+    on any problem; returns ``None`` when valid.
     """
-    _compile(condition)
+    _compile(condition, scope)
 
 
 # ---------------------------------------------------------------------------
@@ -234,15 +311,46 @@ def validate_condition(condition: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def check_condition(condition: str, ctx: ConditionContext) -> bool:
+def check_condition(
+    condition: str,
+    ctx: ConditionContext,
+    scope: ConditionScope = ConditionScope.dialog,
+) -> bool:
     """Return the truth value of ``condition`` for ``ctx``.
 
     Validates first (so a broken condition raises :class:`ConditionError` rather
     than misbehaving), then interprets the whitelisted AST against the predicate
     bridge. The result is coerced to ``bool``.
     """
-    tree = _compile(condition)
+    tree = _compile(condition, scope)
     return bool(_Interpreter(ctx).eval(tree.body))
+
+
+def eval_number(
+    expression: str,
+    ctx: ConditionContext,
+    scope: ConditionScope = ConditionScope.quest,
+) -> int:
+    """Evaluate ``expression`` to an ``int`` (decision D9 — quest progress).
+
+    Same parser, same whitelist, same predicate bridge as
+    :func:`check_condition`; only the result type differs. Used for a quest's
+    ``progress`` expression, e.g. ``item_count("MERMAIDS_TEAR")``.
+
+    A ``bool`` result is rejected rather than silently counted as 0/1: writing
+    ``progress: 'visited("X", "1")'`` is an authoring mistake (a yes/no fact is
+    not a quantity), and a progress bar reading "1/3" because a predicate
+    happened to be true is exactly the kind of quiet nonsense this epic is
+    trying to design out.
+    """
+    tree = _compile(expression, scope)
+    value = _Interpreter(ctx).eval(tree.body)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ConditionError(
+            f"expression {expression!r} must evaluate to a number, got "
+            f"{type(value).__name__} ({value!r})"
+        )
+    return int(value)
 
 
 class _Interpreter:
@@ -295,22 +403,28 @@ class _Interpreter:
 
     def _eval_name(self, node: ast.Name) -> Any:
         if node.id == "sentiment":
-            return self.ctx.sentiment
+            # dialog scope only; validation keeps quests from reaching this
+            return self.ctx.sentiment  # type: ignore[attr-defined]
         # unreachable after validation
         raise ConditionError(f"unknown name {node.id!r}")
 
-    def _eval_call(self, node: ast.Call) -> bool:
+    def _eval_call(self, node: ast.Call) -> Any:
         name = node.func.id  # type: ignore[attr-defined]  # validated to be a Name
         args = [self.eval(arg) for arg in node.args]
-        if name == "selected":
-            return self.ctx.selected(args[0])
         if name == "has_item":
             return self.ctx.has_item(args[0])
+        if name == "item_count":
+            return self.ctx.item_count(args[0])
+        if name == "quest_done":
+            return self.ctx.quest_done(args[0])
         if name == "visited":
             if len(args) == 1:
                 return self.ctx.visited(args[0])
             # visited(npc, node) — npc first, node second
             return self.ctx.visited(args[1], npc=args[0])
+        if name == "selected":
+            # dialog scope only; validation keeps quests from reaching this
+            return self.ctx.selected(args[0])  # type: ignore[attr-defined]
         # unreachable after validation
         raise ConditionError(f"unknown predicate {name!r}")
 
@@ -318,6 +432,9 @@ class _Interpreter:
 __all__ = [
     "ConditionContext",
     "ConditionError",
+    "ConditionScope",
+    "DialogConditionContext",
     "check_condition",
+    "eval_number",
     "validate_condition",
 ]

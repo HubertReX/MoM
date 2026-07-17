@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import copy
 import random
 import time
@@ -243,12 +244,21 @@ class SaveManager:
             dead_monsters=self._build_dead_monsters(scene),
         )
 
+        # Maps restored from a save but not re-entered yet have no live objects to
+        # read, so carry their state through untouched. Without this, saving (and
+        # every map change autosaves) would drop the progress of every map the
+        # player has not revisited since loading.
+        for name, state in (getattr(scene, "pending_map_states", None) or {}).items():
+            if name not in maps:
+                maps[name] = state
+
         return maps
 
     def _build_npc_states(self, scene: Scene) -> dict[str, NPCState]:
         return {
             npc.name: NPCState(
                 name=npc.name,
+                config_key=getattr(npc, "config_key", ""),
                 attitude=npc.model.attitude,
                 pos_x=npc.pos.x,
                 pos_y=npc.pos.y,
@@ -344,6 +354,7 @@ class SaveManager:
         for npc in cached.get("NPCs", []):
             result[npc.name] = NPCState(
                 name=npc.name,
+                config_key=getattr(npc, "config_key", ""),
                 attitude=npc.model.attitude,
                 pos_x=npc.pos.x,
                 pos_y=npc.pos.y,
@@ -459,6 +470,16 @@ class SaveManager:
 
     def _apply_map_states(self, scene: Scene, maps: dict[str, MapState]) -> None:
         current_name = scene.current_map
+
+        # Only the map the player saved on exists right now — the others have no
+        # NPCs, chests or sprites to apply state to yet. Hold their state until
+        # the player walks back into them (see `apply_pending_map_state`), rather
+        # than dropping it: that drop is what silently reset every other map's
+        # progress on load.
+        scene.pending_map_states = {
+            name: state for name, state in maps.items() if name != current_name
+        }
+
         if current_name not in maps:
             return
 
@@ -472,6 +493,36 @@ class SaveManager:
 
         scene.loaded_maps.clear()
         scene.store_map()
+
+    def apply_pending_map_state(self, scene: Scene) -> None:
+        """Apply the saved state of a map the player has just (re-)entered.
+
+        Called from ``Scene.load_map`` once the map is built from its TMX but
+        before it is cached. A map with no pending state (never visited, or
+        already restored once) is left exactly as the TMX defines it.
+        """
+        pending: dict[str, Any] = getattr(scene, "pending_map_states", None) or {}
+        ms = pending.pop(scene.current_map, None)
+        if ms is None:
+            return
+
+        self._apply_chest_states(scene, ms.chests)
+        # The TMX just respawned this map's ground items; the save knows which of
+        # them the player already took. Replace rather than append.
+        self._clear_ground_items(scene)
+        self._apply_ground_items(scene, ms.ground_items)
+        self._apply_destroyed_walls(scene, ms.destroyed_walls)
+        self._apply_npc_states(scene, ms)
+        self._apply_maze_mobs(scene, ms)
+
+    def _clear_ground_items(self, scene: Scene) -> None:
+        """Drop every ground item currently on the map (sprites included)."""
+        for item in list(scene.items):
+            with contextlib.suppress(KeyError):
+                scene.group.remove(item)
+            if item in scene.item_sprites:
+                scene.item_sprites.remove(item)
+        scene.items = []
 
     def _apply_chest_states(self, scene: Scene, chests: dict[str, ChestState]) -> None:
         chest_map = {c.name: c for c in scene.chests}

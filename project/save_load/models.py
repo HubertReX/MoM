@@ -262,9 +262,20 @@ class NPCDialogState:
 
 @dataclass
 class NPCState:
-    """Snapshot of a single NPC's mutable state."""
+    """Snapshot of a single NPC's mutable state.
+
+    ``name`` is the TMX object name (unique per map); ``config_key`` is the
+    character's key in ``config.json`` — the same key dialog and quest
+    conditions use in ``visited("BARMAN_ABSINTHRAYNER", "012")``. Both are kept
+    because a saved map that has not been re-entered yet has no live NPC objects
+    to ask, and a condition can only look it up by ``config_key``.
+
+    ``config_key`` defaults to ``""`` so saves written before it existed still
+    load (those NPCs simply resolve once their map is re-entered).
+    """
 
     name: str = ""
+    config_key: str = ""
     attitude: AttitudeEnum = AttitudeEnum.friendly
     pos_x: float = 0.0
     pos_y: float = 0.0
@@ -282,6 +293,7 @@ class NPCState:
         dialog_state_raw = data.get("dialog_state")
         return cls(
             name=str(data.get("name", "")),
+            config_key=str(data.get("config_key", "")),
             attitude=_enum_val(data.get("attitude"), AttitudeEnum),
             pos_x=float(data.get("pos_x", 0.0)),
             pos_y=float(data.get("pos_y", 0.0)),

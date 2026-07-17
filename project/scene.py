@@ -157,6 +157,12 @@ class Scene(State):
         self.game.time_elapsed = 0.0
         self.current_map = map_name
         self.loaded_maps: dict[str, Any] = {}
+        # Saved state for maps the player visited before saving but has not
+        # re-entered since loading. Their NPCs/chests do not exist yet, so the
+        # state cannot be applied at load time; `load_map` applies each entry
+        # when its map is actually built. Deliberately NOT in `self.properties`:
+        # this is global, not per-map, and must survive `store_map`/`restore_map`.
+        self.pending_map_states: dict[str, Any] = {}
         self.entry_point = entry_point
         self.new_scene: Collider | None = None
         self.is_maze = is_maze
@@ -421,6 +427,13 @@ class Scene(State):
 
         # mark map as loaded
         if self.current_map not in self.loaded_maps:
+            # A map entered for the first time after loading a save has just been
+            # rebuilt from its TMX defaults, so it knows nothing about the chests
+            # the player opened, the monsters they killed or the conversations
+            # they had here. Re-apply the saved state now, before the map is
+            # cached, or that progress is silently rolled back.
+            if hasattr(self.game, "save_manager"):
+                self.game.save_manager.apply_pending_map_state(self)
             self.store_map()
 
     #############################################################################################################
