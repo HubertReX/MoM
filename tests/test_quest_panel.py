@@ -265,6 +265,34 @@ def test_a_tagged_title_is_cut_without_breaking_its_markup() -> None:
     assert_true(panel._build_rich(cut, 10_000, 14, _WHITE).content_width <= 200, "fits the room")
 
 
+def test_the_result_section_is_gated_on_finishing() -> None:
+    """WYNIK is the answer, so showing it early would spoil the step that earns it.
+
+    Q-12: the `**Sukces**:` prose reaches the player here and in the completion
+    toast; before that it was imported and localized and shown nowhere.
+    """
+    panel = _panel(done={Q00})
+    panel.filter_idx = 2
+    panel._rebuild()
+
+    assert_true(panel._done(Q00), "the opening quest is finished")
+    assert_true(not panel._done(Q01_S00), "the curse thread is not")
+
+    drawn: list[str] = []
+    panel._label = lambda surface, text, pos: drawn.append(text)  # type: ignore[assignment]
+    panel._draw_result = lambda *a, **k: drawn.append("RESULT-BODY") or 0  # type: ignore[assignment]
+
+    surface = pygame.Surface((1280, 720))
+    panel.selected = [r.key for r in panel._rows].index(Q00)
+    panel._draw_details(surface)
+    assert_true("RESULT-BODY" in drawn, "a finished quest shows its outcome")
+
+    drawn.clear()
+    panel.selected = [r.key for r in panel._rows].index(Q01_S00)
+    panel._draw_details(surface)
+    assert_true("RESULT-BODY" not in drawn, "an unfinished one keeps its ending to itself")
+
+
 def test_a_tagged_title_renders_as_text_not_markup() -> None:
     """`draw_text` would print "[char]Kowal[/char]" literally - the bug this fixes."""
     panel = _panel()
@@ -290,6 +318,7 @@ def main() -> None:
         test_titles_are_truncated_to_their_column,
         test_a_tagged_title_is_cut_without_breaking_its_markup,
         test_a_tagged_title_renders_as_text_not_markup,
+        test_the_result_section_is_gated_on_finishing,
     ]
     for t in tests:
         t()

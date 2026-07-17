@@ -215,6 +215,40 @@ def test_unlocked_thread_and_step_read_differently() -> None:
     assert_true(any("Nowy cel" in t for t in texts), f"its first step is an objective: {texts}")
 
 
+def test_the_completion_toast_carries_the_success_prose() -> None:
+    """Q-12: `**Sukces**:` finally reaches the player.
+
+    The prose was imported, stored in config.json and localized from Q-10 on, and
+    `success_text()` sat in quest/rewards.py called by nothing but its own test.
+    The toast is where the author's payoff line belongs - the player just earned it.
+    """
+    runtime, _sink = _runtime({"CLAPBACK_SWORD": {"015"}})
+    runtime.scene.game.conf.messages = {
+        "PL": {"M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS": "Miecz postawił diagnozę: to klątwa."}
+    }
+
+    runtime.on_event("DialogPanel_closed")
+
+    done = [t for t, _type in runtime.scene.toasts if "Ukończono" in t]
+    assert_eq(len(done), 1, f"one completion toast, got {runtime.scene.toasts}")
+    assert_true("Miecz postawił diagnozę: to klątwa." in done[0], f"prose is there: {done[0]}")
+    # headline and prose are separate lines: the quest's name is not a sentence
+    assert_true("\n" in done[0], f"prose sits on its own line: {done[0]!r}")
+    # and the reward still rides along, joined by success_text rather than by hand
+    assert_true("[num]+50[/num] :golden_coin:" in done[0], f"reward label kept: {done[0]}")
+
+
+def test_a_quest_without_prose_does_not_toast_a_dangling_line() -> None:
+    """An unresolved message key must not become a toast of raw key text."""
+    runtime, _sink = _runtime({"CLAPBACK_SWORD": {"015"}})
+    runtime.on_event("DialogPanel_closed")
+
+    done = [t for t, _type in runtime.scene.toasts if "Ukończono" in t][0]
+    # with no messages configured the key falls through, but the toast still reads
+    # as one thing rather than trailing an empty line
+    assert_true(done.strip() == done, "no trailing whitespace")
+
+
 def test_quiet_sweep_says_nothing_to_the_player() -> None:
     runtime, _ = _runtime()
     runtime.update(SWEEP_INTERVAL + 0.1)
@@ -233,6 +267,8 @@ def main() -> None:
         test_toast_for_a_finished_step,
         test_toast_for_a_closed_thread_is_louder,
         test_unlocked_thread_and_step_read_differently,
+        test_the_completion_toast_carries_the_success_prose,
+        test_a_quest_without_prose_does_not_toast_a_dangling_line,
         test_quiet_sweep_says_nothing_to_the_player,
     ]
     for t in tests:

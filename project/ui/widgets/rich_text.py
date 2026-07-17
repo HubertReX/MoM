@@ -47,6 +47,7 @@ class RichText(Widget):
         self.scroll: int = 0
         self.max_scroll: int = 0
         self.content_width: int = 0
+        self.line_heights: list[int] = []
         self._anim_t: float = 0.0
         self.link_rects: list[tuple[pygame.Rect, str]] = []
         # (name, rect, target_height) so animated frames are scaled to match the text
@@ -236,6 +237,11 @@ class RichText(Widget):
             y += line["height"] + self.line_spacing
 
         self._content = content
+        # per-line heights, so a caller capping at N lines can cut on a boundary.
+        # A line is as tall as its tallest item, which is not the font's height:
+        # a shadow or an inline icon makes it taller, and guessing from the font
+        # slices the last line through the middle of its glyphs.
+        self.line_heights = [int(line["height"]) for line in lines]
         self.content_width = max((line["width"] for line in lines), default=0)
         self.max_scroll = max(0, total_h - self.rect.height)
         self.scroll = min(self.scroll, self.max_scroll)

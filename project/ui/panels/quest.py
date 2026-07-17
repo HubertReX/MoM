@@ -340,11 +340,32 @@ class QuestPanel(Widget):
         surface.blit(description, (_RIGHT_X, y))
         y += description.get_height()
 
+        if self._done(row.key):
+            y = self._draw_result(surface, quest, y + 26)
+
         children = children_of(self._defs, row.key)
         if children:
             y = self._draw_steps(surface, row.key, children, y + 26)
 
         self._draw_rewards(surface, quest, y + 26)
+
+    def _draw_result(self, surface: pygame.Surface, quest: QuestDef, y: int) -> int:
+        """The author's prose for how the quest ended — for finished quests only.
+
+        Gated on `done` because the prose *is* the answer: "Kiedyś wołali na nią
+        Mariolka" told up front would spoil the step that earns it. The journal is
+        a record of what happened, not a hint sheet.
+
+        This is where `**Sukces**:` finally reaches the player. It was imported,
+        stored in config.json and localized all along, and nothing ever showed it.
+        """
+        self._label(surface, _("quest.result"), (_RIGHT_X, y))
+        y += 22
+        prose = self._rich_block(
+            get_msg(self._messages, quest.success), _RIGHT_W, FONT_SIZE_SMALL, _DONE, max_lines=4
+        )
+        surface.blit(prose, (_RIGHT_X, y))
+        return y + prose.get_height()
 
     def _draw_steps(self, surface: pygame.Surface, key: str, children: list[str], y: int) -> int:
         self._label(surface, _("quest.steps"), (_RIGHT_X, y))
@@ -485,11 +506,14 @@ class QuestPanel(Widget):
         key = (markup, width, size, tuple(colour))
         surf = self._rich_cache.get(key)
         if surf is None:
-            surf = self._build_rich(
-                markup, width, size, colour, line_spacing=_LINE_SPACING
-            ).render_static()
-            line_h = self._font(size).get_height() + _LINE_SPACING
-            ceiling = line_h * max_lines - _LINE_SPACING
+            rt = self._build_rich(markup, width, size, colour, line_spacing=_LINE_SPACING)
+            surf = rt.render_static()
+            # cut on a line boundary, using the heights RichText actually laid out.
+            # Deriving them from the font slices the last line through its glyphs:
+            # a line is as tall as its tallest item, and a shadow makes that more
+            # than the font's own height.
+            kept = rt.line_heights[:max_lines]
+            ceiling = sum(kept) + _LINE_SPACING * max(0, len(kept) - 1)
             if surf.get_height() > ceiling:
                 surf = surf.subsurface((0, 0, surf.get_width(), ceiling)).copy()
             self._rich_cache[key] = surf

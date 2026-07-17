@@ -25,7 +25,7 @@ from quest.context_adapter import QuestConditionContext
 from quest.engine import QuestCheckResult, check_quests
 from quest.entities import QuestDef
 from quest.graph import children_of, init_quests
-from quest.rewards import apply_quest_rewards, format_reward_label
+from quest.rewards import apply_quest_rewards, success_text
 from settings import _, entity_name, get_msg
 
 if TYPE_CHECKING:
@@ -119,18 +119,21 @@ class QuestRuntime:
 
         for key in result.newly_done:
             quest = self.defs[key]
-            label = format_reward_label(quest.rewards, self._item_name)
             name = f"[quest]{self._quest_name(quest)}[/quest]"
+            # The author's prose is the payoff for finishing, and until now it was
+            # imported, stored and localized without ever reaching the player.
+            # success_text already knows how to join it to the reward label (D3=A).
+            body = success_text(self._success_prose(quest), quest.rewards, self._item_name)
 
             if children_of(self.defs, key):
                 # Closing a thread is a chapter ending, not another tick on a
                 # list. If it looked like every other step the player would scroll
                 # right past the end of the story they just finished.
-                text = _("quest.toast_thread_done", name=name)
-                notify(f"[h3]{text}[/h3]{self._suffix(label)}", NotificationTypeEnum.success)
+                headline = _("quest.toast_thread_done", name=name)
+                notify(f"[h3]{headline}[/h3]\n{body}", NotificationTypeEnum.success)
             else:
-                text = _("quest.toast_done", name=name)
-                notify(f"{text}{self._suffix(label)}", NotificationTypeEnum.success)
+                headline = _("quest.toast_done", name=name)
+                notify(f"{headline}\n{body}", NotificationTypeEnum.success)
 
         for key in result.newly_unlocked:
             name = f"[quest]{self._quest_name(self.defs[key])}[/quest]"
@@ -144,16 +147,15 @@ class QuestRuntime:
             )
             notify(_(message_key, name=name), NotificationTypeEnum.info)
 
-    @staticmethod
-    def _suffix(label: str) -> str:
-        # no wrapping tag: the labels carry their own now ("[num]+50[/num] :golden_coin:"),
-        # and nesting [num] inside [num] would just be markup noise
-        return f"  {label}" if label else ""
-
     def _quest_name(self, quest: QuestDef) -> str:
         """The quest's title in the current language (D3: quests hold keys, not text)."""
         messages = getattr(self.scene.game.conf, "messages", None) or {}
         return get_msg(messages, quest.name)
+
+    def _success_prose(self, quest: QuestDef) -> str:
+        """What the author wrote for how this quest ends."""
+        messages = getattr(self.scene.game.conf, "messages", None) or {}
+        return get_msg(messages, quest.success)
 
     def _item_name(self, item_key: str) -> str:
         items = getattr(self.scene.game.conf, "items", None) or {}
