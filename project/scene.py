@@ -76,6 +76,7 @@ from settings import (
     MONSTER_WAKE_DISTANCE,
     NIGHT_FILTER,
     NOTIFICATION_DURATION,
+    NOTIFICATION_STAGGER,
     # PANEL_BG_COLOR,
     PARTICLES,
     SHADERS_NAMES,
@@ -320,13 +321,28 @@ class Scene(State):
         # message is raw markup; the HUD renders and caches it via the new RichText engine
         icon = NOTIFICATION_TYPE_ICONS[type]
         message = f":{icon}: {text}"
-        notification = Notification(type, message, "", 0, 0, self.game.time_elapsed, emote_key)
+        now = self.game.time_elapsed
+
+        # Queue rather than pile up: several toasts raised in one frame used to
+        # share a single window, and the player got ~5 s to read all of them.
+        # Each new one waits out the previous one's head start; because the
+        # lifetime runs from show_time, waiting costs it nothing.
+        last_shown = max((n.show_time for n in self.notifications), default=now - NOTIFICATION_STAGGER)
+        show_time = max(now, last_shown + NOTIFICATION_STAGGER)
+
+        notification = Notification(type, message, "", 0, 0, now, emote_key, show_time)
         self.notifications.append(notification)
 
     #############################################################################################################
+    def visible_notifications(self) -> list[Notification]:
+        """The ones whose turn has come. The rest are queued, not lost."""
+        return [n for n in self.notifications if n.show_time <= self.game.time_elapsed]
+
+    #############################################################################################################
     def remove_old_notifications(self) -> None:
+        # a queued toast has not been seen yet, so it cannot be old
         self.notifications = [n for n in self.notifications
-                              if n.create_time  + NOTIFICATION_DURATION  > self.game.time_elapsed]
+                              if n.show_time + NOTIFICATION_DURATION > self.game.time_elapsed]
 
     #############################################################################################################
     def create_item(self, name: str, x: int, y: int, show: bool = True) -> ItemSprite:

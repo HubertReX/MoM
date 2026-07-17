@@ -515,3 +515,7 @@ class Notification():
     height: int
     create_time: float
     emote_key: str = ""
+    # When this toast becomes visible. Its lifetime and its slide-in both run
+    # from here, not from create_time, so a queued toast still gets the full
+    # NOTIFICATION_DURATION and still animates in when its turn comes.
+    show_time: float = 0.0

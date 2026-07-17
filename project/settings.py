@@ -367,6 +367,10 @@ INITIAL_HOUR: int = 9
 GAME_TIME_SPEED: float = 0.25
 # how many seconds a notification will be displayed
 NOTIFICATION_DURATION: float = 5.0
+# head start between two notifications appearing. Toasts queue instead of piling
+# up: one quest closing can raise three at once (done + thread opened + first
+# step), and sharing a single window left nothing readable.
+NOTIFICATION_STAGGER: float = 1.2
 # probability that NPC will rest [%]
 SHOULD_NPC_REST_PROBABILITY: int = 15
 # how long (min) will NPC rest [s]

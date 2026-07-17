@@ -374,7 +374,9 @@ class HUD(Widget):
 
     def show_notification(self, surface: pygame.Surface, notification: Notification, row: int) -> None:
         row_spacing = row * 50
-        time_elapsed = self.game.time_elapsed - notification.create_time
+        # from show_time, not create_time: a queued toast would otherwise have
+        # burned its slide-in while waiting and pop in fully arrived
+        time_elapsed = self.game.time_elapsed - notification.show_time
 
         y_bottom = HEIGHT - TILE_SIZE
         y_stop = 230 + row_spacing
@@ -434,7 +436,10 @@ class HUD(Widget):
             self.show_available_actions(surface)
 
     def draw_overlay(self, surface: pygame.Surface, *, stats: bool = True) -> None:
-        for row, notification in enumerate(self.scene.notifications):
+        # rows are numbered over the *visible* ones: enumerating the whole list
+        # would reserve a slot for every toast still waiting its turn and leave
+        # a gap on screen
+        for row, notification in enumerate(self.scene.visible_notifications()):
             self.show_notification(surface, notification, row)
         # A full-screen panel (the journal) covers the stats box; drawing it on top
         # would put the hero's HP over the quest title. Notifications stay: they are
