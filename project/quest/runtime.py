@@ -19,12 +19,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+from enums import NotificationTypeEnum
 from dialog.result_sink import ResultSink
 from quest.context_adapter import QuestConditionContext
 from quest.engine import QuestCheckResult, check_quests
 from quest.entities import QuestDef
-from quest.graph import init_quests
-from quest.rewards import apply_quest_rewards
+from quest.graph import children_of, init_quests
+from quest.rewards import apply_quest_rewards, format_reward_label
+from settings import _, entity_name, get_msg
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -104,7 +106,57 @@ class QuestRuntime:
             for key in result.newly_done:
                 apply_quest_rewards(self.defs[key], sink)
 
+        self._announce(result)
         return result
+
+    # --- toasts (Q-09) -------------------------------------------------------
+
+    def _announce(self, result: QuestCheckResult) -> None:
+        """Tell the player what just changed. No new machinery — Scene already toasts."""
+        notify = getattr(self.scene, "add_notification", None)
+        if notify is None:
+            return
+
+        for key in result.newly_done:
+            quest = self.defs[key]
+            label = format_reward_label(quest.rewards, self._item_name)
+            name = f"[quest]{self._quest_name(quest)}[/quest]"
+
+            if children_of(self.defs, key):
+                # Closing a thread is a chapter ending, not another tick on a
+                # list. If it looked like every other step the player would scroll
+                # right past the end of the story they just finished.
+                text = _("quest.toast_thread_done", name=name)
+                notify(f"[h3]{text}[/h3]{self._suffix(label)}", NotificationTypeEnum.success)
+            else:
+                text = _("quest.toast_done", name=name)
+                notify(f"{text}{self._suffix(label)}", NotificationTypeEnum.success)
+
+        for key in result.newly_unlocked:
+            name = f"[quest]{self._quest_name(self.defs[key])}[/quest]"
+            # A thread opening and a step inside it becoming available are
+            # different news; calling a step "a new thread" would be a plain lie
+            # to the player, and they can see both in the log anyway.
+            message_key = (
+                "quest.toast_unlocked_thread"
+                if children_of(self.defs, key)
+                else "quest.toast_unlocked_step"
+            )
+            notify(_(message_key, name=name), NotificationTypeEnum.info)
+
+    @staticmethod
+    def _suffix(label: str) -> str:
+        return f"  [num]{label}[/num]" if label else ""
+
+    def _quest_name(self, quest: QuestDef) -> str:
+        """The quest's title in the current language (D3: quests hold keys, not text)."""
+        messages = getattr(self.scene.game.conf, "messages", None) or {}
+        return get_msg(messages, quest.name)
+
+    def _item_name(self, item_key: str) -> str:
+        items = getattr(self.scene.game.conf, "items", None) or {}
+        model = items.get(item_key)
+        return entity_name(model) if model is not None else item_key
 
     def _game_sink(self) -> ResultSink:
         # Imported here: result_sink_adapter pulls in the whole character/UI

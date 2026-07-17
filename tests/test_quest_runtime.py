@@ -53,14 +53,17 @@ class SpySink:
 def _runtime(visits: dict[str, set[str]] | None = None) -> tuple[QuestRuntime, SpySink]:
     """A runtime over the real 8-quest graph, with a stub scene."""
     sink = SpySink()
+    toasts: list[tuple[str, object]] = []
     scene = SimpleNamespace(
-        game=SimpleNamespace(conf=SimpleNamespace(quests=SAMPLE)),
+        game=SimpleNamespace(conf=SimpleNamespace(quests=SAMPLE, messages={}, items={})),
         quest_state=QuestState(),
         loaded_NPCs={},
         loaded_maps={},
         pending_map_states={},
         player=SimpleNamespace(items=[]),
+        toasts=toasts,
     )
+    scene.add_notification = lambda text, type=None, emote_key="": toasts.append((text, type))
     runtime = QuestRuntime(scene, sink_factory=lambda: sink)
 
     if visits:
@@ -165,6 +168,57 @@ def test_quest_config_flattens_both_loaders() -> None:
     assert_eq(quest_config(SimpleNamespace(quests=None)), {}, "None section -> empty")
 
 
+def test_toast_for_a_finished_step() -> None:
+    """Q-09: completing a step says so, in the quest colour."""
+    runtime, _ = _runtime({"CLAPBACK_SWORD": {"015"}})
+    runtime.on_event("DialogPanel_closed")
+
+    texts = [t for t, _type in runtime.scene.toasts]
+    done = [t for t in texts if "Ukończono" in t]
+    assert_eq(len(done), 1, f"one completion toast, got {texts}")
+    assert_true("[quest]" in done[0], "the quest name is tagged, not bare text")
+    assert_true("[h3]" not in done[0], "a step is not shouted like a thread ending")
+
+
+def test_toast_for_a_closed_thread_is_louder() -> None:
+    """A chapter ending must not look like another tick on a list."""
+    runtime, _ = _runtime(
+        {
+            "CLAPBACK_SWORD": {"015"},
+            "BARMAN_ABSINTHRAYNER": {"012", "017"},
+            "POTIONEER_PUZZLEMINT": {"014"},
+            "HAMMER_HOAXHEART": {"009"},
+        }
+    )
+    runtime.on_event("DialogPanel_closed")
+
+    texts = [t for t, _type in runtime.scene.toasts]
+    thread = [t for t in texts if "Wątek zamknięty" in t]
+    assert_eq(len(thread), 1, f"exactly one thread-closed toast, got {texts}")
+    assert_true("[h3]" in thread[0], "the thread ending is visually louder than a step")
+    # SAMPLE's umbrella pays money + max_health + an item; all three must show,
+    # because the label and the payout read the same list (the SSiS `break` bug)
+    assert_true("+100 💰" in thread[0], f"money in the label: {thread[0]}")
+    assert_true("+20 max HP" in thread[0], f"max health in the label: {thread[0]}")
+    assert_true("MERMAIDS_TEAR" in thread[0], f"item in the label: {thread[0]}")
+
+
+def test_unlocked_thread_and_step_read_differently() -> None:
+    """Calling a step 'a new thread' would simply be a lie to the player."""
+    runtime, _ = _runtime({"CLAPBACK_SWORD": {"015"}})
+    runtime.on_event("DialogPanel_closed")
+
+    texts = [t for t, _type in runtime.scene.toasts]
+    assert_true(any("Nowy wątek" in t for t in texts), f"the umbrella opened: {texts}")
+    assert_true(any("Nowy cel" in t for t in texts), f"its first step is an objective: {texts}")
+
+
+def test_quiet_sweep_says_nothing_to_the_player() -> None:
+    runtime, _ = _runtime()
+    runtime.update(SWEEP_INTERVAL + 0.1)
+    assert_eq(runtime.scene.toasts, [], "nothing happened, nothing announced")
+
+
 def main() -> None:
     tests = [
         test_event_completes_a_quest,
@@ -174,6 +228,10 @@ def main() -> None:
         test_rewards_are_applied_once_on_completion,
         test_no_quests_configured_is_a_no_op,
         test_quest_config_flattens_both_loaders,
+        test_toast_for_a_finished_step,
+        test_toast_for_a_closed_thread_is_louder,
+        test_unlocked_thread_and_step_read_differently,
+        test_quiet_sweep_says_nothing_to_the_player,
     ]
     for t in tests:
         t()

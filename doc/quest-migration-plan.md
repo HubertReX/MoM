@@ -559,7 +559,41 @@ Change" - PASS, zero ostrzeżeń ze sweepa.
 **Uwaga i18n:** etykiety panelu → TOML przez `_()`. Tytuły/opisy questów → `messages` przez `get_msg()`.
 Te dwa mechanizmy się nie mieszają.
 
-### Q-09 · Toasty questowe `#S`
+### Q-09 · Toasty questowe `#S` ✅
+
+**Zrobione 2026-07-16.** `QuestRuntime._announce()` + 4 klucze w locale, testy w
+`tests/test_quest_runtime.py` (11 łącznie). Zero nowego mechanizmu, zgodnie z planem:
+`scene.add_notification()` już był, a `[quest]` (cyjan) już był w `STYLE_TAGS_DICT`.
+
+Trzy rodzaje, odróżnione **markupem RichText**, nie nowym typem powiadomienia:
+
+| Zdarzenie | Wygląd |
+| --- | --- |
+| Krok ukończony | `Ukończono: [quest]Nazwa[/quest]` + etykieta nagród, `success` (`blessed_anim`) |
+| **Wątek zamknięty** | `[h3]Wątek zamknięty: [quest]Nazwa[/quest][/h3]` + etykieta, `success` |
+| Odblokowanie | `Nowy wątek:` / `Nowy cel:` + `[quest]Nazwa[/quest]`, `info` (`dots_anim`) |
+
+- **Parasol jest głośniejszy przez `[h3]`.** Domknięcie wątku to koniec rozdziału, nie kolejny
+  ptaszek na liście - gdyby wyglądało jak każdy inny krok, gracz przewinąłby obok końca historii,
+  którą właśnie skończył.
+- **"Nowy wątek" vs "Nowy cel".** Pierwsza wersja mówiła "Nowy wątek" o **każdym** odblokowanym
+  queście, w tym o krokach - czyli po prostu kłamała. Rozróżniane po tym, czy quest ma dzieci.
+- Nazwy questów idą przez `get_msg()` (mechanizm `messages`), etykiety toastów przez `_()` (TOML).
+  Te dwa mechanizmy się nie mieszają.
+
+**Weryfikacja na żywej grze** (prawdziwe `scene.notifications`):
+
+```
+[success] :blessed_anim: Ukończono: [quest]O co tu chodzi?[/quest]
+[info]    :dots_anim:    Nowy wątek: [quest]Przełamać klątwę[/quest]
+[info]    :dots_anim:    Nowy cel: [quest]Dowiedz się więcej o klątwie[/quest]
+[success] :blessed_anim: [h3]Wątek zamknięty: [quest]Znajdź kogoś kto wie o klątwach[/quest][/h3]  [num]+10 max HP[/num]
+```
+
+Nagroda faktycznie zaaplikowana: `max_health` 80 → 90. Smoke "Save and Load Basic" - PASS.
+
+**Zostaje:** dźwięk (plan i tak odkładał na później) i wizualne porównanie z makietami z sekcji 6
+HTML-a - dopiero razem z panelem (Q-08).
 
 **Goal:** powiadomienia. **Zero nowego mechanizmu** - `scene.add_notification()` już istnieje.
 
