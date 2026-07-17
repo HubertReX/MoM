@@ -6,6 +6,9 @@ edits. Supported, nestable tags: h1/h2/h3, shadow, dark, light, bold|b, italic|i
 underline|u, big, small, left|right|center, the colour tags (act, char, item, loc,
 num, quest, text, error) and ``[link URL]...[/link]``. ``:name:`` becomes an inline
 image when ``name`` is a known emoji.
+
+``[/]`` closes the innermost open tag, so ``[char]Kowal[/]`` needs no repetition
+of the name. ``[/name]`` still works and still closes that specific tag.
 """
 from __future__ import annotations
 
@@ -75,9 +78,13 @@ _EMOJIS: frozenset[str] = frozenset(EMOTE_SHEET_DEFINITION)
 
 # longer names first so "[bold]" is not shadowed by "[b]"
 _TAG_NAMES = sorted(TAG_STYLES.keys(), key=len, reverse=True)
+# Named groups, not positions: this pattern has grown a branch before, and every
+# time it does, `m.group(4)` silently starts meaning something else.
 _TOKEN_RE = re.compile(
-    r"\[(/?)(" + "|".join(re.escape(n) for n in _TAG_NAMES) + r")(?: ([^\]]*))?\]"
-    r"|:([\w$]+):"  # emoji names may contain '$' (e.g. :$_anim:)
+    r"\[(?P<slash>/?)(?P<name>" + "|".join(re.escape(n) for n in _TAG_NAMES) + r")"
+    r"(?: (?P<arg>[^\]]*))?\]"
+    r"|(?P<close_last>\[/\])"  # bare closer: pops whatever tag is innermost
+    r"|:(?P<emoji>[\w$]+):"    # emoji names may contain '$' (e.g. :$_anim:)
 )
 
 
@@ -112,7 +119,7 @@ def parse(text: str, base: Style | None = None) -> list[Token]:
             _emit_text(tokens, text[pos:m.start()], current())
         pos = m.end()
 
-        emoji = m.group(4)
+        emoji = m.group("emoji")
         if emoji is not None:
             if emoji in _EMOJIS:
                 tokens.append(Token("image", emoji, current()))
@@ -120,7 +127,19 @@ def parse(text: str, base: Style | None = None) -> list[Token]:
                 _emit_text(tokens, m.group(0), current())  # unknown -> literal
             continue
 
-        slash, name, arg = m.group(1), m.group(2), m.group(3)
+        # `[/]` closes whatever is innermost, so `[h3][char]X[/][/]` reads left to
+        # right without naming anything twice.
+        if m.group("close_last") is not None:
+            if stack:
+                stack.pop()
+            else:
+                # `\[` escapes the bracket for rich: without it rich reads our own
+                # error text as *its* markup and raises MarkupError, so a typo in a
+                # dialog blew up in the handler meant to report it.
+                print(r"[red]ERROR[/] markup: closing tag \[/] without matching open tag")
+            continue
+
+        slash, name, arg = m.group("slash"), m.group("name"), m.group("arg")
         if not slash:
             mutation = dict(TAG_STYLES.get(name, {}))
             if name == "link":
@@ -132,7 +151,7 @@ def parse(text: str, base: Style | None = None) -> list[Token]:
                     del stack[i]
                     break
             else:
-                print(f"[red]ERROR[/] markup: closing tag [/{name}] without matching open tag")
+                print(rf"[red]ERROR[/] markup: closing tag \[/{name}] without matching open tag")
 
     if pos < len(text):
         _emit_text(tokens, text[pos:], current())
