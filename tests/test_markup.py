@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for ui/text/markup.py - the tag parser (Q-12).
+"""Unit tests for ui/text/markup.py and RichText's static render (Q-12).
 
 Run from the project root:
     .venv/bin/python tests/test_markup.py
@@ -8,6 +8,10 @@ This parser is shared by every dialog, item and quest in the game, so a change
 here can repaint text nobody was looking at. The `[/]` shorthand is the reason
 this file exists; the emoji test is here because adding its branch to _TOKEN_RE
 would have shifted the positional groups the parser used to read.
+
+The last test counts pixels rather than reading strings. It has to: icons were
+being dropped from every reward chip and every toast, and no assertion about the
+markup *string* could ever have seen it.
 """
 
 from __future__ import annotations
@@ -109,6 +113,63 @@ def test_link_argument_survives() -> None:
     assert_eq([t.style.link for t in linked], ["https://example.com"], "URL parsed from the tag")
 
 
+def test_extra_emojis_opens_the_item_sheet() -> None:
+    """`:golden_coin:` is an item sprite, and the emote sheet is speech bubbles.
+
+    Opt-in per call site on purpose: a name in this set that has no icon renders
+    as *nothing*, which is worse than the literal text it replaces.
+    """
+    label = "[num]+50[/num] :golden_coin:"
+
+    default = [(t.kind, t.value) for t in parse(label)]
+    assert_true(("text", ":golden_coin:") in default, f"literal without opting in: {default}")
+
+    widened = [(t.kind, t.value) for t in parse(label, extra_emojis=frozenset({"golden_coin"}))]
+    assert_true(("image", "golden_coin") in widened, f"an image once opted in: {widened}")
+    assert_true(("text", ":golden_coin:") not in widened, "and the marker is consumed")
+
+
+def _rendered(markup: str, *, static: bool):  # type: ignore[no-untyped-def]
+    """Render `markup` through the real RichText and the real sprite sheets."""
+    import pygame
+
+    pygame.init()
+    pygame.display.set_mode((64, 64))
+    from scene import Scene
+    from settings import (
+        EMOTE_SHEET_DEFINITION,
+        EMOTE_SHEET_FILE,
+        ITEMS_SHEET_DEFINITION,
+        ITEMS_SHEET_FILE,
+    )
+    from ui.widgets.rich_text import RichText
+
+    emotes = Scene.import_sheet(str(EMOTE_SHEET_FILE), EMOTE_SHEET_DEFINITION, width=14, height=13)
+    items = Scene.import_sheet(str(ITEMS_SHEET_FILE), ITEMS_SHEET_DEFINITION, width=16, height=16)
+    rt = RichText(markup, (0, 0, 400, 60), {**items, **emotes}, base_size=14,
+                  show_scrollbar=False, extra_emojis=frozenset(ITEMS_SHEET_DEFINITION))
+    surface = rt.render_static() if static else rt.content_surface
+    assert surface is not None
+    return pygame.mask.from_surface(surface).count()
+
+
+def test_render_static_actually_draws_the_icons() -> None:
+    """The bug this method exists for, and the one a string test cannot see.
+
+    `content_surface` is text only - icons live in `image_items` and are blitted
+    by `draw()` each frame. Reward chips and toasts cached `content_surface` and
+    blitted it themselves, so every icon in both was silently dropped: the layout
+    reserved the width, nothing filled it. Measured in painted pixels, because
+    that is the only thing that would have caught it.
+    """
+    text_only = _rendered("[num]+50[/num] :golden_coin:", static=False)
+    with_icons = _rendered("[num]+50[/num] :golden_coin:", static=True)
+    bare = _rendered("[num]+50[/num]", static=True)
+
+    assert_true(with_icons > text_only, f"the coin adds pixels: {with_icons} vs {text_only}")
+    assert_eq(text_only, bare, "and content_surface had none of it - same pixels as no icon at all")
+
+
 def main() -> None:
     tests = [
         test_bare_closer_matches_the_named_one,
@@ -119,6 +180,8 @@ def main() -> None:
         test_emoji_still_parses,
         test_an_unknown_emoji_stays_literal,
         test_link_argument_survives,
+        test_extra_emojis_opens_the_item_sheet,
+        test_render_static_actually_draws_the_icons,
     ]
     for t in tests:
         t()

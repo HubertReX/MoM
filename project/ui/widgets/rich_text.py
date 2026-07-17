@@ -32,9 +32,14 @@ class RichText(Widget):
         base_color: pygame._common.ColorValue = theme.DEFAULT_TEXT_COLOR,
         show_scrollbar: bool = True,
         line_spacing: int = 0,
+        extra_emojis: frozenset[str] = frozenset(),
     ) -> None:
         super().__init__(rect)
         self.icons = icons
+        # Names beyond the emote sheet that ``:name:`` may reference. Whatever is
+        # listed here must exist in ``icons`` - an image token with no frames
+        # draws nothing at all, which is worse than the literal text it replaced.
+        self.extra_emojis = extra_emojis
         self.base_style = Style(size=base_size, color=tuple(base_color))  # type: ignore[arg-type]
         self.show_scrollbar = show_scrollbar
         self.line_spacing = line_spacing
@@ -50,7 +55,7 @@ class RichText(Widget):
         self._content: pygame.Surface | None = None
 
         self._text = text
-        self.tokens: list[Token] = parse(text, self.base_style)
+        self.tokens: list[Token] = parse(text, self.base_style, extra_emojis=self.extra_emojis)
         self._bake()
 
     #############################################################################################################
@@ -60,14 +65,44 @@ class RichText(Widget):
         if text == self._text:
             return
         self._text = text
-        self.tokens = parse(text, self.base_style)
+        self.tokens = parse(text, self.base_style, extra_emojis=self.extra_emojis)
         self.scroll = 0
         self._bake()
 
     @property
     def content_surface(self) -> pygame.Surface | None:
-        """The full (unclipped) laid-out text surface; height == total content height."""
+        """The full (unclipped) laid-out **text** surface; height == total content height.
+
+        Text only - inline icons are not in here. :meth:`draw` blits them on top
+        each frame so they can animate. A caller that takes this surface and
+        blits it itself gets no icons at all; it wants :meth:`render_static`.
+        """
         return self._content
+
+    def render_static(self) -> pygame.Surface:
+        """Text *and* icons baked into one surface, for callers that cache and blit.
+
+        ``content_surface`` carries no icons, which is invisible until you look:
+        the layout still reserves their width, so the text spaces itself out
+        around an icon that never arrives. Reward chips and toasts both cached
+        ``content_surface`` and had been dropping every icon silently.
+
+        Animated icons freeze on their first frame - the price of a cached
+        surface, and the reason this is a separate method rather than the default.
+        """
+        assert self._content is not None
+        # an icon is nudged up to sit centred against the text, so it can start
+        # above y=0 and would be clipped away by a naive blit
+        top = min([r.y for _, r, _ in self.image_items] + [0])
+        bottom = max([r.bottom for _, r, _ in self.image_items] + [self._content.get_height()])
+
+        surf = pygame.Surface((self._content.get_width(), bottom - top), pygame.SRCALPHA)
+        surf.blit(self._content, (0, -top))
+        for name, crect, target_h in self.image_items:
+            frames = self._icon_frames(name, target_h)
+            if frames:
+                surf.blit(frames[0], (crect.x, crect.y - top))
+        return surf
 
     def _default_line_height(self) -> int:
         return theme.get_font(self.base_style.size).get_height()

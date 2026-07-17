@@ -101,9 +101,19 @@ def _emit_text(tokens: list[Token], text: str, style: Style) -> None:
             tokens.append(Token("text", part, style))
 
 
-def parse(text: str, base: Style | None = None) -> list[Token]:
-    """Parse markup ``text`` into a flat list of styled tokens."""
+def parse(
+    text: str, base: Style | None = None, *, extra_emojis: frozenset[str] = frozenset()
+) -> list[Token]:
+    """Parse markup ``text`` into a flat list of styled tokens.
+
+    ``extra_emojis`` widens the set of ``:name:`` markers that become images -
+    the emote sheet is speech bubbles, so a caller wanting item sprites inline
+    (a coin next to a reward) has to say so. Opt-in per call site, because a name
+    that becomes an image token but has no frames renders as *nothing*: whoever
+    widens the set has to supply the matching icons.
+    """
     base = base or Style()
+    known_emojis = _EMOJIS | extra_emojis
     tokens: list[Token] = []
     stack: list[tuple[str, dict[str, object]]] = []
 
@@ -121,7 +131,7 @@ def parse(text: str, base: Style | None = None) -> list[Token]:
 
         emoji = m.group("emoji")
         if emoji is not None:
-            if emoji in _EMOJIS:
+            if emoji in known_emojis:
                 tokens.append(Token("image", emoji, current()))
             else:
                 _emit_text(tokens, m.group(0), current())  # unknown -> literal

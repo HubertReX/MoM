@@ -28,6 +28,7 @@ from settings import (
     INVENTORY_ITEM_SCALE,
     INVENTORY_ITEM_WIDTH,
     IS_WEB,
+    ITEMS_SHEET_DEFINITION,
     MAX_HOTBAR_ITEMS,
     PANEL_BG_COLOR,
     SHOW_HELP_INFO,
@@ -363,10 +364,14 @@ class HUD(Widget):
         surf = self._notification_cache.get(notification.message)
         if surf is None:
             from ..widgets.rich_text import RichText
-            rt = RichText(notification.message, (0, 0, WIDTH - 300, 400), self.icons,
-                          base_size=14, show_scrollbar=False)
-            full = rt.content_surface
-            assert full is not None
+            # quest toasts carry reward labels ("[num]+50[/num] :golden_coin:"), and
+            # the coin is an item sprite rather than an emote - items go in first so
+            # the emote sheet keeps the one name they share (`heart`)
+            rt = RichText(notification.message, (0, 0, WIDTH - 300, 400),
+                          {**self.scene.items_sheet, **self.icons},
+                          base_size=14, show_scrollbar=False,
+                          extra_emojis=frozenset(ITEMS_SHEET_DEFINITION))
+            full = rt.render_static()
             w = max(1, min(rt.content_width, full.get_width()))
             surf = full.subsurface((0, 0, w, full.get_height())).copy()
             self._notification_cache[notification.message] = surf

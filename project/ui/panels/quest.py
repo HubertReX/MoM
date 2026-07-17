@@ -26,6 +26,7 @@ from quest.graph import children_of
 from quest.rewards import format_reward_label
 from settings import (
     FONT_SIZE_LARGE,
+    ITEMS_SHEET_DEFINITION,
     PANEL_BG_COLOR,
     FONT_SIZE_MEDIUM,
     FONT_SIZE_SMALL,
@@ -66,6 +67,9 @@ _RIGHT_EDGE = 1160
 _RIGHT_W = _RIGHT_EDGE - _RIGHT_X
 _ROW_H = 30
 _STEP_INDENT = 42
+# `:golden_coin:` and friends are item sprites, not emotes, so markup has to be
+# told they are drawable here - see _reward_icons.
+_ITEM_EMOJIS = frozenset(ITEMS_SHEET_DEFINITION)
 _LIST_TOP = 168
 _LIST_BOTTOM = _FOOTER_Y - 8
 
@@ -387,6 +391,14 @@ class QuestPanel(Widget):
             surface.blit(text, (x + 16, y + (30 - text.get_height()) // 2))
             x += width + 12
 
+    def _reward_icons(self) -> dict[str, list[pygame.Surface]]:
+        """Emote/HUD icons plus the item sprites, for the reward chips.
+
+        Items go in first so the emote sheet wins the one name they share
+        (``heart``) and every existing ``:heart:`` keeps the look it has.
+        """
+        return {**self.scene.items_sheet, **self.hud.icons}
+
     def _rich(self, markup: str) -> pygame.Surface:
         """Render reward markup — ``[num]+50[/num] :golden_coin:`` — and cache it.
 
@@ -394,6 +406,10 @@ class QuestPanel(Widget):
         print literally. They also have to: ``💰`` and friends are not in MoM's
         pixel font (measured — every one of them renders the same tofu box), so the
         coin has to be the real sprite rather than an emoji.
+
+        The coin lives in the *items* sheet, not the emote sheet, so both the icon
+        dict and the emoji whitelist have to be widened for it — the emote sheet is
+        speech bubbles, and a coin is not something a character says.
         """
         surf = self._rich_cache.get(markup)
         if surf is None:
@@ -401,10 +417,10 @@ class QuestPanel(Widget):
 
             # base_color, or the unit ("max HP") falls back to RichText's own
             # default and stops matching the chip it sits in
-            rt = RichText(markup, (0, 0, 420, 60), self.hud.icons, base_size=FONT_SIZE_SMALL,
-                          base_color=_TITLE, show_scrollbar=False)
-            full = rt.content_surface
-            assert full is not None
+            rt = RichText(markup, (0, 0, 420, 60), self._reward_icons(),
+                          base_size=FONT_SIZE_SMALL, base_color=_TITLE, show_scrollbar=False,
+                          extra_emojis=_ITEM_EMOJIS)
+            full = rt.render_static()
             width = max(1, min(rt.content_width, full.get_width()))
             surf = full.subsurface((0, 0, width, full.get_height())).copy()
             self._rich_cache[markup] = surf
