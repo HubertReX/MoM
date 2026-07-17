@@ -185,6 +185,19 @@ quest-graph:
     #!powershell
     .venv\Scripts\python.exe scripts\quest_graph.py
 
+# Regenerate the quest authoring cheat sheet at doc/quest-cheatsheet.md.
+# Everything in it is derived from the code (enums, condition whitelist, validators),
+# so run it after changing any of them - a hand-kept cheat sheet lies with authority.
+[unix]
+quest-cheatsheet:
+    .venv/bin/python scripts/gen_quest_cheatsheet.py
+
+# Regenerate the quest authoring cheat sheet at doc/quest-cheatsheet.md.
+[windows]
+quest-cheatsheet:
+    #!powershell
+    .venv\Scripts\python.exe scripts\gen_quest_cheatsheet.py
+
 # Run mypy static type checker on the project directory
 [unix]
 mypy:
