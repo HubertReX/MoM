@@ -89,7 +89,11 @@ _ACTIVE = (0, 197, 199)
 _GREY = (170, 170, 164)
 _WHITE = (255, 255, 255)
 _RULE = (68, 68, 68)
-_BAR_BG = (51, 51, 51)
+# The empty track has to read as a bar on its own: every all_subquests umbrella
+# starts at 0/N, and at (51,51,51) the track sat at 1.68:1 against the olive panel
+# — below the 3:1 UI floor, so a fresh thread looked like it had no bar at all.
+# Near-black clears 3:1 as an inset groove; the cyan fill still pops by hue.
+_BAR_BG = (18, 18, 18)
 _MANUAL = (232, 146, 12)
 
 _FILTERS = ("active", "done", "all")

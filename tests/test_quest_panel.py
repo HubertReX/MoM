@@ -214,6 +214,38 @@ def test_selection_wraps_and_survives_an_empty_list() -> None:
 _WHITE = (255, 255, 255)
 
 
+def _relative_luminance(colour: tuple[int, int, int]) -> float:
+    return sum(w * c / 255 for w, c in zip((0.2126, 0.7152, 0.0722), colour))
+
+
+def _contrast(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
+    la, lb = _relative_luminance(a) + 0.05, _relative_luminance(b) + 0.05
+    return max(la, lb) / min(la, lb)
+
+
+def test_the_empty_progress_track_is_visible_on_the_panel() -> None:
+    """A 0/N bar must still read as a bar - every umbrella starts empty.
+
+    An all_subquests thread opens at 0/N, so if the empty track sinks into the
+    panel, a fresh thread looks like it has no progress bar at all (reported for
+    Q03_S00). At (51,51,51) the track sat at 1.68:1 against the olive panel, below
+    the 3:1 floor for UI elements; this pins it above.
+    """
+    import pygame
+
+    from ui import theme
+    from ui.panels.quest import _BAR_BG, PANEL_H, PANEL_W, PANEL_X, _RIGHT_X
+
+    pygame.init()
+    pygame.display.set_mode((64, 64))
+    bg = theme.nine_patch("nine_patch_04.png", PANEL_W, PANEL_H)
+    # where the bar actually sits: inside the right pane, mid panel
+    panel_here = bg.get_at((_RIGHT_X - PANEL_X + 100, 300))[:3]
+
+    ratio = _contrast(_BAR_BG, panel_here)
+    assert_true(ratio >= 3.0, f"empty track vs panel is {ratio:.2f}:1, needs >= 3:1")
+
+
 def test_the_reference_step_title_fits_without_truncation() -> None:
     """The agreed contract for how wide the thread column has to be.
 
@@ -314,6 +346,7 @@ def main() -> None:
         test_collapsing_a_thread_hides_its_steps,
         test_collapsing_a_step_does_nothing,
         test_selection_wraps_and_survives_an_empty_list,
+        test_the_empty_progress_track_is_visible_on_the_panel,
         test_the_reference_step_title_fits_without_truncation,
         test_titles_are_truncated_to_their_column,
         test_a_tagged_title_is_cut_without_breaking_its_markup,
