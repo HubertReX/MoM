@@ -1383,9 +1383,8 @@ class Scene(State):
             self.start_intro()
             INPUTS["intro"] = False
 
-        if INPUTS["help"]:
-            self.ui.show_help_info = not self.ui.show_help_info
-            INPUTS["help"] = False
+        # help (H / F1) is handled in GameUI.update: it is a modal panel now, so it
+        # must be toggled before the scene freezes, not here.
 
         if INPUTS["show_ui"]:
             self.display_ui_flag = not self.display_ui_flag

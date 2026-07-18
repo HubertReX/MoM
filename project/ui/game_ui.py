@@ -30,6 +30,7 @@ from objects import NotificationTypeEnum
 
 from .panels.dialog import DialogPanel
 from .panels.quest import QuestPanel
+from .panels.help import HelpPanel
 from .panels.hud import HUD
 from .panels.inventory import InventoryPanel
 from .panels.modal import ModalPanel
@@ -47,12 +48,13 @@ if TYPE_CHECKING:
 _QUEST_EVENT_PANELS = (DialogPanel, TradePanel)
 
 # the hotbar is not drawn while one of these is up: it would show through the panel
-_BLOCKING = (DialogPanel, TradePanel, QuestPanel)
+_BLOCKING = (DialogPanel, TradePanel, QuestPanel, HelpPanel)
 # panels that fully freeze the world while open: input must go to the panel only,
 # not to the scene underneath (otherwise e.g. R renames a slot *and* reloads the map).
 # The journal is here so its arrow keys drive the list instead of walking the hero
-# around behind it, and so Esc closes it rather than opening the main menu.
-_MODAL = (DialogPanel, TradePanel, LoadPanel, SavePanel, QuestPanel)
+# around behind it, and so Esc closes it rather than opening the main menu. The help
+# panel is here too — that is what "pause the game until it is closed" means.
+_MODAL = (DialogPanel, TradePanel, LoadPanel, SavePanel, QuestPanel, HelpPanel)
 
 
 class GameUI:
@@ -129,11 +131,8 @@ class GameUI:
 
     @property
     def show_help_info(self) -> bool:
-        return self.hud.show_help_info
-
-    @show_help_info.setter
-    def show_help_info(self, value: bool) -> None:
-        self.hud.show_help_info = value
+        """Back-compat shim: the help panel is now a modal in this UI's stack."""
+        return self.is_open(HelpPanel)
 
     #############################################################################################################
     def _edge(self, action: str) -> bool:
@@ -154,6 +153,22 @@ class GameUI:
         if INPUTS["quest_log"]:
             self.toggle(QuestPanel)
             INPUTS["quest_log"] = False
+
+        # Help (H / F1): a modal panel, so it pauses the world (see _MODAL). Handled
+        # here rather than in Scene.update because a modal freezes the scene and its
+        # update never reaches the old toggle — this runs before that freeze.
+        if INPUTS["help"]:
+            self.toggle(HelpPanel)
+            INPUTS["help"] = False
+        if self.is_open(HelpPanel):
+            help_panel = cast(HelpPanel, self._panel(HelpPanel))
+            if self._edge("up"):
+                help_panel.scroll_up()
+            if self._edge("down"):
+                help_panel.scroll_down()
+            if INPUTS["quit"]:
+                self.close(HelpPanel)
+                INPUTS["quit"] = False
 
         if self.is_open(QuestPanel):
             quests = cast(QuestPanel, self._panel(QuestPanel))
@@ -317,4 +332,5 @@ class GameUI:
             panel.draw(surface)
 
         # notifications always on top; the stats box hides behind a full-screen panel
-        self.hud.draw_overlay(surface, stats=not self.is_open(QuestPanel))
+        # (the journal or the help reference)
+        self.hud.draw_overlay(surface, stats=not (self.is_open(QuestPanel) or self.is_open(HelpPanel)))

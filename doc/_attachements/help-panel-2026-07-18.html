@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoM — panel pomocy (mock layoutu)</title>
+<style>
+  :root{
+    --gold:#FFD700; --title:#FFFC67; --cyan:#00C5C7; --green:#6ECF68;
+    --grey:#aaaaa4; --white:#ffffff; --rule:#444444; --orange:#e8920c;
+    --panel:#20201c; --panel-edge:#3a3a30; --keycap:#111111; --keycap-edge:#5a5a4a;
+    --bg:#0e0f0d;
+    --sans:"Segoe UI",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"Consolas",monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#e9eae6; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:#ddd; font-family:var(--sans);
+    line-height:1.5; padding:28px 20px 60px;
+  }
+  .doc-head{max-width:1180px; margin:0 auto 22px}
+  .doc-head h1{font-size:1.4rem; margin:0 0 6px; color:#eee}
+  .doc-head p{margin:4px 0; color:#9a9a94; font-size:.92rem}
+  .doc-head code{font-family:var(--mono); color:var(--cyan); font-size:.85em}
+
+  /* ---- the game "screen": logical 1280x720, scaled responsively ---- */
+  .screen-wrap{max-width:1180px; margin:0 auto}
+  .screen{
+    position:relative; width:100%; aspect-ratio:1280/720; border-radius:8px;
+    overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,.6);
+    /* faux game backdrop so the panel's contrast reads like in-game */
+    background:
+      radial-gradient(120% 90% at 30% 20%, #2b3a25 0%, #1a2417 45%, #0c130b 100%);
+  }
+  .screen::after{ /* subtle tile grid to suggest the map underneath */
+    content:""; position:absolute; inset:0; opacity:.10; pointer-events:none;
+    background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
+    background-size:32px 32px;
+  }
+  /* dim veil while the modal is up (world is paused) */
+  .veil{position:absolute; inset:0; background:rgba(0,0,0,.45)}
+
+  /* container-query units so text scales with the mock, matching pixel sizes */
+  .panel{
+    position:absolute;
+    left:7.03%;  top:8.33%;          /* PANEL_X=90/1280 , PANEL_Y=60/720 */
+    width:85.94%; height:83.33%;     /* PANEL_W=1100/1280, PANEL_H=600/720 */
+    background:var(--panel);
+    border:3px solid var(--panel-edge);
+    border-radius:10px;
+    box-shadow:inset 0 0 0 2px #000, 0 0 0 3px #000;
+    padding:2.1cqw 2.4cqw;
+    display:flex; flex-direction:column;
+    container-type:inline-size;
+  }
+  .screen{container-type:inline-size}
+
+  .panel-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+  .panel-title{color:var(--title); font-weight:700; font-size:2.1cqw; letter-spacing:.5px}
+  .panel-hint{color:var(--grey); font-size:1.15cqw}
+  .panel-hint b{color:var(--cyan)}
+  .rule{height:2px; background:var(--rule); margin:1.2cqw 0 1.4cqw}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr 1fr; gap:2.2cqw; flex:1; min-height:0}
+  .col{display:flex; flex-direction:column; gap:1.5cqw}
+
+  .group-title{
+    color:var(--grey); text-transform:uppercase; letter-spacing:1px;
+    font-size:1.05cqw; font-weight:700; margin-bottom:.4cqw;
+    display:flex; align-items:center; gap:.6cqw;
+  }
+  .group-title .tag{
+    font-size:.85cqw; color:var(--orange); border:1px solid var(--orange);
+    border-radius:4px; padding:0 .5cqw; letter-spacing:.5px; text-transform:none;
+  }
+  .group.debug{opacity:.96}
+  .group.debug .group-title{color:var(--orange)}
+
+  .row{display:flex; align-items:center; gap:.8cqw; margin:.35cqw 0}
+  .keys{display:flex; gap:.35cqw; flex:0 0 auto; min-width:7.5cqw}
+  .desc{color:var(--white); font-size:1.25cqw}
+  .desc .ctx{color:var(--grey); font-size:.9em}
+
+  /* keycap = the in-game dark button with a light edge */
+  .cap{
+    font-family:var(--mono); font-size:1.05cqw; color:#f0f0e8;
+    background:var(--keycap); border:1px solid var(--keycap-edge);
+    border-bottom-width:2px; border-radius:4px;
+    min-width:2.1cqw; height:2.1cqw; padding:0 .5cqw;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .cap.wide{min-width:3.4cqw}
+  .cap.mouse{background:#161616; border-color:#6a6a5a}
+  .sep{color:var(--grey); font-size:1cqw; align-self:center}
+
+  .legend{max-width:1180px; margin:22px auto 0; display:flex; flex-wrap:wrap; gap:18px;
+    font-size:.85rem; color:#9a9a94}
+  .legend span{display:inline-flex; align-items:center; gap:7px}
+  .sw{width:13px; height:13px; border-radius:3px; display:inline-block}
+  .note{max-width:1180px; margin:16px auto 0; font-size:.85rem; color:#8a8a84;
+    border-left:3px solid var(--orange); padding:6px 12px; background:rgba(232,146,12,.06)}
+</style>
+</head>
+<body>
+
+<div class="doc-head">
+  <h1>Panel pomocy — mock layoutu (spec współrzędnych)</h1>
+  <p>Cel dokumentu: zatwierdzić <b>układ, grupowanie i treść</b> nowego panelu pomocy zanim powstanie <code>project/ui/panels/help.py</code>. Panel modalny, wyśrodkowany, <b>pauzuje świat</b> do zamknięcia.</p>
+  <p><b>Zmiany względem tego mocka w wersji finalnej:</b> pixel font w grze jest znacznie szerszy niż font webowy, więc zamiast 3 kolumn wdrożono <b>2 kolumny</b> (najdłuższy opis = 378 px). Keycapy są rysowane na żywo jako <b>ciemne chipy z białym tekstem</b> (wysoki kontrast), a nie skalowane sprite'y hotbara. Górny hint skrócono do <code>H / F1 / Esc - zamknij</code>.</p>
+  <p>Geometria z planu: <code>PANEL_X=90, PANEL_Y=60, PANEL_W=1100, PANEL_H=600</code> na logicznym <code>1280×720</code>. Keycapy = te same ciemne przyciski z jasną krawędzią co w grze (<code>icons["key_*"]</code>).</p>
+</div>
+
+<div class="screen-wrap">
+  <div class="screen">
+    <div class="veil"></div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">POMOC — Sterowanie</div>
+        <div class="panel-hint"><b>H</b> / <b>F1</b> / <b>Esc</b> - zamknij</div>
+      </div>
+      <div class="rule"></div>
+
+      <div class="cols">
+
+        <!-- COLUMN 1 -->
+        <div class="col">
+          <div class="group">
+            <div class="group-title">Ruch</div>
+            <div class="row"><span class="keys"><span class="cap">W</span><span class="cap">A</span><span class="cap">S</span><span class="cap">D</span></span><span class="desc">Poruszanie <span class="ctx">(lub strzałki)</span></span></div>
+            <div class="row"><span class="keys"><span class="cap wide">Shift</span></span><span class="desc">Bieg</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">Space</span></span><span class="desc">Skok</span></div>
+            <div class="row"><span class="keys"><span class="cap">+</span><span class="sep">/</span><span class="cap">−</span></span><span class="desc">Przybliż / oddal kamerę</span></div>
+          </div>
+
+          <div class="group">
+            <div class="group-title">Interakcja</div>
+            <div class="row"><span class="keys"><span class="cap wide">Space</span></span><span class="desc">Rozmawiaj / otwórz / atakuj <span class="ctx">(zależnie od kontekstu)</span></span></div>
+            <div class="row"><span class="keys"><span class="cap">E</span></span><span class="desc">Podnieś przedmiot / przełącz</span></div>
+            <div class="row"><span class="keys"><span class="cap">X</span></span><span class="desc">Upuść przedmiot</span></div>
+            <div class="row"><span class="keys"><span class="cap">F</span></span><span class="desc">Użyj przedmiotu / kup / sprzedaj</span></div>
+          </div>
+        </div>
+
+        <!-- COLUMN 2 -->
+        <div class="col">
+          <div class="group">
+            <div class="group-title">Ekwipunek</div>
+            <div class="row"><span class="keys"><span class="cap">I</span></span><span class="desc">Ekwipunek</span></div>
+            <div class="row"><span class="keys"><span class="cap">J</span></span><span class="desc">Dziennik questów <span class="ctx">(lub F10)</span></span></div>
+            <div class="row"><span class="keys"><span class="cap">1</span><span class="sep">–</span><span class="cap">6</span></span><span class="desc">Wybór slotu paska</span></div>
+            <div class="row"><span class="keys"><span class="cap">,</span><span class="sep">/</span><span class="cap">.</span></span><span class="desc">Przełącz zaznaczony przedmiot</span></div>
+          </div>
+
+          <div class="group">
+            <div class="group-title">Mysz</div>
+            <div class="row"><span class="keys"><span class="cap mouse wide">LMB</span></span><span class="desc">Idź do wskazanego miejsca</span></div>
+            <div class="row"><span class="keys"><span class="cap mouse wide">RMB</span></span><span class="desc">Zatrzymaj</span></div>
+          </div>
+
+          <div class="group">
+            <div class="group-title">System</div>
+            <div class="row"><span class="keys"><span class="cap">H</span><span class="sep">/</span><span class="cap wide">F1</span></span><span class="desc">Ta pomoc</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">F2</span></span><span class="desc">Menu główne</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">Esc</span><span class="sep">/</span><span class="cap">Q</span></span><span class="desc">Menu główne</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">F5</span></span><span class="desc">Szybki zapis</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">F9</span></span><span class="desc">Szybki odczyt</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">F6</span></span><span class="desc">Zrzut ekranu</span></div>
+          </div>
+        </div>
+
+        <!-- COLUMN 3 -->
+        <div class="col">
+          <div class="group">
+            <div class="group-title">W oknach (dialog / dziennik)</div>
+            <div class="row"><span class="keys"><span class="cap">↑</span><span class="sep">/</span><span class="cap">↓</span></span><span class="desc">Wybór opcji / pozycji</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">Space</span></span><span class="desc">Przewiń tekst NPC</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">Enter</span></span><span class="desc">Zatwierdź / rozwiń</span></div>
+            <div class="row"><span class="keys"><span class="cap">←</span><span class="sep">/</span><span class="cap">→</span></span><span class="desc">Filtr wątków <span class="ctx">(dziennik)</span></span></div>
+            <div class="row"><span class="keys"><span class="cap wide">Esc</span><span class="sep">/</span><span class="cap">Q</span></span><span class="desc">Zamknij okno</span></div>
+          </div>
+
+          <div class="group debug">
+            <div class="group-title">Debug <span class="tag">tryb dev</span></div>
+            <div class="row"><span class="keys"><span class="cap">`</span><span class="sep">/</span><span class="cap">Z</span></span><span class="desc">Overlay debug</span></div>
+            <div class="row"><span class="keys"><span class="cap">B</span></span><span class="desc">Filtr światła (alpha)</span></div>
+            <div class="row"><span class="keys"><span class="cap">N</span></span><span class="desc">Następny dzień</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">F3</span></span><span class="desc">Ukryj / pokaż UI</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">F4</span></span><span class="desc">Odtwórz intro</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">F7</span></span><span class="desc">Demo TextInput</span></div>
+            <div class="row"><span class="keys"><span class="cap">R</span></span><span class="desc">Przeładuj mapę</span></div>
+            <div class="row"><span class="keys"><span class="cap wide">Alt</span></span><span class="desc">Tryb latania (noclip)</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><i class="sw" style="background:#FFFC67"></i> tytuł panelu / grupy</span>
+  <span><i class="sw" style="background:#ffffff"></i> opis akcji</span>
+  <span><i class="sw" style="background:#aaaaa4"></i> kontekst / wariant</span>
+  <span><i class="sw" style="background:#e8920c"></i> sekcja Debug (tylko przy SHOW_DEBUG_INFO)</span>
+</div>
+
+<div class="note">
+  <b>Zachowanie warunkowe:</b> sekcja <b>Debug</b> renderuje się tylko gdy <code>settings.SHOW_DEBUG_INFO</code> jest włączone (` / Z). W trybie web (<code>IS_WEB</code>) sekcja Debug znika w całości, a z sekcji System znikają wiersze <b>F5</b> / <b>F9</b> (zapis/odczyt) — tak jak dziś działa <code>[] if IS_WEB</code>. Gdy Debug jest ukryty, trzecia kolumna zawiera tylko „W oknach”, więc panel może być odrobinę niższy albo rozłożyć grupy równiej — do dostrojenia w implementacji.
+</div>
+
+</body>
+</html>
