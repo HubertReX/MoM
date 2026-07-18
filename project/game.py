@@ -553,6 +553,12 @@ class Game:
 
         cursor_rect = self.cursor_img.get_frect(center=pygame.mouse.get_pos())
 
+        # BLEND_ALPHA_SDL2 forces proper SDL2 alpha compositing. The scene is drawn
+        # onto game.canvas (a 32-bit Surface without the SRCALPHA flag) and leaves the
+        # unused per-pixel alpha byte at 0. A default blit of the per-pixel-alpha cursor
+        # onto such a destination writes the transparent cursor pixels as opaque black,
+        # producing a black box around the pointer. This flag makes the transparent
+        # pixels blend correctly and keep the scene behind them.
         if USE_SOD:
             pos = vec(cursor_rect.center)
             if self.time_elapsed - self.sod_time > 3:
@@ -568,9 +574,9 @@ class Game:
 
             res[0] = min(WIDTH - 8, res[0])
             res[1] = min(HEIGHT - 8, res[1])
-            screen.blit(self.cursor_img, res)
+            screen.blit(self.cursor_img, res, special_flags=pygame.BLEND_ALPHA_SDL2)
         else:
-            screen.blit(self.cursor_img, cursor_rect.center)
+            screen.blit(self.cursor_img, cursor_rect.center, special_flags=pygame.BLEND_ALPHA_SDL2)
 
     #############################################################################################################
     def get_images(self, path: str) -> list[pygame.Surface]:
