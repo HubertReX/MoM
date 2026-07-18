@@ -112,7 +112,7 @@ class TradePanel(Widget):
         if tradeable:
             properties.append({"icon_name": "red_exclamation_anim", "value": _("trade.trades_only")})
             for item_type in tradeable:
-                properties.append({"icon_name": "", "value": f"        {item_type.value.capitalize()}"})
+                properties.append({"icon_name": "", "value": f"        {_(f'item_type.{item_type.value}')}"})
         for row, prop in enumerate(properties):
             self.hud.draw_icon_value(surface, top_left, row, prop)
 

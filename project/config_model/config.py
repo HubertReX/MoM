@@ -92,7 +92,7 @@ class Character():
             race = RaceEnum(data.get("race", "")),
             attitude = AttitudeEnum(data.get("attitude", "")),
             is_merchant = data.get("is_merchant", False),
-            tradeable_items_types = data.get("tradeable_items_types", []),
+            tradeable_items_types = [ItemTypeEnum(t) for t in data.get("tradeable_items_types", [])],
             allowed_zones = data.get("allowed_zones", []),
             health = data.get("health", 30),
             max_health = data.get("max_health", 30),
