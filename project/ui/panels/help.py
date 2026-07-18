@@ -56,21 +56,24 @@ if TYPE_CHECKING:
 PANEL_W, PANEL_H = 1120, 680
 PANEL_X, PANEL_Y = (WIDTH - PANEL_W) // 2, (HEIGHT - PANEL_H) // 2
 _PAD = 28
+# scrollbar on the right edge of the panel
+_SCROLLBAR_W = 6
+_SCROLLBAR_X = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 4
 _INNER_LEFT = PANEL_X + _PAD
-_INNER_RIGHT = PANEL_X + PANEL_W - _PAD
+_INNER_RIGHT = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 8
 _HEADER_Y = PANEL_Y + 22
-_RULE_Y = PANEL_Y + 60
-_CONTENT_TOP = PANEL_Y + 78
+_RULE_Y = PANEL_Y + 72
+_CONTENT_TOP = PANEL_Y + 82
 _CONTENT_BOTTOM = PANEL_Y + PANEL_H - _PAD
 _CONTENT_H = _CONTENT_BOTTOM - _CONTENT_TOP
 
 _COL_GAP = 48
-_COL_W = (PANEL_W - 2 * _PAD - _COL_GAP) // 2
+_COL_W = (_INNER_RIGHT - _INNER_LEFT - _COL_GAP) // 2
 _COL_X = (_INNER_LEFT, _INNER_LEFT + _COL_W + _COL_GAP)
-# room reserved for the key icons before a row's description starts. 120 fits the
-# widest row (W A S D — four caps) without the description running under them.
-_KEY_COL_W = 120
-_ROW_H = 24
+# room reserved for the key icons before a row's description starts. 155 fits the
+# widest row (W A S D — four 32px caps = 137px) with a small margin.
+_KEY_COL_W = 155
+_ROW_H = 36
 _TITLE_H = 26
 _GROUP_GAP = 10
 _CAP_GAP = 3
@@ -88,7 +91,7 @@ _ORANGE = theme.WARN
 
 # A key is drawn as a hotbar keycap sprite via ``keycap.build_cap`` (the same component
 # the HUD hotbar and action buttons use). Only the separators stay plain text.
-_SEPARATORS = ("/", "-")
+_SEPARATORS = ("/",)
 
 
 @dataclass(frozen=True)
@@ -231,18 +234,22 @@ class HelpPanel(Widget):
         self.scroll = max(0, min(self.scroll, self._max_scroll))
 
         old_clip = surface.get_clip()
-        surface.set_clip(pygame.Rect(_INNER_LEFT, _CONTENT_TOP, PANEL_W - 2 * _PAD, _CONTENT_H))
+        surface.set_clip(pygame.Rect(_INNER_LEFT, _CONTENT_TOP, _INNER_RIGHT - _INNER_LEFT, _CONTENT_H))
         for col_idx, visible in enumerate(columns):
             self._draw_column(surface, _COL_X[col_idx], visible)
         surface.set_clip(old_clip)
+
+        if self._max_scroll > 0:
+            self._draw_scrollbar(surface)
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         self._text(surface, _("help.title"), (_INNER_LEFT, _HEADER_Y), FONT_SIZE_LARGE,
                    _TITLE_COL, shadow=True)
         keycap.render_hint(
-            surface, self.hud.icons, self._font(FONT_SIZE_TINY), self._font(FONT_SIZE_SMALL),
+            surface, self.hud.icons, self._font(FONT_SIZE_SMALL), self._font(FONT_SIZE_SMALL),
             _("help.close_hint"), (_INNER_RIGHT, _HEADER_Y + 10), _GREY,
             align="right", glyph_color=_CAP_TEXT, shadow_color=PANEL_BG_COLOR,
+            scale=1.0,
         )
 
     def _draw_column(self, surface: pygame.Surface, x: int,
@@ -271,18 +278,32 @@ class HelpPanel(Widget):
     def _draw_cap(self, surface: pygame.Surface, token: str, x: int, y: int) -> int:
         """Draw one keycap sprite; return its width so the caller can advance.
 
-        Uses the hotbar keycap sprite (hud.icons["key_*"]) scaled evenly /2 to
-        16px — the same pixel-art key the HUD hotbar shows, so a hotkey looks the
-        same everywhere. Single-char keys get a crisp fresh glyph on the scaled
-        key; multi-char / mouse / arrow keys reuse their baked sprite art.
+        Uses the hotbar keycap sprite (hud.icons["key_*"]) scaled evenly to
+        24px — larger than the HUD hotbar's 16px for panel readability.
+        Single-char keys get a crisp fresh glyph on the scaled key; multi-char /
+        mouse / arrow keys reuse their baked sprite art.
         """
-        cap = keycap.build_cap(self.hud.icons, token, self._font(FONT_SIZE_TINY), _CAP_TEXT)
+        cap = keycap.build_cap(self.hud.icons, token, self._font(FONT_SIZE_SMALL), _CAP_TEXT,
+                               scale=1.0)
         if cap is None:  # unknown token — fall back to plain text so nothing vanishes
             glyph = self._font(FONT_SIZE_SMALL).render(token, False, _CAP_TEXT)
             surface.blit(glyph, (x, y + 5))
             return glyph.get_width()
         surface.blit(cap, (x, y + (_ROW_H - cap.get_height()) // 2))
         return cap.get_width()
+
+    # --- scrollbar -----------------------------------------------------------
+
+    def _draw_scrollbar(self, surface: pygame.Surface) -> None:
+        """Thin vertical scrollbar on the right edge of the panel."""
+        track_h = _CONTENT_H
+        total_h = track_h + self._max_scroll
+        thumb_h = max(20, int(track_h * track_h / total_h))
+        thumb_y = _CONTENT_TOP + int((track_h - thumb_h) * self.scroll / self._max_scroll)
+        # track
+        pygame.draw.rect(surface, _GREY, (_SCROLLBAR_X, _CONTENT_TOP, _SCROLLBAR_W, track_h))
+        # thumb
+        pygame.draw.rect(surface, _GOLD, (_SCROLLBAR_X, thumb_y, _SCROLLBAR_W, thumb_h))
 
     # --- helpers ------------------------------------------------------------
 

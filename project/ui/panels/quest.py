@@ -60,7 +60,7 @@ _RULE_Y = 128
 # that some headroom (and happens to fit "Spotkaj się z Sarkażmijką" too). The
 # details pane pays for it and can afford to: it was mostly empty space.
 _SPLIT_X = 560
-_FOOTER_Y = 612
+_FOOTER_Y = 578
 _LEFT_X = 118
 # derived, so moving the divider cannot leave the right column behind
 _RIGHT_X = _SPLIT_X + 30
@@ -221,9 +221,10 @@ class QuestPanel(Widget):
         self._draw_details(surface)
         pygame.draw.line(surface, _RULE, (_INNER_LEFT, _FOOTER_Y), (_INNER_RIGHT, _FOOTER_Y), 2)
         keycap.render_hint(
-            surface, self.hud.icons, self._font(FONT_SIZE_TINY), self._font(FONT_SIZE_SMALL),
-            _("quest.hints"), (_LEFT_X, _FOOTER_Y + 8), _GREY,
+            surface, self.hud.icons, self._font(FONT_SIZE_SMALL), self._font(FONT_SIZE_SMALL),
+            _("quest.hints"), (_LEFT_X, _FOOTER_Y + 18), _GREY,
             glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR,
+            scale=1.0,
         )
 
     def _draw_header(self, surface: pygame.Surface) -> None:
