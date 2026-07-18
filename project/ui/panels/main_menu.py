@@ -239,6 +239,16 @@ class MenuScreen(State):
             self.panel.select_prev()
         if self._edge("down"):
             self.panel.select_next()
+        # Left/right adjust a value in-place (e.g. the settings resolution cycler).
+        # Only panels that opt in (define on_left/on_right) react; others ignore it.
+        if self._edge("left"):
+            on_left = getattr(self.panel, "on_left", None)
+            if callable(on_left):
+                on_left()
+        if self._edge("right"):
+            on_right = getattr(self.panel, "on_right", None)
+            if callable(on_right):
+                on_right()
         if self._edge("select") or self._edge("accept"):
             self.game.reset_inputs()
             self.panel.activate()

@@ -22,7 +22,7 @@ about_url = "WWW: https://hubertnafalski.itch.io/"
 
 [settings]
 title = "Ustawienia"
-resolution = "Rozdzielczość: {w}x{h}"
+resolution = "Rozdzielczość: < {w}x{h} >"
 fullscreen = "Pełny ekran: {state}"
 fullscreen_on = "WŁ"
 fullscreen_off = "WYŁ"

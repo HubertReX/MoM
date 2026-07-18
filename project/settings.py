@@ -240,12 +240,12 @@ Y_TILES = 45  # 64
 BASE_WIDTH: int = X_TILES * TILE_SIZE
 BASE_HEIGHT: int = Y_TILES * TILE_SIZE
 
-# Display resolution options (in tiles)
+# Display resolution options (in tiles), sorted ascending by physical pixel area.
 _DISPLAY_RES_INDEX: int = 0
 DISPLAY_RES_OPTIONS: list[tuple[int, int]] = [
     (80, 45),  # 1280x720
-    (120, 64),  # 1920x1080
     (100, 64),  # 1600x1024
+    (120, 64),  # 1920x1024
     (160, 90),  # 2560x1440
 ]
 
