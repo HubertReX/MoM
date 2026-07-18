@@ -3,6 +3,7 @@
 > Pełny audyt z próbkami palety, zrzutami pięciu ekranów i interaktywną tabelą decyzji:
 > [`_attachements/design-system-2026-07-18.html`](_attachements/design-system-2026-07-18.html)
 > (podgląd: `docserve start doc/_attachements/design-system-2026-07-18.html`).
+> Postępy before/after (log zmian): [`_attachements/design-system-progress.html`](_attachements/design-system-progress.html).
 > Zwięzłe zasady dla agentów: [`../project/ui/AGENTS.md`](../project/ui/AGENTS.md).
 
 ## Context
@@ -83,6 +84,20 @@ klawisz). Mysz `LMB/RMB` ma sprite'y. Reszta klawiszy pomocy w pełni pokryta.
 
 Legenda: **FIX** = zmiana w kodzie (osobne zadanie), **DOC** = zasada do zapisania.
 
+Status (branch `docs/design-system-ui`, aktualizowany; podgląd before/after:
+`doc/_attachements/design-system-progress.html`):
+
+| # | Odstępstwo | Status |
+|---|---|---|
+| C | Paleta → tokeny `theme.py` | zrobione |
+| B | Cień pomocy → model questów | zrobione |
+| D | Kanty zamiast `border_radius`, linie 1px→2px, `UI_BORDER` 8 | zrobione (wyjątek: pasek sentymentu) |
+| E | Nazwa postaci EXTRA_TINY 8 → TINY 10 | zrobione |
+| G | Skalowanie ikon emoji całkowitą krotnością | zrobione |
+| H | Pasek sentymentu: pełny, bez ramki, zaokrąglony | zrobione |
+| F | Wzorce paneli (DOC) | zrobione |
+| A | Komponent klawisza = sprite wszędzie | **w toku** (pomoc zrobiona; TODO: art strzałek + ciemne lico kafli arkusza, stopka questów, „(F)" w dialogu) |
+
 ### A. Komponent "klawisz" - 3 warianty → 1 (sprite)
 
 Sprite (HUD hotbar/broń/przyciski akcji) vs chip rysowany (ciało pomocy) vs tekst
@@ -115,9 +130,9 @@ nagłówku i tytułach sekcji.
 
 | Odstępstwo | Gdzie | Decyzja |
 |---|---|---|
-| Linie 1px | `help._draw_cap` `width=1`, `quest._draw_marker` `width=1` | **FIX** min. 2px; jednostka bazowa UI = 2px logiczne |
-| `border_radius=4` na chipach/paskach | help, quest | **DOC/FIX** zaokrąglenie łamie pixel-grid; 0 lub wielokrotność jednostki |
-| `UI_BORDER_WIDTH = 9` (nieparzyste) | `settings.py:398` | **FIX** 8 lub 10 |
+| Linie 1px | `help._draw_cap` `width=1`, `quest._draw_marker` `width=1` | **FIX (zrobione)** min. 2px; jednostka bazowa UI = 2px logiczne |
+| `border_radius` na chipach/paskach | help, quest, dialog, save_load, text_input | **FIX (zrobione)** usunięte (kanty); wyjątek = pasek sentymentu (decyzja usera) |
+| `UI_BORDER_WIDTH = 9` (nieparzyste) | `settings.py:398` | **FIX (zrobione)** → 8 |
 | Ułamkowe skalowanie canvasu (SCALE 1.5 @1080p, 0.8 w test-env → letterbox, miękkie krawędzie) | `DISPLAY_RES_OPTIONS` | **DOC** udokumentować ryzyko; preferować całkowite krotności (1280x720 → 2560x1440 = 2x) |
 | `nine_patch` scale=4, border=6 | `theme.py:73` | **DOC** wzorzec (parzyste, OK) |
 
@@ -164,11 +179,10 @@ nazwy jako wektorowy widget:
   wektorowa, nie pixel-art;
 - `fill_w = int(bar_w*sentiment/100)` - krawędź wypełnienia na dowolnym pikselu.
 
-**FIX (propozycja):** pasek segmentowy w stylu retro - N komórek (np. 10) o parzystej
-szerokości z parzystymi odstępami, wypełniane skokowo do poziomu sentymentu; kolor z
-małej palety progowej (czerwony / żółty / zielony przez `theme`), rogi proste
-(`border_radius=0`), obwódka 2px. Alternatywa minimalna: zostawić pełny pasek, ale rogi
-proste + obwódka 2px + kolor progowy zamiast gradientu + `fill_w` snap do parzystego kroku.
+**FIX (zrobione):** decyzja użytkownika - **pełny pasek, bez ramki, zaokrąglony po bokach**
+(świadomy wyjątek od pixel-grid). Track `theme.BAR_BG`, wypełnienie czerwony→żółty→zielony
+wg dyspozycji, `border_radius = bar_h // 2` (pill), obie obwódki `width=1` usunięte; flash
+rozjaśnia wypełnienie ku bieli zamiast rysować ramkę.
 
 ## Deliverables (utworzone w tym przejściu)
 
@@ -180,20 +194,18 @@ proste + obwódka 2px + kolor progowy zamiast gradientu + `fill_w` snap do parzy
    zrzuty pięciu ekranów osadzone w pliku (self-contained).
 3. **`doc/design-system-ui.md`** - ten dokument (plan + decyzje) z linkiem do HTML.
 
-## Backlog implementacji (przyszłe zadania FIX)
+## Backlog implementacji
 
-Kolejność wg ryzyka - najpierw bezpieczne, mechaniczne:
+Zrobione (C, B, D, E, G, H, F oraz część A) - patrz tabela statusu wyżej i
+`design-system-progress.html`. Zostało:
 
-1. **Paleta → `theme.py`** (C) - tokeny + podmiana literałów; 0 zmian wizualnych.
-2. **Cień pomocy → model questów** (B).
-3. **Linie 1px → 2px, `UI_BORDER_WIDTH` 9→8** (D).
-4. **Komponent klawisza = sprite wszędzie** (A) - główna zmiana wizualna; wymaga 4
-   sprite'ów strzałek od użytkownika + drobny fix `generate_icons` (`,` `.` `9`).
-5. **Role fontów + wycofanie EXTRA_TINY z UI** (E).
-
-Pliki kodu do dotknięcia w przyszłych zadaniach: `theme.py`, `help.py`, `quest.py`,
-`settings.py`, `scene.py`, `dialog.py`, `inventory.py`, `trade.py` - **nietykane w tym
-przejściu**.
+1. **Ręczny art 4 strzałek** (A) - użytkownik rysuje w Aseprite; zastąpi placeholderowy
+   trójkąt z `generate_icons`.
+2. **Ciemne lico ręcznych kafli arkusza** (A) - `Esc/Tab/Ctl/Alt/Enter/Shift/Space/mysz`
+   mają jasne lico + zaszyty biały glif; w kodzie nie da się poprawić kontrastu
+   (mnożenie skaluje glif razem z licem) - do przyciemnienia w Aseprite.
+3. **Stopka questów i „(F)" w dialogu → sprite'y** (A) - wymaga parsowania stringów i18n
+   (klawisze wplecione w tekst), więc osobne zadanie.
 
 ## Weryfikacja
 
