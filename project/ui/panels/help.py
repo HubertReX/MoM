@@ -19,8 +19,8 @@ Three concerns shape the content:
   ``[] if IS_WEB`` gating in ``ACTIONS``.
 
 i18n (D3): every string here is UI furniture and comes from the TOML ``[help]`` section
-via ``_()``. Keycaps are drawn fresh as high-contrast chips (dark fill, white glyph)
-rather than scaled hotbar sprites, so a downscale never blurs the label.
+via ``_()``. Keycaps are the shared hotbar sprite (``hud.icons["key_*"]``) scaled
+evenly to 16px, so a hotkey looks identical here and on the HUD (design-system A).
 """
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ from settings import (
     _,
 )
 
-from .. import theme
+from .. import keycap, theme
 from ..widget import Widget
 
 if TYPE_CHECKING:
@@ -75,27 +75,20 @@ _TITLE_H = 26
 _GROUP_GAP = 10
 _CAP_GAP = 3
 _SEP_GAP = 5
-# keycaps are drawn fresh (not scaled hotbar sprites): a dark chip with white text,
-# so the label reads at high contrast. _CAP_H fits inside _ROW_H with a hair of margin.
-_CAP_H = 22
-_CAP_PAD = 5
 
-# --- palette (shared with QuestPanel / the game) ----------------------------
-_TITLE_COL = (255, 252, 103)
-_GOLD = (255, 215, 0)
-_GREY = (170, 170, 164)
-_WHITE = (255, 255, 255)
-# keycap chip: near-black fill + light edge + white glyph = maximum legibility
-_CAP_BG = (22, 22, 22)
-_CAP_EDGE = (150, 150, 140)
-_CAP_TEXT = (255, 255, 255)
-_RULE = (68, 68, 68)
-_ORANGE = (232, 146, 12)
+# --- palette — shared tokens from theme (single source of truth) ------------
+_TITLE_COL = theme.TITLE
+_GOLD = theme.GOLD
+_GREY = theme.GREY
+_WHITE = theme.WHITE
+# fresh glyph rendered onto the scaled key for single-char caps
+_CAP_TEXT = theme.WHITE
+_RULE = theme.RULE
+_ORANGE = theme.WARN
 
-# A key is drawn as a chip. Two tokens are special: separators (grey glyph, no chip)
-# and arrow markers (a triangle chip — the pixel font has no arrow glyphs).
+# A key is drawn as a hotbar keycap sprite via ``keycap.build_cap`` (the same component
+# the HUD hotbar and action buttons use). Only the separators stay plain text.
 _SEPARATORS = ("/", "-")
-_ARROW_DIR = {"↑": "up", "↓": "down", "←": "left", "→": "right"}
 
 
 @dataclass(frozen=True)
@@ -244,16 +237,20 @@ class HelpPanel(Widget):
         surface.set_clip(old_clip)
 
     def _draw_header(self, surface: pygame.Surface) -> None:
-        self._text(surface, _("help.title"), (_INNER_LEFT, _HEADER_Y), FONT_SIZE_LARGE, _TITLE_COL)
-        self._text(surface, _("help.close_hint"), (_INNER_RIGHT, _HEADER_Y + 12),
-                   FONT_SIZE_SMALL, _GREY, align="right")
+        self._text(surface, _("help.title"), (_INNER_LEFT, _HEADER_Y), FONT_SIZE_LARGE,
+                   _TITLE_COL, shadow=True)
+        keycap.render_hint(
+            surface, self.hud.icons, self._font(FONT_SIZE_TINY), self._font(FONT_SIZE_SMALL),
+            _("help.close_hint"), (_INNER_RIGHT, _HEADER_Y + 10), _GREY,
+            align="right", glyph_color=_CAP_TEXT, shadow_color=PANEL_BG_COLOR,
+        )
 
     def _draw_column(self, surface: pygame.Surface, x: int,
                      visible: list[tuple[_Group, list[_Row]]]) -> None:
         y = _CONTENT_TOP - self.scroll
         for group, rows in visible:
             colour = _ORANGE if group.debug else _GREY
-            self._text(surface, _(group.title), (x, y), FONT_SIZE_TINY, colour)
+            self._text(surface, _(group.title), (x, y), FONT_SIZE_TINY, colour, shadow=True)
             y += _TITLE_H
             for row in rows:
                 self._draw_keys(surface, row.keys, x, y)
@@ -272,39 +269,20 @@ class HelpPanel(Widget):
                 cx += self._draw_cap(surface, token, cx, y) + _CAP_GAP
 
     def _draw_cap(self, surface: pygame.Surface, token: str, x: int, y: int) -> int:
-        """Draw one keycap chip; return its width so the caller can advance.
+        """Draw one keycap sprite; return its width so the caller can advance.
 
-        A dark rounded chip with a white glyph — deliberately high contrast, and
-        rendered fresh (not a scaled sprite) so the label stays crisp. Arrow tokens
-        get a triangle instead of text, since the pixel font has no arrow glyphs.
+        Uses the hotbar keycap sprite (hud.icons["key_*"]) scaled evenly /2 to
+        16px — the same pixel-art key the HUD hotbar shows, so a hotkey looks the
+        same everywhere. Single-char keys get a crisp fresh glyph on the scaled
+        key; multi-char / mouse / arrow keys reuse their baked sprite art.
         """
-        cap_y = y + (_ROW_H - _CAP_H) // 2
-        arrow = _ARROW_DIR.get(token)
-        if arrow is None:
+        cap = keycap.build_cap(self.hud.icons, token, self._font(FONT_SIZE_TINY), _CAP_TEXT)
+        if cap is None:  # unknown token — fall back to plain text so nothing vanishes
             glyph = self._font(FONT_SIZE_SMALL).render(token, False, _CAP_TEXT)
-            width = max(_CAP_H, glyph.get_width() + 2 * _CAP_PAD)
-        else:
-            glyph = None
-            width = _CAP_H
-        rect = pygame.Rect(x, cap_y, width, _CAP_H)
-        pygame.draw.rect(surface, _CAP_BG, rect, border_radius=4)
-        pygame.draw.rect(surface, _CAP_EDGE, rect, width=1, border_radius=4)
-        if glyph is not None:
-            surface.blit(glyph, glyph.get_rect(center=rect.center))
-        else:
-            self._draw_arrow(surface, rect, arrow)
-        return width
-
-    @staticmethod
-    def _draw_arrow(surface: pygame.Surface, rect: pygame.Rect, direction: str) -> None:
-        cx, cy, d = rect.centerx, rect.centery, 4
-        points = {
-            "up":    [(cx, cy - d), (cx - d, cy + d), (cx + d, cy + d)],
-            "down":  [(cx, cy + d), (cx - d, cy - d), (cx + d, cy - d)],
-            "left":  [(cx - d, cy), (cx + d, cy - d), (cx + d, cy + d)],
-            "right": [(cx + d, cy), (cx - d, cy - d), (cx - d, cy + d)],
-        }[direction]
-        pygame.draw.polygon(surface, _CAP_TEXT, points)
+            surface.blit(glyph, (x, y + 5))
+            return glyph.get_width()
+        surface.blit(cap, (x, y + (_ROW_H - cap.get_height()) // 2))
+        return cap.get_width()
 
     # --- helpers ------------------------------------------------------------
 
@@ -312,9 +290,15 @@ class HelpPanel(Widget):
         return self.scene.game.fonts[size]
 
     def _text(self, surface: pygame.Surface, text: str, pos: tuple[int, int], size: int,
-              colour: tuple[int, int, int], align: str = "left") -> None:
+              colour: tuple[int, int, int], align: str = "left", *, shadow: bool = False) -> None:
+        """Draw a line of plain text.
+
+        ``shadow`` off by default (QuestPanel model): it earns its keep on the
+        furniture (header, section titles) where it separates chrome from content,
+        but under a description or a keycap glyph it only thickens every pixel.
+        """
         self.hud.draw_text(
             surface, text, pos, font=self._font(size), color=colour,
             align="right" if align == "right" else "left",  # type: ignore[arg-type]
-            border=PANEL_BG_COLOR,
+            border=PANEL_BG_COLOR if shadow else None,  # type: ignore[arg-type]
         )

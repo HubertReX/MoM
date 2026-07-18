@@ -54,18 +54,18 @@ _BODY_FONT = 16
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
 _WEIGHT_COL = 80      # px reserved on the right of each option row for emote + sentiment weight
-_EMOTE_SCALE = 1.8    # scale factor for sentiment emotes in the weight indicator column
+_EMOTE_SCALE = 2      # integer scale for sentiment emotes (pixel-art: no fractional upscaling)
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
 _BODY_LINES = 4
 _SEPARATOR_H = 4
 _SEPARATOR_GAP = 4
-_SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01c)
-_OPTION_HIGHLIGHT_COLOR = (22, 55, 82)  # dark blue, high contrast vs turquoise text
+_SEPARATOR_COLOR = theme.DIALOG_SEPARATOR  # greenish panel border colour (nine_patch_01c)
+_OPTION_HIGHLIGHT_COLOR = theme.DIALOG_OPTION_HIGHLIGHT  # dark blue vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
 _OPTION_HIGHLIGHT_BORDER = 2
 _VISITED_BG_ALPHA = 40     # alpha for visited-option background (subtle dim behind text)
-_VISITED_BG_COLOR = (8, 12, 16)  # very dark, neutral — distinct from highlight blue
+_VISITED_BG_COLOR = theme.DIALOG_VISITED_BG  # very dark, neutral — distinct from highlight blue
 _TOOLTIP_TEMPLATE = "[h3][act]Hint[/act][/h3]\n\n[bold]%s[/bold]"
 
 
@@ -259,24 +259,29 @@ class DialogPanel(Widget):
 
         Shows the emote sprite mapped from ``opt.sentiment`` (e.g. ``kind`` ->
         ``:blessed:``) followed by the numeric weight or ``?`` for
-        undiscovered sentiment.
+        undiscovered sentiment.  ``neutral`` is always ``+0`` (never hidden,
+        since its weight can never differ from zero).
         """
         if self.npc is None:
             return pygame.Surface((0, 0), pygame.SRCALPHA)
 
+        # ``neutral`` always shifts sentiment by 0, so there is nothing to
+        # discover — show ``+0`` straight away instead of an unknown ``?``.
         known = opt.sentiment in self.npc.known_disposition
-        text = f"{self.npc.known_disposition[opt.sentiment]:+d}" if known else "?"
+        if known:
+            text = f"{self.npc.known_disposition[opt.sentiment]:+d}"
+        elif opt.sentiment == "neutral":
+            text = "+0"
+        else:
+            text = "?"
         color = theme.DEFAULT_TEXT_COLOR
 
         text_surf = self._weight_font.render(text, False, color)
         emote_key = SENTIMENT_NAME_TO_EMOTE.get(opt.sentiment, opt.sentiment)
         emote = self.scene.icons.get(emote_key, [self.key_icon])[0]
-        # Scale emote up for readability
-        if _EMOTE_SCALE != 1.0:
-            w, h = emote.get_size()
-            emote = pygame.transform.scale(
-                emote, (max(1, round(w * _EMOTE_SCALE)), max(1, round(h * _EMOTE_SCALE)))
-            )
+        # Scale emote up for readability — integer factor keeps the pixel-art crisp.
+        if _EMOTE_SCALE != 1:
+            emote = pygame.transform.scale_by(emote, _EMOTE_SCALE)
         # Fixed-width column so emotes align in one vertical line and the numeric
         # weights align in a second right-justified column across all options.
         total_w = _WEIGHT_COL
@@ -461,13 +466,13 @@ class DialogPanel(Widget):
         for i in range(start, end):
                 if self._options[i].selected:
                     rect = self.option_rects[i]
-                    pygame.draw.rect(surface, (*_VISITED_BG_COLOR, _VISITED_BG_ALPHA), rect, border_radius=3)
+                    pygame.draw.rect(surface, (*_VISITED_BG_COLOR, _VISITED_BG_ALPHA), rect)
 
         # 2. Highlight the active option (on top of visited background, if any).
         if start <= self.selected_index < end:
             rect = self.option_rects[self.selected_index]
-            pygame.draw.rect(surface, (*_OPTION_HIGHLIGHT_COLOR, _OPTION_HIGHLIGHT_ALPHA), rect, border_radius=3)
-            pygame.draw.rect(surface, _OPTION_HIGHLIGHT_COLOR, rect, width=_OPTION_HIGHLIGHT_BORDER, border_radius=3)
+            pygame.draw.rect(surface, (*_OPTION_HIGHLIGHT_COLOR, _OPTION_HIGHLIGHT_ALPHA), rect)
+            pygame.draw.rect(surface, _OPTION_HIGHLIGHT_COLOR, rect, width=_OPTION_HIGHLIGHT_BORDER)
 
         # 3. Draw option text — dimmed for visited, full opacity otherwise.
         for i in range(start, end):
@@ -526,9 +531,11 @@ class DialogPanel(Widget):
 
         sentiment = max(0, min(100, self.npc.sentiment))
         bar_w, bar_h = 80, 8
+        radius = bar_h // 2  # pill-rounded on the sides
         x = self.offset[0] + 4 * TILE_SIZE
         y = self.offset[1] - int(2.2 * TILE_SIZE)
-        pygame.draw.rect(surface, (40, 40, 40), (x, y, bar_w, bar_h), border_radius=2)
+        # Full bar, no frame: dark track + coloured fill, both rounded on the sides.
+        pygame.draw.rect(surface, theme.BAR_BG, (x, y, bar_w, bar_h), border_radius=radius)
         fill_w = int(bar_w * sentiment / 100)
         if fill_w > 0:
             # Red -> yellow -> green as sentiment grows.
@@ -536,12 +543,7 @@ class DialogPanel(Widget):
                 color = (255, int(255 * sentiment / 50), 0)
             else:
                 color = (int(255 * (100 - sentiment) / 50), 255, 0)
-            pygame.draw.rect(surface, color, (x, y, fill_w, bar_h), border_radius=2)
-            
-        border_color = CHAR_NAME_COLOR
-        if self._sentiment_flash_timer > 0.0:
-            if int(self._sentiment_flash_timer * 10) % 2 == 0:
-                border_color = (255, 255, 255)
-                # Draw a slightly inflated border for flash emphasis
-                pygame.draw.rect(surface, border_color, (x - 1, y - 1, bar_w + 2, bar_h + 2), width=1, border_radius=2)
-        pygame.draw.rect(surface, border_color, (x, y, bar_w, bar_h), width=1, border_radius=2)
+            # Flash brightens the fill toward white (emphasis without a frame).
+            if self._sentiment_flash_timer > 0.0 and int(self._sentiment_flash_timer * 10) % 2 == 0:
+                color = tuple((c + 255) // 2 for c in color)
+            pygame.draw.rect(surface, color, (x, y, fill_w, bar_h), border_radius=radius)

@@ -36,7 +36,7 @@ from settings import (
     get_msg,
 )
 
-from .. import theme
+from .. import keycap, theme
 from ..text.markup import cut_markup, strip_tags
 from ..widget import Widget
 
@@ -77,24 +77,19 @@ _LINE_SPACING = 10
 _LIST_TOP = 168
 _LIST_BOTTOM = _FOOTER_Y - 8
 
-# --- palette, straight from the mock ----------------------------------------
-_GOLD = (255, 215, 0)
-_TITLE = (255, 252, 103)
-_DONE = (110, 207, 104)
-_ACTIVE = (0, 197, 199)
-# One grey for every muted thing (labels, counter, locked rows, hints). The mock
-# has three separate ones, but they were picked against a flat SVG background;
-# over the game's tiles the darker two sink into the text shadow and stop being
-# readable. Brightest of the three, lifted a little further.
-_GREY = (170, 170, 164)
-_WHITE = (255, 255, 255)
-_RULE = (68, 68, 68)
-# The empty track has to read as a bar on its own: every all_subquests umbrella
-# starts at 0/N, and at (51,51,51) the track sat at 1.68:1 against the olive panel
-# — below the 3:1 UI floor, so a fresh thread looked like it had no bar at all.
-# Near-black clears 3:1 as an inset groove; the cyan fill still pops by hue.
-_BAR_BG = (18, 18, 18)
-_MANUAL = (232, 146, 12)
+# --- palette — shared tokens from theme (single source of truth) ------------
+# Local aliases keep the call sites unchanged; values live in theme.py.
+_GOLD = theme.GOLD
+_TITLE = theme.TITLE
+_DONE = theme.DONE
+_ACTIVE = theme.ACCENT_CYAN
+# One grey for every muted thing (labels, counter, locked rows, hints).
+_GREY = theme.GREY
+_WHITE = theme.WHITE
+_RULE = theme.RULE
+# Empty progress track: near-black clears the 3:1 UI floor against the olive panel.
+_BAR_BG = theme.BAR_BG
+_MANUAL = theme.WARN
 
 _FILTERS = ("active", "done", "all")
 
@@ -225,7 +220,11 @@ class QuestPanel(Widget):
         self._draw_list(surface)
         self._draw_details(surface)
         pygame.draw.line(surface, _RULE, (_INNER_LEFT, _FOOTER_Y), (_INNER_RIGHT, _FOOTER_Y), 2)
-        self._text(surface, _("quest.hints"), (_LEFT_X, _FOOTER_Y + 10), FONT_SIZE_SMALL, _GREY, shadow=True)
+        keycap.render_hint(
+            surface, self.hud.icons, self._font(FONT_SIZE_TINY), self._font(FONT_SIZE_SMALL),
+            _("quest.hints"), (_LEFT_X, _FOOTER_Y + 8), _GREY,
+            glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR,
+        )
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         title = _("quest.journal")
@@ -380,11 +379,11 @@ class QuestPanel(Widget):
                 surface, f"{current} / {total}", (_RIGHT_EDGE, y), FONT_SIZE_SMALL, _ACTIVE, align="right"
             )
             bar_y = y + 20
-            pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, _RIGHT_W, 8), border_radius=4)
+            pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, _RIGHT_W, 8))
             if total:
                 filled = int(_RIGHT_W * current / total)
                 if filled:
-                    pygame.draw.rect(surface, _ACTIVE, (_RIGHT_X, bar_y, filled, 8), border_radius=4)
+                    pygame.draw.rect(surface, _ACTIVE, (_RIGHT_X, bar_y, filled, 8))
             y = bar_y + 26
         else:
             # A `manual` umbrella has no progress bar - completing its steps does not
@@ -422,7 +421,7 @@ class QuestPanel(Widget):
             chip = pygame.Surface((width, 30), pygame.SRCALPHA)
             chip.fill((*_GOLD, 30))
             surface.blit(chip, (x, y))
-            pygame.draw.rect(surface, _GOLD, (x, y, width, 30), width=1, border_radius=4)
+            pygame.draw.rect(surface, _GOLD, (x, y, width, 30), width=2)
             surface.blit(text, (x + 16, y + (30 - text.get_height()) // 2))
             x += width + 12
 
@@ -564,7 +563,7 @@ class QuestPanel(Widget):
         elif state == "active":
             pygame.draw.circle(surface, colour, (cx, cy), 5)
         else:
-            pygame.draw.circle(surface, colour, (cx, cy), 5, width=1)
+            pygame.draw.circle(surface, colour, (cx, cy), 5, width=2)
 
     def _draw_caret(self, surface: pygame.Surface, x: int, y: int, expanded: bool, colour) -> None:  # type: ignore[no-untyped-def]
         """▾ / ▸ for a thread head — again shapes, for the same reason."""

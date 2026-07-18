@@ -240,12 +240,12 @@ Y_TILES = 45  # 64
 BASE_WIDTH: int = X_TILES * TILE_SIZE
 BASE_HEIGHT: int = Y_TILES * TILE_SIZE
 
-# Display resolution options (in tiles)
+# Display resolution options (in tiles), sorted ascending by physical pixel area.
 _DISPLAY_RES_INDEX: int = 0
 DISPLAY_RES_OPTIONS: list[tuple[int, int]] = [
     (80, 45),  # 1280x720
-    (120, 64),  # 1920x1080
     (100, 64),  # 1600x1024
+    (120, 64),  # 1920x1024
     (160, 90),  # 2560x1440
 ]
 
@@ -302,7 +302,7 @@ IS_FULLSCREEN = False
 _IS_FULLSCREEN = False  # mutable runtime toggle
 IS_PAUSED = False
 USE_ALPHA_FILTER = True
-USE_PARTICLES = False
+USE_PARTICLES = True
 USE_CUSTOM_MOUSE_CURSOR = True
 USE_SOD = False
 USE_SHADERS = False
@@ -394,8 +394,8 @@ BLACK_COLOR = (0, 0, 0, 255)
 BG_COLOR = (0, 0, 0, 0)
 # HUD box border color
 UI_BORDER_COLOR = (17, 17, 17, 255)
-# HUD box border width
-UI_BORDER_WIDTH = 9
+# HUD box border width (even, per design-system pixel-grid rule)
+UI_BORDER_WIDTH = 8
 # HUD border color when weapon switched
 UI_BORDER_COLOR_ACTIVE = "gold"
 # HUD box fill color when attacking
@@ -714,6 +714,26 @@ import particles  # noqa: E402
 PARTICLES = {
     "leafs": particles.ParticleLeafs,
     "rain": particles.ParticleRain,
+}
+
+
+@dataclass(frozen=True)
+# MARK: EmitterSchedule
+class EmitterSchedule:
+    # harmonogram epizodyczny emitera pogody (sterowany przez WeatherDirector)
+    group: str                 # grupa wykluczająca; naraz aktywny tylko jeden emiter z grupy
+    weight: float = 1.0        # względna szansa wyboru w obrębie grupy
+    active_min: float = 8.0    # długość pojedynczego epizodu (sekundy) - dolna granica
+    active_max: float = 20.0   # długość pojedynczego epizodu (sekundy) - górna granica
+    gap_min: float = 30.0      # przerwa (idle) między epizodami w grupie - dolna granica
+    gap_max: float = 90.0      # przerwa (idle) między epizodami w grupie - górna granica
+
+
+# jedyna powierzchnia strojenia harmonogramu pogody - dodanie emitera/grupy tutaj
+# (nazwa musi pasować do klucza w PARTICLES oraz do wpisu w property `particles` mapy .tmx)
+EMITTER_SCHEDULES: dict[str, EmitterSchedule] = {
+    "leafs": EmitterSchedule(group="sky", active_min=8,  active_max=20, gap_min=30, gap_max=90),
+    "rain":  EmitterSchedule(group="sky", active_min=10, active_max=25, gap_min=40, gap_max=120),
 }
 
 CONF_ENTITIES_TO_STORE: dict[str, list[str]] = {

@@ -29,7 +29,7 @@ from maze_generator.maze_utils import (
     timeit
 )
 from objects import (ChestSprite, Collider, DestructibleSprite, ItemSprite, Notification, NotificationTypeEnum)
-from particles import ParticleDestructible, ParticleSystem
+from particles import ParticleDestructible, ParticleSystem, WeatherDirector
 from pyscroll.group import PyscrollGroup
 from pytmx import TiledMap, TiledObjectGroup, TiledTileLayer
 from pytmx.util_pygame import load_pygame
@@ -78,6 +78,7 @@ from settings import (
     NOTIFICATION_DURATION,
     NOTIFICATION_STAGGER,
     # PANEL_BG_COLOR,
+    EMITTER_SCHEDULES,
     PARTICLES,
     SHADERS_NAMES,
     SHOW_DEBUG_INFO,
@@ -154,6 +155,7 @@ class Scene(State):
             "sprites_layer",
             "group",
             "particles",
+            "weather",
         ]
 
         self.notifications: list[Notification] = []
@@ -258,6 +260,8 @@ class Scene(State):
         self.sprites_layer: int = 0
         self.group: PyscrollGroup
         self.particles: list[ParticleSystem] = []
+        # weather scheduler (episodic emitters); built per-map in load_particles()
+        self.weather: WeatherDirector | None = None
         # self.circle_gradient: pygame.Surface = (CIRCLE_GRADIENT).convert_alpha()
         self.ui = GameUI(self)
         self.display_ui_flag: bool = SHOW_UI
@@ -279,6 +283,13 @@ class Scene(State):
         small_font = self.game.fonts[FONT_SIZE_SMALL]
         tiny_font = self.game.fonts[FONT_SIZE_TINY]
 
+        # Przyciemnij lico pustego klawisza (jasny niebieski -> ciemny granat) mnożnikiem,
+        # żeby biały glif miał kontrast (patrz design-system, panel pomocy). Dotyczy tylko
+        # keycapów generowanych z tej bazy (A-Z, cyfry, F1-F12, znaki, strzałki) oraz
+        # świeżych capów w pomocy. Ręcznie rysowane kafle arkusza (Esc/Shift/Space/... z
+        # zaszytym białym glifem) mają jasne lico - do przyciemnienia w Aseprite osobno.
+        icons["key"][0].fill((75, 82, 105, 255), special_flags=pygame.BLEND_RGBA_MULT)
+
         # generate keys with letter buttons (A-Z)
         center = icons["key"][0].get_rect().center
         for letter in range(ord("A"), ord("Z") + 1):
@@ -290,7 +301,7 @@ class Scene(State):
 
         # 0 to 9
 
-        for digit in range(0, 9):
+        for digit in range(0, 10):
             text_surf = tiny_font.render(str(digit), False, FONT_COLOR)
             text_rect = text_surf.get_rect(center = center).move(0, -2)
             bg = icons["key"][0].copy()
@@ -307,12 +318,28 @@ class Scene(State):
             icons[f"key_F{str(letter)}"] = [bg]
 
         # other keys
-        for sign in "<>`[]+-":
+        for sign in "<>`[]+-,.":
             text_surf = small_font.render(sign, False, FONT_COLOR)
             text_rect = text_surf.get_rect(center = center).move(0, -1)
             bg = icons["key"][0].copy()
             bg.blit(text_surf, text_rect)
             icons[f"key_{sign}"] = [bg]
+
+        # arrow keys - PLACEHOLDER: a filled triangle glyph nabity na pusty `key`.
+        # Docelowo ręczny art w arkuszu HUD (jak Esc/Shift/Space); do tego czasu ten
+        # placeholder daje spójny sprite `key_up/down/left/right` dla paneli.
+        cx, cy = center
+        d = 5
+        arrow_points = {
+            "up":    [(cx, cy - 1 - d), (cx - d, cy - 1 + d), (cx + d, cy - 1 + d)],
+            "down":  [(cx, cy - 1 + d), (cx - d, cy - 1 - d), (cx + d, cy - 1 - d)],
+            "left":  [(cx - d, cy - 1), (cx + d, cy - 1 - d), (cx + d, cy - 1 + d)],
+            "right": [(cx + d, cy - 1), (cx - d, cy - 1 - d), (cx - d, cy - 1 + d)],
+        }
+        for name, points in arrow_points.items():
+            bg = icons["key"][0].copy()
+            pygame.draw.polygon(bg, FONT_COLOR, points)
+            icons[f"key_{name}"] = [bg]
 
     #############################################################################################################
 
@@ -508,11 +535,19 @@ class Scene(State):
         map_particles = tileset_map.properties.get("particles", "").replace(" ", "").strip().lower().split(",")
         # string with coma separated names of particle systems active in this map
         self.particles = []
+        # name -> system, used to hand the schedulable emitters to the WeatherDirector
+        weather_systems: dict[str, ParticleSystem] = {}
         # init particle systems relevant for this scene
         for particle in map_particles:
             if particle in PARTICLES:
                 particle_class = PARTICLES[particle]
-                self.particles.append(particle_class(self.game.canvas, self.group, self.camera))
+                system = particle_class(self.game.canvas, self.group, self.camera)
+                self.particles.append(system)
+                weather_systems[particle] = system
+
+        # WeatherDirector turns the map's allowed emitters into random, mutually-exclusive
+        # episodes (see EMITTER_SCHEDULES); only emitters with a schedule are scheduled
+        self.weather = WeatherDirector(weather_systems, EMITTER_SCHEDULES)
 
     #############################################################################################################
 
@@ -1145,6 +1180,11 @@ class Scene(State):
         if not self.new_scene:
             return
 
+        # cancel the leaving map's armed spawn timers so they don't keep firing for
+        # emitters that are about to be swapped out (each map keeps its own director)
+        if self.weather:
+            self.weather.stop_all()
+
         self.return_map = self.current_map
         self.return_entry_point = self.new_scene.return_entry_point
 
@@ -1228,6 +1268,10 @@ class Scene(State):
         self.group.update(dt)
         self.animations.update(dt)
         self.transition.update(dt)
+
+        # advance weather episodes (start/stop emitters); global master switch gates it
+        if USE_PARTICLES and self.weather:
+            self.weather.update(dt)
 
         # absolute time calculation
         # self.hour   = int((self.game.time_elapsed + INITIAL_HOUR) % 24)
@@ -1565,6 +1609,9 @@ class Scene(State):
         self.reset_sprite_groups()
         # self.map_view.reload()
         self.player.reset()
+        # stop the old director's timers before load_map() rebuilds the emitters
+        if self.weather:
+            self.weather.stop_all()
         self.load_map()
         if USE_PARTICLES:
             self.start_particles()

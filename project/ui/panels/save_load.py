@@ -171,8 +171,8 @@ class _LoadSlotSelector:
             btn.update(dt)
 
     def draw(self, surface: pygame.Surface) -> None:
-        pygame.draw.rect(surface, (30, 28, 22), self.rect, border_radius=4)
-        pygame.draw.rect(surface, (80, 70, 55), self.rect, border_radius=4, width=2)
+        pygame.draw.rect(surface, (30, 28, 22), self.rect)
+        pygame.draw.rect(surface, (80, 70, 55), self.rect, width=2)
 
         if not self._slots:
             empty_surf = theme.menu_font(20).render(_("save.no_saves"), False, (120, 110, 90))
@@ -181,9 +181,9 @@ class _LoadSlotSelector:
         for i, slot in enumerate(self._slots):
             color = (200, 180, 140) if slot.occupied else (120, 110, 90)
             bg_color = (50, 48, 42) if i == self._selected_idx else (30, 28, 22)
-            pygame.draw.rect(surface, bg_color, slot.rect, border_radius=4)
+            pygame.draw.rect(surface, bg_color, slot.rect)
             if i == self._selected_idx:
-                pygame.draw.rect(surface, (120, 100, 60), slot.rect, border_radius=4, width=2)
+                pygame.draw.rect(surface, (120, 100, 60), slot.rect, width=2)
             sf = theme.menu_font(18).render(slot.label, False, color)
             surface.blit(sf, (slot.rect.left + 8, slot.rect.top + 6))
 
@@ -433,9 +433,9 @@ class SaveLoadPanel(Widget):
         for i, slot in enumerate(self._slots):
             color = (200, 180, 140) if slot.occupied else (120, 110, 90)
             bg_color = (50, 48, 42) if i == self._selected_idx else (30, 28, 22)
-            pygame.draw.rect(surface, bg_color, slot.rect, border_radius=4)
+            pygame.draw.rect(surface, bg_color, slot.rect)
             if i == self._selected_idx:
-                pygame.draw.rect(surface, (120, 100, 60), slot.rect, border_radius=4, width=2)
+                pygame.draw.rect(surface, (120, 100, 60), slot.rect, width=2)
             sf = theme.menu_font(18).render(slot.label, False, color)
             surface.blit(sf, (slot.rect.left + 8, slot.rect.top + 6))
 

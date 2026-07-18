@@ -46,50 +46,28 @@ class SettingsPanel(Widget):
         self._apply_callback = apply_callback
         super().__init__()
         self.index: int = 0  # current selection index
+        self._anchor: str = anchor
         self._button_types: list[str] = []
         self._buttons: list[Button] = []
 
         self._title_surf = theme.menu_font(_TITLE_SIZE).render(_("settings.title"), False, theme.NAME)
-        self._rebuild_buttons()
 
-        # Calculate panel size
-        buttons_h = sum(b.rect.height + _GAP for b in self._buttons) + _GAP
-        content_w = max(b.rect.width for b in self._buttons) + 2 * _PAD
-        width = content_w + 2 * _PAD
-        height = buttons_h + 2 * _PAD
-        if self._title_surf:
-            height += self._title_surf.get_height() + _GAP
-
+        self._build_buttons()
+        width, height = self._compute_size()
         self.rect = pygame.Rect(0, 0, width, height)
         setattr(self.rect, anchor, pos)
         self._bg = theme.nine_patch("nine_patch_06b.png", width, height)
-
-        # Layout buttons as children
-        y = self.rect.top + _PAD
-        if self._title_surf:
-            y += self._title_surf.get_height() + _GAP
-        for btn in self._buttons:
-            btn.rect.left = self.rect.left + _PAD
-            btn.rect.y = y
-            self.add(btn)
-            y += btn.rect.height + _GAP
-
+        self._layout_children()
         self._sync_selection()
 
-    def _rebuild_buttons(self) -> None:
-        """Recreate all buttons and child widgets after state change."""
-        # Clear existing children
-        self.children.clear()
+    def _build_buttons(self) -> None:
+        """(Re)create the Button widgets and their type tags from current settings."""
         self._button_types.clear()
         self._buttons.clear()
 
-        # Build resolution buttons
-        for i, (xt, yt) in enumerate(_settings.DISPLAY_RES_OPTIONS):
-            w = xt * _settings.TILE_SIZE
-            h = yt * _settings.TILE_SIZE
-            label = _("settings.resolution", w=w, h=h)
-            self._buttons.append(Button(label, None, size=_BUTTON_SIZE))
-            self._button_types.append("resolution")
+        # Single resolution row - cycled left/right instead of one button per option
+        self._buttons.append(Button(self._resolution_label(), None, size=_BUTTON_SIZE))
+        self._button_types.append("resolution")
 
         # Fullscreen button (desktop only)
         if not IS_WEB:
@@ -105,18 +83,34 @@ class SettingsPanel(Widget):
         self._buttons.append(Button(_("settings.back"), None, size=_BUTTON_SIZE))
         self._button_types.append("back")
 
-        # Re-layout buttons as children
+    def _resolution_label(self) -> str:
+        """Label for the resolution cycler at the current display index."""
+        idx = _settings._DISPLAY_RES_INDEX % len(_settings.DISPLAY_RES_OPTIONS)
+        xt, yt = _settings.DISPLAY_RES_OPTIONS[idx]
+        return _("settings.resolution", w=xt * _settings.TILE_SIZE, h=yt * _settings.TILE_SIZE)
+
+    def _cycle_resolution(self, step: int) -> None:
+        """Move the resolution selection by *step* (wrapping) and apply it."""
+        n = len(_settings.DISPLAY_RES_OPTIONS)
+        new_idx = (_settings._DISPLAY_RES_INDEX + step) % n
+        _settings.set_display(new_idx)
+        if self._apply_callback is not None:
+            self._apply_callback()
+        self._rebuild_buttons()
+        save_display_settings()
+
+    def _compute_size(self) -> tuple[int, int]:
         buttons_h = sum(b.rect.height + _GAP for b in self._buttons) + _GAP
         content_w = max(b.rect.width for b in self._buttons) + 2 * _PAD
         width = content_w + 2 * _PAD
         height = buttons_h + 2 * _PAD
         if self._title_surf:
             height += self._title_surf.get_height() + _GAP
+        return width, height
 
-        self.rect.width = width
-        self.rect.height = height
-        self._bg = theme.nine_patch("nine_patch_06b.png", width, height)
-
+    def _layout_children(self) -> None:
+        """Position all buttons (centered) as children, top-to-bottom under the title."""
+        self.children.clear()
         y = self.rect.top + _PAD
         if self._title_surf:
             y += self._title_surf.get_height() + _GAP
@@ -125,7 +119,22 @@ class SettingsPanel(Widget):
             self.add(btn)
             y += btn.rect.height + _GAP
 
+    def _rebuild_buttons(self) -> None:
+        """Recreate all buttons and re-layout after a state change (resolution, etc.).
+
+        Preserves the panel's anchor point so resizing the box does not make it drift -
+        setting ``rect.width``/``rect.height`` directly pins the top-left corner, which
+        moves a ``midleft``-anchored panel off its position.
+        """
+        self._build_buttons()
+        width, height = self._compute_size()
+        anchor_pos = getattr(self.rect, self._anchor)
+        self.rect.size = (width, height)
+        setattr(self.rect, self._anchor, anchor_pos)
+        self._bg = theme.nine_patch("nine_patch_06b.png", width, height)
+        self._layout_children()
         self._sync_selection()
+        self.mark_dirty()
 
     def _sync_selection(self) -> None:
         n = len(self._buttons)
@@ -142,6 +151,16 @@ class SettingsPanel(Widget):
 
     def select_prev(self) -> None:
         self.set_index(self.index - 1)
+
+    def on_left(self) -> None:
+        """Left input: cycle the resolution back when the resolution row is selected."""
+        if self._button_types[self.index] == "resolution":
+            self._cycle_resolution(-1)
+
+    def on_right(self) -> None:
+        """Right input: cycle the resolution forward when the resolution row is selected."""
+        if self._button_types[self.index] == "resolution":
+            self._cycle_resolution(1)
 
     def render(self) -> pygame.Surface:
         surf = self._bg.copy()
@@ -161,19 +180,20 @@ class SettingsPanel(Widget):
             for i, child in enumerate(self.children):
                 if child.rect.collidepoint(event.pos):
                     self.set_index(i)
-                    self.activate()
+                    # On the resolution row, a click on the left half steps back and
+                    # the right half steps forward (matching the "< WxH >" arrows).
+                    if self._button_types[i] == "resolution":
+                        self._cycle_resolution(-1 if event.pos[0] < child.rect.centerx else 1)
+                    else:
+                        self.activate()
                     return True
         return False
 
     def activate(self) -> None:
         bt = self._button_types[self.index]
         if bt == "resolution":
-            idx = self.index
-            _settings.set_display(idx)
-            if self._apply_callback is not None:
-                self._apply_callback()
-            self._rebuild_buttons()
-            save_display_settings()
+            # Keyboard/gamepad accept cycles forward; left/right give both directions.
+            self._cycle_resolution(1)
         elif bt == "fullscreen":
             _settings._IS_FULLSCREEN = not _settings._IS_FULLSCREEN
             if self._apply_callback is not None:
