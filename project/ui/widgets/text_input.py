@@ -314,8 +314,8 @@ class TextInput(Widget):
         surf = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         border = NAME if self._focused else _dim(TEXT, 0.45)
 
-        pygame.draw.rect(surf, PANEL_BG_COLOR, surf.get_rect(), border_radius=4)
-        pygame.draw.rect(surf, border, surf.get_rect(), width=2, border_radius=4)
+        pygame.draw.rect(surf, PANEL_BG_COLOR, surf.get_rect())
+        pygame.draw.rect(surf, border, surf.get_rect(), width=2)
 
         font = self.font
         px, py = self._pad

@@ -458,13 +458,13 @@ class DialogPanel(Widget):
         for i in range(start, end):
                 if self._options[i].selected:
                     rect = self.option_rects[i]
-                    pygame.draw.rect(surface, (*_VISITED_BG_COLOR, _VISITED_BG_ALPHA), rect, border_radius=3)
+                    pygame.draw.rect(surface, (*_VISITED_BG_COLOR, _VISITED_BG_ALPHA), rect)
 
         # 2. Highlight the active option (on top of visited background, if any).
         if start <= self.selected_index < end:
             rect = self.option_rects[self.selected_index]
-            pygame.draw.rect(surface, (*_OPTION_HIGHLIGHT_COLOR, _OPTION_HIGHLIGHT_ALPHA), rect, border_radius=3)
-            pygame.draw.rect(surface, _OPTION_HIGHLIGHT_COLOR, rect, width=_OPTION_HIGHLIGHT_BORDER, border_radius=3)
+            pygame.draw.rect(surface, (*_OPTION_HIGHLIGHT_COLOR, _OPTION_HIGHLIGHT_ALPHA), rect)
+            pygame.draw.rect(surface, _OPTION_HIGHLIGHT_COLOR, rect, width=_OPTION_HIGHLIGHT_BORDER)
 
         # 3. Draw option text — dimmed for visited, full opacity otherwise.
         for i in range(start, end):

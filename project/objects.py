@@ -6,7 +6,7 @@ import pygame
 from settings import (
     BLACK_COLOR,
     CHAR_NAME_COLOR,
-    FONT_SIZE_EXTRA_TINY,
+    FONT_SIZE_TINY,
     HUD_DIR,
     IS_WEB,
     MAIN_FONT,
@@ -219,7 +219,7 @@ class HealthBar(pygame.sprite.Sprite):
 
         # render name of the character (wrap at space if too wide)
         name = entity_name(self.model)
-        fs = FONT_SIZE_EXTRA_TINY
+        fs = FONT_SIZE_TINY
         max_w = self.image.get_width() - 4
         _font = pygame.font.Font(MAIN_FONT, fs)
         line_h = fs + 4

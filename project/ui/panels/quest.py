@@ -375,11 +375,11 @@ class QuestPanel(Widget):
                 surface, f"{current} / {total}", (_RIGHT_EDGE, y), FONT_SIZE_SMALL, _ACTIVE, align="right"
             )
             bar_y = y + 20
-            pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, _RIGHT_W, 8), border_radius=4)
+            pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, _RIGHT_W, 8))
             if total:
                 filled = int(_RIGHT_W * current / total)
                 if filled:
-                    pygame.draw.rect(surface, _ACTIVE, (_RIGHT_X, bar_y, filled, 8), border_radius=4)
+                    pygame.draw.rect(surface, _ACTIVE, (_RIGHT_X, bar_y, filled, 8))
             y = bar_y + 26
         else:
             # A `manual` umbrella has no progress bar - completing its steps does not
@@ -417,7 +417,7 @@ class QuestPanel(Widget):
             chip = pygame.Surface((width, 30), pygame.SRCALPHA)
             chip.fill((*_GOLD, 30))
             surface.blit(chip, (x, y))
-            pygame.draw.rect(surface, _GOLD, (x, y, width, 30), width=1, border_radius=4)
+            pygame.draw.rect(surface, _GOLD, (x, y, width, 30), width=2)
             surface.blit(text, (x + 16, y + (30 - text.get_height()) // 2))
             x += width + 12
 

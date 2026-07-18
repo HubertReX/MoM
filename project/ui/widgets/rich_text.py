@@ -344,8 +344,8 @@ class RichText(Widget):
         total = view.height + self.max_scroll
         thumb_h = max(16, int(view.height * view.height / total))
         thumb_y = view.y + int((view.height - thumb_h) * (self.scroll / self.max_scroll))
-        pygame.draw.rect(surface, (0, 0, 0, 90), track, border_radius=2)
-        pygame.draw.rect(surface, theme.DEFAULT_TEXT_COLOR, (track.x, thumb_y, 4, thumb_h), border_radius=2)
+        pygame.draw.rect(surface, (0, 0, 0, 90), track)
+        pygame.draw.rect(surface, theme.DEFAULT_TEXT_COLOR, (track.x, thumb_y, 4, thumb_h))
 
 
 def render_rich_text_surface(
