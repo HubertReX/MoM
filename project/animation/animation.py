@@ -639,8 +639,16 @@ def animator(cutscene_def: dict[str, Any], group: pygame.sprite.Group) -> Animat
             # else:
             #     animations[step["from"]].schedule(anim)
 
-        # add each animation step to Sprite Group
-        group.add(anim)
+        # add each step to the Sprite Group so it actually gets updated.
+        # NOTE: for "task" steps we must add the delaying `task`, not `anim`
+        # (which is a stale Animation left over from a previous iteration).
+        # Adding `anim` here left the task orphaned outside any group, so it
+        # never fired - e.g. the intro's step_09 (set_camera_on_player) never
+        # ran and the camera stayed detached from the player after the cutscene.
+        if step["type"] == "animation":
+            group.add(anim)
+        else:
+            group.add(task)
     # start first animation
     first_step = animations[first_step_name]
     if type(first_step) is Animation:
