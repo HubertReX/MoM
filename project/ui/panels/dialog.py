@@ -259,13 +259,21 @@ class DialogPanel(Widget):
 
         Shows the emote sprite mapped from ``opt.sentiment`` (e.g. ``kind`` ->
         ``:blessed:``) followed by the numeric weight or ``?`` for
-        undiscovered sentiment.
+        undiscovered sentiment.  ``neutral`` is always ``+0`` (never hidden,
+        since its weight can never differ from zero).
         """
         if self.npc is None:
             return pygame.Surface((0, 0), pygame.SRCALPHA)
 
+        # ``neutral`` always shifts sentiment by 0, so there is nothing to
+        # discover — show ``+0`` straight away instead of an unknown ``?``.
         known = opt.sentiment in self.npc.known_disposition
-        text = f"{self.npc.known_disposition[opt.sentiment]:+d}" if known else "?"
+        if known:
+            text = f"{self.npc.known_disposition[opt.sentiment]:+d}"
+        elif opt.sentiment == "neutral":
+            text = "+0"
+        else:
+            text = "?"
         color = theme.DEFAULT_TEXT_COLOR
 
         text_surf = self._weight_font.render(text, False, color)
