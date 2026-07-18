@@ -36,7 +36,7 @@ from settings import (
     get_msg,
 )
 
-from .. import theme
+from .. import keycap, theme
 from ..text.markup import cut_markup, strip_tags
 from ..widget import Widget
 
@@ -220,7 +220,11 @@ class QuestPanel(Widget):
         self._draw_list(surface)
         self._draw_details(surface)
         pygame.draw.line(surface, _RULE, (_INNER_LEFT, _FOOTER_Y), (_INNER_RIGHT, _FOOTER_Y), 2)
-        self._text(surface, _("quest.hints"), (_LEFT_X, _FOOTER_Y + 10), FONT_SIZE_SMALL, _GREY, shadow=True)
+        keycap.render_hint(
+            surface, self.hud.icons, self._font(FONT_SIZE_TINY), self._font(FONT_SIZE_SMALL),
+            _("quest.hints"), (_LEFT_X, _FOOTER_Y + 8), _GREY,
+            glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR,
+        )
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         title = _("quest.journal")
