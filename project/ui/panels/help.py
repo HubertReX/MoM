@@ -80,17 +80,17 @@ _SEP_GAP = 5
 _CAP_H = 22
 _CAP_PAD = 5
 
-# --- palette (shared with QuestPanel / the game) ----------------------------
-_TITLE_COL = (255, 252, 103)
-_GOLD = (255, 215, 0)
-_GREY = (170, 170, 164)
-_WHITE = (255, 255, 255)
+# --- palette — shared tokens from theme (single source of truth) ------------
+_TITLE_COL = theme.TITLE
+_GOLD = theme.GOLD
+_GREY = theme.GREY
+_WHITE = theme.WHITE
 # keycap chip: near-black fill + light edge + white glyph = maximum legibility
-_CAP_BG = (22, 22, 22)
-_CAP_EDGE = (150, 150, 140)
-_CAP_TEXT = (255, 255, 255)
-_RULE = (68, 68, 68)
-_ORANGE = (232, 146, 12)
+_CAP_BG = theme.CAP_BG
+_CAP_EDGE = theme.CAP_EDGE
+_CAP_TEXT = theme.WHITE
+_RULE = theme.RULE
+_ORANGE = theme.WARN
 
 # A key is drawn as a chip. Two tokens are special: separators (grey glyph, no chip)
 # and arrow markers (a triangle chip — the pixel font has no arrow glyphs).
@@ -244,16 +244,17 @@ class HelpPanel(Widget):
         surface.set_clip(old_clip)
 
     def _draw_header(self, surface: pygame.Surface) -> None:
-        self._text(surface, _("help.title"), (_INNER_LEFT, _HEADER_Y), FONT_SIZE_LARGE, _TITLE_COL)
+        self._text(surface, _("help.title"), (_INNER_LEFT, _HEADER_Y), FONT_SIZE_LARGE,
+                   _TITLE_COL, shadow=True)
         self._text(surface, _("help.close_hint"), (_INNER_RIGHT, _HEADER_Y + 12),
-                   FONT_SIZE_SMALL, _GREY, align="right")
+                   FONT_SIZE_SMALL, _GREY, align="right", shadow=True)
 
     def _draw_column(self, surface: pygame.Surface, x: int,
                      visible: list[tuple[_Group, list[_Row]]]) -> None:
         y = _CONTENT_TOP - self.scroll
         for group, rows in visible:
             colour = _ORANGE if group.debug else _GREY
-            self._text(surface, _(group.title), (x, y), FONT_SIZE_TINY, colour)
+            self._text(surface, _(group.title), (x, y), FONT_SIZE_TINY, colour, shadow=True)
             y += _TITLE_H
             for row in rows:
                 self._draw_keys(surface, row.keys, x, y)
@@ -288,7 +289,7 @@ class HelpPanel(Widget):
             width = _CAP_H
         rect = pygame.Rect(x, cap_y, width, _CAP_H)
         pygame.draw.rect(surface, _CAP_BG, rect, border_radius=4)
-        pygame.draw.rect(surface, _CAP_EDGE, rect, width=1, border_radius=4)
+        pygame.draw.rect(surface, _CAP_EDGE, rect, width=2, border_radius=4)
         if glyph is not None:
             surface.blit(glyph, glyph.get_rect(center=rect.center))
         else:
@@ -312,9 +313,15 @@ class HelpPanel(Widget):
         return self.scene.game.fonts[size]
 
     def _text(self, surface: pygame.Surface, text: str, pos: tuple[int, int], size: int,
-              colour: tuple[int, int, int], align: str = "left") -> None:
+              colour: tuple[int, int, int], align: str = "left", *, shadow: bool = False) -> None:
+        """Draw a line of plain text.
+
+        ``shadow`` off by default (QuestPanel model): it earns its keep on the
+        furniture (header, section titles) where it separates chrome from content,
+        but under a description or a keycap glyph it only thickens every pixel.
+        """
         self.hud.draw_text(
             surface, text, pos, font=self._font(size), color=colour,
             align="right" if align == "right" else "left",  # type: ignore[arg-type]
-            border=PANEL_BG_COLOR,
+            border=PANEL_BG_COLOR if shadow else None,  # type: ignore[arg-type]
         )

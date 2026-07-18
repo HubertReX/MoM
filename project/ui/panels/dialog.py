@@ -60,12 +60,12 @@ _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
 _BODY_LINES = 4
 _SEPARATOR_H = 4
 _SEPARATOR_GAP = 4
-_SEPARATOR_COLOR = (84, 135, 137)  # greenish panel border colour (nine_patch_01c)
-_OPTION_HIGHLIGHT_COLOR = (22, 55, 82)  # dark blue, high contrast vs turquoise text
+_SEPARATOR_COLOR = theme.DIALOG_SEPARATOR  # greenish panel border colour (nine_patch_01c)
+_OPTION_HIGHLIGHT_COLOR = theme.DIALOG_OPTION_HIGHLIGHT  # dark blue vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
 _OPTION_HIGHLIGHT_BORDER = 2
 _VISITED_BG_ALPHA = 40     # alpha for visited-option background (subtle dim behind text)
-_VISITED_BG_COLOR = (8, 12, 16)  # very dark, neutral — distinct from highlight blue
+_VISITED_BG_COLOR = theme.DIALOG_VISITED_BG  # very dark, neutral — distinct from highlight blue
 _TOOLTIP_TEMPLATE = "[h3][act]Hint[/act][/h3]\n\n[bold]%s[/bold]"
 
 

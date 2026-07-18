@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
     from .hud import HUD
 
-_DIVIDER = (70, 64, 46)
+_DIVIDER = theme.DIVIDER
 
 
 def build_inventory_bg() -> pygame.Surface:

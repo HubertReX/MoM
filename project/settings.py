@@ -394,8 +394,8 @@ BLACK_COLOR = (0, 0, 0, 255)
 BG_COLOR = (0, 0, 0, 0)
 # HUD box border color
 UI_BORDER_COLOR = (17, 17, 17, 255)
-# HUD box border width
-UI_BORDER_WIDTH = 9
+# HUD box border width (even, per design-system pixel-grid rule)
+UI_BORDER_WIDTH = 8
 # HUD border color when weapon switched
 UI_BORDER_COLOR_ACTIVE = "gold"
 # HUD box fill color when attacking

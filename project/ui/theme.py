@@ -94,6 +94,26 @@ BORDER: tuple[int, int, int, int] = UI_BORDER_COLOR
 TEXT: tuple[int, int, int, int] = FONT_COLOR
 NAME: tuple[int, int, int] = CHAR_NAME_COLOR
 
+# Shared UI palette tokens — single source of truth. Panels import these instead of
+# re-declaring the same literals (see doc/_attachements/design-system-2026-07-18.html).
+TITLE: tuple[int, int, int] = CHAR_NAME_COLOR   # (255,252,103) headings / character names
+WHITE: tuple[int, int, int] = (255, 255, 255)
+GREY: tuple[int, int, int] = (170, 170, 164)    # muted: labels, counters, locked rows, hints
+GOLD: tuple[int, int, int] = (255, 215, 0)      # active accent / filter underline
+ACCENT_CYAN: tuple[int, int, int] = (0, 197, 199)  # active state / progress / default dialog text
+DONE: tuple[int, int, int] = (110, 207, 104)    # completed
+WARN: tuple[int, int, int] = (232, 146, 12)     # warning / manual step
+RULE: tuple[int, int, int] = (68, 68, 68)       # divider lines (2px)
+BAR_BG: tuple[int, int, int] = (18, 18, 18)     # empty progress-bar track
+DIVIDER: tuple[int, int, int] = (70, 64, 46)    # inventory/trade separator
+# keycap chip fill/edge — legacy, pending migration to sprite keycaps (design-system step A)
+CAP_BG: tuple[int, int, int] = (22, 22, 22)
+CAP_EDGE: tuple[int, int, int] = (150, 150, 140)
+# dialog-specific
+DIALOG_SEPARATOR: tuple[int, int, int] = (84, 135, 137)   # greenish panel border (nine_patch_01c)
+DIALOG_OPTION_HIGHLIGHT: tuple[int, int, int] = (22, 55, 82)  # dark blue vs turquoise text
+DIALOG_VISITED_BG: tuple[int, int, int] = (8, 12, 16)     # very dark, neutral
+
 __all__ = [
     "get_font",
     "menu_font",
@@ -107,6 +127,21 @@ __all__ = [
     "BORDER",
     "TEXT",
     "NAME",
+    "TITLE",
+    "WHITE",
+    "GREY",
+    "GOLD",
+    "ACCENT_CYAN",
+    "DONE",
+    "WARN",
+    "RULE",
+    "BAR_BG",
+    "DIVIDER",
+    "CAP_BG",
+    "CAP_EDGE",
+    "DIALOG_SEPARATOR",
+    "DIALOG_OPTION_HIGHLIGHT",
+    "DIALOG_VISITED_BG",
     "STYLE_TAGS_DICT",
     "HUD_DIR",
 ]
