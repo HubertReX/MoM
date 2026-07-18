@@ -314,6 +314,22 @@ class Scene(State):
             bg.blit(text_surf, text_rect)
             icons[f"key_{sign}"] = [bg]
 
+        # arrow keys - PLACEHOLDER: a filled triangle glyph nabity na pusty `key`.
+        # Docelowo ręczny art w arkuszu HUD (jak Esc/Shift/Space); do tego czasu ten
+        # placeholder daje spójny sprite `key_up/down/left/right` dla paneli.
+        cx, cy = center
+        d = 5
+        arrow_points = {
+            "up":    [(cx, cy - 1 - d), (cx - d, cy - 1 + d), (cx + d, cy - 1 + d)],
+            "down":  [(cx, cy - 1 + d), (cx - d, cy - 1 - d), (cx + d, cy - 1 - d)],
+            "left":  [(cx - d, cy - 1), (cx + d, cy - 1 - d), (cx + d, cy - 1 + d)],
+            "right": [(cx + d, cy - 1), (cx - d, cy - 1 - d), (cx - d, cy - 1 + d)],
+        }
+        for name, points in arrow_points.items():
+            bg = icons["key"][0].copy()
+            pygame.draw.polygon(bg, FONT_COLOR, points)
+            icons[f"key_{name}"] = [bg]
+
     #############################################################################################################
 
     def add_notification(self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info,
