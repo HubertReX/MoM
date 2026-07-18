@@ -24,13 +24,14 @@ from settings import (
 
 from .. import theme
 from ..widget import Widget
+from .hud import hotbar_topleft
 from .inventory import build_inventory_bg, draw_item_details
 
 if TYPE_CHECKING:
     from characters import NPC
     from scene import Scene
 
-    from .hud import HUD, hotbar_topleft
+    from .hud import HUD
 
 _DIVIDER = (70, 64, 46)
 
