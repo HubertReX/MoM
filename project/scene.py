@@ -290,7 +290,7 @@ class Scene(State):
 
         # 0 to 9
 
-        for digit in range(0, 9):
+        for digit in range(0, 10):
             text_surf = tiny_font.render(str(digit), False, FONT_COLOR)
             text_rect = text_surf.get_rect(center = center).move(0, -2)
             bg = icons["key"][0].copy()
@@ -307,7 +307,7 @@ class Scene(State):
             icons[f"key_F{str(letter)}"] = [bg]
 
         # other keys
-        for sign in "<>`[]+-":
+        for sign in "<>`[]+-,.":
             text_surf = small_font.render(sign, False, FONT_COLOR)
             text_rect = text_surf.get_rect(center = center).move(0, -1)
             bg = icons["key"][0].copy()

@@ -357,6 +357,31 @@
     </tbody>
   </table>
 
+  <!-- ============================ IKONY ============================ -->
+  <h2 id="ikony">6b. Skalowanie ikon emoji / emote</h2>
+  <p class="prose">Ikony pixel-art (sentyment na toastach, inline emoji/monety w rich-text)
+  były skalowane <strong>ułamkowo</strong> do <code>wysokość_fontu × 1.35</code>. Źródła są
+  małe, więc krotność prawie nigdy nie wychodzi całkowita → <code>pygame.transform.scale</code>
+  dubluje część rzędów/kolumn i ikona wygląda na zniekształconą.</p>
+  <table>
+    <thead><tr><th>Ikona (źródło)</th><th>Cel</th><th>Krotność (przed)</th><th>Efekt</th></tr></thead>
+    <tbody>
+      <tr><td>emote sentyment <code>14×13</code></td><td>19px (font 14)</td><td>×1.46 → 20×19</td>
+        <td><span class="badge err">nierówne piksele</span></td></tr>
+      <tr><td>moneta / przedmiot <code>16×16</code></td><td>19px (font 14)</td><td>×1.19 → 19×19</td>
+        <td><span class="badge err">nierówne piksele</span></td></tr>
+    </tbody>
+  </table>
+  <div class="callout ok">
+    <strong>Decyzja + FIX (zrobione): tylko całkowita krotność.</strong>
+    <code>k = max(1, round(target_h / src_h))</code>, potem <code>scale_by(k)</code>.
+    Trzy miejsca: <code>_icon_factor</code> w <code>rich_text.py</code> (inline emoji),
+    toasty w <code>hud.py</code>, emote opcji w <code>dialog.py</code> (<code>_EMOTE_SCALE</code>
+    1.8 → 2). Toast → ×1 (natywne 16/13, ostre), dialogi (font 16) emote → ×2 (26px). Każdy piksel
+    źródła = czysty blok k×k. Gdy natywny rozmiar za mały → przerysować asset w wyższej
+    rozdzielczości, nie skalować ułamkowo.
+  </div>
+
   <!-- ============================ PANELE ============================ -->
   <h2 id="panele">7. Panele i pozostałe komponenty</h2>
   <ul class="prose">
@@ -367,8 +392,9 @@
     <li><strong>Reguły (linie działowe)</strong> = kolor <code>#444444</code>, grubość 2px. Spójne
     między questami a pomocą — do palety jako token <code>RULE</code>.</li>
     <li><strong>Tag nazwy mówcy</strong> (dialog) = nine-patch zakładka, żółty tekst
-    <code>#FFFC67</code>. Udokumentować jako komponent <code>name_tag</code>. (Bug: dwa nachodzące
-    tagi na <code>dlg_b</code> — osobne zgłoszenie.)</li>
+    <code>#FFFC67</code>. Udokumentować jako komponent <code>name_tag</code>. (Sprostowanie:
+    „dwa nachodzące tagi" na <code>dlg_b</code> to nie bug — to tabliczka + żółty wikilink
+    <code>[[Barman Absyntnent]]</code> w powitaniu, gdzie NPC przedstawia się imieniem.)</li>
     <li><strong>Znaczniki stanu</strong> (✔/●/○ w questach) = rysowane kształty, nie glify (pixel font
     ich nie ma). Zachować wzorzec „kształt zamiast tofu".</li>
   </ul>
@@ -387,6 +413,8 @@
       <tr><td>A</td><td>Klawisz</td><td>Sprite wszędzie; usunąć chipy/trójkąty/tekstowe klawisze; +4 strzałki</td><td><span class="badge fix">FIX</span></td><td><span class="badge warn">średnie (wizualne)</span></td></tr>
       <tr><td>E</td><td>Czcionka</td><td>Rola zamiast surowego rozmiaru; wycofać EXTRA_TINY z UI</td><td><span class="badge fix">FIX</span></td><td><span class="badge ok">niskie</span></td></tr>
       <tr><td>F</td><td>Panele</td><td>Udokumentować wzorce (nine-patch, rule, name_tag, kształty)</td><td><span class="badge doc">DOC</span></td><td><span class="badge ok">—</span></td></tr>
+      <tr><td>G</td><td>Ikony emoji</td><td>Skalowanie tylko całkowitą krotnością (koniec z ułamkowym ×1.19–1.46)</td><td><span class="badge fix">FIX</span></td><td><span class="badge ok">zrobione</span></td></tr>
+      <tr><td>H</td><td>Pasek sentymentu</td><td>Wektorowy (border_radius, 1px, gradient) → segmentowy pixel-art (2px, prog, prostokątny)</td><td><span class="badge fix">FIX</span></td><td><span class="badge warn">propozycja</span></td></tr>
     </tbody>
   </table>
 

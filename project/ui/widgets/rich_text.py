@@ -18,7 +18,19 @@ from ..widget import Widget
 
 _WORD_RE = re.compile(r"\S+|\s+")
 _ANIM_FPS = 8.0
-_ICON_SCALE = 1.35        # inline icons are scaled up relative to font height
+_ICON_SCALE = 1.35        # inline icons are sized ~1.35x font height (then snapped, see below)
+
+
+def _icon_factor(src_h: int, target_h: int) -> int:
+    """Nearest whole scale factor for a pixel-art icon (min 1).
+
+    Fractional upscaling of a low-res icon duplicates some rows/cols and not
+    others, so the icon looks distorted. An integer factor maps every source
+    pixel to a clean k x k block. See the design-system doc (skalowanie ikon).
+    """
+    if src_h <= 0:
+        return 1
+    return max(1, round(target_h / src_h))
 
 
 class RichText(Widget):
@@ -116,9 +128,8 @@ class RichText(Widget):
             src = self.icons.get(name, [])
             frames = []
             for frame in src:
-                w, h = frame.get_size()
-                scale = target_h / h if h else 1.0
-                frames.append(pygame.transform.scale(frame, (max(1, round(w * scale)), target_h)))
+                _w, h = frame.get_size()
+                frames.append(pygame.transform.scale_by(frame, _icon_factor(h, target_h)))
             self._scaled_icons[key] = frames
         return frames
 
@@ -172,7 +183,7 @@ class RichText(Widget):
                 if items:
                     x += pending_space
                 pending_space = 0
-                adj = (target_h - font_h) // 2  # upward offset to vertically center the oversized icon
+                adj = (h - font_h) // 2  # upward offset to vertically center the icon over text
                 items.append({"kind": "image", "name": tok.value, "x": x, "w": w, "h": h,
                               "th": target_h, "link": tok.style.link, "adj": adj})
                 x += w
@@ -391,18 +402,18 @@ def render_rich_text_surface(
             if not src:
                 continue
             w0, h0 = src[0].get_size()
-            scale = target_h / h0 if h0 else 1.0
-            w = max(1, round(w0 * scale))
+            k = _icon_factor(h0, target_h)  # integer scale: keep pixel-art crisp
+            w, h = w0 * k, h0 * k
             if items and x + pending_space + w > max_width:
                 flush()
             if items:
                 x += pending_space
             pending_space = 0
             font_h = theme.get_font(tok.style.size).get_height()
-            adj = (target_h - font_h) // 2
-            items.append({"kind": "image", "name": tok.value, "x": x, "w": w, "h": target_h, "adj": adj})
+            adj = (h - font_h) // 2
+            items.append({"kind": "image", "name": tok.value, "x": x, "w": w, "h": h, "adj": adj})
             x += w
-            line_h = max(line_h, target_h)
+            line_h = max(line_h, h)
             continue
 
         font = theme.get_font(tok.style.size, bold=tok.style.bold,
@@ -440,11 +451,8 @@ def render_rich_text_surface(
                 src = icons.get(it["name"], [])
                 if src:
                     frame = src[0]
-                    w0, h0 = frame.get_size()
-                    scale = it["h"] / h0 if h0 else 1.0
-                    scaled = pygame.transform.scale(
-                        frame, (max(1, round(w0 * scale)), it["h"]),
-                    )
+                    _w0, h0 = frame.get_size()
+                    scaled = pygame.transform.scale_by(frame, _icon_factor(h0, it["h"]))
                     adj = it.get("adj", 0)
                     surface.blit(scaled, (ox + it["x"], y - adj))
         y += line["height"]

@@ -54,7 +54,7 @@ _BODY_FONT = 16
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
 _WEIGHT_COL = 80      # px reserved on the right of each option row for emote + sentiment weight
-_EMOTE_SCALE = 1.8    # scale factor for sentiment emotes in the weight indicator column
+_EMOTE_SCALE = 2      # integer scale for sentiment emotes (pixel-art: no fractional upscaling)
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
 _BODY_LINES = 4
@@ -271,12 +271,9 @@ class DialogPanel(Widget):
         text_surf = self._weight_font.render(text, False, color)
         emote_key = SENTIMENT_NAME_TO_EMOTE.get(opt.sentiment, opt.sentiment)
         emote = self.scene.icons.get(emote_key, [self.key_icon])[0]
-        # Scale emote up for readability
-        if _EMOTE_SCALE != 1.0:
-            w, h = emote.get_size()
-            emote = pygame.transform.scale(
-                emote, (max(1, round(w * _EMOTE_SCALE)), max(1, round(h * _EMOTE_SCALE)))
-            )
+        # Scale emote up for readability — integer factor keeps the pixel-art crisp.
+        if _EMOTE_SCALE != 1:
+            emote = pygame.transform.scale_by(emote, _EMOTE_SCALE)
         # Fixed-width column so emotes align in one vertical line and the numeric
         # weights align in a second right-justified column across all options.
         total_w = _WEIGHT_COL
@@ -526,9 +523,11 @@ class DialogPanel(Widget):
 
         sentiment = max(0, min(100, self.npc.sentiment))
         bar_w, bar_h = 80, 8
+        radius = bar_h // 2  # pill-rounded on the sides
         x = self.offset[0] + 4 * TILE_SIZE
         y = self.offset[1] - int(2.2 * TILE_SIZE)
-        pygame.draw.rect(surface, (40, 40, 40), (x, y, bar_w, bar_h), border_radius=2)
+        # Full bar, no frame: dark track + coloured fill, both rounded on the sides.
+        pygame.draw.rect(surface, theme.BAR_BG, (x, y, bar_w, bar_h), border_radius=radius)
         fill_w = int(bar_w * sentiment / 100)
         if fill_w > 0:
             # Red -> yellow -> green as sentiment grows.
@@ -536,12 +535,7 @@ class DialogPanel(Widget):
                 color = (255, int(255 * sentiment / 50), 0)
             else:
                 color = (int(255 * (100 - sentiment) / 50), 255, 0)
-            pygame.draw.rect(surface, color, (x, y, fill_w, bar_h), border_radius=2)
-            
-        border_color = CHAR_NAME_COLOR
-        if self._sentiment_flash_timer > 0.0:
-            if int(self._sentiment_flash_timer * 10) % 2 == 0:
-                border_color = (255, 255, 255)
-                # Draw a slightly inflated border for flash emphasis
-                pygame.draw.rect(surface, border_color, (x - 1, y - 1, bar_w + 2, bar_h + 2), width=1, border_radius=2)
-        pygame.draw.rect(surface, border_color, (x, y, bar_w, bar_h), width=1, border_radius=2)
+            # Flash brightens the fill toward white (emphasis without a frame).
+            if self._sentiment_flash_timer > 0.0 and int(self._sentiment_flash_timer * 10) % 2 == 0:
+                color = tuple((c + 255) // 2 for c in color)
+            pygame.draw.rect(surface, color, (x, y, fill_w, bar_h), border_radius=radius)

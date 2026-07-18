@@ -127,13 +127,48 @@ Pixel font `[8, 10, 14, 16, 24, 155]`. Licznik questów w TINY=10. **DOC:** chro
 **10px**, treść czytelna min **14px**, `FONT_SIZE_EXTRA_TINY=8` **wycofać z UI**
 (nieczytelny po ułamkowym downscale).
 
+### G. Skalowanie ikon emoji/emote (toasty, rich-text)
+
+Ikony pixel-art skalowane **ułamkowo** do wysokości fontu × 1.35:
+
+- toast (font 14 → target 19): emote 14×13 → ×1.46 (20×19), moneta 16×16 → ×1.19 (19×19);
+- rich-text inline (`_ICON_SCALE=1.35`) - te same ułamkowe krotności w dialogach/questach.
+
+`pygame.transform.scale` na ułamkowej krotności dubluje część rzędów/kolumn → nierówne
+piksele (objaw zgłoszony: „za mały albo nieparzyste skalowanie").
+
+**FIX (zrobione):** skalowanie tylko całkowitą krotnością - `k = max(1, round(target_h /
+src_h))`, `scale_by(k)`. Trzy miejsca: helper `_icon_factor` w `rich_text.py` (inline
+emoji), toasty w `hud.py`, oraz emote sentymentu w opcjach dialogu `dialog.py`
+(`_EMOTE_SCALE` 1.8 → 2, `scale_by`). Efekt: toast ×1 (natywne 16/13, ostre), dialogi
+emote ×2 (26/28px). Decyzja użytkownika: auto-najbliższa krotność.
+
 ### F. Panele - dobre praktyki do utrwalenia
 
 - Questy i pomoc: ten sam nine-patch olive (`nine_patch_04.png`) - **DOC** wzorzec.
 - Dialog: inny ciemny nine-patch - **DOC** świadomy wyjątek (inna warstwa + portrety).
 - Reguły (`_RULE`, 2px) spójne quest↔pomoc - **DOC** (kolor do palety).
 - Tag nazwy mówcy w dialogu (nine-patch zakładka, żółty tekst) - **DOC** komponent
-  `name_tag`. (Uwaga: na `dlg_b` widać dwa nachodzące tagi - drobny bug, osobne zgłoszenie.)
+  `name_tag`. (Sprostowanie: „dwa nachodzące tagi" na `dlg_b` to NIE bug - to tabliczka
+  nazwy + żółty wikilink `[[Barman Absyntnent]]` w pierwszej kwestii, gdzie NPC przedstawia
+  się imieniem; imiona renderują się na żółto jak tabliczka, stąd złudzenie dublowania.)
+
+### H. Pasek sentymentu w dialogu - niezgodny z pixel-art
+
+`_draw_sentiment_indicator` (`dialog.py:519`) rysuje pasek nastawienia NPC nad tabliczką
+nazwy jako wektorowy widget:
+
+- `border_radius=2` na tle, wypełnieniu i obwódce - zaokrąglone rogi łamią pixel-grid;
+- obwódka `width=1` (i flash `width=1` z offsetem `-1`) - linie 1px wbrew zasadzie 2px;
+- płynny gradient RGB (`int(255*sentiment/50)`) - ciągła interpolacja koloru = estetyka
+  wektorowa, nie pixel-art;
+- `fill_w = int(bar_w*sentiment/100)` - krawędź wypełnienia na dowolnym pikselu.
+
+**FIX (propozycja):** pasek segmentowy w stylu retro - N komórek (np. 10) o parzystej
+szerokości z parzystymi odstępami, wypełniane skokowo do poziomu sentymentu; kolor z
+małej palety progowej (czerwony / żółty / zielony przez `theme`), rogi proste
+(`border_radius=0`), obwódka 2px. Alternatywa minimalna: zostawić pełny pasek, ale rogi
+proste + obwódka 2px + kolor progowy zamiast gradientu + `fill_w` snap do parzystego kroku.
 
 ## Deliverables (utworzone w tym przejściu)
 

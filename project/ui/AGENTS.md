@@ -31,6 +31,12 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   border 6). Sprite'y i nine-patch skaluj parzyście (×2, ×4).
 - Rozdzielczość ekranu — preferuj całkowite krotności bazy (1280×720 → 2560×1440 = ×2).
   Skala ułamkowa (1920×1080 → ×1.5) daje miękkie krawędzie; unikać dla nowych opcji.
+- **Ikony pixel-art (emoji/emote/przedmioty) skaluj tylko całkowitą krotnością.** Źródła są
+  małe (emote 14×13, przedmioty 16×16); rozciąganie ułamkowe (np. `target_h / src_h`)
+  dubluje część rzędów/kolumn i ikona wygląda na zniekształconą. Wzór: `k = max(1,
+  round(target_h / src_h))`, potem `pygame.transform.scale_by(src, k)` (helper
+  `_icon_factor` w `rich_text.py`). Jeśli natywny rozmiar jest za mały — przerysuj asset w
+  wyższej rozdzielczości, nie skaluj ułamkowo.
 
 ## Komponent „klawisz" (hotkey) — zawsze sprite
 

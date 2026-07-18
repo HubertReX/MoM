@@ -373,9 +373,11 @@ class HUD(Widget):
                 font_h = theme.get_font(14).get_height()
                 target_h = round(font_h * 1.35)
                 src = frames[0]
-                sw, sh = src.get_size()
-                s = target_h / sh if sh else 1.0
-                emote_surf = pygame.transform.scale(src, (max(1, round(sw * s)), target_h))
+                _sw, sh = src.get_size()
+                # integer scale only: fractional upscaling of pixel-art gives uneven
+                # rows/cols (design-system: skalowanie ikon). Snap to nearest whole multiple.
+                k = max(1, round(target_h / sh)) if sh else 1
+                emote_surf = pygame.transform.scale_by(src, k)
                 emote_w = emote_surf.get_width() + 4  # 4px gap
 
         total_w = tw + emote_w
