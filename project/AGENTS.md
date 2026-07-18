@@ -57,6 +57,10 @@ powierzchnię** (dirty-flag) — statyczne UI = jeden blit/klatkę, zero alokacj
 boolean-flag. Dialogi w vaultcie `doc/{PL,EN}/**/*.md` używają tagów `[bold]`/`[link URL]`/`:emoji:`
 (tabela `STYLE_TAGS_DICT` w `settings.py`).
 
+**Design system** (paleta, komponent „klawisz", cień, skalowanie, min. font): zasady w
+[`ui/AGENTS.md`](./ui/AGENTS.md), pełny audyt w
+[`../doc/_attachements/design-system-2026-07-18.html`](../doc/_attachements/design-system-2026-07-18.html).
+
 ## System dialogów (`dialog/`)
 
 **Szczegółowa dokumentacja przepływu, mapy plików i znanych pułapek:**
