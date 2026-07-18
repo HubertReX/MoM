@@ -42,13 +42,25 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 
 - Klawisze rysuj **sprite'em** `hud.icons["key_*"]` (te same, których używa HUD hotbar i
   przyciski akcji). **Nie** rysuj wektorowych chipów ani nie wypisuj klawisza tekstem.
+  Panel pomocy (`help.py`) jest już przełączony na sprite'y (dawne `_draw_cap`/`_draw_arrow`
+  usunięte).
 - Sprite'y powstają dwuwarstwowo:
   - ręczny arkusz `HUD_SHEET_DEFINITION` (`settings.py:870`): `key` (pusty), `Esc`, `Tab`,
     `Ctl`, `Alt`, `Enter`, `Shift`, `Space`, `mouse_LMB`, `mouse_RMB`;
-  - generowane w `generate_icons()` (`scene.py:277`): A–Z, cyfry 0–8, F1–F12, znaki
-    `< > \` [ ] + -`.
+  - generowane w `generate_icons()` (`scene.py:277`): A–Z, cyfry 0–9, F1–F12, znaki
+    `< > \` [ ] + - , .`, oraz **placeholderowe strzałki** `up/down/left/right` (trójkąt na
+    pustym `key` — do zastąpienia ręcznym artem w arkuszu).
 - **Nowy klawisz z literą/cyfrą/F-em/znakiem** — dodaj do `generate_icons` (glif na pustym
-  `key`). **Nowy klawisz bez glifu w foncie** (np. strzałki) — wymaga arta w arkuszu.
+  `key`). **Nowy klawisz bez glifu w foncie** (np. strzałki) — docelowo art w arkuszu
+  (na razie placeholder trójkąta).
+- **Kontrast:** lico pustego `key` jest przyciemniane mnożnikiem (`(75,82,105)` w
+  `generate_icons`), żeby **biały** glif był czytelny. Ręcznie rysowane kafle arkusza mają
+  jasne lico z zaszytym białym glifem — do przyciemnienia w Aseprite (osobno, mnożenie w
+  kodzie nie poprawi im kontrastu, bo skaluje glif razem z licem).
+- **Rozmiar:** sprite bazowy to 32px (arkusz 16px ×2). W gęstych panelach (pomoc) skaluj
+  **parzyście ÷2 → 16px** (`transform.scale_by(0.5)`); ułamkowe 32→22 zdradzałoby udawany
+  pixel-art. Capy jednoznakowe renderuj świeżym glifem na przeskalowanym `key` (ostrość);
+  wieloznakowe / mysz / strzałki reużywają arta sprite'a (÷2).
 - Separatory `/` i `-` między klawiszami zostają tekstem (interpunkcja, nie klawisz).
 
 ## Cień tekstu — tylko chrome
