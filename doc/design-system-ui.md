@@ -96,7 +96,7 @@ Status (branch `docs/design-system-ui`, aktualizowany; podgląd before/after:
 | G | Skalowanie ikon emoji całkowitą krotnością | zrobione |
 | H | Pasek sentymentu: pełny, bez ramki, zaokrąglony | zrobione |
 | F | Wzorce paneli (DOC) | zrobione |
-| A | Komponent klawisza = sprite wszędzie | **w toku** (pomoc zrobiona; TODO: art strzałek + ciemne lico kafli arkusza, stopka questów, „(F)" w dialogu) |
+| A | Komponent klawisza = sprite wszędzie | **w toku** (pomoc, hotbar, hinty nawigacji pomocy/questów zrobione; TODO: ręczny art strzałek + ciemne lico kafli arkusza) |
 
 ### A. Komponent "klawisz" - 3 warianty → 1 (sprite)
 
@@ -204,8 +204,9 @@ Zrobione (C, B, D, E, G, H, F oraz część A) - patrz tabela statusu wyżej i
 2. **Ciemne lico ręcznych kafli arkusza** (A) - `Esc/Tab/Ctl/Alt/Enter/Shift/Space/mysz`
    mają jasne lico + zaszyty biały glif; w kodzie nie da się poprawić kontrastu
    (mnożenie skaluje glif razem z licem) - do przyciemnienia w Aseprite.
-3. **Stopka questów i „(F)" w dialogu → sprite'y** (A) - wymaga parsowania stringów i18n
-   (klawisze wplecione w tekst), więc osobne zadanie.
+
+Hinty nawigacji (nagłówek pomocy `close_hint`, stopka questów `hints`) są już na
+keycapach przez `ui/keycap.py` (`render_hint`, składnia `{TOKEN}` w stringach i18n).
 
 ## Weryfikacja
 

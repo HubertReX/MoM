@@ -40,10 +40,13 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 
 ## Komponent „klawisz" (hotkey) — zawsze sprite
 
-- Klawisze rysuj **sprite'em** `hud.icons["key_*"]` (te same, których używa HUD hotbar i
-  przyciski akcji). **Nie** rysuj wektorowych chipów ani nie wypisuj klawisza tekstem.
-  Panel pomocy (`help.py`) jest już przełączony na sprite'y (dawne `_draw_cap`/`_draw_arrow`
-  usunięte).
+- Klawisze rysuj przez współdzielony moduł **`ui/keycap.py`** (nie duplikuj logiki):
+  - `keycap.build_cap(icons, token, glyph_font, glyph_color)` → keycap 16px (sprite ÷2);
+  - `keycap.render_hint(surface, icons, glyph_font, text_font, text, pos, color, ...)` →
+    inline wiersz mieszający keycapy i tekst ze składni `{TOKEN}` (hinty nawigacji: nagłówek
+    pomocy `close_hint`, stopka questów `hints`).
+  **Nie** rysuj wektorowych chipów ani nie wypisuj klawisza tekstem. Panel pomocy i hinty
+  nawigacji pomocy/questów są już na sprite'ach (dawne `_draw_cap`/`_draw_arrow` usunięte).
 - Sprite'y powstają dwuwarstwowo:
   - ręczny arkusz `HUD_SHEET_DEFINITION` (`settings.py:870`): `key` (pusty), `Esc`, `Tab`,
     `Ctl`, `Alt`, `Enter`, `Shift`, `Space`, `mouse_LMB`, `mouse_RMB`;
