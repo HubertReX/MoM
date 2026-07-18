@@ -279,6 +279,13 @@ class Scene(State):
         small_font = self.game.fonts[FONT_SIZE_SMALL]
         tiny_font = self.game.fonts[FONT_SIZE_TINY]
 
+        # Przyciemnij lico pustego klawisza (jasny niebieski -> ciemny granat) mnożnikiem,
+        # żeby biały glif miał kontrast (patrz design-system, panel pomocy). Dotyczy tylko
+        # keycapów generowanych z tej bazy (A-Z, cyfry, F1-F12, znaki, strzałki) oraz
+        # świeżych capów w pomocy. Ręcznie rysowane kafle arkusza (Esc/Shift/Space/... z
+        # zaszytym białym glifem) mają jasne lico - do przyciemnienia w Aseprite osobno.
+        icons["key"][0].fill((75, 82, 105, 255), special_flags=pygame.BLEND_RGBA_MULT)
+
         # generate keys with letter buttons (A-Z)
         center = icons["key"][0].get_rect().center
         for letter in range(ord("A"), ord("Z") + 1):

@@ -19,8 +19,8 @@ Three concerns shape the content:
   ``[] if IS_WEB`` gating in ``ACTIONS``.
 
 i18n (D3): every string here is UI furniture and comes from the TOML ``[help]`` section
-via ``_()``. Keycaps are drawn fresh as high-contrast chips (dark fill, white glyph)
-rather than scaled hotbar sprites, so a downscale never blurs the label.
+via ``_()``. Keycaps are the shared hotbar sprite (``hud.icons["key_*"]``) scaled
+evenly to 16px, so a hotkey looks identical here and on the HUD (design-system A).
 """
 from __future__ import annotations
 
@@ -75,27 +75,26 @@ _TITLE_H = 26
 _GROUP_GAP = 10
 _CAP_GAP = 3
 _SEP_GAP = 5
-# keycaps are drawn fresh (not scaled hotbar sprites): a dark chip with white text,
-# so the label reads at high contrast. _CAP_H fits inside _ROW_H with a hair of margin.
-_CAP_H = 22
-_CAP_PAD = 5
 
 # --- palette — shared tokens from theme (single source of truth) ------------
 _TITLE_COL = theme.TITLE
 _GOLD = theme.GOLD
 _GREY = theme.GREY
 _WHITE = theme.WHITE
-# keycap chip: near-black fill + light edge + white glyph = maximum legibility
-_CAP_BG = theme.CAP_BG
-_CAP_EDGE = theme.CAP_EDGE
+# fresh glyph rendered onto the scaled key for single-char caps
 _CAP_TEXT = theme.WHITE
 _RULE = theme.RULE
 _ORANGE = theme.WARN
 
-# A key is drawn as a chip. Two tokens are special: separators (grey glyph, no chip)
-# and arrow markers (a triangle chip — the pixel font has no arrow glyphs).
+# A key is drawn as a hotbar keycap sprite (hud.icons["key_*"]) — the same component
+# the HUD hotbar and action buttons use. Two tokens stay text: the separators.
+# Arrow markers map to their dedicated sprites; the mouse tokens to the mouse sprites.
 _SEPARATORS = ("/", "-")
 _ARROW_DIR = {"↑": "up", "↓": "down", "←": "left", "→": "right"}
+_MOUSE = {"LMB": "mouse_LMB", "RMB": "mouse_RMB"}
+# Sprites are 32px (16px sheet x2). The dense help rows fit a 16px cap (even /2
+# downscale — a fractional 32->22 would reveal the fake pixel-art).
+_CAP_PX = 16
 
 
 @dataclass(frozen=True)
@@ -184,6 +183,7 @@ class HelpPanel(Widget):
         self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
         self.scroll: int = 0
         self._max_scroll: int = 0
+        self._cap_cache: dict[str, "pygame.Surface | None"] = {}
 
     # --- lifecycle ----------------------------------------------------------
 
@@ -273,39 +273,45 @@ class HelpPanel(Widget):
                 cx += self._draw_cap(surface, token, cx, y) + _CAP_GAP
 
     def _draw_cap(self, surface: pygame.Surface, token: str, x: int, y: int) -> int:
-        """Draw one keycap chip; return its width so the caller can advance.
+        """Draw one keycap sprite; return its width so the caller can advance.
 
-        A dark rounded chip with a white glyph — deliberately high contrast, and
-        rendered fresh (not a scaled sprite) so the label stays crisp. Arrow tokens
-        get a triangle instead of text, since the pixel font has no arrow glyphs.
+        Uses the hotbar keycap sprite (hud.icons["key_*"]) scaled evenly /2 to
+        16px — the same pixel-art key the HUD hotbar shows, so a hotkey looks the
+        same everywhere. Single-char keys get a crisp fresh glyph on the scaled
+        key; multi-char / mouse / arrow keys reuse their baked sprite art.
         """
-        cap_y = y + (_ROW_H - _CAP_H) // 2
-        arrow = _ARROW_DIR.get(token)
-        if arrow is None:
+        cap = self._cap_sprite(token)
+        if cap is None:  # unknown token — fall back to plain text so nothing vanishes
             glyph = self._font(FONT_SIZE_SMALL).render(token, False, _CAP_TEXT)
-            width = max(_CAP_H, glyph.get_width() + 2 * _CAP_PAD)
-        else:
-            glyph = None
-            width = _CAP_H
-        rect = pygame.Rect(x, cap_y, width, _CAP_H)
-        pygame.draw.rect(surface, _CAP_BG, rect, border_radius=4)
-        pygame.draw.rect(surface, _CAP_EDGE, rect, width=2, border_radius=4)
-        if glyph is not None:
-            surface.blit(glyph, glyph.get_rect(center=rect.center))
-        else:
-            self._draw_arrow(surface, rect, arrow)
-        return width
+            surface.blit(glyph, (x, y + 5))
+            return glyph.get_width()
+        surface.blit(cap, (x, y + (_ROW_H - cap.get_height()) // 2))
+        return cap.get_width()
 
-    @staticmethod
-    def _draw_arrow(surface: pygame.Surface, rect: pygame.Rect, direction: str) -> None:
-        cx, cy, d = rect.centerx, rect.centery, 4
-        points = {
-            "up":    [(cx, cy - d), (cx - d, cy + d), (cx + d, cy + d)],
-            "down":  [(cx, cy + d), (cx - d, cy - d), (cx + d, cy - d)],
-            "left":  [(cx - d, cy), (cx + d, cy - d), (cx + d, cy + d)],
-            "right": [(cx + d, cy), (cx - d, cy - d), (cx - d, cy + d)],
-        }[direction]
-        pygame.draw.polygon(surface, _CAP_TEXT, points)
+    def _cap_sprite(self, token: str) -> "pygame.Surface | None":
+        """Build/lookup the 16px keycap surface for ``token`` (cached per token)."""
+        cached = self._cap_cache.get(token)
+        if cached is not None:
+            return cached
+        icons = self.hud.icons
+        arrow = _ARROW_DIR.get(token)
+        if arrow is not None:                       # ← ↑ → ↓ (placeholder or hand art)
+            src = icons.get(f"key_{arrow}")
+            cap = pygame.transform.scale_by(src[0], 0.5) if src else None
+        elif token in _MOUSE:                        # LMB / RMB
+            src = icons.get(_MOUSE[token])
+            cap = pygame.transform.scale_by(src[0], 0.5) if src else None
+        elif len(token) == 1:                        # single glyph — fresh, crisp label
+            key_src = icons.get("key")
+            cap = pygame.transform.scale_by(key_src[0], 0.5).copy() if key_src else None
+            if cap is not None:
+                glyph = self._font(FONT_SIZE_TINY).render(token, False, _CAP_TEXT)
+                cap.blit(glyph, glyph.get_rect(center=cap.get_rect().center).move(0, -1))
+        else:                                        # Esc / Shift / Space / Enter / F1..
+            src = icons.get(f"key_{token}")
+            cap = pygame.transform.scale_by(src[0], 0.5) if src else None
+        self._cap_cache[token] = cap
+        return cap
 
     # --- helpers ------------------------------------------------------------
 
