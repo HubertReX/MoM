@@ -29,7 +29,7 @@ from maze_generator.maze_utils import (
     timeit
 )
 from objects import (ChestSprite, Collider, DestructibleSprite, ItemSprite, Notification, NotificationTypeEnum)
-from particles import ParticleDestructible, ParticleSystem
+from particles import ParticleDestructible, ParticleSystem, WeatherDirector
 from pyscroll.group import PyscrollGroup
 from pytmx import TiledMap, TiledObjectGroup, TiledTileLayer
 from pytmx.util_pygame import load_pygame
@@ -78,6 +78,7 @@ from settings import (
     NOTIFICATION_DURATION,
     NOTIFICATION_STAGGER,
     # PANEL_BG_COLOR,
+    EMITTER_SCHEDULES,
     PARTICLES,
     SHADERS_NAMES,
     SHOW_DEBUG_INFO,
@@ -154,6 +155,7 @@ class Scene(State):
             "sprites_layer",
             "group",
             "particles",
+            "weather",
         ]
 
         self.notifications: list[Notification] = []
@@ -258,6 +260,8 @@ class Scene(State):
         self.sprites_layer: int = 0
         self.group: PyscrollGroup
         self.particles: list[ParticleSystem] = []
+        # weather scheduler (episodic emitters); built per-map in load_particles()
+        self.weather: WeatherDirector | None = None
         # self.circle_gradient: pygame.Surface = (CIRCLE_GRADIENT).convert_alpha()
         self.ui = GameUI(self)
         self.display_ui_flag: bool = SHOW_UI
@@ -531,11 +535,19 @@ class Scene(State):
         map_particles = tileset_map.properties.get("particles", "").replace(" ", "").strip().lower().split(",")
         # string with coma separated names of particle systems active in this map
         self.particles = []
+        # name -> system, used to hand the schedulable emitters to the WeatherDirector
+        weather_systems: dict[str, ParticleSystem] = {}
         # init particle systems relevant for this scene
         for particle in map_particles:
             if particle in PARTICLES:
                 particle_class = PARTICLES[particle]
-                self.particles.append(particle_class(self.game.canvas, self.group, self.camera))
+                system = particle_class(self.game.canvas, self.group, self.camera)
+                self.particles.append(system)
+                weather_systems[particle] = system
+
+        # WeatherDirector turns the map's allowed emitters into random, mutually-exclusive
+        # episodes (see EMITTER_SCHEDULES); only emitters with a schedule are scheduled
+        self.weather = WeatherDirector(weather_systems, EMITTER_SCHEDULES)
 
     #############################################################################################################
 
@@ -1168,6 +1180,11 @@ class Scene(State):
         if not self.new_scene:
             return
 
+        # cancel the leaving map's armed spawn timers so they don't keep firing for
+        # emitters that are about to be swapped out (each map keeps its own director)
+        if self.weather:
+            self.weather.stop_all()
+
         self.return_map = self.current_map
         self.return_entry_point = self.new_scene.return_entry_point
 
@@ -1251,6 +1268,10 @@ class Scene(State):
         self.group.update(dt)
         self.animations.update(dt)
         self.transition.update(dt)
+
+        # advance weather episodes (start/stop emitters); global master switch gates it
+        if USE_PARTICLES and self.weather:
+            self.weather.update(dt)
 
         # absolute time calculation
         # self.hour   = int((self.game.time_elapsed + INITIAL_HOUR) % 24)
@@ -1588,6 +1609,9 @@ class Scene(State):
         self.reset_sprite_groups()
         # self.map_view.reload()
         self.player.reset()
+        # stop the old director's timers before load_map() rebuilds the emitters
+        if self.weather:
+            self.weather.stop_all()
         self.load_map()
         if USE_PARTICLES:
             self.start_particles()

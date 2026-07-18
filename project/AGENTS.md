@@ -26,7 +26,7 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 | `settings.py`              | **Wszystkie stałe** gry + definicje sprite-sheetów                                              | **30K**                                          |
 | `objects.py`               | Sprite'y: `ItemSprite`, `ChestSprite`, `HealthBar`, `EmoteSprite`, `Collider`, `Notification`   |                                                  |
 | `npc_state.py`             | FSM NPC (Idle/Walk/Run/Jump/Fly/Stunned/Attacking/Talk/Dead)                                    |                                                  |
-| `particles.py`             | System cząstek (liście, deszcz, wiatr)                                                          |                                                  |
+| `particles.py`             | System cząstek + reżyser pogody (liście, deszcz, rozpad obiektów) — patrz sekcja niżej           |                                                  |
 | `nine_patch.py`            | Skalowalne panele UI (9-patch) — używany przez `ui/theme.py`                                    |                                                  |
 | `opengl_shader.py`         | Wrapper zengl do shaderów post-process                                                          | patrz [`shaders/AGENTS.md`](./shaders/AGENTS.md) |
 | `camera.py`                | Viewport + zoom (steruje `map_view.zoom`)                                                       |                                                  |
@@ -429,6 +429,48 @@ SS_REVIEW_TIMEOUT = 60.0
 - Stałe → `settings.py`; typy wyliczeniowe → `enums.py`. Nie hardkoduj magic numbers w logice.
 - Type hints wymagane (mypy strict). Nie modyfikuj vendored libów (`animation`).
 - Dane gry (postacie, przedmioty) **nie** w kodzie — w configu, patrz [`config_model/AGENTS.md`](./config_model/AGENTS.md).
+
+## System cząstek i pogoda (`particles.py`)
+
+Emitery cząstek dzielą się na **pogodę** (liście, deszcz — sterowane epizodycznie
+przez `WeatherDirector`) i **jednorazowe efekty** (rozpad niszczonych obiektów).
+Globalny wyłącznik: `USE_PARTICLES` (`settings.py`). Cząstki renderują się przez
+`emit()` w `Scene.draw()` **bezwarunkowo**; flaga i reżyser sterują tylko *spawnem*.
+
+**Architektura:**
+
+- `ParticleImageBased` — silnik jednego emitera. Spawn napędza timer pygame
+  (`custom_event_id`), uzbrajany/rozbrajany jawnie przez `start()` / `stop()`
+  (`set_timer(event, 0)` = stop). Timer **nie** startuje w `__init__` — robi to reżyser.
+- `ParticleSystem` (ABC) — kontrakt: `add()` / `emit(dt)` / `start()` / `stop()`.
+  Implementacje: `ParticleLeafs`, `ParticleRain`, `ParticleDestructible`.
+- `WeatherDirector` — planuje pogodę jako **losowe epizody** (idle → aktywny emiter →
+  idle), zamiast ciągłego spawnu. Tykany co klatkę z `Scene.update()`.
+
+**Grupy wykluczające:** każdy emiter ma `group` (`EmitterSchedule.group`). W obrębie
+jednej grupy naraz aktywny jest **tylko jeden** emiter. `leafs` i `rain` są w grupie
+`"sky"` → **nigdy nie grają jednocześnie**. Emiter w innej grupie działa **równolegle**
+(niezależny cykl). Nowy równoległy efekt (np. mgła, świetliki) = nowa nazwa grupy.
+
+**Konfiguracja — `EMITTER_SCHEDULES` w `settings.py`** (jedyna powierzchnia strojenia):
+dataclass `EmitterSchedule(group, weight, active_min/max, gap_min/max)`. `weight` =
+względna szansa wyboru w grupie; `active_*` = długość epizodu (s); `gap_*` = przerwa
+między epizodami (s). Dodanie emitera: wpis w `PARTICLES` (klasa) **+** wpis w
+`EMITTER_SCHEDULES` (harmonogram) **+** nazwa w property `particles` mapy `.tmx`.
+
+**Allow-list per mapa:** `Scene.load_particles()` czyta property `particles="leafs,rain"`
+z `.tmx` (dziś tylko `Village.tmx`; reszta `n/a`), tworzy emitery i przekazuje te, które
+mają wpis w `EMITTER_SCHEDULES`, do nowego `WeatherDirector`. Reżyser jest częścią stanu
+mapy (`store_map`/`restore_map`), a `go_to_map()`/`reload_map()` wołają `weather.stop_all()`
+przed przebudową, żeby nie przeciekały uzbrojone timery między mapami.
+
+**Rozpad obiektów (`ParticleDestructible`)** działa **poza** reżyserem i flagą pogody:
+`scene.py` przy zniszczeniu krzaka/kamienia woła `add()` bezpośrednio; `start()/stop()`
+to no-opy. To jednorazowy wystrzał cząstek, nie cykl.
+
+**Pułapka:** cząstki pogody używają `spawn_rect` (nie pozycji myszki) i pola `time_elapsed`
+rosnącego co klatkę — nie memoizuj funkcji zależnych od `time_elapsed` (`x_oscillation`):
+klucz nigdy się nie powtarza, `@cache` = 0 trafień + nieograniczony wzrost pamięci.
 
 ## Animacja sprite'ów / dodanie postaci
 

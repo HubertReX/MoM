@@ -302,7 +302,7 @@ IS_FULLSCREEN = False
 _IS_FULLSCREEN = False  # mutable runtime toggle
 IS_PAUSED = False
 USE_ALPHA_FILTER = True
-USE_PARTICLES = False
+USE_PARTICLES = True
 USE_CUSTOM_MOUSE_CURSOR = True
 USE_SOD = False
 USE_SHADERS = False
@@ -714,6 +714,26 @@ import particles  # noqa: E402
 PARTICLES = {
     "leafs": particles.ParticleLeafs,
     "rain": particles.ParticleRain,
+}
+
+
+@dataclass(frozen=True)
+# MARK: EmitterSchedule
+class EmitterSchedule:
+    # harmonogram epizodyczny emitera pogody (sterowany przez WeatherDirector)
+    group: str                 # grupa wykluczająca; naraz aktywny tylko jeden emiter z grupy
+    weight: float = 1.0        # względna szansa wyboru w obrębie grupy
+    active_min: float = 8.0    # długość pojedynczego epizodu (sekundy) - dolna granica
+    active_max: float = 20.0   # długość pojedynczego epizodu (sekundy) - górna granica
+    gap_min: float = 30.0      # przerwa (idle) między epizodami w grupie - dolna granica
+    gap_max: float = 90.0      # przerwa (idle) między epizodami w grupie - górna granica
+
+
+# jedyna powierzchnia strojenia harmonogramu pogody - dodanie emitera/grupy tutaj
+# (nazwa musi pasować do klucza w PARTICLES oraz do wpisu w property `particles` mapy .tmx)
+EMITTER_SCHEDULES: dict[str, EmitterSchedule] = {
+    "leafs": EmitterSchedule(group="sky", active_min=8,  active_max=20, gap_min=30, gap_max=90),
+    "rain":  EmitterSchedule(group="sky", active_min=10, active_max=25, gap_min=40, gap_max=120),
 }
 
 CONF_ENTITIES_TO_STORE: dict[str, list[str]] = {

@@ -2,8 +2,10 @@ import math
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import cache
-from typing import Any, Callable
+from typing import Callable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from settings import EmitterSchedule
 from rich import print
 
 import pygame
@@ -84,8 +86,10 @@ class ParticleImageBased:
         self.rate: int | float = rate
         self.custom_event_id: int  = pygame.event.custom_type()
 
+        # timer is NOT started here - the WeatherDirector controls spawning via
+        # start()/stop(); this keeps emitters idle until an episode activates them
         self.interval: float = 1000.0 // rate
-        pygame.time.set_timer(pygame.event.Event(self.custom_event_id), int(self.interval))
+        self.is_running: bool = False
 
         # scale_speed: 1.0 ==> from 100% to 0% size in 1 second
         self.scale_speed = scale_speed
@@ -97,6 +101,23 @@ class ParticleImageBased:
         self.spawn_rect = spawn_rect
         # (optional) if provided, x position will oscillate
         self.x_oscillation: Callable = x_oscillation or (lambda x: 0.0)
+
+    ###################################################################################################################
+    # MARK: start / stop
+    def start(self) -> None:
+        # (re)arm the spawn timer; from now on custom_event_id fires every `interval` ms
+        if self.is_running:
+            return
+        pygame.time.set_timer(pygame.event.Event(self.custom_event_id), int(self.interval))
+        self.is_running = True
+
+    def stop(self) -> None:
+        # disarm the spawn timer (interval 0 cancels it); existing particles keep
+        # animating and fade out on their own via emit()
+        if not self.is_running:
+            return
+        pygame.time.set_timer(pygame.event.Event(self.custom_event_id), 0)
+        self.is_running = False
 
     ###################################################################################################################
     # MAR: animate
@@ -227,6 +248,16 @@ class ParticleSystem(ABC):
     def emit(self, dt: float) -> None:
         ...
 
+    @ abstractmethod
+    def start(self) -> None:
+        # arm the emitter so it begins spawning particles
+        ...
+
+    @ abstractmethod
+    def stop(self) -> None:
+        # disarm the emitter; existing particles fade out via emit()
+        ...
+
 #######################################################################################################################
 # MARK: Leaf
 
@@ -252,16 +283,16 @@ class ParticleLeafs(ParticleSystem):
         )
         self.custom_event_id = self.particle.custom_event_id
 
-    @ cache
-    @ staticmethod
-    def x_oscillation(self: Any, time_elapsed: float) -> float:
+    # plain method: input is particle.time_elapsed (a float growing every frame), so it
+    # never repeats - caching it gave 0 hits and grew unbounded; just compute the sine
+    def x_oscillation(self, time_elapsed: float) -> float:
         return math.sin(time_elapsed * 10.0) * 4.0
 
     ###################################################################################################################
     def add(self) -> None:
         # move 80 pixels/seconds into south-west (down-left) +/- 30 degree, enlarge 5 x, kill after 4 seconds
+        # (spawn_rect drives the position; no mouse involved for weather particles)
         self.particle.add_particles(
-            start_pos=pygame.mouse.get_pos(),
             move_speed=80,
             move_dir=210 + random.randint(-30, 30),
             scale=5.0,
@@ -271,6 +302,13 @@ class ParticleLeafs(ParticleSystem):
     ###################################################################################################################
     def emit(self, dt: float) -> None:
         self.particle.emit(dt)
+
+    ###################################################################################################################
+    def start(self) -> None:
+        self.particle.start()
+
+    def stop(self) -> None:
+        self.particle.stop()
 
 #####################################################################################################################
 
@@ -308,8 +346,8 @@ class ParticleRain(ParticleSystem):
     ###################################################################################################################
     def add(self) -> None:
         # move 1500 pixels/seconds into south-west (down-left) enlarge 5 x, kill after half a second
+        # (spawn_rect drives the position; no mouse involved for weather particles)
         self.particle.add_particles(
-            start_pos=pygame.mouse.get_pos(),
             move_speed=1500,
             move_dir=210,
             scale=4.0,
@@ -319,6 +357,13 @@ class ParticleRain(ParticleSystem):
     ###################################################################################################################
     def emit(self, dt: float) -> None:
         self.particle.emit(dt)
+
+    ###################################################################################################################
+    def start(self) -> None:
+        self.particle.start()
+
+    def stop(self) -> None:
+        self.particle.stop()
 
 #####################################################################################################################
 
@@ -464,3 +509,88 @@ class ParticleDestructible(ParticleSystem):
         self.particle_left.emit(dt)
         self.particle_right.emit(dt)
         self.particle_destruct.emit(dt)
+
+    ###################################################################################################################
+    def start(self) -> None:
+        # one-shot system: add() is called directly on destruction, not driven by a
+        # recurring timer, so there is nothing to arm here
+        pass
+
+    def stop(self) -> None:
+        pass
+
+#####################################################################################################################
+# MARK: WeatherDirector
+
+
+class WeatherDirector:
+    """Schedules weather emitters as random episodes instead of running them constantly.
+
+    Emitters are bucketed into named exclusivity groups (via EmitterSchedule.group).
+    Within one group only a single emitter is active at a time - so `leafs` and `rain`
+    (both group "sky") never overlap. Emitters in different groups run independently and
+    may therefore play in parallel. Each group alternates between an idle phase (no
+    emitter) and an active phase (one weighted-random emitter running for a random
+    duration). Driven per-frame from Scene.update() via update(dt).
+    """
+
+    # short randomized delay before the very first episode of a group, so weather shows
+    # up soon after entering a map instead of waiting a full (long) idle gap
+    INITIAL_DELAY_MIN: float = 1.0
+    INITIAL_DELAY_MAX: float = 6.0
+
+    def __init__(
+        self,
+        systems: dict[str, ParticleSystem],
+        schedules: "dict[str, EmitterSchedule]",
+    ) -> None:
+        # keep only emitters that have both a live system on this map and a schedule
+        self.schedules = {name: schedules[name] for name in systems if name in schedules}
+        self.systems = {name: systems[name] for name in self.schedules}
+
+        # group -> list of emitter names in that group
+        self.groups: dict[str, list[str]] = {}
+        for name, sched in self.schedules.items():
+            self.groups.setdefault(sched.group, []).append(name)
+
+        # per-group runtime state: which emitter is active (or None = idle) + countdown
+        self._active: dict[str, str | None] = {}
+        self._timer: dict[str, float] = {}
+        for group in self.groups:
+            self._active[group] = None
+            self._timer[group] = random.uniform(self.INITIAL_DELAY_MIN, self.INITIAL_DELAY_MAX)
+
+    ###################################################################################################################
+    def update(self, dt: float) -> None:
+        for group, names in self.groups.items():
+            self._timer[group] -= dt
+            if self._timer[group] > 0.0:
+                continue
+
+            active = self._active[group]
+            if active is not None:
+                # active episode ended -> stop emitter, enter idle for a random gap
+                self.systems[active].stop()
+                self._active[group] = None
+                sched = self.schedules[active]
+                self._timer[group] = random.uniform(sched.gap_min, sched.gap_max)
+            else:
+                # idle ended -> pick a weighted-random emitter and run it for a while
+                chosen = self._pick(names)
+                self.systems[chosen].start()
+                self._active[group] = chosen
+                sched = self.schedules[chosen]
+                self._timer[group] = random.uniform(sched.active_min, sched.active_max)
+
+    ###################################################################################################################
+    def _pick(self, names: list[str]) -> str:
+        weights = [self.schedules[name].weight for name in names]
+        return random.choices(names, weights=weights, k=1)[0]
+
+    ###################################################################################################################
+    def stop_all(self) -> None:
+        # disarm every active emitter (e.g. before a map change) so no timer leaks
+        for group, active in self._active.items():
+            if active is not None:
+                self.systems[active].stop()
+                self._active[group] = None
