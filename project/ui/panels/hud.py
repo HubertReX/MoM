@@ -31,7 +31,6 @@ from settings import (
     ITEMS_SHEET_DEFINITION,
     MAX_HOTBAR_ITEMS,
     PANEL_BG_COLOR,
-    SHOW_HELP_INFO,
     TILE_SIZE,
     UI_BORDER_COLOR_ACTIVE,
     UI_BORDER_WIDTH,
@@ -94,7 +93,6 @@ class HUD(Widget):
         self.icons: dict[str, list[pygame.Surface]] = scene.icons
         self.font: pygame.font.Font = self.game.fonts[FONT_SIZE_MEDIUM]
         self.tiny_font: pygame.font.Font = self.game.fonts[FONT_SIZE_SMALL]
-        self.show_help_info: bool = SHOW_HELP_INFO
 
         self.inventory_slot = InventorySlot(
             None,
@@ -106,14 +104,6 @@ class HUD(Widget):
         self.weapon_bg = theme.nine_patch("nine_patch_04.png", weapon_s, weapon_s)
         self.stats_bg = theme.nine_patch("nine_patch_04.png", 300, 190)
         self.available_action_bg = theme.nine_patch("panel_brown.png", 216, 36, border=3)
-
-        show_actions = [action for action in ACTIONS.values() if action["show"]]
-        help_h = int((len(show_actions) + 2) * FONT_SIZE_MEDIUM * 2.1)
-        self.help_bg = theme.nine_patch("nine_patch_04.png", 400, help_h)
-
-        self.help_scroll: int = 0
-        self.help_max_scroll: int = 0
-        self.help_rect: pygame.Rect = pygame.Rect(0, 0, 0, 0)
 
         # cache: notification message string -> pre-rendered rich-text surface
         self._notification_cache: dict[str, pygame.Surface] = {}
@@ -288,43 +278,11 @@ class HUD(Widget):
                 surface.blit(self.icons["key_Space"][0], bg_rect.move(4, 18).topright)
 
     #############################################################################################################
-    # MARK: help / actions
-
-    def show_help(self, surface: pygame.Surface) -> None:
-        if not self.show_help_info:
-            return
-        show_actions = [action for action in ACTIONS.values() if action["show"]]
-        row_spacing = 2.2
-        row_height = int(FONT_SIZE_MEDIUM * row_spacing)
-        content_w = 400
-        panel_x = WIDTH - content_w - 16
-        content_h = (len(show_actions) + 1) * row_height
-        max_h = HEIGHT - TILE_SIZE
-        visible_h = min(content_h, max_h)
-        self.help_max_scroll = max(0, content_h - visible_h)
-        self.help_scroll = max(0, min(self.help_scroll, self.help_max_scroll))
-        rect = pygame.Rect(panel_x, TILE_SIZE // 2, content_w, visible_h)
-        self.help_rect = rect
-
-        old_clip = surface.get_clip()
-        surface.set_clip(rect)
-        surface.blit(self.help_bg, rect.topleft, area=pygame.Rect(0, self.help_scroll,
-                      content_w, visible_h))
-        for i, action in enumerate(show_actions, start=1):
-            y = 2 + int(i * row_height) - self.help_scroll
-            self.draw_text(surface, _(action['msg']),
-                           (panel_x + 50, y), shadow=True)
-            surface.blit(self.icons[action['show'][0]][0],
-                         (panel_x + 16, -6 + int(i * row_height) - self.help_scroll))
-        surface.set_clip(old_clip)
-
-    def _on_event(self, event: pygame.event.Event) -> bool:
-        if not self.show_help_info:
-            return False
-        if event.type == pygame.MOUSEWHEEL and self.help_rect.collidepoint(pygame.mouse.get_pos()):
-            self.help_scroll = max(0, min(self.help_max_scroll, self.help_scroll - event.y * 40))
-            return True
-        return False
+    # MARK: available actions
+    #
+    # The full keybindings reference moved to HelpPanel (a centered modal that pauses
+    # the world). What stays here is the small contextual prompt bottom-right — the
+    # "H — help" hint plus whatever the player can do right now (pick up, talk, ...).
 
     def show_action(self, surface: pygame.Surface, action: str, row: int, label: str = "") -> None:
         row_spacing = row * 48
@@ -336,7 +294,9 @@ class HUD(Widget):
         self.draw_text(surface, label, (WIDTH - TILE_SIZE - label_w - 56, HEIGHT - (2 * TILE_SIZE) - 7 - row_spacing))
 
     def show_available_actions(self, surface: pygame.Surface) -> None:
-        if not self.show_help_info:
+        # the "H — help" hint hides while the help panel itself is open
+        # (ui.show_help_info now reports whether HelpPanel is on the stack)
+        if not self.scene.ui.show_help_info:
             self.show_action(surface, "help", 0)
         player: Player = self.scene.player
         if not player.is_flying and not player.is_attacking and not player.is_stunned:
@@ -438,8 +398,9 @@ class HUD(Widget):
     # MARK: compose
     #
     # Drawn in two parts so the UI controller can layer panels between them, matching the
-    # original order: gameplay overlay (weapon/hotbar/help) under modal/dialog/trade, then
-    # the always-on overlay (notifications + stats) on top of everything.
+    # original order: gameplay overlay (weapon/hotbar) under modal/dialog/trade, then
+    # the always-on overlay (notifications + stats) on top of everything. The help
+    # reference is its own modal panel now, drawn by GameUI on top of this.
 
     def draw_gameplay(self, surface: pygame.Surface, enabled: bool = True) -> None:
         if not enabled:
@@ -449,10 +410,7 @@ class HUD(Widget):
                                self.game.time_elapsed)
         # recomputed per frame: the hero's bar widens when a quest rewards slots
         self.draw_hotbar(surface, player, hotbar_topleft(player.max_items), show_shortcuts=True)
-        if self.show_help_info:
-            self.show_help(surface)
-        else:
-            self.show_available_actions(surface)
+        self.show_available_actions(surface)
 
     def draw_overlay(self, surface: pygame.Surface, *, stats: bool = True) -> None:
         # Stack by each toast's real height, not a fixed row pitch: a quest-done
