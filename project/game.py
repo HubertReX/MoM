@@ -624,7 +624,16 @@ class Game:
             # 1:1 native (1280x720) surface that holds the fully composited frame -
             # world + HUD + open panels + custom cursor - and always reads back
             # correctly. Same source the agent capture uses with MOM_AGENT_SS_CANVAS=1.
-            pygame.image.save(self.canvas, file_name)
+            #
+            # convert(24) drops the alpha channel before saving. game.canvas is a
+            # 32-bit surface without the SRCALPHA flag, so blits copy RGB but leave
+            # the unused per-pixel alpha byte at 0 (see custom_cursor). On a display
+            # whose format has an alpha mask (real macOS, Amask != 0) PNG save writes
+            # that 0-alpha, turning world/sprite pixels transparent - only the
+            # alpha-blended font text survives, on a white background. Forcing 24-bit
+            # RGB yields the opaque frame the player actually sees. (Headless dummy
+            # has Amask == 0, so this was invisible in tests.)
+            pygame.image.save(self.canvas.convert(24), file_name)
             if IS_WEB:
                 import platform
 
