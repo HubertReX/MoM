@@ -62,6 +62,17 @@ przed przeładowaniem strony:
   realne zdarzenia TEXTINPUT, np. `type:Abc123`),
   `backspace` (skasuj znak przed kursorem w polu tekstowym - wysyła KEYDOWN Backspace).
 
+## Deterministyczna nawigacja (bez zgadywania czasu/kierunków)
+- `talk_to_char:<key>` — **deterministycznie otwórz dialog** NPC o kluczu `<key>` (dopasowanie
+  po nazwie obiektu mapy lub nazwie modelu, akceptuje prefiks, np. `barman`). Nie chodzi do
+  wędrującego NPC - zamraża go, ustawia `npc_met` i otwiera panel przez ścieżkę gry.
+  Najpewniejszy sposób na powtarzalny test dialogu.
+- `walk_to_char:<key>` / `walk_to_point:<x>,<y>` — poprowadź bohatera ścieżką A* (ten sam
+  mechanizm co lewy przycisk myszy) do NPC/itemu/skrzyni lub punktu świata. Sprawdza
+  osiągalność ("brak ścieżki"), po dojściu (lub zakleszczeniu w tłumie) dociąga do celu.
+  Stan zapisywany do `agent_status.txt` (idle|walking|arrived|no_path|not_found); runner
+  testów blokuje się do zakończenia zamiast zgadywać `wait` (patrz `_wait_for_walk`).
+
 ## Nawigacja po menu głównym (przydatne dla agenta)
     accept            # uruchom zaznaczoną pozycję (Play jest domyślnie zaznaczone)
     down / up         # zmień zaznaczenie
@@ -73,9 +84,10 @@ import pygame
 
 try:
     # dostępne, gdy moduł działa wewnątrz gry (sys.path zawiera 'project')
-    from settings import ACTIONS
+    from settings import ACTIONS, AGENT_STATUS_FILE
 except ImportError:
     ACTIONS = {}
+    AGENT_STATUS_FILE = None
 
 # domyślny czas przytrzymania klawiszy ciągłych (ruch), gdy nie podano ':frames'
 DEFAULT_HOLD_FRAMES = 12
@@ -117,8 +129,17 @@ class AgentController:
         self._type_pending: str = ""          # tekst do "wpisania" (posted TEXTINPUT)
         self._text_demo_pending = False       # żądanie pokazania panelu demo TextInput
         self._set_maze_pending = False        # wymuś tryb maze na bieżącej scenie (test zakazu zapisu)
+        # deterministyczna nawigacja: walk_to_char / walk_to_point (patrz apply)
+        self._walk_request: str | None = None  # "char:<key>" | "point:<x>,<y>" do rozwiązania
+        self._talk_request: str | None = None  # klucz NPC do deterministycznego otwarcia dialogu
+        self._walk_active = False              # trwa chodzenie do celu
+        self._walk_goal = None                 # vec: docelowy punkt świata
+        self._walk_frames = 0                  # klatki od startu chodzenia
+        self._walk_last_pos = None             # vec: pozycja gracza w poprzedniej klatce
+        self._walk_stuck = 0                   # klatki bez ruchu (zakleszczenie w tłumie NPC)
         if not web_mode:
             self._write_file("")           # wyczyść stary plik na starcie
+            self._write_status("idle")
 
     # ---------------------------------------------------------------- wysyłanie
     @staticmethod
@@ -138,6 +159,16 @@ class AgentController:
         try:
             with open(self.input_file, "w") as f:
                 f.write(text)
+        except OSError:
+            pass
+
+    def _write_status(self, word: str) -> None:
+        """Publish deterministic-navigation state for the runner to poll."""
+        if self.web_mode or AGENT_STATUS_FILE is None:
+            return
+        try:
+            with open(AGENT_STATUS_FILE, "w") as f:
+                f.write(word)
         except OSError:
             pass
 
@@ -184,6 +215,21 @@ class AgentController:
         action, _, frames_str = token.partition(":")
         action = action.strip()
         if not action:
+            return
+        if action == "talk_to_char":
+            # `talk_to_char:<key>` — deterministycznie otwórz dialog NPC (bez chodzenia
+            # do wędrującego celu). Rozwiązywane w apply (potrzebna scena).
+            self._talk_request = frames_str.strip()
+            return
+        if action == "walk_to_char":
+            # `walk_to_char:<key>` — chodź do NPC/itemu/skrzyni o kluczu <key>.
+            self._walk_request = f"char:{frames_str.strip()}"
+            self._write_status("walking")
+            return
+        if action == "walk_to_point":
+            # `walk_to_point:<x>,<y>` — chodź do punktu świata (współrzędne world).
+            self._walk_request = f"point:{frames_str.strip()}"
+            self._write_status("walking")
             return
         if action in ("screenshot", "shot"):
             self._screenshot_pending = True
@@ -320,6 +366,93 @@ class AgentController:
                 self.log(f"[agent_ctrl] debug_map_change -> {exit.to_map}")
             else:
                 self.log("[agent_ctrl] debug_map_change: no scene/exits available")
+
+        self._apply_walk(game)
+
+    # ------------------------------------------------------- deterministic walk
+    def _apply_walk(self, game) -> None:
+        """Resolve a pending walk request and monitor an active walk.
+
+        Writes the outcome to the status file so the runner can poll deterministically:
+        ``arrived`` (reached), ``no_path`` (unreachable), ``not_found`` (bad key).
+        """
+        state = game.states[-1] if game.states else None
+        scene = state if state is not None and hasattr(state, "agent_walk_target") else None
+
+        if self._talk_request is not None:
+            key, self._talk_request = self._talk_request, None
+            if scene is not None and scene.agent_open_dialog(key):
+                self.log(f"[agent_ctrl] talk_to_char {key!r} -> dialog opened")
+            else:
+                self.log(f"[agent_ctrl] talk_to_char {key!r} -> not_found/no_dialog")
+
+        if self._walk_request is not None:
+            request, self._walk_request = self._walk_request, None
+            if scene is None:
+                self.log("[agent_ctrl] walk: no scene available")
+                self._write_status("not_found")
+                return
+            kind, _, arg = request.partition(":")
+            point = None
+            if kind == "char":
+                point = scene.agent_walk_target(arg)
+                if point is None:
+                    self.log(f"[agent_ctrl] walk_to_char {arg!r} -> not_found/no_path")
+                    self._write_status("not_found")
+                    return
+            else:  # point:x,y
+                try:
+                    xs, ys = arg.split(",")
+                    from settings import vec
+                    point = scene.agent_point_near(vec(float(xs), float(ys)))
+                except (ValueError, ImportError):
+                    point = None
+                if point is None:
+                    self.log(f"[agent_ctrl] walk_to_point {arg!r} -> no_path")
+                    self._write_status("no_path")
+                    return
+            if scene.agent_walk_player_to(point):
+                self._walk_active = True
+                self._walk_goal = point
+                self._walk_frames = 0
+                self._walk_stuck = 0
+                self._walk_last_pos = scene.player.pos.copy()
+                self.log(f"[agent_ctrl] walk started -> ({int(point.x)},{int(point.y)})")
+            else:
+                self.log("[agent_ctrl] walk -> no_path (A* empty)")
+                self._write_status("no_path")
+
+        elif self._walk_active and scene is not None:
+            from settings import TILE_SIZE
+            player = scene.player
+            self._walk_frames += 1
+            moved = player.pos.distance_to(self._walk_last_pos)
+            self._walk_last_pos = player.pos.copy()
+            self._walk_stuck = self._walk_stuck + 1 if moved < 0.5 else 0
+            dist = player.pos.distance_to(self._walk_goal)
+            # Arrival: clean stop, or close enough to talk, or jammed in the NPC
+            # crowd right by the goal. Physics collision with NPCs means the player
+            # rarely lands on the exact waypoint, so "close/stuck" must also count.
+            clean = scene.agent_player_arrived()
+            close = dist <= 1.2 * TILE_SIZE
+            jammed = self._walk_stuck >= 20 and dist <= 2.0 * TILE_SIZE
+            if clean or close or jammed:
+                self._finish_walk(scene, snap=not (clean or close))
+            elif self._walk_frames > 1200 or self._walk_stuck >= 60:
+                # gave up walking (long jam far from goal): teleport to the validated,
+                # reachable goal tile so the test stays deterministic.
+                self._finish_walk(scene, snap=True)
+
+    def _finish_walk(self, scene, *, snap: bool) -> None:
+        if snap and self._walk_goal is not None:
+            scene.player.pos.update(self._walk_goal)
+            scene.player.clear_waypoints()
+            self.log("[agent_ctrl] walk arrived (snap to goal)")
+        else:
+            self.log("[agent_ctrl] walk arrived")
+        self._walk_active = False
+        self._walk_goal = None
+        self._write_status("arrived")
 
     # ------------------------------------------------------------- screenshot
     def capture(self, surface) -> "str | None":

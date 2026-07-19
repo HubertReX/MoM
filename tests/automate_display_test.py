@@ -73,7 +73,9 @@ TEST_CONFIG = {
     ],
     "WEB_URL": "http://127.0.0.1:8001/",
     "INPUT_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "agent_input.txt"),
+    "STATUS_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "agent_status.txt"),
     "SCENARIOS_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "scenarios.json"),
+    "WALK_TIMEOUT": 30.0,   # max seconds to wait for a walk_to_* to reach its target
 }
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -452,9 +454,17 @@ class DesktopRunner(RunnerBase):
         if wants_shot:
             # Osadź slug akcji w komendzie: gra użyje go w nazwie pliku.
             tokens.append(f"screenshot:{action.slug}")
+        walk_cmd = next((t for t in tokens if t.startswith("walk_to")), None)
+        if walk_cmd is not None:
+            self._reset_walk_status()
         cmd = f'echo "{" ".join(tokens)}" > {TEST_CONFIG["INPUT_FILE"]}'
         print(f"[RUNNER SEND] {cmd}")
         subprocess.run(cmd, shell=True)
+        if walk_cmd is not None:
+            # Deterministic: block until the game reports the walk finished (or failed),
+            # instead of guessing a fixed sleep. Poll the status file the game writes.
+            outcome = self._wait_for_walk()
+            print(f"[{get_timestamp()}] walk '{walk_cmd}' -> {outcome}")
         if wants_shot:
             # Przewidź ścieżkę, którą zapisze gra (ten sam format nazwy), na potrzeby asercji.
             self.record_screenshot(action.slug)
@@ -462,6 +472,31 @@ class DesktopRunner(RunnerBase):
         print(f"[{get_timestamp()}] Done. Delta: {end - start:.4f}s")
         if action.wait > 0:
             time.sleep(action.wait)
+
+    def _reset_walk_status(self) -> None:
+        try:
+            with open(TEST_CONFIG["STATUS_FILE"], "w") as f:
+                f.write("walking")
+        except OSError:
+            pass
+
+    def _wait_for_walk(self) -> str:
+        """Poll the game's status file until the walk is no longer in progress.
+
+        Returns the terminal status: ``arrived`` / ``no_path`` / ``not_found`` /
+        ``timeout``. Deterministic replacement for a fixed sleep after walk_to_*.
+        """
+        deadline = time.perf_counter() + TEST_CONFIG["WALK_TIMEOUT"]
+        while time.perf_counter() < deadline:
+            try:
+                with open(TEST_CONFIG["STATUS_FILE"]) as f:
+                    status = f.read().strip()
+            except OSError:
+                status = ""
+            if status and status != "walking":
+                return status
+            time.sleep(0.1)
+        return "timeout"
 
     def check_assertion(self, assertion: dict[str, Any]) -> List[str]:
         common = self.check_common_assertion(assertion)

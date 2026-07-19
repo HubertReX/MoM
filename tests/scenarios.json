@@ -536,5 +536,18 @@
             { "type": "screenshot_review", "target": "after_escape", "expect": "A dialog panel is STILL open showing Hammer's dialog text and reply options. The dialog did NOT close after pressing Escape." },
             { "type": "screenshot_review", "target": "dialog_closed", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; the dialog panel is closed after picking the final farewell option." }
         ]
+    },
+    {
+        "name": "Dialog Open Deterministic",
+        "slug": "dialog_open_deterministic",
+        "platform": ["desktop"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "talk_to_barman", "commands": ["talk_to_char:barman"], "wait": 1.0 },
+            { "slug": "barman_dialog", "commands": ["screenshot"], "wait": 1.5 }
+        ],
+        "assertions": [
+            { "type": "process_alive" }
+        ]
     }
 ]

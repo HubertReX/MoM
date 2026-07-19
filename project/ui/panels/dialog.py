@@ -38,7 +38,7 @@ from settings import (
 
 from .. import theme
 from ..widget import Widget
-from ..widgets import Label
+from ..widgets import Label, bar
 from ..widgets.rich_text import RichText, render_rich_text_surface
 from ._tooltip import Tooltip
 
@@ -54,12 +54,22 @@ _BODY_FONT = 16
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
 _WEIGHT_COL = 80      # px reserved on the right of each option row for emote + sentiment weight
+_OPT_SCROLLBAR_W = 16  # width of the options scrollbar (widgets/bar.py), at the row's right edge
+_OPT_SCROLLBAR_GAP = 8  # gap between the emote/weight column and the scrollbar
+_SCROLL_RESERVE = _OPT_SCROLLBAR_W + _OPT_SCROLLBAR_GAP  # right-edge space kept clear for the bar
 _EMOTE_SCALE = 2      # integer scale for sentiment emotes (pixel-art: no fractional upscaling)
 _VISITED_ALPHA = 100  # alpha (0-255) for already-selected (visited) options
 _OPTION_VISIBLE_COUNT = 4  # fixed number of options shown before scrolling
 _BODY_LINES = 4
 _SEPARATOR_H = 4
 _SEPARATOR_GAP = 4
+# Sentiment progress bar: bigger, framed capsule (widgets/bar.py) stacked ABOVE the
+# name text. The name plate is raised/heightened so name + bar fit without overlap.
+_SENT_BAR_W = 112
+_SENT_BAR_H = 16
+_SENT_BAR_GAP = 8           # gap between the bar's bottom and the name text top
+_NAME_PLATE_H = 76          # taller than the 64px nine-patch minimum, to hold bar + name
+_NAME_PLATE_TOP = 60        # px above ``offset[1]`` where the plate's top edge sits
 _SEPARATOR_COLOR = theme.DIALOG_SEPARATOR  # greenish panel border colour (nine_patch_01c)
 _OPTION_HIGHLIGHT_COLOR = theme.DIALOG_OPTION_HIGHLIGHT  # dark blue vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
@@ -106,7 +116,7 @@ class DialogPanel(Widget):
         self._on_final_node = False                      # a final node was reached; wait for Accept to close
         self._accept_consumed = False                    # guard against double-handling Enter in the same frame
 
-        self.name_bg = theme.nine_patch("nine_patch_13.png", 8 * TILE_SIZE, TILE_SIZE)
+        self.name_bg = theme.nine_patch("nine_patch_13.png", 8 * TILE_SIZE, _NAME_PLATE_H)
         self.name_label = Label("", size=FONT_SIZE_LARGE, font_path=str(MAIN_FONT),
                                 color=CHAR_NAME_COLOR, shadow=True)
         self.key_space = scene.icons["key_Space"][0]
@@ -134,7 +144,7 @@ class DialogPanel(Widget):
         )
         # dynamiczne dopasowanie pola imienia do szerokości tekstu
         name_w = max(self.name_label.rect.width + 2 * TILE_SIZE, 8 * TILE_SIZE)
-        self.name_bg = theme.nine_patch("nine_patch_13.png", name_w, TILE_SIZE)
+        self.name_bg = theme.nine_patch("nine_patch_13.png", name_w, _NAME_PLATE_H)
         self.tooltip.update(None, (0, 0))
         self._sentiment_flash_timer = 0.0
         self._on_final_node = False
@@ -184,9 +194,9 @@ class DialogPanel(Widget):
             if available:
                 self._options.append(opt)
 
-        left = self.body_rect.left + _CURSOR_WIDTH
-        # Reserve the weight column so long option text never runs into it.
-        max_w = self.body_rect.width - _CURSOR_WIDTH - _WEIGHT_COL
+        # Reserve the weight column AND the scrollbar column so long option text
+        # never runs into either (the scrollbar sits at the far right edge).
+        max_w = self.body_rect.width - _CURSOR_WIDTH - _WEIGHT_COL - _SCROLL_RESERVE
         for display_idx, opt in enumerate(self._options):
             text = get_msg(self.game.conf.messages, opt.text)
             rich_text = f"{display_idx + 1}. {text}"
@@ -295,9 +305,13 @@ class DialogPanel(Widget):
     def _weight_pos(
         self, surf: pygame.Surface, option_rect: pygame.Rect
     ) -> tuple[pygame.Surface, pygame.Rect]:
-        """Right-align the (fixed-width) weight column inside an option row."""
+        """Right-align the (fixed-width) weight column inside an option row.
+
+        Shifted left by ``_SCROLL_RESERVE`` so the emote + weight never sit under
+        the options scrollbar that lives at the row's far right edge.
+        """
         total_w, total_h = surf.get_size()
-        x = option_rect.right - total_w - _OPTION_PAD
+        x = option_rect.right - total_w - _OPTION_PAD - _SCROLL_RESERVE
         y = option_rect.centery - total_h // 2
         return surf, pygame.Rect(x, y, total_w, total_h)
 
@@ -494,9 +508,10 @@ class DialogPanel(Widget):
         sep_rect = pygame.Rect(self.body_rect.left, sep_y - _SEPARATOR_H // 2, self.body_rect.width, _SEPARATOR_H)
         pygame.draw.rect(surface, _SEPARATOR_COLOR, sep_rect)
 
-        # Name plate (dynamic width) centred under the name label.
+        # Name plate (dynamic width) centred under the name label. Raised so the
+        # taller plate can back both the sentiment bar and the name text.
         name_x = self.name_label.rect.centerx - self.name_bg.get_width() // 2
-        surface.blit(self.name_bg, (name_x, self.offset[1] - 3 * TILE_SIZE))
+        surface.blit(self.name_bg, (name_x, self.offset[1] - _NAME_PLATE_TOP))
         self.name_label.draw(surface)
         self._draw_sentiment_indicator(surface)
 
@@ -508,42 +523,41 @@ class DialogPanel(Widget):
         self.tooltip.draw(surface)
 
     def _draw_scroll_hints(self, surface: pygame.Surface, start: int, end: int, n: int) -> None:
-        """Draw up/down triangles when options extend past the visible window."""
-        if n <= self._visible_count:
+        """Draw the options scrollbar (shared beveled capsule) when the option list
+        overflows the visible window — replaces the old up/down triangle hints."""
+        if n <= self._visible_count or self._visible_count <= 0:
             return
-        x = self.body_rect.right - 8
-        color = CHAR_NAME_COLOR
-        if start > 0:
-            top = self.options_top
-            pygame.draw.polygon(surface, color, [
-                (x - 8, top + 10), (x + 4, top + 10), (x - 2, top),
-            ])
-        if end < n:
-            bot = self.options_bottom
-            pygame.draw.polygon(surface, color, [
-                (x - 8, bot - 10), (x + 4, bot - 10), (x - 2, bot),
-            ])
+        x = self.body_rect.right - _OPT_SCROLLBAR_W
+        h = self.options_bottom - self.options_top
+        denom = max(1, n - self._visible_count)
+        bar.draw_scrollbar(
+            surface, (x, self.options_top, _OPT_SCROLLBAR_W, h),
+            frac_visible=self._visible_count / n,
+            frac_pos=start / denom,
+        )
 
     def _draw_sentiment_indicator(self, surface: pygame.Surface) -> None:
-        """Draw a small sentiment bar above the NPC name (only when known)."""
+        """Draw the sentiment progress bar above the NPC name (only when known).
+
+        Shared beveled capsule (``widgets/bar.py``): the fill colour is computed
+        continuously (red→yellow→green) and the bevel is derived from it, so one
+        component covers every hue without a family of sprites. Sits stacked above
+        the name text inside the (raised) name plate.
+        """
         if self.npc is None:
             return
 
         sentiment = max(0, min(100, self.npc.sentiment))
-        bar_w, bar_h = 80, 8
-        radius = bar_h // 2  # pill-rounded on the sides
+        # Red -> yellow -> green as sentiment grows.
+        if sentiment < 50:
+            color = (255, int(255 * sentiment / 50), 0)
+        else:
+            color = (int(255 * (100 - sentiment) / 50), 255, 0)
+        # Flash brightens the fill toward white for emphasis on a change.
+        if self._sentiment_flash_timer > 0.0 and int(self._sentiment_flash_timer * 10) % 2 == 0:
+            color = tuple((c + 255) // 2 for c in color)
         x = self.offset[0] + 4 * TILE_SIZE
-        y = self.offset[1] - int(2.2 * TILE_SIZE)
-        # Full bar, no frame: dark track + coloured fill, both rounded on the sides.
-        pygame.draw.rect(surface, theme.BAR_BG, (x, y, bar_w, bar_h), border_radius=radius)
-        fill_w = int(bar_w * sentiment / 100)
-        if fill_w > 0:
-            # Red -> yellow -> green as sentiment grows.
-            if sentiment < 50:
-                color = (255, int(255 * sentiment / 50), 0)
-            else:
-                color = (int(255 * (100 - sentiment) / 50), 255, 0)
-            # Flash brightens the fill toward white (emphasis without a frame).
-            if self._sentiment_flash_timer > 0.0 and int(self._sentiment_flash_timer * 10) % 2 == 0:
-                color = tuple((c + 255) // 2 for c in color)
-            pygame.draw.rect(surface, color, (x, y, fill_w, bar_h), border_radius=radius)
+        y = self.name_label.rect.top - _SENT_BAR_GAP - _SENT_BAR_H
+        bar.draw_progress(
+            surface, (x, y, _SENT_BAR_W, _SENT_BAR_H), sentiment / 100, fill=color
+        )

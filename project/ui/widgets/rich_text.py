@@ -19,6 +19,7 @@ from ..widget import Widget
 _WORD_RE = re.compile(r"\S+|\s+")
 _ANIM_FPS = 8.0
 _ICON_SCALE = 1.35        # inline icons are sized ~1.35x font height (then snapped, see below)
+_SCROLLBAR_W = 16         # beveled capsule scrollbar (widgets/bar.py) at the right edge
 
 
 def _icon_factor(src_h: int, target_h: int) -> int:
@@ -339,13 +340,14 @@ class RichText(Widget):
             self._draw_scrollbar(surface)
 
     def _draw_scrollbar(self, surface: pygame.Surface) -> None:
+        from . import bar  # local import: bar imports theme, avoid load-order churn
         view = self.rect
-        track = pygame.Rect(view.right - 6, view.y, 4, view.height)
         total = view.height + self.max_scroll
-        thumb_h = max(16, int(view.height * view.height / total))
-        thumb_y = view.y + int((view.height - thumb_h) * (self.scroll / self.max_scroll))
-        pygame.draw.rect(surface, (0, 0, 0, 90), track)
-        pygame.draw.rect(surface, theme.DEFAULT_TEXT_COLOR, (track.x, thumb_y, 4, thumb_h))
+        bar.draw_scrollbar(
+            surface, (view.right - _SCROLLBAR_W - 2, view.y, _SCROLLBAR_W, view.height),
+            frac_visible=view.height / total,
+            frac_pos=self.scroll / self.max_scroll,
+        )
 
 
 def render_rich_text_surface(

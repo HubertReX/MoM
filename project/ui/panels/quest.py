@@ -39,6 +39,7 @@ from settings import (
 from .. import keycap, theme
 from ..text.markup import cut_markup, strip_tags
 from ..widget import Widget
+from ..widgets import bar
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -87,8 +88,6 @@ _ACTIVE = theme.ACCENT_CYAN
 _GREY = theme.GREY
 _WHITE = theme.WHITE
 _RULE = theme.RULE
-# Empty progress track: near-black clears the 3:1 UI floor against the olive panel.
-_BAR_BG = theme.BAR_BG
 _MANUAL = theme.WARN
 
 _FILTERS = ("active", "done", "all")
@@ -382,12 +381,11 @@ class QuestPanel(Widget):
                 surface, f"{current} / {total}", (_RIGHT_EDGE, y), FONT_SIZE_SMALL, _ACTIVE, align="right"
             )
             bar_y = self._content_y(y)  # shared vertical-rhythm gap under the label
-            pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, _RIGHT_W, 8))
-            if total:
-                filled = int(_RIGHT_W * current / total)
-                if filled:
-                    pygame.draw.rect(surface, _ACTIVE, (_RIGHT_X, bar_y, filled, 8))
-            y = bar_y + 26
+            # Shared beveled capsule progress bar (widgets/bar.py): all_subquests
+            # completion, filled current/total in the cyan progress accent.
+            fraction = current / total if total else 0.0
+            bar.draw_progress(surface, (_RIGHT_X, bar_y, _RIGHT_W, 16), fraction, fill=_ACTIVE)
+            y = bar_y + 30
         else:
             # A `manual` umbrella has no progress bar - completing its steps does not
             # complete it, so a bar would be a lie. Skipping the bar must not also
