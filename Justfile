@@ -46,12 +46,12 @@ run *args:
     cd project
     ..\.venv\Scripts\python.exe main.py {{args}}
 
-# Start pygbag local web server. Pass '--bind 0.0.0.0' to make it available on the local network (e.g. `just serve-web --bind 0.0.0.0`)
+# Start pygbag local web server. Remote access: `--bind mac-mini.kamori-vector.ts.net --port 8989` (bind must be a routable host, NOT 0.0.0.0 which pygbag bakes into asset URLs). Append '#debug' to the URL to show the pygbag console with Python tracebacks.
 [unix]
 serve-web *args:
     .venv/bin/python -m pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
 
-# Start pygbag local web server. Pass '--bind 0.0.0.0' to make it available on the local network (e.g. `just serve-web --bind 0.0.0.0`)
+# Start pygbag local web server. Remote access: `--bind mac-mini.kamori-vector.ts.net --port 8989` (bind must be a routable host, NOT 0.0.0.0 which pygbag bakes into asset URLs). Append '#debug' to the URL to show the pygbag console with Python tracebacks.
 [windows]
 serve-web *args:
     #!powershell
