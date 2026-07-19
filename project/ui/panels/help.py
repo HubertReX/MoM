@@ -14,9 +14,9 @@ Three concerns shape the content:
 - **Debug section is dev-only**: it renders only when the runtime debug overlay is on
   (``scene.SHOW_DEBUG_INFO`` — the *scene module* global that ``/Z toggles, read live
   exactly as ``characters.py`` does, not a stale import).
-- **Web hides what web cannot do**: the whole Debug section (debug overlay is desktop
-  only anyway) and the quick save/load rows (``web_hidden``), mirroring the existing
-  ``[] if IS_WEB`` gating in ``ACTIONS``.
+- **Web hides only what web cannot do**: the whole Debug section (the debug overlay is
+  desktop only). Save/load/screenshot (F5/F9/F6) all work on web, so they stay visible;
+  the ``web_hidden`` mechanism remains for any future desktop-only row.
 
 i18n (D3): every string here is UI furniture and comes from the TOML ``[help]`` section
 via ``_()``. Keycaps are the shared hotbar sprite (``hud.icons["key_*"]``) at native
@@ -178,8 +178,8 @@ _COLUMNS: tuple[tuple[_Group, ...], ...] = (
             _row(("H", "/", "F1"), "help.this_help"),
             _row(("F2",), "help.menu"),
             _row(("Esc", "/", "Q"), "help.main_menu"),
-            _row(("F5",), "help.quick_save", web_hidden=True),
-            _row(("F9",), "help.quick_load", web_hidden=True),
+            _row(("F5",), "help.quick_save"),
+            _row(("F9",), "help.quick_load"),
             _row(("F6",), "help.screenshot"),
         )),
         _Group("help.grp_windows", (
