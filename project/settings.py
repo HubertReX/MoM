@@ -888,15 +888,19 @@ SPRITE_SHEET_DEFINITIONS: dict[int, Any] = {
 
 
 HUD_SHEET_DEFINITION: dict[str, list[tuple[int, int]]] = {
-    "key": [(0, 0)],
-    "key_Esc": [(1, 0)],
-    "key_Tab": [(2, 0)],
-    "key_Ctl": [(3, 0)],
-    "key_Alt": [(0, 1)],
+    "key":       [(0, 0)],
+    "key_Esc":   [(1, 0)],
+    "key_Tab":   [(2, 0)],
+    "key_Ctl":   [(3, 0)],
+    "key_Alt":   [(0, 1)],
     "key_Enter": [(1, 1)],
     "key_Shift": [(2, 1)],
     "key_Space": [(3, 1)],
-    "mouse": [(0, 3)],
+    "key_up":    [(0, 2)],
+    "key_down":  [(1, 2)],
+    "key_right": [(2, 2)],
+    "key_left":  [(3, 2)],
+    "mouse":     [(0, 3)],
     "mouse_LMB": [(1, 3)],
     "mouse_RMB": [(2, 3)],
 }
