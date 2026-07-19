@@ -108,7 +108,10 @@ class ParticleImageBased:
         # (re)arm the spawn timer; from now on custom_event_id fires every `interval` ms
         if self.is_running:
             return
-        pygame.time.set_timer(pygame.event.Event(self.custom_event_id), int(self.interval))
+        # NOTE: pass the int event-type, NOT pygame.event.Event(...): pygbag's
+        # patch_set_timer does `if event in THREADS` and an Event object is
+        # unhashable -> TypeError that freezes the game in the browser.
+        pygame.time.set_timer(self.custom_event_id, int(self.interval))
         self.is_running = True
 
     def stop(self) -> None:
@@ -116,7 +119,8 @@ class ParticleImageBased:
         # animating and fade out on their own via emit()
         if not self.is_running:
             return
-        pygame.time.set_timer(pygame.event.Event(self.custom_event_id), 0)
+        # int event-type, not an Event object (see start() note re: pygbag freeze)
+        pygame.time.set_timer(self.custom_event_id, 0)
         self.is_running = False
 
     ###################################################################################################################

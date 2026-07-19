@@ -1137,6 +1137,52 @@ class Game:
         try:
             while self.is_running:
                 await self.run()
+        except Exception as exc:  # noqa: BLE001 - top-level guard: never freeze silently
+            # Without this, an exception escaping run() ends the asyncio Task and the
+            # browser tab just freezes with no visible clue ("Task exception was never
+            # retrieved" only shows up in the pygbag #debug console). Surface it on-screen.
+            await self._show_fatal_error(exc)
         finally:
             self.save_recording()
             pygame.quit()
+
+    async def _show_fatal_error(self, exc: BaseException) -> None:
+        """Paint the traceback onto the game screen so a crash is visible in the
+        browser instead of a silent freeze. Keeps pumping the event loop so the
+        message stays on screen and the tab does not look completely hung."""
+        import traceback as _tb
+
+        tb_text = "".join(_tb.format_exception(type(exc), exc, exc.__traceback__))
+        # Always log the full traceback too (browser console / terminal).
+        try:
+            self.log(tb_text)
+        except Exception:  # noqa: BLE001
+            print(tb_text)
+
+        lines = ["*** GAME CRASHED ***", ""] + tb_text.rstrip("\n").splitlines()
+
+        # Small, robust rendering: use the base font directly on self.screen so we
+        # do not depend on any per-scene surface/state that may be half-torn-down.
+        line_h = self.font.get_height() + 2
+        margin = 10
+
+        def _paint() -> None:
+            self.screen.fill((10, 10, 30))
+            y = margin
+            for ln in lines:
+                # crude horizontal clip so long tracebacks do not vanish off-screen
+                clipped = ln[:110]
+                color = (255, 90, 90) if ln.startswith("***") else (230, 230, 230)
+                surf = self.font.render(clipped, False, color)
+                self.screen.blit(surf, (margin, y))
+                y += line_h
+            pygame.display.flip()
+
+        # Loop so the message persists and the browser keeps ticking (Esc/close still work).
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.is_running = False
+                    return
+            _paint()
+            await asyncio.sleep(0.1)  # type: ignore
