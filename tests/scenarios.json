@@ -547,7 +547,8 @@
             { "slug": "barman_dialog", "commands": ["screenshot"], "wait": 1.5 }
         ],
         "assertions": [
-            { "type": "process_alive" }
+            { "type": "process_alive" },
+            { "type": "screenshot_review", "target": "barman_dialog", "expect": "A dialog panel is open showing the Barman Absinthrayner NPC's dialog text, with the yellow name plate, a thick sentiment bar above it, and a numbered list of reply options." }
         ]
     }
 ]

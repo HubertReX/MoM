@@ -617,7 +617,14 @@ class Game:
             time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
             file_name = SCREENSHOTS_DIR / f"screenshot_{time_str}.png"
             os.makedirs(file_name.parent, exist_ok=True)
-            pygame.image.save(self.screen, file_name)
+            # Save the offscreen canvas, not self.screen. In fullscreen the display
+            # is created with DOUBLEBUF, so reading back self.screen after
+            # pygame.display.flip() returns the undefined swapped back-buffer (a
+            # blank/white image with only the letterbox bars). game.canvas is the
+            # 1:1 native (1280x720) surface that holds the fully composited frame -
+            # world + HUD + open panels + custom cursor - and always reads back
+            # correctly. Same source the agent capture uses with MOM_AGENT_SS_CANVAS=1.
+            pygame.image.save(self.canvas, file_name)
             if IS_WEB:
                 import platform
 
