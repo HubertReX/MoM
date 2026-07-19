@@ -29,14 +29,13 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+import settings
 from settings import (
     FONT_SIZE_LARGE,
     FONT_SIZE_SMALL,
     FONT_SIZE_TINY,
-    HEIGHT,
     IS_WEB,
     PANEL_BG_COLOR,
-    WIDTH,
     _,
 )
 
@@ -55,26 +54,47 @@ if TYPE_CHECKING:
 # third column would clip every description. Two ~508px columns clear the widest
 # line, and the row height is tuned so even the debug-on layout fits without scroll.
 PANEL_W, PANEL_H = 1120, 680
-PANEL_X, PANEL_Y = (WIDTH - PANEL_W) // 2, (HEIGHT - PANEL_H) // 2
 _PAD = 28
 # scrollbar on the right edge of the panel — shared beveled capsule component
 # (widgets/bar.py): INK frame + RULE track + gold beveled thumb, CHUNKY (non-AA) ends.
 _SCROLLBAR_W = 16
-_SCROLLBAR_X = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 4
-_INNER_LEFT = PANEL_X + _PAD
-_INNER_RIGHT = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 8
-_HEADER_Y = PANEL_Y + 22
-_RULE_Y = PANEL_Y + 72
-_CONTENT_TOP = PANEL_Y + 82
-# footer strip (shortcuts) mirrors the quest panel: a rule + a hint row at the bottom
-_FOOTER_Y = PANEL_Y + PANEL_H - _PAD - 44
-_FOOTER_TEXT_Y = _FOOTER_Y + 8
-_CONTENT_BOTTOM = _FOOTER_Y - 10
-_CONTENT_H = _CONTENT_BOTTOM - _CONTENT_TOP
-
 _COL_GAP = 48
-_COL_W = (_INNER_RIGHT - _INNER_LEFT - _COL_GAP) // 2
-_COL_X = (_INNER_LEFT, _INNER_LEFT + _COL_W + _COL_GAP)
+
+# The panel is a fixed 1120x680 box centered on screen. Its absolute geometry
+# depends on the current viewport size (settings.WIDTH/HEIGHT change with the
+# resolution), so it is (re)computed by _recompute_geometry() when the panel opens
+# instead of being baked at import time. Declared here first for module visibility.
+PANEL_X = PANEL_Y = 0
+_SCROLLBAR_X = _INNER_LEFT = _INNER_RIGHT = 0
+_HEADER_Y = _RULE_Y = _CONTENT_TOP = 0
+_FOOTER_Y = _FOOTER_TEXT_Y = _CONTENT_BOTTOM = _CONTENT_H = 0
+_COL_W = 0
+_COL_X: tuple[int, int] = (0, 0)
+
+
+def _recompute_geometry() -> None:
+    """Recenter the panel geometry on the current viewport (settings.WIDTH/HEIGHT)."""
+    global PANEL_X, PANEL_Y, _SCROLLBAR_X, _INNER_LEFT, _INNER_RIGHT
+    global _HEADER_Y, _RULE_Y, _CONTENT_TOP, _FOOTER_Y, _FOOTER_TEXT_Y
+    global _CONTENT_BOTTOM, _CONTENT_H, _COL_W, _COL_X
+    PANEL_X = (settings.WIDTH - PANEL_W) // 2
+    PANEL_Y = (settings.HEIGHT - PANEL_H) // 2
+    _SCROLLBAR_X = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 4
+    _INNER_LEFT = PANEL_X + _PAD
+    _INNER_RIGHT = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 8
+    _HEADER_Y = PANEL_Y + 22
+    _RULE_Y = PANEL_Y + 72
+    _CONTENT_TOP = PANEL_Y + 82
+    # footer strip (shortcuts) mirrors the quest panel: a rule + a hint row at the bottom
+    _FOOTER_Y = PANEL_Y + PANEL_H - _PAD - 44
+    _FOOTER_TEXT_Y = _FOOTER_Y + 8
+    _CONTENT_BOTTOM = _FOOTER_Y - 10
+    _CONTENT_H = _CONTENT_BOTTOM - _CONTENT_TOP
+    _COL_W = (_INNER_RIGHT - _INNER_LEFT - _COL_GAP) // 2
+    _COL_X = (_INNER_LEFT, _INNER_LEFT + _COL_W + _COL_GAP)
+
+
+_recompute_geometry()
 # room reserved for the key icons before a row's description starts. 155 fits the
 # widest row (W A S D — four 32px caps = 137px) with a small margin.
 _KEY_COL_W = 155
@@ -188,6 +208,7 @@ class HelpPanel(Widget):
         super().__init__()
         self.scene = scene
         self.hud = hud
+        _recompute_geometry()
         self.bg = theme.nine_patch("nine_patch_04.png", PANEL_W, PANEL_H)
         self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
         self.scroll: int = 0
@@ -196,6 +217,10 @@ class HelpPanel(Widget):
     # --- lifecycle ----------------------------------------------------------
 
     def open(self) -> None:
+        # Recenter on the current viewport in case the resolution changed since
+        # this panel was constructed.
+        _recompute_geometry()
+        self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
         self.scroll = 0
 
     def scroll_up(self) -> None:

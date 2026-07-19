@@ -13,7 +13,8 @@ from typing import TYPE_CHECKING
 
 import pygame
 
-from settings import HEIGHT, WIDTH, _
+import settings
+from settings import _
 
 from .. import theme
 from ..widgets import CharSet, Label, TextInput
@@ -34,7 +35,7 @@ class TextInputDemoState(_State):
 
         bg_w, bg_h = 620, 420
         self._bg = theme.nine_patch("nine_patch_04.png", bg_w, bg_h)
-        self._bg_rect = self._bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self._bg_rect = self._bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
         self._title_surf = theme.menu_font(40).render(_("text_demo.title"), False, theme.NAME)
 
         # (label, kwargs) for each demonstrated configuration

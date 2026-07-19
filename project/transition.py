@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pygame
-from settings import COLORS, HEIGHT, WIDTH
+import settings
+from settings import COLORS
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 class Transition():
 
     def __init__(self, scene: Scene) -> None:
-        self.fade_surf: pygame.Surface = pygame.Surface((WIDTH, HEIGHT))
+        self.fade_surf: pygame.Surface = pygame.Surface((settings.WIDTH, settings.HEIGHT))
         self.scene = scene
         self.exiting: bool = False
         self.fade_out_speed: int = 500
@@ -32,7 +33,7 @@ class Transition():
         else:
             self.alpha = max(0, self.alpha - int(self.fade_in_speed * dt))
         # self.radius = (WIDTH//2) -  (WIDTH//2) * (self.alpha/255)
-        self.radius = int((WIDTH * 2.7) -  (WIDTH * 2.7) * (self.alpha / 255))
+        self.radius = int((settings.WIDTH * 2.7) -  (settings.WIDTH * 2.7) * (self.alpha / 255))
 
     #############################################################################################################
 

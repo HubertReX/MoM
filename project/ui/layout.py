@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pygame
 
-from settings import HEIGHT, WIDTH
+import settings
 
 # valid pygame.Rect anchor attribute names
 ANCHORS = (
@@ -21,7 +21,7 @@ ANCHORS = (
 
 #############################################################################################################
 def screen_rect() -> pygame.Rect:
-    return pygame.Rect(0, 0, WIDTH, HEIGHT)
+    return pygame.Rect(0, 0, settings.WIDTH, settings.HEIGHT)
 
 
 def anchor_rect(

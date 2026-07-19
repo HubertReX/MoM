@@ -235,8 +235,10 @@ X_TILES = 80  # 100
 Y_TILES = 45  # 64
 
 # --- display resolution (mutable at runtime) ---
-# Base logical resolution — stays fixed; the canvas is rendered at this size
-# and then scaled to the physical screen.
+# Higher resolution = LARGER logical viewport = MORE tiles on screen, rendered
+# natively 1:1 (no upscale). Tiles and characters keep the same pixel size; you
+# just see more of the world. ``BASE_*`` is only the smallest option, kept as a
+# reference point (not a fixed canvas size any more).
 BASE_WIDTH: int = X_TILES * TILE_SIZE
 BASE_HEIGHT: int = Y_TILES * TILE_SIZE
 
@@ -253,35 +255,35 @@ DISPLAY_RES_OPTIONS: list[tuple[int, int]] = [
 def _calc_resolution() -> tuple[int, int, int, int]:
     """Return (width, height, width_scaled, height_scaled) for current settings.
 
-    ``width`` / ``height`` are always the **base logical** resolution.
-    ``width_scaled`` / ``height_scaled`` are the **physical** display resolution
-    for the currently selected option.
+    Logical and physical resolution are the **same**: the canvas is rendered at
+    the selected tile count and blitted 1:1 to the screen. A wider option means
+    a wider viewport (more tiles), not a scaled-up image.
     """
     x_tiles, y_tiles = DISPLAY_RES_OPTIONS[_DISPLAY_RES_INDEX]
-    w_phys, h_phys = x_tiles * TILE_SIZE, y_tiles * TILE_SIZE
-    return BASE_WIDTH, BASE_HEIGHT, w_phys, h_phys
+    w, h = x_tiles * TILE_SIZE, y_tiles * TILE_SIZE
+    return w, h, w, h
 
 
 # initial values
-_W, _H, WIDTH_SCALED_INIT, HEIGHT_SCALED_INIT = _calc_resolution()
-WIDTH, HEIGHT = _W, _H  # logical resolution — fixed for the whole session
-WIDTH_SCALED, HEIGHT_SCALED = WIDTH_SCALED_INIT, HEIGHT_SCALED_INIT
-SCALE: float = min(WIDTH_SCALED / BASE_WIDTH, HEIGHT_SCALED / BASE_HEIGHT)  # scale factor canvas → screen
+WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED = _calc_resolution()
+# Logical == physical now, so the final blit is a 1:1 copy (pixel-perfect by
+# construction). Kept at 1.0 for the few call sites that still read SCALE.
+SCALE: float = 1.0
 
 
 def set_display(index: int, scale: int = 1) -> None:
-    """Change physical display resolution at runtime.
+    """Change display resolution (and thus logical viewport size) at runtime.
 
-    Only ``WIDTH_SCALED`` / ``HEIGHT_SCALED`` / ``SCALE`` change; the
-    logical resolution (``WIDTH`` / ``HEIGHT``) stays at the base value
-    so that the canvas, UI layout and pyscroll viewport all remain
-    consistent.
+    Logical ``WIDTH`` / ``HEIGHT`` follow the selected option so the game shows
+    more tiles at higher resolution. Modules that need the current size must read
+    ``settings.WIDTH`` / ``settings.HEIGHT`` dynamically (not import them by name),
+    because these change after this call.
     """
     global _DISPLAY_RES_INDEX, WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED, SCALE
     _DISPLAY_RES_INDEX = max(0, min(index, len(DISPLAY_RES_OPTIONS) - 1))
     WIDTH, HEIGHT, WIDTH_SCALED, HEIGHT_SCALED = _calc_resolution()
-    SCALE = min(WIDTH_SCALED / BASE_WIDTH, HEIGHT_SCALED / BASE_HEIGHT)
-    print(f"{WIDTH_SCALED=} {SCALE=:.2f}")
+    SCALE = 1.0
+    print(f"{WIDTH=} {HEIGHT=} (viewport {WIDTH // TILE_SIZE}x{HEIGHT // TILE_SIZE} tiles)")
 
 
 FILTER_SCALE = 8

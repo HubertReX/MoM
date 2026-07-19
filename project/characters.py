@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from save_load.models import NPCDialogState
 
 import pygame
+import settings
 from maze_generator.maze_utils import a_star_cached
 from pygame.math import Vector2 as vec
 from settings import (
@@ -25,7 +26,6 @@ from settings import (
     AVATAR_SCALE,
     _,
     CHARACTERS_DIR,
-    HEIGHT,
     INPUTS,
     IS_WEB,
     entity_name,
@@ -1192,7 +1192,7 @@ class NPC(pygame.sprite.Sprite):
     def debug(self, msgs: list[str]) -> None:
         if scene.SHOW_DEBUG_INFO:
             for i, msg in enumerate(msgs):
-                self.game.render_text(msg, (0, HEIGHT - 25 - i * 25))
+                self.game.render_text(msg, (0, settings.HEIGHT - 25 - i * 25))
 
     #############################################################################################################
     def pick_up(self, item: ItemSprite) -> bool:

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+import settings
 from quest.engine import is_unlocked, quest_progress
 from quest.entities import CompletionMode, QuestDef
 from quest.graph import children_of
@@ -47,26 +48,27 @@ if TYPE_CHECKING:
     from .hud import HUD
 
 # --- geometry, straight from the mock ---------------------------------------
-PANEL_X, PANEL_Y, PANEL_W, PANEL_H = 90, 60, 1100, 600
+# Base layout is authored for the panel centered in a 1280x720 viewport (top-left
+# at 90,60). All the absolute coordinates below are the "_0" reference values; the
+# panel is recentered on the current viewport by _recompute_geometry(), which shifts
+# every X/Y constant by the delta from that reference. See help.py for the same idea.
+PANEL_W, PANEL_H = 1100, 600
+_PANEL_X0, _PANEL_Y0 = 90, 60
 # The nine-patch draws its own frame; rules and text stop short of it instead of
 # running onto the border.
 _INNER_PAD = 22
-_INNER_LEFT = PANEL_X + _INNER_PAD
-_INNER_RIGHT = PANEL_X + PANEL_W - _INNER_PAD
-_HEADER_Y = 88
-_RULE_Y = 128
+_HEADER_Y0 = 88
+_RULE_Y0 = 128
 # Wider than the mock's 470, and measured rather than guessed: a step title starts
 # at _LEFT_X + _STEP_INDENT + 24 = 184, and "Gdzie znaleźć tę osobę?" is 322px in
 # the pixel font, so the divider has to sit at 522 for it to fit whole. 560 gives
 # that some headroom (and happens to fit "Spotkaj się z Sarkażmijką" too). The
 # details pane pays for it and can afford to: it was mostly empty space.
-_SPLIT_X = 560
-_FOOTER_Y = 578
-_LEFT_X = 118
-# derived, so moving the divider cannot leave the right column behind
-_RIGHT_X = _SPLIT_X + 30
-_RIGHT_EDGE = 1160
-_RIGHT_W = _RIGHT_EDGE - _RIGHT_X
+_SPLIT_X0 = 560
+_FOOTER_Y0 = 578
+_LEFT_X0 = 118
+_RIGHT_EDGE0 = 1160
+_LIST_TOP0 = 168
 _ROW_H = 30
 _STEP_INDENT = 42
 # `:golden_coin:` and friends are item sprites, not emotes, so markup has to be
@@ -75,8 +77,43 @@ _ITEM_EMOJIS = frozenset(ITEMS_SHEET_DEFINITION)
 # RichText leads at the font's own height (14px at FONT_SIZE_SMALL), which sets
 # prose solid; the mock's rhythm is 24px per line, so the difference is padding.
 _LINE_SPACING = 10
-_LIST_TOP = 168
-_LIST_BOTTOM = _FOOTER_Y - 8
+
+# Live geometry — (re)computed by _recompute_geometry() from the current viewport.
+PANEL_X = PANEL_Y = 0
+_INNER_LEFT = _INNER_RIGHT = 0
+_HEADER_Y = _RULE_Y = _SPLIT_X = _FOOTER_Y = 0
+_LEFT_X = _RIGHT_X = _RIGHT_EDGE = _RIGHT_W = 0
+_LIST_TOP = _LIST_BOTTOM = 0
+
+
+def _recompute_geometry() -> None:
+    """Recenter the fixed 1100x600 panel on the current viewport (settings.WIDTH/HEIGHT).
+
+    Every absolute coordinate is shifted by the panel's displacement from its
+    authored 1280x720 position, so the internal layout is preserved exactly.
+    """
+    global PANEL_X, PANEL_Y, _INNER_LEFT, _INNER_RIGHT, _HEADER_Y, _RULE_Y
+    global _SPLIT_X, _FOOTER_Y, _LEFT_X, _RIGHT_X, _RIGHT_EDGE, _RIGHT_W
+    global _LIST_TOP, _LIST_BOTTOM
+    PANEL_X = (settings.WIDTH - PANEL_W) // 2
+    PANEL_Y = (settings.HEIGHT - PANEL_H) // 2
+    dx, dy = PANEL_X - _PANEL_X0, PANEL_Y - _PANEL_Y0
+    _INNER_LEFT = PANEL_X + _INNER_PAD
+    _INNER_RIGHT = PANEL_X + PANEL_W - _INNER_PAD
+    _HEADER_Y = _HEADER_Y0 + dy
+    _RULE_Y = _RULE_Y0 + dy
+    _SPLIT_X = _SPLIT_X0 + dx
+    _FOOTER_Y = _FOOTER_Y0 + dy
+    _LEFT_X = _LEFT_X0 + dx
+    # derived, so moving the divider cannot leave the right column behind
+    _RIGHT_X = _SPLIT_X + 30
+    _RIGHT_EDGE = _RIGHT_EDGE0 + dx
+    _RIGHT_W = _RIGHT_EDGE - _RIGHT_X
+    _LIST_TOP = _LIST_TOP0 + dy
+    _LIST_BOTTOM = _FOOTER_Y - 8
+
+
+_recompute_geometry()
 
 # --- palette — shared tokens from theme (single source of truth) ------------
 # Local aliases keep the call sites unchanged; values live in theme.py.
@@ -107,6 +144,7 @@ class QuestPanel(Widget):
         super().__init__()
         self.scene = scene
         self.hud = hud
+        _recompute_geometry()
         self.bg = theme.nine_patch("nine_patch_04.png", PANEL_W, PANEL_H)
         self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
         self.filter_idx = 0
@@ -162,6 +200,10 @@ class QuestPanel(Widget):
         self.selected = max(0, min(self.selected, len(rows) - 1))
 
     def open(self) -> None:
+        # Recenter on the current viewport in case the resolution changed since
+        # this panel was constructed.
+        _recompute_geometry()
+        self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
         self.selected = 0
         self._rebuild()
 

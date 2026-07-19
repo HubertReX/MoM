@@ -36,6 +36,7 @@ from pytmx.util_pygame import load_pygame
 from config_model.config import AttitudeEnum, RaceEnum
 from quest.entities import QuestState
 from quest.runtime import QuestRuntime
+import settings
 from settings import (
     _,
     entity_name,
@@ -59,7 +60,6 @@ from settings import (
     GAME_TIME_SPEED,
     GEMS_SHEET_DEFINITION,
     GEMS_SHEET_FILE,
-    HEIGHT,
     HUD_SHEET_DEFINITION,
     HUD_SHEET_FILE,
     INITIAL_DAY,
@@ -91,7 +91,6 @@ from settings import (
     USE_PARTICLES,
     USE_SHADERS,
     WAYPOINTS_LINE_COLOR,
-    WIDTH,
     ZOOM_LEVEL,
     ZOOM_WIDE,
     # ColorValue,
@@ -218,7 +217,7 @@ class Scene(State):
             self,
             self.shadow_sprites,
             self.label_sprites,
-            (WIDTH // 2, HEIGHT // 2),
+            (settings.WIDTH // 2, settings.HEIGHT // 2),
             name="Malachi",
             model_name="Player",
             emotes=self.icons,
@@ -245,7 +244,7 @@ class Scene(State):
         self.minute_f: float = 0.0
         # are we outdoors? shell there be night and day cycle?
         self.outdoor: bool = False
-        self.filter_surf = pygame.Surface((WIDTH // FILTER_SCALE, HEIGHT // FILTER_SCALE),
+        self.filter_surf = pygame.Surface((settings.WIDTH // FILTER_SCALE, settings.HEIGHT // FILTER_SCALE),
                                           pygame.SRCALPHA)  # .convert(self.game.canvas)
 
         self.b_and_w_circle = pygame.Surface((2 * CIRCLE_RADIUS, 2 * CIRCLE_RADIUS),
@@ -1275,6 +1274,20 @@ class Scene(State):
     #     new_scene.enter_state()
 
     #############################################################################################################
+    def on_resize(self) -> None:
+        """Re-fit viewport-sized surfaces after a display resolution change.
+
+        The pyscroll viewport and the day/night filter surface are created once at
+        the canvas size; when the resolution changes while this scene is loaded (e.g.
+        via the in-game settings menu), returning to it must show the full new
+        viewport, not a stale smaller one.
+        """
+        self.map_view.set_size(self.game.canvas.get_size())
+        self.filter_surf = pygame.Surface(
+            (settings.WIDTH // FILTER_SCALE, settings.HEIGHT // FILTER_SCALE),
+            pygame.SRCALPHA,
+        )
+
     def go_to_map(self) -> None:
         if not self.new_scene:
             return
@@ -1814,7 +1827,7 @@ class Scene(State):
                     pos_vec,
                     special_flags=pygame.BLEND_RGBA_MIN)
 
-        screen.blit(pygame.transform.scale(self.filter_surf, (WIDTH, HEIGHT)))  # FILTER_SCALE
+        screen.blit(pygame.transform.scale(self.filter_surf, (settings.WIDTH, settings.HEIGHT)))  # FILTER_SCALE
         # print(screen.get_bitsize(), self.filter_surf.get_bitsize())
         # pygame.transform.scale(self.filter_surf, (WIDTH, HEIGHT), screen)  # FILTER_SCALE
 
@@ -1851,7 +1864,7 @@ class Scene(State):
                 for npc in self.NPCs + [self.player]:
                     pos = self.map_view.translate_point(npc.pos + vec(0, -8))
                     # pos_list = scene.map_view.translate_point(npc.pos + vec(0, -8))
-                    light = vec3(pos[0], HEIGHT - pos[1], 64.0)
+                    light = vec3(pos[0], settings.HEIGHT - pos[1], 64.0)
                     light_sources.append(light)
                     # pygame.draw.circle(filter_surf, DAY_FILTER, pos, 196)
                 if "intro" in self.waypoints:
@@ -1864,23 +1877,23 @@ class Scene(State):
     def get_light_from_intro(self, light_sources: list[vec3]) -> None:
         village_pos = self.waypoints["intro"][0].as_vector
         pos = self.map_view.translate_point(village_pos + vec(0, 0))
-        light = vec3(pos[0], HEIGHT - pos[1], 64.0)
+        light = vec3(pos[0], settings.HEIGHT - pos[1], 64.0)
         light_sources.append(light)
 
         village_pos = self.waypoints["intro"][-1].as_vector
         pos = self.map_view.translate_point(village_pos + vec(0, 0))
-        light = vec3(pos[0], HEIGHT - pos[1], 64.0)
+        light = vec3(pos[0], settings.HEIGHT - pos[1], 64.0)
         light_sources.append(light)
 
     #############################################################################################################
     def apply_alpha_filter(self, screen: pygame.Surface) -> None:
         # MARK: apply_alpha_filter
-        h = HEIGHT // 2
+        h = settings.HEIGHT // 2
         self.game.render_text(_("scene.day_label"),   (0, int(h - FONT_SIZE_MEDIUM * TEXT_ROW_SPACING)))
         self.game.render_text(_("scene.night_label"), (0, int(h +                    TEXT_ROW_SPACING)))
 
         # sunny, warm yellow light during daytime
-        half_screen = pygame.Surface((WIDTH, h), pygame.SRCALPHA)
+        half_screen = pygame.Surface((settings.WIDTH, h), pygame.SRCALPHA)
         half_screen.fill(DAY_FILTER)
         screen.blit(half_screen, (0, 0))
 
@@ -1895,15 +1908,15 @@ class Scene(State):
         if percentage <= 0.001:
             return
 
-        surface_h = HEIGHT // 2
-        framing_h = int(HEIGHT * 0.1)
+        surface_h = settings.HEIGHT // 2
+        framing_h = int(settings.HEIGHT * 0.1)
         framing_offset = int(framing_h * percentage)
-        half_screen = pygame.Surface((WIDTH, surface_h), pygame.SRCALPHA)
+        half_screen = pygame.Surface((settings.WIDTH, surface_h), pygame.SRCALPHA)
         half_screen.fill(CUTSCENE_BG_COLOR)
         # blit a black rect at the top of the screen
         screen.blit(half_screen, (0, -surface_h + framing_offset))
         # blit a black rect at the bottom of the screen
-        screen.blit(half_screen, (0, HEIGHT - framing_offset))
+        screen.blit(half_screen, (0, settings.HEIGHT - framing_offset))
 
     #############################################################################################################
     def show_debug(self) -> None:

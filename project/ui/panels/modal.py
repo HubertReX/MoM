@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
-from settings import HEIGHT, WIDTH
+import settings
 
 from .. import theme
 from ..widget import Widget
@@ -28,22 +28,30 @@ class ModalPanel(Widget):
         self.scene = scene
         self.game = scene.game
 
-        bg_w, bg_h = WIDTH - 200, HEIGHT - 100
+        self._build_layout(text)
+
+        self.tooltip = Tooltip(scene.icons, _TOOLTIP_TEMPLATE, cursor_size=self.game.cursor_img.get_size())
+
+    def _build_layout(self, text: str = "") -> None:
+        """(Re)build the viewport-sized box and body. Called on open() too, so the
+        cached panel re-fits the current viewport after a resolution change."""
+        bg_w, bg_h = settings.WIDTH - 200, settings.HEIGHT - 100
         self.bg = theme.nine_patch("nine_patch_03c.png", bg_w, bg_h)
         self.offset = (100, 50)
         self.rect = pygame.Rect(self.offset, self.bg.get_size())
 
+        self._text = text
         text_rect = (self.offset[0] + _BORDER, self.offset[1] + _BORDER, bg_w - 2 * _BORDER, bg_h - 2 * _BORDER)
-        self.body = RichText(text, text_rect, scene.icons, base_size=20)
-
-        self.tooltip = Tooltip(scene.icons, _TOOLTIP_TEMPLATE, cursor_size=self.game.cursor_img.get_size())
+        self.body = RichText(text, text_rect, self.scene.icons, base_size=20)
 
     #############################################################################################################
     def open(self, text: str | None = None) -> None:
-        if text is not None:
-            self.set_text(text)
+        # Re-fit to the current viewport (the panel is cached; the resolution may have
+        # changed since it was built), keeping the current text if none is passed.
+        self._build_layout(text if text is not None else self._text)
 
     def set_text(self, text: str) -> None:
+        self._text = text
         self.body.set_text(text)
         self.body.scroll_top()
         self.tooltip.update(None, (0, 0))

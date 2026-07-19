@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING, Any
 
 import pygame
 
-from settings import HEIGHT, WIDTH, _, entity_name
+import settings
+from settings import _, entity_name
 
 from .. import theme
 from ..widget import Widget
@@ -74,10 +75,17 @@ class InventoryPanel(Widget):
         self.scene = scene
         self.hud = hud
         self.bg = build_inventory_bg()
-        self.rect = self.bg.get_rect(topleft=(WIDTH // 2 - self.bg.get_width() // 2, HEIGHT - 320))
+        self._reposition()
+
+    def _reposition(self) -> None:
+        """Center horizontally and anchor near the bottom of the current viewport."""
+        self.rect = self.bg.get_rect(
+            topleft=(settings.WIDTH // 2 - self.bg.get_width() // 2, settings.HEIGHT - 320))
 
     def open(self) -> None:
-        pass
+        # Re-fit to the current viewport: the panel is cached by the UI, so the
+        # resolution may have changed since it was built.
+        self._reposition()
 
     def draw(self, surface: pygame.Surface) -> None:
         if not self.visible:

@@ -10,12 +10,12 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+import settings
 from settings import (
     CHAR_NAME_COLOR,
     FONT_SIZE_LARGE,
     INVENTORY_ITEM_WIDTH,
     MAX_HOTBAR_ITEMS,
-    WIDTH,
     _,
     entity_name,
     get_buy_price_multiplier,
@@ -45,23 +45,26 @@ class TradePanel(Widget):
         self.is_buying: bool = True
 
         self.inventory_bg = build_inventory_bg()
-        self.inventory_bg_rect = self.inventory_bg.get_rect(
-            topleft=(WIDTH // 2 - self.inventory_bg.get_width() // 2, 720 - 320)
-        )
-
-        left = WIDTH // 2 - (INVENTORY_ITEM_WIDTH * MAX_HOTBAR_ITEMS // 2) - 48
-
         self.trader_bg = theme.nine_patch("nine_patch_04.png", 800, 520).copy()
         w, h = self.trader_bg.get_size()
         pygame.draw.line(self.trader_bg, _DIVIDER, (w // 2, h - 140), (w // 2, h - 40), 4)
         pygame.draw.line(self.trader_bg, _DIVIDER, (40, 330), (w - 40, 330), 4)
-        self.trader_bg_rect = self.trader_bg.get_rect(topleft=(left, 50))
-
         self.trader_small_bg = theme.nine_patch("nine_patch_04.png", 800, 340).copy()
+        self._reposition()
+
+    def _reposition(self) -> None:
+        """Center/anchor the panels on the current viewport. Called on open() too, so
+        the cached panel re-fits after a resolution change."""
+        self.inventory_bg_rect = self.inventory_bg.get_rect(
+            topleft=(settings.WIDTH // 2 - self.inventory_bg.get_width() // 2, settings.HEIGHT - 320)
+        )
+        left = settings.WIDTH // 2 - (INVENTORY_ITEM_WIDTH * MAX_HOTBAR_ITEMS // 2) - 48
+        self.trader_bg_rect = self.trader_bg.get_rect(topleft=(left, 50))
         self.trader_small_bg_rect = self.trader_small_bg.get_rect(topleft=(left, 50))
 
     #############################################################################################################
     def open(self) -> None:
+        self._reposition()
         self.is_buying = True
 
     def toggle_side(self) -> None:
@@ -130,14 +133,14 @@ class TradePanel(Widget):
 
         avatar = pygame.transform.scale_by(merchant.avatar, 0.5)
         ar = avatar.get_rect()
-        surface.blit(avatar, (WIDTH // 2 - ar.width // 2, self.trader_bg_rect.top + 10))
+        surface.blit(avatar, (settings.WIDTH // 2 - ar.width // 2, self.trader_bg_rect.top + 10))
         self.hud.draw_text(
             surface, entity_name(merchant.model),
-            (WIDTH // 2, self.trader_bg_rect.top + 10 + ar.height - 16),
+            (settings.WIDTH // 2, self.trader_bg_rect.top + 10 + ar.height - 16),
             font=self.game.fonts[FONT_SIZE_LARGE], color=CHAR_NAME_COLOR,
             border=(84, 135, 137), shadow=False, align="centred",
         )
-        self._draw_merchant_stats(surface, merchant, (WIDTH // 2 + ar.width // 2, self.trader_bg_rect.top + 10))
+        self._draw_merchant_stats(surface, merchant, (settings.WIDTH // 2 + ar.width // 2, self.trader_bg_rect.top + 10))
 
         self.hud.draw_hotbar(
             surface, merchant,

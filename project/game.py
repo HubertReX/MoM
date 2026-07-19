@@ -44,8 +44,6 @@ from settings import (  # LOGO_IMG,; ColorValue,
     GAMEPAD_XBOX_AXIS2ACTIONS,
     GAMEPAD_XBOX_BUTTON2ACTIONS,
     GAMEPAD_XBOX_CONTROL_NAMES,
-    HEIGHT,
-    HEIGHT_SCALED,
     HUD_DIR,
     INPUTS,
     IS_FULLSCREEN,
@@ -72,8 +70,6 @@ from settings import (  # LOGO_IMG,; ColorValue,
     USE_SHADERS,
     USE_SOD,
     USE_WEB_SIMULATOR,
-    WIDTH,
-    WIDTH_SCALED,
     load_image,
     vec,
     vec3,
@@ -204,8 +200,10 @@ class Game:
 
         # bg_image = load_image(HUD_DIR / "main_menu_bg.png").convert_alpha()
         # bg_image = load_image(HUD_DIR / "big_tree_1600x1024.png").convert_alpha()
-        bg_image = load_image(HUD_DIR / "Main_menu_bg-0001.png").convert_alpha()
-        bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
+        # Keep the unscaled source so the menu background can be re-fit to a new
+        # resolution without compounding nearest-neighbour scaling (see set_display).
+        self._menu_bg_source: pygame.Surface = load_image(HUD_DIR / "Main_menu_bg-0001.png").convert_alpha()
+        bg_image = pygame.transform.scale(self._menu_bg_source, (settings.WIDTH, settings.HEIGHT))
         # logo_image = load_image(LOGO_IMG).convert_alpha()
         # logo_image = pygame.transform.scale_by(logo_image, 5)
         # bg_image.blit(logo_image, (WIDTH // 2, 100))
@@ -277,16 +275,16 @@ class Game:
             # pygame.RESIZABLE , | pygame.SCALED
             self.flags = self.flags | pygame.OPENGL | pygame.DOUBLEBUF
 
-        # final surface, after scaling up
+        # Logical viewport == physical window (1:1, no upscale). A larger option
+        # means more tiles, not a scaled image.
         if IS_FULLSCREEN or settings._IS_FULLSCREEN:
             res = (0, 0)
         else:
-            # Recalculate from saved display index — WIDTH_SCALED may have
-            # been overwritten by the fullscreen (0,0) path above.
             _xt, _yt = settings.DISPLAY_RES_OPTIONS[settings._DISPLAY_RES_INDEX]
             res = (_xt * settings.TILE_SIZE, _yt * settings.TILE_SIZE)
+            settings.WIDTH, settings.HEIGHT = res
             settings.WIDTH_SCALED, settings.HEIGHT_SCALED = res
-            settings.SCALE = min(res[0] / settings.BASE_WIDTH, res[1] / settings.BASE_HEIGHT)
+            settings.SCALE = 1.0
             # Clamp window size to desktop when returning from fullscreen
             if not IS_WEB:
                 try:
@@ -299,12 +297,13 @@ class Game:
                     pass
         print(res)
         self.screen: pygame.Surface = pygame.display.set_mode(res, self.flags, vsync=0)
-        # sync WIDTH_SCALED with actual screen size (important for fullscreen)
-        if self.screen.get_size() != (settings.WIDTH_SCALED, settings.HEIGHT_SCALED):
-            actual_w, actual_h = self.screen.get_size()
-            settings.WIDTH_SCALED = actual_w
-            settings.HEIGHT_SCALED = actual_h
-            settings.SCALE = min(actual_w / settings.BASE_WIDTH, actual_h / settings.BASE_HEIGHT)
+        # Sync logical viewport with the actual window size (important for fullscreen,
+        # where res=(0,0) resolves to the native desktop resolution). Logical ==
+        # physical, so the whole surface is used with no black borders.
+        actual_w, actual_h = self.screen.get_size()
+        settings.WIDTH, settings.HEIGHT = actual_w, actual_h
+        settings.WIDTH_SCALED, settings.HEIGHT_SCALED = actual_w, actual_h
+        settings.SCALE = 1.0
         if not IS_WEB:
             try:
                 from pygame._sdl2.video import Window as _SDL2Win
@@ -335,6 +334,22 @@ class Game:
             # self.canvas = self.screen
             # self.HUD    = self.screen
             self.HUD = self.canvas
+
+        # Re-fit the menu background to the new viewport, from the unscaled source so
+        # quality does not degrade across repeated resolution changes. Guarded: at
+        # startup set_display() runs before _menu_bg_source is loaded.
+        if getattr(self, "_menu_bg_source", None) is not None:
+            self.menu_bg_image = pygame.transform.scale(
+                self._menu_bg_source, (settings.WIDTH, settings.HEIGHT))
+
+        # If the resolution changed while a state (scene or menu) is already on the
+        # stack (in-game settings menu), let it re-fit its viewport-sized surfaces and
+        # panel positions. Guarded with getattr: at startup set_display() runs before
+        # self.states exists.
+        for state in getattr(self, "states", []):
+            on_resize = getattr(state, "on_resize", None)
+            if callable(on_resize):
+                on_resize()
 
     # #############################################################################################################
     # def update_config_schema(self) -> None:
@@ -398,7 +413,7 @@ class Game:
         self.screen.fill(BG_COLOR)
         self.render_text(
             _("game.loading"),
-            (WIDTH_SCALED // 2, HEIGHT_SCALED // 2),
+            (settings.WIDTH_SCALED // 2, settings.HEIGHT_SCALED // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
             bg_color=PANEL_BG_COLOR,
@@ -572,8 +587,8 @@ class Game:
             res[0] = max(0, res[0])
             res[1] = max(0, res[1])
 
-            res[0] = min(WIDTH - 8, res[0])
-            res[1] = min(HEIGHT - 8, res[1])
+            res[0] = min(settings.WIDTH - 8, res[0])
+            res[1] = min(settings.HEIGHT - 8, res[1])
             screen.blit(self.cursor_img, res, special_flags=pygame.BLEND_ALPHA_SDL2)
         else:
             screen.blit(self.cursor_img, cursor_rect.center, special_flags=pygame.BLEND_ALPHA_SDL2)
@@ -660,7 +675,7 @@ class Game:
             file_name = SCREENSHOTS_DIR / f"screenshot_{time_str}.png"
             os.makedirs(file_name.parent, exist_ok=True)
             # pygame.image.save(self.screen, file_name)
-            Image.frombuffer("RGBA", (WIDTH, HEIGHT), data, "raw", "RGBA", 0, -1).save(file_name)
+            Image.frombuffer("RGBA", (settings.WIDTH, settings.HEIGHT), data, "raw", "RGBA", 0, -1).save(file_name)
             if IS_WEB:
                 import platform
 
@@ -889,7 +904,7 @@ class Game:
         self.log("saving recordings - this can take a while...")
         self.render_text(
             _("game.saving"),
-            (WIDTH_SCALED // 2, HEIGHT_SCALED // 2),
+            (settings.WIDTH_SCALED // 2, settings.HEIGHT_SCALED // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
             bg_color=PANEL_BG_COLOR,
@@ -919,7 +934,7 @@ class Game:
                 "pipe:",
                 format="rawvideo",
                 pix_fmt="rgba",
-                s=f"{WIDTH}x{HEIGHT}",
+                s=f"{settings.WIDTH}x{settings.HEIGHT}",
                 r=FPS_CAP,
             )
             .vflip()
@@ -932,7 +947,7 @@ class Game:
     def show_pause_message(self) -> None:
         self.render_text(
             _("game.paused"),
-            (WIDTH // 2, HEIGHT // 2),
+            (settings.WIDTH // 2, settings.HEIGHT // 2),
             font_size=FONT_SIZE_HUGE,
             centred=True,
             bg_color=PANEL_BG_COLOR,
@@ -1072,18 +1087,11 @@ class Game:
         if self.is_paused:
             self.show_pause_message()
 
-        # than scale and copy on final Surface (game.screen)
-
-        _scale = settings.SCALE
-        if _scale != 1:
-            scaled_w = int(WIDTH * _scale)
-            scaled_h = int(HEIGHT * _scale)
-            offset_x = (settings.WIDTH_SCALED - scaled_w) // 2
-            offset_y = (settings.HEIGHT_SCALED - scaled_h) // 2
-            self.screen.fill((0, 0, 0))
-            self.screen.blit(pygame.transform.scale(self.canvas, (scaled_w, scaled_h)), (offset_x, offset_y))
-        else:
-            self.screen.blit(self.canvas, (0, 0))
+        # Copy the logical canvas onto the screen 1:1. The canvas is created at the
+        # exact window size (settings.WIDTH/HEIGHT == physical), so this is a plain
+        # pixel-perfect blit — no scaling, no letterbox. Higher resolution shows more
+        # of the world (a larger viewport), not a magnified image.
+        self.screen.blit(self.canvas, (0, 0))
 
         if USE_SHADERS:
             self.postprocessing(dt)

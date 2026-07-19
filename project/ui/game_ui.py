@@ -61,7 +61,6 @@ class GameUI:
     def __init__(self, scene: "Scene") -> None:
         self.scene = scene
         self.game = scene.game
-        self.surface = self.game.HUD
         self.hud = HUD(scene)
         self._panels: dict[type, "Widget"] = {}
         self._open: list["Widget"] = []
@@ -323,7 +322,10 @@ class GameUI:
     # MARK: draw
 
     def draw(self, time_elapsed: float | None = None) -> None:
-        surface = self.surface
+        # Read game.HUD live: changing the resolution recreates that surface, and a
+        # cached reference would leave the HUD/panels drawing onto the old, orphaned
+        # surface (never blitted) — invisible HUD after a resolution change.
+        surface = self.game.HUD
         blocking = any(isinstance(p, _BLOCKING) for p in self._open)
 
         # inventory background sits *under* the hotbar (original draw order)

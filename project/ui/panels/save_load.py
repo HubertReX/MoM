@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, Callable
 import pygame
 from enums import NotificationTypeEnum
 from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo
-from settings import HEIGHT, MAX_SAVE_SLOTS, WIDTH, _
+import settings
+from settings import MAX_SAVE_SLOTS, _
 
 from .. import theme
 from ..widget import Widget
@@ -228,7 +229,7 @@ class SaveLoadPanel(Widget):
     def _build_background(self) -> None:
         bw, bh = 600, 420
         self.bg = theme.nine_patch("nine_patch_04.png", bw, bh)
-        self.rect = self.bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self.rect = self.bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
         self._title_surf = theme.menu_font(32).render(_(self._TITLE_KEY), False, theme.NAME)
         self._close_btn = Label("[X]", size=24)
 
@@ -282,6 +283,10 @@ class SaveLoadPanel(Widget):
         self._confirm_selected = 0
         self._selected_idx = 0
         self._close_editor()
+        # Re-fit to the current viewport (the panel is cached; the resolution may have
+        # changed since it was built). Slot rects derive from self.rect, so rebuild the
+        # background first, then the slots.
+        self._build_background()
         self._refresh_slots()
 
     def handle_event(self, event: pygame.event.Event) -> bool:
@@ -511,7 +516,7 @@ class DeathScreen(Widget):
 
         bw, bh = 600, 520
         self.bg = theme.nine_patch("nine_patch_12b.png", bw, bh)
-        self.rect = self.bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self.rect = self.bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
         self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
 
         slot_rect = pygame.Rect(
@@ -597,7 +602,7 @@ class DeadState(_State):
         self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
         bg_w, bg_h = 600, 520
         self._bg = theme.nine_patch("nine_patch_12b.png", bg_w, bg_h)
-        self._bg_rect = self._bg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self._bg_rect = self._bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
 
         slot_rect = pygame.Rect(
             self._bg_rect.left + _PAD,

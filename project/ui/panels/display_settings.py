@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Callable
 
 import pygame
 import settings as _settings
-from settings import HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH, _
+from settings import INPUTS, IS_WEB, MENU_FONT, _
 
 from save_load.display_settings import save_display_settings
 
@@ -38,10 +38,13 @@ class SettingsPanel(Widget):
         self,
         *,
         anchor: str = "midleft",
-        pos: tuple[int, int] = (60, HEIGHT // 2),
+        pos: tuple[int, int] | None = None,
         back_callback: Callable[[], object] | None = None,
         apply_callback: Callable[[], object] | None = None,
     ) -> None:
+        # viewport-relative default resolved at call time (settings.HEIGHT is mutable)
+        if pos is None:
+            pos = (60, _settings.HEIGHT // 2)
         self._back_callback = back_callback
         self._apply_callback = apply_callback
         super().__init__()
@@ -222,7 +225,7 @@ class SettingsMenu:
             {
                 "build_panel": lambda self: SettingsPanel(
                     anchor="midleft",
-                    pos=(60, HEIGHT // 2),
+                    pos=(60, _settings.HEIGHT // 2),
                     back_callback=lambda: self.on_quit(),
                     apply_callback=lambda: self.game.set_display(),
                 ),

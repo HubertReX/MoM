@@ -17,6 +17,27 @@ IS_WEB = __import__("sys").platform == "emscripten" or USE_WEB_SIMULATOR
 Web ma ograniczenia wydajności i runtime'u (m.in. brak Pydantic, wyłączone shadery/filtr
 dzień-noc). Szczegóły rozgałęzień: [`project/AGENTS.md`](./project/AGENTS.md).
 
+## 🔑 Złota zasada: pixel-perfect rendering (natywny 1:1, więcej kafelków)
+
+Gra **musi renderować się pixel-perfect** i **nigdy nie skaluje** obrazu na ekran.
+Wyższa rozdzielczość = **większy viewport = więcej kafelków**, nie powiększony obraz.
+Kafelek i postać mają zawsze ten sam rozmiar w pikselach (`TILE_SIZE = 16` natywnie).
+
+- Rozdzielczość logiczna == fizyczna: `settings.WIDTH`/`HEIGHT` **podążają** za wybraną
+  opcją (`DISPLAY_RES_OPTIONS`, w kafelkach), a `settings.SCALE == 1.0` zawsze
+  (`settings.py` `_calc_resolution`). Canvas tworzony jest w rozmiarze okna, a finalny
+  blit to zwykłe 1:1 (`self.screen.blit(self.canvas, (0, 0))` w `game.py:render()`).
+  Zero `transform.scale`/`smoothscale` na pełnym canvasie, zero letterboxa.
+- **NIE importuj `WIDTH`/`HEIGHT`/`WIDTH_SCALED`/`HEIGHT_SCALED` po nazwie**
+  (`from settings import WIDTH`) — te wartości zmieniają się w runtime przy zmianie
+  rozdzielczości, a import łapie je raz przy starcie (stąd rozjazdy centrowania UI).
+  Zawsze czytaj dynamicznie: `import settings` → `settings.WIDTH`. Domyślne argumenty
+  z `WIDTH`/`HEIGHT` też są zakazane (liczone raz przy definicji) — użyj `None` i licz
+  w środku (wzorzec: `main_menu.py`, `display_settings.py`, `help.py::_recompute_geometry`).
+- Świat (pyscroll) sam bierze rozmiar viewportu z `canvas.get_size()` — rośnie automatem.
+  UI/HUD/panele muszą kotwiczyć się do `settings.WIDTH`/`HEIGHT` (krawędzie/środek), żeby
+  rozciągały się na cały viewport.
+
 ## Co gdzie jest
 
 | Katalog              | Zawartość                                                | Edytować?                                                                     |

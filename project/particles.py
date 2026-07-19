@@ -12,7 +12,8 @@ import pygame
 from camera import Camera
 from pygame.math import Vector2 as vec
 from pyscroll.group import PyscrollGroup
-from settings import HEIGHT, PARTICLES_DIR, WIDTH, ZOOM_LEVEL
+import settings
+from settings import PARTICLES_DIR, ZOOM_LEVEL
 
 
 #####################################################################################################################
@@ -269,7 +270,7 @@ class ParticleSystem(ABC):
 class ParticleLeafs(ParticleSystem):
     def __init__(self, canvas: pygame.Surface, group: PyscrollGroup, camera: Camera) -> None:
         # leafs appears at the top half of the screen
-        spawn_rect = pygame.Rect(0, 0, WIDTH, HEIGHT // 2)
+        spawn_rect = pygame.Rect(0, 0, settings.WIDTH, settings.HEIGHT // 2)
 
         leaf_img = pygame.image.load(PARTICLES_DIR / "Leaf_single.png").convert_alpha()
         # emit: 1 particle/second
@@ -321,7 +322,7 @@ class ParticleRain(ParticleSystem):
     # MARK: Rain
     def __init__(self, canvas: pygame.Surface, group: PyscrollGroup, camera: Camera) -> None:
         # rain appears at the top of the screen (16 pixels high, full width)
-        spawn_rect = pygame.Rect(0, -HEIGHT // 2, WIDTH + 256, HEIGHT)
+        spawn_rect = pygame.Rect(0, -settings.HEIGHT // 2, settings.WIDTH + 256, settings.HEIGHT)
         # leaf_img = pygame.image.load(PARTICLES_DIR / "Rain.png").convert_alpha()
 
         from settings import import_sprite_sheet, SPRITE_SHEET_DEFINITION_RAIN

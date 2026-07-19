@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Literal
 
 import pygame
 
+import settings
 from animation.transitions import AnimationTransition
 from objects import ItemSprite, InventorySlot, Notification, NotificationTypeEnum
 from settings import (
@@ -24,7 +25,6 @@ from settings import (
     FONT_COLOR,
     FONT_SIZE_MEDIUM,
     FONT_SIZE_SMALL,
-    HEIGHT,
     INVENTORY_ITEM_SCALE,
     INVENTORY_ITEM_WIDTH,
     IS_WEB,
@@ -35,7 +35,6 @@ from settings import (
     UI_BORDER_COLOR_ACTIVE,
     UI_BORDER_WIDTH,
     UI_COOL_OFF_COLOR,
-    WIDTH,
     _,
 )
 
@@ -77,8 +76,8 @@ def hotbar_topleft(slots: int) -> tuple[int, int]:
     the old width and drift off to the left.
     """
     return (
-        WIDTH // 2 - (INVENTORY_ITEM_WIDTH * slots // 2),
-        HEIGHT - INVENTORY_ITEM_WIDTH - TILE_SIZE,
+        settings.WIDTH // 2 - (INVENTORY_ITEM_WIDTH * slots // 2),
+        settings.HEIGHT - INVENTORY_ITEM_WIDTH - TILE_SIZE,
     )
 
 
@@ -270,7 +269,7 @@ class HUD(Widget):
             cooldown = min(100, int(now / limit * 100))
         else:
             cooldown = 100
-        bg_rect = self.selection_box(surface, TILE_SIZE, HEIGHT - (TILE_SIZE * 9), has_switched, cooldown)
+        bg_rect = self.selection_box(surface, TILE_SIZE, settings.HEIGHT - (TILE_SIZE * 9), has_switched, cooldown)
         if weapon:
             weapon_surf = pygame.transform.scale(weapon.image_directions["up"], (TILE_SIZE * 7, TILE_SIZE * 7))
             surface.blit(weapon_surf, weapon_surf.get_rect(center=bg_rect.center))
@@ -289,9 +288,9 @@ class HUD(Widget):
         label = label or _(ACTIONS[action]["msg"])
         icon = self.icons[ACTIONS[action]["show"][0]][0]
         label_w, _h = self.font.size(label)
-        surface.blit(self.available_action_bg, (WIDTH - TILE_SIZE - 216, HEIGHT - (2 * TILE_SIZE) - 16 - row_spacing))
-        surface.blit(icon, (WIDTH - (2 * TILE_SIZE) - 32, HEIGHT - (2 * TILE_SIZE) - 14 - row_spacing))
-        self.draw_text(surface, label, (WIDTH - TILE_SIZE - label_w - 56, HEIGHT - (2 * TILE_SIZE) - 7 - row_spacing))
+        surface.blit(self.available_action_bg, (settings.WIDTH - TILE_SIZE - 216, settings.HEIGHT - (2 * TILE_SIZE) - 16 - row_spacing))
+        surface.blit(icon, (settings.WIDTH - (2 * TILE_SIZE) - 32, settings.HEIGHT - (2 * TILE_SIZE) - 14 - row_spacing))
+        self.draw_text(surface, label, (settings.WIDTH - TILE_SIZE - label_w - 56, settings.HEIGHT - (2 * TILE_SIZE) - 7 - row_spacing))
 
     def show_available_actions(self, surface: pygame.Surface) -> None:
         # the "H — help" hint hides while the help panel itself is open
@@ -334,7 +333,7 @@ class HUD(Widget):
             # quest toasts carry reward labels ("[num]+50[/num] :golden_coin:"), and
             # the coin is an item sprite rather than an emote - items go in first so
             # the emote sheet keeps the one name they share (`heart`)
-            rt = RichText(notification.message, (0, 0, WIDTH - 300, 400),
+            rt = RichText(notification.message, (0, 0, settings.WIDTH - 300, 400),
                           {**self.scene.items_sheet, **self.icons},
                           base_size=14, show_scrollbar=False,
                           extra_emojis=frozenset(ITEMS_SHEET_DEFINITION))
@@ -356,7 +355,7 @@ class HUD(Widget):
         # burned its slide-in while waiting and pop in fully arrived
         time_elapsed = self.game.time_elapsed - notification.show_time
 
-        y_bottom = HEIGHT - TILE_SIZE
+        y_bottom = settings.HEIGHT - TILE_SIZE
         y_stop = 230 + stack_offset
         factor = AnimationTransition.in_out_expo(min(1.0, time_elapsed / 1.0))
         y = int(y_bottom + (y_stop - y_bottom) * factor)

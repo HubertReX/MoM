@@ -12,7 +12,8 @@ from typing import TYPE_CHECKING, Callable
 
 import pygame
 from objects import NotificationTypeEnum
-from settings import VERSION, HEIGHT, INPUTS, IS_WEB, MENU_FONT, WIDTH, LANG, _
+import settings
+from settings import VERSION, INPUTS, IS_WEB, MENU_FONT, LANG, _
 from state import State
 
 from .. import theme
@@ -45,13 +46,19 @@ class MenuPanel(Widget):
         line_keys: list[str | tuple[str, dict[str, object]]] | None = None,
         bg_file: str = "nine_patch_06b.png",
         anchor: str = "midleft",
-        pos: tuple[int, int] = (60, HEIGHT // 2),
+        pos: tuple[int, int] | None = None,
         title_size: int = _TITLE_SIZE,
         button_size: int = _BUTTON_SIZE,
         line_size: int = _LINE_SIZE,
-        min_width: int = WIDTH // 5,
+        min_width: int | None = None,
     ) -> None:
         super().__init__()
+        # Resolve viewport-relative defaults at call time (settings.WIDTH/HEIGHT
+        # change with the resolution, so they must not be baked into default args).
+        if pos is None:
+            pos = (60, settings.HEIGHT // 2)
+        if min_width is None:
+            min_width = settings.WIDTH // 5
         self.index: int = 0
         self._i18n_keys: list[str] = [key for key, _ in options]  # type: ignore[misc]
         self._title_key: str | None = title_key
@@ -215,6 +222,25 @@ class MenuScreen(State):
     def build_panel(self) -> MenuPanel:
         raise NotImplementedError("Subclasses must implement build_panel()")
 
+    def on_resize(self) -> None:
+        """Re-fit to a new resolution (called from Game.set_display for stacked states).
+
+        Refresh the background to the freshly rescaled menu image and rebuild the panel
+        so it recenters on the new viewport - this screen is cached on the state stack,
+        so its background and panel would otherwise keep the previous resolution's size
+        and position.
+        """
+        if self.bg_image is not None:
+            self.bg_image = self.game.menu_bg_image
+        old_index = getattr(self.panel, "index", 0)
+        self.manager = UIManager(self.game.HUD)
+        self.panel = self.build_panel()
+        self.manager.add(self.panel)
+        # restore the highlighted row (set_index wraps out-of-range indices safely)
+        set_index = getattr(self.panel, "set_index", None)
+        if callable(set_index):
+            set_index(old_index)
+
     def on_quit(self) -> None:
         self.game.reset_inputs()
         self.exit_state()
@@ -370,7 +396,7 @@ class MainMenuScreen(MenuScreen):
         ])
         if not IS_WEB:
             options.append(("menu.quit", self._quit_game))
-        return MenuPanel(options, bg_file="nine_patch_06b.png", anchor="midleft", pos=(60, HEIGHT // 2))
+        return MenuPanel(options, bg_file="nine_patch_06b.png", anchor="midleft", pos=(60, settings.HEIGHT // 2))
 
     def _has_saved_games(self) -> bool:
         slots = self.game.save_manager.list_slots()
@@ -425,7 +451,7 @@ class ConfirmMenuScreen(MenuScreen):
             lines=[self._message],
             bg_file="nine_patch_12b.png",
             anchor="center",
-            pos=(WIDTH // 2, HEIGHT // 2),
+            pos=(settings.WIDTH // 2, settings.HEIGHT // 2),
             line_size=15,
         )
 
@@ -453,5 +479,5 @@ class AboutMenuScreen(MenuScreen):
             ],
             bg_file="nine_patch_12b.png",
             anchor="midleft",
-            pos=(60, HEIGHT // 2),
+            pos=(60, settings.HEIGHT // 2),
         )

@@ -21,16 +21,15 @@ from dialog.entities import DialogOption
 from dialog.result_sink import visit_node
 from result_sink_adapter import GameResultSink
 from enums import NotificationTypeEnum
+import settings
 from settings import (
     AVATAR_SCALE,
     CHAR_NAME_COLOR,
     FONT_SIZE_LARGE,
     FONT_SIZE_SMALL,
-    HEIGHT,
     MAIN_FONT,
     SENTIMENT_NAME_TO_EMOTE,
     TILE_SIZE,
-    WIDTH,
     _,
     entity_name,
     get_msg,
@@ -86,25 +85,7 @@ class DialogPanel(Widget):
         self.game = scene.game
         self.npc: "NPC | None" = None
 
-        bg_w, bg_h = WIDTH - 64, HEIGHT // 3
-        self.bg = theme.nine_patch("nine_patch_01c.png", bg_w, bg_h)
-        self.offset = (32, HEIGHT - self.bg.get_height() - 10)
-        self.rect = pygame.Rect(self.offset, self.bg.get_size())
-
-        body_text_h = _BODY_LINES * _BODY_FONT + (_BODY_LINES - 1) * 4
-        self.body_rect = pygame.Rect(
-            self.offset[0] + _BORDER,
-            self.offset[1] + _BORDER,
-            bg_w - 2 * _BORDER,
-            body_text_h,
-        )
-        self.body = RichText("", self.body_rect, scene.icons, base_size=_BODY_FONT, line_spacing=4)
-
-        # Options grow downward from under the separator line (which sits between
-        # the node text and the first option row).
-        sep_h = _OPTION_GAP + _OPTION_PAD + _SEPARATOR_H + _SEPARATOR_GAP
-        self.options_top = self.body_rect.bottom + sep_h
-        self.options_bottom = self.rect.bottom - _BORDER
+        self._recompute_layout()
         self._options: list[DialogOption] = []          # filtered, indexed source of truth
         self._option_surfaces: list[pygame.Surface] = []  # weight-indicator surface per option
         self.option_rects: list[pygame.Rect] = []       # parallel to _options; off-screen if not in window
@@ -129,8 +110,52 @@ class DialogPanel(Widget):
         self._sentiment_flash_timer = 0.0
 
     #############################################################################################################
+    def _recompute_layout(self) -> None:
+        """(Re)build the viewport-dependent geometry: box, body (speech) and options.
+
+        Called on construction and again on open(), so the panel re-fits the current
+        viewport after a resolution change (it is cached by the UI and would otherwise
+        keep the previous resolution's size and position).
+
+        The options section is a COMPACT block anchored to the bottom of the box: just
+        tall enough for _OPTION_VISIBLE_COUNT single-line rows. Everything above (all
+        the extra height the box gains as the viewport grows) goes to the character's
+        speech (body). The single-row height is measured from a real one-line render so
+        the reserve matches the pixel font exactly (4 rows always fit, no scroll).
+        """
+        bg_w, bg_h = settings.WIDTH - 64, settings.HEIGHT // 3
+        self.bg = theme.nine_patch("nine_patch_01c.png", bg_w, bg_h)
+        self.offset = (32, settings.HEIGHT - self.bg.get_height() - 10)
+        self.rect = pygame.Rect(self.offset, self.bg.get_size())
+
+        _probe = render_rich_text_surface(
+            "1. Ag", bg_w - 2 * _BORDER, self.scene.icons,
+            base_size=_OPTION_FONT, base_color=theme.DEFAULT_TEXT_COLOR, shadow=False,
+        )
+        option_row_h = _probe.get_height() + _OPTION_PAD + _OPTION_GAP
+        options_area_h = _OPTION_VISIBLE_COUNT * option_row_h + _OPTION_PAD
+
+        sep_h = _OPTION_GAP + _OPTION_PAD + _SEPARATOR_H + _SEPARATOR_GAP
+        self.options_bottom = self.rect.bottom - _BORDER
+        self.options_top = self.options_bottom - options_area_h
+
+        # Body (speech) fills from the top border down to just above the separator.
+        body_top = self.offset[1] + _BORDER
+        body_h = (self.options_top - sep_h) - body_top
+        self.body_rect = pygame.Rect(
+            self.offset[0] + _BORDER,
+            body_top,
+            bg_w - 2 * _BORDER,
+            body_h,
+        )
+        self.body = RichText("", self.body_rect, self.scene.icons, base_size=_BODY_FONT, line_spacing=4)
+
+    #############################################################################################################
     def open(self, npc: "NPC | None" = None, text: str = "") -> None:
         """Configure the panel when the UI controller opens it."""
+        # Re-fit to the current viewport (the panel is cached; the resolution may have
+        # changed since it was built).
+        self._recompute_layout()
         self.set_dialog(npc, text)
 
     def set_dialog(self, npc: "NPC | None", text: str) -> None:

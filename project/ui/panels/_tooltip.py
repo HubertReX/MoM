@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pygame
 
-from settings import HEIGHT, WIDTH
+import settings
 
 from ..theme import DEFAULT_TEXT_COLOR
 from ..widgets.rich_text import RichText
@@ -44,8 +44,8 @@ class Tooltip:
         self.surface = surf
         x = mouse_pos[0] + self.cursor_size[0] // 2
         y = mouse_pos[1] + self.cursor_size[1]
-        x = min(x, WIDTH - surf.get_width())
-        y = min(y, HEIGHT - surf.get_height())
+        x = min(x, settings.WIDTH - surf.get_width())
+        y = min(y, settings.HEIGHT - surf.get_height())
         self.rect = pygame.Rect(x, y, *surf.get_size())
 
     def draw(self, surface: pygame.Surface) -> None:
