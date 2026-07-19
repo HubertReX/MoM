@@ -41,6 +41,7 @@ from .. import keycap, theme
 from ..text.markup import cut_markup, strip_tags
 from ..widget import Widget
 from ..widgets import bar
+from ..widgets.scroll_view import ScrollView
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -77,6 +78,12 @@ _ITEM_EMOJIS = frozenset(ITEMS_SHEET_DEFINITION)
 # RichText leads at the font's own height (14px at FONT_SIZE_SMALL), which sets
 # prose solid; the mock's rhythm is 24px per line, so the difference is padding.
 _LINE_SPACING = 10
+# The details pane scrolls now (ScrollView), so prose no longer has to fit the box:
+# these caps are just a runaway guard, not a layout constraint. Before, a low cap
+# was the only thing stopping a long description from pushing KROKI/NAGRODA off the
+# frame; that job now belongs to the scrollbar.
+_MAX_DESC_LINES = 20
+_MAX_RESULT_LINES = 12
 
 # Live geometry — (re)computed by _recompute_geometry() from the current viewport.
 PANEL_X = PANEL_Y = 0
@@ -157,6 +164,11 @@ class QuestPanel(Widget):
         # same title is drawn narrow in the list and wide in the details pane, and
         # baking it is not free: fitting one to a column costs a handful of probes.
         self._rich_cache: dict[tuple[str, int, int, tuple[int, ...]], pygame.Surface] = {}
+        # The details pane can be taller than its box (long description + many
+        # steps + reward chips); this scrolls it and draws the scrollbar only when
+        # it overflows. Reset whenever the selection changes so each quest opens
+        # at the top.
+        self._details_scroll = ScrollView()
 
     # --- data ---------------------------------------------------------------
 
@@ -205,6 +217,7 @@ class QuestPanel(Widget):
         _recompute_geometry()
         self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
         self.selected = 0
+        self._details_scroll.reset()
         self._rebuild()
 
     # --- input --------------------------------------------------------------
@@ -212,20 +225,37 @@ class QuestPanel(Widget):
     def select_next(self) -> None:
         if self._rows:
             self.selected = (self.selected + 1) % len(self._rows)
+            self._details_scroll.reset()
 
     def select_prev(self) -> None:
         if self._rows:
             self.selected = (self.selected - 1) % len(self._rows)
+            self._details_scroll.reset()
 
     def next_filter(self) -> None:
         self.filter_idx = (self.filter_idx + 1) % len(_FILTERS)
         self.selected = 0
+        self._details_scroll.reset()
         self._rebuild()
 
     def prev_filter(self) -> None:
         self.filter_idx = (self.filter_idx - 1) % len(_FILTERS)
         self.selected = 0
+        self._details_scroll.reset()
         self._rebuild()
+
+    def scroll_details(self) -> None:
+        """SPACE: page the details pane, wrapping to the top at the end.
+
+        Same one-key metaphor as the dialogue speech scroll — the left column is
+        driven by W/S, so the details need their own key to be reachable by
+        keyboard when a quest is taller than the pane.
+        """
+        self._details_scroll.page_or_top()
+
+    def handle_details_wheel(self, events: list[pygame.event.Event]) -> None:
+        """Mouse wheel scrolls the details pane (not a documented shortcut)."""
+        self._details_scroll.handle_wheel(events)
 
     def toggle_expand(self) -> None:
         row = self._current_row()
@@ -267,6 +297,15 @@ class QuestPanel(Widget):
             glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR,
             scale=1.0,
         )
+        # right side of the footer: the details-scroll hint, shown only while the
+        # selected quest is taller than the pane (design-system footer pattern).
+        if self._details_scroll.overflows:
+            keycap.render_hint(
+                surface, self.hud.icons, self._font(FONT_SIZE_SMALL), self._font(FONT_SIZE_SMALL),
+                _("quest.scroll_hint"), (_INNER_RIGHT, _FOOTER_Y + 18), _GREY,
+                align="right", glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR,
+                scale=1.0,
+            )
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         title = _("quest.journal")
@@ -367,36 +406,56 @@ class QuestPanel(Widget):
         return f"{progress[0]}/{progress[1]}" if progress else ""
 
     def _draw_details(self, surface: pygame.Surface) -> None:
+        # SZCZEGÓŁY label and the empty message are the pane's fixed header — they
+        # stay put while the content below them scrolls.
         row = self._current_row()
         self._label(surface, _("quest.details"), (_RIGHT_X, _LIST_TOP - 26))
         if row is None:
             self._text(surface, _("quest.empty"), (_RIGHT_X, _LIST_TOP + 20), FONT_SIZE_SMALL, _GREY)
             return
 
+        # The scrollable body sits below the label (shared vertical-rhythm gap, so it
+        # lines up with the left column's first row) and runs to just above the footer
+        # rule. ScrollView clips it, tracks the offset and draws the scrollbar only
+        # when the quest is taller than this box.
+        top = self._content_y(_LIST_TOP - 26)
+        viewport = pygame.Rect(_RIGHT_X, top, _RIGHT_EDGE - _RIGHT_X, _LIST_BOTTOM - top)
+        self._details_scroll.draw(
+            surface, viewport,
+            lambda top_y, width: self._render_details(surface, row, top_y, width),
+        )
+
+    def _render_details(self, surface: pygame.Surface, row: _Row, y: int, width: int) -> int:
+        """Draw the selected quest's body from ``y`` down, wrapped to ``width``.
+
+        Returns the y where it finished — the ScrollView derives the content height
+        (and thus whether to show the scrollbar) from the delta. ``width`` is the
+        pane width minus the scrollbar gutter, so nothing draws under the bar;
+        ``right`` is the matching right edge for right-aligned / wrapping content.
+        """
         quest = self._defs[row.key]
-        # SZCZEGÓŁY label sits at _LIST_TOP - 26 (like WĄTKI); its content follows the
-        # shared vertical-rhythm gap, so it lines up with the left column's first row
-        y = self._content_y(_LIST_TOP - 26)
-        title = self._rich_line(get_msg(self._messages, quest.name), _RIGHT_W, FONT_SIZE_MEDIUM, _TITLE)
+        right = _RIGHT_X + width
+        title = self._rich_line(get_msg(self._messages, quest.name), width, FONT_SIZE_MEDIUM, _TITLE)
         surface.blit(title, (_RIGHT_X, y))
 
         y += 34
         description = self._rich_block(
-            get_msg(self._messages, quest.description), _RIGHT_W, FONT_SIZE_SMALL, _WHITE
+            get_msg(self._messages, quest.description), width, FONT_SIZE_SMALL, _WHITE,
+            max_lines=_MAX_DESC_LINES,
         )
         surface.blit(description, (_RIGHT_X, y))
         y += description.get_height()
 
         if self._done(row.key):
-            y = self._draw_result(surface, quest, y + 26)
+            y = self._draw_result(surface, quest, y + 26, width)
 
         children = children_of(self._defs, row.key)
         if children:
-            y = self._draw_steps(surface, row.key, children, y + 26)
+            y = self._draw_steps(surface, row.key, children, y + 26, width, right)
 
-        self._draw_rewards(surface, quest, y + 26)
+        return self._draw_rewards(surface, quest, y + 26, width, right)
 
-    def _draw_result(self, surface: pygame.Surface, quest: QuestDef, y: int) -> int:
+    def _draw_result(self, surface: pygame.Surface, quest: QuestDef, y: int, width: int) -> int:
         """The author's prose for how the quest ended — for finished quests only.
 
         Gated on `done` because the prose *is* the answer: "Kiedyś wołali na nią
@@ -409,24 +468,27 @@ class QuestPanel(Widget):
         self._label(surface, _("quest.result"), (_RIGHT_X, y))
         y = self._content_y(y)  # shared vertical-rhythm gap under the label
         prose = self._rich_block(
-            get_msg(self._messages, quest.success), _RIGHT_W, FONT_SIZE_SMALL, _DONE, max_lines=4
+            get_msg(self._messages, quest.success), width, FONT_SIZE_SMALL, _DONE,
+            max_lines=_MAX_RESULT_LINES,
         )
         surface.blit(prose, (_RIGHT_X, y))
         return y + prose.get_height()
 
-    def _draw_steps(self, surface: pygame.Surface, key: str, children: list[str], y: int) -> int:
+    def _draw_steps(
+        self, surface: pygame.Surface, key: str, children: list[str], y: int, width: int, right: int
+    ) -> int:
         self._label(surface, _("quest.steps"), (_RIGHT_X, y))
         progress = self._progress(key)
         if progress:
             current, total = progress
             self._text(
-                surface, f"{current} / {total}", (_RIGHT_EDGE, y), FONT_SIZE_SMALL, _ACTIVE, align="right"
+                surface, f"{current} / {total}", (right, y), FONT_SIZE_SMALL, _ACTIVE, align="right"
             )
             bar_y = self._content_y(y)  # shared vertical-rhythm gap under the label
             # Shared beveled capsule progress bar (widgets/bar.py): all_subquests
             # completion, filled current/total in the cyan progress accent.
             fraction = current / total if total else 0.0
-            bar.draw_progress(surface, (_RIGHT_X, bar_y, _RIGHT_W, 16), fraction, fill=_ACTIVE)
+            bar.draw_progress(surface, (_RIGHT_X, bar_y, width, 16), fraction, fill=_ACTIVE)
             y = bar_y + 30
         else:
             # A `manual` umbrella has no progress bar - completing its steps does not
@@ -437,19 +499,22 @@ class QuestPanel(Widget):
         for child in children:
             self._draw_marker(surface, _RIGHT_X, y, child)
             name = self._rich_line(
-                get_msg(self._messages, self._defs[child].name), _RIGHT_W - 24,
+                get_msg(self._messages, self._defs[child].name), width - 24,
                 FONT_SIZE_SMALL, self._state_colour(child),
             )
             surface.blit(name, (_RIGHT_X + 24, y))
             y += 28
         return y
 
-    def _draw_rewards(self, surface: pygame.Surface, quest: QuestDef, y: int) -> None:
+    def _draw_rewards(
+        self, surface: pygame.Surface, quest: QuestDef, y: int, width: int, right: int
+    ) -> int:
         if not quest.rewards:
-            return
+            return y
         self._label(surface, _("quest.reward"), (_RIGHT_X, y))
         y = self._content_y(y)  # shared vertical-rhythm gap under the label
 
+        chip_h = 30
         x = _RIGHT_X
         for reward in quest.rewards:
             label = format_reward_label([reward], self._item_name)
@@ -457,16 +522,19 @@ class QuestPanel(Widget):
                 continue
             # a chip sizes to its label rather than the other way round, so the
             # only cap is the pane it has to stay inside
-            text = self._rich_line(label, _RIGHT_W - 32, FONT_SIZE_SMALL, _TITLE)
-            width = text.get_width() + 32
-            if x + width > _RIGHT_EDGE:
+            text = self._rich_line(label, width - 32, FONT_SIZE_SMALL, _TITLE)
+            chip_w = text.get_width() + 32
+            if x + chip_w > right:
                 x, y = _RIGHT_X, y + 38
-            chip = pygame.Surface((width, 30), pygame.SRCALPHA)
+            chip = pygame.Surface((chip_w, chip_h), pygame.SRCALPHA)
             chip.fill((*_GOLD, 30))
             surface.blit(chip, (x, y))
-            pygame.draw.rect(surface, _GOLD, (x, y, width, 30), width=2)
-            surface.blit(text, (x + 16, y + (30 - text.get_height()) // 2))
-            x += width + 12
+            pygame.draw.rect(surface, _GOLD, (x, y, chip_w, chip_h), width=2)
+            surface.blit(text, (x + 16, y + (chip_h - text.get_height()) // 2))
+            x += chip_w + 12
+        # the chip row's own height, so the ScrollView counts the reward as content
+        # (this is exactly the row that used to run off the frame)
+        return y + chip_h
 
     def _reward_icons(self) -> dict[str, list[pygame.Surface]]:
         """Emote/HUD icons plus the item sprites, for the reward chips.
@@ -546,8 +614,9 @@ class QuestPanel(Widget):
         and unlike a plain-text wrap, it breaks what is actually drawn rather than
         the untagged string behind it.
 
-        The cap is what stops a long description from pushing KROKI and NAGRODA
-        off the bottom of the panel; the pane has no scrollbar to fall back on.
+        The cap used to be what stopped a long description from pushing KROKI and
+        NAGRODA off the bottom; now the pane scrolls (ScrollView), so the cap is a
+        generous runaway guard rather than the layout's safety net.
         """
         key = (markup, width, size, tuple(colour))
         surf = self._rich_cache.get(key)

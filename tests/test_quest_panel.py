@@ -84,6 +84,8 @@ def _panel(done: set[str] | None = None):  # type: ignore[no-untyped-def]
     panel.collapsed = set()
     panel._rows = []
     panel._rich_cache = {}
+    from ui.widgets.scroll_view import ScrollView
+    panel._details_scroll = ScrollView()
     return panel
 
 
@@ -234,7 +236,7 @@ def test_the_empty_progress_track_is_visible_on_the_panel() -> None:
     import pygame
 
     from ui import theme
-    from ui.panels.quest import _BAR_BG, PANEL_H, PANEL_W, PANEL_X, _RIGHT_X
+    from ui.panels.quest import PANEL_H, PANEL_W, PANEL_X, _RIGHT_X
 
     pygame.init()
     pygame.display.set_mode((64, 64))
@@ -242,7 +244,11 @@ def test_the_empty_progress_track_is_visible_on_the_panel() -> None:
     # where the bar actually sits: inside the right pane, mid panel
     panel_here = bg.get_at((_RIGHT_X - PANEL_X + 100, 300))[:3]
 
-    ratio = _contrast(_BAR_BG, panel_here)
+    # The old quest-local _BAR_BG track token was folded into the theme palette as
+    # theme.BAR_BG (== INK, 17,17,17) in the 2026-07-19 refactor. That dark, chunky
+    # frame is what makes an empty (0/N) bar still read as a bar — this pins its
+    # contrast against the olive panel above the 3:1 UI floor.
+    ratio = _contrast(theme.BAR_BG, panel_here)
     assert_true(ratio >= 3.0, f"empty track vs panel is {ratio:.2f}:1, needs >= 3:1")
 
 

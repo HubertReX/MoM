@@ -119,6 +119,30 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 - `theme.draw_pixel_round_rect` zostaje osobnym prymitywem dla innych kańciastych
   zaokrągleń (nie jest już używany przez `bar.py`, który idzie ścieżką natywna+integer-scale).
 
+## Przewijalny obszar — jeden komponent `ui/widgets/scroll_view.py`
+
+- **Każdy obszar, który może być wyższy niż jego ramka** (details questa, długa kolumna
+  pomocy, ściana prozy dialogu), rysuj przez współdzielony **`ScrollView`** — nie
+  przepisuj w panelu clip-rect + offsetu + clampu + scrollbara od nowa (tak było w
+  `help.py` ręcznie, a `quest.py` w ogóle nie miał i nagrody wychodziły za ramkę).
+- **Tryb immediate, jak reszta paneli.** Trzymasz instancję na panelu (jedna na obszar) i
+  co klatkę wołasz `scroll.draw(surface, viewport, render)`, gdzie
+  `render(top_y, width) -> bottom_y` rysuje treść od `top_y` (lewy brzeg = `viewport.left`),
+  zawija do `width` i **zwraca** y końca. Z różnicy komponent liczy wysokość treści.
+  `ScrollView` robi: **clip** do viewportu, **offset** scrolla + clamp do `[0, max_scroll]`,
+  oraz rysuje współdzielony **scrollbar (`bar.py`) tylko gdy treść się nie mieści**.
+- **Bez oscylacji reflow.** Kolumna scrollbara jest **rezerwowana z `width` zawsze** (stała
+  rynna), nie tylko gdy pasek widoczny — inaczej pojawienie się paska zwężałoby treść,
+  zmieniało zawijanie i mogłoby przełączyć overflow z powrotem (migotanie na granicy).
+  Kilka pikseli szerokości za stabilność.
+- **Wejście:** `scroll_up/down`, `scroll_by(dy)`, `page_or_top()` (SPACJA — stronicowanie
+  z zawinięciem do góry na końcu, jak przewijanie kwestii NPC), `handle_wheel(events)`
+  (kółko myszy, celowo poza listą skrótów), `reset()` (na `open()` panelu i przy zmianie
+  zaznaczenia — każdy element otwiera się od góry). Hint scrolla do stopki **tylko gdy
+  `scroll.overflows`** (wzorzec „skróty w stopce”).
+- **Miejsca użycia:** panel questów (details, `quest.py`). Do migracji przy okazji:
+  `help.py` (dziś ręczny clip+offset — dokładnie ten sam wzorzec).
+
 ## Cień tekstu — tylko chrome
 
 - Model questów: cień **tylko** na chromie (nagłówki, etykiety sekcji, stopki). Proza i

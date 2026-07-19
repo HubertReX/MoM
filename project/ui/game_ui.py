@@ -190,6 +190,12 @@ class GameUI:
             if self._edge("accept"):
                 quests.toggle_expand()
                 INPUTS["accept"] = False
+            # SPACE pages the details pane (W/S drive the list, so the details need
+            # their own key); mouse wheel scrolls it too (not a documented shortcut).
+            if self._edge("talk"):
+                quests.scroll_details()
+                INPUTS["talk"] = False
+            quests.handle_details_wheel(events)
             if INPUTS["quit"]:
                 self.close(QuestPanel)
                 INPUTS["quit"] = False
