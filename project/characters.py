@@ -1631,8 +1631,22 @@ class Player(NPC):
 
         item = self.items[self.selected_item_idx]
         if item.model.type == ItemTypeEnum.consumable:
+            # actual delta after clamping: eating at full health (or the nominal
+            # impact overshooting max_health) heals less than the label promises,
+            # so the toast reports what really changed, not item.health_impact
+            health_before = self.model.health
             self.model.health += item.model.health_impact
             self.model.health = max(0, min(self.model.health, self.model.max_health))
+            actual_change = self.model.health - health_before
+            if actual_change > 0:
+                self.scene.add_notification(
+                    _("notify.health", amount=actual_change), NotificationTypeEnum.success)
+            elif actual_change < 0:
+                self.scene.add_notification(
+                    _("notify.health", amount=actual_change), NotificationTypeEnum.failure)
+            else:
+                self.scene.add_notification(
+                    _("notify.health_no_change"), NotificationTypeEnum.info)
             item.model.count -= 1
             self.total_items_weight -= item.model.weight
             if item.model.count <= 0:
