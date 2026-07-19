@@ -6,7 +6,7 @@ import pygame
 from settings import (
     BLACK_COLOR,
     CHAR_NAME_COLOR,
-    FONT_SIZE_TINY,
+    FONT_SIZE_EXTRA_TINY,
     HUD_DIR,
     IS_WEB,
     MAIN_FONT,
@@ -217,9 +217,13 @@ class HealthBar(pygame.sprite.Sprite):
 
             y += 5
 
-        # render name of the character (wrap at space if too wide)
+        # render name of the character (wrap at space if too wide).
+        # EXTRA_TINY (8px), NOT the UI minimum (10px): this label is baked into the
+        # character's world sprite and drawn at camera zoom (~3.8x), so it is not
+        # downscaled like UI text — 10px reads oversized in-world (design-system:
+        # world-space vs UI-space text scaling).
         name = entity_name(self.model)
-        fs = FONT_SIZE_TINY
+        fs = FONT_SIZE_EXTRA_TINY
         max_w = self.image.get_width() - 4
         _font = pygame.font.Font(MAIN_FONT, fs)
         line_h = fs + 4

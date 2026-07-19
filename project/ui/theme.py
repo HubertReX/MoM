@@ -152,6 +152,15 @@ BAR_BG: tuple[int, int, int] = INK              # empty progress-bar / scrollbar
 # RULE + DIVIDER merged: one warm olive-grey (same luminance, warmer tone than old #444).
 RULE: tuple[int, int, int] = (74, 70, 54)       # divider lines (2px)
 DIVIDER: tuple[int, int, int] = RULE            # inventory/trade separator (alias of RULE)
+# --- Vertical rhythm (spacing tokens) --------------------------------------------
+# A "section label" (WĄTKI / SZCZEGÓŁY / KROKI / NAGRODA — SMALL 14px, GREY, chrome
+# shadow) is followed by its content this many px below the label's BOTTOM edge.
+# ALWAYS derive the content position from the label font metric, never a magic offset:
+#     content_top = label_top + label_font.get_height() + SECTION_LABEL_GAP
+# so changing the label font size can NEVER crowd the content (the bug that made the
+# quest details pane drift from the threads list). Same value on every panel/column.
+SECTION_LABEL_GAP: int = 18
+
 # dialog-specific
 DIALOG_SEPARATOR: tuple[int, int, int] = (84, 135, 137)   # greenish panel border (nine_patch_01c)
 DIALOG_OPTION_HIGHLIGHT: tuple[int, int, int] = (22, 55, 82)  # dark blue vs turquoise text
@@ -182,6 +191,7 @@ __all__ = [
     "RULE",
     "BAR_BG",
     "DIVIDER",
+    "SECTION_LABEL_GAP",
     "DIALOG_SEPARATOR",
     "DIALOG_OPTION_HIGHLIGHT",
     "DIALOG_VISITED_BG",

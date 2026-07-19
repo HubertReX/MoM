@@ -35,6 +35,14 @@ SS = REPO / "screenshots/agent"
 BEFORE = REPO / "doc/_attachements/_progress_assets/before"
 SCRATCH = REPO / "doc/_attachements/_progress_assets/_after"
 OUT = REPO / "doc/_attachements/design-system-progress.html"
+# Committed snapshot the living doc (design-system-ui.html) links to. This script is the
+# SINGLE pipeline: every run refreshes it from the SAME captures used here, and BOTH docs
+# reference these files for the shared screenshots — so they can never drift apart.
+DS_ASSETS = REPO / "doc/_attachements/_ds_assets"
+# capture label -> committed filename (must match the SHOTS/hud refs in design-system-ui.html)
+DS_NAMES = {"main_menu": "01_main_menu", "gameplay": "02_gameplay", "help": "03_help",
+            "quest": "04_quest", "dialog": "05_dialog"}
+HUD_SRC = REPO / "project/assets/NinjaAdventure/HUD/HUD.png"
 PREFIX = "progress_after"
 PY = str(REPO / ".venv/bin/python3")
 
@@ -147,10 +155,20 @@ def rel_after(path: Path) -> str:
 
 
 def img_after(path: Path) -> str:
-    """An 'after' figure: inline base64 preview wrapped in a link to the full-res
-    sibling PNG (opens 1:1 in a new tab for per-pixel inspection)."""
+    """A synthetic 'after' figure (progress-only render): inline base64 preview
+    wrapped in a link to the full-res sibling PNG in the (gitignored) _after/ dir."""
     return (f'<a class="full" href="{rel_after(path)}" target="_blank" '
             f'title="otwórz w pełnej rozdzielczości (1:1)">{img(path)}</a>')
+
+
+def img_ds(name: str) -> str:
+    """A screenshot 'after' figure shared with the living doc: inline base64 preview
+    from the COMMITTED _ds_assets/ snapshot, linked full-res to the SAME committed file
+    that design-system-ui.html uses — one source, so the two docs can never drift."""
+    p = DS_ASSETS / f"{name}.png"
+    rel = f"_ds_assets/{name}.png"
+    return (f'<a class="full" href="{rel}" target="_blank" '
+            f'title="otwórz w pełnej rozdzielczości (1:1)">{img(p)}</a>')
 
 
 def _crop_letterbox(im: "Image.Image") -> "Image.Image":
@@ -242,12 +260,15 @@ COMMITS = [
 def build(sections: list[tuple]) -> None:
     def section(title, note, tags, before, after):
         t = "".join(f'<span class="tag">{x}</span>' for x in tags)
+        # after is a str (committed _ds_assets screenshot, shared with the living doc)
+        # or a Path (progress-only synthetic render)
+        after_html = img_ds(after) if isinstance(after, str) else img_after(after)
         return (f'    <section class="card">\n      <h2>{title}</h2>\n'
                 f'      <p class="note">{t}<br>{note}</p>\n      <div class="ba">\n'
                 f'        <figure><figcaption>PRZED&nbsp;·&nbsp;<span class="hint">klik → '
                 f'nowa karta</span></figcaption>{img_before(before)}</figure>\n'
                 f'        <figure><figcaption>PO&nbsp;·&nbsp;<span class="hint">klik → '
-                f'pełna rozdzielczość</span></figcaption>{img_after(after)}</figure>\n'
+                f'pełna rozdzielczość</span></figcaption>{after_html}</figure>\n'
                 f'      </div>\n    </section>\n')
 
     status = "".join(
@@ -308,6 +329,15 @@ def main() -> None:
 
     after = {lbl: latest(lbl) for lbl in ("main_menu", "gameplay", "quest", "help", "dialog")}
 
+    # Single pipeline: refresh the committed snapshot the living doc links to, from the
+    # SAME captures. Both design-system-ui.html and this log then point at these files
+    # for the shared screenshots, so a re-capture updates both at once (no drift).
+    DS_ASSETS.mkdir(parents=True, exist_ok=True)
+    for lbl, path in after.items():
+        shutil.copyfile(path, DS_ASSETS / f"{DS_NAMES[lbl]}.png")
+    if HUD_SRC.exists():
+        shutil.copyfile(HUD_SRC, DS_ASSETS / "hud_sheet.png")
+
     # rendery syntetyczne + zbliżenia
     render_sentiment(False, SCRATCH / "sentiment_before.png")
     render_sentiment(True, SCRATCH / "sentiment_after.png")
@@ -316,11 +346,11 @@ def main() -> None:
     sections = [
         ("Menu główne",
          "Kontrola refaktora palety - ma wyglądać identycznie (kolory do tokenów theme.py).",
-         ["C paleta"], BEFORE / "01_main_menu.png", after["main_menu"]),
+         ["C paleta"], BEFORE / "01_main_menu.png", DS_NAMES["main_menu"]),
         ("Rozgrywka + HUD",
          "UI_BORDER_WIDTH 9→8. Keycapy hotbara i przycisków akcji: jasne lico → ciemne "
          "(kontrast białego glifu). Ikony emoji na toastach tylko całkowitą krotnością.",
-         ["D border 9→8", "A keycapy", "G emoji"], BEFORE / "02_gameplay.png", after["gameplay"]),
+         ["D border 9→8", "A keycapy", "G emoji"], BEFORE / "02_gameplay.png", DS_NAMES["gameplay"]),
         ("Keycapy - zbliżenie hotbara",
          "Ten sam komponent klawisza wszędzie, natywne 32px. Lico kafli przyciemnione "
          "wprost w arkuszu HUD.png; biały glif (1-6, ‹ ›) czytelny. Strzałki i kafle "
@@ -329,18 +359,18 @@ def main() -> None:
         ("Dziennik zadań (J)",
          "Znacznik locked ○ i chip nagrody 1px→2px. Usunięcie border_radius z pasków postępu "
          "i chipa (kanty). Stopka: hinty nawigacji jako keycapy zamiast tekstu. Paleta z tokenów.",
-         ["D kanty", "A keycapy", "C paleta"], BEFORE / "03_quest.png", after["quest"]),
+         ["D kanty", "A keycapy", "C paleta"], BEFORE / "03_quest.png", DS_NAMES["quest"]),
         ("Panel pomocy (H)",
          "Cień tylko na chromie. Keycapy w natywnym 32px (jednoznakowe = świeży glif, reszta = "
          "art). Skróty (zamknij + przewiń ↑/↓) przeniesione do stopki. Etykiety sekcji większe "
          "(14px). Separatory: „/\" w większym foncie, zakres „1–6\" jako kreska (nie keycap). "
          "Scrollbar: gruby, schodkowo (kańciasto) zaokrąglony + scroll kółkiem myszy.",
-         ["B cień", "A keycapy", "stopka", "scrollbar"], BEFORE / "04_help.png", after["help"]),
+         ["B cień", "A keycapy", "stopka", "scrollbar"], BEFORE / "04_help.png", DS_NAMES["help"]),
         ("Dialog z NPC",
          "Pasek sentymentu nad nazwą: pełny/bez ramki/zaokrąglony (było: ramka 1px + gradient). "
          "Podświetlenie opcji: kanty zamiast border_radius. Keycapy przycisków akcji ciemne. "
          "Emote sentymentu skalowane ×2.",
-         ["H sentyment", "D kanty", "A keycapy", "G emoji"], BEFORE / "05_dialog.png", after["dialog"]),
+         ["H sentyment", "D kanty", "A keycapy", "G emoji"], BEFORE / "05_dialog.png", DS_NAMES["dialog"]),
         ("Pasek sentymentu - zbliżenie (render z kodu)",
          "PRZED: zaokrąglony prostokąt z ramką 1px (żółtą) + gradient - 1px zdradza udawany "
          "pixel-art. PO: pełny pasek, bez ramki, zaokrąglony po bokach (decyzja usera).",

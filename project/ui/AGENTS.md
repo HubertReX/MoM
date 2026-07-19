@@ -99,6 +99,27 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 - Font pixel: `[8, 10, 14, 16, 24, 155]` (EXTRA_TINY…HUGE).
 - **Minimum:** chrome (etykiety, licznik) ≥ **10px** (`TINY`); treść czytana ≥ **14px**
   (`SMALL`). `FONT_SIZE_EXTRA_TINY` (8) **nie używać w UI** — nieczytelne po downscale.
+- **Tekst w przestrzeni świata vs UI — inne skalowanie.** Powyższe minimum dotyczy
+  tekstu **UI** (rysowanego w logicznej rozdzielczości 1280×720 canvasu, potem
+  downscale przez `SCALE`). Tekst **wtopiony w sprite świata** (np. imię postaci nad
+  głową w `objects.py`) NIE jest downscalowany — jest skalowany kamerą (zoom ~3.8×), więc
+  ten sam rozmiar czcionki wychodzi znacznie większy. Dla takich etykiet używaj
+  `FONT_SIZE_EXTRA_TINY` (8) — reguła „min 10px" ich nie dotyczy (inna ścieżka renderu).
+
+## Rytm pionowy — komponent „etykieta sekcji"
+
+- **Jeden odstęp etykieta→treść wszędzie.** Etykieta sekcji (WĄTKI / SZCZEGÓŁY / KROKI /
+  NAGRODA / grupy pomocy) to `FONT_SIZE_SMALL` (14px), `GREY`, cień chrome. Treść pod nią
+  zaczyna się zawsze `theme.SECTION_LABEL_GAP` (18px) **poniżej dolnej krawędzi etykiety**.
+- **Wyliczaj z metryki fontu, nie z magicznego offsetu:**
+  `content_top = label_top + label_font.get_height() + theme.SECTION_LABEL_GAP`
+  (helper `quest.py:_content_y`). Dzięki temu zmiana rozmiaru czcionki etykiety **nie może**
+  ścisnąć treści — to był bug, który rozjechał panel questów (prawa kolumna vs lewa).
+- **Meta-zasada (dlaczego to się powtarzało):** gdy zmieniasz współdzielony token (rozmiar
+  czcionki, kolor, szerokość), **wszystko co wyliczyło z jego starej wartości magiczną liczbę
+  po cichu się psuje.** Wartości zależne wyliczaj z tokenu/metryki albo z nazwanej stałej —
+  inaczej design system nie ochroni przed rozjazdem. Nie wpisuj „na oko" liczby, która
+  zależy od innej stałej.
 
 ## Pozostałe wzorce
 

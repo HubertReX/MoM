@@ -329,8 +329,11 @@ class Scene(State):
 
     def add_notification(self, text: str, type: NotificationTypeEnum = NotificationTypeEnum.info,
                          emote_key: str = "") -> None:
-        # message is raw markup; the HUD renders and caches it via the new RichText engine
-        icon = NOTIFICATION_TYPE_ICONS[type]
+        # message is raw markup; the HUD renders and caches it via the new RichText engine.
+        # A supplied emote (the chosen dialog option's sentiment) leads the message inline,
+        # at the text's own height — replacing the generic type icon. It is NOT also drawn as
+        # a separate overlay (that produced a second, mis-aligned copy of the emote).
+        icon = emote_key or NOTIFICATION_TYPE_ICONS[type]
         message = f":{icon}: {text}"
         now = self.game.time_elapsed
 
@@ -341,7 +344,8 @@ class Scene(State):
         last_shown = max((n.show_time for n in self.notifications), default=now - NOTIFICATION_STAGGER)
         show_time = max(now, last_shown + NOTIFICATION_STAGGER)
 
-        notification = Notification(type, message, "", 0, 0, now, emote_key, show_time)
+        # emote_key baked into the message above; no separate overlay (field kept empty)
+        notification = Notification(type, message, "", 0, 0, now, "", show_time)
         self.notifications.append(notification)
 
     #############################################################################################################

@@ -81,7 +81,11 @@ _COL_X = (_INNER_LEFT, _INNER_LEFT + _COL_W + _COL_GAP)
 # widest row (W A S D — four 32px caps = 137px) with a small margin.
 _KEY_COL_W = 155
 _ROW_H = 36
-_TITLE_H = 26
+# group title (SMALL 14px) + its rows: the shared section-label rhythm — content sits
+# 14px (label height) + theme.SECTION_LABEL_GAP (18) below the label, same as quest.py.
+# Keep in sync with the label font if it changes (there it is derived; here it is a
+# layout constant used in _column_height, so it is spelled out).
+_TITLE_H = 14 + theme.SECTION_LABEL_GAP
 _GROUP_GAP = 10
 _CAP_GAP = 3
 _SEP_GAP = 5

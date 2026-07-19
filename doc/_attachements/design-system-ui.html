@@ -136,6 +136,7 @@
     <a href="#keycap">Klawisz (keycap)</a>
     <a href="#cien">Cień</a>
     <a href="#panele">Wzorce paneli</a>
+    <a href="#rytm">Rytm pionowy</a>
     <a href="#wyjatki">Wyjątki</a>
     <a href="#ekrany">Ekrany</a>
     <a href="#konsolidacja">Konsolidacja palety</a>
@@ -207,6 +208,14 @@
   </table>
   <p><strong>Minimum:</strong> chrome ≥ 10px (<code>TINY</code>), treść ≥ 14px (<code>SMALL</code>).
   Znaczniki stanu (✔ ● ○, karety, strzałki) rysuj jako <strong>kształty</strong>, nie glify.</p>
+  <div class="callout warn">
+    <strong>Tekst w świecie vs UI — inne skalowanie.</strong> Minimum wyżej dotyczy tekstu
+    <strong>UI</strong> (rysowany w 1280×720, potem downscale przez <code>SCALE</code>). Tekst
+    wtopiony w sprite <strong>świata</strong> (np. imię postaci nad głową, <code>objects.py</code>)
+    NIE jest downscalowany — skaluje go kamera (zoom ~3.8×), więc ten sam rozmiar wychodzi dużo
+    większy. Dla takich etykiet używaj <code>FONT_SIZE_EXTRA_TINY</code> (8) — reguła „min 10px"
+    ich nie dotyczy.
+  </div>
 
   <!-- SKALOWANIE -->
   <h2 id="skalowanie">Skalowanie i geometria</h2>
@@ -275,6 +284,26 @@
       jak upscale nearest-neighbour). <strong>Nie</strong> <code>border_radius=</code> (antyaliasuje).
       Dodatkowo scroll <strong>kółkiem myszy</strong>.</p>
     </div>
+  </div>
+
+  <!-- RYTM PIONOWY -->
+  <h2 id="rytm">Rytm pionowy — komponent „etykieta sekcji"</h2>
+  <p>Jeden odstęp etykieta→treść wszędzie. Etykieta sekcji (WĄTKI / SZCZEGÓŁY / KROKI /
+  NAGRODA / grupy pomocy) to <code>FONT_SIZE_SMALL</code> (14px), <code>GREY</code>, cień chrome.
+  Treść pod nią zaczyna się zawsze <code>theme.SECTION_LABEL_GAP</code> (18px) poniżej dolnej
+  krawędzi etykiety.</p>
+  <div class="callout">
+    <strong>Wyliczaj z metryki fontu, nie z magicznego offsetu:</strong>
+    <pre style="margin:8px 0 0;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto"><code>content_top = label_top + label_font.get_height() + theme.SECTION_LABEL_GAP</code></pre>
+    (helper <code>quest.py:_content_y</code>). Zmiana rozmiaru czcionki etykiety <strong>nie może</strong>
+    wtedy ścisnąć treści.
+  </div>
+  <div class="callout warn">
+    <strong>Meta-zasada (dlaczego rozjazdy się powtarzały).</strong> Gdy zmieniasz współdzielony
+    token (rozmiar czcionki, kolor, szerokość), <strong>wszystko, co wyliczyło z jego starej
+    wartości „magiczną" liczbę, po cichu się psuje</strong> (np. font etykiety 10→14px, a treść
+    została na starym offsecie → wjeżdża pod etykietę). Wartości zależne wyliczaj z tokenu/metryki
+    albo z nazwanej stałej — nie wpisuj liczby „na oko", która zależy od innej stałej.
   </div>
 
   <!-- WYJĄTKI -->

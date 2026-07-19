@@ -364,36 +364,14 @@ class HUD(Widget):
         text_surf = self._notification_surface(notification)
         tw, th = text_surf.get_size()
 
-        # Sentiment emote drawn separately to the left of the text.
-        emote_surf: pygame.Surface | None = None
-        emote_w = 0
-        if notification.emote_key:
-            frames = self.icons.get(notification.emote_key, [])
-            if frames:
-                font_h = theme.get_font(14).get_height()
-                target_h = round(font_h * 1.35)
-                src = frames[0]
-                _sw, sh = src.get_size()
-                # integer scale only: fractional upscaling of pixel-art gives uneven
-                # rows/cols (design-system: skalowanie ikon). Snap to nearest whole multiple.
-                k = max(1, round(target_h / sh)) if sh else 1
-                emote_surf = pygame.transform.scale_by(src, k)
-                emote_w = emote_surf.get_width() + 4  # 4px gap
-
-        total_w = tw + emote_w
+        # The leading emote (type icon, or the chosen option's sentiment for sentiment
+        # toasts) is part of the RichText message inline — no separate overlay copy.
         pad_x, pad_y = _NOTIFICATION_PAD_X, _NOTIFICATION_PAD_Y
-        bg = theme.nine_patch("nine_patch_04c.png", total_w + 2 * pad_x, th + 2 * pad_y, border=3)
+        bg = theme.nine_patch("nine_patch_04c.png", tw + 2 * pad_x, th + 2 * pad_y, border=3)
         surface.blit(bg, (TILE_SIZE, y))
-        # Centre the text+emote block inside the panel on both axes.
-        text_x = TILE_SIZE + (bg.get_width() - total_w) // 2 + (emote_w - 8 if emote_w else 0)
+        text_x = TILE_SIZE + (bg.get_width() - tw) // 2
         text_y = y + (bg.get_height() - th) // 2
         surface.blit(text_surf, (text_x, text_y))
-
-        if emote_surf is not None:
-            emote_x = text_x - emote_w + 24
-            emote_y = text_y + (th - emote_surf.get_height()) // 2 - 3
-            surface.blit(emote_surf, (emote_x, emote_y))
-
         return bg.get_height()
 
     #############################################################################################################

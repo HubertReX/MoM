@@ -236,7 +236,7 @@ class QuestPanel(Widget):
         # whatever room they leave.
         font = self._font(FONT_SIZE_SMALL)
         labels = [_(f"quest.filter_{name}") for name in _FILTERS]
-        gap = 26
+        gap = 20
         total_w = sum(font.size(text)[0] for text in labels) + gap * (len(labels) - 1)
         filters_x = PANEL_X + PANEL_W - 28 - total_w
 
@@ -245,18 +245,18 @@ class QuestPanel(Widget):
         # measured, not a fixed offset: the mock was drawn in a proportional font
         # and MoM renders in a wide pixel one, where a hardcoded x puts the count
         # straight through the title
-        counter_x = _LEFT_X + self._font(FONT_SIZE_LARGE).size(title)[0] + 24
-        # tiny, not small: the mock sized this for a proportional font, and in MoM's
-        # wider pixel font the sentence gets chopped to "4 uko..." at small
+        counter_x = _LEFT_X + self._font(FONT_SIZE_LARGE).size(title)[0] + 8
+        # small (14px), for readability; sits tight after the title and is truncated to
+        # the room before the filters so a 2-digit count can't run through the filter labels
         self._text(
             surface,
             self._truncate(
                 _("quest.counter", total=total, done=done),
-                filters_x - counter_x - 20,
-                FONT_SIZE_TINY,
+                filters_x - counter_x - 6,
+                FONT_SIZE_SMALL,
             ),
-            (counter_x, _HEADER_Y + 14),
-            FONT_SIZE_TINY,
+            (counter_x, _HEADER_Y + 8),
+            FONT_SIZE_SMALL,
             _GREY,
             shadow=True,
         )
@@ -333,7 +333,9 @@ class QuestPanel(Widget):
             return
 
         quest = self._defs[row.key]
-        y = _LIST_TOP - 6
+        # SZCZEGÓŁY label sits at _LIST_TOP - 26 (like WĄTKI); its content follows the
+        # shared vertical-rhythm gap, so it lines up with the left column's first row
+        y = self._content_y(_LIST_TOP - 26)
         title = self._rich_line(get_msg(self._messages, quest.name), _RIGHT_W, FONT_SIZE_MEDIUM, _TITLE)
         surface.blit(title, (_RIGHT_X, y))
 
@@ -364,7 +366,7 @@ class QuestPanel(Widget):
         stored in config.json and localized all along, and nothing ever showed it.
         """
         self._label(surface, _("quest.result"), (_RIGHT_X, y))
-        y += 22
+        y = self._content_y(y)  # shared vertical-rhythm gap under the label
         prose = self._rich_block(
             get_msg(self._messages, quest.success), _RIGHT_W, FONT_SIZE_SMALL, _DONE, max_lines=4
         )
@@ -379,7 +381,7 @@ class QuestPanel(Widget):
             self._text(
                 surface, f"{current} / {total}", (_RIGHT_EDGE, y), FONT_SIZE_SMALL, _ACTIVE, align="right"
             )
-            bar_y = y + 20
+            bar_y = self._content_y(y)  # shared vertical-rhythm gap under the label
             pygame.draw.rect(surface, _BAR_BG, (_RIGHT_X, bar_y, _RIGHT_W, 8))
             if total:
                 filled = int(_RIGHT_W * current / total)
@@ -390,7 +392,7 @@ class QuestPanel(Widget):
             # A `manual` umbrella has no progress bar - completing its steps does not
             # complete it, so a bar would be a lie. Skipping the bar must not also
             # skip its vertical space, or the first step lands on the KROKI label.
-            y += 24
+            y = self._content_y(y)  # shared vertical-rhythm gap under the label (no bar)
 
         for child in children:
             self._draw_marker(surface, _RIGHT_X, y, child)
@@ -406,7 +408,7 @@ class QuestPanel(Widget):
         if not quest.rewards:
             return
         self._label(surface, _("quest.reward"), (_RIGHT_X, y))
-        y += 18
+        y = self._content_y(y)  # shared vertical-rhythm gap under the label
 
         x = _RIGHT_X
         for reward in quest.rewards:
@@ -604,7 +606,16 @@ class QuestPanel(Widget):
 
     def _label(self, surface: pygame.Surface, text: str, pos: tuple[int, int]) -> None:
         """A section heading (WĄTKI / SZCZEGÓŁY / KROKI / NAGRODA) — chrome, so shadowed."""
-        self._text(surface, text, pos, FONT_SIZE_TINY, _GREY, shadow=True)
+        self._text(surface, text, pos, FONT_SIZE_SMALL, _GREY, shadow=True)
+
+    def _content_y(self, label_top: int) -> int:
+        """Y for the content that sits under a section label.
+
+        Derived from the label font metric + shared ``theme.SECTION_LABEL_GAP`` — NOT a
+        magic offset — so changing the label font size can never crowd the content
+        (design-system vertical rhythm). Same gap on every panel and column.
+        """
+        return label_top + self._font(FONT_SIZE_SMALL).get_height() + theme.SECTION_LABEL_GAP
 
     def _truncate(self, text: str, width: int, size: int) -> str:
         """Cut plain ``text`` to ``width`` with an ellipsis.
