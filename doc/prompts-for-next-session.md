@@ -12,7 +12,7 @@ Inne:
 - [x] ekran wczytaj grę (F9) oraz zmień nazwę (r), oraz potwierdzenie wczytania (enter - richtext, brak panelu, który kolor wybiera?) wymagają dużo miłości
 - [x] skróty F5, F6 i F9 powinny być wydoczne na panelu help w trybie web
 - [x] jak sprzedam przedostatni przedmiot to potem nie wybiera się pierwszy i jest próba sprzedania przedmiotu niedozwolonego typu (Jaś)
-- [ ] nagrody czasami się nie mieszczą w panelu - dodaj scrollbar albo jeszce lepiej komponent panel, który ma wbudowany scrollbar, pokazujący się tylko wtedy kiedy trzeba
+- [x] nagrody czasami się nie mieszczą w panelu - dodaj scrollbar albo jeszce lepiej komponent panel, który ma wbudowany scrollbar, pokazujący się tylko wtedy kiedy trzeba
 - [x] zjedzenie czegoś powinno uruchamiać toast
 - [ ] system cząsteczek po pauzie lub wejściu w menu nagle spawnuje mnóstwo elementów
 - [ ] co się stanie jak zwiększę max_inventory?
