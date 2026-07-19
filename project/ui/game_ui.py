@@ -273,6 +273,14 @@ class GameUI:
                             self.scene.add_notification(
                                 _("notify.sold", name=entity_name(item_to_sell.model), price=price),
                                 NotificationTypeEnum.info)
+                            # re-clamp selection to the (now shrunk) filtered list: drop_item
+                            # adjusts selected_item_idx against the full inventory, but while
+                            # selling the index refers to the tradable-only list.
+                            filtered = player.get_tradable_items()
+                            if not filtered:
+                                player.selected_item_idx = -1
+                            elif player.selected_item_idx >= len(filtered):
+                                player.selected_item_idx = len(filtered) - 1
                 INPUTS["sell"] = False
 
             # item selection during trade

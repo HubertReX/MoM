@@ -1296,13 +1296,17 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def can_sell(self) -> bool:
+        # selected_item_idx indexes the *filtered* (tradable) list while selling, not
+        # self.items - a type-restricted merchant (e.g. gems only) filters the player's
+        # inventory, so validate against the same list the sell action uses.
+        tradable = self.get_tradable_items()
         if (
-            not self.items or self.selected_item_idx < 0 or self.selected_item_idx > len(
-                self.items) - 1 or not self.npc_met
+            not tradable or self.selected_item_idx < 0 or self.selected_item_idx > len(
+                tradable) - 1 or not self.npc_met
         ):
             return False
 
-        selected_item = self.items[self.selected_item_idx]
+        selected_item = tradable[self.selected_item_idx]
         price = int(round(selected_item.model.value * get_sell_price_multiplier(self.npc_met.sentiment)))
 
         if self.npc_met.model.money < price:
