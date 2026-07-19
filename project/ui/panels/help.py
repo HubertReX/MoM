@@ -42,6 +42,7 @@ from settings import (
 
 from .. import keycap, theme
 from ..widget import Widget
+from ..widgets import bar
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -56,12 +57,9 @@ if TYPE_CHECKING:
 PANEL_W, PANEL_H = 1120, 680
 PANEL_X, PANEL_Y = (WIDTH - PANEL_W) // 2, (HEIGHT - PANEL_H) // 2
 _PAD = 28
-# scrollbar on the right edge of the panel — thick, with CHUNKY (stair-stepped, not
-# smooth) rounded ends, as befits pixel-art: rounding drawn from full pixels, like a
-# low-res rounded shape upscaled with nearest-neighbour. Grey track + gold thumb.
-_SCROLLBAR_W = 12
-_SCROLLBAR_R = 6         # corner radius (= half width → rounded pill ends)
-_SCROLLBAR_STEP = 2      # size of each quantised corner step (bigger = blockier)
+# scrollbar on the right edge of the panel — shared beveled capsule component
+# (widgets/bar.py): INK frame + RULE track + gold beveled thumb, CHUNKY (non-AA) ends.
+_SCROLLBAR_W = 16
 _SCROLLBAR_X = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 4
 _INNER_LEFT = PANEL_X + _PAD
 _INNER_RIGHT = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 8
@@ -92,7 +90,6 @@ _SEP_GAP = 5
 
 # --- palette — shared tokens from theme (single source of truth) ------------
 _TITLE_COL = theme.TITLE
-_GOLD = theme.GOLD
 _GREY = theme.GREY
 _WHITE = theme.WHITE
 # fresh glyph rendered onto the scaled key for single-char caps
@@ -331,18 +328,15 @@ class HelpPanel(Widget):
     # --- scrollbar -----------------------------------------------------------
 
     def _draw_scrollbar(self, surface: pygame.Surface) -> None:
-        """Thick pixel-art scrollbar: grey track + gold thumb, both with CHUNKY
-        (stair-stepped, non-anti-aliased) rounded ends."""
+        """Shared beveled capsule scrollbar (``widgets/bar.py``): INK frame, RULE
+        track, gold beveled thumb — the same component every panel uses."""
         track_h = _CONTENT_H
         total_h = track_h + self._max_scroll
-        thumb_h = max(20, int(track_h * track_h / total_h))
-        thumb_y = _CONTENT_TOP + int((track_h - thumb_h) * self.scroll / self._max_scroll)
-        theme.draw_pixel_round_rect(
-            surface, _GREY, (_SCROLLBAR_X, _CONTENT_TOP, _SCROLLBAR_W, track_h),
-            _SCROLLBAR_R, _SCROLLBAR_STEP)
-        theme.draw_pixel_round_rect(
-            surface, _GOLD, (_SCROLLBAR_X, thumb_y, _SCROLLBAR_W, thumb_h),
-            _SCROLLBAR_R, _SCROLLBAR_STEP)
+        bar.draw_scrollbar(
+            surface, (_SCROLLBAR_X, _CONTENT_TOP, _SCROLLBAR_W, track_h),
+            frac_visible=track_h / total_h,
+            frac_pos=self.scroll / self._max_scroll,
+        )
 
     # --- helpers ------------------------------------------------------------
 

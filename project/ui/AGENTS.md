@@ -43,6 +43,15 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   round(target_h / src_h))`, potem `pygame.transform.scale_by(src, k)` (helper
   `_icon_factor` w `rich_text.py`). Jeśli natywny rozmiar jest za mały — przerysuj asset w
   wyższej rozdzielczości, nie skaluj ułamkowo.
+- **Kształty proceduralne (paski, ramki, zaokrąglenia) rysuj metodą nine-patch: model w
+  natywnej siatce → integer scale (nearest).** Zamiast rysować cienkie 1–2px detale wprost
+  w rozdzielczości logicznej (po globalnym `SCALE` wychodzą wątłe, „za cienkie", nie widać
+  grubych pikseli), zbuduj kształt w małej **natywnej** siatce (jak asset źródłowy) i
+  powiększ **całkowitą krotnością** `pygame.transform.scale` (nearest-neighbour). Wtedy każdy
+  natywny piksel = blok `k×k`, a kańciaste zaokrąglone końce zachowują proporcje. Tylko
+  środkowe, jednolite sekcje wolno rozciągać (długość paska) — narożniki/końcówki są stałe
+  (`k × liczba_natywnych_rzędów`). Wzorzec referencyjny: `ui/widgets/bar.py` (model 8-kolumnowy
+  z `scrollbar.png`, `k = round(cross/8)`, min 2). Ta sama zasada co przy nine-patch panelu.
 
 ## Komponent „klawisz" (hotkey) — zawsze sprite
 
@@ -80,12 +89,35 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   nie do nagłówka. Wzorzec: linia `RULE` + wiersz `keycap.render_hint` (patrz
   `help.py` `_draw_footer`, `quest.py` stopka). Lewa strona = zamknięcie/akcje, prawa =
   hinty kontekstowe (np. `↑ / ↓ przewiń`, pokazywane tylko gdy jest co scrollować).
-- Scrollbar paneli: **gruby** pionowy pasek (`help.py` `_draw_scrollbar`) — szary track +
-  złoty thumb — z zaokrąglonymi końcami, ale **schodkowo/kańciasto** (nie gładkie AA):
-  helper `theme.draw_pixel_round_rect` rysuje rogi z pełnych pikseli, tak jak wyglądałby
-  nisko-rozdzielczy kształt powiększony nearest-neighbour. **Nie** używać
-  `pygame.draw.rect(border_radius=)` (antyaliasuje → gładka krzywa, zdradza pixel-art).
-  Dodatkowo scroll kółkiem myszy (obsługa w `game_ui.py`, celowo poza listą skrótów).
+- Dodatkowo scroll kółkiem myszy (obsługa w `game_ui.py`, celowo poza listą skrótów).
+
+## Suwak i pasek postępu — jeden komponent `ui/widgets/bar.py`
+
+- **Wszystkie suwaki i paski postępu** rysuje współdzielony moduł **`ui/widgets/bar.py`**
+  (styl jak `keycap.py` — funkcje, nie klasa). Nie duplikuj rysowania paska, nie używaj
+  `pygame.draw.rect(border_radius=)` (antyaliasuje → gładka krzywa, **zdradza pixel-art**).
+- **Referencja wyglądu:** `assets/NinjaAdventure/HUD/scrollbar.png` (8×16). Budowany
+  **proceduralnie w natywnej siatce 8-kolumnowej, potem integer-scale (nearest)** — patrz
+  reguła „kształty proceduralne = nine-patch" wyżej. Dzięki temu skaluje się do dowolnej
+  długości, działa **pionowo i poziomo**, przyjmuje **dowolny kolor** wypełnienia i wychodzi
+  **gruby/kańciasty** (a nie wątłe 1px detale). `k = round(cross/8)`, min 2 → ramka nigdy nie
+  cieńsza niż ~2× natywna. Każdy kolor assetu to token `theme.py`: `INK` = ramka,
+  `RULE` = pusty track, `GOLD` = wypełnienie, `WARN` = ciemna kolumna bevela (krawędź
+  wiodąca), `TITLE` = jasna (krawędź przeciwna).
+- **API:** `bar.draw_scrollbar(surface, rect, *, frac_visible, frac_pos, vertical=True,
+  fill=GOLD, bevel=(WARN,TITLE))` — track + beveled thumb; `bar.draw_progress(surface,
+  rect, fraction, *, vertical=False, fill=ACCENT_CYAN, bevel=None)` — track + wypełnienie
+  od początku do `fraction`. Progressbar to **szczególny przypadek** suwaka (ta sama
+  kapsuła i bevel). Domyślne `bevel=(WARN,TITLE)` na `fill=GOLD` odtwarza asset 1:1.
+- **Kolor zmienny (np. sentyment) → filtr, nie sprite'y.** Podaj `fill=<liczony kolor>` z
+  `bevel=None` — komponent **wyprowadza** bevel z koloru (ciemna = fill×0.6, jasna = blend
+  do bieli). Jeden komponent pokrywa każdy odcień, bez rodziny sprite'ów.
+- **Miejsca użycia:** panel pomocy (`help.py`), suwak przewijalnego `RichText`
+  (`rich_text.py` — m.in. kwestia NPC), suwak opcji dialogu i pasek sentymentu
+  (`dialog.py`), postęp `all_subquests` w questach (`quest.py` KROKI). Suwaki paneli
+  rysuj szerokością wielokrotności 8 (obecnie 16 → `k=2`); węższe wychodzą za cienkie.
+- `theme.draw_pixel_round_rect` zostaje osobnym prymitywem dla innych kańciastych
+  zaokrągleń (nie jest już używany przez `bar.py`, który idzie ścieżką natywna+integer-scale).
 
 ## Cień tekstu — tylko chrome
 
