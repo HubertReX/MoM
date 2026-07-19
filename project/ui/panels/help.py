@@ -41,7 +41,7 @@ from settings import (
 
 from .. import keycap, theme
 from ..widget import Widget
-from ..widgets import bar
+from ..widgets.scroll_view import ScrollView
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -102,7 +102,7 @@ _ROW_H = 36
 # group title (SMALL 14px) + its rows: the shared section-label rhythm — content sits
 # 14px (label height) + theme.SECTION_LABEL_GAP (18) below the label, same as quest.py.
 # Keep in sync with the label font if it changes (there it is derived; here it is a
-# layout constant used in _column_height, so it is spelled out).
+# layout constant used to advance _draw_column, so it is spelled out).
 _TITLE_H = 14 + theme.SECTION_LABEL_GAP
 _GROUP_GAP = 10
 _CAP_GAP = 3
@@ -211,8 +211,10 @@ class HelpPanel(Widget):
         _recompute_geometry()
         self.bg = theme.nine_patch("nine_patch_04.png", PANEL_W, PANEL_H)
         self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
-        self.scroll: int = 0
-        self._max_scroll: int = 0
+        # Shared scroll component (widgets/scroll_view.py): clips the columns,
+        # tracks the offset and draws the scrollbar only when they overflow. Step
+        # is one row so a key-press moves the list by exactly one line.
+        self._scroll = ScrollView(step=_ROW_H)
 
     # --- lifecycle ----------------------------------------------------------
 
@@ -221,13 +223,13 @@ class HelpPanel(Widget):
         # this panel was constructed.
         _recompute_geometry()
         self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
-        self.scroll = 0
+        self._scroll.reset()
 
     def scroll_up(self) -> None:
-        self.scroll = max(0, self.scroll - _ROW_H)
+        self._scroll.scroll_up()
 
     def scroll_down(self) -> None:
-        self.scroll = min(self._max_scroll, self.scroll + _ROW_H)
+        self._scroll.scroll_down()
 
     # --- debug gate ---------------------------------------------------------
 
@@ -253,10 +255,6 @@ class HelpPanel(Widget):
                 out.append((group, rows))
         return out
 
-    @staticmethod
-    def _column_height(visible: list[tuple[_Group, list[_Row]]]) -> int:
-        return sum(_TITLE_H + len(rows) * _ROW_H + _GROUP_GAP for _g, rows in visible)
-
     # --- drawing ------------------------------------------------------------
 
     def draw(self, surface: pygame.Surface) -> None:
@@ -267,18 +265,29 @@ class HelpPanel(Widget):
         pygame.draw.line(surface, _RULE, (_INNER_LEFT, _RULE_Y), (_INNER_RIGHT, _RULE_Y), 2)
 
         columns = [self._visible_groups(groups) for groups in _COLUMNS]
-        self._max_scroll = max(0, max(self._column_height(c) for c in columns) - _CONTENT_H)
-        self.scroll = max(0, min(self.scroll, self._max_scroll))
-
-        old_clip = surface.get_clip()
-        surface.set_clip(pygame.Rect(_INNER_LEFT, _CONTENT_TOP, _INNER_RIGHT - _INNER_LEFT, _CONTENT_H))
-        for col_idx, visible in enumerate(columns):
-            self._draw_column(surface, _COL_X[col_idx], visible)
-        surface.set_clip(old_clip)
-
-        if self._max_scroll > 0:
-            self._draw_scrollbar(surface)
+        # The viewport spans the columns and reaches the scrollbar's right edge, so
+        # ScrollView drops the bar exactly where the panel used to (_SCROLLBAR_X).
+        # The columns' own x/width already exclude the scrollbar, so ScrollView's
+        # width param is unused here — the two-column layout is fixed, not fluid.
+        viewport = pygame.Rect(
+            _INNER_LEFT, _CONTENT_TOP, _SCROLLBAR_X + _SCROLLBAR_W - _INNER_LEFT, _CONTENT_H
+        )
+        self._scroll.draw(
+            surface, viewport,
+            lambda top_y, width: self._render_columns(surface, columns, top_y),
+        )
         self._draw_footer(surface)
+
+    def _render_columns(
+        self, surface: pygame.Surface,
+        columns: list[list[tuple[_Group, list[_Row]]]], top_y: int,
+    ) -> int:
+        """Draw both columns from ``top_y``; return the taller one's bottom y so
+        the ScrollView measures the overflow from the longer column."""
+        bottom = top_y
+        for col_idx, visible in enumerate(columns):
+            bottom = max(bottom, self._draw_column(surface, _COL_X[col_idx], visible, top_y))
+        return bottom
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         self._text(surface, _("help.title"), (_INNER_LEFT, _HEADER_Y), FONT_SIZE_LARGE,
@@ -297,7 +306,7 @@ class HelpPanel(Widget):
             _("help.close_hint"), (_INNER_LEFT, _FOOTER_TEXT_Y), _GREY,
             glyph_color=_CAP_TEXT, shadow_color=PANEL_BG_COLOR, sep_font=sep_font,
         )
-        if self._max_scroll > 0:
+        if self._scroll.overflows:
             keycap.render_hint(
                 surface, self.hud.icons, text_font, text_font,
                 _("help.scroll_hint"), (_INNER_RIGHT, _FOOTER_TEXT_Y), _GREY,
@@ -305,8 +314,9 @@ class HelpPanel(Widget):
             )
 
     def _draw_column(self, surface: pygame.Surface, x: int,
-                     visible: list[tuple[_Group, list[_Row]]]) -> None:
-        y = _CONTENT_TOP - self.scroll
+                     visible: list[tuple[_Group, list[_Row]]], y: int) -> int:
+        """Draw one column from ``y`` down; return the y where it finished (the
+        ScrollView derives content height, hence overflow, from it)."""
         for group, rows in visible:
             colour = _ORANGE if group.debug else _GREY
             self._text(surface, _(group.title), (x, y), FONT_SIZE_SMALL, colour, shadow=True)
@@ -316,6 +326,7 @@ class HelpPanel(Widget):
                 self._text(surface, _(row.desc), (x + _KEY_COL_W, y + 5), FONT_SIZE_SMALL, _WHITE)
                 y += _ROW_H
             y += _GROUP_GAP
+        return y
 
     def _draw_keys(self, surface: pygame.Surface, keys: tuple[str, ...], x: int, y: int) -> None:
         cx = x
@@ -349,19 +360,6 @@ class HelpPanel(Widget):
             return glyph.get_width()
         surface.blit(cap, (x, y + (_ROW_H - cap.get_height()) // 2))
         return cap.get_width()
-
-    # --- scrollbar -----------------------------------------------------------
-
-    def _draw_scrollbar(self, surface: pygame.Surface) -> None:
-        """Shared beveled capsule scrollbar (``widgets/bar.py``): INK frame, RULE
-        track, gold beveled thumb — the same component every panel uses."""
-        track_h = _CONTENT_H
-        total_h = track_h + self._max_scroll
-        bar.draw_scrollbar(
-            surface, (_SCROLLBAR_X, _CONTENT_TOP, _SCROLLBAR_W, track_h),
-            frac_visible=track_h / total_h,
-            frac_pos=self.scroll / self._max_scroll,
-        )
 
     # --- helpers ------------------------------------------------------------
 

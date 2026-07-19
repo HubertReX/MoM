@@ -140,8 +140,8 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   (kółko myszy, celowo poza listą skrótów), `reset()` (na `open()` panelu i przy zmianie
   zaznaczenia — każdy element otwiera się od góry). Hint scrolla do stopki **tylko gdy
   `scroll.overflows`** (wzorzec „skróty w stopce”).
-- **Miejsca użycia:** panel questów (details, `quest.py`). Do migracji przy okazji:
-  `help.py` (dziś ręczny clip+offset — dokładnie ten sam wzorzec).
+- **Miejsca użycia:** panel questów (details, `quest.py`), panel pomocy (dwie kolumny,
+  `help.py`). Wzorzec dla kolejnych paneli z przewijaną treścią.
 
 ## Cień tekstu — tylko chrome
 
