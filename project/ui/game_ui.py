@@ -166,6 +166,13 @@ class GameUI:
                 help_panel.scroll_up()
             if self._edge("down"):
                 help_panel.scroll_down()
+            # mouse wheel scrolls the panel too (deliberately not a documented shortcut)
+            for ev in events:
+                if ev.type == pygame.MOUSEWHEEL:
+                    if ev.y > 0:
+                        help_panel.scroll_up()
+                    elif ev.y < 0:
+                        help_panel.scroll_down()
             if INPUTS["quit"]:
                 self.close(HelpPanel)
                 INPUTS["quit"] = False

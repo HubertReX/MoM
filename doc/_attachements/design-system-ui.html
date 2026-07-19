@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System UI — MoM (aktualny)</title>
+<script>
+  // apply saved theme before paint (no flash)
+  try{var _t=localStorage.getItem('mom-ds-theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}
+</script>
+<style>
+  :root{
+    --bg:#16161a;--surface:#1e1e24;--surface-2:#26262e;
+    --text:#e8e8e6;--muted:#9a9a96;--border:#33333c;
+    --accent:#748ffc;--accent-soft:#26304d;
+    --ok:#6ecf68;--warn:#e8920c;
+    --ok-soft:#143a1d;--warn-soft:#3d2c0a;
+    --radius:12px;--radius-sm:8px;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.4);
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
+  }
+  /* light theme: OS pref when no explicit choice, or explicit data-theme=light */
+  @media (prefers-color-scheme: light){:root:not([data-theme]){
+    --bg:#fbfbfa;--surface:#fff;--surface-2:#f4f4f2;--text:#1c1c1a;
+    --muted:#6b6b66;--border:#e6e6e2;--accent:#3b5bdb;--accent-soft:#e7ecff;
+    --ok-soft:#ebfbee;--warn-soft:#fff4e6;--shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.06);
+  }}
+  :root[data-theme="light"]{
+    --bg:#fbfbfa;--surface:#fff;--surface-2:#f4f4f2;--text:#1c1c1a;
+    --muted:#6b6b66;--border:#e6e6e2;--accent:#3b5bdb;--accent-soft:#e7ecff;
+    --ok-soft:#ebfbee;--warn-soft:#fff4e6;--shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#16161a;--surface:#1e1e24;--surface-2:#26262e;--text:#e8e8e6;--muted:#9a9a96;
+    --border:#33333c;--accent:#748ffc;--accent-soft:#26304d;--ok-soft:#143a1d;--warn-soft:#3d2c0a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:var(--s7) var(--s5)}
+  h1{font-size:2rem;line-height:1.2;margin:0 0 var(--s3);letter-spacing:-.02em}
+  h2{font-size:1.4rem;line-height:1.25;margin:var(--s7) 0 var(--s3);letter-spacing:-.01em;scroll-margin-top:var(--s4)}
+  h3{font-size:1.05rem;margin:var(--s5) 0 var(--s2)}
+  p{margin:0 0 var(--s4)}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600;color:var(--muted);margin:0 0 var(--s2)}
+  .lead{font-size:1.1rem;color:var(--muted)}
+  code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);padding:1px 5px;border-radius:5px}
+  .grid{display:grid;gap:var(--s4)}
+  .cols-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--s5);box-shadow:var(--shadow)}
+  .card h3:first-child{margin-top:0}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:999px;line-height:1.6}
+  .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem;margin:var(--s3) 0}
+  th,td{text-align:left;padding:var(--s2) var(--s3);border-bottom:1px solid var(--border);vertical-align:top}
+  thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  tbody tr:hover{background:var(--surface-2)}
+  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:var(--s3) var(--s4);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:var(--s4) 0}
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  /* palette swatches */
+  .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s3)}
+  .sw{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;background:var(--surface);transition:transform .12s}
+  .sw:hover{transform:translateY(-2px)}
+  .sw .chip{height:52px}
+  .sw .meta{padding:var(--s2) var(--s3);font-size:.78rem}
+  .sw .meta b{display:block;font-size:.82rem}
+  .sw .meta .hex{font-family:var(--mono);color:var(--muted)}
+  .sub{font-size:.95rem;font-weight:700;color:var(--muted);margin:var(--s5) 0 var(--s2);text-transform:uppercase;letter-spacing:.05em}
+  /* copy chips */
+  .chips{display:flex;flex-wrap:wrap;gap:var(--s2);margin:var(--s2) 0 var(--s4)}
+  .cc{font-family:var(--mono);font-size:.82rem;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;cursor:pointer;color:var(--text);transition:all .12s;white-space:nowrap}
+  .cc:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .cc small{color:var(--muted);font-family:var(--sans);margin-left:6px}
+  /* screenshots */
+  figure{margin:0}
+  figcaption{font-size:.74rem;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:6px}
+  a.full{display:block;cursor:zoom-in}
+  img.shot{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);image-rendering:pixelated;display:block}
+  a.full:hover img.shot{border-color:var(--accent)}
+  img.ref{width:100%;max-width:760px;border:1px solid var(--border);border-radius:var(--radius-sm);image-rendering:pixelated;display:block;margin-bottom:var(--s3)}
+  .hint{font-weight:400;letter-spacing:0;text-transform:none;color:var(--accent)}
+  .sheet{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--s4);display:flex;gap:var(--s5);align-items:center;flex-wrap:wrap}
+  .sheet img{width:256px;height:256px;image-rendering:pixelated;border:1px solid var(--border);border-radius:6px}
+  ul.tight{margin:0 0 var(--s4);padding-left:1.2em}
+  ul.tight li{margin:2px 0}
+  .toc{display:flex;flex-wrap:wrap;gap:var(--s2);margin:var(--s5) 0 var(--s6)}
+  .toc a{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:.82rem;color:var(--text)}
+  .toc a:hover{border-color:var(--accent);text-decoration:none}
+  /* theme toggle */
+  #themeToggle{position:fixed;top:16px;right:16px;z-index:10;font:inherit;font-size:.85rem;font-weight:600;
+    cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);
+    border-radius:999px;padding:6px 14px;box-shadow:var(--shadow)}
+  #themeToggle:hover{border-color:var(--accent)}
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);
+    color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<button id="themeToggle" title="Przełącz tryb jasny/ciemny">🌓 Tryb</button>
+<div class="wrap">
+
+  <p class="eyebrow">Design System · żywy dokument · aktualizacja 2026-07-19</p>
+  <h1>Design System UI — MoM</h1>
+  <p class="lead">Aktualne zasady i komponenty UI gry <em>Misadventures of Malachi</em>
+  (Pygame-CE, top-down RPG, dual-target desktop + web). To jest stan <strong>docelowy</strong>,
+  wdrożony w kodzie — nie audyt „przed".</p>
+
+  <div class="callout">
+    <strong>Trzy dokumenty, trzy role.</strong>
+    <ul class="tight" style="margin-top:6px">
+      <li><b>Ten plik</b> — żywy design system (aktualny stan UI).</li>
+      <li><a href="../../project/ui/AGENTS.md"><code>project/ui/AGENTS.md</code></a> — zwięzłe
+        zasady dla agentów (źródło prawdy dla kodu; ten HTML jest ich czytelną wersją).</li>
+      <li><a href="design-system-progress.html">design-system-progress.html</a> — log zmian
+        before/after (każdy screen „PO" klikalny w pełnej rozdzielczości 1:1).</li>
+    </ul>
+    Historyczny audyt „przed": <a href="design-system-2026-07-18.html">design-system-2026-07-18.html</a>.
+  </div>
+
+  <nav class="toc">
+    <a href="#zasady">Zasady nadrzędne</a>
+    <a href="#paleta">Paleta</a>
+    <a href="#richtext">RichText</a>
+    <a href="#emote">Emotki</a>
+    <a href="#czcionki">Czcionki</a>
+    <a href="#skalowanie">Skalowanie</a>
+    <a href="#keycap">Klawisz (keycap)</a>
+    <a href="#cien">Cień</a>
+    <a href="#panele">Wzorce paneli</a>
+    <a href="#wyjatki">Wyjątki</a>
+    <a href="#ekrany">Ekrany</a>
+    <a href="#konsolidacja">Konsolidacja palety</a>
+  </nav>
+
+  <!-- ZASADY -->
+  <h2 id="zasady">Dwie zasady nadrzędne</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>1 · Nie zdradzać, że pixel-art jest skalowany</h3>
+      <p>Gra renderuje <strong>cały canvas (świat + UI) w logicznej rozdzielczości 1280×720</strong>,
+      po czym skaluje go jako jeden obraz do rozdzielczości ekranu (<code>settings.py</code>
+      <code>SCALE</code>). Dlatego UI skalujemy <strong>parzyście</strong>, grubości i odstępy to
+      wielokrotności 2px, a <code>border_radius</code> jest zerowy. Jedyny wyjątek dla skalowania
+      ułamkowego to czcionka.</p>
+    </div>
+    <div class="card">
+      <h3>2 · Te same komponenty wszędzie</h3>
+      <p>Jeden sposób na „klawisz" (sprite 32px), jeden na cień (tylko chrome), jedna paleta
+      (tokeny z <code>theme.py</code>), jeden minimalny rozmiar czcionki, jeden wzorzec stopki
+      ze skrótami. Panel po panelu UI rozjeżdżało się — te zasady scalają je w jeden system.</p>
+    </div>
+  </div>
+
+  <!-- PALETA -->
+  <h2 id="paleta">Paleta — tokeny z <code>theme.py</code></h2>
+  <p>Jedno źródło prawdy. Panele importują nazwane tokeny, nigdy literały RGB. Kliknij swatch, aby skopiować hex.</p>
+  <div class="sub">Kolory UI (chrome / struktura)</div>
+  <div class="swatches" id="palUI"></div>
+  <div class="sub">Kolory RichText (tagi tekstu)</div>
+  <p style="margin-top:0">Kolory znaczników RichText (<code>STYLE_TAGS_DICT</code>). Dwa pokrywają się
+  z tokenami UI: <code>char</code> = <code>TITLE</code>, <code>text</code> = <code>ACCENT_CYAN</code>.</p>
+  <div class="swatches" id="palRT"></div>
+
+  <!-- RICHTEXT -->
+  <h2 id="richtext">RichText — dostępne znaczniki</h2>
+  <p>Składnia to nawiasy kwadratowe: <code>[tag]tekst[/]</code> (zamknięcie <code>[/]</code> zdejmuje
+  najgłębszy tag; można też <code>[/tag]</code>). Emotki inline: <code>:key:</code>. Parser:
+  <code>project/ui/text/markup.py</code> (tabela z <code>STYLE_TAGS_DICT</code>). Kliknij chip, aby skopiować.</p>
+  <a class="full" href="mom-richtext-tags.png" target="_blank" title="otwórz w pełnej rozdzielczości">
+    <img class="ref" src="mom-richtext-tags.png" alt="MoM RichText — dostępne znaczniki"></a>
+  <div class="sub">Kolory</div><div class="chips" id="rtColors"></div>
+  <div class="sub">Styl</div><div class="chips" id="rtStyle"></div>
+  <div class="sub">Nagłówki i wyrównanie</div><div class="chips" id="rtBlock"></div>
+  <div class="sub">Link i zamknięcie</div><div class="chips" id="rtMisc"></div>
+
+  <!-- EMOTE -->
+  <h2 id="emote">Emotki — klucze <code>:key:</code></h2>
+  <p>Arkusz <code>EMOTE_SHEET_DEFINITION</code> (komórka 14×13 px, siatka 8×8). Wstaw w tekst jako
+  <code>:key:</code> (np. <code>:blessed:</code>). Kliknij chip, aby skopiować.</p>
+  <a class="full" href="mom-emote-sheet.png" target="_blank" title="otwórz w pełnej rozdzielczości">
+    <img class="ref" src="mom-emote-sheet.png" alt="MoM — arkusz emote (klucze)" style="max-width:520px"></a>
+  <div class="sub">Klucze statyczne</div><div class="chips" id="emStatic"></div>
+  <div class="sub">Warianty animowane (<code>_anim</code>)</div><div class="chips" id="emAnim"></div>
+
+  <!-- CZCIONKI -->
+  <h2 id="czcionki">Czcionki</h2>
+  <p>Font pikselowy, sześć rozmiarów: <code>[8, 10, 14, 16, 24, 155]</code>.</p>
+  <table>
+    <thead><tr><th>Stała</th><th>px</th><th>Zastosowanie</th></tr></thead>
+    <tbody>
+      <tr><td><code>FONT_SIZE_EXTRA_TINY</code></td><td>8</td><td><span class="badge warn">wycofane z UI</span> nieczytelne po downscale</td></tr>
+      <tr><td><code>FONT_SIZE_TINY</code></td><td>10</td><td>absolutne minimum chrome (liczniki)</td></tr>
+      <tr><td><code>FONT_SIZE_SMALL</code></td><td>14</td><td>treść czytana; etykiety sekcji paneli</td></tr>
+      <tr><td><code>FONT_SIZE_MEDIUM</code></td><td>16</td><td>domyślny</td></tr>
+      <tr><td><code>FONT_SIZE_LARGE</code></td><td>24</td><td>tytuły paneli; separatory „/" między keycapami</td></tr>
+      <tr><td><code>FONT_SIZE_HUGE</code></td><td>155</td><td>ekrany pełnoekranowe (zapis/ładowanie)</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Minimum:</strong> chrome ≥ 10px (<code>TINY</code>), treść ≥ 14px (<code>SMALL</code>).
+  Znaczniki stanu (✔ ● ○, karety, strzałki) rysuj jako <strong>kształty</strong>, nie glify.</p>
+
+  <!-- SKALOWANIE -->
+  <h2 id="skalowanie">Skalowanie i geometria</h2>
+  <ul class="tight">
+    <li><b>Bazowa jednostka UI = 2px logiczne.</b> Grubości, odstępy, rozmiary = wielokrotność 2px (lepiej 4px). Żadnych linii 1px.</li>
+    <li><b><code>border_radius</code> = 0</b> (kanty). Świadome wyjątki: pasek sentymentu i scrollbar (schodkowo).</li>
+    <li><b>Ikony pixel-art skaluj tylko całkowitą krotnością:</b> <code>k = max(1, round(target_h / src_h))</code>, potem <code>scale_by(k)</code>.</li>
+    <li><b>Panel = nine-patch</b> (<code>nine_patch_04.png</code>, scale 4, border 6). Sprite'y i nine-patch skaluj ×2/×4.</li>
+    <li><code>UI_BORDER_WIDTH = 8</code> (parzyste), linie działowe <code>RULE</code> 2px.</li>
+  </ul>
+
+  <!-- KEYCAP -->
+  <h2 id="keycap">Komponent „klawisz" (keycap) — zawsze sprite, 32px</h2>
+  <p>Klawisze rysuje wyłącznie <code>ui/keycap.py</code> — nigdy wektorowe chipy ani tekst.</p>
+  <div class="sheet">
+    <img src="_ds_assets/hud_sheet.png" alt="arkusz HUD keycapów">
+    <div style="flex:1;min-width:280px">
+      <h3 style="margin-top:0">Arkusz <code>HUD.png</code> (16px ×2 → 32px)</h3>
+      <p style="margin-bottom:6px">Ręczne kafle z <strong>ciemnym licem baked</strong> (kontrast dla białego glifu):</p>
+      <ul class="tight">
+        <li>rząd 0: <code>key</code> (pusty), <code>Esc</code>, <code>Tab</code>, <code>Ctl</code></li>
+        <li>rząd 1: <code>Alt</code>, <code>Enter</code>, <code>Shift</code>, <code>Space</code></li>
+        <li>rząd 2: <strong>strzałki</strong> <code>↑ ↓ → ←</code> (ręczny art)</li>
+        <li>rząd 3: <code>mouse</code>, <code>LMB</code>, <code>RMB</code></li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid cols-2" style="margin-top:var(--s4)">
+    <div class="card">
+      <h3>Zasady</h3>
+      <ul class="tight">
+        <li><b>32px wszędzie</b> (<code>scale=1.0</code>). Downscale do 16px jest <strong>zabroniony</strong>.</li>
+        <li><b>Jednoznakowe</b> — świeży glif na pustym <code>key</code> (<code>generate_icons()</code>).</li>
+        <li><b>Wieloznakowe / mysz / strzałki</b> — art z arkusza 1:1.</li>
+        <li><b>Kontrast</b> — ciemne lico baked w <code>HUD.png</code>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Separatory (to <em>nie</em> klawisze)</h3>
+      <ul class="tight">
+        <li><code>/</code> — „lub", większy font (<code>FONT_SIZE_LARGE</code>, param <code>sep_font</code>).</li>
+        <li><code>–</code> — zakres (<code>1–6</code>), krótka szara kreska.</li>
+        <li><span class="badge warn">pułapka</span> ASCII <code>-</code> to realny klawisz (zoom out).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CIEŃ -->
+  <h2 id="cien">Cień tekstu — tylko chrome</h2>
+  <p>Model questów: cień <strong>tylko</strong> na chrome (nagłówki, etykiety, stopki). Proza i glify
+  klawiszy <strong>bez</strong> cienia. API: <code>_text(..., shadow=False)</code> domyślnie.</p>
+
+  <!-- PANELE -->
+  <h2 id="panele">Wzorce paneli</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Stopka ze skrótami</h3>
+      <p><strong>Skróty klawiszowe idą do stopki</strong> (pod linią <code>RULE</code>), nie do
+      nagłówka. Wzorzec: linia + <code>keycap.render_hint</code>. Lewa = zamknięcie/akcje, prawa =
+      hinty kontekstowe (<code>↑ / ↓ przewiń</code>, tylko gdy jest co scrollować).</p>
+    </div>
+    <div class="card">
+      <h3>Scrollbar</h3>
+      <p><strong>Gruby</strong> pionowy pasek z zaokrąglonymi końcami, ale <strong>schodkowo /
+      kańciasto</strong> — helper <code>theme.draw_pixel_round_rect</code> (rogi z pełnych pikseli,
+      jak upscale nearest-neighbour). <strong>Nie</strong> <code>border_radius=</code> (antyaliasuje).
+      Dodatkowo scroll <strong>kółkiem myszy</strong>.</p>
+    </div>
+  </div>
+
+  <!-- WYJĄTKI -->
+  <h2 id="wyjatki">Świadome wyjątki od pixel-grid</h2>
+  <ul class="tight">
+    <li><b>Pasek sentymentu (dialog)</b> — pełny, bez ramki, <strong>zaokrąglony po bokach</strong>
+      (<code>border_radius = bar_h // 2</code>, pill), czerwony→żółty→zielony wg dyspozycji.</li>
+    <li><b>Panel dialogu</b> — świadomie inny, ciemny nine-patch (portrety + tabliczka <code>name_tag</code>).</li>
+  </ul>
+
+  <!-- EKRANY -->
+  <h2 id="ekrany">Ekrany (aktualny stan, 1280×720 1:1)</h2>
+  <p>Zrzuty z realnej gry (headless, natywna rozdzielczość canvasu). Każdy klikalny do pełnej rozdzielczości.</p>
+  <div class="grid cols-2" id="shots"></div>
+
+  <!-- KONSOLIDACJA -->
+  <h2 id="konsolidacja">Konsolidacja palety — zastosowana</h2>
+  <div class="callout">
+    <span class="badge ok">zastosowane 2026-07-19</span> Poniższe jest już w kodzie
+    (<code>theme.py</code>); zrzuty „PO" wyżej są po zmianie. 12 → 10 tokenów UI + wycofane 2 martwe.
+  </div>
+  <p>Pięć ciemnych tokenów zachodziło na siebie. Redukcja + wycofanie martwych tokenów:</p>
+  <table>
+    <thead><tr><th>Teraz</th><th>hex</th><th>Propozycja</th><th>Uzasadnienie</th></tr></thead>
+    <tbody>
+      <tr><td><code>UI_BORDER</code></td><td>#111111</td><td rowspan="2"><b>→ INK</b> #111111</td>
+        <td rowspan="2">Δ = 1/255 między nimi — nierozróżnialne. Jeden token: ramka HUD + pusty track paska/scrollbara.</td></tr>
+      <tr><td><code>BAR_BG</code></td><td>#121212</td></tr>
+      <tr><td><code>PANEL_BG</code></td><td>#1E1E1E</td><td><b>bez zmian</b></td><td>Tło panelu (α 200), wyraźnie jaśniejsze od INK.</td></tr>
+      <tr><td><code>RULE</code></td><td>#444444</td><td rowspan="2"><b>→ DIVIDER</b> #4A4636</td>
+        <td rowspan="2">Ta sama jasność, różnią się tylko tonem (szary vs oliwka). Jeden ciepły token (linie działowe + separatory ekwipunku) lepiej siada na oliwkowych nine-patchach.</td></tr>
+      <tr><td><code>DIVIDER</code></td><td>#46402E</td></tr>
+      <tr><td><code>CAP_BG</code>, <code>CAP_EDGE</code></td><td>—</td><td><b>usunąć</b></td><td>Martwe (0 użyć) — pozostałość po keycapach rysowanych; dziś sprite'y.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Ocieplenie jasnych neutrali</strong> do tonu palety (oliwka + żółte tytuły):</p>
+  <table>
+    <thead><tr><th>Token</th><th>Teraz</th><th>Propozycja</th><th>Zmiana</th></tr></thead>
+    <tbody>
+      <tr><td><code>GREY</code></td><td>#AAAAA4</td><td>#ADA898</td><td>lekko cieplejszy (oliwkowy), spójny z panelami</td></tr>
+      <tr><td><code>DONE</code></td><td>#6ECF68</td><td>#5FFA68 (= <code>loc</code>)</td><td>ten sam zielony co RichText „lokacja" — jedna zieleń „sukces/miejsce"</td></tr>
+      <tr><td><code>WHITE</code></td><td>#FFFFFF</td><td>#FBF7EC (ivory)</td><td>opcjonalnie: mniej zimny biały; do decyzji</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:.9rem"><code>error</code> (#DF394C) zostaje bez zmian —
+  to kolor debug, celowo krzykliwy. Po akceptacji: aktualizacja <code>theme.py</code> +
+  <code>settings.py</code> (STYLE_TAGS), re-capture zrzutów, odświeżenie tej palety.</p>
+
+  <p style="margin-top:var(--s7);color:var(--muted);font-size:.85rem">
+    Źródło prawdy: <a href="../../project/ui/AGENTS.md"><code>project/ui/AGENTS.md</code></a>.
+    Podgląd: <code>docserve start doc/_attachements/design-system-ui.html</code>.
+  </p>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ---- palette ----
+  const PAL_UI=[
+    ["TITLE","#FFFC67","nagłówki / nazwy postaci (= CHAR_NAME_COLOR = RichText char)"],
+    ["WHITE","#FBF7EC","treść (ivory — ocieplony)"],
+    ["GREY","#ADA898","etykiety, liczniki, hinty, wiersze locked (ocieplony)"],
+    ["GOLD","#FFD700","akcent aktywny / thumb scrollbara / podkreślenie filtra"],
+    ["ACCENT_CYAN","#00C5C7","stan aktywny / pasek postępu / RichText text"],
+    ["DONE","#5FFA68","ukończone (= RichText loc)"],
+    ["WARN","#E8920C","ostrzeżenie / krok ręczny / sekcja debug"],
+    ["RULE / DIVIDER","#4A4636","linie działowe (2px) + separator ekwipunku / handlu"],
+    ["PANEL_BG","#1E1E1E","tło panelu (α 200)"],
+    ["INK","#111111","ramka HUD + pusty track paska / scrollbara (BAR_BG)"],
+  ];
+  const PAL_RT=[
+    ["act","#FF6E68","akcja / czasownik"],
+    ["char","#FFFC67","postać (= TITLE)"],
+    ["item","#6871FF","przedmiot"],
+    ["loc","#5FFA68","lokacja"],
+    ["num","#FF77FF","liczba"],
+    ["quest","#60FDFF","zadanie"],
+    ["text","#00C5C7","tekst domyślny (= ACCENT_CYAN)"],
+    ["error","#DF394C","błąd / debug"],
+  ];
+  function swatch(host,arr){
+    arr.forEach(([name,hex,use])=>{
+      const el=document.createElement('div');el.className='sw';el.title='kliknij, aby skopiować '+hex;
+      el.innerHTML=`<div class="chip" style="background:${hex}"></div>
+        <div class="meta"><b>${name}</b><span class="hex">${hex}</span><br>${use}</div>`;
+      el.onclick=()=>copyToClipboard(hex,'Skopiowano '+hex);
+      host.appendChild(el);
+    });
+  }
+  swatch(document.getElementById('palUI'),PAL_UI);
+  swatch(document.getElementById('palRT'),PAL_RT);
+
+  // ---- richtext tags ----
+  function chips(host,items){
+    items.forEach(([copy,label])=>{
+      const el=document.createElement('span');el.className='cc';el.title='kliknij, aby skopiować '+copy;
+      el.innerHTML=copy+(label?`<small>${label}</small>`:'');
+      el.onclick=()=>copyToClipboard(copy,'Skopiowano '+copy);
+      host.appendChild(el);
+    });
+  }
+  const wrap=t=>[`[${t}][/]`,t];
+  chips(document.getElementById('rtColors'),["act","char","item","loc","num","quest","text","error"].map(wrap));
+  chips(document.getElementById('rtStyle'),["bold","b","italic","i","underline","u","shadow","dark","light","big","small"].map(wrap));
+  chips(document.getElementById('rtBlock'),["h1","h2","h3","left","center","right"].map(wrap));
+  chips(document.getElementById('rtMisc'),[["[link ADRES][/]","link z URL"],["[/]","zamknij najgłębszy tag"]]);
+
+  // ---- emotes ----
+  const EM_STATIC="empty shocked blessed love angry indifferent happy wondering blink doubt frounce smile dreaming sad neutral dead miserable offended peaceful evil dots exclamation red_exclamation question human red_question broken_heart heart zzz star cross fight walk A B X Y $ clear".split(" ");
+  const EM_ANIM="shocked_anim blessed_anim love_anim blink_anim dots_anim red_exclamation_anim red_question_anim broken_heart_anim heart_anim zzz_anim star_anim fight_anim $_anim".split(" ");
+  chips(document.getElementById('emStatic'),EM_STATIC.map(k=>[`:${k}:`,""]));
+  chips(document.getElementById('emAnim'),EM_ANIM.map(k=>[`:${k}:`,""]));
+
+  // ---- screenshots ----
+  const SHOTS=[
+    ["01_main_menu","Menu główne"],
+    ["02_gameplay","Rozgrywka + HUD + hotbar"],
+    ["04_quest","Dziennik zadań (J)"],
+    ["05_dialog","Dialog z NPC"],
+  ];
+  const shots=document.getElementById('shots');
+  SHOTS.forEach(([slug,cap])=>{
+    const src=`_ds_assets/${slug}.png`;
+    const f=document.createElement('figure');
+    f.innerHTML=`<figcaption>${cap} · <span class="hint">klik → 1:1</span></figcaption>
+      <a class="full" href="${src}" target="_blank" title="pełna rozdzielczość (1:1)"><img class="shot" src="${src}" alt="${cap}"></a>`;
+    shots.appendChild(f);
+  });
+
+  // ---- theme toggle ----
+  const TKEY='mom-ds-theme';
+  function effTheme(){const c=document.documentElement.getAttribute('data-theme');
+    return c||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+  function setToggleLabel(){document.getElementById('themeToggle').textContent=(effTheme()==='dark'?'☀️ Jasny':'🌙 Ciemny');}
+  document.getElementById('themeToggle').onclick=()=>{
+    const next=effTheme()==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    try{localStorage.setItem(TKEY,next);}catch(e){}
+    setToggleLabel();
+  };
+  setToggleLabel();
+
+  // ---- copy helper + toast ----
+  function copyToClipboard(text,msg='Skopiowano'){
+    navigator.clipboard.writeText(text).then(()=>showToast(msg)).catch(()=>{
+      const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);
+      ta.select();document.execCommand('copy');ta.remove();showToast(msg);
+    });
+  }
+  let tt;
+  function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1600);}
+</script>
+</body>
+</html>

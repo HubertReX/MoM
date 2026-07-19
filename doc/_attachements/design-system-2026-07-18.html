@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MoM — Design System UI</title>
+<script>try{var _t=localStorage.getItem('mom-ds-theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
 <style>
   :root {
     --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
@@ -18,7 +19,7 @@
     --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme]) {
       --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
       --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
       --accent:#748ffc; --accent-soft:#26304d;
@@ -26,6 +27,24 @@
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
     }
   }
+  :root[data-theme="dark"] {
+    --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+    --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+    --accent:#748ffc; --accent-soft:#26304d;
+    --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"] {
+    --bg:#fbfbfa; --surface:#ffffff; --surface-2:#f4f4f2;
+    --text:#1c1c1a; --muted:#6b6b66; --border:#e6e6e2;
+    --accent:#3b5bdb; --accent-soft:#e7ecff;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+  }
+  #themeToggle{position:fixed;top:16px;right:16px;z-index:10;font:inherit;font-size:.85rem;
+    font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);
+    color:var(--text);border-radius:999px;padding:6px 14px;box-shadow:var(--shadow)}
+  #themeToggle:hover{border-color:var(--accent)}
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); color: var(--text);
@@ -117,13 +136,30 @@
 </style>
 </head>
 <body>
+<button id="themeToggle" title="Przełącz tryb jasny/ciemny">Tryb</button>
 <div class="wrap">
 
-  <p class="eyebrow">Design System · 2026-07-18</p>
+  <p class="eyebrow">Design System · 2026-07-18 · AUDYT HISTORYCZNY (stan „przed")</p>
   <h1>Misadventures of Malachi — Design System UI</h1>
   <p class="lead">Audyt pięciu realnych ekranów, katalog odstępstw z decyzjami i wspólny język
   komponentów UI. Cel: żeby „udawany pixel-art w niskiej rozdzielczości" jak najrzadziej
   zdradzał, że to udawanie — i żeby te same elementy wyglądały tak samo na każdym ekranie.</p>
+
+  <div class="callout" style="border-left-color:var(--warn,#e8920c);background:rgba(232,146,12,.12)">
+    <strong>⏳ To jest dokument historyczny (stan „przed").</strong>
+    Pokazuje UI <em>sprzed</em> ujednolicenia — chaos, który był punktem wyjścia. Zebrane tu
+    odstępstwa (tabela A–H) zostały już <strong>wdrożone w kodzie</strong>.
+    <ul style="margin:var(--s2) 0 0">
+      <li><strong>Aktualny design system:</strong>
+        <a href="design-system-ui.html">design-system-ui.html</a> — żywy dokument
+        z bieżącymi zasadami, paletą i zrzutami 1:1.</li>
+      <li><strong>Log zmian before/after:</strong>
+        <a href="design-system-progress.html">design-system-progress.html</a>.</li>
+      <li><strong>Zasady dla kodu (źródło prawdy):</strong>
+        <a href="../../project/ui/AGENTS.md"><code>project/ui/AGENTS.md</code></a>.</li>
+    </ul>
+    Poniższy audyt zachowujemy jako zapis stanu wyjściowego i uzasadnień decyzji.
+  </div>
 
   <div class="callout">
     <strong>Dwie zasady nadrzędne.</strong>
@@ -410,7 +446,7 @@
       <tr><td>C</td><td>Paleta</td><td>Tokeny do <code>theme.py</code>, panele importują (0 zmian wizualnych)</td><td><span class="badge fix">FIX</span></td><td><span class="badge ok">niskie</span></td><td><span class="badge ok">zrobione</span></td></tr>
       <tr><td>B</td><td>Cień</td><td>Pomoc → model questów (cień tylko chrome)</td><td><span class="badge fix">FIX</span></td><td><span class="badge ok">niskie</span></td><td><span class="badge ok">zrobione</span></td></tr>
       <tr><td>D</td><td>Skala</td><td>Linie 1px → 2px; <code>UI_BORDER_WIDTH</code> 9 → 8; usunięcie <code>border_radius</code> z chrome (kanty)</td><td><span class="badge fix">FIX</span></td><td><span class="badge ok">niskie</span></td><td><span class="badge ok">zrobione</span></td></tr>
-      <tr><td>A</td><td>Klawisz</td><td>Sprite wszędzie; pomoc + hinty nawigacji (pomoc/questy) na sprite'y ÷2; strzałki jako placeholder</td><td><span class="badge fix">FIX</span></td><td><span class="badge warn">średnie (wizualne)</span></td><td><span class="badge warn">w toku</span></td></tr>
+      <tr><td>A</td><td>Klawisz</td><td>Sprite <strong>32px wszędzie</strong> (koniec skalowania do 16px); ręczny art strzałek + ciemne lico kafli baked w <code>HUD.png</code>; separatory „/" (większy font) i „1–6" (kreska)</td><td><span class="badge fix">FIX</span></td><td><span class="badge warn">średnie (wizualne)</span></td><td><span class="badge ok">zrobione</span></td></tr>
       <tr><td>E</td><td>Czcionka</td><td>Rola zamiast surowego rozmiaru; nazwa postaci EXTRA_TINY 8 → TINY 10</td><td><span class="badge fix">FIX</span></td><td><span class="badge ok">niskie</span></td><td><span class="badge ok">zrobione</span></td></tr>
       <tr><td>F</td><td>Panele</td><td>Udokumentować wzorce (nine-patch, rule, name_tag, kształty)</td><td><span class="badge doc">DOC</span></td><td><span class="badge ok">—</span></td><td><span class="badge ok">zrobione</span></td></tr>
       <tr><td>G</td><td>Ikony emoji</td><td>Skalowanie tylko całkowitą krotnością (koniec z ułamkowym ×1.19–1.46)</td><td><span class="badge fix">FIX</span></td><td><span class="badge ok">niskie</span></td><td><span class="badge ok">zrobione</span></td></tr>
@@ -477,6 +513,19 @@
   function showToast(msg){ const t=document.getElementById('toast');
     t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer);
     toastTimer=setTimeout(()=>t.classList.remove('show'),1600); }
+
+  /* ---- theme toggle (persisted) ---- */
+  (function(){
+    const TK='mom-ds-theme';
+    function eff(){const c=document.documentElement.getAttribute('data-theme');
+      return c||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+    const btn=document.getElementById('themeToggle');
+    function lbl(){btn.textContent=(eff()==='dark'?'☀️ Jasny':'🌙 Ciemny');}
+    btn.onclick=()=>{const n=eff()==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',n);
+      try{localStorage.setItem(TK,n);}catch(e){}lbl();};
+    lbl();
+  })();
 </script>
 </body>
 </html>

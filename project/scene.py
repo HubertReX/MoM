@@ -283,12 +283,8 @@ class Scene(State):
         small_font = self.game.fonts[FONT_SIZE_SMALL]
         tiny_font = self.game.fonts[FONT_SIZE_TINY]
 
-        # Przyciemnij lico pustego klawisza (jasny niebieski -> ciemny granat) mnożnikiem,
-        # żeby biały glif miał kontrast (patrz design-system, panel pomocy). Dotyczy tylko
-        # keycapów generowanych z tej bazy (A-Z, cyfry, F1-F12, znaki, strzałki) oraz
-        # świeżych capów w pomocy. Ręcznie rysowane kafle arkusza (Esc/Shift/Space/... z
-        # zaszytym białym glifem) mają jasne lico - do przyciemnienia w Aseprite osobno.
-        # icons["key"][0].fill((75, 82, 105, 255), special_flags=pygame.BLEND_RGBA_MULT)
+        # Lico pustego `key` (i wszystkich kafli arkusza) jest już przyciemnione
+        # w samym sprite'cie HUD.png, więc biały glif ma kontrast bez mnożenia w kodzie.
 
         # generate keys with letter buttons (A-Z)
         center = icons["key"][0].get_rect().center
@@ -325,21 +321,9 @@ class Scene(State):
             bg.blit(text_surf, text_rect)
             icons[f"key_{sign}"] = [bg]
 
-        # arrow keys - PLACEHOLDER: a filled triangle glyph nabity na pusty `key`.
-        # Docelowo ręczny art w arkuszu HUD (jak Esc/Shift/Space); do tego czasu ten
-        # placeholder daje spójny sprite `key_up/down/left/right` dla paneli.
-        cx, cy = center
-        d = 5
-        arrow_points = {
-            "up":    [(cx, cy - 1 - d), (cx - d, cy - 1 + d), (cx + d, cy - 1 + d)],
-            "down":  [(cx, cy - 1 + d), (cx - d, cy - 1 - d), (cx + d, cy - 1 - d)],
-            "left":  [(cx - d, cy - 1), (cx + d, cy - 1 - d), (cx + d, cy - 1 + d)],
-            "right": [(cx + d, cy - 1), (cx - d, cy - 1 - d), (cx - d, cy - 1 + d)],
-        }
-        for name, points in arrow_points.items():
-            bg = icons["key"][0].copy()
-            pygame.draw.polygon(bg, FONT_COLOR, points)
-            icons[f"key_{name}"] = [bg]
+        # arrow keys (key_up/down/left/right) come from the HUD sheet directly
+        # (HUD_SHEET_DEFINITION, rows 2) - hand-drawn arrows on dark keycaps, no
+        # code-side placeholder needed anymore.
 
     #############################################################################################################
 

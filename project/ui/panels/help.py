@@ -19,8 +19,8 @@ Three concerns shape the content:
   ``[] if IS_WEB`` gating in ``ACTIONS``.
 
 i18n (D3): every string here is UI furniture and comes from the TOML ``[help]`` section
-via ``_()``. Keycaps are the shared hotbar sprite (``hud.icons["key_*"]``) scaled
-evenly to 16px, so a hotkey looks identical here and on the HUD (design-system A).
+via ``_()``. Keycaps are the shared hotbar sprite (``hud.icons["key_*"]``) at native
+32px, so a hotkey looks identical here and on the HUD (design-system A).
 """
 from __future__ import annotations
 
@@ -56,15 +56,22 @@ if TYPE_CHECKING:
 PANEL_W, PANEL_H = 1120, 680
 PANEL_X, PANEL_Y = (WIDTH - PANEL_W) // 2, (HEIGHT - PANEL_H) // 2
 _PAD = 28
-# scrollbar on the right edge of the panel
-_SCROLLBAR_W = 6
+# scrollbar on the right edge of the panel — thick, with CHUNKY (stair-stepped, not
+# smooth) rounded ends, as befits pixel-art: rounding drawn from full pixels, like a
+# low-res rounded shape upscaled with nearest-neighbour. Grey track + gold thumb.
+_SCROLLBAR_W = 12
+_SCROLLBAR_R = 6         # corner radius (= half width → rounded pill ends)
+_SCROLLBAR_STEP = 2      # size of each quantised corner step (bigger = blockier)
 _SCROLLBAR_X = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 4
 _INNER_LEFT = PANEL_X + _PAD
 _INNER_RIGHT = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 8
 _HEADER_Y = PANEL_Y + 22
 _RULE_Y = PANEL_Y + 72
 _CONTENT_TOP = PANEL_Y + 82
-_CONTENT_BOTTOM = PANEL_Y + PANEL_H - _PAD
+# footer strip (shortcuts) mirrors the quest panel: a rule + a hint row at the bottom
+_FOOTER_Y = PANEL_Y + PANEL_H - _PAD - 44
+_FOOTER_TEXT_Y = _FOOTER_Y + 8
+_CONTENT_BOTTOM = _FOOTER_Y - 10
 _CONTENT_H = _CONTENT_BOTTOM - _CONTENT_TOP
 
 _COL_GAP = 48
@@ -90,8 +97,12 @@ _RULE = theme.RULE
 _ORANGE = theme.WARN
 
 # A key is drawn as a hotbar keycap sprite via ``keycap.build_cap`` (the same component
-# the HUD hotbar and action buttons use). Only the separators stay plain text.
-_SEPARATORS = ("/",)
+# the HUD hotbar and action buttons use). Separators are NOT keys:
+#   "/"  -> "or" separator, drawn as a larger grey glyph (proportional to 32px caps);
+#   "–"  -> range separator (e.g. hotbar 1–6), drawn as a short grey dash line.
+# The ASCII "-" stays a real keycap (the zoom-out key), so it must not be a separator.
+_TEXT_SEP = ("/",)
+_RANGE_SEP = ("–",)
 
 
 @dataclass(frozen=True)
@@ -133,7 +144,7 @@ _COLUMNS: tuple[tuple[_Group, ...], ...] = (
         _Group("help.grp_items", (
             _row(("I",), "help.inventory"),
             _row(("J",), "help.quest_log"),
-            _row(("1", "-", "6"), "help.hotbar"),
+            _row(("1", "–", "6"), "help.hotbar"),
             _row((",", "/", "."), "help.cycle"),
         )),
         _Group("help.grp_mouse", (
@@ -241,23 +252,38 @@ class HelpPanel(Widget):
 
         if self._max_scroll > 0:
             self._draw_scrollbar(surface)
+        self._draw_footer(surface)
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         self._text(surface, _("help.title"), (_INNER_LEFT, _HEADER_Y), FONT_SIZE_LARGE,
                    _TITLE_COL, shadow=True)
+
+    def _draw_footer(self, surface: pygame.Surface) -> None:
+        """Footer shortcuts strip (design-system: panel shortcuts live in the footer).
+
+        Left: close hints. Right: scroll hints, only while the list overflows.
+        """
+        pygame.draw.line(surface, _RULE, (_INNER_LEFT, _FOOTER_Y), (_INNER_RIGHT, _FOOTER_Y), 2)
+        text_font = self._font(FONT_SIZE_SMALL)
+        sep_font = self._font(FONT_SIZE_LARGE)  # bigger "/" so it isn't dwarfed by 32px caps
         keycap.render_hint(
-            surface, self.hud.icons, self._font(FONT_SIZE_SMALL), self._font(FONT_SIZE_SMALL),
-            _("help.close_hint"), (_INNER_RIGHT, _HEADER_Y + 10), _GREY,
-            align="right", glyph_color=_CAP_TEXT, shadow_color=PANEL_BG_COLOR,
-            scale=1.0,
+            surface, self.hud.icons, text_font, text_font,
+            _("help.close_hint"), (_INNER_LEFT, _FOOTER_TEXT_Y), _GREY,
+            glyph_color=_CAP_TEXT, shadow_color=PANEL_BG_COLOR, sep_font=sep_font,
         )
+        if self._max_scroll > 0:
+            keycap.render_hint(
+                surface, self.hud.icons, text_font, text_font,
+                _("help.scroll_hint"), (_INNER_RIGHT, _FOOTER_TEXT_Y), _GREY,
+                align="right", glyph_color=_CAP_TEXT, shadow_color=PANEL_BG_COLOR, sep_font=sep_font,
+            )
 
     def _draw_column(self, surface: pygame.Surface, x: int,
                      visible: list[tuple[_Group, list[_Row]]]) -> None:
         y = _CONTENT_TOP - self.scroll
         for group, rows in visible:
             colour = _ORANGE if group.debug else _GREY
-            self._text(surface, _(group.title), (x, y), FONT_SIZE_TINY, colour, shadow=True)
+            self._text(surface, _(group.title), (x, y), FONT_SIZE_SMALL, colour, shadow=True)
             y += _TITLE_H
             for row in rows:
                 self._draw_keys(surface, row.keys, x, y)
@@ -267,21 +293,27 @@ class HelpPanel(Widget):
 
     def _draw_keys(self, surface: pygame.Surface, keys: tuple[str, ...], x: int, y: int) -> None:
         cx = x
-        font = self._font(FONT_SIZE_SMALL)
+        sep_font = self._font(FONT_SIZE_LARGE)  # "/" proportional to the 32px caps
         for token in keys:
-            if token in _SEPARATORS:
-                self._text(surface, token, (cx + _SEP_GAP, y + 5), FONT_SIZE_SMALL, _GREY)
-                cx += font.size(token)[0] + 2 * _SEP_GAP
+            if token in _TEXT_SEP:
+                gy = y + (_ROW_H - sep_font.get_height()) // 2
+                self._text(surface, token, (cx + _SEP_GAP, gy), FONT_SIZE_LARGE, _GREY)
+                cx += sep_font.size(token)[0] + 2 * _SEP_GAP
+            elif token in _RANGE_SEP:
+                # a range (1–6), not a key: a short horizontal grey dash
+                dash_w = 12
+                dy = y + _ROW_H // 2
+                pygame.draw.rect(surface, _GREY, (cx + _SEP_GAP, dy - 1, dash_w, 2))
+                cx += dash_w + 2 * _SEP_GAP
             else:
                 cx += self._draw_cap(surface, token, cx, y) + _CAP_GAP
 
     def _draw_cap(self, surface: pygame.Surface, token: str, x: int, y: int) -> int:
         """Draw one keycap sprite; return its width so the caller can advance.
 
-        Uses the hotbar keycap sprite (hud.icons["key_*"]) scaled evenly to
-        24px — larger than the HUD hotbar's 16px for panel readability.
-        Single-char keys get a crisp fresh glyph on the scaled key; multi-char /
-        mouse / arrow keys reuse their baked sprite art.
+        Uses the hotbar keycap sprite (hud.icons["key_*"]) at native 32px - the
+        design-system minimum for a readable keycap. Single-char keys get a crisp
+        fresh glyph on the key; multi-char / mouse / arrow keys reuse baked art.
         """
         cap = keycap.build_cap(self.hud.icons, token, self._font(FONT_SIZE_SMALL), _CAP_TEXT,
                                scale=1.0)
@@ -295,15 +327,18 @@ class HelpPanel(Widget):
     # --- scrollbar -----------------------------------------------------------
 
     def _draw_scrollbar(self, surface: pygame.Surface) -> None:
-        """Thin vertical scrollbar on the right edge of the panel."""
+        """Thick pixel-art scrollbar: grey track + gold thumb, both with CHUNKY
+        (stair-stepped, non-anti-aliased) rounded ends."""
         track_h = _CONTENT_H
         total_h = track_h + self._max_scroll
         thumb_h = max(20, int(track_h * track_h / total_h))
         thumb_y = _CONTENT_TOP + int((track_h - thumb_h) * self.scroll / self._max_scroll)
-        # track
-        pygame.draw.rect(surface, _GREY, (_SCROLLBAR_X, _CONTENT_TOP, _SCROLLBAR_W, track_h))
-        # thumb
-        pygame.draw.rect(surface, _GOLD, (_SCROLLBAR_X, thumb_y, _SCROLLBAR_W, thumb_h))
+        theme.draw_pixel_round_rect(
+            surface, _GREY, (_SCROLLBAR_X, _CONTENT_TOP, _SCROLLBAR_W, track_h),
+            _SCROLLBAR_R, _SCROLLBAR_STEP)
+        theme.draw_pixel_round_rect(
+            surface, _GOLD, (_SCROLLBAR_X, thumb_y, _SCROLLBAR_W, thumb_h),
+            _SCROLLBAR_R, _SCROLLBAR_STEP)
 
     # --- helpers ------------------------------------------------------------
 

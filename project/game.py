@@ -1086,9 +1086,14 @@ class Game:
             )
             self.save_screenshot(add_notification)
 
-        # save screenshot if an external agent requested one (no-op unless enabled)
+        # save screenshot if an external agent requested one (no-op unless enabled).
+        # MOM_AGENT_SS_CANVAS=1 captures the logical canvas (native 1280x720, 1:1
+        # pixels) instead of the scaled physical screen — for pixel-perfect UI review.
         if self.agent_ctrl:
-            self.agent_ctrl.capture(self.screen)
+            ss_source = (self.canvas
+                         if os.environ.get("MOM_AGENT_SS_CANVAS") == "1"
+                         else self.screen)
+            self.agent_ctrl.capture(ss_source)
 
         await asyncio.sleep(0)  # type: ignore
 

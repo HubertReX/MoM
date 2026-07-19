@@ -86,6 +86,47 @@ def menu_border(file: str, scale: int) -> pygame.Surface:
 
 
 #######################################################################################################################
+# MARK: Pixel-art shapes
+
+
+def draw_pixel_round_rect(
+    surface: pygame.Surface,
+    color: "tuple[int, int, int] | tuple[int, int, int, int]",
+    rect: "tuple[int, int, int, int]",
+    radius: int,
+    step: int = 2,
+) -> None:
+    """Filled rounded rectangle with CHUNKY, non-anti-aliased corners.
+
+    ``pygame.draw.rect(..., border_radius=)`` anti-aliases the arc → smooth curve.
+    Pixel-art wants the opposite: rounding that looks like a low-res rounded shape
+    scaled up with nearest-neighbour (a stair-step, hard edges, no grey pixels).
+
+    We build the two caps from full-opacity horizontal slabs whose width steps in
+    quantised ``step``-pixel bands following the circle equation — so the corners
+    are rounded but blocky. ``radius`` is clamped to half the smaller side.
+    """
+    x, y, w, h = rect
+    radius = max(0, min(radius, w // 2, h // 2))
+    if radius == 0:
+        pygame.draw.rect(surface, color, rect)
+        return
+    # central body between the two rounded caps
+    if h - 2 * radius > 0:
+        pygame.draw.rect(surface, color, (x, y + radius, w, h - 2 * radius))
+    # caps as a quantised staircase (each band a full rect → no anti-aliasing)
+    b = 0
+    while b < radius:
+        bh = min(step, radius - b)
+        dy = radius - (b + bh)                       # inner edge of the band vs cap centre
+        inset = radius - int((radius * radius - dy * dy) ** 0.5)
+        band_w = w - 2 * inset
+        pygame.draw.rect(surface, color, (x + inset, y + b, band_w, bh))               # top cap
+        pygame.draw.rect(surface, color, (x + inset, y + h - b - bh, band_w, bh))      # bottom cap
+        b += step
+
+
+#######################################################################################################################
 # MARK: Palette
 
 # re-export common colours so widgets import them from one place
@@ -96,19 +137,21 @@ NAME: tuple[int, int, int] = CHAR_NAME_COLOR
 
 # Shared UI palette tokens — single source of truth. Panels import these instead of
 # re-declaring the same literals (see doc/_attachements/design-system-2026-07-18.html).
+# Bright / semantic tokens. Neutrals warmed toward the game's olive/tan palette
+# (design-system palette consolidation, 2026-07-19).
 TITLE: tuple[int, int, int] = CHAR_NAME_COLOR   # (255,252,103) headings / character names
-WHITE: tuple[int, int, int] = (255, 255, 255)
-GREY: tuple[int, int, int] = (170, 170, 164)    # muted: labels, counters, locked rows, hints
+WHITE: tuple[int, int, int] = (251, 247, 236)   # ivory — warmed off pure white
+GREY: tuple[int, int, int] = (173, 168, 152)    # muted (warm): labels, counters, locked rows, hints
 GOLD: tuple[int, int, int] = (255, 215, 0)      # active accent / filter underline
 ACCENT_CYAN: tuple[int, int, int] = (0, 197, 199)  # active state / progress / default dialog text
-DONE: tuple[int, int, int] = (110, 207, 104)    # completed
+DONE: tuple[int, int, int] = (95, 250, 104)     # completed — unified with RichText `loc` green
 WARN: tuple[int, int, int] = (232, 146, 12)     # warning / manual step
-RULE: tuple[int, int, int] = (68, 68, 68)       # divider lines (2px)
-BAR_BG: tuple[int, int, int] = (18, 18, 18)     # empty progress-bar track
-DIVIDER: tuple[int, int, int] = (70, 64, 46)    # inventory/trade separator
-# keycap chip fill/edge — legacy, pending migration to sprite keycaps (design-system step A)
-CAP_BG: tuple[int, int, int] = (22, 22, 22)
-CAP_EDGE: tuple[int, int, int] = (150, 150, 140)
+# INK: merged UI_BORDER (17,17,17) + BAR_BG (18,18,18) — they differed by 1/255.
+INK: tuple[int, int, int] = (17, 17, 17)
+BAR_BG: tuple[int, int, int] = INK              # empty progress-bar / scrollbar track
+# RULE + DIVIDER merged: one warm olive-grey (same luminance, warmer tone than old #444).
+RULE: tuple[int, int, int] = (74, 70, 54)       # divider lines (2px)
+DIVIDER: tuple[int, int, int] = RULE            # inventory/trade separator (alias of RULE)
 # dialog-specific
 DIALOG_SEPARATOR: tuple[int, int, int] = (84, 135, 137)   # greenish panel border (nine_patch_01c)
 DIALOG_OPTION_HIGHLIGHT: tuple[int, int, int] = (22, 55, 82)  # dark blue vs turquoise text
@@ -120,6 +163,7 @@ __all__ = [
     "measure",
     "nine_patch",
     "menu_border",
+    "draw_pixel_round_rect",
     "DEFAULT_TEXT_COLOR",
     "DEFAULT_SHADOW_COLOR",
     "DEFAULT_SHADOW_OFFSET",
@@ -134,11 +178,10 @@ __all__ = [
     "ACCENT_CYAN",
     "DONE",
     "WARN",
+    "INK",
     "RULE",
     "BAR_BG",
     "DIVIDER",
-    "CAP_BG",
-    "CAP_EDGE",
     "DIALOG_SEPARATOR",
     "DIALOG_OPTION_HIGHLIGHT",
     "DIALOG_VISITED_BG",

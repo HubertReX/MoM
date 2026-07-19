@@ -17,10 +17,16 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 
 - **Jedno źródło prawdy** — kolory z nazwanych tokenów w `theme.py`, nigdy literały RGB w
   panelu. Jeśli tokenu brakuje, dodaj go do `theme.py`, nie kopiuj wartości.
-- Kluczowe tokeny (hex): `TITLE #FFFC67`, `WHITE #FFFFFF`, `GREY #AAAAA4`, `GOLD #FFD700`,
-  `ACCENT_CYAN #00C5C7`, `DONE #6ECF68`, `WARN #E8920C`, `RULE #444444`, `PANEL_BG #1E1E1E`.
-- `settings.CHAR_NAME_COLOR` to ten sam żółty co `TITLE` — trzymać jako re-eksport, nie
-  drugą definicję.
+- Kluczowe tokeny (hex): `TITLE #FFFC67`, `WHITE #FBF7EC` (ivory), `GREY #ADA898`,
+  `GOLD #FFD700`, `ACCENT_CYAN #00C5C7`, `DONE #5FFA68` (= RichText `loc`), `WARN #E8920C`,
+  `RULE`/`DIVIDER #4A4636` (jeden ciepły token), `PANEL_BG #1E1E1E`, `INK #111111`
+  (ramka HUD + `BAR_BG`). Neutrale ocieplone do tonu oliwkowej palety (2026-07-19).
+- `settings.CHAR_NAME_COLOR` to ten sam żółty co `TITLE`; `DONE` = RichText `loc`;
+  `char` = `TITLE`, `text` = `ACCENT_CYAN` — trzymać jako aliasy, nie drugie definicje.
+- Kolory RichText (tagi tekstu) w `STYLE_TAGS_DICT` (`settings.py`): `act #FF6E68`,
+  `char #FFFC67`, `item #6871FF`, `loc #5FFA68`, `num #FF77FF`, `quest #60FDFF`,
+  `text #00C5C7`, `error #DF394C` (error = debug, celowo krzykliwy).
+- `CAP_BG`/`CAP_EDGE` **wycofane** (martwe po przejściu na sprite-keycapy).
 
 ## Skalowanie i geometria
 
@@ -41,7 +47,7 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 ## Komponent „klawisz" (hotkey) — zawsze sprite
 
 - Klawisze rysuj przez współdzielony moduł **`ui/keycap.py`** (nie duplikuj logiki):
-  - `keycap.build_cap(icons, token, glyph_font, glyph_color)` → keycap 16px (sprite ÷2);
+  - `keycap.build_cap(icons, token, glyph_font, glyph_color)` → keycap 32px (natywny sprite);
   - `keycap.render_hint(surface, icons, glyph_font, text_font, text, pos, color, ...)` →
     inline wiersz mieszający keycapy i tekst ze składni `{TOKEN}` (hinty nawigacji: nagłówek
     pomocy `close_hint`, stopka questów `hints`).
@@ -51,20 +57,35 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   - ręczny arkusz `HUD_SHEET_DEFINITION` (`settings.py:870`): `key` (pusty), `Esc`, `Tab`,
     `Ctl`, `Alt`, `Enter`, `Shift`, `Space`, `mouse_LMB`, `mouse_RMB`;
   - generowane w `generate_icons()` (`scene.py:277`): A–Z, cyfry 0–9, F1–F12, znaki
-    `< > \` [ ] + - , .`, oraz **placeholderowe strzałki** `up/down/left/right` (trójkąt na
-    pustym `key` — do zastąpienia ręcznym artem w arkuszu).
+    `< > \` [ ] + - , .` (glif na pustym `key`).
+    Strzałki `up/down/left/right` mają **ręczny art w arkuszu** (rząd 2
+    `HUD_SHEET_DEFINITION`), nie są już generowane w kodzie.
 - **Nowy klawisz z literą/cyfrą/F-em/znakiem** — dodaj do `generate_icons` (glif na pustym
-  `key`). **Nowy klawisz bez glifu w foncie** (np. strzałki) — docelowo art w arkuszu
-  (na razie placeholder trójkąta).
-- **Kontrast:** lico pustego `key` jest przyciemniane mnożnikiem (`(75,82,105)` w
-  `generate_icons`), żeby **biały** glif był czytelny. Ręcznie rysowane kafle arkusza mają
-  jasne lico z zaszytym białym glifem — do przyciemnienia w Aseprite (osobno, mnożenie w
-  kodzie nie poprawi im kontrastu, bo skaluje glif razem z licem).
-- **Rozmiar:** sprite bazowy to 32px (arkusz 16px ×2). W gęstych panelach (pomoc) skaluj
-  **parzyście ÷2 → 16px** (`transform.scale_by(0.5)`); ułamkowe 32→22 zdradzałoby udawany
-  pixel-art. Capy jednoznakowe renderuj świeżym glifem na przeskalowanym `key` (ostrość);
-  wieloznakowe / mysz / strzałki reużywają arta sprite'a (÷2).
-- Separatory `/` i `-` między klawiszami zostają tekstem (interpunkcja, nie klawisz).
+  `key`). **Nowy klawisz bez glifu w foncie** (np. strzałki) — ręczny art w arkuszu `HUD.png`.
+- **Kontrast:** lico wszystkich kafli (`key` i kafle nazwane) jest **przyciemnione wprost
+  w arkuszu `HUD.png`**, żeby **biały** glif był czytelny — bez mnożenia w kodzie.
+- **Rozmiar:** keycapy renderuj w natywnym **32px** (`scale=1.0`, domyślnie) — wszędzie,
+  także w gęstych panelach. Skalowanie w dół do 16px było nieczytelne i jest zabronione.
+  Capy jednoznakowe renderuj świeżym glifem na `key` (ostrość); wieloznakowe / mysz /
+  strzałki reużywają arta sprite'a 1:1.
+- Separatory między klawiszami zostają tekstem/kształtem, nie keycapem: `/` („lub") to
+  szary glif w **większym foncie** (`FONT_SIZE_LARGE`), proporcjonalny do keycapów 32px
+  (parametr `sep_font` w `keycap.render_hint`); zakres (`1–6`) to krótka szara kreska
+  (en-dash `–` w danych, rysowany jako prostokąt). Uwaga: ASCII `-` to realny klawisz
+  (zoom out), więc **nie** jest separatorem.
+
+## Skróty w stopce panelu
+
+- **Skróty klawiszowe panelu idą do stopki** (nad dolną krawędzią, pod linią działową),
+  nie do nagłówka. Wzorzec: linia `RULE` + wiersz `keycap.render_hint` (patrz
+  `help.py` `_draw_footer`, `quest.py` stopka). Lewa strona = zamknięcie/akcje, prawa =
+  hinty kontekstowe (np. `↑ / ↓ przewiń`, pokazywane tylko gdy jest co scrollować).
+- Scrollbar paneli: **gruby** pionowy pasek (`help.py` `_draw_scrollbar`) — szary track +
+  złoty thumb — z zaokrąglonymi końcami, ale **schodkowo/kańciasto** (nie gładkie AA):
+  helper `theme.draw_pixel_round_rect` rysuje rogi z pełnych pikseli, tak jak wyglądałby
+  nisko-rozdzielczy kształt powiększony nearest-neighbour. **Nie** używać
+  `pygame.draw.rect(border_radius=)` (antyaliasuje → gładka krzywa, zdradza pixel-art).
+  Dodatkowo scroll kółkiem myszy (obsługa w `game_ui.py`, celowo poza listą skrótów).
 
 ## Cień tekstu — tylko chrome
 
