@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import string
 import time
 from typing import TYPE_CHECKING, Callable
@@ -8,9 +9,9 @@ import pygame
 from enums import NotificationTypeEnum
 from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo
 import settings
-from settings import MAX_SAVE_SLOTS, _
+from settings import FONT_SIZE_LARGE, FONT_SIZE_SMALL, MAX_SAVE_SLOTS, PANEL_BG_COLOR, _
 
-from .. import theme
+from .. import keycap, theme
 from ..widget import Widget
 from ..widgets import Button, Label, TextInput
 
@@ -24,6 +25,24 @@ if TYPE_CHECKING:
 _PAD = 20
 _GAP = 10
 _BUTTON_SIZE = 28
+_SLOT_FONT = 16          # save-slot row text (>= SMALL 14, design-system minimum)
+_ROW_INSET = 12          # left/right text inset inside a slot row
+_CAP_ROW_H = 32          # native keycap height (design-system: caps render at 32px)
+_BOX_NINE_PATCH = "nine_patch_12b.png"  # darker sub-panel for confirm / rename dialogs
+
+_RICH_TAG = re.compile(r"\[/?[a-zA-Z]+\]")
+_KEY_MARKUP = re.compile(r"[{}]")
+
+
+def _strip_rich(text: str) -> str:
+    """Drop RichText ``[tag]`` markup so a plain font render doesn't show the tags."""
+    return _RICH_TAG.sub("", text)
+
+
+def _strip_key_markup(text: str) -> str:
+    """Fallback for hint strings when no keycap sprites are available (main-menu load):
+    turn ``{Enter} zapisz`` into ``Enter zapisz``."""
+    return _KEY_MARKUP.sub("", text)
 
 
 def _slot_name_char(ch: str) -> bool:
@@ -56,11 +75,38 @@ class _SlotButton:
 
     @property
     def label(self) -> str:
+        name, meta = self.parts
+        return name if not meta else f"{name}   {meta}"
+
+    @property
+    def parts(self) -> tuple[str, str]:
+        """Row text split into (name, meta). ``meta`` (timestamp + playtime) is drawn
+        right-aligned so a long name can never push the playtime off the panel edge -
+        the clipping bug from the single concatenated label."""
         if not self.occupied or self.info is None or self.info.metadata is None:
-            return _("save.slot_empty", n=self.idx + 1)
+            return _("save.slot_empty", n=self.idx + 1), ""
         m = self.info.metadata
         name = m.slot_name or _("save.slot_default_name", n=self.idx + 1)
-        return f"{name}  |  {_format_timestamp(m.timestamp)}  |  {_format_playtime(m.playtime)}"
+        meta = f"{_format_timestamp(m.timestamp)}  {_format_playtime(m.playtime)}"
+        return name, meta
+
+
+def _draw_slot_row(surface: pygame.Surface, slot: "_SlotButton", selected: bool) -> None:
+    """Shared render for one save/load slot row: name left, meta (date + playtime)
+    right-aligned, so nothing clips regardless of name length."""
+    bg_color = (50, 48, 42) if selected else (30, 28, 22)
+    pygame.draw.rect(surface, bg_color, slot.rect)
+    if selected:
+        pygame.draw.rect(surface, theme.GOLD, slot.rect, width=2)
+    font = theme.menu_font(_SLOT_FONT)
+    name, meta = slot.parts
+    name_col = theme.WHITE if slot.occupied else theme.GREY
+    cy = slot.rect.centery
+    name_surf = font.render(name, False, name_col)
+    surface.blit(name_surf, name_surf.get_rect(midleft=(slot.rect.left + _ROW_INSET, cy)))
+    if meta:
+        meta_surf = font.render(meta, False, theme.GREY)
+        surface.blit(meta_surf, meta_surf.get_rect(midright=(slot.rect.right - _ROW_INSET, cy)))
 
 
 class _LoadSlotSelector:
@@ -180,13 +226,7 @@ class _LoadSlotSelector:
             surface.blit(empty_surf, empty_surf.get_rect(center=self.rect.center))
 
         for i, slot in enumerate(self._slots):
-            color = (200, 180, 140) if slot.occupied else (120, 110, 90)
-            bg_color = (50, 48, 42) if i == self._selected_idx else (30, 28, 22)
-            pygame.draw.rect(surface, bg_color, slot.rect)
-            if i == self._selected_idx:
-                pygame.draw.rect(surface, (120, 100, 60), slot.rect, width=2)
-            sf = theme.menu_font(18).render(slot.label, False, color)
-            surface.blit(sf, (slot.rect.left + 8, slot.rect.top + 6))
+            _draw_slot_row(surface, slot, i == self._selected_idx)
 
         if self._confirm_action:
             overlay = pygame.Surface(self.rect.size, pygame.SRCALPHA)
@@ -215,6 +255,8 @@ class SaveLoadPanel(Widget):
         self._confirm_buttons: list[Button] = []
         self._confirm_selected: int = 0
         self._confirm_text: str = ""
+        self._confirm_lines: list[str] = []
+        self._confirm_box: pygame.Rect | None = None
 
         # inline rename editor (TextInput) — active only while renaming a slot
         self._editor: TextInput | None = None
@@ -227,15 +269,17 @@ class SaveLoadPanel(Widget):
         self._refresh_slots()
 
     def _build_background(self) -> None:
-        bw, bh = 600, 420
+        bw, bh = 800, 520
         self.bg = theme.nine_patch("nine_patch_04.png", bw, bh)
         self.rect = self.bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
         self._title_surf = theme.menu_font(32).render(_(self._TITLE_KEY), False, theme.NAME)
         self._close_btn = Label("[X]", size=24)
 
-    # header/footer sit inside the 9-patch border; keep the slot list clear of both
-    _HEADER_Y = 18
-    _FOOTER_Y = 30
+    # header/footer sit inside the 9-patch border (scale 4 x border 6 = 24px thick),
+    # so the title/footer must clear that border - keep the slot list clear of both.
+    _HEADER_Y = 32
+    _FOOTER_Y = 40         # footer text baseline, measured up from the panel bottom
+    _FOOTER_RULE_Y = 64    # divider line above the footer, measured up from the bottom
 
     def _list_top(self) -> int:
         return self.rect.top + self._HEADER_Y + self._title_surf.get_height() + 12
@@ -404,15 +448,40 @@ class SaveLoadPanel(Widget):
             msg = _("save.load_confirm", n=slot.idx + 1)
         self._confirm_slot_idx = slot.idx
         self._confirm_selected = 0
-        cx = self.rect.centerx
-        cy = self.rect.centery + 40
+        self._confirm_text = msg
+        self._confirm_lines = [_strip_rich(line) for line in msg.split("\n")]
         self._confirm_buttons = [
             Button(_("menu.yes"), self._confirm_yes, size=_BUTTON_SIZE),
             Button(_("menu.no"), self._confirm_no, size=_BUTTON_SIZE),
         ]
-        for i, btn in enumerate(self._confirm_buttons):
-            btn.rect.center = (cx - 60 + i * 120, cy)
-        self._confirm_text = msg
+        self._layout_confirm_box()
+
+    # geometry of the confirm sub-panel (a centered nine-patch box sized to its content)
+    _BOX_PAD = 36
+    _BOX_TEXT_GAP = 6        # between wrapped text lines
+    _BOX_BUTTON_GAP = 24     # between the text block and the button row
+    _BOX_BTN_SPACING = 28    # between the two buttons
+
+    def _layout_confirm_box(self) -> None:
+        font = theme.menu_font(22)
+        line_h = font.get_height()
+        text_w = max((font.size(ln)[0] for ln in self._confirm_lines), default=0)
+        text_h = len(self._confirm_lines) * line_h + (len(self._confirm_lines) - 1) * self._BOX_TEXT_GAP
+        btn_w = sum(b.rect.width for b in self._confirm_buttons) + self._BOX_BTN_SPACING
+        btn_h = max((b.rect.height for b in self._confirm_buttons), default=0)
+        content_w = max(text_w, btn_w)
+        content_h = text_h + self._BOX_BUTTON_GAP + btn_h
+        box_w = content_w + 2 * self._BOX_PAD
+        box_h = content_h + 2 * self._BOX_PAD
+        box = pygame.Rect(0, 0, box_w, box_h)
+        box.center = self.rect.center
+        self._confirm_box = box
+        # place the two buttons in a centered row on the box's lower half
+        row_x = box.centerx - btn_w // 2
+        row_y = box.top + self._BOX_PAD + text_h + self._BOX_BUTTON_GAP
+        for btn in self._confirm_buttons:
+            btn.rect.topleft = (row_x, row_y)
+            row_x += btn.rect.width + self._BOX_BTN_SPACING
 
     def update(self, dt: float) -> None:
         for btn in self._confirm_buttons:
@@ -435,42 +504,118 @@ class SaveLoadPanel(Widget):
             tr = self._title_surf.get_rect(midtop=(self.rect.centerx, self.rect.top + self._HEADER_Y))
             surface.blit(self._title_surf, tr)
 
-        for i, slot in enumerate(self._slots):
-            color = (200, 180, 140) if slot.occupied else (120, 110, 90)
-            bg_color = (50, 48, 42) if i == self._selected_idx else (30, 28, 22)
-            pygame.draw.rect(surface, bg_color, slot.rect)
-            if i == self._selected_idx:
-                pygame.draw.rect(surface, (120, 100, 60), slot.rect, width=2)
-            sf = theme.menu_font(18).render(slot.label, False, color)
-            surface.blit(sf, (slot.rect.left + 8, slot.rect.top + 6))
+        if self._slots:
+            for i, slot in enumerate(self._slots):
+                _draw_slot_row(surface, slot, i == self._selected_idx)
+        else:
+            # empty list (e.g. LoadPanel with no saves) — say so instead of a blank box
+            msg = theme.menu_font(20).render(_("save.no_saves"), False, theme.GREY)
+            list_mid = (self._list_top() + (self.rect.bottom - self._FOOTER_RULE_Y)) // 2
+            surface.blit(msg, msg.get_rect(center=(self.rect.centerx, list_mid)))
 
-        # hint for the per-slot actions, shown whenever an occupied slot is selected
-        if self._selected_is_occupied() and not self._confirm_action and self._editor is None:
-            hint = theme.menu_font(16).render(_("save.action_hint"), False, (150, 140, 110))
-            surface.blit(hint, hint.get_rect(midbottom=(self.rect.centerx, self.rect.bottom - self._FOOTER_Y)))
+        # footer: Esc-to-close always on the left; per-slot actions on the right when an
+        # occupied slot is selected (design-system: close/actions left, context right)
+        if not self._confirm_action and self._editor is None:
+            self._draw_footer(surface)
 
         if self._editor is not None:
             self._draw_rename_editor(surface)
         elif self._confirm_action:
-            overlay = pygame.Surface(self.bg.get_size(), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 160))
-            surface.blit(overlay, self.rect.topleft)
-            cf = theme.menu_font(24).render(self._confirm_text, False, (255, 230, 180))
-            surface.blit(cf, cf.get_rect(center=(self.rect.centerx, self.rect.centery)))
-            for i, btn in enumerate(self._confirm_buttons):
-                btn.selected = i == self._confirm_selected
-                btn.draw(surface)
+            self._draw_confirm_box(surface)
+
+    #############################################################################################################
+    # MARK: footer + hint rendering (design-system keycaps)
+
+    def _draw_footer(self, surface: pygame.Surface) -> None:
+        """Panel shortcuts strip (design-system: shortcuts live in the footer, on
+        sprite keycaps, above a RULE divider). Left = rename/delete (while an occupied
+        slot is selected); right = Esc-to-close (always)."""
+        inner_l = self.rect.left + _PAD
+        inner_r = self.rect.right - _PAD
+        rule_y = self.rect.bottom - self._FOOTER_RULE_Y
+        cy = self.rect.bottom - self._FOOTER_Y
+        pygame.draw.line(surface, theme.RULE, (inner_l, rule_y), (inner_r, rule_y), 2)
+        if self._selected_is_occupied():
+            self._blit_hint(surface, _("save.action_hint"), (inner_l, cy), align="left")
+        self._blit_hint(surface, _("save.close_hint"), (inner_r, cy), align="right")
+
+    def _blit_hint(self, surface: pygame.Surface, markup: str,
+                   pos: tuple[int, int], *, align: str = "left") -> None:
+        """Render a ``{TOKEN}`` hint anchored at ``pos`` (a point on the row's vertical
+        centre) using shared keycaps, with a plain-text fallback when no sprite sheet is
+        available (main-menu load path). ``align`` is left / center / right."""
+        text_font = theme.get_font(FONT_SIZE_SMALL)
+        cx, cy = pos
+        icons = self.hud.icons if self.hud is not None else None
+        if icons is None:
+            plain = theme.menu_font(16).render(_strip_key_markup(markup), False, theme.GREY)
+            anchor = {"left": "midleft", "right": "midright"}.get(align, "center")
+            surface.blit(plain, plain.get_rect(**{anchor: (cx, cy)}))
+            return
+        glyph_font = theme.get_font(FONT_SIZE_SMALL)
+        sep_font = theme.get_font(FONT_SIZE_LARGE)
+        y = cy - _CAP_ROW_H // 2
+        if align == "right":
+            keycap.render_hint(
+                surface, icons, glyph_font, text_font, markup, (cx, y), theme.GREY,
+                align="right", glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR, sep_font=sep_font,
+            )
+            return
+        if align == "center":
+            w = keycap.measure(icons, glyph_font, text_font, markup, theme.WHITE, sep_font=sep_font)
+            cx -= w // 2
+        keycap.render_hint(
+            surface, icons, glyph_font, text_font, markup, (cx, y), theme.GREY,
+            glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR, sep_font=sep_font,
+        )
+
+    #############################################################################################################
+    # MARK: confirm / rename sub-panels
+
+    def _dim_panel(self, surface: pygame.Surface, alpha: int) -> None:
+        overlay = pygame.Surface(self.bg.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, alpha))
+        surface.blit(overlay, self.rect.topleft)
+
+    def _draw_confirm_box(self, surface: pygame.Surface) -> None:
+        self._dim_panel(surface, 150)
+        box = self._confirm_box
+        if box is None:
+            return
+        surface.blit(theme.nine_patch(_BOX_NINE_PATCH, box.width, box.height), box.topleft)
+        font = theme.menu_font(22)
+        line_h = font.get_height()
+        y = box.top + self._BOX_PAD
+        for line in self._confirm_lines:
+            ls = font.render(line, False, theme.WHITE)
+            surface.blit(ls, ls.get_rect(midtop=(box.centerx, y)))
+            y += line_h + self._BOX_TEXT_GAP
+        for i, btn in enumerate(self._confirm_buttons):
+            btn.selected = i == self._confirm_selected
+            btn.draw(surface)
 
     def _draw_rename_editor(self, surface: pygame.Surface) -> None:
-        overlay = pygame.Surface(self.bg.get_size(), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 190))
-        surface.blit(overlay, self.rect.topleft)
         assert self._editor is not None
-        prompt = theme.menu_font(16).render(_("save.rename_title"), False, (255, 230, 180))
-        surface.blit(prompt, prompt.get_rect(midbottom=(self.rect.centerx, self._editor.rect.top - 12)))
-        self._editor.draw(surface)
-        hint = theme.menu_font(12).render(_("save.rename_hint"), False, (170, 160, 130))
-        surface.blit(hint, hint.get_rect(midtop=(self.rect.centerx, self._editor.rect.bottom + 12)))
+        self._dim_panel(surface, 170)
+        editor = self._editor
+        title_font = theme.menu_font(22)
+        title = title_font.render(_("save.rename_title"), False, theme.TITLE)
+        # box wraps the title, the input field and the keycap hint
+        gap = 18
+        title_top = editor.rect.top - gap - title.get_height()
+        hint_top = editor.rect.bottom + gap
+        content_w = max(editor.rect.width, title.get_width(), 320)
+        box_w = content_w + 2 * self._BOX_PAD
+        box_top = title_top - self._BOX_PAD
+        box_bottom = hint_top + _CAP_ROW_H + self._BOX_PAD
+        box = pygame.Rect(0, 0, box_w, box_bottom - box_top)
+        box.centerx = self.rect.centerx
+        box.top = box_top
+        surface.blit(theme.nine_patch(_BOX_NINE_PATCH, box.width, box.height), box.topleft)
+        surface.blit(title, title.get_rect(midtop=(box.centerx, title_top)))
+        editor.draw(surface)
+        self._blit_hint(surface, _("save.rename_hint"),
+                        (box.centerx, hint_top + _CAP_ROW_H // 2), align="center")
 
 
 class SavePanel(SaveLoadPanel):

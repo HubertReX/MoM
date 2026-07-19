@@ -51,6 +51,8 @@ class MenuPanel(Widget):
         button_size: int = _BUTTON_SIZE,
         line_size: int = _LINE_SIZE,
         min_width: int | None = None,
+        lines_centered: bool = False,
+        buttons_horizontal: bool = False,
     ) -> None:
         super().__init__()
         # Resolve viewport-relative defaults at call time (settings.WIDTH/HEIGHT
@@ -66,6 +68,8 @@ class MenuPanel(Widget):
         self._line_keys: list[str | tuple[str, dict[str, object]]] = line_keys or []
         self._line_size: int = line_size
         self._bg_file: str = bg_file
+        self._lines_centered: bool = lines_centered
+        self._buttons_horizontal: bool = buttons_horizontal
 
         self.buttons: list[Button] = [
             Button(_(key), cb, size=button_size)
@@ -91,9 +95,9 @@ class MenuPanel(Widget):
 
         title_h = (self._title_surf.get_height() + _GAP) if self._title_surf else 0
         lines_h = sum(lbl.rect.height + 4 for lbl in self.line_labels)
-        buttons_h = sum(b.rect.height + _GAP for b in self.buttons)
+        buttons_h = self._buttons_block_height()
         content_w = max(
-            [b.rect.width for b in self.buttons] + [lbl.rect.width for lbl in self.line_labels] + [min_width]
+            [self._buttons_block_width()] + [lbl.rect.width for lbl in self.line_labels] + [min_width]
         )
         width = content_w + 2 * _PAD
         height = title_h + lines_h + buttons_h + 2 * _PAD
@@ -106,12 +110,28 @@ class MenuPanel(Widget):
         self._sync_selection()
 
     #############################################################################################################
+    def _buttons_block_width(self) -> int:
+        """Width the button block needs (a horizontal row sums widths + gaps)."""
+        if not self.buttons:
+            return 0
+        if self._buttons_horizontal:
+            return sum(b.rect.width for b in self.buttons) + _GAP * (len(self.buttons) - 1)
+        return max(b.rect.width for b in self.buttons)
+
+    def _buttons_block_height(self) -> int:
+        """Height the button block needs (a horizontal row is a single button tall)."""
+        if not self.buttons:
+            return 0
+        if self._buttons_horizontal:
+            return max(b.rect.height for b in self.buttons) + _GAP
+        return sum(b.rect.height + _GAP for b in self.buttons)
+
     def _relayout(self) -> None:
         title_h = (self._title_surf.get_height() + _GAP) if self._title_surf else 0
         lines_h = sum(lbl.rect.height + 4 for lbl in self.line_labels)
-        buttons_h = sum(b.rect.height + _GAP for b in self.buttons)
+        buttons_h = self._buttons_block_height()
         content_w = max(
-            [b.rect.width for b in self.buttons] + [lbl.rect.width for lbl in self.line_labels]
+            [self._buttons_block_width()] + [lbl.rect.width for lbl in self.line_labels]
         )
         width = content_w + 2 * _PAD
         height = title_h + lines_h + buttons_h + 2 * _PAD
@@ -128,13 +148,25 @@ class MenuPanel(Widget):
         if self._title_surf:
             y += self._title_surf.get_height() + _GAP
         for lbl in self.line_labels:
-            lbl.set_pos((self.rect.left + _PAD, y))
+            if self._lines_centered:
+                lbl.set_pos((self.rect.centerx, y), anchor="midtop")
+            else:
+                lbl.set_pos((self.rect.left + _PAD, y))
             self.add(lbl)
             y += lbl.rect.height + 4
-        for btn in self.buttons:
-            btn.rect.center = (self.rect.centerx, y + btn.rect.height // 2)
-            self.add(btn)
-            y += btn.rect.height + _GAP
+        if self._buttons_horizontal and self.buttons:
+            row_w = self._buttons_block_width()
+            row_h = max(b.rect.height for b in self.buttons)
+            x = self.rect.centerx - row_w // 2
+            for btn in self.buttons:
+                btn.rect.topleft = (x, y)
+                self.add(btn)
+                x += btn.rect.width + _GAP
+        else:
+            for btn in self.buttons:
+                btn.rect.center = (self.rect.centerx, y + btn.rect.height // 2)
+                self.add(btn)
+                y += btn.rect.height + _GAP
 
     def _sync_selection(self) -> None:
         for i, btn in enumerate(self.buttons):
@@ -155,6 +187,16 @@ class MenuPanel(Widget):
     def activate(self) -> None:
         if self.buttons:
             self.buttons[self.index].activate()
+
+    # left/right move the selection only for a side-by-side (horizontal) button row,
+    # e.g. the Yes/No confirm; vertical menus keep left/right as no-ops (unchanged).
+    def on_left(self) -> None:
+        if self._buttons_horizontal:
+            self.select_prev()
+
+    def on_right(self) -> None:
+        if self._buttons_horizontal:
+            self.select_next()
 
     #############################################################################################################
     def render(self) -> pygame.Surface:
@@ -444,15 +486,19 @@ class ConfirmMenuScreen(MenuScreen):
 
     def build_panel(self) -> MenuPanel:
         # message goes in `lines` (not `title`) because MenuPanel sizes its width to the
-        # lines/buttons - a long title would overflow the panel background.
+        # lines/buttons - a long title would overflow the panel background. Explicit "\n"
+        # in the localized string breaks it into short centered lines (keeps the panel
+        # narrow); Yes/No sit side by side under the text.
         return MenuPanel(
             [("menu.yes", self._on_yes), ("menu.no", self._on_no)],
             title_key="menu.confirm",
-            lines=[self._message],
+            lines=self._message.split("\n"),
             bg_file="nine_patch_12b.png",
             anchor="center",
             pos=(settings.WIDTH // 2, settings.HEIGHT // 2),
             line_size=15,
+            lines_centered=True,
+            buttons_horizontal=True,
         )
 
     def _on_yes(self) -> None:
@@ -461,6 +507,23 @@ class ConfirmMenuScreen(MenuScreen):
 
     def _on_no(self) -> None:
         self.exit_state()
+
+    def draw(self, screen: pygame.Surface, dt: float) -> None:
+        # Keep the game visible behind the dialog by re-drawing the state underneath us
+        # LIVE (the same draw call the engine makes for it). The scene is paused - not
+        # updated - so this just re-renders the frozen frame through the real render
+        # path, which stays correct in every pipeline (a snapshot of a single surface
+        # did not: it captured only part of the composited frame). Then dim + dialog.
+        if self.prev_state is not None:
+            self.prev_state.draw(screen, dt)
+            dim = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+            dim.fill((0, 0, 0, 110))
+            screen.blit(dim, (0, 0))
+        else:
+            screen.fill((85, 99, 77))
+            if self.bg_image:
+                screen.blit(self.bg_image, (0, 0))
+        self.manager.draw(screen)
 
 
 #######################################################################################################################

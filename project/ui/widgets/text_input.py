@@ -110,6 +110,10 @@ class TextInput(Widget):
         self._focused = False
         self._blink_timer = 0.0
         self._blink_on = True
+        # update() is fed the game's *absolute* clock (scene passes game.time_elapsed,
+        # not a per-frame delta). Recover a real delta by differencing successive values
+        # so the caret blinks at ~1 Hz instead of toggling every frame ("blinking crazy").
+        self._last_clock: float | None = None
 
         self._max_length = max_length
         self._charset = charset
@@ -153,6 +157,7 @@ class TextInput(Widget):
             self._set_text_input(True)
             self._blink_on = True
             self._blink_timer = 0.0
+            self._last_clock = None  # first update() after focus contributes no delta
         else:
             self._set_text_input(False)
         self.mark_dirty()
@@ -297,13 +302,18 @@ class TextInput(Widget):
     #############################################################################################################
     # MARK: update / render
 
-    def update(self, dt: float) -> None:
-        super().update(dt)
+    def update(self, clock: float) -> None:
+        super().update(clock)
         if not self._focused:
             return
+        # `clock` is the game's absolute elapsed time, not a delta - difference it.
+        if self._last_clock is None:
+            self._last_clock = clock
+        dt = max(0.0, clock - self._last_clock)
+        self._last_clock = clock
         self._blink_timer += dt
         if self._blink_timer >= 0.5:
-            self._blink_timer -= 0.5
+            self._blink_timer %= 0.5
             self._blink_on = not self._blink_on
             self.mark_dirty()
 

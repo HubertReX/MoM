@@ -66,8 +66,10 @@ def _enum_val(v: str | None, enum_cls: Any) -> Any:
 # Slot name sanitization
 # ---------------------------------------------------------------------------
 
-# Maximum length of a user-visible save-slot name.
-MAX_SLOT_NAME_LEN: int = 20
+# Maximum length of a user-visible save-slot name. Kept short enough that a full-length
+# name (left-aligned) does not collide with the right-aligned timestamp+playtime in a
+# save/load slot row (see ui/panels/save_load.py _draw_slot_row and the panel width).
+MAX_SLOT_NAME_LEN: int = 16
 
 
 def sanitize_slot_name(name: str) -> str:
