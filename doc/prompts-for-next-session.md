@@ -10,10 +10,10 @@ Inne:
 
 - [x] ekran restartu (r) mapy wymaga trochę miłości
 - [x] ekran wczytaj grę (F9) oraz zmień nazwę (r), oraz potwierdzenie wczytania (enter - richtext, brak panelu, który kolor wybiera?) wymagają dużo miłości
-- [ ] skróty F5, F6 i F9 powinny być wydoczne na panelu help w trybie web
-- [ ] jak sprzedam przedostatni przedmiot to potem nie wybiera się pierwszy i jest próba sprzedania przedmiotu niedozwolonego typu (Jaś)
+- [x] skróty F5, F6 i F9 powinny być wydoczne na panelu help w trybie web
+- [x] jak sprzedam przedostatni przedmiot to potem nie wybiera się pierwszy i jest próba sprzedania przedmiotu niedozwolonego typu (Jaś)
 - [ ] nagrody czasami się nie mieszczą w panelu - dodaj scrollbar albo jeszce lepiej komponent panel, który ma wbudowany scrollbar, pokazujący się tylko wtedy kiedy trzeba
-- [ ] zjedzenie czegoś powinno uruchamiać toast
+- [x] zjedzenie czegoś powinno uruchamiać toast
 - [ ] system cząsteczek po pauzie lub wejściu w menu nagle spawnuje mnóstwo elementów
 - [ ] co się stanie jak zwiększę max_inventory?
 - [ ] po zmianie rozdzielczośći ekran wraca na monitor na którym był uruchomiony
