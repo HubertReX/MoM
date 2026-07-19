@@ -8,8 +8,8 @@ Problemy ze źle wyskalowanymi emoji:
 
 Inne:
 
-- [ ] ekran restartu (r) mapy wymaga trochę miłości
-- [ ] ekran wczytaj grę (F9) oraz zmień nazwę (r), oraz potwierdzenie wczytania (enter - richtext, brak panelu, który kolor wybiera?) wymagają dużo miłości
+- [x] ekran restartu (r) mapy wymaga trochę miłości
+- [x] ekran wczytaj grę (F9) oraz zmień nazwę (r), oraz potwierdzenie wczytania (enter - richtext, brak panelu, który kolor wybiera?) wymagają dużo miłości
 - [ ] skróty F5, F6 i F9 powinny być wydoczne na panelu help w trybie web
 - [ ] jak sprzedam przedostatni przedmiot to potem nie wybiera się pierwszy i jest próba sprzedania przedmiotu niedozwolonego typu (Jaś)
 - [ ] nagrody czasami się nie mieszczą w panelu - dodaj scrollbar albo jeszce lepiej komponent panel, który ma wbudowany scrollbar, pokazujący się tylko wtedy kiedy trzeba
