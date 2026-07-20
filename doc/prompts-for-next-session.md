@@ -1,9 +1,12 @@
 Konieczne do ukończenia prologu:
 
-- [ ] nowa mapa na bazie Village z dodatkowymi budynkami i docelowym rozmieszczeniem postaci oraz przedmiotów
-- [ ] system odnawiania stanu posiadania handlarzy kolejnego dnia
-- [ ] prosty dobowy cykl życia NPC
-- [ ] balancing atrybutów postaci, przedmiotów (bohatera, na mapie, w lochu, u handlarzy)
+- [ ] panel quest w sekcji nagród - jest jakaś dziwna skala, poprawić do 16 lub 32
+- [ ] toast mają za małe emocji - nieczytelne, powiększ.
+
+Zmiany layout HUD:
+- [ ] panel statystyk postaci przesunąć w prawy górny róg i upewnić się, że toasty jadą teraz po lewej do samej góry ekranu
+- [ ] zachować spójne odległości od granicy ekranu stałych elementów HUD: stats, broń (lewy dolny róg), sloty itemów (dolna krawędź), etykiety akcji z keycap (prawy dolny róg), toasty - preferowana odległość taka jak obecnie ma panel broni (blisko krawędzi, ale trochę widać mapę gry).
+- [ ] wyrównać keycap akcji w prawym dolnym rogu tak, aby prawa krawędź keycap pokrywała się z prawą krawędzią panelu z opisem akcji
 
 Inne:
 
