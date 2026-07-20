@@ -514,23 +514,35 @@ class QuestPanel(Widget):
         self._label(surface, _("quest.reward"), (_RIGHT_X, y))
         y = self._content_y(y)  # shared vertical-rhythm gap under the label
 
-        chip_h = 30
+        # tall enough to seat a 32px reward icon (icon_scale=2.0 below) with padding;
+        # the old 30px chip clipped the enlarged coin/emote
+        chip_h = 44
+        row_step = chip_h + 8
         x = _RIGHT_X
         for reward in quest.rewards:
             label = format_reward_label([reward], self._item_name)
             if not label:
                 continue
             # a chip sizes to its label rather than the other way round, so the
-            # only cap is the pane it has to stay inside
-            text = self._rich_line(label, width - 32, FONT_SIZE_SMALL, _TITLE)
+            # only cap is the pane it has to stay inside. icon_scale bumps the inline
+            # coin/emote a whole step (16px source -> crisp 32px), fixing the tiny,
+            # oddly-scaled reward icons
+            text = self._rich_line(label, width - 32, FONT_SIZE_SMALL, _TITLE, icon_scale=2.0)
             chip_w = text.get_width() + 32
             if x + chip_w > right:
-                x, y = _RIGHT_X, y + 38
+                x, y = _RIGHT_X, y + row_step
             chip = pygame.Surface((chip_w, chip_h), pygame.SRCALPHA)
             chip.fill((*_GOLD, 30))
             surface.blit(chip, (x, y))
             pygame.draw.rect(surface, _GOLD, (x, y, chip_w, chip_h), width=2)
-            surface.blit(text, (x + 16, y + (chip_h - text.get_height()) // 2))
+            # Center on the *visible* ink, not the surface height: an enlarged inline
+            # icon leaves transparent padding (the coin art fills only part of its
+            # cell; text sits at the line top), so surface-height centering floats the
+            # content upward - the reason the coin/heart chips read as too high while
+            # the text-only chips looked fine. get_bounding_rect finds the real box.
+            bbox = text.get_bounding_rect()
+            text_y = y + (chip_h - bbox.height) // 2 - bbox.top
+            surface.blit(text, (x + 16, text_y))
             x += chip_w + 12
         # the chip row's own height, so the ScrollView counts the reward as content
         # (this is exactly the row that used to run off the frame)
@@ -545,20 +557,26 @@ class QuestPanel(Widget):
         return {**self.scene.items_sheet, **self.hud.icons}
 
     def _build_rich(  # type: ignore[no-untyped-def]
-        self, markup: str, width: int, size: int, colour: tuple[int, ...], *, line_spacing: int = 0
+        self, markup: str, width: int, size: int, colour: tuple[int, ...], *,
+        line_spacing: int = 0, icon_scale: float | None = None
     ):
         """A RichText over ``markup``, with the panel's icons and whitelist.
 
         ``base_color`` matters: without it an untagged run (the unit in "max HP")
         falls back to RichText's own default and stops matching what it sits in.
+
+        ``icon_scale`` (when set) sizes inline sprites a whole step larger so the
+        reward coin/emote snaps to a crisp 32px instead of rounding to native.
         """
         from ..widgets.rich_text import RichText
 
+        extra = {} if icon_scale is None else {"icon_scale": icon_scale}
         return RichText(markup, (0, 0, max(1, width), max(size * 4, 64)), self._reward_icons(),
                         base_size=size, base_color=colour, show_scrollbar=False,
-                        line_spacing=line_spacing, extra_emojis=_ITEM_EMOJIS)
+                        line_spacing=line_spacing, extra_emojis=_ITEM_EMOJIS, **extra)
 
-    def _fit_line(self, markup: str, max_width: int, size: int, colour: tuple[int, ...]) -> str:
+    def _fit_line(self, markup: str, max_width: int, size: int, colour: tuple[int, ...],
+                  icon_scale: float | None = None) -> str:
         """``markup`` cut to ``max_width``, tags intact.
 
         Binary search over how many *characters* survive, measured with RichText
@@ -569,7 +587,7 @@ class QuestPanel(Widget):
         ~6 probes, only for a title that actually overflows, and the result is
         cached by the caller.
         """
-        if self._build_rich(markup, 10_000, size, colour).content_width <= max_width:
+        if self._build_rich(markup, 10_000, size, colour, icon_scale=icon_scale).content_width <= max_width:
             return markup
 
         low, high = 0, len(strip_tags(markup))
@@ -577,14 +595,16 @@ class QuestPanel(Widget):
         while low <= high:
             mid = (low + high) // 2
             candidate = cut_markup(markup, mid)
-            if self._build_rich(candidate, 10_000, size, colour).content_width <= max_width:
+            if self._build_rich(candidate, 10_000, size, colour,
+                                 icon_scale=icon_scale).content_width <= max_width:
                 best, low = candidate, mid + 1
             else:
                 high = mid - 1
         return best
 
     def _rich_line(
-        self, markup: str, max_width: int, size: int, colour: tuple[int, ...]
+        self, markup: str, max_width: int, size: int, colour: tuple[int, ...],
+        icon_scale: float | None = None
     ) -> pygame.Surface:
         """One line of styled text, ellipsised to ``max_width``. Cached.
 
@@ -594,11 +614,11 @@ class QuestPanel(Widget):
         (measured; every one renders the same tofu box), so the coin has to be the
         real thing, and it lives in the *items* sheet rather than the emote sheet.
         """
-        key = (markup, max_width, size, tuple(colour))
+        key = (markup, max_width, size, tuple(colour), icon_scale)
         surf = self._rich_cache.get(key)
         if surf is None:
-            rt = self._build_rich(self._fit_line(markup, max_width, size, colour),
-                                  10_000, size, colour)
+            rt = self._build_rich(self._fit_line(markup, max_width, size, colour, icon_scale),
+                                  10_000, size, colour, icon_scale=icon_scale)
             full = rt.render_static()
             width = max(1, min(rt.content_width, full.get_width()))
             surf = full.subsurface((0, 0, width, full.get_height())).copy()

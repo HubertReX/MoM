@@ -24,7 +24,7 @@ from settings import (
 
 from .. import theme
 from ..widget import Widget
-from .hud import hotbar_topleft
+from .hud import HUD_EDGE, hotbar_topleft
 from .inventory import build_inventory_bg, draw_item_details
 
 if TYPE_CHECKING:
@@ -34,6 +34,15 @@ if TYPE_CHECKING:
     from .hud import HUD
 
 _DIVIDER = theme.DIVIDER
+
+# Layout inside trader_bg, all relative to the panel's own top so they track it when
+# the panel moves (the details block used to be pinned to an absolute Y that only
+# lined up while the panel top happened to be at y=50, and slid too low once the panel
+# was raised to meet the stats panel). The details block sits just below the
+# horizontal divider; its anchor is 40px above the first text row, because
+# draw_icon_label_value adds that top_margin before row 0.
+_TRADER_HDIV_Y = 330      # horizontal divider: hotbar (above) | item details (below)
+_TRADER_DETAILS_Y = 320   # item-details anchor (relative to panel top), just under it
 
 
 class TradePanel(Widget):
@@ -48,7 +57,7 @@ class TradePanel(Widget):
         self.trader_bg = theme.nine_patch("nine_patch_04.png", 800, 520).copy()
         w, h = self.trader_bg.get_size()
         pygame.draw.line(self.trader_bg, _DIVIDER, (w // 2, h - 140), (w // 2, h - 40), 4)
-        pygame.draw.line(self.trader_bg, _DIVIDER, (40, 330), (w - 40, 330), 4)
+        pygame.draw.line(self.trader_bg, _DIVIDER, (40, _TRADER_HDIV_Y), (w - 40, _TRADER_HDIV_Y), 4)
         self.trader_small_bg = theme.nine_patch("nine_patch_04.png", 800, 340).copy()
         self._reposition()
 
@@ -58,9 +67,22 @@ class TradePanel(Widget):
         self.inventory_bg_rect = self.inventory_bg.get_rect(
             topleft=(settings.WIDTH // 2 - self.inventory_bg.get_width() // 2, settings.HEIGHT - 320)
         )
-        left = settings.WIDTH // 2 - (INVENTORY_ITEM_WIDTH * MAX_HOTBAR_ITEMS // 2) - 48
-        self.trader_bg_rect = self.trader_bg.get_rect(topleft=(left, 50))
-        self.trader_small_bg_rect = self.trader_small_bg.get_rect(topleft=(left, 50))
+        hotbar_half = INVENTORY_ITEM_WIDTH * MAX_HOTBAR_ITEMS // 2
+        # Slide the whole trade UI left just enough that the panel's right edge clears
+        # the top-right stats panel (which the HUD now anchors there). Everything the
+        # panel draws - avatar, name, merchant stats, and *both* hotbars - rides this
+        # one center (``self._cx``), so "moje" and the merchant's slots stay
+        # column-aligned (one under the other). No overlap -> no shift (wide screens).
+        default_cx = settings.WIDTH // 2
+        panel_right = (default_cx - hotbar_half - 48) + self.trader_bg.get_width()
+        stats_left = settings.WIDTH - self.hud.stats_bg.get_width() - HUD_EDGE
+        shift = max(0, panel_right - (stats_left - HUD_EDGE))
+        self._cx = default_cx - shift
+        left = self._cx - hotbar_half - 48
+        # top edge flush with the stats panel's (both anchored at HUD_EDGE)
+        top = HUD_EDGE
+        self.trader_bg_rect = self.trader_bg.get_rect(topleft=(left, top))
+        self.trader_small_bg_rect = self.trader_small_bg.get_rect(topleft=(left, top))
 
     #############################################################################################################
     def open(self) -> None:
@@ -75,8 +97,9 @@ class TradePanel(Widget):
         if self.is_buying:
             background = self.trader_bg
             top_left = self.trader_bg_rect.topleft
-            props_top_left = (top_left[0], self.trader_bg_rect.height - 150)
-            props_top_middle = (self.trader_bg_rect.centerx, self.trader_bg_rect.height - 150)
+            props_y = self.trader_bg_rect.top + _TRADER_DETAILS_Y
+            props_top_left = (top_left[0], props_y)
+            props_top_middle = (self.trader_bg_rect.centerx, props_y)
         else:
             background = self.inventory_bg
             top_left = (self.trader_bg_rect.left, self.inventory_bg_rect.top)
@@ -131,24 +154,32 @@ class TradePanel(Widget):
         npc = merchant if self.is_buying else player
         self._draw_inventory(surface, npc)
 
+        cx = self._cx
         avatar = pygame.transform.scale_by(merchant.avatar, 0.5)
         ar = avatar.get_rect()
-        surface.blit(avatar, (settings.WIDTH // 2 - ar.width // 2, self.trader_bg_rect.top + 10))
+        surface.blit(avatar, (cx - ar.width // 2, self.trader_bg_rect.top + 10))
         self.hud.draw_text(
             surface, entity_name(merchant.model),
-            (settings.WIDTH // 2, self.trader_bg_rect.top + 10 + ar.height - 16),
+            (cx, self.trader_bg_rect.top + 10 + ar.height - 16),
             font=self.game.fonts[FONT_SIZE_LARGE], color=CHAR_NAME_COLOR,
             border=(84, 135, 137), shadow=False, align="centred",
         )
-        self._draw_merchant_stats(surface, merchant, (settings.WIDTH // 2 + ar.width // 2, self.trader_bg_rect.top + 10))
+        self._draw_merchant_stats(surface, merchant, (cx + ar.width // 2, self.trader_bg_rect.top + 10))
+
+        # both hotbars ride the same center -> the merchant's slots and "moje" stay in
+        # one vertical line; only the y differs (merchant inside the panel, player at
+        # the bottom of the screen)
+        def hb_x(slots: int) -> int:
+            return cx - INVENTORY_ITEM_WIDTH * slots // 2
 
         self.hud.draw_hotbar(
             surface, merchant,
-            (hotbar_topleft(merchant.max_items)[0], self.trader_bg_rect.top + 10 + ar.height + 24),
+            (hb_x(merchant.max_items), self.trader_bg_rect.top + 10 + ar.height + 24),
             show_shortcuts=self.is_buying,
         )
         self.hud.draw_hotbar(
-            surface, player, hotbar_topleft(player.max_items),
+            surface, player,
+            (hb_x(player.max_items), hotbar_topleft(player.max_items)[1]),
             show_shortcuts=not self.is_buying, tradable=True,
         )
 

@@ -46,9 +46,16 @@ class RichText(Widget):
         show_scrollbar: bool = True,
         line_spacing: int = 0,
         extra_emojis: frozenset[str] = frozenset(),
+        icon_scale: float = _ICON_SCALE,
     ) -> None:
         super().__init__(rect)
         self.icons = icons
+        # Inline-icon height as a multiple of the font height, before the integer
+        # snap. The default (~1.35x) reads as "a touch larger than the text". Dense
+        # chips/toasts at a small font want the icon a *whole* step bigger so a 16px
+        # coin snaps to a crisp 32px (factor 2) instead of rounding back to 1 - see
+        # the design-system rule on integer icon scaling.
+        self._icon_scale = icon_scale
         # Names beyond the emote sheet that ``:name:`` may reference. Whatever is
         # listed here must exist in ``icons`` - an image token with no frames
         # draws nothing at all, which is worse than the literal text it replaced.
@@ -173,7 +180,7 @@ class RichText(Widget):
 
             if tok.kind == "image":
                 font_h = theme.get_font(tok.style.size).get_height()
-                target_h = round(font_h * _ICON_SCALE)
+                target_h = round(font_h * self._icon_scale)
                 frames = self._icon_frames(tok.value, target_h)
                 if not frames:
                     continue
