@@ -5,7 +5,7 @@
 default:
     @just --list
 
-# Initialize virtual environment and install dependencies (uses 'uv' if available)
+# Initialize virtual environment and install dependencies (uses `uv` if available)
 [unix]
 setup:
     @if [ ! -d ".venv" ]; then \
@@ -14,7 +14,7 @@ setup:
     fi
     .venv/bin/uv pip install -r requirements.txt -r requirements-dev.txt
 
-# Initialize virtual environment and install dependencies (uses 'uv' if available, falls back to standard pip)
+# Initialize virtual environment and install dependencies (uses `uv` if available, falls back to standard `pip`)
 [windows]
 setup:
     #!powershell
@@ -32,13 +32,13 @@ setup:
         .venv\Scripts\pip.exe install -r requirements.txt -r requirements-dev.txt
     }
 
-# Run the desktop game. Accepts CLI commands: 'load' (csv->json), 'store' (json->csv), 'update' (config schema), or options like '-h'
+# Run the desktop game. Accepts CLI commands: `load` (csv->json), `store` (json->csv), `update` (config schema), or options like `-h`
 [unix]
 run *args:
     export PYGAME_HIDE_SUPPORT_PROMPT=1
     cd project && ../.venv/bin/python ./main.py {{args}}
 
-# Run the desktop game. Accepts CLI commands: 'load' (csv->json), 'store' (json->csv), 'update' (config schema), or options like '-h'
+# Run the desktop game. Accepts CLI commands: `load` (csv->json), `store` (json->csv), `update` (config schema), or options like `-h`
 [windows]
 run *args:
     #!powershell
@@ -46,12 +46,12 @@ run *args:
     cd project
     ..\.venv\Scripts\python.exe main.py {{args}}
 
-# Start pygbag local web server. e.g: `--bind mac-mini.kamori-vector.ts.net --port 8989`. Append '#debug' to the URL to show debug console.
+# Start pygbag local web server. e.g: `--bind mac-mini.kamori-vector.ts.net --port 8989`. Append `#debug` to the URL to show debug console.
 [unix]
 serve-web *args:
     .venv/bin/python -m pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
 
-# Start pygbag local web server. e.g: `--bind mac-mini.kamori-vector.ts.net --port 8989`. Append '#debug' to the URL to show debug console.
+# Start pygbag local web server. e.g: `--bind mac-mini.kamori-vector.ts.net --port 8989`. Append `#debug` to the URL to show debug console.
 [windows]
 serve-web *args:
     #!powershell
@@ -77,24 +77,24 @@ test-web scenario="" *flags:
         .venv/bin/python3 tests/automate_display_test.py --web {{flags}} "{{scenario}}"
     fi
 
-# Regenerate config JSON schema from the Pydantic models (desktop only)
+# Regenerate `config_schema.json` from the Pydantic models (desktop only)
 [unix]
 update-config-schema:
     cd project/config_model && ../../.venv/bin/python config_pydantic.py
 
-# Regenerate config JSON schema from the Pydantic models (desktop only)
+# Regenerate `config_schema.json` from the Pydantic models (desktop only)
 [windows]
 update-config-schema:
     #!powershell
     cd project/config_model
     ..\..\.venv\Scripts\python.exe config_pydantic.py
 
-# Import entity data from CSV files into config.json (overwrites character, item, chest, and maze sections)
+# Import entity data from CSV files into `config.json` (overwrites character, item, chest, and maze sections)
 [unix]
 import-entities:
     .venv/bin/python project/config_model/import_entities.py
 
-# Import dialog Markdown sources from the doc/ vault into config.json.
+# Import dialog Markdown sources from the `doc/` vault into `config.json`.
 # Pipeline: MD frontmatter -> characters.csv -> config.json (import-entities
 # is the sole writer of the `characters` section, hence the cascade).
 # By default imports all compatible characters; pass a character name to import one.
@@ -109,7 +109,7 @@ import-dialogs *name:
     fi
     just import-entities
 
-# Import quest Markdown sources from the doc/ vault into config.json.
+# Import quest Markdown sources from the `doc/` vault into `config.json`.
 # PL (doc/PL/Misje/) is the source of truth: machine fields (Test, Requires,
 # Nagroda) are read from PL only, EN (doc/EN/Quests/) supplies prose. An invalid
 # condition or a broken graph fails the import and leaves config.json untouched.
@@ -124,29 +124,29 @@ import-quests *chain:
         .venv/bin/python project/quest/markdown_importer.py "{{chain}}"
     fi
 
-# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/_attachements/ from real MoM modules
+# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in `doc/_attachements/` from real MoM modules
 [unix]
 gen-dialog-docs:
     .venv/bin/python scripts/gen_dialog_doc_assets.py
 
-# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in doc/_attachements/ from real MoM modules
+# Regenerate dialog-system doc images (emote sheet + RichText tag palette) in `doc/_attachements/` from real MoM modules
 [windows]
 gen-dialog-docs:
     #!powershell
     .venv\Scripts\python.exe scripts\gen_dialog_doc_assets.py
 
-# Regenerate character faceset copies in doc/_attachements/ (<KEY>.png) from the sprite column of characters.csv
+# Regenerate character faceset copies in `doc/_attachements/ (<KEY>.png)` from the sprite column of `characters.csv`
 [unix]
 gen-faces:
     .venv/bin/python scripts/gen_face_attachments.py
 
-# Regenerate character faceset copies in doc/_attachements/ (<KEY>.png) from the sprite column of characters.csv
+# Regenerate character faceset copies in `doc/_attachements/ (<KEY>.png)` from the sprite column of `characters.csv`
 [windows]
 gen-faces:
     #!powershell
     .venv\Scripts\python.exe scripts\gen_face_attachments.py
 
-# Regenerate interactive dialog graphs (DataviewJS + vis-network) in doc/_graphs/.
+# Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
 # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
 # (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
 [unix]
@@ -159,7 +159,7 @@ dialog-graph *key:
         .venv/bin/python scripts/dialog_graph.py -c "{{key}}" --format json
     fi
 
-# Regenerate interactive dialog graphs (DataviewJS + vis-network) in doc/_graphs/.
+# Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
 # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one.
 [windows]
 dialog-graph *key:
@@ -170,7 +170,7 @@ dialog-graph *key:
         .venv\Scripts\python.exe scripts\dialog_graph.py -c "{{key}}" --format json
     }
 
-# Regenerate the interactive quest DAG (DataviewJS + vis-network) in doc/_graphs/.
+# Regenerate the interactive quest DAG (DataviewJS + vis-network) in `doc/_graphs/`.
 # Run AFTER `just import-quests`: the graph is built from config.json, so it shows
 # what the game sees. One note for every chain - the edges that matter cross them.
 # Needs Dataview "Enable JavaScript Queries" in Obsidian.
@@ -178,38 +178,38 @@ dialog-graph *key:
 quest-graph:
     .venv/bin/python scripts/quest_graph.py
 
-# Regenerate the interactive quest DAG (DataviewJS + vis-network) in doc/_graphs/.
+# Regenerate the interactive quest DAG (DataviewJS + vis-network) in `doc/_graphs/`.
 # Run AFTER `just import-quests`. Needs Dataview "Enable JavaScript Queries" in Obsidian.
 [windows]
 quest-graph:
     #!powershell
     .venv\Scripts\python.exe scripts\quest_graph.py
 
-# Regenerate the quest authoring cheat sheet at doc/quest-cheatsheet.md.
+# Regenerate the quest authoring cheat sheet at `doc/quest-cheatsheet.md`.
 # Everything in it is derived from the code (enums, condition whitelist, validators),
 # so run it after changing any of them - a hand-kept cheat sheet lies with authority.
 [unix]
 quest-cheatsheet:
     .venv/bin/python scripts/gen_quest_cheatsheet.py
 
-# Regenerate the quest authoring cheat sheet at doc/quest-cheatsheet.md.
+# Regenerate the quest authoring cheat sheet at `doc/quest-cheatsheet.md`.
 [windows]
 quest-cheatsheet:
     #!powershell
     .venv\Scripts\python.exe scripts\gen_quest_cheatsheet.py
 
-# Run mypy static type checker on the project directory
+# Run mypy static type checker on the `project` directory
 [unix]
 mypy:
     .venv/bin/mypy --config-file pyproject.toml project
 
-# Run mypy static type checker on the project directory
+# Run mypy static type checker on the `project` directory
 [windows]
 mypy:
     #!powershell
     .venv\Scripts\mypy.exe --config-file pyproject.toml project
 
-# Check for code smells using Sourcery (if installed)
+# Check for code smells using Sourcery
 [unix]
 sourcery:
     @if [ -f .venv/bin/sourcery ]; then \
@@ -220,7 +220,7 @@ sourcery:
         echo "Sourcery is not installed. Uncomment it in requirements-dev.txt and run 'just setup'."; \
     fi
 
-# Check for code smells using Sourcery (if installed)
+# Check for code smells using Sourcery
 [windows]
 sourcery:
     #!powershell
@@ -232,12 +232,12 @@ sourcery:
         Write-Host "Sourcery is not installed. Uncomment it in requirements-dev.txt and run 'just setup'."
     }
 
-# Validate locale TOML files (key symmetry + placeholder consistency)
+# Validate locale TOML files `EN.toml`, `PL.toml` (key symmetry + placeholder consistency)
 [unix]
 validate-locale:
     .venv/bin/python scripts/validate_locale.py
 
-# Validate locale TOML files (key symmetry + placeholder consistency)
+# Validate locale TOML files `EN.toml`, `PL.toml `(key symmetry + placeholder consistency)
 [windows]
 validate-locale:
     #!powershell
@@ -246,7 +246,7 @@ validate-locale:
 # Run all static analysis and code checks (Sourcery + mypy + locale)
 check: sourcery mypy validate-locale
 
-# Fix all PNGs that have sRGB/gAMA/cHRM/iCCP chunks (strips profile chunks via mogrify)
+# Fix all PNGs that have sRGB/gAMA/cHRM/iCCP chunks (strips profile chunks via `mogrify`)
 [unix]
 fix-bad-png:
     @python3 utils/find_bad_png.py | xargs -r mogrify -strip
@@ -274,7 +274,7 @@ cpu-profiling:
     cd project
     austin -t 4s -x 5 -bo "..\profiling\austin_$((Get-Date).ToString('yyyyMMdd_HHmmss')).aprof" ..\.venv\Scripts\python.exe main.py
 
-# Build the pygbag web.zip archive ready for itch.io deployment
+# Build the pygbag `web.zip` archive ready for `itch.io` deployment
 [unix]
 build-itchio:
     .venv/bin/pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt --archive project

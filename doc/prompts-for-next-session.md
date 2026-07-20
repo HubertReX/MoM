@@ -1,14 +1,21 @@
+Konieczne do ukończenia prologu:
+
+- [ ] nowa mapa na bazie Village z dodatkowymi budynkami i docelowym rozmieszczeniem postaci oraz przedmiotów
+- [ ] system odnawiania stanu posiadania handlarzy kolejnego dnia
+- [ ] prosty dobowy cykl życia NPC
+- [ ] balancing atrybutów postaci, przedmiotów (bohatera, na mapie, w lochu, u handlarzy)
+
 Inne:
 
-- [ ] system cząsteczek po pauzie lub wejściu w menu nagle spawnuje mnóstwo elementów
-- [ ] co się stanie jak zwiększę max_inventory?
-- [ ] po zmianie rozdzielczośći ekran wraca na monitor na którym był uruchomiony
-- [ ] przydało by się włączyć FOW w labiryńcie w trybie web
+- [ ] co się stanie jak zwiększę max_inventory
+- [ ] po zmianie rozdzielczości ekran wraca na monitor na którym był uruchomiony
+- [ ] przydało by się włączyć FOW w labiryncie w trybie web
 - [ ] zwierzęta mają być tylko w określonych strefach (np.: łąka), bo przeszkadzają
 - [ ] zwierzęta czasami się klinują i dygocą w miejscu
 - [ ] ryby i żaby jak są w wodzie to nie powinny rzucać cienia
 - [ ] brakowało elementu w EN.toml, ale nic nie rzucało błędem - sprawdzić czy jest jakiś test podczas importu
-- [-] przeanalizuj ten artykuł i ostatnie nasze sesje, szczególnie te dłuższe, zobacz kiedy model męczył się z czymś wielokrotnie i tracił tokeny. Czy zainstalowanie jednego z narzędzi wymienionych w tym artykule może przynieść znaczącą poprawę skuteczności, przypiśpieszyć pracę i zaoszczędzić tokeny? Jeśli tak, to które narzędzie będzie najlepsze dla projektu gry MoM?
+- [x] system cząsteczek po pauzie lub wejściu w menu nagle spawnuje mnóstwo elementów
+- [-] przeanalizuj ten artykuł i ostatnie nasze sesje, szczególnie te dłuższe, zobacz kiedy model męczył się z czymś wielokrotnie i tracił tokeny. Czy zainstalowanie jednego z narzędzi wymienionych w tym artykule może przynieść znaczącą poprawę skuteczności, przyśpieszyć pracę i zaoszczędzić tokeny? Jeśli tak, to które narzędzie będzie najlepsze dla projektu gry MoM?
 - [x] ekran restartu (r) mapy wymaga trochę miłości
 - [x] ekran wczytaj grę (F9) oraz zmień nazwę (r), oraz potwierdzenie wczytania (enter - richtext, brak panelu, który kolor wybiera?) wymagają dużo miłości
 - [x] skróty F5, F6 i F9 powinny być wydoczne na panelu help w trybie web
