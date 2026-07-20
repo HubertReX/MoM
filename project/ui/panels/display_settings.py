@@ -53,7 +53,7 @@ class SettingsPanel(Widget):
         self._button_types: list[str] = []
         self._buttons: list[Button] = []
 
-        self._title_surf = theme.menu_font(_TITLE_SIZE).render(_("settings.title"), False, theme.NAME)
+        self._render_title()
 
         self._build_buttons()
         width, height = self._compute_size()
@@ -62,6 +62,10 @@ class SettingsPanel(Widget):
         self._bg = theme.nine_patch("nine_patch_06b.png", width, height)
         self._layout_children()
         self._sync_selection()
+
+    def _render_title(self) -> None:
+        """(Re)render the panel title in the current language."""
+        self._title_surf = theme.menu_font(_TITLE_SIZE).render(_("settings.title"), False, theme.NAME)
 
     def _build_buttons(self) -> None:
         """(Re)create the Button widgets and their type tags from current settings."""
@@ -129,6 +133,7 @@ class SettingsPanel(Widget):
         setting ``rect.width``/``rect.height`` directly pins the top-left corner, which
         moves a ``midleft``-anchored panel off its position.
         """
+        self._render_title()
         self._build_buttons()
         width, height = self._compute_size()
         anchor_pos = getattr(self.rect, self._anchor)
@@ -138,6 +143,15 @@ class SettingsPanel(Widget):
         self._layout_children()
         self._sync_selection()
         self.mark_dirty()
+
+    def rebuild_i18n(self) -> None:
+        """Re-apply translations to the title and every button after a language change.
+
+        Called by :class:`MenuScreen` when it detects a runtime language switch (matching
+        the same hook on :class:`MenuPanel`), so the settings screen refreshes even when
+        the toggle happens elsewhere.
+        """
+        self._rebuild_buttons()
 
     def _sync_selection(self) -> None:
         n = len(self._buttons)

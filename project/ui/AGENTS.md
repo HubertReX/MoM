@@ -185,6 +185,24 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   mówcy `name_tag`). To dozwolony wyjątek od panelu standardowego.
 - Linie działowe: kolor `RULE`, grubość 2px.
 
+## Zmiana języka w locie (i18n)
+
+- **Nigdy nie importuj `LANG` przez wartość** (`from settings import LANG`). To wiązanie
+  utrwala wartość z chwili importu i nie widzi późniejszych `settings.LANG = ...`. Każdy
+  moduł reagujący na zmianę języka w locie musi czytać `settings.LANG` na żywo (przez
+  `import settings`). Ta sama pułapka co przy `WIDTH/HEIGHT` — czytaj atrybut modułu, nie
+  jego kopię.
+- Panele budują etykiety przez `_()` w konstruktorze, więc **nie odświeżają się same** po
+  zmianie języka. `MenuScreen.update` wykrywa zmianę (`settings.LANG != self._last_lang`)
+  i woła `panel.rebuild_i18n()`. Każdy panel osadzony w `MenuScreen` musi mieć
+  `rebuild_i18n()`, inaczej ten kod rzuci `AttributeError`.
+- `rebuild_i18n()` musi odświeżyć **wszystko** zbudowane z `_()`: etykiety przycisków,
+  linie tekstu **oraz tytuł** (`_title_surf` renderowany raz w `__init__` to najczęstsza
+  luka — patrz bug „nagłówek Settings nie zmienia języka").
+- Menu buforowane na stosie stanów (np. `MainMenuScreen` pod `SettingsMenu`) nie odświeży
+  się dopóki nie wróci na wierzch stosu — `update` biegnie tylko dla `states[-1]`. Odświeża
+  je pierwsza klatka `update` po powrocie (dlatego działa też świeżo zbudowane menu).
+
 ## Dual-target desktop + web
 
 Każdy komponent UI musi działać w obu trybach (patrz [`../AGENTS.md`](../AGENTS.md) i

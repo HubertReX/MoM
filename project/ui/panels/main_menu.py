@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Callable
 import pygame
 from objects import NotificationTypeEnum
 import settings
-from settings import VERSION, INPUTS, IS_WEB, MENU_FONT, LANG, _
+from settings import VERSION, INPUTS, IS_WEB, MENU_FONT, _
 from state import State
 
 from .. import theme
@@ -255,7 +255,7 @@ class MenuScreen(State):
         self.panel = self.build_panel()
         self.manager.add(self.panel)
         self._held: dict[str, bool] = {}
-        self._last_lang: str = LANG
+        self._last_lang: str = settings.LANG
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}: {self.name}"
@@ -298,9 +298,11 @@ class MenuScreen(State):
     def update(self, dt: float, events: list[pygame.event.Event]) -> None:
         self.manager.handle_events(events)
 
-        # Rebuild button labels if language changed at runtime
-        if LANG != self._last_lang:
-            self._last_lang = LANG
+        # Rebuild button labels if language changed at runtime.
+        # Read settings.LANG live - a bare `from settings import LANG` binds the value at
+        # import time and never sees `settings.LANG = ...` reassignments.
+        if settings.LANG != self._last_lang:
+            self._last_lang = settings.LANG
             self.panel.rebuild_i18n()
 
         if self._edge("up"):
