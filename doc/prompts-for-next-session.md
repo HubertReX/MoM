@@ -8,6 +8,7 @@ Problemy ze źle wyskalowanymi emoji:
 
 Inne:
 
+- [ ] przeanalizuj ten artykuł i ostatnie nasze sesje, szczególnie te dłuższe, zobacz kiedy model męczył się z czymś wielokrotnie i tracił tokeny. Czy zainstalowanie jednego z narzędzi wymienionych w tym artykule może przynieść znaczącą poprawę skuteczności, przypiśpieszyć pracę i zaoszczędzić tokeny? Jeśli tak, to które narzędzie będzie najlepsze dla projektu gry MoM?
 - [x] ekran restartu (r) mapy wymaga trochę miłości
 - [x] ekran wczytaj grę (F9) oraz zmień nazwę (r), oraz potwierdzenie wczytania (enter - richtext, brak panelu, który kolor wybiera?) wymagają dużo miłości
 - [x] skróty F5, F6 i F9 powinny być wydoczne na panelu help w trybie web
