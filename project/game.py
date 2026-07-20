@@ -170,6 +170,10 @@ class Game:
 
         self.is_running: bool = True
         self.is_paused: bool = False
+        # tracks the last is_paused we notified the active state about, so a hard pause
+        # (P key / focus loss) suspends the scene's weather emitters exactly once and
+        # resumes them exactly once (see suspend/resume notes in scene.py)
+        self._was_paused: bool = False
 
         # self.show_loading_screen()
         # if USE_SHADERS:
@@ -1073,6 +1077,16 @@ class Game:
         # Stash screenshot intent *before* the scene update may clear it
         # (Scene.update → reset_inputs when a modal panel is open).
         _screenshot_pending = not USE_SHADERS and INPUTS.get("screenshot")
+
+        # a hard pause (P / focus loss) doesn't push a state, so drive the active
+        # state's suspend/resume hooks on the pause transition - this disarms the
+        # scene's weather emitters while paused so they don't backlog particles
+        if self.is_paused != self._was_paused:
+            if self.is_paused:
+                self.states[-1].on_suspend()
+            else:
+                self.states[-1].on_resume()
+            self._was_paused = self.is_paused
 
         # first draw on separate Surface (game.canvas)
         if not self.is_paused:

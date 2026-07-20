@@ -17,15 +17,34 @@ class State:
     def enter_state(self) -> None:
         if len(self.game.states) > 1:
             self.prev_state = self.game.states[-1]
+        # tell the state we're covering that it's going to the background (its update/
+        # draw stop running) so it can pause time-based side effects, e.g. Scene weather
+        # emitters that would otherwise pile up a particle backlog while hidden
+        if self.game.states:
+            self.game.states[-1].on_suspend()
         self.game.states.append(self)
 
     #############################################################################################################
     def exit_state(self, quit: bool = True) -> None:
         if len(self.game.states) > 1:
             self.game.states.pop()
+            # the state revealed underneath is active again; let it re-arm what it paused
+            self.game.states[-1].on_resume()
         else:
             if not IS_WEB and quit:
                 self.game.is_running = False
+
+    #############################################################################################################
+    def on_suspend(self) -> None:
+        # called when another state is pushed on top of this one (this state stops
+        # updating/drawing). Override to pause time-based side effects. Must be idempotent.
+        pass
+
+    #############################################################################################################
+    def on_resume(self) -> None:
+        # called when the covering state is popped and this one becomes active again.
+        # Override to re-arm whatever on_suspend() paused. Must be idempotent.
+        pass
 
     #############################################################################################################
     def update(self, dt: float, events: list[pygame.event.EventType]) -> None:

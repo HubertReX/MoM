@@ -593,6 +593,24 @@ class WeatherDirector:
         return random.choices(names, weights=weights, k=1)[0]
 
     ###################################################################################################################
+    def pause(self) -> None:
+        # temporarily disarm the running emitter's spawn timer WITHOUT losing the
+        # schedule state (unlike stop_all). Used when the scene is backgrounded by a
+        # menu/pause: while hidden, Scene.draw() -> emit() never runs, so particles
+        # would never age; leaving the timer armed would pile up a backlog that bursts
+        # all at once on resume.
+        for active in self._active.values():
+            if active is not None:
+                self.systems[active].stop()
+
+    ###################################################################################################################
+    def resume(self) -> None:
+        # re-arm whatever emitter was active before pause() (episode state is intact)
+        for active in self._active.values():
+            if active is not None:
+                self.systems[active].start()
+
+    ###################################################################################################################
     def stop_all(self) -> None:
         # disarm every active emitter (e.g. before a map change) so no timer leaks
         for group, active in self._active.items():

@@ -544,6 +544,22 @@ class Scene(State):
             self.game.register_custom_event(particle.custom_event_id, particle.add)
 
     #############################################################################################################
+    def on_suspend(self) -> None:
+        # a menu/dialog is now on top: Scene.draw() (which ages particles via emit)
+        # stops running, so disarm the weather emitters. Otherwise their spawn timers
+        # keep firing (get_inputs runs every frame) and pile up a backlog that bursts
+        # all at once when we return to the scene.
+        if self.weather:
+            self.weather.pause()
+
+    #############################################################################################################
+    def on_resume(self) -> None:
+        # re-arm the weather emitters once the scene is active again - but not while a
+        # hard pause (P / focus loss) is still in effect (that path re-arms on unpause)
+        if self.weather and not self.game.is_paused:
+            self.weather.resume()
+
+    #############################################################################################################
 
     def load_step_cost(self, tileset_map: TiledMap) -> None:
         for x, y, surf in tileset_map.layers[0].tiles():
