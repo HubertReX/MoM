@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, cast
 
 from enums import AttitudeEnum, ItemTypeEnum
+from npc_runtime import NpcRuntime
 from settings import MAX_HOTBAR_ITEMS, VERSION
 
 
@@ -293,6 +294,9 @@ class NPCState:
     is_dead: bool = False
     inventory: list[ItemState] = field(default_factory=list)
     dialog_state: NPCDialogState | None = None
+    #: Per-instance state kept outside the config model - see `npc_runtime`.
+    #: Defaults to a blank runtime so saves written before it existed still load.
+    runtime: NpcRuntime = field(default_factory=NpcRuntime)
 
     def to_dict(self) -> dict[str, Any]:
         return _to_dict(self)
@@ -311,6 +315,7 @@ class NPCState:
             is_dead=bool(data.get("is_dead", False)),
             inventory=[ItemState.from_dict(i) for i in data.get("inventory", [])],
             dialog_state=NPCDialogState.from_dict(dialog_state_raw) if dialog_state_raw else None,
+            runtime=NpcRuntime.from_dict(data.get("runtime")),
         )
 
 

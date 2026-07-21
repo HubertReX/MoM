@@ -1,5 +1,6 @@
 # from dataclasses import dataclass
 from collections import Counter
+import copy
 import math
 import os
 import random
@@ -61,6 +62,7 @@ from dialog.graph import get_start_node, init_dialog
 
 import game
 import npc_state
+from npc_runtime import NpcRuntime
 import scene
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, HealthBarUI, ItemSprite, NotificationTypeEnum, Shadow
@@ -92,7 +94,19 @@ class NPC(pygame.sprite.Sprite):
         super(NPC, self).__init__()
         self.game = game
         self.scene = scene
-        self.model: Character = game.conf.characters[model_name]
+        # Deep copy, not a reference: `game.conf.characters[...]` is one object
+        # shared by the whole process, and this class writes into it (`model.health`
+        # in hit/encounter, `model.money` in pick_up and trading). Without the copy
+        # every snake in the maze drew from a single pool of health - kill one and
+        # the next died to a single blow - and the player's gold survived into a new
+        # game. Items and chests already copy their config per instance
+        # (`Scene.create_item`, chest spawning); NPCs were the one that did not.
+        # deepcopy, not copy: `Character` carries lists (`items`, `allowed_zones`)
+        # and a dict (`disposition`), and on desktop it is a pydantic model.
+        self.model: Character = copy.deepcopy(game.conf.characters[model_name])
+        # Mutable state that is deliberately *not* in the config model - see
+        # npc_runtime.NpcRuntime for why it lives outside it.
+        self.runtime: NpcRuntime = NpcRuntime()
         self.current_map = self.scene.current_map
         self.has_dialog: bool = False
         # How many item slots this character has. Used to be the module constant

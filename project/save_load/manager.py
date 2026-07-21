@@ -6,6 +6,7 @@ import time
 from typing import TYPE_CHECKING, Any, cast
 
 from enums import ItemTypeEnum
+from npc_runtime import NpcRuntime
 from objects import ItemSprite
 from quest.entities import QuestState
 from save_load.backends import FileSaveBackend, LocalStorageSaveBackend, SaveBackend
@@ -288,6 +289,7 @@ class SaveManager:
                     health_impact=item.model.health_impact,
                 ) for item in npc.items],
                 dialog_state=self._build_npc_dialog_state(npc),
+                runtime=copy.deepcopy(getattr(npc, "runtime", NpcRuntime())),
             )
             for npc in scene.NPCs
         }
@@ -394,6 +396,7 @@ class SaveManager:
                 inventory=[ItemState(name=it.name, type=it.model.type, count=it.model.count)
                            for it in npc.items],
                 dialog_state=self._build_npc_dialog_state(npc),
+                runtime=copy.deepcopy(getattr(npc, "runtime", NpcRuntime())),
             )
         return result
 
@@ -694,9 +697,14 @@ class SaveManager:
 
             if npc.name in ms.npc_states:
                 saved = ms.npc_states[npc.name]
-                npc.model = _copy_item_model(npc.model)
+                # No defensive copy of `npc.model` here any more: `NPC.__init__`
+                # now deep-copies the character config, so this model already
+                # belongs to this NPC alone. The shallow copy that used to sit
+                # here only patched the symptom at load time - two NPCs of the
+                # same model still shared health and money the rest of the time.
                 npc.model.health = saved.health
                 npc.model.money = saved.money
+                npc.runtime = copy.deepcopy(saved.runtime)
                 npc.pos = vec(saved.pos_x, saved.pos_y)
                 npc.is_dead = saved.is_dead
                 if saved.dialog_state is not None and hasattr(npc, "restore_dialog_state"):

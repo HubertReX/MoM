@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Współdzielony config NPC - co to znaczy i jak to naprawić</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6; font-size: 16px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: var(--s7) var(--s5); }
+  .prose { max-width: 74ch; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.4rem; margin: var(--s7) 0 var(--s3); letter-spacing: -.01em;
+       padding-bottom: var(--s2); border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin: var(--s5) 0 var(--s2); }
+  p { margin: 0 0 var(--s4); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.1rem; color: var(--muted); max-width: 74ch; }
+  .grid { display: grid; gap: var(--s4); }
+  .cols-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: var(--s5); box-shadow: var(--shadow); }
+  .card h3:first-child { margin-top: 0; }
+  .badge { display: inline-flex; align-items: center; font-size: .72rem; font-weight: 600;
+    padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+    background: var(--surface-2); color: var(--muted); }
+  .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .badge.err{background:var(--err-soft);color:var(--err)}
+  .badge.info{background:var(--info-soft);color:var(--info)}
+  .tblwrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: var(--s2) var(--s3); border-bottom: 1px solid var(--border);
+           vertical-align: top; }
+  thead th { background: var(--surface); font-size: .72rem; text-transform: uppercase;
+             letter-spacing: .05em; color: var(--muted); }
+  tbody tr:hover { background: var(--surface-2); }
+  tr.chosen { background: var(--ok-soft); }
+  tr.chosen:hover { background: var(--ok-soft); }
+  tr.bad td { color: var(--err); }
+  code { font-family: var(--mono); font-size: .86em; background: var(--surface-2);
+    padding: 1px 5px; border-radius: 5px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: var(--s4); overflow-x: auto; font-size: .84rem; }
+  pre code { background: none; padding: 0; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: var(--s3) var(--s4); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: var(--s4) 0; }
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .callout.err{border-color:var(--err);background:var(--err-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .callout p:last-child { margin-bottom: 0; }
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s3) var(--s4); margin-bottom: var(--s2); background: var(--surface); }
+  summary { cursor: pointer; font-weight: 600; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "\25b8"; display: inline-block; margin-right: var(--s2);
+    transition: transform .15s; color: var(--muted); }
+  details[open] summary::before { transform: rotate(90deg); }
+  nav.toc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: var(--s4) var(--s5); margin: var(--s5) 0; box-shadow: var(--shadow); }
+  nav.toc h2 { margin: 0 0 var(--s3); font-size: .75rem; text-transform: uppercase;
+               letter-spacing: .08em; color: var(--muted); border: none; padding: 0; }
+  nav.toc ol { list-style: decimal; margin: 0; padding-left: 1.3em; }
+  nav.toc li { margin-bottom: var(--s1); }
+  .hp { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .box { border: 1px solid var(--border); border-radius: var(--radius-sm);
+         padding: var(--s3) var(--s4); background: var(--surface); }
+  .memlane { display:grid; gap: var(--s2); grid-template-columns: 1fr; }
+  .memrow { display:flex; gap:var(--s3); align-items:center; flex-wrap:wrap; font-size:.9rem; }
+  .chip { font-family: var(--mono); font-size:.8rem; padding:2px 8px; border-radius:6px;
+          background: var(--surface-2); border:1px solid var(--border); }
+  .chip.shared { background: var(--err-soft); border-color: var(--err); color: var(--err); }
+  .chip.own { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Wyjaśnienie &middot; MoM &middot; 21 lipca 2026</p>
+  <h1>Współdzielony config NPC</h1>
+  <p class="lead">Czemu dwa węże w labiryncie mają jedną pulę życia, czemu w grze tego nie widać, i co znaczą pojęcia z decyzji o <code>NpcRuntime</code>.</p>
+
+  <nav class="toc">
+    <h2>Spis treści</h2>
+    <ol>
+      <li><a href="#dowod">Dowód: to naprawdę jest współdzielone</a></li>
+      <li><a href="#czemu">Czemu w grze tego nie widzisz</a></li>
+      <li><a href="#kopiowanie">Co to jest "kopiowanie configu"</a></li>
+      <li><a href="#runtime">Co to jest "osobny obiekt runtime"</a></li>
+      <li><a href="#dublowanie">O jakie dublowanie chodzi</a></li>
+      <li><a href="#granica">Co to za "czysta granica"</a></li>
+      <li><a href="#opcje">Trzy warianty, porównanie</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="dowod">1. Dowód: to naprawdę jest współdzielone</h2>
+
+  <p class="prose">Nie chodzi o teorię z czytania kodu. Uruchomiłem <strong>prawdziwy loader configu z gry</strong> i powtórzyłem dosłownie dwie linie, które wykonuje gra: przypisanie modelu w <code>NPC.__init__</code> i odjęcie zdrowia w <code>NPC.hit()</code>.</p>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Linia z <code>NPC.__init__</code> (<code>characters.py:95</code>)</h3>
+      <pre><code>self.model = game.conf.characters[model_name]</code></pre>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)">Bez <code>copy</code>. To jest <strong>przypisanie referencji</strong>, nie kopii - obie postacie dostają wskaźnik na ten sam obiekt w pamięci.</p>
+    </div>
+    <div class="card">
+      <h3>Linia z <code>NPC.hit()</code> (<code>characters.py:1079</code>)</h3>
+      <pre><code>oponent.model.health -= damage</code></pre>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)">Zapis <em>do wnętrza</em> tego wspólnego obiektu. Skoro obiekt jest jeden, zmiana widoczna jest u wszystkich, którzy go trzymają.</p>
+    </div>
+  </div>
+
+  <h3>Wynik uruchomienia</h3>
+
+  <pre><code>Dwa osobne potwory tego samego typu (SNAKE_01):
+  a.name = Maze_01_SNAKE_01_001
+  b.name = Maze_01_SNAKE_01_002
+  a.model is b.model  ->  True   &lt;-- ten sam obiekt w pamieci
+  id(a.model) = 4441121088
+  id(b.model) = 4441121088
+
+Zdrowie na starcie:  a=50  b=50
+Gracz uderza TYLKO potwora 'a' za 25 obrazen...
+Zdrowie po ciosie:   a=25  b=25   &lt;-- b oberwal tak samo
+
+Gracz dobija 'a'.    a=0   b=0
+Czy 'b' jest juz martwy, choc nikt go nie tknal?  True</code></pre>
+
+  <div class="memlane" style="margin:var(--s4) 0">
+    <div class="memrow"><strong style="min-width:9em">Jak jest teraz:</strong>
+      <span class="chip">wąż #1</span> &rarr; <span class="chip shared">jeden obiekt Character (health=50)</span> &larr; <span class="chip">wąż #2</span>
+    </div>
+    <div class="memrow"><strong style="min-width:9em">Jak być powinno:</strong>
+      <span class="chip">wąż #1</span> &rarr; <span class="chip own">własny Character (health=50)</span>
+      &nbsp;&nbsp; <span class="chip">wąż #2</span> &rarr; <span class="chip own">własny Character (health=50)</span>
+    </div>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>Przedmioty i skrzynie są już zrobione dobrze.</strong> <code>create_item</code> robi <code>copy.copy(self.game.conf.items[name])</code> (<code>scene.py:372</code>), a skrzynie <code>copy.deepcopy(...)</code> (<code>scene.py:667</code>) z komentarzem, że dla desktopu to model pydantic. Wzorzec "każda instancja dostaje własną kopię configu" <strong>już w projekcie istnieje</strong> - NPC jest jedynym, który został pominięty.</p>
+  </div>
+
+  <h2 id="czemu">2. Czemu w grze tego nie widzisz</h2>
+
+  <p class="prose">Twoja obserwacja - "każdego duszka muszę zabić osobno" - <strong>jest prawdziwa</strong>, i wcale nie przeczy powyższemu. Powód jest w mechanizmie śmierci, który jest osobny od odejmowania zdrowia.</p>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:34%">Element</th><th style="width:24%">Gdzie</th><th style="width:42%">Co robi</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>odjęcie zdrowia</td>
+          <td><code>hit()</code>, <code>characters.py:1079</code></td>
+          <td>zmniejsza <strong>wspólną</strong> pulę zdrowia typu potwora</td>
+        </tr>
+        <tr class="bad">
+          <td><code>oponent.die()</code> po trafieniu</td>
+          <td><code>characters.py:1083-1084</code></td>
+          <td><strong>zakomentowane</strong> - trafiony potwór nie ginie od razu</td>
+        </tr>
+        <tr>
+          <td>ogłuszenie trafionego</td>
+          <td><code>hit()</code>, tuż niżej</td>
+          <td>ustawia <code>is_stunned</code> i timer na 800 ms <em>tej konkretnej instancji</em></td>
+        </tr>
+        <tr>
+          <td>faktyczna śmierć</td>
+          <td><code>process_custom_event()</code>, <code>characters.py:994-996</code></td>
+          <td>gdy timer ogłuszenia wygaśnie: <code>if self.model.health == 0: self.die()</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="prose"><strong>Kluczowe:</strong> potwór ginie tylko wtedy, gdy <em>jego własny</em> timer ogłuszenia wygaśnie - a timer ustawia się tylko przy trafieniu. Dlatego <strong>musisz uderzyć każdego potwora osobno</strong>, dokładnie jak mówisz. Ale zdrowie, które przy tym sprawdzasz, jest wspólne.</p>
+
+  <h3>Co się dzieje naprawdę: dwa węże, katana za 20 obrażeń, zdrowie 50</h3>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:8%">Krok</th><th style="width:34%">Akcja gracza</th><th style="width:20%">Wspólna pula</th><th style="width:38%">Efekt</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>cios w węża&nbsp;A</td><td class="hp">50 &rarr; 30</td><td>A ogłuszony, żyje</td></tr>
+        <tr><td>2</td><td>cios w węża&nbsp;A</td><td class="hp">30 &rarr; 10</td><td>A ogłuszony, żyje</td></tr>
+        <tr><td>3</td><td>cios w węża&nbsp;A</td><td class="hp">10 &rarr; 0</td><td>timer A wygasa &rarr; <strong>A ginie</strong>. Wygląda normalnie: trzy ciosy.</td></tr>
+        <tr class="bad"><td>4</td><td>pierwszy cios w węża&nbsp;B</td><td class="hp">0 &rarr; 0</td><td>timer B wygasa &rarr; <strong>B ginie po JEDNYM ciosie</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Objawem nie jest "wszystkie potwory giną naraz"</strong> - bo do śmierci trzeba trafić każdego z osobna. Objawem jest to, że <strong>drugi i każdy kolejny potwór tego samego typu ginie od jednego ciosu</strong>. Łatwo to wziąć za trafienie krytyczne, przypadek albo po prostu tego nie zauważyć - zwłaszcza że poziom labiryntu losuje potwory z listy, więc dwa te same typy na jednym poziomie wcale nie są pewne.</p>
+    <p style="margin-top:var(--s2)">Ta sama pula nie resetuje się przy nowym poziomie ani przy nowej grze - <code>reset()</code> (<code>characters.py:1133</code>) wołane jest tylko na graczu (<code>scene.py:1840</code>). Config żyje tak długo, jak proces gry.</p>
+  </div>
+
+  <h2 id="kopiowanie">3. Co to jest "kopiowanie configu"</h2>
+
+  <p class="prose"><code>config.json</code> wczytuje się <strong>raz</strong> przy starcie gry do obiektów w pamięci. Pytanie brzmi: czy postać dostaje <em>ten</em> obiekt, czy <em>swoją kopię</em>.</p>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:20%">Wariant</th><th style="width:26%">Kod</th><th style="width:54%">Znaczenie</th></tr></thead>
+      <tbody>
+        <tr class="bad">
+          <td>referencja <span class="badge err">dziś w NPC</span></td>
+          <td><code>self.model = conf.characters[k]</code></td>
+          <td>Postać dostaje <strong>wskaźnik</strong> na wspólny obiekt. Zapis u jednej postaci widzą wszystkie. Jak wspólny zeszyt, w którym wszyscy piszą.</td>
+        </tr>
+        <tr>
+          <td>płytka kopia <span class="badge info">dziś w items</span></td>
+          <td><code>copy.copy(conf.items[k])</code></td>
+          <td>Nowy obiekt z <strong>przepisanymi polami</strong>. Liczby i napisy są niezależne. Ale pola będące listami nadal wskazują tę samą listę.</td>
+        </tr>
+        <tr class="chosen">
+          <td>głęboka kopia <span class="badge ok">dziś w chests</span></td>
+          <td><code>copy.deepcopy(conf.chests[k])</code></td>
+          <td>Nowy obiekt <strong>razem z zawartością list i słowników</strong>. Pełna niezależność. Dla postaci to właściwy wybór, bo <code>items</code>, <code>allowed_zones</code> i <code>disposition</code> są kolekcjami.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <details>
+    <summary>Czemu przy postaci płytka kopia nie wystarczy</summary>
+    <p style="margin-top:var(--s3);margin-bottom:0"><code>Character</code> ma pola <code>items</code> (lista), <code>allowed_zones</code> (lista), <code>tradeable_items_types</code> (lista) i <code>disposition</code> (słownik). Płytka kopia dałaby każdej postaci własne <code>health</code> i <code>money</code>, ale <strong>wciąż wspólną listę</strong> - więc gdyby kod kiedykolwiek zmodyfikował <code>model.items</code> w miejscu, bug wróciłby tylnymi drzwiami. Skrzynie mają dokładnie ten problem i dlatego używają <code>deepcopy</code>, o czym mówi komentarz w <code>scene.py:686</code>.</p>
+  </details>
+
+  <h2 id="runtime">4. Co to jest "osobny obiekt runtime"</h2>
+
+  <p class="prose">Dziś jeden obiekt <code>Character</code> trzyma dwie zupełnie różne kategorie danych. Łatwiej to zobaczyć w tabeli:</p>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:26%">Pole</th><th style="width:22%">Charakter</th><th style="width:52%">Uwagi</th></tr></thead>
+      <tbody>
+        <tr><td><code>name_EN</code>, <code>name_PL</code></td><td><span class="badge">projektowe</span></td><td>nigdy się nie zmienia w trakcie gry</td></tr>
+        <tr><td><code>sprite</code>, <code>race</code>, <code>attitude</code></td><td><span class="badge">projektowe</span></td><td>jw.</td></tr>
+        <tr><td><code>speed_walk</code>, <code>speed_run</code></td><td><span class="badge">projektowe</span></td><td>jw.</td></tr>
+        <tr><td><code>max_carry_weight</code>, <code>is_merchant</code></td><td><span class="badge">projektowe</span></td><td>jw.</td></tr>
+        <tr class="bad"><td><code>health</code></td><td><span class="badge err">zmienne w grze</span></td><td>maleje przy każdym ciosie</td></tr>
+        <tr class="bad"><td><code>money</code></td><td><span class="badge err">zmienne w grze</span></td><td>zmienia się przy każdej transakcji</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="prose"><strong>Osobny obiekt runtime</strong> to po prostu drugi obiekt, przypięty do postaci, który trzyma wyłącznie ten drugi rodzaj danych:</p>
+
+  <pre><code>@dataclass
+class NpcRuntime:
+    """Stan, ktory zmienia sie w trakcie gry. Zycie instancji, nie configu."""
+    health: int
+    money: int
+    stock: list[str]        # asortyment handlarza na dzis
+    routine_key: str        # ktora rutyna z routines.toml
+
+# uzycie
+npc.model.sprite      # dane projektowe - z configu, tylko do odczytu
+npc.runtime.health    # stan biezacy - wlasny dla tej instancji</code></pre>
+
+  <p class="prose">Config zostaje wtedy <strong>wzorcem</strong>, z którego czyta się wartości startowe i graniczne, a wszystko co się zmienia mieszka gdzie indziej.</p>
+
+  <h2 id="dublowanie">5. O jakie dublowanie chodzi</h2>
+
+  <p class="prose">To osobny, już istniejący problem projektu, ale ma wpływ na wybór wariantu. Model configu istnieje w <strong>dwóch niezależnych kopiach</strong>, i to nie kopiach danych, tylko kopiach <em>definicji</em>:</p>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:22%">Plik</th><th style="width:18%">Kiedy używany</th><th style="width:60%">Wybór w <code>game.py:88-95</code></th></tr></thead>
+      <tbody>
+        <tr><td><code>config.py</code></td><td>web (pygbag)</td><td><code>if IS_WEB: from config_model.config import load_config</code> - zwykły <code>@dataclass</code></td></tr>
+        <tr><td><code>config_pydantic.py</code></td><td>desktop</td><td><code>else: from config_model.config_pydantic import load_config</code> - model pydantic z walidacją</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout err">
+    <p><strong>Każde nowe pole configu trzeba dopisać w obu plikach.</strong> Zapomnisz o jednym i gra działa na desktopie, a wywala się tylko na webie - z traceparkiem widocznym wyłącznie w konsoli przeglądarki. To już się w tym projekcie zdarzało.</p>
+  </div>
+
+  <p class="prose">Stąd wniosek praktyczny: <strong>pola, które nie muszą być w configu, lepiej żeby w nim nie były.</strong> <code>stock</code>, <code>demand</code> czy bieżące <code>money</code> handlarza to stan gry, nie dane projektowe - wrzucenie ich do configu oznaczałoby dopisanie ich w dwóch miejscach i utrzymywanie zgodności na zawsze. W obiekcie runtime są raz.</p>
+
+  <h2 id="granica">6. Co to za "czysta granica"</h2>
+
+  <p class="prose">Granica to reguła, którą da się sprawdzić i której złamanie widać. Konkretnie:</p>
+
+  <div class="box" style="margin-bottom:var(--s4)">
+    <p style="margin:0"><strong>"Do configu się nie pisze"</strong> = w całym kodzie gry nie ma ani jednego <code>npc.model.cokolwiek = ...</code>. Config jest źródłem odczytu; wszystko, co się zmienia, zmienia się gdzie indziej.</p>
+  </div>
+
+  <p class="prose">Wartość tej reguły jest praktyczna, nie estetyczna:</p>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:30%">Bez granicy (dziś)</th><th style="width:70%">Z granicą</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Ten sam bug może wrócić przy dowolnym nowym polu</td>
+          <td>Nowe pole runtime nie ma jak trafić do configu, bo config jest do odczytu</td>
+        </tr>
+        <tr>
+          <td>Żeby wykryć problem, trzeba pamiętać, że config jest współdzielony</td>
+          <td>Da się sprawdzić jednym <code>grep</code> - albo mechanicznie, przez <code>frozen=True</code> na dataclassie, co zamienia zapis w natychmiastowy wyjątek zamiast cichego buga</td>
+        </tr>
+        <tr>
+          <td>Czytając <code>npc.model.health</code> nie wiadomo, czy to wartość startowa, czy bieżąca</td>
+          <td><code>npc.model.health</code> to zawsze wartość startowa z CSV, <code>npc.runtime.health</code> to zawsze bieżąca. Nazwa mówi wszystko.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Uwaga o samej kopii.</strong> <code>deepcopy</code> naprawia <em>bug</em>, ale nie stawia <em>granicy</em>: po skopiowaniu nadal wolno pisać do <code>npc.model.health</code>, tylko że teraz trafia to we własną kopię postaci, czyli działa poprawnie. Granica to dodatkowa rzecz - decyzja, że w ogóle się tam nie pisze.</p>
+  </div>
+
+  <h2 id="opcje">7. Trzy warianty, porównanie</h2>
+
+  <div class="tblwrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:22%">Kryterium</th>
+          <th style="width:26%">A. Sama kopia</th>
+          <th style="width:26%">B. Pełny NpcRuntime</th>
+          <th style="width:26%">C. Hybryda</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Na czym polega</td>
+          <td><code>deepcopy</code> configu w <code>NPC.__init__</code></td>
+          <td><code>health</code>, <code>max_health</code>, <code>money</code>, <code>damage</code> przenoszone do nowego obiektu</td>
+          <td><code>deepcopy</code> dla pól istniejących + obiekt runtime na pola nowe</td>
+        </tr>
+        <tr>
+          <td>Ile kodu</td>
+          <td>1 linia</td>
+          <td>78 odwołań w 9 plikach</td>
+          <td>1 linia + nowa klasa bez zmian w istniejących wywołaniach</td>
+        </tr>
+        <tr>
+          <td>Naprawia zdrowie i pieniądze</td>
+          <td><span class="badge ok">tak</span></td>
+          <td><span class="badge ok">tak</span></td>
+          <td><span class="badge ok">tak</span></td>
+        </tr>
+        <tr>
+          <td>Ryzyko regresji</td>
+          <td><span class="badge ok">bliskie zeru</span></td>
+          <td><span class="badge err">realne</span> dotyka kodu walki i zapisu</td>
+          <td><span class="badge ok">bliskie zeru</span></td>
+        </tr>
+        <tr>
+          <td>Stawia granicę</td>
+          <td><span class="badge err">nie</span></td>
+          <td><span class="badge ok">tak, wszędzie</span></td>
+          <td><span class="badge warn">tak, dla nowych pól</span></td>
+        </tr>
+        <tr>
+          <td>Nowe pola cyklu dobowego</td>
+          <td>trzeba dopisać w <strong>obu</strong> modelach configu</td>
+          <td>w obiekcie runtime, raz</td>
+          <td>w obiekcie runtime, raz</td>
+        </tr>
+        <tr>
+          <td>Zgodność z projektem</td>
+          <td>wzorzec items i chests</td>
+          <td>trzeci wzorzec obok dwóch istniejących</td>
+          <td>wzorzec items i chests + jedno nowe miejsce na stan gry</td>
+        </tr>
+        <tr>
+          <td>Sufit sakiewki dla D7</td>
+          <td colspan="2">config zostaje nietknięty, więc <code>conf.characters[k].money</code> to gotowa wartość bazowa - <strong>dotyczy A i C</strong></td>
+          <td>jw.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>Rekomendacja: C.</strong> Kopia naprawia realny bug dziś, jedną linią, wzorcem, który projekt już stosuje w dwóch miejscach - bez dotykania kodu walki. Obiekt runtime powstaje tylko dla pól, które i tak trzeba dopiero dodać (<code>stock</code>, <code>routine_key</code>, bieżąca sakiewka), i to właśnie one najbardziej zyskują na tym, że nie muszą być dublowane w dataclassie i w pydanticu. Migrację <code>health</code> i <code>damage</code> do runtime można zrobić później albo wcale - nie blokuje niczego z planu cyklu dobowego.</p>
+  </div>
+
+  <h3>Czego naprawa NIE zmienia</h3>
+
+  <p class="prose">Opóźniona śmierć potwora jest <strong>zamierzona</strong>: <code>oponent.die()</code> jest w <code>hit()</code> celowo zakomentowane, żeby po ostatnim ciosie potwór został jeszcze chwilę ogłuszony i zdążyła zagrać animacja. Naprawa współdzielenia tego nie rusza - ścieżka śmierci przez timer ogłuszenia zostaje bez zmian.</p>
+
+  <div class="callout warn">
+    <p><strong>Jedna rzecz zmieni się odczuwalnie.</strong> Po naprawie <strong>liczba ciosów potrzebnych do zabicia drugiego i kolejnych potworów tego samego typu wzrośnie</strong> - z jednego do tylu, ile wynika ze zdrowia w CSV. To nie regresja, tylko powrót do zamierzonych wartości: dziś drugi wąż ginie od jednego ciosu, bo dziedziczy wyzerowaną pulę po pierwszym. Warto o tym wiedzieć przed testem na żywo, żeby nie wziąć tego za spowolnienie walki.</p>
+  </div>
+
+  <footer style="margin-top:var(--s7);padding-top:var(--s4);border-top:1px solid var(--border);color:var(--muted);font-size:.85rem">
+    <p style="margin:0">MoM &middot; wyjaśnienie do decyzji o <code>NpcRuntime</code> &middot; plan: <code>doc/plan-cykl-dobowy-npc.md</code></p>
+  </footer>
+
+</div>
+</body>
+</html>
