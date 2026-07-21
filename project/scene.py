@@ -49,6 +49,7 @@ from settings import (
     CIRCLE_RADIUS,
     CUTSCENE_BG_COLOR,
     DAY_FILTER,
+    DESTRUCTIBLE_MIN_DAMAGE,
     FILTER_SCALE,
     FONT_SIZE_MEDIUM,
     FRIENDLY_WAKE_DISTANCE,
@@ -221,6 +222,9 @@ class Scene(State):
         # taken at save time - the snapshot was captured lazily on the first save,
         # so everything destroyed before that first save was invisible to it.
         self.destroyed_walls: list[tuple[int, int]] = []
+        # `Player.attack_time` of the swing that already raised a "weapon too weak"
+        # toast, so one bounced-off hit does not spam a toast per frame
+        self._weak_hit_notified_at: float = -1.0
         # Names of monsters killed on the current map. Needed for the same reason as
         # `destroyed_walls`: `NPC.die()` drops the sprite from `self.NPCs`, so once it
         # is gone nothing on the map says it ever existed. Without this list a save
@@ -1550,26 +1554,40 @@ class Scene(State):
                         (destructible.rect.x - self.player.selected_weapon.rect.x,  # type: ignore[union-attr]
                          destructible.rect.y - self.player.selected_weapon.rect.y)  # type: ignore[union-attr]
                     ):
-                        # make the tile walkable
-                        x = int(destructible.rect.x // TILE_SIZE)
-                        y = int(destructible.rect.y // TILE_SIZE)
+                        # too weak a weapon bounces off: tell the player *why* nothing
+                        # happened, otherwise a destructible obstacle is indistinguishable
+                        # from plain scenery.
+                        min_damage = DESTRUCTIBLE_MIN_DAMAGE.get(destructible.type, 0)
+                        if (self.player.selected_weapon.model.damage or 0) < min_damage:
+                            # once per swing, not once per frame of the swing - the
+                            # collision holds for the whole attack animation
+                            if self._weak_hit_notified_at != self.player.attack_time:
+                                self._weak_hit_notified_at = self.player.attack_time
+                                self.add_notification(
+                                    _("notify.weapon_too_weak",
+                                      name=entity_name(self.player.selected_weapon.model)),
+                                    NotificationTypeEnum.warning)
+                        else:
+                            # make the tile walkable
+                            x = int(destructible.rect.x // TILE_SIZE)
+                            y = int(destructible.rect.y // TILE_SIZE)
 
-                        self.path_finding_grid[y][x] = destructible.step_cost
-                        # unfortunately, the whole A* paths cache need to be recalculated
-                        clear_maze_cache()
-                        # destroy wall rect
-                        wall = destructible.wall
-                        self.walls.remove(wall)
-                        self.destroyed_walls.append((wall.x, wall.y))
-                        # trigger destruction particle system
-                        rect = self.map_view.translate_rect(destructible.rect)
-                        particle = ParticleDestructible(self.game.canvas, self.group,
-                                                        self.camera, rect, destructible.type)
-                        particle.add()
-                        self.particles.append(particle)
-                        # destroy object
-                        destructible.kill()
-                        self.destructibles.remove(destructible)
+                            self.path_finding_grid[y][x] = destructible.step_cost
+                            # unfortunately, the whole A* paths cache need to be recalculated
+                            clear_maze_cache()
+                            # destroy wall rect
+                            wall = destructible.wall
+                            self.walls.remove(wall)
+                            self.destroyed_walls.append((wall.x, wall.y))
+                            # trigger destruction particle system
+                            rect = self.map_view.translate_rect(destructible.rect)
+                            particle = ParticleDestructible(self.game.canvas, self.group,
+                                                            self.camera, rect, destructible.type)
+                            particle.add()
+                            self.particles.append(particle)
+                            # destroy object
+                            destructible.kill()
+                            self.destructibles.remove(destructible)
 
         colliders = self.walls
         # if self.player.is_flying:

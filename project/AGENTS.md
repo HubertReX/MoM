@@ -480,6 +480,18 @@ przed przebudową, żeby nie przeciekały uzbrojone timery między mapami.
 `scene.py` przy zniszczeniu krzaka/kamienia woła `add()` bezpośrednio; `start()/stop()`
 to no-opy. To jednorazowy wystrzał cząstek, nie cykl.
 
+**Pułapka (przezroczystość):** `emit()` blituje z `special_flags=pygame.BLEND_ALPHA_SDL2`.
+Przy zwykłym blicie i `set_alpha(255)` (czyli każdy emiter z `alpha_speed = 0.0` - np.
+`particle_destruct`) SDL wybiera ścieżkę "copy" i wpisuje alfę **źródła** do celu, robiąc
+w `game.canvas` całkowicie przezroczystą dziurę - na ekranie czarny prostokąt wokół
+sprite'a. Emitery, które zanikają (alfa < 255 już w pierwszej klatce), nigdy tam nie
+trafiają, więc psuł się **tylko** sprite rozpadu w miejscu.
+
+**Wymagana siła broni:** `DESTRUCTIBLE_MIN_DAMAGE` (`settings.py`) mapuje `destruct_type`
+(property kafla w `Nature.tsx`) na minimalny `damage` broni. Za słaba broń nie niszczy
+obiektu, tylko wystawia toast `notify.weapon_too_weak` - raz na zamach (klucz:
+`Player.attack_time`), nie raz na klatkę kolizji.
+
 **Pułapka:** cząstki pogody używają `spawn_rect` (nie pozycji myszki) i pola `time_elapsed`
 rosnącego co klatkę — nie memoizuj funkcji zależnych od `time_elapsed` (`x_oscillation`):
 klucz nigdy się nie powtarza, `@cache` = 0 trafień + nieograniczony wzrost pamięci.

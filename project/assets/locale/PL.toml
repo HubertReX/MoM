@@ -220,6 +220,7 @@ all_slots_taken = "Wszystkie '[num]{n}[/num]' sloty na przedmioty są zajęte :r
 max_weight_exceeded = "Przekroczono maksymalną wagę '[num]{w}[/num]' :red_exclamation_anim:"
 chest_opened = "Skrzynia otwarta :red_exclamation_anim:"
 destination_unreachable = "miejsce niedostępne :red_exclamation_anim:"
+weapon_too_weak = "'[item]{name}[/item]' jest za słaby, żeby to rozbić - potrzeba mocniejszej broni :red_exclamation_anim:"
 picked_up = "Podniesiono '[item]{name}[/item]'"
 dropped = "Wyrzucono '[item]{name}[/item]'"
 received_item = "Otrzymano '[item]{name}[/item]'"

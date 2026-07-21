@@ -216,6 +216,7 @@ all_slots_taken = "All '[num]{n}[/num]' items slots are taken :red_exclamation_a
 max_weight_exceeded = "Max carry weight '[num]{w}[/num]' exceeded :red_exclamation_anim:"
 chest_opened = "Chest opened :red_exclamation_anim:"
 destination_unreachable = "destination unreachable :red_exclamation_anim:"
+weapon_too_weak = "'[item]{name}[/item]' is too weak to smash this - try a heavier weapon :red_exclamation_anim:"
 picked_up = "Picked up '[item]{name}[/item]'"
 dropped = "Dropped '[item]{name}[/item]'"
 received_item = "Received '[item]{name}[/item]'"

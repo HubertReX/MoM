@@ -350,6 +350,15 @@ CHEST_OPEN_DISTANCE = 22
 # path from monster will be recalculated
 # only if player moved by more then N pixels
 RECALCULATE_PATH_DISTANCE = 16
+# minimal weapon damage needed to smash a destructible obstacle, per `destruct_type`
+# (tileset property in `Nature.tsx`). A weapon below the threshold bounces off and the
+# player gets a toast - the idea was right, the tool was not. Unknown types default to
+# 0 (anything breaks them). Reference weapon damage: stick 5, sword_short/lance 15,
+# katana 20, hammer 25, club/sword_long 30, axe 35 (`config_model/items.csv`).
+DESTRUCTIBLE_MIN_DAMAGE: dict[str, int] = {
+    "foliage": 10,
+    "rock": 25,
+}
 # path finding step costs used in map grid (path_finding_grid)
 STEP_COST_WALL: int = 100
 STEP_COST_GROUND: int = -100

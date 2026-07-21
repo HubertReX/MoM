@@ -169,7 +169,6 @@ class ParticleImageBased:
             particle.alpha = max(particle.alpha, 0)
             self.image.set_alpha(particle.alpha)
 
-            surface  = self.image
             surface = pygame.transform.scale(
                 self.image,
                 (self.width * particle.scale, self.height * particle.scale)
@@ -184,7 +183,13 @@ class ParticleImageBased:
                 particle.start_view.centery - self.group.view.centery) * self.camera.zoom
 
             self.rect = self.rect.move(view_offset.x, view_offset.y)
-            self.screen.blit(surface, self.rect.topleft)
+            # BLEND_ALPHA_SDL2, not a plain blit: with set_alpha(255) (any emitter with
+            # alpha_speed = 0.0, e.g. the in-place destruction burst) SDL takes the
+            # "copy" path and writes the *source* alpha into the destination, punching
+            # a fully transparent hole into game.canvas - which composites as a black
+            # box around the sprite. Emitters that fade (alpha < 255) never hit that
+            # path, which is why only the destruction sprite looked broken.
+            self.screen.blit(surface, self.rect.topleft, special_flags=pygame.BLEND_ALPHA_SDL2)
 
     ###################################################################################################################
     # MARK: add_particles
