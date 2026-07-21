@@ -39,7 +39,11 @@
             "money": 3000,
             "name_EN": "Johny",
             "name_PL": "Jaś",
-            "has_dialog": false
+            "has_dialog": false,
+            "home": "house_johny",
+            "work": "market_stall_1",
+            "social": "tavern",
+            "hobby": "pier"
         },
         "FRED": {
             "sprite": "Villager2",
@@ -68,7 +72,11 @@
             "money": 200,
             "name_EN": "Bart",
             "name_PL": "Bartuś",
-            "has_dialog": false
+            "has_dialog": false,
+            "home": "house_bart",
+            "work": "market_stall_2",
+            "social": "tavern",
+            "hobby": "well"
         },
         "ROB": {
             "sprite": "Villager4",
@@ -361,7 +369,11 @@
             "name_EN": "Hammer Hoaxheart",
             "name_PL": "Kowal Kłamca",
             "has_dialog": true,
-            "friendly": 0.3
+            "friendly": 0.3,
+            "home": "house_smith",
+            "work": "smithy",
+            "social": "tavern",
+            "hobby": "shrine"
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
@@ -380,7 +392,11 @@
             "name_EN": "Barman Absinthrayner",
             "name_PL": "Barman Absyntnent",
             "has_dialog": true,
-            "friendly": 0.6
+            "friendly": 0.6,
+            "home": "house_barman",
+            "work": "tavern",
+            "social": "well",
+            "hobby": "shrine"
         },
         "CLAPBACK_SWORD": {
             "sprite": "Knight",

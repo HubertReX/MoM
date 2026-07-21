@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="70" height="70" tilewidth="16" tileheight="16" infinite="0" nextlayerid="14" nextobjectid="115">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="70" height="70" tilewidth="16" tileheight="16" infinite="0" nextlayerid="15" nextobjectid="126">
  <properties>
   <property name="outdoor" type="bool" value="true"/>
   <property name="particles" value="leafs,rain"/>
@@ -525,6 +525,19 @@
   <object id="33" name="Cat01" x="976" y="752">
    <polygon points="0,0 62,0 62,64 0,64"/>
   </object>
+ </objectgroup>
+ <objectgroup id="14" name="places">
+  <object id="115" name="market_stall_1" x="840" y="760"/>
+  <object id="116" name="house_johny" x="376" y="872"/>
+  <object id="117" name="market_stall_2" x="712" y="840"/>
+  <object id="118" name="house_bart" x="376" y="872"/>
+  <object id="119" name="tavern" x="680" y="728"/>
+  <object id="120" name="house_barman" x="376" y="872"/>
+  <object id="121" name="smithy" x="808" y="712"/>
+  <object id="122" name="house_smith" x="376" y="872"/>
+  <object id="123" name="well" x="696" y="788"/>
+  <object id="124" name="pier" x="1064" y="680"/>
+  <object id="125" name="shrine" x="568" y="152"/>
  </objectgroup>
  <objectgroup id="9" name="spawn_points">
   <object id="76" name="Snake_01" gid="2823" x="961.372" y="863.896" width="16" height="16">

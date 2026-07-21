@@ -1,6 +1,6 @@
 key;name_EN;name_PL;sprite;race;attitude;health;max_health;items;money;has_dialog;is_merchant;tradeable_items_types;max_carry_weight;allowed_zones;speed_walk;damage;speed_run;friendly;money_cap;money_regen_pct;home;work;social;hobby;kind;weak;angry;smart;funny
-BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;;;;;1;-1;-2;-1;2
-BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;;;;;;;;;
+BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;house_barman;tavern;well;shrine;1;-1;-2;-1;2
+BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;house_bart;market_stall_2;tavern;well;;;;;
 BOAR;Boar;Dzik;Boar;animal;afraid;;;;;false;;;;;20;;;;;;;;;;;;;;
 CAT;Cat;Kotek;Cat;animal;friendly;;;;;false;;;;;15;;;;;;;;;;;;;;
 CAVE_LION;CaveLion;Lew jaskiniowy;CaveLion;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
@@ -17,9 +17,9 @@ FISH_RED;red fish;Czerwona rybka;FishRed;animal;friendly;;;;;false;;;;water;10;;
 FLAM;Flame;Płomień;Flam;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
 FRED;Fred;Franek;Villager2;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;
 FROG;Frog;Żabcia;Frog;animal;afraid;;;;;false;;;;shore;10;;;;;;;;;;;;;;
-HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;;30;true;;;;;;;;0.3;;;;;;;-1;1;2;-1;-2
+HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;;30;true;;;;;;;;0.3;;;house_smith;smithy;tavern;shrine;-1;1;2;-1;-2
 HORSE;Horse;Konik;Horse;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;
-JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;;;;;;;;;;;;;;;
+JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;;;;;;;house_johny;market_stall_1;tavern;pier;;;;;
 LION_YELLOW;LionYellow;Żółty lew;LionYellow;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
 MADAME_SARCASMIA;Madame Sarcasmia;Madame Sarkażmijka;SorcererBlack;humanoid;friendly;;;POTION_CURSE_NO_MORE;100;true;;;;;;;;0.5;;;;;;;1;-2;-1;1;2
 MARRY;Marry;Marysia;Woman;humanoid;friendly;120;120;;25;false;;;;;;;;;;;;;;;;;;;
