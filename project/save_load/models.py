@@ -375,8 +375,19 @@ class MapState:
     ground_items: list[GroundItemState] = field(default_factory=list)
     npc_states: dict[str, NPCState] = field(default_factory=dict)
     destroyed_walls: list[tuple[int, int]] = field(default_factory=list)
+    # A maze level is not stored tile by tile - it is regenerated from this seed.
+    # Everything random about it (grid, decors, chest and monster placement, which
+    # monster model each spawn gets, chest loot) is drawn from a generator seeded
+    # with it, so the level comes back identical and the state below - who is dead,
+    # who is hurt, which chest is open - lands on the right entities.
+    # ``None`` means this map is an ordinary TMX map.
     maze_seed: int | None = None
     maze_level: int | None = None
+    # Where a level-1 maze exit leads. Not derivable after a load: levels 2+ compute
+    # it from the level number, but level 1 returns to whichever overworld map the
+    # player came in from.
+    maze_return_map: str = ""
+    maze_return_entry_point: str = ""
     dead_monsters: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -395,6 +406,8 @@ class MapState:
             destroyed_walls=[tuple(w) for w in data.get("destroyed_walls", [])],
             maze_seed=int(data["maze_seed"]) if data.get("maze_seed") is not None else None,
             maze_level=int(data["maze_level"]) if data.get("maze_level") is not None else None,
+            maze_return_map=str(data.get("maze_return_map", "")),
+            maze_return_entry_point=str(data.get("maze_return_entry_point", "")),
             dead_monsters=list(data.get("dead_monsters", [])),
         )
 

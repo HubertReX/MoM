@@ -288,6 +288,26 @@
         ]
     },
     {
+        "name": "Maze Persists Across Save Load",
+        "slug": "maze_persists_across_save_load",
+        "platform": ["desktop"],
+        "cleanup_saves": [0, 1, 2],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "enter_maze", "commands": ["debug_enter_maze"], "wait": 3.0 },
+            { "slug": "maze_generated", "commands": ["screenshot"], "wait": 0.5 },
+            { "slug": "open_loadpanel", "commands": ["quick_load"], "wait": 0.5 },
+            { "slug": "confirm_load", "commands": ["accept"], "wait": 0.5 },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "maze_after_load", "commands": ["screenshot"], "wait": 0.5 }
+        ],
+        "assertions": [
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
+            { "type": "screenshot_review", "target": "maze_generated", "expect": "The player is inside a dark dungeon/maze corridor, not an outdoor village map." },
+            { "type": "screenshot_review", "target": "maze_after_load", "expect": "The player is inside a dark dungeon/maze corridor, not an outdoor village map." }
+        ]
+    },
+    {
         "name": "In-Game Reload Confirm",
         "slug": "ingame_reload_confirm",
         "platform": ["desktop", "web"],

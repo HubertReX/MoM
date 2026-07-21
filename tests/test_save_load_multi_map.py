@@ -414,6 +414,63 @@ def test_chests_from_one_template_do_not_collapse() -> None:
     assert_eq(rebuilt[1].image, "closed", "second chest stayed closed")
 
 
+def test_maze_seed_is_the_one_that_built_the_level() -> None:
+    """The save must carry the seed in use, not a freshly rolled one.
+
+    `_build_maze_seed` used to `random.randint(...)` at save time. Nothing read the
+    field back, so it went unnoticed - but the moment anything did, it would have
+    rebuilt a different dungeon than the one the player was standing in.
+    """
+    scene = _make_scene("Maze_01", [])
+    mgr = SaveManager.__new__(SaveManager)
+    scene.is_maze = True
+    scene.maze_seed = 1234567
+
+    assert_eq(mgr._build_maze_seed(scene), 1234567, "the live seed is saved verbatim")
+
+    scene.is_maze = False
+    assert_eq(mgr._build_maze_seed(scene), None, "an ordinary map has no seed")
+
+
+def test_maze_level_left_behind_keeps_its_seed() -> None:
+    """Walking out of a dungeon and saving must not lose the dungeon."""
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+    scene.destroyed_walls = []
+    scene.loaded_maps = {
+        "Maze_01": {
+            "maze_seed": 777, "maze_stats": {"current_map_level": 1},
+            "return_map": "Village", "return_entry_point": "Stairs",
+            "destroyed_walls": [], "NPCs": [], "chests": [], "items": [],
+        }
+    }
+
+    maps = mgr._build_map_states(scene)
+
+    assert_eq(maps["Maze_01"].maze_seed, 777, "seed of the level we left")
+    assert_eq(maps["Maze_01"].maze_level, 1, "and its level number")
+    assert_eq(maps["Maze_01"].maze_return_map, "Village", "and where its exit leads")
+
+
+def test_autosave_only_on_the_way_into_the_dungeon() -> None:
+    """Slot 0 must stay parked at the dungeon entrance.
+
+    A maze run gets one autosave - the step in from the overworld. Going deeper,
+    coming back up a level, and walking out to the surface must not overwrite it,
+    or slot 0 follows the player around inside the dungeon and the entrance is
+    lost. Every excluded case is a transition *out of* a maze map.
+    """
+    mgr = SaveManager.__new__(SaveManager)
+
+    # was_maze=False: overworld -> overworld, and overworld -> maze level 1
+    assert_true(mgr.should_autosave_on_map_change(was_maze=False),
+                "ordinary map change and dungeon entry both autosave")
+
+    # was_maze=True: deeper level, back up a level, and out to the surface
+    assert_true(not mgr.should_autosave_on_map_change(was_maze=True),
+                "leaving a maze map never autosaves")
+
+
 def main() -> None:
     tests = [
         test_other_maps_are_kept_pending_not_dropped,
@@ -427,6 +484,9 @@ def main() -> None:
         test_destroyed_walls_of_other_maps_survive_a_save,
         test_loading_reseeds_the_scene_destroyed_walls,
         test_chests_from_one_template_do_not_collapse,
+        test_maze_seed_is_the_one_that_built_the_level,
+        test_maze_level_left_behind_keeps_its_seed,
+        test_autosave_only_on_the_way_into_the_dungeon,
     ]
     for t in tests:
         t()

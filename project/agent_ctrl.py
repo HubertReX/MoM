@@ -58,6 +58,7 @@ przed przeładowaniem strony:
   `debug_map_change` (debugowa zmiana mapy - wywołuje auto-save),
   `debug_text_input` (pokaż panel demo widgetu TextInput),
   `debug_set_maze` (wymuś is_maze=True na bieżącej scenie - test zakazu zapisu w lochu),
+  `debug_enter_maze` (wejdź wyjściem prowadzącym do labiryntu - generacja poziomu + autosave slotu 0),
   `type:<tekst>` (wpisz tekst do pola z fokusem - jedno słowo, bez spacji; wysyła
   realne zdarzenia TEXTINPUT, np. `type:Abc123`),
   `backspace` (skasuj znak przed kursorem w polu tekstowym - wysyła KEYDOWN Backspace).
@@ -126,6 +127,7 @@ class AgentController:
         self._death_pending = False
         self._load_last_pending = False
         self._map_change_pending = False
+        self._enter_maze_pending = False
         self._type_pending: str = ""          # tekst do "wpisania" (posted TEXTINPUT)
         self._text_demo_pending = False       # żądanie pokazania panelu demo TextInput
         self._set_maze_pending = False        # wymuś tryb maze na bieżącej scenie (test zakazu zapisu)
@@ -261,6 +263,11 @@ class AgentController:
             self._map_change_pending = True
             return
 
+        if action == "debug_enter_maze":
+            # wejdź w wyjście prowadzące do labiryntu (autosave slotu 0 + generacja poziomu)
+            self._enter_maze_pending = True
+            return
+
         if action == "debug_text_input":
             self._text_demo_pending = True
             return
@@ -351,6 +358,20 @@ class AgentController:
                     last_idx = i
             if last_idx >= 0:
                 game.save_manager.load(last_idx)
+
+        if self._enter_maze_pending:
+            self._enter_maze_pending = False
+            state = game.states[-1] if game.states else None
+            maze_exit = next(
+                (e for e in getattr(state, "exits", None) or [] if getattr(e, "is_maze", False)),
+                None,
+            )
+            if state is not None and maze_exit is not None:
+                state.new_scene = maze_exit
+                state.go_to_map()
+                self.log(f"[agent_ctrl] debug_enter_maze -> {maze_exit.to_map}")
+            else:
+                self.log("[agent_ctrl] debug_enter_maze: no maze exit on this map")
 
         if self._map_change_pending:
             self._map_change_pending = False

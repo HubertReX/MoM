@@ -10,6 +10,7 @@ import pyscroll.data
 from animation import animator
 from camera import Camera
 from maze_generator.hunt_and_kill_maze import HuntAndKillMaze
+from maze_generator.maze import Maze
 from maze_generator.maze_utils import (
     _TIMEIT_CACHE,
     EMPTY_CELL,
@@ -123,7 +124,10 @@ class Scene(State):
             entry_point: str,
             is_maze: bool = False,
             maze_cols: int = 0,
-            maze_rows: int = 0
+            maze_rows: int = 0,
+            maze_seed: int | None = None,
+            return_map: str = "",
+            return_entry_point: str = "",
     ) -> None:
 
         super().__init__(game)
@@ -132,6 +136,13 @@ class Scene(State):
             "maze_stats",
             "maze_cols",
             "maze_rows",
+            # a maze level is reproduced from its seed alone, so both the seed and
+            # the grid it produced belong to the per-map cache
+            "maze_seed",
+            "maze",
+            # where this map's exit leads back to - per map, like everything else here
+            "return_map",
+            "return_entry_point",
             "waypoints",
             "items",
             "zones",
@@ -183,6 +194,22 @@ class Scene(State):
         self.maze_stats: dict[str, Any] = {}
         self.maze_cols = maze_cols
         self.maze_rows = maze_rows
+        # Seed of the current maze level, and the generator driven by it. Every
+        # random decision that shapes a maze - the grid, the decors, where the
+        # chests and monsters stand, which monster model each one gets - is drawn
+        # from `maze_rng`, so the save file needs to store nothing but this int to
+        # bring the whole level back. `None` means "not generated yet"; a value
+        # handed to the constructor means "reproduce this one" (loading a save).
+        self.maze_seed: int | None = maze_seed
+        self.maze_rng: random.Random = random.Random(maze_seed)
+        self.maze: Maze | None = None
+        # Where the exit of a level-1 maze leads back to. Normally filled in by
+        # `go_to_map` when the player walks in; passed to the constructor when a
+        # save drops the player straight into a dungeon. Without it,
+        # `build_tileset_map_from_maze` raised AttributeError on a directly
+        # constructed maze scene.
+        self.return_map: str = return_map
+        self.return_entry_point: str = return_entry_point
         self.waypoints: dict[str, tuple[Point, ...]] = {}
         self.items: list[ItemSprite] = []
         # self.items_defs: dict[str, pygame.Surface] = {}
@@ -629,14 +656,15 @@ class Scene(State):
                     )
                     self.exits.append(exit)
                 elif getattr(obj, "obj_type", "") == "chest":
-                    if self.is_maze and obj.name == "SmallChest_Maze":
+                    if self.is_maze and self.maze is not None and obj.name == "SmallChest_Maze":
+                        maze = self.maze
                         # maze_configs = self.game.conf.maze_configs
                         # level = self.maze_stats["current_map_level"]
                         # level_properties = maze_configs.get(level, maze_configs[len(maze_configs)])
 
                         # generate list of maze locations to put small chests
                         # use only cells with one way out
-                        candidates = find_dead_ends(self.maze)
+                        candidates = find_dead_ends(maze)
 
                         # skip start (too easy) and end (big chest will be there)
                         start = self.maze_stats["start"]
@@ -649,12 +677,14 @@ class Scene(State):
 
                         # generate small chests
                         level_properties = self.maze_stats["level_properties"]
-                        for x, y in random.sample(candidates, level_properties.small_chest_count):
+                        # maze_rng, not random: the positions have to come back
+                        # identical when this level is rebuilt from its seed
+                        for x, y in self.maze_rng.sample(candidates, level_properties.small_chest_count):
                             # blocked from walking (wall)
                             self.path_finding_grid[y][x] = STEP_COST_WALL
 
                             # recalculate grid position to map coordinates
-                            image_index = self.maze.cell_rows[y][x].image_index
+                            image_index = maze.cell_rows[y][x].image_index
                             offset = IMAGE_DIRECTION_TO_CHEST[image_index]
                             x = (MARGIN + x * SUBTILE_COLS + offset[0]) * TILE_SIZE
                             y = (MARGIN + y * SUBTILE_ROWS + offset[1]) * TILE_SIZE
@@ -672,6 +702,7 @@ class Scene(State):
                                                 copy.deepcopy(self.game.conf.chests[model_name]),
                                                 self.items_sheet,
                                                 name=_chest_name(model_name),
+                                                rng=self.maze_rng,
                                                 )
                             self.chests.append(chest)
                     else:
@@ -699,6 +730,7 @@ class Scene(State):
                                             copy.deepcopy(self.game.conf.chests[model_name]),
                                             self.items_sheet,
                                             name=_chest_name(model_name),
+                                            rng=self.maze_rng if self.is_maze else None,
                                             )
                         self.chests.append(chest)
 
@@ -772,6 +804,26 @@ class Scene(State):
 
     #############################################################################################################
 
+    def _resolve_maze_seed(self) -> int:
+        """Seed for the maze level about to be generated.
+
+        Three ways in, in priority order: a seed already on the scene (this scene
+        was built from a save and starts inside the maze), a seed waiting in
+        `pending_map_states` (the player is walking back into a level they saved
+        on), or a fresh roll for a level nobody has seen yet.
+        """
+        if self.maze_seed is not None:
+            return self.maze_seed
+
+        pending = (self.pending_map_states or {}).get(self.current_map)
+        pending_seed = getattr(pending, "maze_seed", None) if pending is not None else None
+        if pending_seed is not None:
+            return int(pending_seed)
+
+        return random.randint(0, 2**31 - 1)
+
+    #############################################################################################################
+
     def load_tileset_map(self) -> TiledMap:
         if self.is_maze:
             # check from which scene we came here
@@ -787,9 +839,16 @@ class Scene(State):
                 level_properties = maze_configs.get(level, maze_configs[max_level])
                 self.maze_cols = level_properties.maze_cols
                 self.maze_rows = level_properties.maze_rows
+                # A saved maze level is reproduced, not re-rolled: `self.maze_seed`
+                # is already set when this scene was built from a save, or when the
+                # player walks back into a level whose seed is waiting in
+                # `pending_map_states`. Otherwise this level is new - roll a seed
+                # now and keep it, so the save can bring this exact maze back.
+                self.maze_seed = self._resolve_maze_seed()
+                self.maze_rng = random.Random(self.maze_seed)
                 # generate new maze
                 self.maze = HuntAndKillMaze(self.maze_cols, self.maze_rows)
-                self.maze.generate()
+                self.maze.generate(self.maze_rng)
                 self.maze_stats = analyze_maze(self.maze)
                 self.maze_stats["level_properties"] = level_properties
                 self.maze_stats["current_map_level"] = level
@@ -804,7 +863,8 @@ class Scene(State):
                 self.maze_stats,
                 self.current_map,
                 to_map = self.return_map,
-                entry_point = self.return_entry_point
+                entry_point = self.return_entry_point,
+                rng = self.maze_rng,
             )
         else:
             # load data from pytmx
@@ -904,9 +964,13 @@ class Scene(State):
 
             # add regular monsters
             # get a `monsters_count` number of randomly selected positions from candidates list
-            for x_r, y_r in random.sample(candidates, level_properties.monsters_count):
+            # maze_rng, not random: both the positions and the model picked for each
+            # monster must be reproduced when the level is rebuilt from its seed,
+            # otherwise the saved health/position of "Bat_003" lands on a monster
+            # that is now a different creature standing somewhere else
+            for x_r, y_r in self.maze_rng.sample(candidates, level_properties.monsters_count):
                 id += 1
-                npc_model_name: str = random.choice(level_properties.monsters_list)
+                npc_model_name: str = self.maze_rng.choice(level_properties.monsters_list)
                 self.add_NPC_at_grid_pos(id, x_r, y_r, npc_model_name)
 
             # add boss monster at the end of the longest path (stairs down to next level)
@@ -919,8 +983,12 @@ class Scene(State):
         # moved here to avoid circular imports
         from characters import NPC
 
-        # make sure the name is unique
-        name = f"{model_name}_{id:03}"
+        # Unique across the whole scene, not just this level: `loaded_NPCs` is one
+        # dict shared by every map, so without the map prefix the third bat on
+        # Maze_01 and the third bat on Maze_02 were both "Bat_003" - the second
+        # level's spawn was silently dropped, and a save could not tell the two
+        # apart either.
+        name = f"{self.current_map}_{model_name}_{id:03}"
         # recalculate grid position to word coordinates
         pos = ((MARGIN + X_CENTER + x * SUBTILE_COLS) * TILE_SIZE,
                (MARGIN + Y_CENTER + y * SUBTILE_ROWS) * TILE_SIZE)
@@ -1350,6 +1418,10 @@ class Scene(State):
         if self.weather:
             self.weather.stop_all()
 
+        # captured before `is_maze` is overwritten below - the autosave policy at the
+        # end of this method needs to know what we are leaving, not what we enter
+        was_maze = self.is_maze
+
         self.return_map = self.current_map
         self.return_entry_point = self.new_scene.return_entry_point
 
@@ -1359,6 +1431,11 @@ class Scene(State):
         self.is_maze = self.new_scene.is_maze
         self.maze_cols = self.new_scene.maze_cols
         self.maze_rows = self.new_scene.maze_rows
+        # The seed belongs to the level we are leaving. Clearing it lets
+        # `_resolve_maze_seed` decide for the level we are entering: reproduce the
+        # one waiting in `pending_map_states`, or roll a fresh one. A cached level
+        # gets its seed back from `restore_map` (it is in `properties`).
+        self.maze_seed = None
 
         if self.current_map not in self.loaded_maps:
             self.reset_sprite_groups()
@@ -1388,8 +1465,15 @@ class Scene(State):
         # firing it now keeps the sweep quiet when it lands.
         self.quests.on_event("map_change")
 
-        if hasattr(self.game, "save_manager"):
-            self.game.save_manager.save(0)
+        # Autosave into slot 0 on a map change - including the one that takes the
+        # player from the overworld down into the dungeon, which is the only save a
+        # maze run ever gets (manual saving stays blocked in a maze, see
+        # Game.update). It gets a toast because it silently overwrites slot 0 and
+        # the player has to know.
+        if (hasattr(self.game, "save_manager")
+                and self.game.save_manager.should_autosave_on_map_change(was_maze)
+                and self.game.save_manager.save(0)):
+            self.add_notification(_("notify.autosaved_slot", n=1), NotificationTypeEnum.info)
 
         self.transition.exiting = False
 

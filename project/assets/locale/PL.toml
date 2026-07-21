@@ -227,6 +227,7 @@ cannot_save_dungeon = "Nie można zapisać gry w lochu"
 no_free_slots = "Brak wolnych slotów na zapis gry"
 game_saved_slot = "Gra zapisana w slocie [num]{n}[/num]"
 failed_save = "Błąd zapisu gry"
+autosaved_slot = "Autozapis w slocie [num]{n}[/num]"
 
 # === Demo TextInput ===
 

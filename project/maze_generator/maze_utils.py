@@ -628,12 +628,14 @@ def place_tile_randomly(
     tile_gids: dict[str, int],
     layer: pytmx.TiledTileLayer,
     tile_name: str,
-    tiles_count: int
+    tiles_count: int,
+    rng: random.Random | None = None,
 ) -> None:
+    r = rng or random
     count: int = 0
     while count < tiles_count:
-        r_x = random.randint(0, maze.num_cols - 1)
-        r_y = random.randint(0, maze.num_rows - 1)
+        r_x = r.randint(0, maze.num_cols - 1)
+        r_y = r.randint(0, maze.num_rows - 1)
         # tile_gid = random.choice(walls_decors_gids)
         x = (r_x * SUBTILE_ROWS) + MARGIN + 3
         y = (r_y * SUBTILE_COLS) + MARGIN + 3
@@ -662,6 +664,7 @@ def build_tileset_map_from_maze(
     current_map: str,
     to_map: str,
     entry_point: str,
+    rng: random.Random | None = None,
 ) -> None:
     """
     Builds a final maze map from a maze grid.
@@ -701,6 +704,10 @@ def build_tileset_map_from_maze(
     # if "entry_points" in self.layers:
     #     for obj in tileset_map.get_layer_by_name("entry_points"):
     #         self.entry_points[obj.name] = vec(obj.x, obj.y)
+    # every draw below must come from `rng` so the decorated map is reproducible
+    # from the seed stored in the save (see Maze.generate)
+    r = rng or random
+
     global BACKGROUND_CELL, STAIRS_TILES_POS, IMAGE_DIRECTION_TO_IDX, RETURN_CELL
     BACKGROUND_CELL = clean_tileset_map.get_layer_by_name("background").data[0][0]
     # print(f"{BACKGROUND_CELL=}")
@@ -861,12 +868,12 @@ def build_tileset_map_from_maze(
             # for cell_id in SPECIAL_WALLS_IDS:
             #     print(clean_tileset_map.gidmap[cell_id])
             while elements_cnt < ELEMENTS_MAX:
-                r_x = random.randint(0, maze.num_cols - 1)
-                r_y = random.randint(0, maze.num_rows - 1)
+                r_x = r.randint(0, maze.num_cols - 1)
+                r_y = r.randint(0, maze.num_rows - 1)
                 # tiles with visible wall at the top (so there is a place to put decors)
                 image_index = maze.cell_rows[r_y][r_x].image_index
                 if image_index in ELEMENTS_OFFSETS_MAP:  # .keys():
-                    tile_gid = random.choice(list(elements_gids.values()))
+                    tile_gid = r.choice(list(elements_gids.values()))
                     x = (r_x * SUBTILE_ROWS) + MARGIN + int(ELEMENTS_OFFSETS_MAP[image_index].x)
                     y = (r_y * SUBTILE_COLS) + MARGIN + int(ELEMENTS_OFFSETS_MAP[image_index].y)
                     layer.data[y][x] = tile_gid
@@ -913,11 +920,11 @@ def build_tileset_map_from_maze(
     # walls_decors_gids = [get_gid_from_tmx_id(cell_id, clean_tileset_map) for cell_id in WALLS_DECORS_IDS]
     wall_decors_cnt = 0
     while wall_decors_cnt < WALL_DECORS_MAX:
-        r_x = random.randint(0, maze.num_cols - 1)
-        r_y = random.randint(0, maze.num_rows - 1)
+        r_x = r.randint(0, maze.num_cols - 1)
+        r_y = r.randint(0, maze.num_rows - 1)
         # tiles with visible wall at the top (so there is a place to put decors)
         if maze.cell_rows[r_y][r_x].image_index >= 8:
-            tile_gid = random.choice(list(walls_decors_gids.values()))
+            tile_gid = r.choice(list(walls_decors_gids.values()))
             x = (r_x * SUBTILE_ROWS) + MARGIN + WALLS_DECORS_OFFSET_RANGE_X
             y = (r_y * SUBTILE_COLS) + MARGIN + WALLS_DECORS_OFFSET_RANGE_Y
             # print(tile_gid)
@@ -944,7 +951,7 @@ def build_tileset_map_from_maze(
     # put random items on the map
 
     for item_name, count in ITEMS_MAX_COUNT.items():
-        place_tile_randomly(maze, items_gids, items_layer, item_name, count)
+        place_tile_randomly(maze, items_gids, items_layer, item_name, count, rng=r)
     # print(clean_tileset_map.gidmap)
     # stairs_id = get_gid_from_tmx_id(STAIRS_CELL, clean_tileset_map)
 

@@ -34,7 +34,7 @@ pretty.install()
 
 # 0.2: sentiment keys renamed to author-facing names (kind/weak/...) - older
 # saves are incompatible and rejected on load with a terminal message.
-VERSION = 0.2
+VERSION = 0.3
 GAME_NAME = "Misadventures of Malachi"
 LANG = "PL"
 UI_STRINGS: dict[str, dict[str, str]] = {}

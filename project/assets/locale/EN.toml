@@ -223,6 +223,7 @@ cannot_save_dungeon = "Cannot save in the dungeon"
 no_free_slots = "No free save slots"
 game_saved_slot = "Game saved in slot {n}"
 failed_save = "Failed to save game"
+autosaved_slot = "Autosaved in slot {n}"
 
 # === TextInput Demo ===
 

@@ -47,8 +47,9 @@ class HuntAndKillMaze(Maze):
 
     # Hunt and kill generation algorithm
 
-    def generate(self) -> None:
-        current_cell: Cell | None = self.get_random_cell()
+    def generate(self, rng: random.Random | None = None) -> None:
+        r = rng or random
+        current_cell: Cell | None = self.get_random_cell(rng)
 
         while current_cell is not None:
             neighbors = current_cell.get_all_neighbors()
@@ -58,7 +59,7 @@ class HuntAndKillMaze(Maze):
                     unvisited_neighbors.append(neighbor)
 
             if len(unvisited_neighbors) > 0:
-                neighbor = random.choice(unvisited_neighbors)
+                neighbor = r.choice(unvisited_neighbors)
                 current_cell.link(neighbor)
                 current_cell = neighbor
             else:
@@ -73,7 +74,7 @@ class HuntAndKillMaze(Maze):
 
                         if len(visited_neighbors) > 0:
                             current_cell = cell
-                            neighbor = random.choice(visited_neighbors)
+                            neighbor = r.choice(visited_neighbors)
                             current_cell.link(neighbor)
                             break
 

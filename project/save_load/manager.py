@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import copy
-import random
 import time
 from typing import TYPE_CHECKING, Any, cast
 
@@ -146,6 +145,21 @@ class SaveManager:
                 oldest_idx = i
         return oldest_idx
 
+    def should_autosave_on_map_change(self, was_maze: bool) -> bool:
+        """Whether a map change should autosave slot 0.
+
+        A dungeon run gets exactly one autosave: the step from the overworld into
+        maze level 1. Descending further, climbing back up, and walking out to the
+        surface all leave it alone, so slot 0 keeps pointing at the mouth of the
+        dungeon instead of following the player around inside it.
+
+        All three excluded cases share one property - the map being *left* is a
+        maze - so that is the whole rule. Ordinary overworld map changes still
+        autosave, and so does the overworld -> maze-level-1 step, because there the
+        map being left is not a maze.
+        """
+        return not was_maze
+
     def pick_quick_save_slot(self) -> int | None:
         """Pick a slot for quick save: first free, falling back to oldest occupied."""
         free = self.find_first_free_slot()
@@ -239,6 +253,10 @@ class SaveManager:
                 chests=self._build_chest_states_from_cache(cached),
                 ground_items=self._build_ground_items_from_cache(cached),
                 destroyed_walls=self._build_destroyed_walls_from_cache(cached),
+                maze_seed=cached.get("maze_seed"),
+                maze_level=(cached.get("maze_stats") or {}).get("current_map_level"),
+                maze_return_map=cached.get("return_map", "") or "",
+                maze_return_entry_point=cached.get("return_entry_point", "") or "",
                 dead_monsters=self._build_dead_monsters_from_cache(cached),
             )
 
@@ -250,6 +268,8 @@ class SaveManager:
             destroyed_walls=self._build_destroyed_walls(scene),
             maze_seed=self._build_maze_seed(scene),
             maze_level=self._build_maze_level(scene),
+            maze_return_map=getattr(scene, "return_map", "") if scene.is_maze else "",
+            maze_return_entry_point=getattr(scene, "return_entry_point", "") if scene.is_maze else "",
             dead_monsters=self._build_dead_monsters(scene),
         )
 
@@ -347,9 +367,15 @@ class SaveManager:
         return list(getattr(scene, "destroyed_walls", None) or [])
 
     def _build_maze_seed(self, scene: Scene) -> int | None:
+        """The seed this maze level was actually generated from.
+
+        Used to roll a *fresh* random number here, which made the field useless:
+        nothing read it back, and had anything tried, it would have rebuilt a
+        different dungeon than the one the player was standing in.
+        """
         if not scene.is_maze:
             return None
-        return random.randint(0, 2**31 - 1)
+        return scene.maze_seed
 
     def _build_maze_level(self, scene: Scene) -> int | None:
         if not scene.is_maze or not hasattr(scene, "maze_stats"):
@@ -433,10 +459,21 @@ class SaveManager:
             if isinstance(state, Scene):
                 state.exit_state()
 
+        # A save can put the player inside a maze (entering one autosaves slot 0),
+        # and a maze level is not read from a TMX - it is regenerated. Scene builds
+        # its map in __init__, so `is_maze` and the seed have to be known now; a
+        # moment later is too late.
+        current_map_state = save.maps.get(save.player.map_name)
+        maze_seed = current_map_state.maze_seed if current_map_state else None
+
         new_scene = Scene(
             game,
             save.player.map_name,
             save.player.entry_point,
+            is_maze=maze_seed is not None,
+            maze_seed=maze_seed,
+            return_map=current_map_state.maze_return_map if current_map_state else "",
+            return_entry_point=current_map_state.maze_return_entry_point if current_map_state else "",
         )
         new_scene.enter_state()
 
@@ -661,7 +698,14 @@ class SaveManager:
                     npc.restore_dialog_state(saved.dialog_state)
 
     def _apply_maze_mobs(self, scene: Scene, ms: MapState) -> None:
-        pass
+        """Nothing to do: maze monsters are rebuilt by regenerating the level.
+
+        Seeding the level's generator with `ms.maze_seed` puts the same monsters,
+        of the same models, in the same cells, under the same names - so the
+        health / position / dead state in `ms` is applied by `_apply_npc_states`
+        like on any hand-made map. Kept as an explicit no-op so the next reader
+        does not go looking for the missing maze branch.
+        """
 
     def _apply_game_clock(self, scene: Scene, clock: GameClockState) -> None:
         scene.day = clock.day

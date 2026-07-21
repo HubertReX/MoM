@@ -46,9 +46,10 @@ class Maze:
                 yield cell
 
     #############################################################################################################
-    def get_random_cell(self) -> Cell:
-        x = random.randint(0, self.num_cols - 1)
-        y = random.randint(0, self.num_rows - 1)
+    def get_random_cell(self, rng: random.Random | None = None) -> Cell:
+        r = rng or random
+        x = r.randint(0, self.num_cols - 1)
+        y = r.randint(0, self.num_rows - 1)
         return self.cell_rows[y][x]
 
     #############################################################################################################
@@ -56,6 +57,13 @@ class Maze:
         return self.num_rows * self.num_cols
 
     #############################################################################################################
-    def generate(self) -> None:
+    def generate(self, rng: random.Random | None = None) -> None:
+        """Build the maze. ``rng`` makes the layout reproducible from a seed.
+
+        The save file stores only that seed, so every draw made here (and in the
+        chest / monster placement that follows) must come from ``rng`` rather than
+        the global ``random`` - otherwise anything else touching ``random`` between
+        two runs shifts the stream and the maze comes back different.
+        """
         raise NotImplementedError(
             "[red]error[/] This is abstract class. 'generate' method needs to be implemented in subclass.")
