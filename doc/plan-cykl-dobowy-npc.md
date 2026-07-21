@@ -1,0 +1,470 @@
+# Cykl dobowy NPC + odnawianie zasobów handlarzy
+
+Dokument decyzyjny z tabelami opcji: [cykl-dobowy-npc.html](_attachements/cykl-dobowy-npc.html)
+
+Wersja 3, po drugiej turze uwag.
+
+## Kontekst
+
+Dziś każdy NPC ma jedną statyczną łamaną z warstwy `waypoints` w Tiled (kluczowaną nazwą NPC, `scene.py:424`), po której chodzi w kółko bez końca. Doba trwa 96 sekund realnych, a jedyne co dzieje się na jej przełomie to `Scene.update_next_day()` (`scene.py:1446`) wołające `restock_items()` na każdym handlarzu.
+
+Ten mechanizm jest zepsuty w trzech miejscach naraz:
+
+1. **`sell_all_bought_items()` (`characters.py:298`) tylko dodaje pieniądze** - wartość wszystkiego, co gracz sprzedał, wpada do sakiewki handlarza i nigdy z niej nie wychodzi. Sakiewka rośnie w nieskończoność.
+2. **`npc.model` to współdzielony obiekt configu** (`game.conf.characters[model_name]`), więc `model.money` jest globalne. Dotyczy to również gracza - `pick_up()` robi `self.model.money += value` na tym samym obiekcie. Dwa NPC-e z tym samym `model_name` dzielą jedną sakiewkę, a nowa gra po starej dziedziczy stan.
+3. **Limit fizycznie nigdy się nie aktywuje** - patrz pomiar poniżej.
+
+Cel: cykl życia postaci sterowany danymi, nie kodem, z czystym rozdziałem Tiled / konfiguracja / kod. Odnawianie handlarzy jest konsumentem tego samego haka przełomu dnia.
+
+### Pomiar ekonomii
+
+| Wielkość | Wartość |
+|---|---|
+| Udźwig gracza | 15 kg, 6 slotów |
+| Najlepsza gęstość klejnotu (`gem_small_orange`) | 60 zł/kg |
+| Maksymalny łup w klejnotach | ~900 zł |
+| Sakiewka JOHNY'ego | 3000 zł |
+
+Sakiewka jest 3,3x za bogata, żeby cokolwiek dławić - gracz fizycznie nie jest w stanie jej wyczerpać. Dlatego plan skupia się na architekturze, a liczby zostają w CSV jako domena autora.
+
+Obserwacja poboczna, poza zakresem zadania: klejnoty "big" są per kilogram gorsze od "small" w każdym kolorze, więc gracz optymalizujący zł/kg zostawia duże klejnoty na podłodze.
+
+### Nie-cele, świadomie
+
+- Brak symulacji potrzeb (głód, energia, nastrój) i relacji między NPC-ami. To nie ma być The Sims.
+- Brak dynamicznych drzwi i wnętrz budynków.
+- Brak kolejkowania i budżetowania A* dla systemu, który jeszcze nie istnieje.
+- Brak strojenia liczb balansowych.
+
+## Trójpodział odpowiedzialności
+
+| Warstwa | Odpowiada za | Nośnik | Kto edytuje |
+|---|---|---|---|
+| Tiled | *Gdzie* - nazwane punkty na mapie i trasy | warstwa obiektów `places` (same nazwy) + istniejąca `waypoints` | edytor map |
+| Postacie | *Czyje jest które miejsce* - destynacje per postać | kolumny `home`, `work`, `social`, `hobby` w `characters.csv` | istniejący pipeline CSV |
+| Rutyny | *Kiedy i co* - rytm dnia wspólny dla wielu postaci | `project/config_model/routines.toml` | ręcznie, w edytorze tekstu |
+| Kod | *Jak* - generyczny wykonawca, zero logiki per-NPC | `project/npc_schedule.py` | Python |
+
+Test poprawności podziału:
+
+- "kowal ma chodzić na obiad o 12 zamiast o 13" - jedna liczba w TOML-u
+- "nowe miejsce w wiosce" - jeden nazwany obiekt w Tiled
+- "ten NPC ma pracować gdzie indziej" - jedna komórka w `characters.csv`
+- "cała wioska ma wstawać godzinę wcześniej" - jedna liczba w TOML-u
+
+Jeśli któreś wymaga Pythona, podział jest zły.
+
+### Format konfiguracji: TOML
+
+Nie YAML. `settings.py:5-7` już importuje `tomllib` z fallbackiem na `tomli` dla weba, `tomli==2.2.1` jest w `requirements.txt`, a `load_ui_strings()` (`settings.py:130`) to gotowy wzorzec ładowania do skopiowania. PyYAML byłby nową zależnością doinstalowywaną także w pygbag. TOML spełnia zasadę "JSON tylko maszynowo generowany" i nie kosztuje nic.
+
+Rutyny nie idą do `characters.csv` - zagnieżdżona lista slotów nie mieści się w płaskiej kolumnie, a CSV jest generatorem `config.json`.
+
+## Model danych
+
+### Gdzie wiąże się "które miejsce należy do której postaci"
+
+W wersji 2 miejsca miały w Tiled własności `tag` i `owner`. To nie działa, bo **ta sama karczma jest miejscem pracy barmana i miejscem odpoczynku wszystkich pozostałych**. Rola miejsca nie jest własnością obiektu na mapie - jest relacją między postacią a miejscem, a własność obiektu potrafi wyrazić tylko jedną odpowiedź.
+
+Rozwiązanie: **destynacje w `characters.csv`, obiekty w Tiled tylko nazwane.**
+
+| Kolumna | Znaczenie | Przykład |
+|---|---|---|
+| `home` | gdzie śpi | BARMAN: `tavern`, JOHNY: `house_3` |
+| `work` | gdzie pracuje | BARMAN: `tavern`, JOHNY: `market_stall_1`, FARMER: `field_north` |
+| `social` | gdzie spędza przerwę | JOHNY: `tavern`, FARMER: `well` |
+| `hobby` | miejsce charakterystyczne dla postaci | JOHNY: `pier`, KOWAL: `shrine` |
+
+Karczma rozwiązana: BARMAN ma `work = tavern`, JOHNY ma `social = tavern`. Jeden obiekt w Tiled, dwie różne role, zero duplikatów. Rutyna mówi tylko "o 13:00 idź do swojego `social`" i nie wie, czym to jest dla konkretnej postaci.
+
+Jedna postać ma najwyżej jedno miejsce danego typu. Lista typów jest zamknięta.
+
+### Warstwa `places` w Tiled
+
+Skoro role przeniosły się do CSV, warstwa upraszcza się do **nazwanych punktów** - żadnych custom properties, żadnego `tag`, żadnego `owner`.
+
+| Element | Rola |
+|---|---|
+| nazwa obiektu | jedyne, co niesie obiekt: `tavern`, `well`, `market_stall_1`, `house_3`, `field_north`. Musi być unikalna w obrębie mapy |
+| pozycja | gdzie NPC ma dojść; dla `sleep` to próg, na którym następuje zanik |
+| `radius` (opcjonalne) | jedyna dopuszczona własność - nadpisuje `wander_radius` z `[defaults]` dla tego miejsca |
+
+Istniejąca warstwa `waypoints` zostaje bez zmian i zyskuje drugie życie jako trasa dla aktywności `patrol`.
+
+### Trzy warianty `at`
+
+| Zapis | Rozwiązanie | Do czego |
+|---|---|---|
+| `at = "type:work"` | kolumna `work` postaci -> nazwa obiektu -> pozycja | domyślny sposób; to on czyni rutynę uniwersalną |
+| `at = "location:well"` | wprost nazwa obiektu z warstwy `places` | furtka na wyjątki i miejsca wspólne dla wszystkich |
+| `at = "route:patrol_north"` | nazwana łamana z warstwy `waypoints` | patrole; jedyny wariant, w którym celem jest trasa, nie punkt |
+
+Fallback: gdy `type:X` nie jest zdefiniowane dla postaci (pusta komórka), NPC zostaje tam, gdzie jest - krok degraduje się do `idle` w bieżącym miejscu, plus ostrzeżenie w trybie debug. Niekompletne dane nigdy nie wywalają gry, a brak domów dla wszystkich nie blokuje wdrożenia.
+
+### `routines.toml`
+
+Kroki rutyny to zwięzła tablica tabel `[[routine.X.slot]]`. Wariant z nazwanymi krokami (`morning`, `lunch`) dawał czytelną etykietę, ale wymagał pełnego `[routine.townsfolk.slots.morning]` w każdym nagłówku - etykieta nie jest warta tego prefiksu. To, czym krok jest, i tak widać z pól `from` i `at` tuż pod nim.
+
+Naturalny odruch, czyli `[[routine.townsfolk.slots]]` a pod nim `[[morning]]`, parsuje się bez błędu, ale buduje złą strukturę. Sprawdzone pod `tomllib`:
+
+```text
+{'routine': {'townsfolk': {'slots': [{}]}},
+ 'morning': [{'from': '06:30'}]}
+```
+
+`[[morning]]` to nagłówek bezwzględny, nie zagnieżdżony - ląduje na najwyższym poziomie dokumentu, odłączony od rutyny, a `slots` zostaje pustą listą. TOML nie ma zagnieżdżania przez wcięcie, ścieżkę zawsze pisze się w nagłówku w całości.
+
+**Kolejność kroków bierze się z pola `from`, nie z kolejności w pliku.** Przestawienie bloków czy dopisanie kroku w środku nigdy niczego nie psuje. Sortowanie po `from` obsługuje też noc przechodzącą przez północ - u strażnika krok o 02:00 jest aktywny do 06:00, a o 23:00 aktywny jest krok wieczorny.
+
+```toml
+# Rutyny NPC.
+#
+# `at` ma trzy warianty:
+#   type:<typ>       -> kolumna `home`/`work`/`social`/`hobby` w characters.csv
+#                       wskazuje nazwe obiektu z warstwy `places` w Tiled.
+#                       To on czyni rutyne uniwersalna - kazda postac idzie
+#                       "do swojego" miejsca danego typu.
+#   location:<nazwa> -> wprost nazwa obiektu z warstwy `places` (wyjatki,
+#                       miejsca wspolne dla wszystkich)
+#   route:<nazwa>    -> nazwana lamana z istniejacej warstwy `waypoints`
+#
+# Kolejnosc wykonania bierze sie z pola `from`, nie z kolejnosci w pliku.
+
+[defaults]
+wander_radius       = 3     # promien mikro-wedrowki, w kaflach
+slot_jitter_minutes = 20    # +/- , deterministycznie z hasha nazwy NPC
+
+
+# =====================================================================
+#  townsfolk - kupiec, kowal, barman: dom, praca, przerwa, praca, dom
+# =====================================================================
+
+[[routine.townsfolk.slot]]
+from     = "06:30"
+at       = "type:home"
+activity = "idle"
+
+[[routine.townsfolk.slot]]
+from     = "08:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.townsfolk.slot]]
+from     = "13:00"
+at       = "type:social"
+activity = "wander"
+
+[[routine.townsfolk.slot]]
+from     = "14:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.townsfolk.slot]]
+from     = "18:30"
+at       = "type:hobby"
+activity = "wander"
+
+[[routine.townsfolk.slot]]
+from     = "20:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  farmer - wstaje przed switem, dluga praca w polu, wczesniej spi
+# =====================================================================
+
+[[routine.farmer.slot]]
+from     = "04:30"
+at       = "type:work"
+activity = "stand"
+
+[[routine.farmer.slot]]
+from     = "11:00"
+at       = "location:well"      # wspolna studnia, nie "swoja" - stad location:
+activity = "idle"
+
+[[routine.farmer.slot]]
+from     = "12:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.farmer.slot]]
+from     = "18:00"
+at       = "type:social"
+activity = "wander"
+
+[[routine.farmer.slot]]
+from     = "21:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  guard - patrol dzienny, patrol wieczorny, krotka noc
+# =====================================================================
+
+[[routine.guard.slot]]
+from     = "06:00"
+at       = "route:patrol_north"
+activity = "patrol"
+
+[[routine.guard.slot]]
+from     = "18:00"
+at       = "route:patrol_south"
+activity = "patrol"
+
+[[routine.guard.slot]]
+from     = "02:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  Przypisanie rutyn do postaci. Klucz = nazwa obiektu NPC z Tiled.
+# =====================================================================
+
+[assign]
+JOHNY    = "townsfolk"
+BART     = "townsfolk"
+KOWAL    = "townsfolk"
+BARMAN   = "townsfolk"
+FARMER   = "farmer"
+STRAZNIK = "guard"
+```
+
+Zmiany względem wersji 2:
+
+- Rutyna `farmer` **przywrócona** - ma inny rytm, nie tylko inne miejsce pracy: wstaje o 04:30, ma jedną długą przerwę w południe zamiast dwóch i kładzie się o 21:00. Scalenie jej z `townsfolk` w v2 było błędem.
+- `at` **rozszerzone** o jawne prefiksy `type:` / `location:` / `route:`. Bez nich nie było widać, czy chodzi o typ destynacji, czy o konkretny obiekt.
+- `tag` i `owner` w Tiled **usunięte** - zastąpione kolumnami w `characters.csv`.
+- `fade_duration` usunięte już w v2 - nie robiło nic, a jako stała renderowania należy do `settings.py`.
+
+### Aktywności
+
+Pięć wartości, nic więcej. Każda mapuje się na kod, który już istnieje - żadna nie wymaga nowego systemu ruchu.
+
+| Aktywność | Zachowanie | Co reużywa |
+|---|---|---|
+| `sleep` | dojście do progu miejsca, zanik, wypisanie z aktualizacji do rana | istniejące grupy sprite'ów |
+| `stand` | stanie w miejscu; dla handlarza to godziny otwarcia | `Idle` / `Bored` z `npc_state.py` |
+| `wander` | losowy spacer w promieniu wokół miejsca | `get_random_safe_pos()`, `characters.py:597` |
+| `patrol` | podążanie nazwaną łamaną | `follow_waypoints()` |
+| `idle` | stanie + emotka | `EmoteSprite` |
+
+### Parametry żywości
+
+Dwa do dodania, trzeci już istnieje:
+
+1. **`slot_jitter_minutes`** - każdy NPC przesuwa granice slotów o deterministyczny offset z hasha nazwy. Nic nie jest zsynchronizowane, wioska nie przeskakuje o 8:00. Około 80% wrażenia życia za ~5 linii, a przy okazji rozkłada w czasie przeliczanie tras.
+2. **`wander_radius`** - postać dryfuje po swoim miejscu zamiast stać jak słup.
+3. **Zróżnicowana prędkość** - już istnieje (`speed = random.choice([speed_walk, speed_run])`, `characters.py:205`).
+
+## Architektura kodu
+
+### `NpcRuntime` - fundament
+
+Rozdzielenie stanu mutowalnego od współdzielonego `Character` z configu, dla NPC i gracza.
+
+Warstwa zapisu już ma właściwy kształt: `NPCState` (`save_load/models.py:273`) trzyma `money` i `inventory` per nazwa NPC, `manager.py:278` zapisuje, `manager.py:699` przywraca. Zostaje więc obiekt runtime w pamięci plus nowe pola w `NPCState`.
+
+- Nowe pola instancyjne: `money`, `stock`, `routine_key`.
+- `Character` z configu staje się tylko do odczytu - żaden kod nie pisze do `npc.model.*`.
+- `NPCState` dostaje nowe pola z wartościami domyślnymi, żeby stare zapisy się wczytywały.
+
+### `npc_schedule.py` - dostawca celu, nie drugi kontroler
+
+Harmonogram nie steruje ruchem. Ustawia `npc.goal = (place, activity)`, a istniejący FSM z `npc_state.py` decyduje jak tam dotrzeć. Dwa systemy piszące do `npc.vel` to gwarantowany bug "NPC drga w drzwiach".
+
+- `Talk` jest stanem pochłaniającym - zmiana slotu w trakcie dialogu jest kolejkowana i stosowana po zamknięciu panelu. Inaczej handlarz odchodzi w środku transakcji, a `TradePanel` zostaje z wiszącą referencją (`trade.py:120`).
+- Godziny otwarcia sprawdzane tylko przy otwarciu panelu, nigdy co klatkę.
+
+### Hak przełomu dnia
+
+`Scene.update_next_day()` przechodzi na `apply_days(n)`. Powrót z wyprawy trwającej trzy doby ma zadziałać jednym wywołaniem, więc każdy krok dzienny musi być funkcją stanu i liczby dni, a nie pętlą po dniach.
+
+Losowanie musi być zaziarnione: `Random(hash((save_seed, day, npc_name)))`. Inaczej gracz przeładowuje zapis, aż handlarz będzie miał to, czego szuka. To także warunek konieczny zapowiadania popytu na jutro (opcja N1).
+
+### Odnawianie sakiewki: regeneracja do limitu
+
+```text
+money = min(money_cap, money + n_dni * round(money_cap * money_regen_pct))
+```
+
+Regeneracja liniowa z sufitem jest domknięta wzorem, więc pozostaje N-bezpieczna - powrót po trzech dobach to jedno wywołanie, nie pętla. (Procent składany od aktualnego stanu nie miałby tej własności.)
+
+Przykład dla JOHNY'ego, `money_cap` 3000, regeneracja 25% czyli 750/dobę, po opróżnieniu sakiewki do zera:
+
+| Dzień | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| Sakiewka | 0 | 750 | 1500 | 2250 | 3000 |
+
+Pełna odbudowa zajmuje cztery doby. To jest ten delikatny nacisk na sukcesywne zdobywanie i sprzedawanie - gracz, który opróżni handlarza, ma powód, żeby przez kilka dni sprzedawać komuś innemu albo mniej naraz.
+
+Parametry w CSV: `money_cap`, `money_regen_pct` (domyślnie 0,25). Stan bieżący `money` żyje w `NpcRuntime` i w zapisie, nie w configu.
+
+Dodatkowo: przelosowanie asortymentu o świcie **wymazuje towar skupiony od gracza**. Bez tego `max_carry_weight` handlarza zapycha się złomem gracza między sesjami i handlarz na stałe przestaje kupować.
+
+### Sprzedaż: bez zmian mechaniki
+
+Handel jest i zostaje **po jednej sztuce** na naciśnięcie klawisza (`characters.py:1494-1518` woła `drop_item()`, cena liczona dla jednego przedmiotu).
+
+To jest dobra wiadomość: handel po 1 sztuce plus skończona sakiewka *już strukturalnie jest* stopniową sprzedażą. Gracz klika, patrzy jak sakiewka topnieje, i w pewnym momencie kolejne kliknięcie nie przechodzi. Nie trzeba żadnej nowej mechaniki - trzeba tylko, żeby sakiewka faktycznie się kończyła i żeby gracz widział dlaczego.
+
+| Element | Stan | Do zrobienia |
+|---|---|---|
+| Sakiewka handlarza w panelu | `_draw_merchant_stats` (`trade.py:131`) już rysuje pieniądze i wagę | gotowe |
+| Powód odmowy | trzy osobne powiadomienia: pieniądze, waga, sloty (`characters.py:1302-1341`) | gotowe |
+| Sufit sakiewki widoczny | panel pokazuje samo `money`, bez `money_cap` | pokazać `money / money_cap`, na wzór istniejącego wiersza z wagą |
+
+## Brakujące kolumny w `characters.csv`
+
+Zgłoszone jako sprawa poboczna, ale wiązanie destynacji i tak wymaga dopisania kolumn do tego pliku, więc trafia do planu.
+
+**Nie brakuje kodu - plik jest po prostu nieaktualny.** `import_entities.py` jest symetryczny: `_export_csv` zbiera nazwy kolumn ze wszystkich encji w sekcji (`for v in section.values(): for k in v`), więc pole obecne u choćby jednej postaci trafia do nagłówka. `characters.csv` ma dziś 17 kolumn, a ponowny eksport wygeneruje 24.
+
+| Kolumna | Typ | Kto ją dziś ma w `config.json` |
+|---|---|---|
+| `money` | int | 12 postaci: Player, JOHNY, FRED, BART, ROB, ROBIN, MARRY, HAMMER_HOAXHEART, BARMAN_ABSINTHRAYNER, CLAPBACK_SWORD, POTIONEER_PUZZLEMINT, MADAME_SARCASMIA |
+| `items` | lista | Player, JOHNY, BART, SNAKE_01, MADAME_SARCASMIA |
+| `is_merchant` | bool | JOHNY, BART |
+| `tradeable_items_types` | lista | JOHNY |
+| `max_carry_weight` | float | JOHNY, BART |
+| `allowed_zones` | lista | 11 zwierząt: FISH_RED, DOG_ORANGE, DOG_PURPLE, CHICKEN_*, PIG, COW, HORSE, FROG |
+| `max_health` | int | nie zgłoszone, ale też brakuje |
+
+Jak to zrobić:
+
+```bash
+just import-entities --export
+```
+
+Round-trip jest bezpieczny, ale warto obejrzeć diff. Eksport wypisuje pustą komórkę dla pola, którego postać nie ma, a import pomija puste komórki (`if raw == "": continue`), więc model użyje wartości domyślnej - puste zostaje puste. Mimo to pierwszy przebieg przepisuje cały plik (kolejność kolumn, sortowanie kluczy, formatowanie list), więc diff będzie duży.
+
+#### Kolumny listowe: przecinek zamiast JSON-a
+
+Dziś `_export_csv` zapisuje listy jako JSON w komórce (`["water","shore"]`). To jedyne miejsce, gdzie JSON wraca tylnymi drzwiami do pliku edytowanego ręcznie, i jest nieprzyjemne w edycji. Zmiana: listy zapisywane jako wartości rozdzielone przecinkiem.
+
+| Kolumna | Dziś | Po zmianie |
+|---|---|---|
+| `allowed_zones` | `["water","shore"]` | `water,shore` |
+| `tradeable_items_types` | `["gem"]` | `gem` |
+| `items` | `["life_pot","life_pot","fish"]` | `life_pot,life_pot,fish` |
+
+Separator kolumn to średnik, więc przecinek jest wolny i nie trzeba niczego cytować. Po stronie odczytu `parse_value` przyjmuje oba zapisy: najpierw próba JSON (żeby istniejące komórki dalej działały), a gdy to nie jest lista - podział po przecinku z obcięciem białych znaków. Pusta komórka nadal oznacza "nie nadpisuj".
+
+Recepta `import-entities` dostaje przelot argumentów, więc eksport to `just import-entities --export` - bez mnożenia recept.
+
+Do tego samego pliku dochodzą cztery kolumny destynacji: `home`, `work`, `social`, `hobby`. Trzeba je dodać także do modelu postaci (`config.py` i `config_pydantic.py`) z domyślną wartością pustego stringa, żeby importer je rozpoznał.
+
+## Pliki
+
+Nowe:
+
+- `project/config_model/routines.toml`
+- `project/npc_schedule.py`
+- warstwa obiektów `places` w mapie Tiled - nazwane punkty
+
+Modyfikowane:
+
+- `project/characters.py` - `NpcRuntime`, `goal`, przepisanie `restock_items` / `sell_all_bought_items`
+- `project/npc_state.py` - `Talk` pochłaniający, konsumpcja `npc.goal`
+- `project/scene.py` - wczytanie warstwy `places` (obok `waypoints`, ~`:424`), `update_next_day` -> `apply_days(n)`, gating klawisza debug za `IS_DEBUG_MODE`
+- `project/save_load/models.py` + `manager.py` - nowe pola `NPCState`, domyślne wartości dla starych zapisów
+- `project/ui/panels/trade.py` - sakiewka jako `bieżąca / sufit`
+- `project/config_model/config.py` + `config_pydantic.py` - `money_cap`, `money_regen_pct`, pula asortymentu, cztery kolumny destynacji
+- `project/config_model/characters.csv` - regeneracja przez `--export` (7 brakujących kolumn) + 4 kolumny destynacji
+- `project/config_model/import_entities.py` - listy po przecinku, odczyt tolerujący też stary JSON
+- `Justfile` - przelot argumentów w `import-entities`
+
+## Kolejność budowy
+
+1. `NpcRuntime` + rozdzielenie od configu + pola w zapisie. Blokuje wszystko inne; naprawia przy okazji globalny bug ze złotem gracza.
+2. Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu. To realizuje cel zadania.
+3. Zaziarnione losowanie + gating klawisza `next_day` za `IS_DEBUG_MODE`. Bez tego drugiego własne testy kłamią.
+4. Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci. Osobny, czysty commit - diff będzie duży, więc nie warto go mieszać ze zmianami logiki.
+5. `routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.
+6. `sleep` z zanikiem na progu.
+7. `wander` / `patrol` / `idle` + jitter kroków.
+
+Punkty 1-3 to ekonomia, 4-7 to cykl dobowy. Obie połówki są niezależne, byle `NpcRuntime` był pierwszy.
+
+## Weryfikacja
+
+| Co | Jak |
+|---|---|
+| Harmonogram | Test jednostkowy `current_slot()`: granice kroków, zawijanie przez północ (krok o 02:00 aktywny do 06:00), determinizm jittera, niezależność od kolejności kroków w pliku. Bez pygame - czysta funkcja. |
+| Rozwiązywanie `at` | Trzy warianty: `type:` trafia w kolumnę postaci, `location:` w obiekt mapy, `route:` w łamaną. Pusta komórka destynacji degraduje krok do `idle` w miejscu, nie wyjątek. |
+| Round-trip CSV | `--export` a potem `import_entities.py` daje `config.json` identyczny semantycznie z wyjściowym (puste komórki nie nadpisują wartości domyślnych). |
+| Regeneracja | `apply_days(3)` daje ten sam stan co trzykrotne `apply_days(1)`. Sakiewka nie przekracza `money_cap`. Pusta odbudowuje się w 4 doby przy 25%. |
+| Asortyment | Po przelosowaniu nie zawiera towaru skupionego od gracza. |
+| Zapis / odczyt | Stary plik zapisu bez nowych pól wczytuje się bez wyjątku. Dopisać do `tests/test_save_load_dialog_state.py`. |
+| Ręcznie | Przez `agent_ctrl`: `talk_to_char` na handlarzu o 8:00 i o 23:00. Sprzedawać po sztuce aż do wyczerpania sakiewki i sprawdzić powiadomienie o odmowie. |
+| Wizualnie | U usera. Zrzuty headless nie są wierne dla kompozycji całej klatki, więc zanik NPC o zmierzchu i panel handlu weryfikuje user na prawdziwym ekranie. |
+| Wydajność | Przy `SHOW_DEBUG_INFO` sprawdzić, że o pełnej godzinie nie ma skoku czasu klatki - jitter ma to rozłożyć. |
+
+## Opcjonalne, na koniec
+
+Obie rzeczy poniżej są zaprojektowane tak, żeby cała reszta działała bez nich. Żadna nie jest zależnością niczego z listy powyżej.
+
+### N1 - popyt dzienny z zapowiedzią na jutro
+
+Każdy handlarz ma na dany dzień 2-3 towary, za które płaci więcej. Gracz dowiaduje się o tym dzień wcześniej, więc może zaplanować, po co schodzi do labiryntu. To zamienia losowanie w plan do wykonania.
+
+**Problem:** handlarze nie prowadzą dialogów - `JOHNY` i `BART` mają `has_dialog: false`, więc nie ma gdzie umieścić zdania "jutro będę chciał bursztyny".
+
+| Nośnik | Jak | Koszt | Ocena |
+|---|---|---|---|
+| Panel handlu | `_draw_merchant_stats` (`trade.py:131`) już rysuje wiersze ikona + wartość i już potrafi wypisać listę typów towaru (`trade.trades_only`). Dokładasz dwie sekcje tą samą metodą | reużywa `draw_icon_value`, zero nowych paneli i dialogów | zalecane |
+| Tablica ogłoszeń w wiosce | nowy obiekt interaktywny w Tiled, panel z popytem wszystkich handlarzy | nowy typ obiektu, nowy panel, obsługa interakcji | później |
+| Nadanie handlarzom dialogów | `has_dialog: true` + graf z węzłem czytającym popyt | trzeba napisać i utrzymywać treść w dwóch językach | odrzucone |
+
+Plan wdrożenia dla wariantu "panel handlu":
+
+1. **Model.** `NpcRuntime.demand: dict[str, int]` - klucz przedmiotu na liczbę sztuk objętych podwyżką. Nic nowego w zapisie: skoro losowanie jest zaziarnione, popyt wylicza się z `(save_seed, day, npc_name)` i nie musi być serializowany.
+2. **Funkcja.** `demand_for(npc, day) -> dict[str, int]` - czysta funkcja bez stanu. Wywołana z `day` daje dziś, wywołana z `day + 1` daje zapowiedź. To jest cała magia zapowiedzi - jutro jest za darmo, bo jest deterministyczne.
+3. **Cena.** W `get_sell_price_multiplier` dołożyć mnożnik popytu, dopóki nie wyczerpie się liczba sztuk na dziś. Po wyczerpaniu cena wraca do normalnej, *nie spada poniżej* - inaczej wracamy do odrzuconego nasycenia.
+4. **Panel.** Dwa wiersze w `_draw_merchant_stats`, wzorowane na istniejącym bloku `trades_only`.
+5. **Arytmetyka.** Cena w panelu szczegółów pokazuje składniki: `40 zł x1,2 (poszukiwane) x0,9 (nieufny) = 43 zł`. To musi powstać razem z popytem, nie po nim - bez tego popyt jest niewidzialną matematyką.
+
+Warunek sensowności: N1 warto robić dopiero, gdy limit sakiewki realnie się aktywuje, czyli po korekcie liczb w CSV.
+
+### N2 - nocleg u Barmana
+
+Gracz podchodzi do Barmana w karczmie, rozmawia, a jedna z opcji dialogowych ma specjalny efekt: zabiera pieniądze (jeśli gracza stać), potem fade out / fade in i zaczyna się nowy dzień.
+
+Trzy czwarte tego już istnieje: `BARMAN_ABSINTHRAYNER` ma dialogi, a system efektów ubocznych węzłów ma gotową kategorię `MONEY_RETURNED`, która woła `sink.remove_money()` (`dialog/result_sink.py`). Zabranie złota za nocleg nie wymaga żadnego nowego kodu ekonomicznego.
+
+Trzy realne blokady, wykryte w kodzie:
+
+| Blokada | Na czym polega | Rozwiązanie |
+|---|---|---|
+| Efekt działa tylko raz | `visit_node()` ma `if node.visited: return False` - efekt stosuje się raz na całą grę, a nocleg musi działać co noc | flaga `repeatable: bool` na `DialogNode`, domyślnie `False`; gdy ustawiona, `visit_node` stosuje efekt mimo `visited`. Jedno pole i jeden warunek, nie rusza żadnego istniejącego dialogu |
+| Brak kategorii "prześpij noc" | `NodeVisitResultCategory` ma 7 wartości: pieniądze, przedmioty, zdrowie, sentyment - żadna nie przesuwa czasu | ósma wartość `TIME_ADVANCED` + metoda `sleep_until_dawn()` w protokole `ResultSink` + jedna gałąź w `apply_result`; implementacja w adapterze woła istniejące `apply_days(1)` i ustawia godzinę na 6:00 |
+| DSL warunków nie widzi złota ani godziny | `NPCConditionContext` daje `selected`, `visited`, `has_item`, `item_count`, `quest_done`, `sentiment` - brak pieniędzy i zegara | dwie właściwości: `money` (z `player`, już wstrzykniętego) i `hour` (ze `scene`); wtedy warunek opcji to `money >= 20 and (hour >= 20 or hour < 6)`, czysto deklaratywnie w danych dialogu |
+
+Przepływ:
+
+```text
+gracz rozmawia z Barmanem
+  |
+  +- opcja "Przenocuję" widoczna tylko gdy:
+  |     money >= cena_noclegu   AND   godzina w oknie 20:00-06:00
+  |     (warunek w DSL, zero kodu per-przypadek)
+  |
+  +- wybór opcji -> węzeł z result:
+  |     MONEY_RETURNED  (cena_noclegu)  -> sink.remove_money()     [istnieje]
+  |     TIME_ADVANCED                   -> sink.sleep_until_dawn() [nowe]
+  |
+  +- sleep_until_dawn():
+        zamknij panel dialogu
+        transition.fade_out()          [istnieje: project/transition.py]
+        scene.apply_days(1); scene.hour = 6; scene.minute = 0
+        transition.fade_in()
+```
+
+Dlaczego okno 20:00-06:00: jedno `if` w warunku opcji sprawia, że pętla "prześpij - sprzedaj - prześpij" staje się zdominowana. Po noclegu jest 6:00 i opcja znika na 14 godzin gry, a odpowiedź na "i co teraz" brzmi: labirynt, czyli gra. Opłata dokłada drugi koszt.
+
+Zasada do wielokrotnego użytku: nie trzeba czynić degeneracyjnej taktyki niemożliwą, wystarczy uczynić ją gorszą od grania. Po dodaniu reguły antyexploitowej pytaj: "co optymalny gracz robi w oknie, które ta reguła tworzy?". Jeśli odpowiedź brzmi "stoi", reguła jest cooldownem i zawiodła.
+
+Pliki dodatkowe dla opcjonalnych: N1 dotyka `trade.py` i `settings.py`. N2 dotyka `dialog/entities.py`, `dialog/result_sink.py`, `dialog/context_adapter.py` i `result_sink_adapter.py`.

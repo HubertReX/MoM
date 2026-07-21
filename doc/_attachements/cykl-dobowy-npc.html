@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cykl dobowy NPC + odnawianie handlarzy - dokument decyzyjny</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6; font-size: 16px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: var(--s7) var(--s5); }
+  .prose { max-width: 74ch; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.4rem; line-height: 1.25; margin: var(--s7) 0 var(--s3); letter-spacing: -.01em;
+       padding-bottom: var(--s2); border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin: var(--s5) 0 var(--s2); }
+  p { margin: 0 0 var(--s4); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.1rem; color: var(--muted); max-width: 74ch; }
+  .grid { display: grid; gap: var(--s4); }
+  .cols-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .cols-3 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: var(--s5); box-shadow: var(--shadow); }
+  .card h3:first-child { margin-top: 0; }
+  .metric .num { font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; }
+  .metric .label { color: var(--muted); font-size: .85rem; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem;
+    font-weight: 600; padding: 2px 10px; border-radius: 999px; line-height: 1.6; white-space: nowrap;
+    background: var(--surface-2); color: var(--muted); }
+  .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .badge.err{background:var(--err-soft);color:var(--err)}
+  .badge.info{background:var(--info-soft);color:var(--info)}
+  .tblwrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: var(--s2) var(--s3); border-bottom: 1px solid var(--border);
+           vertical-align: top; }
+  thead th { background: var(--surface); font-size: .72rem; text-transform: uppercase;
+             letter-spacing: .05em; color: var(--muted); }
+  tbody tr:hover { background: var(--surface-2); }
+  tr.chosen { background: var(--ok-soft); }
+  tr.chosen:hover { background: var(--ok-soft); }
+  tr.chosen td:first-child { font-weight: 700; }
+  code { font-family: var(--mono); font-size: .86em; background: var(--surface-2);
+    padding: 1px 5px; border-radius: 5px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: var(--s4); overflow-x: auto; font-size: .85rem; }
+  pre code { background: none; padding: 0; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: var(--s3) var(--s4); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: var(--s4) 0; }
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .callout.err{border-color:var(--err);background:var(--err-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .callout p:last-child { margin-bottom: 0; }
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s3) var(--s4); margin-bottom: var(--s2); background: var(--surface); }
+  details[open] { box-shadow: var(--shadow); }
+  summary { cursor: pointer; font-weight: 600; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "\25b8"; display: inline-block; margin-right: var(--s2);
+    transition: transform .15s; color: var(--muted); }
+  details[open] summary::before { transform: rotate(90deg); }
+  button.btn { font: inherit; font-weight: 600; cursor: pointer; border-radius: var(--radius-sm);
+    padding: var(--s2) var(--s4); border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+  button.btn:hover { background: var(--surface-2); }
+  button.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+    font-size: .85rem; font-weight: 600; opacity: 0; transition: all .25s; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* ---------- Decyzje: zwijane sekcje ---------- */
+  details.dec { margin: var(--s3) 0; border: 1px solid var(--border); border-radius: var(--radius);
+         background: var(--surface); box-shadow: var(--shadow); overflow: hidden; padding: 0; }
+  details.dec > summary { padding: var(--s4) var(--s5); background: var(--surface-2);
+                  border-bottom: 1px solid transparent; font-weight: 400;
+                  display: flex; gap: var(--s3); align-items: baseline; flex-wrap: wrap;
+                  font-size: 1.05rem; transition: background .15s; }
+  details.dec > summary:hover { background: var(--accent-soft); }
+  details.dec[open] > summary { border-bottom-color: var(--border); }
+  details.dec > summary::before { content: "\25b8"; margin-right: 0; flex: none;
+    transition: transform .15s; color: var(--muted); }
+  details.dec[open] > summary::before { transform: rotate(90deg); }
+  .dec .qid { font-family: var(--mono); font-size: .8rem; color: var(--accent); font-weight: 700; }
+  .dec .body { padding: var(--s4) var(--s5) var(--s5); }
+  .dec .why { margin-top: var(--s4); font-size: .92rem; color: var(--muted); max-width: 74ch; }
+  .dec .why strong { color: var(--text); }
+  details.dec.revised > summary { background: var(--warn-soft); }
+  details.dec.optional > summary { background: var(--info-soft); }
+  details.dec:target { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Spis treści ---------- */
+  nav.toc { background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: var(--s4) var(--s5);
+            margin: var(--s5) 0; box-shadow: var(--shadow); }
+  nav.toc h2 { margin: 0 0 var(--s3); font-size: .75rem; text-transform: uppercase;
+               letter-spacing: .08em; color: var(--muted); border: none; padding: 0; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: var(--s6); }
+  nav.toc > ol > li { break-inside: avoid; margin-bottom: var(--s2); }
+  nav.toc ol ol { columns: 1; margin: var(--s1) 0 var(--s2) 0; padding-left: var(--s4);
+                  border-left: 2px solid var(--border); }
+  nav.toc ol ol li { margin: 0; font-size: .88rem; }
+  nav.toc a { display: block; padding: 1px 0; }
+  nav.toc .qid { margin-right: var(--s2); }
+  nav.toc .tocnote { color: var(--muted); font-size: .8rem; margin-left: var(--s2); }
+  @media (max-width: 700px) { nav.toc ol { columns: 1; } }
+  .bar { height: 9px; border-radius: 999px; background: var(--accent); display: block; min-width: 2px; }
+  .bar.dim { background: var(--muted); opacity: .45; }
+  .barcell { display: flex; align-items: center; gap: var(--s3); }
+  .barcell span.v { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .85rem;
+                    min-width: 5.5em; }
+  .layers { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); }
+  .layer { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--s4);
+           background: var(--surface); }
+  .layer .k { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+              font-weight: 700; }
+  .layer .t { font-size: 1.15rem; font-weight: 700; margin: var(--s1) 0 var(--s2); }
+  ol.steps { padding-left: 1.3em; max-width: 74ch; }
+  ol.steps li { margin-bottom: var(--s3); }
+  .nongoal { color: var(--muted); }
+  .nongoal li { margin-bottom: var(--s2); }
+  footer.pg { margin-top: var(--s7); padding-top: var(--s4); border-top: 1px solid var(--border);
+              color: var(--muted); font-size: .85rem; }
+  .regen { display:flex; gap:2px; align-items:flex-end; height:80px; margin: var(--s3) 0 var(--s2); }
+  .regen div { flex:1; background: var(--accent); border-radius:3px 3px 0 0; position:relative; }
+  .regen div span { position:absolute; top:-18px; left:0; right:0; text-align:center;
+                    font-size:.7rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .daylabels { display:flex; gap:2px; font-size:.7rem; color:var(--muted); }
+  .daylabels div { flex:1; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Dokument decyzyjny &middot; MoM &middot; 21 lipca 2026 &middot; wersja 3</p>
+  <h1>Cykl dobowy NPC + odnawianie zasobów handlarzy</h1>
+  <p class="lead">Cykl życia postaci sterowany danymi, nie kodem. Czysty rozdział Tiled / konfiguracja / kod, żeby dało się go zmieniać bez dotykania Pythona. Odnawianie handlarzy jest konsumentem tego samego haka przełomu dnia.</p>
+
+  <div class="callout warn">
+    <p><strong>Co zmieniła wersja 3</strong> (po drugiej turze uwag):</p>
+    <p style="margin-top:var(--s2)"><strong>Wiązanie miejsc przeniesione z Tiled do <code>characters.csv</code></strong>: to samo miejsce bywa <code>work</code> dla jednej postaci i <code>social</code> dla innej, więc relacja nie jest własnością obiektu na mapie. Trzy warianty <code>at</code>: <code>type:</code>, <code>location:</code>, <code>route:</code>. <strong>Rutyna <code>farmer</code> przywrócona</strong> - wstaje wcześniej. Plus sekcja o brakujących kolumnach w <code>characters.csv</code>.</p>
+  </div>
+
+  <details>
+    <summary>Co zmieniła wersja 2 (historia)</summary>
+    <p style="margin-top:var(--s3);margin-bottom:0"><strong>D7</strong> - regeneracja +25% dziennie do limitu zamiast pełnego resetu. <strong>D8</strong> - wycofane, handel jest po 1 sztuce, więc sprzedaż częściowa nie miała sensu. <strong>D9</strong> i <strong>D11</strong> - przeniesione na koniec jako opcjonalne, z konkretnym planem wdrożenia. <code>routines.toml</code> - koniec z inline-tabelami udającymi JSON. <code>fade_duration</code> usunięte.</p>
+  </details>
+
+  <nav class="toc">
+    <h2>Spis treści</h2>
+    <ol>
+      <li><a href="#stan">Stan obecny i pomiar</a></li>
+      <li><a href="#podzial">Trójpodział odpowiedzialności</a></li>
+      <li>
+        <a href="#decyzje">Decyzje</a>
+        <ol>
+          <li><a href="#d1"><span class="qid">D1</span>Format pliku konfiguracji</a></li>
+          <li><a href="#d2"><span class="qid">D2</span>Granica Tiled / konfiguracja</a></li>
+          <li><a href="#d3"><span class="qid">D3</span>Rutyny współdzielone</a></li>
+          <li><a href="#d12"><span class="qid">D12</span>Wiązanie miejsc <span class="tocnote">nowe w v3</span></a></li>
+          <li><a href="#d4"><span class="qid">D4</span>Ile aktywności</a></li>
+          <li><a href="#d5"><span class="qid">D5</span>Dostawca celu, nie kontroler</a></li>
+          <li><a href="#d6"><span class="qid">D6</span>Co NPC robi w nocy</a></li>
+          <li><a href="#d7"><span class="qid">D7</span>Odnawianie sakiewki</a></li>
+          <li><a href="#d8"><span class="qid">D8</span>Sprzedaż częściowa <span class="tocnote">wycofane</span></a></li>
+          <li><a href="#d9"><span class="qid">D9</span>Dławik zrzucania towaru</a></li>
+          <li><a href="#d10"><span class="qid">D10</span>Losowanie zaziarnione</a></li>
+        </ol>
+      </li>
+      <li><a href="#toml">Struktura <code>routines.toml</code></a></li>
+      <li><a href="#zywosc">Parametry "żywości"</a></li>
+      <li><a href="#csv">Brakujące kolumny w <code>characters.csv</code></a></li>
+      <li><a href="#kod">Architektura kodu</a></li>
+      <li><a href="#kolejnosc">Kolejność budowy</a></li>
+      <li>
+        <a href="#nth">Opcjonalne, na koniec</a>
+        <ol>
+          <li><a href="#nth1"><span class="qid">N1</span>Popyt dzienny</a></li>
+          <li><a href="#nth2"><span class="qid">N2</span>Nocleg u Barmana</a></li>
+        </ol>
+      </li>
+      <li><a href="#pliki">Pliki</a></li>
+      <li><a href="#weryfikacja">Weryfikacja</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="stan">Stan obecny i pomiar</h2>
+
+  <div class="prose">
+    <p>Dziś każdy NPC ma <strong>jedną statyczną łamaną</strong> z warstwy <code>waypoints</code> w Tiled (kluczowaną nazwą NPC, <code>scene.py:424</code>), po której chodzi w kółko bez końca. Doba trwa 96 sekund realnych, a jedyne co się dzieje na jej przełomie to <code>Scene.update_next_day()</code> (<code>scene.py:1446</code>) wołające <code>restock_items()</code> na każdym handlarzu.</p>
+  </div>
+
+  <h3>Trzy rzeczy zepsute naraz</h3>
+
+  <div class="grid cols-3" style="margin-bottom:var(--s5)">
+    <div class="card">
+      <span class="badge err">bug</span>
+      <h3 style="margin-top:var(--s3)">Sakiewka rośnie bez końca</h3>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)"><code>sell_all_bought_items()</code> (<code>characters.py:298</code>) tylko <em>dodaje</em> pieniądze. Wartość wszystkiego, co gracz sprzedał, wpada do sakiewki handlarza i nigdy z niej nie wychodzi.</p>
+    </div>
+    <div class="card">
+      <span class="badge err">bug</span>
+      <h3 style="margin-top:var(--s3)">Stan globalny w configu</h3>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)"><code>npc.model</code> to współdzielony obiekt <code>game.conf.characters[...]</code>. Dwa NPC-e z tym samym modelem dzielą jedną sakiewkę. Dotyczy też gracza: <code>pick_up()</code> robi <code>self.model.money += value</code>.</p>
+    </div>
+    <div class="card">
+      <span class="badge warn">projekt</span>
+      <h3 style="margin-top:var(--s3)">Limit nigdy się nie aktywuje</h3>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)">Gracz fizycznie nie jest w stanie wynieść tyle towaru, żeby wyczerpać sakiewkę handlarza. Limit pieniędzy jest dziś czystą dekoracją.</p>
+    </div>
+  </div>
+
+  <h3>Pomiar: czy limit pieniędzy w ogóle może zadziałać</h3>
+
+  <div class="grid cols-3" style="margin:var(--s4) 0">
+    <div class="card metric"><div class="num">15 kg</div><div class="label">udźwig gracza (6 slotów)</div></div>
+    <div class="card metric"><div class="num">~900 zł</div><div class="label">max łup w klejnotach</div></div>
+    <div class="card metric"><div class="num">3000 zł</div><div class="label">sakiewka JOHNY'ego</div></div>
+  </div>
+
+  <div class="callout err">
+    <p><strong>Sakiewka jest 3,3&times; za bogata, żeby cokolwiek dławić.</strong> Najlepsza gęstość klejnotu to <code>gem_small_orange</code> = 60 zł/kg, więc przy 15 kg udźwigu maksymalny możliwy łup w klejnotach wynosi 900 zł. Ten dokument skupia się na <em>architekturze</em> - liczby są Twoją domeną i żyją w CSV.</p>
+  </div>
+
+  <details>
+    <summary>Gęstość wartości klejnotów - pełne dane z <code>config.json</code></summary>
+    <div class="tblwrap" style="margin-top:var(--s3)">
+      <table>
+        <thead><tr><th>Przedmiot</th><th>Wartość</th><th>Waga</th><th style="width:45%">zł / kg</th></tr></thead>
+        <tbody>
+          <tr><td><code>gem_small_orange</code></td><td>60</td><td>1,0 kg</td><td><div class="barcell"><span class="v">60,0</span><span class="bar" style="width:100%"></span></div></td></tr>
+          <tr><td><code>gem_small_blue</code></td><td>40</td><td>1,0 kg</td><td><div class="barcell"><span class="v">40,0</span><span class="bar" style="width:66%"></span></div></td></tr>
+          <tr><td><code>gem_crystal_orange</code></td><td>80</td><td>2,0 kg</td><td><div class="barcell"><span class="v">40,0</span><span class="bar" style="width:66%"></span></div></td></tr>
+          <tr><td><code>gem_crystal_blue</code></td><td>60</td><td>2,0 kg</td><td><div class="barcell"><span class="v">30,0</span><span class="bar" style="width:50%"></span></div></td></tr>
+          <tr><td><code>gem_big_orange</code></td><td>90</td><td>3,0 kg</td><td><div class="barcell"><span class="v">30,0</span><span class="bar" style="width:50%"></span></div></td></tr>
+          <tr><td><code>gem_big_blue</code></td><td>80</td><td>3,0 kg</td><td><div class="barcell"><span class="v">26,7</span><span class="bar" style="width:44%"></span></div></td></tr>
+          <tr><td><code>gem_small_purple</code></td><td>20</td><td>1,0 kg</td><td><div class="barcell"><span class="v">20,0</span><span class="bar" style="width:33%"></span></div></td></tr>
+          <tr><td><code>gem_crystal_purple</code></td><td>40</td><td>2,0 kg</td><td><div class="barcell"><span class="v">20,0</span><span class="bar" style="width:33%"></span></div></td></tr>
+          <tr><td><code>gem_big_purple</code></td><td>60</td><td>3,0 kg</td><td><div class="barcell"><span class="v">20,0</span><span class="bar" style="width:33%"></span></div></td></tr>
+          <tr><td><code>gem_small_green</code></td><td>10</td><td>1,0 kg</td><td><div class="barcell"><span class="v">10,0</span><span class="bar dim" style="width:17%"></span></div></td></tr>
+          <tr><td><code>gem_crystal_green</code></td><td>20</td><td>2,0 kg</td><td><div class="barcell"><span class="v">10,0</span><span class="bar dim" style="width:17%"></span></div></td></tr>
+          <tr><td><code>gem_big_green</code></td><td>30</td><td>3,0 kg</td><td><div class="barcell"><span class="v">10,0</span><span class="bar dim" style="width:17%"></span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn" style="margin-bottom:0">
+      <p><strong>Obserwacja na marginesie</strong> (nie do naprawy w tym zadaniu): klejnoty "big" są per kilogram <em>gorsze</em> od "small" w każdym kolorze. Gracz optymalizujący zł/kg będzie zostawiał duże klejnoty na podłodze.</p>
+    </div>
+  </details>
+
+  <h2 id="podzial">Trójpodział odpowiedzialności</h2>
+
+  <p class="prose">Sedno zadania: rozdzielić projektowanie w Tiled, konfigurację i kod tak, żeby zmiana zachowania wioski nie wymagała Pythona.</p>
+
+  <div class="layers" style="margin: var(--s5) 0">
+    <div class="layer">
+      <div class="k">Warstwa 1</div>
+      <div class="t">Tiled</div>
+      <p style="margin:0 0 var(--s2);font-size:.9rem"><strong>Gdzie.</strong> Nazwane punkty na mapie i trasy.</p>
+      <p style="margin:0;font-size:.85rem;color:var(--muted)">Nowa warstwa obiektów <code>places</code> (same nazwy, bez własności) + istniejąca <code>waypoints</code>. Edytujesz w edytorze map.</p>
+    </div>
+    <div class="layer">
+      <div class="k">Warstwa 2a</div>
+      <div class="t">Postacie (CSV)</div>
+      <p style="margin:0 0 var(--s2);font-size:.9rem"><strong>Czyje jest które miejsce.</strong> Destynacje per postać.</p>
+      <p style="margin:0;font-size:.85rem;color:var(--muted)">Kolumny <code>home</code>, <code>work</code>, <code>social</code>, <code>hobby</code> w <code>characters.csv</code>. Istniejący pipeline CSV -&gt; <code>config.json</code>.</p>
+    </div>
+    <div class="layer">
+      <div class="k">Warstwa 2b</div>
+      <div class="t">Rutyny (TOML)</div>
+      <p style="margin:0 0 var(--s2);font-size:.9rem"><strong>Kiedy i co.</strong> Rytm dnia, wspólny dla wielu postaci.</p>
+      <p style="margin:0;font-size:.85rem;color:var(--muted)"><code>project/config_model/routines.toml</code>. Edytujesz ręcznie w edytorze tekstu.</p>
+    </div>
+    <div class="layer">
+      <div class="k">Warstwa 3</div>
+      <div class="t">Kod</div>
+      <p style="margin:0 0 var(--s2);font-size:.9rem"><strong>Jak.</strong> Generyczny wykonawca, zero logiki per-NPC.</p>
+      <p style="margin:0;font-size:.85rem;color:var(--muted)"><code>project/npc_schedule.py</code>. Dotykasz tylko przy zmianie mechaniki, nie treści.</p>
+    </div>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>Test poprawności podziału.</strong> "Kowal ma chodzić na obiad o 12 zamiast o 13" - <em>jedna liczba w TOML-u</em>. "Nowe miejsce w wiosce" - <em>jeden nazwany obiekt w Tiled</em>. "Ten NPC ma pracować gdzie indziej" - <em>jedna komórka w <code>characters.csv</code></em>. "Cała wioska ma wstawać godzinę wcześniej" - <em>jedna liczba w TOML-u</em>. Jeśli któreś wymaga edycji Pythona, podział jest zły.</p>
+  </div>
+
+  <h2 id="decyzje">Decyzje</h2>
+
+  <div class="row" style="margin-bottom:var(--s4)">
+    <button class="btn" onclick="setAllDecisions(true)">Rozwiń wszystkie</button>
+    <button class="btn" onclick="setAllDecisions(false)">Zwiń wszystkie</button>
+    <span style="color:var(--muted);font-size:.85rem">Kliknij nagłówek, żeby rozwinąć pojedynczą decyzję.</span>
+  </div>
+
+  <!-- D1 -->
+  <details class="dec" id="d1">
+    <summary><span class="qid">D1</span> Format pliku konfiguracji rutyn <span class="badge ok">zatwierdzone</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:16%">Opcja</th><th style="width:34%">Za</th><th style="width:34%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr class="chosen">
+              <td>TOML</td>
+              <td>Już jest w projekcie: <code>settings.py:5-7</code> importuje <code>tomllib</code> z fallbackiem na <code>tomli</code> dla weba, <code>tomli==2.2.1</code> jest w <code>requirements.txt</code>, a <code>load_ui_strings()</code> to gotowy wzorzec do skopiowania. Zero nowych zależności.</td>
+              <td>Wymaga dyscypliny składniowej - patrz sekcja o strukturze pliku niżej.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>YAML</td>
+              <td>Najzwięźlejszy dla list zagnieżdżonych.</td>
+              <td>PyYAML to <strong>nowa zależność</strong>, doinstalowywana także w pygbag dla weba.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+            <tr>
+              <td>CSV (kolumna w <code>characters.csv</code>)</td>
+              <td>Spójne z istniejącym pipeline'em importu encji.</td>
+              <td>Lista slotów nie mieści się w płaskiej komórce. CSV jest <em>generatorem</em> <code>config.json</code>, a rutyny to dane ręczne.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+            <tr>
+              <td>JSON</td>
+              <td>Bez nowego loadera.</td>
+              <td>Łamie zasadę "JSON tylko maszynowo generowany". Brak komentarzy, a rutyny wymagają komentarzy.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><strong>Dlaczego.</strong> TOML wygrywa nie elegancją, tylko tym, że kosztuje zero. Wzorzec ładowania z fallbackiem web/desktop jest już napisany i przetestowany w <code>settings.py</code>.</p>
+    </div>
+  </details>
+
+  <!-- D2 -->
+  <details class="dec" id="d2">
+    <summary><span class="qid">D2</span> Granica: co ląduje w Tiled, a co w konfiguracji <span class="badge ok">zatwierdzone</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr class="chosen">
+              <td>Tiled = <em>gdzie</em>, TOML = <em>kiedy i co</em></td>
+              <td>Każda edycja trafia do naturalnego narzędzia. Miejsca są geografią i należą do mapy; harmonogram jest zachowaniem i należy do tekstu. Mapa nie wie nic o godzinach.</td>
+              <td>Wymaga mechanizmu rozwiązywania nazwy miejsca z TOML-a na obiekt z mapy.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>Wszystko we własnościach obiektów Tiled</td>
+              <td>Jedno miejsce prawdy, wszystko widać wizualnie na mapie.</td>
+              <td>Harmonogramy w polach tekstowych Tiled to koszmar edycji, brak sensownego diffa, brak współdzielenia między postaciami.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+            <tr>
+              <td>Wszystko w TOML, łącznie ze współrzędnymi</td>
+              <td>Jeden plik do edycji.</td>
+              <td>Ręczne wpisywanie współrzędnych pikselowych. Każde przesunięcie budynku w Tiled psuje konfigurację po cichu.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><strong>Dlaczego.</strong> Współrzędne należą do mapy, bo mapa je zmienia. Godziny należą do tekstu, bo tekst dobrze się diffuje. Precedens już istnieje - <code>load_NPCs</code> czyta własność <code>obj.model_name</code> z Tiled.</p>
+    </div>
+  </details>
+
+  <!-- D3 -->
+  <details class="dec" id="d3">
+    <summary><span class="qid">D3</span> Harmonogram per postać czy rutyny współdzielone <span class="badge ok">zatwierdzone</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr class="chosen">
+              <td>Rutyny jako szablony + przypisanie</td>
+              <td>Jedna rutyna obsłuży kilkanaście postaci, bo miejsca są wiązane per NPC w Tiled. Zmiana "wszyscy otwierają o 8" to jedna linia. Nowy NPC to jedna linia w <code>[assign]</code>.</td>
+              <td>Postać nietypowa wymaga własnej rutyny.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>Pełny harmonogram per postać</td>
+              <td>Maksymalna swoboda.</td>
+              <td>Dwadzieścia postaci = dwadzieścia bloków do utrzymania. Zmiana globalna wymaga dwudziestu edycji.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+            <tr>
+              <td>Rutyna wyliczana z roli (<code>is_merchant</code> itd.)</td>
+              <td>Zero konfiguracji.</td>
+              <td>Logika zachowania wraca do kodu - dokładnie to, co ten dokument eliminuje.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><strong>Dlaczego.</strong> Rutyny są jedynym wariantem, który skaluje się z liczbą NPC-ów bez proporcjonalnego wzrostu pracy - pod warunkiem, że miejsca są abstrakcyjne (<code>home</code>, <code>work</code>, <code>social</code>, <code>hobby</code>), a konkretny obiekt na mapie wiąże się per postać. Gdzie dokładnie - patrz <a href="#d12">D12</a>.</p>
+    </div>
+  </details>
+
+  <!-- D12 -->
+  <details class="dec revised" id="d12">
+    <summary><span class="qid">D12</span> Gdzie wiąże się "które miejsce należy do której postaci" <span class="badge warn">nowe w v3</span></summary>
+    <div class="body">
+      <div class="callout err">
+        <p><strong>Problem, który przewrócił wersję 2.</strong> W v2 miejsca miały w Tiled własności <code>tag</code> i <code>owner</code>. To nie działa, bo <strong>ta sama karczma jest miejscem pracy barmana i miejscem odpoczynku wszystkich pozostałych</strong>. Rola miejsca nie jest własnością obiektu na mapie - jest <em>relacją między postacią a miejscem</em>. Własność obiektu potrafi wyrazić tylko jedną odpowiedź, a odpowiedzi jest tyle, ilu NPC-ów.</p>
+      </div>
+
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Tag + owner na obiekcie w Tiled <span class="badge">v2</span></td>
+              <td>Wszystko widać wizualnie na mapie.</td>
+              <td><strong>Nie wyraża tego, że karczma to <code>work</code> dla barmana i <code>social</code> dla reszty.</strong> Wymagałoby duplikowania obiektów w tym samym miejscu, po jednym na rolę.</td>
+              <td><span class="badge err">wycofane</span></td>
+            </tr>
+            <tr class="chosen">
+              <td><strong>Destynacje w <code>characters.csv</code>, obiekty w Tiled tylko nazwane</strong></td>
+              <td>Relacja mieszka po stronie postaci, gdzie jej miejsce. Jedno miejsce może pełnić dowolnie wiele ról dla różnych postaci. Wpina się w <strong>istniejący pipeline CSV -&gt; <code>config.json</code></strong>, bez nowego formatu. Warstwa <code>places</code> upraszcza się do samych nazwanych punktów.</td>
+              <td>Cztery nowe kolumny w CSV. Wiązania nie widać na mapie - trzeba zajrzeć do CSV.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>Wiązanie w <code>routines.toml</code></td>
+              <td>Jeden plik na całe zachowanie.</td>
+              <td>Rozbija współdzielenie rutyn - rutyna przestaje być uniwersalna, jeśli zawiera nazwy miejsc konkretnej postaci.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Zamknięta lista typów destynacji</h3>
+      <p class="prose">Cztery kolumny w <code>characters.csv</code>, każda trzyma <strong>nazwę obiektu z warstwy <code>places</code></strong>. Jedna postać ma najwyżej jedno miejsce danego typu.</p>
+
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:14%">Kolumna</th><th style="width:38%">Znaczenie</th><th style="width:48%">Przykład</th></tr></thead>
+          <tbody>
+            <tr><td><code>home</code></td><td>gdzie śpi</td><td>BARMAN: <code>tavern</code>, JOHNY: <code>house_3</code></td></tr>
+            <tr><td><code>work</code></td><td>gdzie pracuje</td><td>BARMAN: <code>tavern</code>, JOHNY: <code>market_stall_1</code>, FARMER: <code>field_north</code></td></tr>
+            <tr><td><code>social</code></td><td>gdzie spędza przerwę</td><td>JOHNY: <code>tavern</code>, FARMER: <code>well</code></td></tr>
+            <tr><td><code>hobby</code></td><td>miejsce charakterystyczne dla postaci</td><td>JOHNY: <code>pier</code>, KOWAL: <code>shrine</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout ok">
+        <p><strong>Karczma rozwiązana.</strong> BARMAN ma <code>work = tavern</code>, JOHNY ma <code>social = tavern</code>. Jeden obiekt w Tiled, dwie różne role, zero duplikatów. Rutyna <code>townsfolk</code> mówi tylko "o 13:00 idź do swojego <code>social</code>" i nie wie, ani nie musi wiedzieć, czym to jest dla konkretnej postaci.</p>
+      </div>
+
+      <h3>Trzy warianty <code>at</code></h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:24%">Zapis</th><th style="width:40%">Rozwiązanie</th><th style="width:36%">Do czego</th></tr></thead>
+          <tbody>
+            <tr><td><code>at = "type:work"</code></td><td>kolumna <code>work</code> postaci -&gt; nazwa obiektu -&gt; pozycja</td><td>domyślny sposób; to on czyni rutynę uniwersalną</td></tr>
+            <tr><td><code>at = "location:well"</code></td><td>wprost nazwa obiektu z warstwy <code>places</code></td><td>furtka na wyjątki - rutyna dla jednej postaci albo miejsce wspólne dla wszystkich</td></tr>
+            <tr><td><code>at = "route:patrol_north"</code></td><td>nazwana łamana z istniejącej warstwy <code>waypoints</code></td><td>patrole; jedyny wariant, w którym celem jest trasa, nie punkt</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="why"><strong>Fallback.</strong> Gdy <code>type:X</code> nie jest zdefiniowane dla danej postaci (pusta komórka w CSV), NPC zostaje tam, gdzie jest - slot degraduje się do <code>idle</code> w bieżącym miejscu, plus ostrzeżenie w trybie debug. Dzięki temu <strong>niekompletne dane nigdy nie wywalają gry</strong>, a brak domów dla wszystkich nie blokuje wdrożenia - dosypujesz obiekty i wypełniasz komórki stopniowo.</p>
+    </div>
+  </details>
+
+  <!-- D4 -->
+  <details class="dec" id="d4">
+    <summary><span class="qid">D4</span> Ile aktywności (gdzie kończy się realizm, a zaczyna The Sims) <span class="badge ok">zatwierdzone</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Dwie (<code>at_post</code> / <code>gone</code>)</td>
+              <td>Najtaniej.</td>
+              <td>Postacie stoją jak słupy przez cały dzień. Wioska wygląda na zamrożoną, nie żywą.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+            <tr class="chosen">
+              <td>Pięć: <code>sleep</code>, <code>stand</code>, <code>wander</code>, <code>patrol</code>, <code>idle</code></td>
+              <td><strong>Każda mapuje się na kod, który już istnieje</strong> - nic nowego do wymyślenia.</td>
+              <td>Pięć ścieżek do przetestowania zamiast dwóch.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>Symulacja potrzeb (głód, energia, nastrój)</td>
+              <td>Emergentne zachowania.</td>
+              <td>To jest pisanie The Sims. Wykładniczo rosnąca złożoność przy zerowej widoczności dla gracza, który spędza z NPC-em 20 sekund.</td>
+              <td><span class="badge err">wykluczone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:var(--s5)">Mapowanie na istniejący kod</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:14%">Aktywność</th><th style="width:46%">Zachowanie</th><th style="width:40%">Co reużywa</th></tr></thead>
+          <tbody>
+            <tr><td><code>sleep</code></td><td>dojście do progu miejsca, zanik, wypisanie z aktualizacji do rana</td><td>istniejące grupy sprite'ów</td></tr>
+            <tr><td><code>stand</code></td><td>stanie w miejscu; dla handlarza to godziny otwarcia</td><td><code>Idle</code> / <code>Bored</code> z <code>npc_state.py</code></td></tr>
+            <tr><td><code>wander</code></td><td>losowy spacer w promieniu wokół miejsca</td><td><code>get_random_safe_pos()</code>, <code>characters.py:597</code></td></tr>
+            <tr><td><code>patrol</code></td><td>podążanie nazwaną łamaną</td><td><code>follow_waypoints()</code> + warstwa <code>waypoints</code></td></tr>
+            <tr><td><code>idle</code></td><td>stanie + emotka</td><td><code>EmoteSprite</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><strong>Dlaczego.</strong> Pięć aktywności to <em>dokładnie tyle, ile da się zbudować z istniejących klocków</em>. Żadna nie wymaga nowego systemu ruchu. Szósta wymagałaby. <em>(Zmiana w wersji 2: aktywność <code>work</code> przemianowana na <code>stand</code>, żeby nie myliła się z typem destynacji <code>work</code>. W kroku rutyny czyta się to jednoznacznie: <code>at = "type:work"</code>, <code>activity = "stand"</code>.)</em></p>
+    </div>
+  </details>
+
+  <!-- D5 -->
+  <details class="dec" id="d5">
+    <summary><span class="qid">D5</span> Harmonogram jako kontroler czy jako dostawca celu <span class="badge ok">zatwierdzone</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr class="chosen">
+              <td>Dostawca celu: ustawia <code>npc.goal</code>, FSM wykonuje</td>
+              <td>Jeden system pisze do <code>npc.vel</code>. Istniejący <code>npc_state.py</code> zostaje nietknięty jako wykonawca. Cel jest serializowalny i podglądalny w debugu.</td>
+              <td>Trzeba jawnie obsłużyć stan pochłaniający dla dialogu.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>Drugi automat stanów sterujący ruchem</td>
+              <td>Prostsze do napisania na start.</td>
+              <td><strong>Dwa systemy piszące do <code>npc.vel</code> to gwarantowany bug "NPC drga w drzwiach".</strong> Trudny do zdiagnozowania i nieusuwalny bez przepisania.</td>
+              <td><span class="badge err">wykluczone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <p><strong>Dwie pułapki do obsłużenia wprost:</strong></p>
+        <p style="margin-top:var(--s2)"><code>Talk</code> jest stanem <strong>pochłaniającym</strong> - zmiana slotu w trakcie dialogu jest kolejkowana i stosowana po zamknięciu panelu. Inaczej handlarz odchodzi w środku transakcji, a <code>TradePanel</code> zostaje z wiszącą referencją (<code>trade.py:120</code> czyta <code>scene.player.npc_met</code>).</p>
+        <p style="margin-top:var(--s2)">Godziny otwarcia sprawdzane <strong>tylko przy otwarciu panelu</strong>, nigdy co klatkę. Panel zamykający się sam w środku handlu to zgłoszenie błędu, nie feature.</p>
+      </div>
+    </div>
+  </details>
+
+  <!-- D6 -->
+  <details class="dec" id="d6">
+    <summary><span class="qid">D6</span> Co NPC robi w nocy (problem: za mało domów) <span class="badge ok">zatwierdzone</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr class="chosen">
+              <td>Dojście do progu + zanik</td>
+              <td>Zero pathfindingu przez drzwi, zero wnętrz, zero unieważniania cache A*. Przy okazji rozwiązuje "NPC stoi w drzwiach i blokuje gracza". Brak domu dla kogoś nic nie psuje - śpi tam, gdzie stoi.</td>
+              <td>Gracz nie może zajrzeć do środka i zobaczyć śpiącego NPC-a.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>Wejście do wnętrza budynku</td>
+              <td>Najbardziej "prawdziwe".</td>
+              <td>Wymaga wnętrz dla każdego domu, dynamicznych drzwi i unieważniania <code>a_star_cached</code> przy każdej zmianie stanu drzwi. Duży koszt za rzecz, której gracz w nocy nie widzi.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+            <tr>
+              <td>Nic - NPC chodzi całą dobę</td>
+              <td>Zero pracy.</td>
+              <td>Doba przestaje cokolwiek znaczyć.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><strong>Dlaczego.</strong> Celem snu jest obiekt wskazany kolumną <code>home</code> danej postaci (patrz <a href="#d12">D12</a>); NPC dochodzi do niego i zanika. Gdy kolumna jest pusta, NPC po prostu zostaje na miejscu - <strong>brak domów dla wszystkich nie blokuje niczego</strong>, obiekty i komórki uzupełniasz stopniowo, a system działa od pierwszego dnia.</p>
+    </div>
+  </details>
+
+  <!-- D7 -->
+  <details class="dec revised" id="d7">
+    <summary><span class="qid">D7</span> Jak odnawia się sakiewka handlarza <span class="badge warn">zmienione w v2</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Stan obecny: rośnie o wartość skupu</td>
+              <td>-</td>
+              <td>Perpetuum mobile. Im więcej gracz sprzeda, tym bogatszy handlarz. Limit rozluźnia się sam.</td>
+              <td><span class="badge err">bug</span></td>
+            </tr>
+            <tr class="chosen">
+              <td><strong>Regeneracja +25% dziennie do limitu</strong></td>
+              <td>Modeluje prostą ekonomię: handlarz zarabia stopniowo, a opróżnienie sakiewki ma konsekwencje przez kilka dni. Naturalnie wymusza sukcesywną sprzedaż. Nadal domknięte wzorem, więc N-bezpieczne.</td>
+              <td>Dwie liczby zamiast jednej (<code>money_cap</code> i procent). Gracz musi obserwować sakiewkę w panelu, żeby wiedzieć na czym stoi - ale ta jest już rysowana.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+            <tr>
+              <td>Pełny reset do bazy o świcie</td>
+              <td>Jedna liczba, gracz może się jej nauczyć.</td>
+              <td>Handlarz "zapomina", że wczoraj wydał majątek. Mniej realistyczne, dzień do dnia nie ma pamięci.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Wzór</h3>
+      <pre><code>money = min(money_cap, money + n_dni * round(money_cap * money_regen_pct))</code></pre>
+
+      <div class="callout ok">
+        <p><strong>To jest domknięte wzorem, więc pozostaje N-bezpieczne.</strong> Powrót z wyprawy trwającej trzy doby to jedno wywołanie z <code>n_dni = 3</code>, nie pętla. Regeneracja liniowa z sufitem ma tę własność za darmo - dlatego akurat taki kształt jest bezpieczny, a np. "procent od aktualnego stanu" (składany) już by nie był.</p>
+      </div>
+
+      <h3>Przykład: JOHNY, <code>money_cap</code> 3000, regeneracja 25% (750/dzień)</h3>
+      <p class="prose" style="font-size:.9rem">Gracz opróżnia sakiewkę do zera pierwszego dnia:</p>
+      <div class="regen">
+        <div style="height:2%"><span>0</span></div>
+        <div style="height:25%"><span>750</span></div>
+        <div style="height:50%"><span>1500</span></div>
+        <div style="height:75%"><span>2250</span></div>
+        <div style="height:100%"><span>3000</span></div>
+        <div style="height:100%"><span>3000</span></div>
+      </div>
+      <div class="daylabels">
+        <div>dzień 1</div><div>dzień 2</div><div>dzień 3</div><div>dzień 4</div><div>dzień 5</div><div>dzień 6</div>
+      </div>
+      <p class="why" style="margin-top:var(--s4)">Pełna odbudowa zajmuje cztery doby. To jest właśnie ten "delikatny nacisk" na sukcesywne zdobywanie i sprzedawanie - gracz, który opróżni handlarza, ma powód, żeby przez kilka dni sprzedawać komuś innemu albo mniej naraz.</p>
+
+      <div class="callout warn">
+        <p><strong>Do zapisania wprost w specyfikacji:</strong> przelosowanie asortymentu o świcie <strong>wymazuje towar skupiony od gracza</strong>. Bez tego <code>max_carry_weight</code> handlarza zapycha się złomem gracza między sesjami i handlarz na stałe przestaje kupować. Jedna linia specyfikacji, jeden uniknięty bug.</p>
+      </div>
+
+      <p class="why"><strong>Parametry w CSV:</strong> <code>money_cap</code> (sufit sakiewki), <code>money_regen_pct</code> (domyślnie 0,25). Stan bieżący <code>money</code> żyje w <code>NpcRuntime</code> i w zapisie, nie w configu.</p>
+    </div>
+  </details>
+
+  <!-- D8 -->
+  <details class="dec revised" id="d8">
+    <summary><span class="qid">D8</span> Sprzedaż częściowa <span class="badge err">wycofane w v2</span></summary>
+    <div class="body">
+      <div class="callout err">
+        <p><strong>Ta decyzja opierała się na moim błędnym założeniu.</strong> Sprawdziłem kod: handel jest <strong>zawsze po jednej sztuce</strong> na naciśnięcie klawisza. <code>characters.py:1494-1518</code> woła <code>drop_item()</code>, które przenosi jeden przedmiot, a cena liczona jest dla jednego. Nie ma transakcji hurtowej, więc nie ma czego dzielić na części.</p>
+      </div>
+
+      <p class="prose"><strong>I to jest dobra wiadomość.</strong> Handel po 1 sztuce plus skończona sakiewka <em>już strukturalnie jest</em> stopniową sprzedażą: gracz klika, patrzy jak sakiewka topnieje, i w pewnym momencie kolejne kliknięcie nie przechodzi. Mechanizm "delikatnego wymuszania sukcesywnej sprzedaży", o który chodziło, nie wymaga żadnej nowej mechaniki - wymaga tylko, żeby <strong>sakiewka faktycznie się kończyła</strong> (D7) i żeby <strong>gracz widział dlaczego</strong>.</p>
+
+      <p class="prose">Co zostaje z tej decyzji jako realna praca:</p>
+
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:30%">Element</th><th style="width:45%">Stan</th><th style="width:25%">Do zrobienia</th></tr></thead>
+          <tbody>
+            <tr><td>Sakiewka handlarza w panelu</td><td><code>_draw_merchant_stats</code> (<code>trade.py:131</code>) już rysuje pieniądze i wagę</td><td><span class="badge ok">gotowe</span></td></tr>
+            <tr><td>Powód odmowy</td><td>Trzy osobne powiadomienia: brak pieniędzy, przekroczona waga, brak slotów (<code>characters.py:1302-1341</code>)</td><td><span class="badge ok">gotowe</span></td></tr>
+            <tr><td>Sufit sakiewki widoczny</td><td>Panel pokazuje tylko bieżące <code>money</code>, bez <code>money_cap</code></td><td>pokazać <code>money / money_cap</code>, tak jak waga już pokazuje <code>waga / max</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="why"><strong>Wniosek.</strong> Jedyna zmiana, jaka zostaje z D8, to pokazanie sakiewki jako <code>bieżąca / sufit</code> zamiast samej liczby - bo przy regeneracji z D7 gracz musi widzieć, ile jeszcze wróci. Kosztuje jedną linię w <code>_draw_merchant_stats</code>, dokładnie na wzór istniejącego wiersza z wagą.</p>
+    </div>
+  </details>
+
+  <!-- D9 -->
+  <details class="dec" id="d9">
+    <summary><span class="qid">D9</span> Mechanizm zniechęcający do zrzucania wszystkiego naraz <span class="badge info">wariant minimalny</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Nasycenie: cena spada z każdą sprzedaną sztuką</td>
+              <td>Symuluje realne nasycenie rynku.</td>
+              <td>Niewidzialna matematyka. Gracz widzi jedną liczbę z trzech ukrytych mnożników i wnioskuje, że gra oszukuje. <strong>Karze dokładnie to, co produkuje główna pętla gry.</strong></td>
+              <td><span class="badge err">wykluczone</span></td>
+            </tr>
+            <tr class="chosen">
+              <td><strong>Wariant minimalny: sam limit sakiewki z regeneracją</strong></td>
+              <td>Zero nowych systemów. Handel po 1 sztuce + topniejąca sakiewka + 4-dniowa odbudowa <em>już</em> realizują cel. Nic do zbalansowania poza dwiema liczbami w CSV.</td>
+              <td>Kolejne dni różnią się tylko stanem sakiewki. Brak powodu, żeby czekać na jutro z ciekawością.</td>
+              <td><span class="badge ok">wybrane teraz</span></td>
+            </tr>
+            <tr>
+              <td>Popyt dzienny z zapowiedzią na jutro</td>
+              <td>Rama pozytywna zamiast kary, zamienia losowanie w plan do wykonania.</td>
+              <td>Drugi system do zbalansowania. Sensowny dopiero, gdy limit sakiewki realnie się aktywuje po korekcie liczb w CSV.</td>
+              <td><span class="badge info">nice to have</span> patrz <a href="#nth1">N1</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><strong>Dlaczego minimalny.</strong> Popyt dzienny ma sens dopiero wtedy, gdy gracz w ogóle odczuwa limit sakiewki. Dopóki maksymalny łup to 900 zł przy sufitcie 3000, popyt byłby ozdobą na mechanice, która nie działa. Najpierw D7 plus Twoja korekta liczb, potem ewentualnie N1.</p>
+    </div>
+  </details>
+
+  <!-- D10 -->
+  <details class="dec" id="d10">
+    <summary><span class="qid">D10</span> Losowanie dzienne: live czy zaziarnione <span class="badge ok">zatwierdzone</span></summary>
+    <div class="body">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:22%">Opcja</th><th style="width:31%">Za</th><th style="width:31%">Przeciw</th><th style="width:16%">Werdykt</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Zwykły <code>random</code> przy przełomie dnia</td>
+              <td>Najprostsze.</td>
+              <td><strong>Gracz przeładowuje zapis, aż handlarz będzie miał to, czego szuka.</strong> System projektowy zamienia się w automat z przyciskiem powtórki.</td>
+              <td><span class="badge err">wykluczone</span></td>
+            </tr>
+            <tr class="chosen">
+              <td><code>Random(hash((save_seed, day, npc_name)))</code></td>
+              <td>Ten sam dzień daje ten sam wynik po każdym wczytaniu. Umożliwia zapowiedź na jutro (N1). Cztery linie kodu.</td>
+              <td>Trzeba przekazać ziarno zapisu do funkcji odnawiania.</td>
+              <td><span class="badge ok">wybrane</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="why"><strong>Dlaczego.</strong> To nie optymalizacja, tylko warunek konieczny - bez tego nie da się zapowiedzieć jutra, którego jeszcze nie wylosowano, więc N1 byłby niemożliwy do zbudowania.</p>
+    </div>
+  </details>
+
+  <h2 id="toml">Struktura <code>routines.toml</code></h2>
+
+  <h3>Kroki rutyny: powtarzalna sekcja <code>[[routine.X.slot]]</code></h3>
+
+  <p class="prose">Nazwane kroki (<code>[routine.townsfolk.slots.morning]</code>) dawały czytelną etykietę, ale kosztem długiego, powtarzanego prefiksu w każdym nagłówku. Skoro TOML i tak nie pozwala nazwać kroku krócej, <strong>lepiej wrócić do zwięzłej tablicy tabel</strong> - nagłówek jest krótki, a to, czym krok jest, i tak widać z pól <code>from</code> i <code>at</code> tuż pod nim.</p>
+
+  <details>
+    <summary>Dlaczego nie da się zapisać tego tak, jak podpowiada intuicja</summary>
+    <p style="margin-top:var(--s3)">Naturalny odruch to wypisać nazwy kroków jako zagnieżdżone nagłówki - <code>[[routine.townsfolk.slots]]</code>, a pod nim <code>[[morning]]</code>, <code>[[lunch]]</code>. To <strong>parsuje się bez błędu, ale buduje złą strukturę</strong>. Sprawdzone pod <code>tomllib</code>:</p>
+    <pre><code>{'routine': {'townsfolk': {'slots': [{}]}},
+ 'morning': [{'from': '06:30'}]}</code></pre>
+    <p><code>[[morning]]</code> to nagłówek <em>bezwzględny</em>, nie zagnieżdżony - ląduje na najwyższym poziomie dokumentu, odłączony od rutyny, a <code>slots</code> zostaje pustą listą. TOML nie ma zagnieżdżania przez wcięcie; ścieżkę zawsze pisze się w nagłówku w całości. Nazwany krok wymagałby więc pełnego <code>[routine.townsfolk.slots.morning]</code> - i to właśnie ta długość przesądziła o powrocie do <code>[[routine.townsfolk.slot]]</code>.</p>
+  </details>
+
+  <div class="callout ok">
+    <p><strong>Kolejność kroków bierze się z pola <code>from</code>, nie z kolejności w pliku.</strong> Dzięki temu przestawienie bloków czy dopisanie kroku w środku nigdy niczego nie psuje. Sortowanie po <code>from</code> obsługuje też noc przechodzącą przez północ - u strażnika krok o 02:00 jest aktywny do 06:00, a o 23:00 aktywny jest krok wieczorny.</p>
+  </div>
+
+  <pre id="tomlsrc"><code># Rutyny NPC.
+#
+# `at` ma trzy warianty:
+#   type:&lt;typ&gt;       -&gt; kolumna `home`/`work`/`social`/`hobby` w characters.csv
+#                       wskazuje nazwe obiektu z warstwy `places` w Tiled.
+#                       To on czyni rutyne uniwersalna - kazda postac idzie
+#                       "do swojego" miejsca danego typu.
+#   location:&lt;nazwa&gt; -&gt; wprost nazwa obiektu z warstwy `places` (wyjatki,
+#                       miejsca wspolne dla wszystkich)
+#   route:&lt;nazwa&gt;    -&gt; nazwana lamana z istniejacej warstwy `waypoints`
+#
+# Kolejnosc wykonania bierze sie z pola `from`, nie z kolejnosci w pliku.
+
+[defaults]
+wander_radius       = 3     # promien mikro-wedrowki, w kaflach
+slot_jitter_minutes = 20    # +/- , deterministycznie z hasha nazwy NPC
+
+
+# =====================================================================
+#  townsfolk - kupiec, kowal, barman: dom, praca, przerwa, praca, dom
+# =====================================================================
+
+[[routine.townsfolk.slot]]
+from     = "06:30"
+at       = "type:home"
+activity = "idle"
+
+[[routine.townsfolk.slot]]
+from     = "08:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.townsfolk.slot]]
+from     = "13:00"
+at       = "type:social"
+activity = "wander"
+
+[[routine.townsfolk.slot]]
+from     = "14:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.townsfolk.slot]]
+from     = "18:30"
+at       = "type:hobby"
+activity = "wander"
+
+[[routine.townsfolk.slot]]
+from     = "20:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  farmer - wstaje przed switem, dluga praca w polu, wczesniej spi
+# =====================================================================
+
+[[routine.farmer.slot]]
+from     = "04:30"
+at       = "type:work"
+activity = "stand"
+
+[[routine.farmer.slot]]
+from     = "11:00"
+at       = "location:well"      # wspolna studnia, nie "swoja" - stad location:
+activity = "idle"
+
+[[routine.farmer.slot]]
+from     = "12:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.farmer.slot]]
+from     = "18:00"
+at       = "type:social"
+activity = "wander"
+
+[[routine.farmer.slot]]
+from     = "21:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  guard - patrol dzienny, patrol wieczorny, krotka noc
+# =====================================================================
+
+[[routine.guard.slot]]
+from     = "06:00"
+at       = "route:patrol_north"
+activity = "patrol"
+
+[[routine.guard.slot]]
+from     = "18:00"
+at       = "route:patrol_south"
+activity = "patrol"
+
+[[routine.guard.slot]]
+from     = "02:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  Przypisanie rutyn do postaci. Klucz = nazwa obiektu NPC z Tiled.
+# =====================================================================
+
+[assign]
+JOHNY    = "townsfolk"
+BART     = "townsfolk"
+KOWAL    = "townsfolk"
+BARMAN   = "townsfolk"
+FARMER   = "farmer"
+STRAZNIK = "guard"</code></pre>
+
+  <button class="btn primary" onclick="copyToClipboard(document.getElementById('tomlsrc').textContent, 'Skopiowano routines.toml')">Kopiuj szkic TOML</button>
+
+  <h3>Warstwa <code>places</code> w Tiled - już bez własności</h3>
+
+  <p class="prose">Skoro role przeniosły się do <code>characters.csv</code> (<a href="#d12">D12</a>), warstwa <code>places</code> upraszcza się do <strong>nazwanych punktów</strong>. Żadnych custom properties, żadnego <code>tag</code>, żadnego <code>owner</code> - obiekt ma tylko unikalną nazwę, po której sięga CSV albo <code>location:</code>.</p>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:22%">Element</th><th style="width:78%">Rola</th></tr></thead>
+      <tbody>
+        <tr><td>nazwa obiektu</td><td>jedyne, co niesie obiekt: <code>tavern</code>, <code>well</code>, <code>market_stall_1</code>, <code>house_3</code>, <code>field_north</code>. Musi być unikalna w obrębie mapy.</td></tr>
+        <tr><td>pozycja</td><td>gdzie NPC ma dojść; dla <code>sleep</code> to próg, na którym następuje zanik</td></tr>
+        <tr><td><code>radius</code> <span class="badge">opcjonalne</span></td><td>jedyna dopuszczona własność - nadpisuje <code>wander_radius</code> z <code>[defaults]</code> dla tego konkretnego miejsca (np. szeroki rynek, ciasna kuźnia)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Zmiany względem wersji 2</h3>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:26%">Element</th><th style="width:74%">Los</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Kształt nagłówka kroku</td>
+          <td><span class="badge ok">bez zmian</span> Zostaje zwięzłe <code>[[routine.X.slot]]</code>. Wariant z nazwanymi krokami wymagałby pełnego <code>[routine.X.slots.&lt;etykieta&gt;]</code> w każdym nagłówku - etykieta nie jest warta tego prefiksu.</td>
+        </tr>
+        <tr>
+          <td>Rutyna <code>farmer</code></td>
+          <td><span class="badge ok">przywrócona</span> Ma inny rytm, nie tylko inne miejsce pracy: wstaje o 04:30, ma jedną długą przerwę w południe zamiast dwóch i kładzie się o 21:00. Scalenie jej z <code>townsfolk</code> w v2 było błędem - to nie jest ta sama rutyna z innym adresem.</td>
+        </tr>
+        <tr>
+          <td><code>at = "home"</code></td>
+          <td><span class="badge warn">rozszerzone</span> Na trzy jawne warianty <code>type:</code> / <code>location:</code> / <code>route:</code>. Bez prefiksu nie było widać, czy chodzi o typ destynacji, czy o konkretny obiekt.</td>
+        </tr>
+        <tr>
+          <td><code>tag</code> i <code>owner</code> w Tiled</td>
+          <td><span class="badge err">usunięte</span> Zastąpione kolumnami w <code>characters.csv</code> - patrz <a href="#d12">D12</a>.</td>
+        </tr>
+        <tr>
+          <td><code>fade_duration</code></td>
+          <td><span class="badge err">usunięte w v2</span> Nie robiło nic. Miało być czasem zanikania NPC o zmierzchu, ale to <strong>stała renderowania, nie dana rutyny</strong> - jej miejsce jest w <code>settings.py</code> obok innych stałych animacji.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="zywosc">Dwa parametry "żywości"</h2>
+
+  <p class="prose">Odpowiedź na "co ma dawać wrażenie realizmu bez komplikowania kodu". Dwa do dodania, trzeci już masz.</p>
+
+  <div class="grid cols-3" style="margin:var(--s4) 0">
+    <div class="card">
+      <span class="badge info">najważniejszy</span>
+      <h3 style="margin-top:var(--s3)"><code>slot_jitter_minutes</code></h3>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)">Każdy NPC przesuwa granice slotów o deterministyczny offset z hasha nazwy. Nic nie jest zsynchronizowane, wioska nie "przeskakuje" o 8:00. Około 80% wrażenia życia za jakieś 5 linii - <strong>i przy okazji rozkłada w czasie przeliczanie tras</strong>, czyli rozwiązuje problem wydajności, zanim powstanie.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0"><code>wander_radius</code></h3>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)">Postać dryfuje po swoim miejscu zamiast stać jak słup. Reużywa <code>get_random_safe_pos()</code>, które już działa.</p>
+    </div>
+    <div class="card">
+      <span class="badge ok">już istnieje</span>
+      <h3 style="margin-top:var(--s3)">Zróżnicowana prędkość</h3>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)"><code>speed = random.choice([speed_walk, speed_run])</code>, <code>characters.py:205</code>. Nic do zrobienia.</p>
+    </div>
+  </div>
+
+  <h3>Nie-cele, świadomie</h3>
+  <ul class="prose nongoal">
+    <li>Brak symulacji potrzeb - głodu, energii, nastroju.</li>
+    <li>Brak relacji między NPC-ami.</li>
+    <li>Brak dynamicznych drzwi i wnętrz budynków.</li>
+    <li>Brak kolejkowania i budżetowania A* dla systemu, który jeszcze nie istnieje.</li>
+    <li>Brak strojenia liczb balansowych - te żyją w CSV i są Twoją domeną.</li>
+  </ul>
+
+  <h2 id="csv">Brakujące kolumny w <code>characters.csv</code></h2>
+
+  <p class="prose">Zgłoszone jako sprawa poboczna, ale D12 i tak wymaga dopisania kolumn do tego pliku, więc trafia do planu.</p>
+
+  <div class="callout ok">
+    <p><strong>Nie brakuje kodu - plik jest po prostu nieaktualny.</strong> <code>import_entities.py</code> jest symetryczny: <code>_export_csv</code> zbiera nazwy kolumn <em>ze wszystkich encji w sekcji</em> (<code>for v in section.values(): for k in v</code>), więc pole obecne u choćby jednej postaci trafia do nagłówka. <code>characters.csv</code> ma dziś 17 kolumn, a ponowny eksport wygeneruje <strong>24</strong>.</p>
+  </div>
+
+  <h3>Co dojdzie po ponownym eksporcie</h3>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:26%">Kolumna</th><th style="width:14%">Typ</th><th style="width:60%">Kto ją dziś ma w <code>config.json</code></th></tr></thead>
+      <tbody>
+        <tr><td><code>money</code></td><td>int</td><td>12 postaci: Player, JOHNY, FRED, BART, ROB, ROBIN, MARRY, HAMMER_HOAXHEART, BARMAN_ABSINTHRAYNER, CLAPBACK_SWORD, POTIONEER_PUZZLEMINT, MADAME_SARCASMIA</td></tr>
+        <tr><td><code>items</code></td><td>lista</td><td>Player, JOHNY, BART, SNAKE_01, MADAME_SARCASMIA</td></tr>
+        <tr><td><code>is_merchant</code></td><td>bool</td><td>JOHNY, BART</td></tr>
+        <tr><td><code>tradeable_items_types</code></td><td>lista</td><td>JOHNY</td></tr>
+        <tr><td><code>max_carry_weight</code></td><td>float</td><td>JOHNY, BART</td></tr>
+        <tr><td><code>allowed_zones</code></td><td>lista</td><td>11 zwierząt: FISH_RED, DOG_ORANGE, DOG_PURPLE, CHICKEN_*, PIG, COW, HORSE, FROG</td></tr>
+        <tr><td><code>max_health</code></td><td>int</td><td>nie zgłoszone, ale też brakuje</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Jak to zrobić</h3>
+
+  <pre><code>just import-entities --export</code></pre>
+
+  <div class="callout warn">
+    <p><strong>Round-trip jest bezpieczny, ale sprawdź to na gałęzi.</strong> Eksport wypisuje pustą komórkę dla pola, którego postać nie ma, a import pomija puste komórki (<code>if raw == "": continue</code>), więc model użyje wartości domyślnej - puste zostaje puste. Mimo to pierwszy przebieg przepisuje <em>cały</em> plik (kolejność kolumn, sortowanie kluczy, formatowanie list jako JSON w komórce), więc diff będzie duży. Warto go obejrzeć raz porządnie.</p>
+  </div>
+
+  <h3>Kolumny listowe: przecinek zamiast JSON-a</h3>
+
+  <p class="prose">Dziś <code>_export_csv</code> zapisuje listy jako JSON w komórce (<code>["water","shore"]</code>). To jedyne miejsce, gdzie JSON wraca tylnymi drzwiami do pliku edytowanego ręcznie, i jest wyraźnie nieprzyjemne w edycji. Zmiana: <strong>listy zapisywane jako wartości rozdzielone przecinkiem</strong>.</p>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:26%">Kolumna</th><th style="width:37%">Dziś</th><th style="width:37%">Po zmianie</th></tr></thead>
+      <tbody>
+        <tr><td><code>allowed_zones</code></td><td><code>["water","shore"]</code></td><td><code>water,shore</code></td></tr>
+        <tr><td><code>tradeable_items_types</code></td><td><code>["gem"]</code></td><td><code>gem</code></td></tr>
+        <tr><td><code>items</code></td><td><code>["life_pot","life_pot","fish"]</code></td><td><code>life_pot,life_pot,fish</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="prose">Separator kolumn w tych plikach to średnik, więc przecinek jest wolny i nie trzeba niczego cytować. Po stronie odczytu <code>parse_value</code> ma przyjmować <strong>oba zapisy</strong>: najpierw próba JSON (żeby istniejące komórki i ręczne wklejki dalej działały), a gdy to nie jest lista - podział po przecinku z obcięciem białych znaków. Pusta komórka nadal oznacza "nie nadpisuj", więc pusta lista i brak wartości pozostają rozróżnialne tak samo jak dziś.</p>
+
+  <p class="prose"><strong>Justfile.</strong> Recepta <code>import-entities</code> dostaje przelot argumentów, więc eksport to <code>just import-entities --export</code> - bez mnożenia recept.</p>
+
+  <h3>Kolumny dokładane przez D12</h3>
+
+  <p class="prose">Do tego samego pliku dochodzą cztery kolumny destynacji: <code>home</code>, <code>work</code>, <code>social</code>, <code>hobby</code>. Każda trzyma nazwę obiektu z warstwy <code>places</code>. Trzeba je dodać także do modelu postaci (<code>config_model/config.py</code> i <code>config_pydantic.py</code>) z domyślną wartością pustego stringa, żeby importer je rozpoznał.</p>
+
+  <h2 id="kod">Architektura kodu</h2>
+
+  <h3><code>NpcRuntime</code> - fundament</h3>
+
+  <div class="callout ok">
+    <p><strong>Warstwa zapisu już ma właściwy kształt.</strong> <code>NPCState</code> (<code>save_load/models.py:273</code>) trzyma <code>money</code> i <code>inventory</code> per nazwa NPC, <code>manager.py:278</code> zapisuje, <code>manager.py:699</code> przywraca. Zostaje obiekt runtime w pamięci plus nowe pola w <code>NPCState</code> - nie trzeba projektować schematu zapisu od zera.</p>
+  </div>
+
+  <ul class="prose">
+    <li>Nowe pola instancyjne: <code>money</code>, <code>stock</code>, <code>routine_key</code>.</li>
+    <li><code>Character</code> z configu staje się <strong>tylko do odczytu</strong> - żaden kod nie pisze do <code>npc.model.*</code>. Dotyczy również gracza.</li>
+    <li><code>NPCState</code> dostaje nowe pola z wartościami domyślnymi, żeby stare zapisy się wczytywały.</li>
+  </ul>
+
+  <h3>Hak przełomu dnia</h3>
+
+  <p class="prose"><code>Scene.update_next_day()</code> przechodzi na <code>apply_days(n)</code>. Powrót z wyprawy trwającej trzy doby ma zadziałać jednym wywołaniem, więc każdy krok musi być funkcją <em>stanu i liczby dni</em>, a nie pętlą po dniach. Regeneracja liniowa z sufitem (D7) i przelosowanie asortymentu mają tę własność z natury.</p>
+
+  <h2 id="kolejnosc">Kolejność budowy</h2>
+
+  <ol class="steps">
+    <li><strong><code>NpcRuntime</code></strong> + rozdzielenie od configu + pola w zapisie. <span class="badge err">blokuje wszystko</span> Naprawia przy okazji globalny bug ze złotem gracza.</li>
+    <li><strong>Regeneracja sakiewki + sakiewka jako <code>bieżąca / sufit</code> w panelu.</strong> <span class="badge ok">realizuje cel zadania</span> Handel po 1 sztuce plus topniejąca sakiewka to już jest stopniowa sprzedaż.</li>
+    <li>Zaziarnione losowanie + gating klawisza <code>next_day</code> za <code>IS_DEBUG_MODE</code>. Bez tego drugiego własne testy kłamią.</li>
+    <li><strong>Regeneracja <code>characters.csv</code></strong> przez <code>--export</code> + cztery kolumny destynacji w modelu postaci. Osobny, czysty commit - diff będzie duży, więc nie warto go mieszać ze zmianami logiki.</li>
+    <li><code>routines.toml</code> + <code>npc_schedule.py</code> + warstwa <code>places</code>, na razie z jedną aktywnością <code>stand</code>.</li>
+    <li><code>sleep</code> z zanikiem na progu.</li>
+    <li><code>wander</code> / <code>patrol</code> / <code>idle</code> + jitter slotów.</li>
+  </ol>
+
+  <p class="prose">Punkty 1-3 to ekonomia, 4-6 to cykl dobowy. Obie połówki są niezależne - można je robić w dowolnej kolejności względem siebie, byle <code>NpcRuntime</code> był pierwszy.</p>
+
+  <h2 id="nth">Opcjonalne, na koniec</h2>
+
+  <p class="prose">Obie rzeczy poniżej są zaprojektowane tak, żeby <strong>cała reszta działała bez nich</strong>. Żadna nie jest zależnością niczego z listy powyżej.</p>
+
+  <!-- N1 -->
+  <details class="dec optional" id="nth1">
+    <summary><span class="qid">N1</span> Popyt dzienny z zapowiedzią na jutro <span class="badge info">nice to have</span></summary>
+    <div class="body">
+      <p class="prose"><strong>Pomysł.</strong> Każdy handlarz ma na dany dzień 2-3 towary, za które płaci więcej. Gracz dowiaduje się o tym <em>dzień wcześniej</em>, więc może zaplanować, po co schodzi do labiryntu. To zamienia losowanie w plan do wykonania.</p>
+
+      <div class="callout warn">
+        <p><strong>Problem do rozwiązania: handlarze nie prowadzą dialogów.</strong> Sprawdziłem - <code>JOHNY</code> i <code>BART</code> mają w configu <code>has_dialog: false</code>, więc nie ma gdzie umieścić zdania "jutro będę chciał bursztyny". Poniżej trzy sposoby obejścia, w kolejności od najtańszego.</p>
+      </div>
+
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:20%">Nośnik</th><th style="width:34%">Jak</th><th style="width:30%">Koszt</th><th style="width:16%">Ocena</th></tr></thead>
+          <tbody>
+            <tr class="chosen">
+              <td><strong>Panel handlu</strong></td>
+              <td><code>_draw_merchant_stats</code> (<code>trade.py:131</code>) już rysuje listę wierszy ikona + wartość, i już potrafi rysować listę typów towaru, którymi handlarz się zajmuje (<code>trade.trades_only</code>). Dokładasz dwie sekcje tą samą metodą: "dziś kupuję drożej" i "jutro będę chciał".</td>
+              <td>Reużywa istniejący <code>draw_icon_value</code>. Zero nowych paneli, zero dialogów, zero obiektów w Tiled.</td>
+              <td><span class="badge ok">zalecane</span></td>
+            </tr>
+            <tr>
+              <td>Tablica ogłoszeń w wiosce</td>
+              <td>Nowy obiekt interaktywny w Tiled, panel pokazujący popyt wszystkich handlarzy naraz.</td>
+              <td>Nowy typ obiektu, nowy panel, obsługa interakcji. Za to jedno miejsce z pełnym obrazem rynku.</td>
+              <td><span class="badge">później</span></td>
+            </tr>
+            <tr>
+              <td>Nadanie handlarzom dialogów</td>
+              <td><code>has_dialog: true</code> + graf dialogowy z węzłem czytającym popyt.</td>
+              <td>Najdroższe - trzeba napisać treść dialogów dla postaci, które ich dziś nie mają, i utrzymywać je w dwóch językach.</td>
+              <td><span class="badge">odrzucone</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Plan wdrożenia (wariant "panel handlu")</h3>
+      <ol class="steps">
+        <li><strong>Model.</strong> <code>NpcRuntime.demand: dict[str, int]</code> - klucz przedmiotu na liczbę sztuk objętych podwyżką. Nic nowego w zapisie: skoro losowanie jest zaziarnione (D10), popyt <em>wylicza się</em> z <code>(save_seed, day, npc_name)</code> i nie musi być serializowany.</li>
+        <li><strong>Funkcja.</strong> <code>demand_for(npc, day) -&gt; dict[str, int]</code> - czysta funkcja, bez stanu. Wywołana z <code>day</code> daje dziś, wywołana z <code>day + 1</code> daje zapowiedź. <strong>To jest cała magia zapowiedzi</strong> - jutro jest za darmo, bo jest deterministyczne.</li>
+        <li><strong>Cena.</strong> W <code>get_sell_price_multiplier</code> dołożyć mnożnik popytu, dopóki nie wyczerpie się liczba sztuk na dziś. Po wyczerpaniu cena wraca do normalnej - <em>nie spada poniżej</em>, żeby nie wracać do odrzuconego nasycenia z D9.</li>
+        <li><strong>Panel.</strong> Dwa wiersze w <code>_draw_merchant_stats</code>, wzorowane na istniejącym bloku <code>trades_only</code>.</li>
+        <li><strong>Arytmetyka.</strong> Cena w panelu szczegółów pokazuje składniki: <code>40 zł x1,2 (poszukiwane) x0,9 (nieufny) = 43 zł</code>. <strong>To musi powstać razem z popytem, nie po nim</strong> - bez tego popyt jest niewidzialną matematyką i wraca dokładnie ten problem, przez który odrzuciliśmy nasycenie.</li>
+      </ol>
+
+      <p class="why"><strong>Warunek sensowności.</strong> N1 warto robić dopiero, gdy limit sakiewki realnie się aktywuje, czyli po Twojej korekcie liczb w CSV. Dopóki maksymalny łup to 900 zł przy sufitcie 3000, popyt jest ozdobą na mechanice, która nie działa.</p>
+    </div>
+  </details>
+
+  <!-- N2 -->
+  <details class="dec optional" id="nth2">
+    <summary><span class="qid">N2</span> Nocleg u Barmana <span class="badge info">nice to have</span></summary>
+    <div class="body">
+      <p class="prose"><strong>Scenariusz.</strong> Gracz podchodzi do Barmana w karczmie, rozmawia, a jedna z opcji dialogowych ma specjalny efekt: zabiera pieniądze (jeśli gracza stać), potem fade out / fade in i zaczyna się nowy dzień.</p>
+
+      <div class="callout ok">
+        <p><strong>Dobra wiadomość: trzy czwarte tego już istnieje.</strong> <code>BARMAN_ABSINTHRAYNER</code> ma dialogi, a system efektów ubocznych węzłów dialogowych ma gotową kategorię <code>MONEY_RETURNED</code>, która woła <code>sink.remove_money()</code> (<code>dialog/result_sink.py</code>). Zabranie złota za nocleg nie wymaga <em>żadnego</em> nowego kodu ekonomicznego.</p>
+      </div>
+
+      <h3>Trzy realne blokady, wykryte w kodzie</h3>
+
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:26%">Blokada</th><th style="width:38%">Na czym polega</th><th style="width:36%">Rozwiązanie</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Efekt działa tylko raz</strong></td>
+              <td><code>visit_node()</code> ma <code>if node.visited: return False</code> - efekt uboczny stosuje się dokładnie raz na całą grę. Nocleg musi działać co noc.</td>
+              <td>Flaga <code>repeatable: bool</code> na <code>DialogNode</code>, domyślnie <code>False</code>. Gdy ustawiona, <code>visit_node</code> stosuje efekt mimo <code>visited</code>. Jedno pole i jeden warunek; nie rusza żadnego istniejącego dialogu.</td>
+            </tr>
+            <tr>
+              <td><strong>Brak kategorii "prześpij noc"</strong></td>
+              <td><code>NodeVisitResultCategory</code> ma 7 wartości: pieniądze, przedmioty, zdrowie, sentyment. Żadna nie przesuwa czasu.</td>
+              <td>Ósma wartość <code>TIME_ADVANCED</code> + metoda <code>sleep_until_dawn()</code> w protokole <code>ResultSink</code> + jedna gałąź w <code>apply_result</code>. Implementacja w adapterze woła istniejące <code>apply_days(1)</code> i ustawia godzinę na 6:00.</td>
+            </tr>
+            <tr>
+              <td><strong>DSL warunków nie widzi złota ani godziny</strong></td>
+              <td><code>NPCConditionContext</code> udostępnia <code>selected</code>, <code>visited</code>, <code>has_item</code>, <code>item_count</code>, <code>quest_done</code>, <code>sentiment</code>. Nie ma dostępu do pieniędzy gracza ani do zegara, więc nie da się warunkowo pokazać opcji "przenocuj".</td>
+              <td>Dwie właściwości: <code>money</code> (z <code>player</code>, już wstrzykniętego do kontekstu) i <code>hour</code> (ze <code>scene</code>). Wtedy warunek opcji brzmi <code>money &gt;= 20 and (hour &gt;= 20 or hour &lt; 6)</code> - czysto deklaratywnie, w danych dialogu.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Przepływ</h3>
+      <pre><code>gracz rozmawia z Barmanem
+  |
+  +- opcja "Przenocuję" widoczna tylko gdy:
+  |     money >= cena_noclegu   AND   godzina w oknie 20:00-06:00
+  |     (warunek w DSL, zero kodu per-przypadek)
+  |
+  +- wybór opcji -> wezel z result:
+  |     MONEY_RETURNED  (cena_noclegu)   -> sink.remove_money()   [istnieje]
+  |     TIME_ADVANCED                    -> sink.sleep_until_dawn() [nowe]
+  |
+  +- sleep_until_dawn():
+        zamknij panel dialogu
+        transition.fade_out()          [istnieje: project/transition.py]
+        scene.apply_days(1); scene.hour = 6; scene.minute = 0
+        transition.fade_in()</code></pre>
+
+      <div class="callout">
+        <p><strong>Dlaczego okno 20:00-06:00.</strong> Jedno <code>if</code> w warunku opcji sprawia, że pętla "prześpij - sprzedaj - prześpij" staje się <em>zdominowana</em>: po noclegu jest 6:00 i opcja znika na 14 godzin gry. Odpowiedź na pytanie "i co teraz" brzmi: labirynt, czyli gra. Opłata za nocleg dokłada drugi koszt.</p>
+        <p style="margin-top:var(--s2)"><strong>Zasada do wielokrotnego użytku:</strong> nie trzeba czynić degeneracyjnej taktyki niemożliwą, wystarczy uczynić ją gorszą od grania. Po dodaniu reguły antyexploitowej pytaj: "co optymalny gracz robi w oknie, które ta reguła tworzy?". Jeśli odpowiedź brzmi "stoi", reguła jest cooldownem i zawiodła.</p>
+      </div>
+
+      <p class="why"><strong>Niezależność.</strong> N2 nie jest wymagane przez nic innego. Bez niego doba po prostu płynie sama - przy obecnych 96 sekundach na dobę czekanie na świt i tak jest krótkie, więc nocleg staje się istotny dopiero, gdy zwolnisz zegar.</p>
+    </div>
+  </details>
+
+  <h2 id="pliki">Pliki</h2>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Nowe</h3>
+      <ul style="margin:0;padding-left:1.2em;font-size:.9rem">
+        <li><code>project/config_model/routines.toml</code></li>
+        <li><code>project/npc_schedule.py</code></li>
+        <li>warstwa obiektów <code>places</code> w mapie Tiled - nazwane punkty</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Modyfikowane</h3>
+      <ul style="margin:0;padding-left:1.2em;font-size:.9rem">
+        <li><code>project/characters.py</code> - <code>NpcRuntime</code>, <code>goal</code>, przepisanie <code>restock_items</code> / <code>sell_all_bought_items</code></li>
+        <li><code>project/npc_state.py</code> - <code>Talk</code> pochłaniający, konsumpcja <code>goal</code></li>
+        <li><code>project/scene.py</code> - warstwa <code>places</code>, <code>apply_days(n)</code>, gating klawisza debug</li>
+        <li><code>project/save_load/models.py</code> + <code>manager.py</code></li>
+        <li><code>project/ui/panels/trade.py</code> - sakiewka jako <code>bieżąca / sufit</code></li>
+        <li><code>project/config_model/config.py</code> + <code>config_pydantic.py</code> - <code>money_cap</code>, <code>money_regen_pct</code>, pula asortymentu, cztery kolumny destynacji</li>
+        <li><code>project/config_model/characters.csv</code> - regeneracja przez <code>--export</code> (7 brakujących kolumn) + 4 kolumny destynacji</li>
+        <li><code>project/config_model/import_entities.py</code> - listy jako wartości po przecinku, odczyt tolerujący też stary JSON</li>
+        <li><code>Justfile</code> - przelot argumentów w <code>import-entities</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="prose" style="margin-top:var(--s4)"><strong>Dodatkowo dla opcjonalnych:</strong> N1 dotyka tylko <code>trade.py</code> i <code>settings.py</code> (mnożnik ceny). N2 dotyka <code>dialog/entities.py</code> (flaga <code>repeatable</code>, kategoria <code>TIME_ADVANCED</code>), <code>dialog/result_sink.py</code>, <code>dialog/context_adapter.py</code> (<code>money</code>, <code>hour</code>) i <code>result_sink_adapter.py</code>.</p>
+
+  <h2 id="weryfikacja">Weryfikacja</h2>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:22%">Co</th><th style="width:78%">Jak</th></tr></thead>
+      <tbody>
+        <tr><td>Harmonogram</td><td>Test jednostkowy <code>current_slot()</code>: granice kroków, zawijanie przez północ (krok o 02:00 aktywny do 06:00), determinizm jittera dla tej samej nazwy, niezależność od kolejności kroków w pliku. Bez pygame - czysta funkcja.</td></tr>
+        <tr><td>Rozwiązywanie <code>at</code></td><td>Trzy warianty: <code>type:</code> trafia w kolumnę postaci, <code>location:</code> w obiekt mapy, <code>route:</code> w łamaną. Pusta komórka destynacji degraduje krok do <code>idle</code> w miejscu, nie wyjątek.</td></tr>
+        <tr><td>Round-trip CSV</td><td><code>--export</code> a potem <code>import_entities.py</code> daje <code>config.json</code> identyczny semantycznie z wyjściowym (puste komórki nie nadpisują wartości domyślnych).</td></tr>
+        <tr><td>Regeneracja</td><td><code>apply_days(3)</code> daje ten sam stan co trzykrotne <code>apply_days(1)</code>. Sakiewka nigdy nie przekracza <code>money_cap</code>. Pusta sakiewka odbudowuje się w 4 doby przy 25%.</td></tr>
+        <tr><td>Asortyment</td><td>Po przelosowaniu nie zawiera towaru skupionego od gracza.</td></tr>
+        <tr><td>Zapis / odczyt</td><td>Stary plik zapisu bez nowych pól wczytuje się bez wyjątku. Dopisać do <code>tests/test_save_load_dialog_state.py</code>.</td></tr>
+        <tr><td>Ręcznie</td><td>Przez <code>agent_ctrl</code>: <code>talk_to_char</code> na handlarzu o 8:00 i o 23:00. Sprzedawać po sztuce aż do wyczerpania sakiewki i sprawdzić, że powiadomienie o odmowie jest właściwe.</td></tr>
+        <tr><td>Wizualnie</td><td><span class="badge warn">u usera</span> Zrzuty headless nie są wierne dla kompozycji całej klatki, więc zanik NPC o zmierzchu i panel handlu weryfikujesz na prawdziwym ekranie.</td></tr>
+        <tr><td>Wydajność</td><td>Przy <code>SHOW_DEBUG_INFO</code> sprawdzić, że o pełnej godzinie nie ma skoku czasu klatki - jitter ma to rozłożyć.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="pg">
+    <p style="margin:0">MoM &middot; dokument decyzyjny, wersja 2, 21 lipca 2026. Plan tekstowy: <code>doc/plan-cykl-dobowy-npc.md</code>.</p>
+  </footer>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+  /* ---------- Zwijane decyzje ---------- */
+  function setAllDecisions(open) {
+    document.querySelectorAll('details.dec').forEach(d => { d.open = open; });
+  }
+
+  // Link ze spisu treści do zwiniętej sekcji sam jej nie otworzy - trzeba pomóc.
+  // Otwieramy też wszystkich przodków, gdyby kiedyś doszło zagnieżdżenie.
+  function revealTarget() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    for (let n = el; n; n = n.parentElement) {
+      if (n.tagName === 'DETAILS') n.open = true;
+    }
+    // po rozwinięciu wysokość się zmienia, więc dosuwamy widok jeszcze raz
+    requestAnimationFrame(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+  }
+  window.addEventListener('hashchange', revealTarget);
+  window.addEventListener('DOMContentLoaded', revealTarget);
+
+  function copyToClipboard(text, msg = 'Skopiowano do schowka') {
+    navigator.clipboard.writeText(text).then(() => showToast(msg))
+      .catch(() => {
+        const ta = document.createElement('textarea'); ta.value = text;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        ta.remove(); showToast(msg);
+      });
+  }
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+</script>
+</body>
+</html>
