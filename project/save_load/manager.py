@@ -183,6 +183,7 @@ class SaveManager:
             clock=clock_state,
             maps=map_states,
             quests=self._build_quest_state(scene),
+            world_seed=scene.world_seed,
         )
 
     def _build_quest_state(self, scene: Scene) -> dict[str, dict[str, Any]]:
@@ -479,6 +480,9 @@ class SaveManager:
         )
         new_scene.enter_state()
 
+        # Before anything that might roll: the fresh Scene rolled itself a new seed
+        # in __init__, and the loaded game's identity has to replace it.
+        new_scene.world_seed = save.world_seed
         self._apply_player_state(new_scene, save.player)
         self._apply_map_states(new_scene, save.maps)
         self._apply_game_clock(new_scene, save.clock)

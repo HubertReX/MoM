@@ -436,6 +436,13 @@ class SaveGame:
     # import-quests` rewrites it, and progress must survive that. Stored flat
     # (not as a nested QuestState) so the save file stays readable.
     quests: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # Identity of the playthrough. Everything the world re-rolls on its own (a
+    # merchant's stock at dawn, what it will pay extra for) is derived from this
+    # plus the day, so the answer for a given day is fixed and reloading in front
+    # of a stall cannot re-roll it - see world_rng.py. Saves written before this
+    # existed default to 0, which is a poorer seed but still a *stable* one; the
+    # alternative, rolling a fresh seed on every load, is the hole itself.
+    world_seed: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return _to_dict(self)
@@ -449,6 +456,7 @@ class SaveGame:
             clock=GameClockState.from_dict(data.get("clock", {})),
             maps={k: MapState.from_dict(v) for k, v in data.get("maps", {}).items()},
             quests=raw_quests if isinstance(raw_quests, dict) else {},
+            world_seed=int(data.get("world_seed", 0)),
         )
 
 

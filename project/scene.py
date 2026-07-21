@@ -83,6 +83,7 @@ from settings import (
     STEP_COST_WALL,
     TEXT_ROW_SPACING,
     TRANSPARENT_COLOR,
+    USE_AGENT_CONTROL,
     USE_ALPHA_FILTER,
     USE_PARTICLES,
     USE_SHADERS,
@@ -106,6 +107,7 @@ from ui import icons as ui_icons
 from ui.game_ui import GameUI
 from ui.panels.hud import NOTIFICATION_TYPE_ICONS
 from ui.panels.trade import TradePanel
+from world_rng import day_rng, new_world_seed
 
 
 ################################################################################################################
@@ -283,6 +285,11 @@ class Scene(State):
         self.hour: int = INITIAL_HOUR
         self.minute: int = 0
         self.minute_f: float = 0.0
+        # Identity of this playthrough, rolled once and then carried in the save.
+        # Everything the world re-rolls by itself draws from `day_rng(name)`, which
+        # is derived from this plus the day - see world_rng.py for why that is not
+        # optional. Global, not per-map, so it stays out of `self.properties`.
+        self.world_seed: int = new_world_seed()
         # are we outdoors? shell there be night and day cycle?
         self.outdoor: bool = False
         self.filter_surf = pygame.Surface((settings.WIDTH // FILTER_SCALE, settings.HEIGHT // FILTER_SCALE),
@@ -1443,6 +1450,16 @@ class Scene(State):
         self.transition.exiting = False
 
     #############################################################################################################
+    def day_rng(self, name: str = "", day_offset: int = 0) -> random.Random:
+        """Generator for `name`'s rolls on the current day (or a later one).
+
+        `day_offset=1` asks for tomorrow, which is what makes a day-ahead preview
+        - "the merchant will want amber tomorrow" - cost nothing to store: it is
+        recomputed, not remembered. See world_rng.py.
+        """
+        return day_rng(self.world_seed, self.day + day_offset, name)
+
+    #############################################################################################################
     def apply_days(self, days: int = 1) -> None:
         """Run the day-turn upkeep for `days` elapsed days in one go.
 
@@ -1660,7 +1677,21 @@ class Scene(State):
             INPUTS["alpha"] = False
 
         if INPUTS["next_day"]:
-            self.apply_days(1)
+            # Debug-only, and deliberately so: left ungated this key is a free
+            # merchant refill on demand, which makes any economy observation - mine
+            # or the player's - meaningless. Gated on the *runtime* overlay flag
+            # (` / Z) rather than `IS_DEBUG_MODE`, which is a hardcoded False that
+            # nothing ever sets; SHOW_DEBUG_INFO is also exactly what the help panel
+            # already uses to decide whether to advertise this key, so the two now
+            # agree. `USE_AGENT_CONTROL` keeps it available to the agent-driven
+            # tests, which skip a day on purpose and run without the overlay.
+            if SHOW_DEBUG_INFO or USE_AGENT_CONTROL:
+                # Advance the counter too. Firing the day turn while `self.day` sat
+                # still made the key lie in the other direction: merchants restocked
+                # on a day that, as far as anything reading the clock was concerned,
+                # had never happened.
+                self.day += 1
+                self.apply_days(1)
             INPUTS["next_day"] = False
 
         if INPUTS["intro"]:

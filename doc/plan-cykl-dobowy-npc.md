@@ -297,6 +297,14 @@ Harmonogram nie steruje ruchem. Ustawia `npc.goal = (place, activity)`, a istnie
 
 Losowanie musi być zaziarnione: `Random(hash((save_seed, day, npc_name)))`. Inaczej gracz przeładowuje zapis, aż handlarz będzie miał to, czego szuka. To także warunek konieczny zapowiadania popytu na jutro (opcja N1).
 
+Status: **zrobione**, krok 3. `project/world_rng.py` (`stable_hash`, `day_rng`, `new_world_seed`) plus `Scene.world_seed` i `Scene.day_rng(name, day_offset)`. Seed jest losowany raz na nową grę i wędruje w zapisie (`SaveGame.world_seed`); stare zapisy dostają 0 - kiepski seed, ale **stały**, bo losowanie świeżego przy każdym wczytaniu byłoby dokładnie tą dziurą, którą to zamyka.
+
+Poprawka do planu: **`hash()` z planu nie działa.** Python soli hashowanie stringów per proces (`PYTHONHASHSEED`), więc `hash((4242, 3, "JOHNY"))` daje inną liczbę po każdym starcie gry - roll byłby stabilny w obrębie sesji i przelosowywalny przez restart, czyli ta sama dziura, tylko wolniejsza. Zweryfikowane empirycznie, dwa procesy: `-8392815750115326562` vs `-2251698939627118296`. Stąd `zlib.crc32` po bajtach UTF-8, przypięte testem odpalającym dwa podprocesy z różnym `PYTHONHASHSEED`.
+
+Uwaga o zakresie: to na razie **sam szkielet, bez konsumenta**. W przełomie dnia nie ma dziś nic losowego (`restock_items()` odtwarza listę z configu), więc `day_rng` czeka na pulę asortymentu i na popyt z N1. Zbudowane teraz, bo plan słusznie stawia je przed krokami 4-7 - dorabianie ziarna po fakcie oznaczałoby unieważnienie zapisów.
+
+Klawisz `next_day` zabramkowany, ale na `SHOW_DEBUG_INFO`, **nie** na `IS_DEBUG_MODE` - ta druga to zahardkodowane `False` w `settings.py:318`, którego nic nigdy nie ustawia, więc dosłowne wykonanie planu zabiłoby klawisz także we własnym playteście. `SHOW_DEBUG_INFO` jest przełączalne w locie (`` ` `` / `Z`) i jest dokładnie tym, czym panel pomocy już teraz bramkuje wiersz "N" - czyli pomoc przestaje kłamać. Do tego `USE_AGENT_CONTROL`, żeby testy agentowe dalej mogły przeskoczyć dobę. Przy okazji klawisz podbija teraz `self.day`; wcześniej odpalał przełom dnia na dobie, która - dla wszystkiego, co czyta zegar - nigdy się nie wydarzyła.
+
 ### Odnawianie sakiewki: regeneracja do limitu
 
 Status: **zrobione**, krok 2. `Scene.update_next_day()` to teraz `Scene.apply_days(n)`, a po stronie NPC są dwie metody: `regenerate_money(days)` i przepisane `restock_items()`. `sell_all_bought_items()` usunięte w całości - to ono było źródłem nieskończonego wzrostu sakiewki.
@@ -380,6 +388,7 @@ Do tego samego pliku dochodzą cztery kolumny destynacji: `home`, `work`, `socia
 
 Nowe:
 
+- `project/world_rng.py` - zaziarnione losowanie świata (zrobione)
 - `project/config_model/routines.toml`
 - `project/npc_schedule.py`
 - warstwa obiektów `places` w mapie Tiled - nazwane punkty
@@ -400,7 +409,7 @@ Modyfikowane:
 
 1. ~~`NpcRuntime` + rozdzielenie od configu + pola w zapisie.~~ **Zrobione**, commit `404d274`.
 2. ~~Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu.~~ **Zrobione**, plus naprawa niezerowanej wagi w `restock_items` i testy `tests/test_merchant_economy.py`.
-3. Zaziarnione losowanie + gating klawisza `next_day` za `IS_DEBUG_MODE`. Bez tego drugiego własne testy kłamią.
+3. ~~Zaziarnione losowanie + gating klawisza `next_day`.~~ **Zrobione**: `world_rng.py`, `Scene.world_seed` w zapisie, bramka na `SHOW_DEBUG_INFO` (nie `IS_DEBUG_MODE` - patrz wyżej), testy `tests/test_world_rng.py`.
 4. Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci. Osobny, czysty commit - diff będzie duży, więc nie warto go mieszać ze zmianami logiki.
 5. `routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.
 6. `sleep` z zanikiem na progu.
