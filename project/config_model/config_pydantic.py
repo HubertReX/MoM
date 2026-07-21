@@ -82,6 +82,16 @@ class Character(BaseModel):
     has_dialog:    Annotated[bool,         Field(False, description="Whether this character has a dialog graph", repr=False)]
     friendly:      Annotated[float,        Field(0.5, ge=0.0, le=1.0, description="Base sentiment towards the player (0..1, maps to initial NPC sentiment 0..100)", repr=False)]
     disposition:   Annotated[int | dict[str, int], Field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS), description="Per-sentiment weights that shift NPC sentiment when a dialog option is chosen; legacy int is converted to default weights", repr=False)]
+    # Daily-routine destinations. Each names an object on the map's `places` layer;
+    # the routine only ever says "go to your `work`", which is what lets one routine
+    # serve the whole village. The role of a place is a *relation* between character
+    # and place, not a property of the place - the same tavern is the barman's `work`
+    # and everybody else's `social` - so it is bound here and not in Tiled.
+    # An empty cell degrades that routine step to "stay put", never to a crash.
+    home:          Annotated[str,          Field("", description="place object the character sleeps at", repr=False)]
+    work:          Annotated[str,          Field("", description="place object the character works at", repr=False)]
+    social:        Annotated[str,          Field("", description="place object the character spends its break at", repr=False)]
+    hobby:         Annotated[str,          Field("", description="place object characteristic for this character", repr=False)]
 
     @field_validator("disposition", mode="before")
     @classmethod

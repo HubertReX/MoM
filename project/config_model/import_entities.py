@@ -26,6 +26,14 @@ SENTIMENT_COLUMNS = ("kind", "weak", "angry", "smart", "funny")
 # every other field falls back to its model default.
 REQUIRED_CHARACTER_FIELDS = ("name_EN", "name_PL", "sprite", "race", "attitude")
 
+# Columns pinned to the front on export. Everything else keeps the order it has in
+# config.json, which is insertion order and therefore arbitrary - it once put
+# `name_EN`/`name_PL` in the middle of the row, so a human scrolling the file could
+# not tell which entity a line described without counting semicolons. Only the
+# identity columns are pinned; pinning more would be a second column list to keep
+# in sync with the model.
+LEADING_COLUMNS = ("key", "name_EN", "name_PL")
+
 
 def _strip_nulls(obj: object) -> object:
     """Recursively remove dict entries with ``None`` values."""
@@ -170,6 +178,27 @@ def import_csv(entity_name: str, data: dict) -> dict:
     return data
 
 
+def _character_model_fields() -> list[str]:
+    """Field names the character model declares, in declaration order.
+
+    Without this the export can only offer columns for fields *somebody already
+    has* in config.json, so a field added to the model with a default (nobody has
+    set it yet) could never get a column - and a column typed in by hand would be
+    dropped again by the next export. Reading the model closes that loop: a new
+    field is one export away from being authorable.
+
+    Import is unaffected; it still reads whatever columns the file happens to
+    carry. A failure to import the model (web build, missing pydantic) degrades to
+    the old behaviour rather than breaking the export.
+    """
+    try:
+        from config_model.config_pydantic import Character
+    except Exception as exc:  # pragma: no cover - depends on the install
+        print(f"  [WARN] character model unavailable ({exc}); exporting known columns only")
+        return []
+    return list(Character.model_fields)
+
+
 def _export_csv(entity_name: str, data: dict) -> None:
     """Export *entity_name* section from *data* back to ``<name>.csv``."""
     import csv, io
@@ -184,6 +213,14 @@ def _export_csv(entity_name: str, data: dict) -> None:
         for k in v:
             if k not in fields:
                 fields.append(k)
+
+    # ...then everything the model declares but nobody has set yet, so a new model
+    # field shows up as an empty column ready to be filled in.
+    if entity_name == "characters":
+        fields.extend(f for f in _character_model_fields() if f not in fields)
+
+    # identity first, so a row is readable without counting semicolons
+    fields = [f for f in LEADING_COLUMNS if f in fields] + [f for f in fields if f not in LEADING_COLUMNS]
 
     # characters: disposition dict is exported as per-sentiment columns
     # (round-trip with import_csv's aggregation)

@@ -1,5 +1,5 @@
 key;monsters_list;boss_monster;monsters_count;small_chest_count;small_chest_template;big_chest_template;maze_cols;maze_rows
-1;"[""SPIRIT_01""]";CAVE_LION;4;2;SmallChest_Maze_01;BigChest_Maze_01;9;6
-2;"[""SPIRIT_01"", ""SLIME_01""]";CAVE_LION2;5;3;SmallChest_Maze_02;BigChest_Maze_02;10;7
-3;"[""SPIRIT_01"", ""SLIME_01"", ""SPIDER_01""]";LION_YELLOW;6;4;SmallChest_Maze_03;BigChest_Maze_03;11;8
-4;"[""SPIRIT_01"", ""SLIME_01"", ""SPIDER_01"", ""SNAKE_01""]";FLAM;7;5;SmallChest_Maze_04;BigChest_Maze_04;12;9
+1;SPIRIT_01;CAVE_LION;4;2;SmallChest_Maze_01;BigChest_Maze_01;9;6
+2;SPIRIT_01,SLIME_01;CAVE_LION2;5;3;SmallChest_Maze_02;BigChest_Maze_02;10;7
+3;SPIRIT_01,SLIME_01,SPIDER_01;LION_YELLOW;6;4;SmallChest_Maze_03;BigChest_Maze_03;11;8
+4;SPIRIT_01,SLIME_01,SPIDER_01,SNAKE_01;FLAM;7;5;SmallChest_Maze_04;BigChest_Maze_04;12;9

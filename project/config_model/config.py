@@ -80,6 +80,11 @@ class Character():
     has_dialog:            Annotated[bool,               field(repr=False)] = False
     friendly:              Annotated[float,              field(repr=False)] = 0.5
     disposition:           Annotated[dict[str, int],     field(repr=False)] = field(default_factory=lambda: dict(DEFAULT_DISPOSITION_WEIGHTS))
+    # Daily-routine destinations - see the same block in config_pydantic.py.
+    home:                  Annotated[str,                field(repr=False)] = ""
+    work:                  Annotated[str,                field(repr=False)] = ""
+    social:                Annotated[str,                field(repr=False)] = ""
+    hobby:                 Annotated[str,                field(repr=False)] = ""
 
     @classmethod
     def from_dict(cls: type["Character"], data: dict[str, Any]) -> "Character":
@@ -109,6 +114,10 @@ class Character():
             has_dialog = data.get("has_dialog", False),
             friendly = float(data.get("friendly", 0.5)),
             disposition = disposition,
+            home = data.get("home", ""),
+            work = data.get("work", ""),
+            social = data.get("social", ""),
+            hobby = data.get("hobby", ""),
         )
 
 

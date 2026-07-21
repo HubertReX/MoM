@@ -1,13 +1,13 @@
-key;name_EN;name_PL;type;value;weight;health_impact;damage;cooldown_time
+key;name_EN;name_PL;type;value;weight;damage;cooldown_time;health_impact
 GNOMES_WHISKER;Gnome's whisker;Wąs gnoma;key;800;0.1;;;
 MERMAIDS_TEAR;Mermaid's tear;Łza syrenki;key;800;0.1;;;
 PHOENIX_FEATHER;Phoenix feather;Pióro feniksa;key;800;0.1;;;
-POTION_CURSE_NO_MORE;Potion curse-no-more;Potion curse-no-more;consumable;1000;0.5;10;;
-axe;War Axe;Topór wojenny;weapon;170;5.0;;35;0.5
-beef;Baked beef;Baked beef;consumable;30;2.0;50;;
-club;War hammer;Maczuga;weapon;;7.0;;30;0.6
+POTION_CURSE_NO_MORE;Potion curse-no-more;Potion curse-no-more;consumable;1000;0.5;;;10
+axe;War Axe;Topór wojenny;weapon;170;5.0;35;0.5;
+beef;Baked beef;Baked beef;consumable;30;2.0;;;50
+club;War hammer;Maczuga;weapon;;7.0;30;0.6;
 empty_pot;Empty pot;Empty pot;consumable;10;0.1;;;
-fish;Fresh fish;Świeża ryba;consumable;15;0.5;15;;
+fish;Fresh fish;Świeża ryba;consumable;15;0.5;;;15
 gem_big_blue;Blue big gem;Niebieski duży klejnot;gem;80;3.0;;;
 gem_big_green;Green big gem;Zielony duży klejnot;gem;30;3.0;;;
 gem_big_orange;Orange big gem;Pomarańczowy duży klejnot;gem;90;3.0;;;
@@ -22,19 +22,19 @@ gem_small_orange;Orange small gem;Pomarańczowy mały klejnot;gem;60;;;;
 gem_small_purple;Purple small gem;Purpurowy mały klejnot;gem;20;;;;
 golden_coin;Golden coin;Złota moneta;money;1000;0.02;;;
 golden_key;Golden key;Złoty klucz;key;500;0.01;;;
-hammer;War hammer;Młot wojenny;weapon;70;5.0;;25;0.5
-honey;Bee honey;Miód;consumable;20;;40;;
-katana;Katana;Katana;weapon;250;2.5;;20;0.3
-lance;Lance;Lanca;weapon;150;2.5;;15;0.4
-leaf;Tea leaf;Liść herbaty;consumable;5;0.01;3;;
-life_pot;Life potion;Mikstura zdrowia;consumable;300;0.15;100;;
-pitchfork;Pitchfork;Widły;weapon;;2.5;;;0.4
-rapier;Rapier;Rapier;weapon;;;;;0.1
-sai;Sai;Sztylet;weapon;20;;;;0.1
-shashlik;Shashlik;Szaszłyk;consumable;20;;30;;
-shrimp;Tiger shrimp;Krewetka tygrysia;consumable;15;0.1;5;;
+hammer;War hammer;Młot wojenny;weapon;70;5.0;25;0.5;
+honey;Bee honey;Miód;consumable;20;;;;40
+katana;Katana;Katana;weapon;250;2.5;20;0.3;
+lance;Lance;Lanca;weapon;150;2.5;15;0.4;
+leaf;Tea leaf;Liść herbaty;consumable;5;0.01;;;3
+life_pot;Life potion;Mikstura zdrowia;consumable;300;0.15;;;100
+pitchfork;Pitchfork;Widły;weapon;;2.5;;0.4;
+rapier;Rapier;Rapier;weapon;;;;0.1;
+sai;Sai;Sztylet;weapon;20;;;0.1;
+shashlik;Shashlik;Szaszłyk;consumable;20;;;;30
+shrimp;Tiger shrimp;Krewetka tygrysia;consumable;15;0.1;;;5
 silver_key;Silver key;Srebrny klucz;key;500;0.01;;;
-stick;Stick;Kij;weapon;20;;;5;0.2
-sword_long;Long sword;Długi miecz;weapon;250;3.0;;30;0.5
-sword_short;Krótki miecz;Krótki miecz;weapon;;;;15;0.1
-water_pot;Water pot;Fiolka wody;consumable;20;0.15;5;;
+stick;Stick;Kij;weapon;20;;5;0.2;
+sword_long;Long sword;Długi miecz;weapon;250;3.0;30;0.5;
+sword_short;Krótki miecz;Krótki miecz;weapon;;;15;0.1;
+water_pot;Water pot;Fiolka wody;consumable;20;0.15;;;5

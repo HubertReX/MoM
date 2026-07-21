@@ -366,7 +366,16 @@ Jak to zrobić:
 just import-entities --export
 ```
 
-Round-trip jest bezpieczny, ale warto obejrzeć diff. Eksport wypisuje pustą komórkę dla pola, którego postać nie ma, a import pomija puste komórki (`if raw == "": continue`), więc model użyje wartości domyślnej - puste zostaje puste. Mimo to pierwszy przebieg przepisuje cały plik (kolejność kolumn, sortowanie kluczy, formatowanie list), więc diff będzie duży.
+Status: **zrobione**, krok 4. `characters.csv` ma teraz 30 kolumn zamiast 17 (7 brakujących + `money_cap`, `money_regen_pct` + 4 destynacje). `chests.csv` przy okazji odzyskał `random_items` i `items`, a `maze_configs.csv` listy po przecinku zamiast JSON-a.
+
+Dwie rzeczy trzeba było naprawić w eksporterze, bo bez nich krok się nie domykał:
+
+- **Eksport widział tylko pola, które ktoś już ma w `config.json`.** `_export_csv` zbierało nazwy kolumn z danych, więc pole dodane do modelu z wartością domyślną (czyli takie, którego nikt jeszcze nie ustawił - dokładnie sześć nowych) nigdy nie dostałoby kolumny, a kolumna dopisana ręcznie zniknęłaby przy następnym eksporcie. Teraz nagłówek to suma "co jest w danych" i "co deklaruje model" (`Character.model_fields`), więc nowe pole modelu jest jeden eksport od bycia edytowalnym. Import bez zmian - dalej czyta te kolumny, które plik akurat niesie.
+- **Kolejność kolumn brała się z kolejności wstawiania w `config.json`, czyli z przypadku.** W `items.csv` wylądowałoby `key;type;value;weight;...`, z nazwami gdzieś w środku wiersza - w pliku edytowanym ręcznie nie da się wtedy powiedzieć, czego dotyczy linijka, bez liczenia średników. `LEADING_COLUMNS = ("key", "name_EN", "name_PL")` przypina tożsamość na przód; reszta zachowuje dotychczasową kolejność.
+
+Uwaga na przyszłość, poza zakresem: **zacommitowany `config.json` nie jest w formacie, który produkuje którykolwiek importer.** W repo jest wcięcie 2-spacjowe ze zwartymi tablicami, a `import_entities.py`, `dialog/markdown_importer.py` i `quest/markdown_importer.py` piszą `indent=4`. Pierwszy lepszy `just import-*` przeformatuje cały plik - 4000 linii diffu przy zerowej zmianie treści. Tutaj przywróciłem plik po weryfikacji round-tripu, żeby nie wciągać tego do commita, ale to wybuchnie przy następnym imporcie dialogów.
+
+Round-trip zweryfikowany: `--export` a potem import daje `config.json` semantycznie identyczny (`a == b` po `json.load`). Eksport wypisuje pustą komórkę dla pola, którego postać nie ma, a import pomija puste komórki (`if raw == "": continue`), więc model użyje wartości domyślnej - puste zostaje puste. Mimo to pierwszy przebieg przepisuje cały plik (kolejność kolumn, sortowanie kluczy, formatowanie list), więc diff będzie duży.
 
 #### Kolumny listowe: przecinek zamiast JSON-a
 
@@ -410,7 +419,7 @@ Modyfikowane:
 1. ~~`NpcRuntime` + rozdzielenie od configu + pola w zapisie.~~ **Zrobione**, commit `404d274`.
 2. ~~Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu.~~ **Zrobione**, plus naprawa niezerowanej wagi w `restock_items` i testy `tests/test_merchant_economy.py`.
 3. ~~Zaziarnione losowanie + gating klawisza `next_day`.~~ **Zrobione**: `world_rng.py`, `Scene.world_seed` w zapisie, bramka na `SHOW_DEBUG_INFO` (nie `IS_DEBUG_MODE` - patrz wyżej), testy `tests/test_world_rng.py`.
-4. Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci. Osobny, czysty commit - diff będzie duży, więc nie warto go mieszać ze zmianami logiki.
+4. ~~Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci.~~ **Zrobione**: 17 -> 30 kolumn, plus dwie naprawy eksportera (kolumny z modelu, tożsamość na przód).
 5. `routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.
 6. `sleep` z zanikiem na progu.
 7. `wander` / `patrol` / `idle` + jitter kroków.

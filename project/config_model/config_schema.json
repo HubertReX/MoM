@@ -160,6 +160,30 @@
                     ],
                     "description": "Per-sentiment weights that shift NPC sentiment when a dialog option is chosen; legacy int is converted to default weights",
                     "title": "Disposition"
+                },
+                "home": {
+                    "default": "",
+                    "description": "place object the character sleeps at",
+                    "title": "Home",
+                    "type": "string"
+                },
+                "work": {
+                    "default": "",
+                    "description": "place object the character works at",
+                    "title": "Work",
+                    "type": "string"
+                },
+                "social": {
+                    "default": "",
+                    "description": "place object the character spends its break at",
+                    "title": "Social",
+                    "type": "string"
+                },
+                "hobby": {
+                    "default": "",
+                    "description": "place object characteristic for this character",
+                    "title": "Hobby",
+                    "type": "string"
                 }
             },
             "required": [
