@@ -5,7 +5,7 @@
 default:
     @just --list
 
-# Initialize virtual environment and install dependencies (uses `uv` if available).
+# Initialize virtual environment and install dependencies (uses `uv` if available). Rerun tu update modules.
 # `--python 3.12` is also in `.python-version`; stated here too because an unpinned
 # `uv venv` silently takes the newest interpreter on the box (Homebrew's python3 is
 # 3.14), and several pinned deps have no wheels for it.
@@ -21,7 +21,7 @@ setup:
         .venv/bin/pip install -r requirements.txt -r requirements-dev.txt; \
     fi
 
-# Initialize virtual environment and install dependencies (uses `uv` if available, falls back to standard `pip`)
+# Initialize virtual environment and install dependencies (uses `uv` if available). Rerun to udpate modules.
 [windows]
 setup:
     #!powershell
@@ -76,7 +76,7 @@ test-unit pattern="" *flags:
     #!powershell
     .venv\Scripts\python.exe scripts/run_unit_tests.py {{flags}} {{pattern}}
 
-# Run agent-driven UI tests (DESKTOP). Optional scenario name: `just test-agent "Save and Load Basic"`; Run `python tests/automate_display_test.py -h` for more.
+# Run agent-driven UI tests (DESKTOP). Example: `just test-agent "Save and Load Basic"`; Run `python tests/automate_display_test.py -h` for more.
 [unix]
 test-agent scenario="":
     #!/usr/bin/env bash
