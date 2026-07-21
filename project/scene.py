@@ -138,6 +138,12 @@ class Scene(State):
             "exits",
             "chests",
             "walls",
+            # both are per-map: `destructibles` used to leak across maps (walls were
+            # restored from the cache, the destructible sprites were not), and
+            # `destroyed_walls` is what the save reads to know which bushes/rocks
+            # the player already smashed on a map they are not standing on
+            "destructibles",
+            "destroyed_walls",
             "label_sprites",
             "shadow_sprites",
             "obstacles_sprites",
@@ -185,6 +191,11 @@ class Scene(State):
         self.chests: list[ChestSprite] = []
         self.destructibles: list[DestructibleSprite] = []
         self.walls: list[pygame.Rect] = []
+        # top-left pixel coords of every destructible destroyed on the current map.
+        # Recorded as it happens rather than diffed against a snapshot of `walls`
+        # taken at save time - the snapshot was captured lazily on the first save,
+        # so everything destroyed before that first save was invisible to it.
+        self.destroyed_walls: list[tuple[int, int]] = []
 
         self.label_sprites: pygame.sprite.Group = pygame.sprite.Group()
         self.shadow_sprites: pygame.sprite.Group = pygame.sprite.Group()
@@ -701,6 +712,7 @@ class Scene(State):
     def load_walls(self, walls_layer: TiledTileLayer) -> None:
         self.walls = []
         self.destructibles = []
+        self.destroyed_walls = []
         if "walls" in self.layers:
             walls_width = walls_layer.width
             walls_height = walls_layer.height
@@ -1478,6 +1490,7 @@ class Scene(State):
                         # destroy wall rect
                         wall = destructible.wall
                         self.walls.remove(wall)
+                        self.destroyed_walls.append((wall.x, wall.y))
                         # trigger destruction particle system
                         rect = self.map_view.translate_rect(destructible.rect)
                         particle = ParticleDestructible(self.game.canvas, self.group,

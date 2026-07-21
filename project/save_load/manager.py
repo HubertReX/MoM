@@ -238,7 +238,7 @@ class SaveManager:
                 npc_states=self._build_npc_states_from_cache(cached),
                 chests=self._build_chest_states_from_cache(cached),
                 ground_items=self._build_ground_items_from_cache(cached),
-                destroyed_walls=[],
+                destroyed_walls=self._build_destroyed_walls_from_cache(cached),
                 dead_monsters=self._build_dead_monsters_from_cache(cached),
             )
 
@@ -335,14 +335,16 @@ class SaveManager:
         ]
 
     def _build_destroyed_walls(self, scene: Scene) -> list[tuple[int, int]]:
-        original = getattr(scene, "_original_wall_positions", None)
-        if original is None:
-            original = {(w.x, w.y) for w in scene.walls}
-            scene._original_wall_positions = original
-            return []
+        """Read the list the scene keeps as destructibles are smashed.
 
-        current = {(w.x, w.y) for w in scene.walls}
-        return [(x, y) for x, y in original if (x, y) not in current]
+        This used to be a diff between ``scene.walls`` and a snapshot of the
+        "original" walls - but that snapshot was taken lazily on the first save,
+        i.e. *after* the player had already been smashing bushes. The first save
+        of every session therefore reported zero destroyed walls, and because the
+        snapshot lived on the Scene (which outlives a map change) it also mixed
+        up positions between maps.
+        """
+        return list(getattr(scene, "destroyed_walls", None) or [])
 
     def _build_maze_seed(self, scene: Scene) -> int | None:
         if not scene.is_maze:
@@ -402,6 +404,14 @@ class SaveManager:
             )
             for it in cached.get("items", [])
         ]
+
+    def _build_destroyed_walls_from_cache(self, cached: dict[str, Any]) -> list[tuple[int, int]]:
+        """Destroyed walls of a map the player left but has visited this session.
+
+        Hard-coded to ``[]`` before, which threw away every bush and rock smashed
+        on any map other than the one being saved on.
+        """
+        return [(int(x), int(y)) for x, y in cached.get("destroyed_walls", [])]
 
     def _build_dead_monsters_from_cache(self, cached: dict[str, Any]) -> list[str]:
         dead: list[str] = []
@@ -582,9 +592,17 @@ class SaveManager:
     def _apply_chest_states(self, scene: Scene, chests: dict[str, ChestState]) -> None:
         chest_map = {c.name: c for c in scene.chests}
         for name, cs in chests.items():
-            if name in chest_map:
-                chest_map[name].model.is_closed = cs.is_closed
-                chest_map[name].model.items = list(cs.items)
+            chest = chest_map.get(name)
+            if chest is None:
+                continue
+            chest.model.items = list(cs.items)
+            # go through open()/close() rather than poking `model.is_closed`:
+            # the sprite picks its image in __init__ only, so setting the flag
+            # alone left a looted chest drawn shut after every load
+            if cs.is_closed:
+                chest.close()
+            else:
+                chest.open()
 
     def _apply_ground_items(self, scene: Scene, items: list[GroundItemState]) -> None:
         item_conf = scene.game.conf.items
@@ -604,6 +622,9 @@ class SaveManager:
 
     def _apply_destroyed_walls(self, scene: Scene, destroyed: list[tuple[int, int]]) -> None:
         destroyed_set = set(destroyed)
+        # the scene tracks this list itself now, so re-seed it - otherwise the next
+        # save would only report what the player smashed *after* loading
+        scene.destroyed_walls = list(destroyed_set)
         remaining: list[Any] = []
         for d in scene.destructibles:
             key = (d.wall.x, d.wall.y)

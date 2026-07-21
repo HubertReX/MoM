@@ -70,6 +70,27 @@ def _make_npc(name: str, *, visited: dict[str, bool] | None = None) -> SimpleNam
     return npc
 
 
+def _make_chest(name: str) -> SimpleNamespace:
+    """A chest stub mirroring ChestSprite: open()/close() swap the image too."""
+    chest = SimpleNamespace(
+        name=name,
+        model=SimpleNamespace(is_closed=True, items=[]),
+        image="closed",
+    )
+
+    def _open(_chest: SimpleNamespace = chest) -> None:
+        _chest.model.is_closed = False
+        _chest.image = "open"
+
+    def _close(_chest: SimpleNamespace = chest) -> None:
+        _chest.model.is_closed = True
+        _chest.image = "closed"
+
+    chest.open = _open
+    chest.close = _close
+    return chest
+
+
 def _make_scene(current_map: str, npcs: list[SimpleNamespace]) -> SimpleNamespace:
     scene = SimpleNamespace(
         current_map=current_map,
@@ -151,7 +172,7 @@ def test_entering_a_map_applies_its_saved_state() -> None:
 
     # ...then walks into the Tavern, which is rebuilt fresh from its TMX
     barman = _make_npc("Barman")
-    chest = SimpleNamespace(name="TavernChest", model=SimpleNamespace(is_closed=True, items=[]))
+    chest = _make_chest("TavernChest")
     scene.current_map = "Tavern"
     scene.NPCs = [barman]
     scene.chests = [chest]
@@ -162,6 +183,9 @@ def test_entering_a_map_applies_its_saved_state() -> None:
     assert_eq(barman.restored_state.visited_nodes, {"012": True}, "visited node restored")
     assert_eq(barman.restored_state.sentiment, 77, "sentiment restored")
     assert_true(not chest.model.is_closed, "chest is still open")
+    # the sprite must follow the flag - setting only `model.is_closed` used to
+    # leave a looted chest drawn shut after a load
+    assert_eq(chest.image, "open", "open chest uses the open sprite")
     # consumed exactly once
     assert_true("Tavern" not in scene.pending_map_states, "pending entry consumed")
 
@@ -317,6 +341,48 @@ def test_picked_up_item_stays_picked_up() -> None:
     assert_eq(len(scene.item_sprites.sprites()), 0, "and its sprite is gone too")
 
 
+def test_first_save_records_already_destroyed_walls() -> None:
+    """A bush smashed before the very first save must land in that save.
+
+    The old implementation diffed `scene.walls` against a snapshot it took
+    lazily on the first `_build_destroyed_walls` call - i.e. after the player
+    had already been smashing things - so the first save of every session
+    always reported an empty list and every bush/rock came back on load.
+    """
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+
+    # player smashed two destructibles, then saves for the first time
+    scene.destroyed_walls = [(32, 48), (64, 48)]
+
+    assert_eq(mgr._build_destroyed_walls(scene), [(32, 48), (64, 48)],
+              "first save reports what was already destroyed")
+
+
+def test_destroyed_walls_of_other_maps_survive_a_save() -> None:
+    """Bushes smashed on a map the player has left are not thrown away."""
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+    scene.destroyed_walls = []
+    scene.loaded_maps = {"Tavern": {"destroyed_walls": [(16, 16)], "NPCs": [], "chests": [], "items": []}}
+
+    maps = mgr._build_map_states(scene)
+
+    assert_eq(maps["Tavern"].destroyed_walls, [(16, 16)],
+              "the cached map keeps its destroyed walls")
+
+
+def test_loading_reseeds_the_scene_destroyed_walls() -> None:
+    """After a load, saving again must still report the restored destructions."""
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+
+    mgr._apply_one_map_state(scene, MapState(name="Village", destroyed_walls=[(32, 48)]))
+
+    assert_eq(mgr._build_destroyed_walls(scene), [(32, 48)],
+              "a re-save keeps what the loaded save had destroyed")
+
+
 def main() -> None:
     tests = [
         test_other_maps_are_kept_pending_not_dropped,
@@ -326,6 +392,9 @@ def main() -> None:
         test_live_map_wins_over_pending,
         test_ground_items_are_replaced_not_appended,
         test_picked_up_item_stays_picked_up,
+        test_first_save_records_already_destroyed_walls,
+        test_destroyed_walls_of_other_maps_survive_a_save,
+        test_loading_reseeds_the_scene_destroyed_walls,
     ]
     for t in tests:
         t()
