@@ -65,8 +65,10 @@ def _make_npc(name: str, *, visited: dict[str, bool] | None = None) -> SimpleNam
         is_dead=False,
         items=[],
         restored_state=None,
+        killed=False,
     )
     npc.restore_dialog_state = lambda state, _npc=npc: setattr(_npc, "restored_state", state)
+    npc.kill = lambda _npc=npc: setattr(_npc, "killed", True)
     return npc
 
 
@@ -107,9 +109,15 @@ def _make_scene(current_map: str, npcs: list[SimpleNamespace]) -> SimpleNamespac
         is_maze=False,
         sprites_layer=1,
         items_sheet={},
+        dead_monsters=[],
         game=SimpleNamespace(conf=SimpleNamespace(items={})),
     )
     scene.store_map = lambda: scene.loaded_maps.__setitem__(scene.current_map, {})
+    # mirrors Scene.note_monster_death - the durable record of a kill whose sprite
+    # NPC.die() has already removed from scene.NPCs
+    scene.note_monster_death = lambda name, _s=scene: (
+        _s.dead_monsters.append(name) if name and name not in _s.dead_monsters else None
+    )
     return scene
 
 
@@ -383,6 +391,89 @@ def test_loading_reseeds_the_scene_destroyed_walls() -> None:
               "a re-save keeps what the loaded save had destroyed")
 
 
+def test_a_dead_monster_stays_dead_across_two_save_cycles() -> None:
+    """A kill must survive load -> save -> load, not just the first load.
+
+    `NPC.die()` drops the monster from `scene.NPCs`, so the *only* durable record
+    of the kill is `MapState.dead_monsters`. `_apply_npc_states` used to consume
+    that list - kill the sprite, remove it - without telling the scene, so the
+    next save read the (now monster-less) live list, wrote `dead_monsters=[]`,
+    and the monster came back to life. Reported from a maze: load a save, walk in
+    (autosave fires), the lion is correctly gone; press F9 and it is standing
+    there again, next to the chest that correctly stayed open.
+    """
+    lion = _make_npc("CaveLion")
+    scene = _make_scene("Maze_01", [lion])
+    scene.group.add(lion)
+    mgr = SaveManager.__new__(SaveManager)
+
+    # first load: the save says the lion is dead, so it is removed from the map
+    mgr._apply_npc_states(scene, MapState(name="Maze_01", dead_monsters=["CaveLion"]))
+    assert_true(lion not in scene.NPCs, "the dead lion is taken off the map")
+
+    # the autosave that fires right after must still report it
+    assert_eq(mgr._build_dead_monsters(scene), ["CaveLion"],
+              "a re-save keeps the kill the loaded save had recorded")
+
+
+def test_dead_monsters_of_other_maps_survive_a_save() -> None:
+    """A kill on a map the player has walked out of is read from its cache."""
+    scene = _make_scene("Village", [])
+    mgr = SaveManager.__new__(SaveManager)
+    scene.loaded_maps = {
+        "Maze_01": {"dead_monsters": ["CaveLion"], "NPCs": [], "chests": [],
+                    "items": [], "destroyed_walls": []},
+    }
+
+    maps = mgr._build_map_states(scene)
+
+    assert_eq(maps["Maze_01"].dead_monsters, ["CaveLion"],
+              "the cached map keeps its dead monsters")
+
+
+def test_dead_monsters_is_a_cached_map_property() -> None:
+    """`Scene.properties` must list it, or the cache above is always empty.
+
+    `store_map`/`restore_map` copy exactly the names in `Scene.properties`, so a
+    field missing from that list silently does not survive a map change - which is
+    how the kill list got lost for any map other than the live one.
+    """
+    import ast
+    import pathlib
+
+    source = pathlib.Path(__file__).resolve().parent.parent / "project" / "scene.py"
+    tree = ast.parse(source.read_text(encoding="utf-8"))
+    listed: list[str] = []
+    for node in ast.walk(tree):
+        # `self.properties: list[str] = [...]` is an AnnAssign; plain `=` an Assign
+        targets = [node.target] if isinstance(node, ast.AnnAssign) else \
+                  node.targets if isinstance(node, ast.Assign) else []
+        if (targets
+                and any(isinstance(t, ast.Attribute) and t.attr == "properties" for t in targets)
+                and isinstance(node.value, ast.List)):
+            listed = [e.value for e in node.value.elts
+                      if isinstance(e, ast.Constant) and isinstance(e.value, str)]
+            break
+
+    assert_true(bool(listed), "found the Scene.properties list in scene.py")
+    for field in ("dead_monsters", "destroyed_walls", "NPCs"):
+        assert_true(field in listed, f"{field!r} is cached per map")
+
+
+def test_a_kill_during_play_is_recorded_without_the_sprite() -> None:
+    """`die()` removes the NPC, so the scene must note the name at that moment."""
+    lion = _make_npc("CaveLion")
+    scene = _make_scene("Maze_01", [lion])
+    mgr = SaveManager.__new__(SaveManager)
+
+    # what NPC.die() does to the scene, minus the pygame parts
+    scene.NPCs = [n for n in scene.NPCs if n is not lion]
+    scene.note_monster_death(lion.name)
+
+    assert_eq(mgr._build_dead_monsters(scene), ["CaveLion"],
+              "the kill is saved even though nothing on the map represents it")
+
+
 def test_chests_from_one_template_do_not_collapse() -> None:
     """Several chests built from the same config template are distinct entries.
 
@@ -483,6 +574,10 @@ def main() -> None:
         test_first_save_records_already_destroyed_walls,
         test_destroyed_walls_of_other_maps_survive_a_save,
         test_loading_reseeds_the_scene_destroyed_walls,
+        test_a_dead_monster_stays_dead_across_two_save_cycles,
+        test_a_kill_during_play_is_recorded_without_the_sprite,
+        test_dead_monsters_of_other_maps_survive_a_save,
+        test_dead_monsters_is_a_cached_map_property,
         test_chests_from_one_template_do_not_collapse,
         test_maze_seed_is_the_one_that_built_the_level,
         test_maze_level_left_behind_keeps_its_seed,

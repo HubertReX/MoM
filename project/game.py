@@ -57,6 +57,7 @@ from settings import (  # LOGO_IMG,; ColorValue,
     MOUSE_CURSOR_IMG,
     PANEL_BG_COLOR,
     PROGRAM_ICON,
+    QUICK_SAVE_SLOT,
     RECORDING_FPS,
     SCREENSHOTS_DIR,
     SHADERS_NAMES,
@@ -1019,6 +1020,15 @@ class Game:
 
     #############################################################################################################
 
+    @staticmethod
+    def _notify(state: object, text: str, type: NotificationTypeEnum) -> None:
+        """Post a toast on *state* if it can show one (menus and splash screens cannot)."""
+        add_notification = getattr(state, "add_notification", None)
+        if add_notification is not None:
+            add_notification(text, type)
+
+    #############################################################################################################
+
     # @timeit
     async def run(self) -> None:
         # delta time since last frame in milliseconds
@@ -1038,31 +1048,29 @@ class Game:
         if self.agent_ctrl:
             self.agent_ctrl.apply(self)
 
-        # handle save/load hotkeys (works even when paused)
+        # Quick save / quick load hotkeys (work even when paused). Both are silent
+        # one-key actions on the reserved QUICK_SAVE_SLOT - no panel, no confirmation.
+        # The full slot lists live in the main menu (Save Game / Load Game).
         if INPUTS.get("quick_save"):
             state = self.states[-1]
-            if getattr(state, "is_maze", False):
-                # saving is not allowed inside dungeons/mazes (procedural, non-persistable)
-                if hasattr(state, "add_notification"):
-                    state.add_notification(_("notify.cannot_save_dungeon"), NotificationTypeEnum.error)  # type: ignore[attr-defined]
+            scene = self.save_manager.current_scene()
+            if scene is not None and scene.is_maze:
+                # saving is not allowed inside dungeons/mazes (procedural, non-persistable).
+                # Checked on the scene, not on states[-1] - F5 also works from a menu
+                # pushed on top of it, and that menu has no is_maze of its own.
+                self._notify(state, _("notify.cannot_save_dungeon"), NotificationTypeEnum.error)
+            elif self.save_manager.save(QUICK_SAVE_SLOT):
+                self._notify(state, _("notify.quick_saved"), NotificationTypeEnum.success)
             else:
-                slot_idx = self.save_manager.pick_quick_save_slot()
-                if slot_idx is None:
-                    if hasattr(state, "add_notification"):
-                        state.add_notification(_("notify.no_free_slots"), NotificationTypeEnum.error)  # type: ignore[attr-defined]
-                elif self.save_manager.save(slot_idx):
-                    if hasattr(state, "add_notification"):
-                        state.add_notification(_("notify.game_saved_slot", n=slot_idx + 1), NotificationTypeEnum.success)  # type: ignore[attr-defined]
-                else:
-                    if hasattr(state, "add_notification"):
-                        state.add_notification(_("notify.failed_save"), NotificationTypeEnum.error)  # type: ignore[attr-defined]
+                self._notify(state, _("notify.failed_save"), NotificationTypeEnum.error)
             INPUTS["quick_save"] = False
         if INPUTS.get("quick_load"):
             state = self.states[-1]
-            if hasattr(state, "ui"):
-                from ui.panels.save_load import LoadPanel as _LP
-
-                state.ui.toggle(_LP)
+            if not self.save_manager.has_quick_save():
+                self._notify(state, _("notify.no_quick_save"), NotificationTypeEnum.error)
+            elif self.save_manager.load(QUICK_SAVE_SLOT):
+                # load() replaced the top state with a fresh Scene - notify on that one
+                self._notify(self.states[-1], _("notify.quick_loaded"), NotificationTypeEnum.info)
             INPUTS["quick_load"] = False
 
         # F7: open the TextInput demo screen (dev tool for exercising the widget's

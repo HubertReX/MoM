@@ -13,7 +13,7 @@ Usage:
     # desktop (default) - jak dotychczas
     .venv/bin/python3 tests/automate_display_test.py "Save and Load Basic"
     .venv/bin/python3 tests/automate_display_test.py            # wszystkie desktop-owe
-    # lub przez Just:  just test "Save and Load Basic"  |  just test
+    # lub przez Just:  just test-agent "Save and Load Basic"  |  just test-agent
 
     # web (wymaga Playwright + chromium: patrz requirements-dev)
     .venv/bin/python3 tests/automate_display_test.py --web "Save and Load Basic"
@@ -52,6 +52,11 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Any, List
+
+# save fixtures live in the repo's central `scripts/` dir (they are a hand-usable
+# CLI, not a test); this runner is executed as a path, so only `tests/` lands on
+# sys.path automatically.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 # --- Configuration & Constants ---
 TEST_CONFIG = {
@@ -192,6 +197,35 @@ def review_screenshot(path: Path, expect: str, expected_state: str | None) -> tu
         last_detail = f"{label}: no verdict (rc={proc.returncode})"
         print(f"[ss-review] {last_detail}")
     return None, last_detail
+
+
+REAL_SAVES_ENV = "MOM_TEST_USE_REAL_SAVES"   # opt out of the sandbox (see isolate_game_data)
+SANDBOX_DIR = Path(__file__).resolve().parent.parent / ".test-data"
+
+
+def isolate_game_data() -> None:
+    """Point the game's data dir at a throw-away sandbox for the whole run.
+
+    Scenarios call ``clear_all_saves()`` before each run and freely overwrite
+    slots, and "Display Settings Flow" rewrites ``settings.json``. Both resolve
+    through ``XDG_DATA_HOME``, so without this the suite eats the *developer's*
+    real saves and display settings - which is exactly what it used to do.
+
+    Set here rather than only on the subprocess env, because this process reads
+    the same paths for its ``file_exists`` / ``save_absent`` assertions, and the
+    game inherits ``os.environ`` when it is spawned. Must run before anything
+    calls :func:`get_save_dir`.
+
+    ``MOM_TEST_USE_REAL_SAVES=1`` opts out, for the rare case of inspecting a
+    scenario against a real save - it will destroy those saves.
+    """
+    if os.environ.get(REAL_SAVES_ENV):
+        print(f"[warn] {REAL_SAVES_ENV} is set - running against the REAL save dir "
+              f"({get_save_dir()}); scenarios will delete those saves")
+        return
+    (SANDBOX_DIR / "mom" / "saves").mkdir(parents=True, exist_ok=True)
+    os.environ["XDG_DATA_HOME"] = str(SANDBOX_DIR)
+    print(f"Game data sandbox: {SANDBOX_DIR} (real saves untouched)")
 
 
 def get_save_dir() -> Path:
@@ -529,7 +563,7 @@ class DesktopRunner(RunnerBase):
             delete_save_slot(slot_idx)
 
     def setup_saves(self, saves: List[dict[str, Any]]) -> None:
-        from test_save_load_corrupt import (
+        from save_fixtures import (
             corrupt_save, corrupt_save_version, create_minimal_save,
         )
         for spec in saves:
@@ -781,7 +815,7 @@ class WebRunner(RunnerBase):
     def _inject_setup_saves(self) -> None:
         if not self._pending_setup_saves or self.page is None:
             return
-        from test_save_load_corrupt import minimal_save_dict, corrupt_save_text
+        from save_fixtures import minimal_save_dict, corrupt_save_text
         for spec in self._pending_setup_saves:
             slot = int(spec["slot"])
             kind = spec.get("type", "minimal")
@@ -907,6 +941,9 @@ def main() -> int:
     )
     parser.add_argument("scenario", nargs="?", default=None, help="scenario name; omit to run all")
     args = parser.parse_args()
+
+    # before anything resolves a save path - see isolate_game_data()
+    isolate_game_data()
 
     scenarios = load_scenarios(TEST_CONFIG["SCENARIOS_FILE"])
     backend = "web" if args.web else "desktop"

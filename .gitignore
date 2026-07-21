@@ -36,6 +36,10 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# Sandbox the agent test runner points XDG_DATA_HOME at, so scenarios cannot
+# delete the developer's real saves / display settings (see isolate_game_data)
+.test-data/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/

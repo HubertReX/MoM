@@ -294,6 +294,10 @@ ZOOM_LEVEL = 3.8
 ZOOM_WIDE = 3.10
 
 MAX_SAVE_SLOTS = 10
+# Slot 0 is reserved: F5/F9 quick save-load and the map-change autosave own it.
+# The player cannot save into it manually, rename it or delete it - see
+# ui/panels/save_load.py, where it is drawn above a divider as a read-only row.
+QUICK_SAVE_SLOT = 0
 SAVE_FILE_EXT = ".mom"
 
 USE_WEB_SIMULATOR = False

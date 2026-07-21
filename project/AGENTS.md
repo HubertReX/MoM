@@ -181,13 +181,18 @@ panelu oraz po wyborze opcji (`activate_selected`).
 
 ### Testy
 
-Czysta logika — testy to samodzielne skrypty (bez SDL), uruchamiane wprost interpreterem:
+Czysta logika — testy to samodzielne skrypty (bez pytesta, bez SDL), uruchamiane wprost
+interpreterem albo hurtem przez `just test-unit`:
 
 ```bash
+just test-unit dialog                              # wszystkie pliki z "dialog" w nazwie
 .venv/bin/python tests/test_dialog_graph.py        # encje + builder (T-029)
 .venv/bin/python tests/test_dialog_conditions.py   # silnik warunków (T-032)
 .venv/bin/python tests/test_dialog_result_sink.py  # efekty węzłów + GameSink (T-034)
 ```
+
+Nowy test musi trafić do listy `tests = [...]` w `main()` swojego pliku — `just test-unit`
+weryfikuje to po AST i zwraca błąd, gdy któryś `test_*` nie jest nigdzie zarejestrowany.
 
 ## 🔑 KRYTYCZNE: różnice desktop ↔ web
 
@@ -305,18 +310,25 @@ Scenariusz może opcjonalnie zawierać:
 
 **Persystencja w testach:**
 
+> ⚠️ Runner **przestawia `XDG_DATA_HOME` na `.test-data/` w katalogu repo** (`isolate_game_data()`
+> w `automate_display_test.py`) na czas całego przebiegu. Bez tego każdy scenariusz kasował
+> prawdziwe zapisy dewelopera - `cleanup_saves_before()` woła `clear_all_saves()` przed **każdym**
+> scenariuszem, a „Display Settings Flow" nadpisuje `settings.json`. Sandbox jest w `.gitignore`;
+> zajrzyj do niego, gdy asercja `file_exists` padnie. Opt-out: `MOM_TEST_USE_REAL_SAVES=1`
+> (wtedy scenariusze **skasują** Twoje zapisy).
+
 Pliki save na desktopie (jeśli zdefiniowano zmienną środowiskową `XDG_DATA_HOME`, zapisy trafiają do `<XDG_DATA_HOME>/mom/saves/`, w przeciwnym razie stosowane są domyślne ścieżki systemowe):
 
 - macOS: `~/Library/Application Support/mom/saves/save_N.mom` (lub `<XDG_DATA_HOME>/mom/saves/save_N.mom`)
 - Linux: `~/.local/share/mom/saves/save_N.mom` (domyślny fallback dla XDG)
 
-Helper do manipulowania zapisami: `tests/test_save_load_corrupt.py`:
+Helper do manipulowania zapisami: `scripts/save_fixtures.py`:
 
 ```bash
-.venv/bin/python3 tests/test_save_load_corrupt.py clear     # usuń wszystkie save'y
-.venv/bin/python3 tests/test_save_load_corrupt.py corrupt 0 # zepsuj slot 0
-.venv/bin/python3 tests/test_save_load_corrupt.py create 0  # utwórz minimalny save
-.venv/bin/python3 tests/test_save_load_corrupt.py delete 0  # usuń slot 0
+.venv/bin/python3 scripts/save_fixtures.py clear     # usuń wszystkie save'y
+.venv/bin/python3 scripts/save_fixtures.py corrupt 0 # zepsuj slot 0
+.venv/bin/python3 scripts/save_fixtures.py create 0  # utwórz minimalny save
+.venv/bin/python3 scripts/save_fixtures.py delete 0  # usuń slot 0
 
 ### Web (pygbag + Playwright)
 

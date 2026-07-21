@@ -25,7 +25,7 @@ from save_load.models import (
     SaveSlotInfo,
     sanitize_slot_name,
 )
-from settings import IS_WEB, MAX_HOTBAR_ITEMS_LIMIT, MAX_SAVE_SLOTS, USE_WEB_SIMULATOR
+from settings import IS_WEB, MAX_HOTBAR_ITEMS_LIMIT, MAX_SAVE_SLOTS, QUICK_SAVE_SLOT, USE_WEB_SIMULATOR
 
 if TYPE_CHECKING:
     from game import Game
@@ -121,29 +121,11 @@ class SaveManager:
         slot.save_data.metadata.slot_name = sanitize_slot_name(new_name)
         return self.backend.write_slot(slot)
 
-    def find_first_free_slot(self) -> int | None:
-        """Return the first unoccupied save slot index, or None if all are full."""
+    def has_quick_save(self) -> bool:
+        """Whether the reserved quick save slot holds a save (F9 has something to load)."""
         slots = self.list_slots()
-        for i in range(MAX_SAVE_SLOTS):
-            info = slots[i]
-            if info is None or not info.is_occupied:
-                return i
-        return None
-
-    def find_oldest_occupied_slot(self) -> int | None:
-        """Return the occupied slot index with the oldest timestamp, or None if all empty."""
-        slots = self.list_slots()
-        oldest_idx: int | None = None
-        oldest_ts: float | None = None
-        for i in range(MAX_SAVE_SLOTS):
-            info = slots[i]
-            if info is None or not info.is_occupied or info.metadata is None:
-                continue
-            ts = info.metadata.timestamp
-            if oldest_ts is None or ts < oldest_ts:
-                oldest_ts = ts
-                oldest_idx = i
-        return oldest_idx
+        info = slots[QUICK_SAVE_SLOT] if QUICK_SAVE_SLOT < len(slots) else None
+        return info is not None and info.is_occupied
 
     def should_autosave_on_map_change(self, was_maze: bool) -> bool:
         """Whether a map change should autosave slot 0.
@@ -160,12 +142,19 @@ class SaveManager:
         """
         return not was_maze
 
-    def pick_quick_save_slot(self) -> int | None:
-        """Pick a slot for quick save: first free, falling back to oldest occupied."""
-        free = self.find_first_free_slot()
-        if free is not None:
-            return free
-        return self.find_oldest_occupied_slot()
+    def current_scene(self) -> "Scene | None":
+        """The live scene to save, or ``None`` if no game is in progress.
+
+        Searched from the top of the state stack rather than taken as
+        ``states[-1]``, because saving is also reachable from the main menu, which
+        sits *above* the scene it is going to save.
+        """
+        from scene import Scene
+
+        for state in reversed(self.game.states):
+            if isinstance(state, Scene):
+                return cast("Scene", state)
+        return None
 
     # ------------------------------------------------------------------
     # Build save game from live state
@@ -173,16 +162,10 @@ class SaveManager:
 
     def _build_save_game(self) -> SaveGame | None:
         game = self.game
-        if not game.states:
+        scene = self.current_scene()
+        if scene is None:
+            print("[save] no scene in the state stack, cannot save")
             return None
-
-        from scene import Scene
-        current_state = game.states[-1]
-        if not isinstance(current_state, Scene):
-            print("[save] current state is not a Scene, cannot save")
-            return None
-
-        scene: Scene = cast("Scene", current_state)
 
         player_state = self._build_player_state(scene)
         map_states = self._build_map_states(scene)
@@ -384,7 +367,17 @@ class SaveManager:
         return val if val is None else int(val)
 
     def _build_dead_monsters(self, scene: Scene) -> list[str]:
-        return [npc.name for npc in scene.NPCs if npc.is_dead]
+        """Every monster known to be dead on the live map.
+
+        Two sources, because neither is complete on its own: the scene's own
+        record (kills whose sprite is already gone, including the ones restored
+        from the save being re-saved) and any NPC still on the map flagged dead.
+        """
+        dead = list(getattr(scene, "dead_monsters", None) or [])
+        for npc in scene.NPCs:
+            if npc.is_dead and npc.name not in dead:
+                dead.append(npc.name)
+        return dead
 
     def _build_npc_states_from_cache(self, cached: dict[str, Any]) -> dict[str, NPCState]:
         result: dict[str, NPCState] = {}
@@ -440,9 +433,15 @@ class SaveManager:
         return [(int(x), int(y)) for x, y in cached.get("destroyed_walls", [])]
 
     def _build_dead_monsters_from_cache(self, cached: dict[str, Any]) -> list[str]:
-        dead: list[str] = []
+        """Same two sources as :meth:`_build_dead_monsters`, for a map left behind.
+
+        ``dead_monsters`` rides along in the per-map cache (``Scene.properties``),
+        so a kill made on a map the player has since walked out of is not lost the
+        way it was when only the cached NPC list was consulted.
+        """
+        dead = list(cached.get("dead_monsters") or [])
         for npc in cached.get("NPCs", []):
-            if npc.is_dead:
+            if npc.is_dead and npc.name not in dead:
                 dead.append(npc.name)
         return dead
 
@@ -679,6 +678,12 @@ class SaveManager:
         scene.destructibles = remaining
 
     def _apply_npc_states(self, scene: Scene, ms: MapState) -> None:
+        # Re-seed the scene's own kill record, exactly like `_apply_destroyed_walls`
+        # does for smashed bushes: the sprites are about to be removed, so without
+        # this the next save (the autosave on entering a maze, say) would report an
+        # empty list and every monster the player already killed would come back.
+        scene.dead_monsters = list(ms.dead_monsters)
+
         for npc in list(scene.NPCs):
             if npc.name in ms.dead_monsters:
                 npc.is_dead = True

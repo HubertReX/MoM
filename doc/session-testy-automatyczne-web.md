@@ -34,7 +34,7 @@ tests/scenarios.json: 9 scenariuszy. Żaden nie ma pola platform/web/target/mode
 Każdy scenariusz z quick_save/quick_load/debug_map_change i assertions.file_exists opiera się na FileSaveBackend (host FS). Web build używa LocalStorageSaveBackend (project/save_load/backends.py:92-126), więc te assercje nie mają sensu w web.
 5. Save helper jest desktop-only
 
-tests/test_save_load_corrupt.py:24-32 — _get_save_dir() zna tylko ~/Library/Application Support/mom/saves, ~/.local/share/mom/saves, AppData\Local\mom\saves. Brak obsługi window.localStorage.
+scripts/save_fixtures.py:24-32 — _get_save_dir() zna tylko ~/Library/Application Support/mom/saves, ~/.local/share/mom/saves, AppData\Local\mom\saves. Brak obsługi window.localStorage.
 6. Brak automatyzacji przeglądarki
 
 Przeszukanie repo (poza .venv//utils/): zero selenium|playwright|puppeteer|MCP server. Żadnego tests/test_web*.py, żadnego conftest.py, żadnego mcp.json.
@@ -63,7 +63,7 @@ project/AGENTS.md:60,76,79 podaje settings.py:84/83/92, ale realna definicja IS_
 | `project/game.py:210` | Rozpięty AgentController w web mode przez `MoM.agent_control` flag w localStorage |
 | `tests/automate_display_test.py` | **Zrefaktorowany** — `RunnerBase` → `DesktopRunner` + `WebRunner` (Playwright). Flaga `--web` |
 | `tests/scenarios.json` | Dodane pole `platform` i `setup_saves` (Corrupt Save) |
-| `tests/test_save_load_corrupt.py` | `minimal_save_dict`/`corrupt_save_text` publiczne — współdzielone z WebRunner |
+| `scripts/save_fixtures.py` | `minimal_save_dict`/`corrupt_save_text` publiczne — współdzielone z WebRunner |
 | `requirements-dev.txt` | Dodany `playwright>=1.50` |
 | `project/AGENTS.md` | Dodana sekcja "Web (pygbag + Playwright)" + poprawione numery linii `settings.py` |
 | `AGENTS.md` (root) | Skrócony duplikat test info, odsyła do `project/AGENTS.md` |
@@ -88,7 +88,7 @@ Commit `dd0a2f2` gotowy. Oto **podsumowanie**:
 | `project/game.py:210` | AgentController włączany przez `localStorage['MoM.agent_control']` w web |
 | `tests/automate_display_test.py` | **Totalny refaktor**: `RunnerBase` → `DesktopRunner` + `WebRunner` (Playwright). Flaga `--web` |
 | `tests/scenarios.json` | Pole `platform` + `setup_saves` (dla Corrupt Save) |
-| `tests/test_save_load_corrupt.py` | `minimal_save_dict()`/`corrupt_save_text()` publiczne |
+| `scripts/save_fixtures.py` | `minimal_save_dict()`/`corrupt_save_text()` publiczne |
 | `requirements-dev.txt` | `playwright>=1.50` |
 | `project/AGENTS.md` | Sekcja "Web (pygbag + Playwright)" + fixy numerów linii `settings.py:84→130` itd. |
 | `AGENTS.md` (root) | Skrócony duplikat |

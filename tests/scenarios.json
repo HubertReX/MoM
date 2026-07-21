@@ -26,14 +26,12 @@
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "scene_loaded", "commands": ["screenshot"] },
-            { "slug": "quick_save", "commands": ["quick_save", "screenshot"] },
-            { "slug": "open_loadpanel", "commands": ["quick_load", "screenshot"] },
-            { "slug": "confirm_load", "commands": ["accept", "screenshot"] },
-            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "quick_save", "commands": ["quick_save", "screenshot"], "wait": 0.5 },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 2.0 },
             { "slug": "after_load", "commands": ["screenshot"] }
         ],
         "assertions": [
-            { "type": "screenshot_review", "target": "after_load", "expected_state": "GAMEPLAY", "expect": "The game is back in active gameplay (a level/scene with the player character visible), NOT a menu or load panel." }
+            { "type": "screenshot_review", "target": "after_load", "expected_state": "GAMEPLAY", "expect": "The game is back in active gameplay (a level/scene with the player character visible), NOT a menu or load panel - F9 loads straight away without opening any panel." }
         ]
     },
     {
@@ -43,11 +41,9 @@
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "starting_position", "commands": ["screenshot"] },
-            { "slug": "quick_save", "commands": ["quick_save"] },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
             { "slug": "move_right", "commands": ["right:30", "screenshot"] },
-            { "slug": "open_loadpanel", "commands": ["quick_load"] },
-            { "slug": "select_slot_confirm", "commands": ["accept"] },
-            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 2.0 },
             { "slug": "back_at_start_position", "commands": ["screenshot"] }
         ],
         "assertions": [
@@ -72,24 +68,22 @@
         ]
     },
     {
-        "name": "Multiple Quick Saves",
+        "name": "Quick Save Owns Slot Zero",
         "slug": "multiple_quick_saves",
         "platform": ["desktop", "web"],
         "cleanup_saves": [0, 1, 2],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "first_quick_save", "commands": ["quick_save", "screenshot"] },
+            { "slug": "first_quick_save", "commands": ["quick_save", "screenshot"], "wait": 0.5 },
             { "slug": "change_game_state", "commands": ["right:30"] },
-            { "slug": "second_quick_save", "commands": ["quick_save", "screenshot"] },
-            { "slug": "open_loadpanel", "commands": ["quick_load"] },
-            { "slug": "select_second_slot", "commands": ["down", "accept"] },
-            { "slug": "confirm", "commands": ["accept"], "wait": 2.0 },
-            { "slug": "after_loading_second_save", "commands": ["screenshot"] }
+            { "slug": "second_quick_save", "commands": ["quick_save", "screenshot"], "wait": 0.5 },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 2.0 },
+            { "slug": "after_loading_latest_quick_save", "commands": ["screenshot"] }
         ],
         "assertions": [
             { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
-            { "type": "file_exists", "path": "<save_dir>/save_1.mom", "min_size": 100 },
-            { "type": "screenshot_review", "target": "after_loading_second_save", "expected_state": "GAMEPLAY", "expect": "Active gameplay after loading the second save (game world visible, not a menu)." }
+            { "type": "save_absent", "path": "<save_dir>/save_1.mom" },
+            { "type": "screenshot_review", "target": "after_loading_latest_quick_save", "expected_state": "GAMEPLAY", "expect": "Active gameplay after loading the quick save (game world visible, not a menu)." }
         ]
     },
     {
@@ -102,14 +96,15 @@
             { "slug": "starting_position", "commands": ["screenshot"] },
             { "slug": "change_map", "commands": ["debug_map_change"], "wait": 2.0 },
             { "slug": "new_map_loaded", "commands": ["screenshot"] },
-            { "slug": "open_loadpanel", "commands": ["quick_load"] },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "select_load", "commands": ["down", "down", "accept"], "wait": 1.0 },
             { "slug": "auto_save_slot_visible", "commands": ["screenshot"] },
-            { "slug": "close_loadpanel", "commands": ["quick_load"] },
+            { "slug": "close_loadpanel", "commands": ["quit"], "wait": 1.0 },
             { "slug": "panel_closed", "commands": ["screenshot"] }
         ],
         "assertions": [
             { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
-            { "type": "screenshot_review", "target": "auto_save_slot_visible", "expect": "A save/load panel is open showing at least one occupied save slot (the auto-save)." }
+            { "type": "screenshot_review", "target": "auto_save_slot_visible", "expect": "A Load Game panel is open showing an occupied quick save slot named '<quick save>' (or '<szybki zapis>' in Polish) at the top of the list, separated from the rest by a horizontal rule." }
         ]
     },
     {
@@ -119,13 +114,14 @@
         "setup_saves": [ { "slot": 0, "type": "corrupt" } ],
         "actions": [
             { "slug": "start_with_corrupt_save", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "open_loadpanel", "commands": ["quick_load"] },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "open_save_panel", "commands": ["down", "accept"], "wait": 1.0 },
             { "slug": "corrupt_save_ignored_panel_shown", "commands": ["screenshot"] },
-            { "slug": "close_panel", "commands": ["quick_load"] },
+            { "slug": "close_panel", "commands": ["quit"], "wait": 1.0 },
             { "slug": "panel_closed", "commands": ["screenshot"] }
         ],
         "assertions": [
-            { "type": "screenshot_review", "target": "corrupt_save_ignored_panel_shown", "expect": "A load panel is shown and the game has NOT crashed (no error dialog / traceback); the corrupt save is simply ignored or shown as empty." },
+            { "type": "screenshot_review", "target": "corrupt_save_ignored_panel_shown", "expect": "A save or load panel is shown and the game has NOT crashed (no error dialog / traceback); the corrupt save is simply ignored or shown as empty." },
             { "type": "process_alive" }
         ]
     },
@@ -144,18 +140,17 @@
         ]
     },
     {
-        "name": "Empty Slot Load",
+        "name": "Quick Load With No Save",
         "slug": "empty_slot_load",
         "platform": ["desktop", "web"],
         "actions": [
             { "slug": "start_new_game_no_saves", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "open_loadpanel_empty", "commands": ["quick_load"] },
-            { "slug": "panel_open", "commands": ["screenshot"] },
-            { "slug": "close_panel", "commands": ["quick_load"] },
-            { "slug": "panel_closed", "commands": ["screenshot"] }
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 0.5 },
+            { "slug": "no_quick_save_notification", "commands": ["screenshot"] }
         ],
         "assertions": [
-            { "type": "screenshot_review", "target": "panel_open", "expect": "A load panel is open showing NO occupied save slots (an empty save list / all slots empty)." }
+            { "type": "screenshot_review", "target": "no_quick_save_notification", "expected_state": "GAMEPLAY", "expect": "Active gameplay with a notification saying there is no quick save to load; no load panel opened." },
+            { "type": "process_alive" }
         ]
     },
     {
@@ -168,7 +163,7 @@
             { "slug": "quick_save", "commands": ["quick_save"] },
             { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
             { "slug": "menu_visible", "commands": ["screenshot"] },
-            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "select_load", "commands": ["down", "down", "accept"], "wait": 1.0 },
             { "slug": "load_panel_visible", "commands": ["screenshot"] },
             { "slug": "confirm_load", "commands": ["accept"] },
             { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
@@ -180,20 +175,27 @@
         ]
     },
     {
-        "name": "UI Flow - Full Save Load",
+        "name": "UI Flow - Menu Save then Load",
         "slug": "ui_flow_full_save_load",
         "platform": ["desktop", "web"],
+        "cleanup_saves": [0, 1, 2],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "quick_save", "commands": ["quick_save"] },
-            { "slug": "game_saved_notification", "commands": ["screenshot"] },
-            { "slug": "open_loadpanel", "commands": ["quick_load", "screenshot"] },
-            { "slug": "select_save_confirm", "commands": ["accept"] },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "open_save_panel", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "save_panel_open", "commands": ["screenshot"] },
+            { "slug": "write_slot_2", "commands": ["accept"], "wait": 1.0 },
+            { "slug": "slot_written", "commands": ["screenshot"] },
+            { "slug": "close_save_panel", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "open_load_panel", "commands": ["down", "down", "accept"], "wait": 1.0 },
+            { "slug": "load_panel_open", "commands": ["screenshot"] },
+            { "slug": "select_save_confirm", "commands": ["accept"], "wait": 0.5 },
             { "slug": "confirm_dialog", "commands": ["screenshot"] },
             { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
             { "slug": "game_loaded", "commands": ["screenshot"] }
         ],
         "assertions": [
+            { "type": "screenshot_review", "target": "save_panel_open", "expect": "A 'Save Game' panel listing all save slots. The first row is the reserved quick save slot ('<quick save>' / '<szybki zapis>'), separated from the numbered empty slots below it by a horizontal rule, and the selection highlight is NOT on that first row." },
             { "type": "screenshot_review", "target": "game_loaded", "expected_state": "GAMEPLAY", "expect": "Active gameplay after completing the full save/load flow (game world visible)." }
         ]
     },
@@ -229,9 +231,11 @@
         "cleanup_saves": [0, 1, 2],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
             { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
-            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "open_save_panel", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "write_slot_2", "commands": ["accept"], "wait": 1.0 },
+            { "slug": "close_save_panel", "commands": ["quit"], "wait": 1.0 },
+            { "slug": "open_load_panel", "commands": ["down", "down", "accept"], "wait": 1.0 },
             { "slug": "loadpanel_one_slot", "commands": ["screenshot"] },
             { "slug": "open_rename_editor", "commands": ["slot_rename"], "wait": 0.5 },
             { "slug": "rename_editor_prefilled", "commands": ["screenshot"] },
@@ -247,27 +251,24 @@
         ],
         "assertions": [
             { "type": "screenshot_review", "target": "delete_confirmation_modal", "expect": "A delete-confirmation modal/dialog is shown with Yes/No (or confirm/cancel) options." },
-            { "type": "screenshot_review", "target": "slot_removed_empty_list", "expect": "The load panel shows an empty save list (the slot was deleted, no occupied slots remain)." }
+            { "type": "screenshot_review", "target": "slot_removed_empty_list", "expect": "The load panel shows an empty save list (the only slot was deleted, no occupied slots remain)." }
         ]
     },
     {
-        "name": "In-Game LoadPanel Paused",
-        "slug": "ingame_loadpanel_paused",
+        "name": "Quick Keys Open No Panel",
+        "slug": "quick_keys_open_no_panel",
         "platform": ["desktop", "web"],
         "cleanup_saves": [0, 1, 2],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
-            { "slug": "open_loadpanel_ingame", "commands": ["quick_load"], "wait": 0.5 },
-            { "slug": "loadpanel_over_frozen_game", "commands": ["screenshot"] },
-            { "slug": "press_r_opens_rename", "commands": ["slot_rename"], "wait": 0.5 },
-            { "slug": "rename_editor_over_game", "commands": ["screenshot"] },
-            { "slug": "cancel_rename", "commands": ["quit"], "wait": 0.3 },
-            { "slug": "close_loadpanel", "commands": ["quit"], "wait": 0.5 },
-            { "slug": "back_in_game_not_main_menu", "commands": ["screenshot"] }
+            { "slug": "quick_save_toast", "commands": ["screenshot"] },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 2.0 },
+            { "slug": "back_in_game_no_panel", "commands": ["screenshot"] }
         ],
         "assertions": [
-            { "type": "screenshot_review", "target": "back_in_game_not_main_menu", "expected_state": "GAMEPLAY", "expect": "Active gameplay (the game world) is shown, NOT the main menu and NOT a load panel." },
+            { "type": "screenshot_review", "target": "quick_save_toast", "expected_state": "GAMEPLAY", "expect": "Active gameplay with a \"quick save\" confirmation toast; no save panel opened." },
+            { "type": "screenshot_review", "target": "back_in_game_no_panel", "expected_state": "GAMEPLAY", "expect": "Active gameplay (the game world) is shown, NOT the main menu and NOT a load panel - F9 loaded the quick save silently." },
             { "type": "process_alive" }
         ]
     },
@@ -296,9 +297,7 @@
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "enter_maze", "commands": ["debug_enter_maze"], "wait": 3.0 },
             { "slug": "maze_generated", "commands": ["screenshot"], "wait": 0.5 },
-            { "slug": "open_loadpanel", "commands": ["quick_load"], "wait": 0.5 },
-            { "slug": "confirm_load", "commands": ["accept"], "wait": 0.5 },
-            { "slug": "activate_load", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 3.0 },
             { "slug": "maze_after_load", "commands": ["screenshot"], "wait": 0.5 }
         ],
         "assertions": [
@@ -349,7 +348,7 @@
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
             { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
-            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "select_load", "commands": ["down", "down", "accept"], "wait": 1.0 },
             { "slug": "confirm_load", "commands": ["accept"] },
             { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
             { "slug": "back_in_game_after_load", "commands": ["screenshot"] },
@@ -370,7 +369,7 @@
             { "slug": "create_save_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
             { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
-            { "slug": "select_load", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "select_load", "commands": ["down", "down", "accept"], "wait": 1.0 },
             { "slug": "load_panel_open", "commands": ["screenshot"] },
             { "slug": "press_esc_cancel_load", "commands": ["quit"], "wait": 1.0 },
             { "slug": "back_at_main_menu", "commands": ["screenshot"] }
@@ -457,9 +456,7 @@
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
             { "slug": "hub_node", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "quick_save", "commands": ["quick_save"], "wait": 1.0 },
-            { "slug": "quick_load", "commands": ["quick_load"], "wait": 1.0 },
-            { "slug": "select_slot", "commands": ["accept"], "wait": 1.0 },
-            { "slug": "confirm_load", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 3.0 },
             { "slug": "after_load", "commands": ["screenshot"], "wait": 1.0 },
             { "slug": "start_dialog_after_load", "commands": ["talk:5"], "wait": 1.0 },
             { "slug": "dialog_open_after_load", "commands": ["screenshot"], "wait": 2.0 }
@@ -569,6 +566,44 @@
         "assertions": [
             { "type": "process_alive" },
             { "type": "screenshot_review", "target": "barman_dialog", "expect": "A dialog panel is open showing the Barman Absinthrayner NPC's dialog text, with the yellow name plate, a thick sentiment bar above it, and a numbered list of reply options." }
+        ]
+    },
+    {
+        "name": "Menu Save Blocked In Maze",
+        "slug": "menu_save_blocked_in_maze",
+        "platform": ["desktop", "web"],
+        "cleanup_saves": [0, 1, 2],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "force_maze_mode", "commands": ["debug_set_maze"], "wait": 0.3 },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "menu_without_save_entry", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "screenshot_review", "target": "menu_without_save_entry", "expected_state": "MENU_MAIN", "expect": "The main menu is shown WITHOUT a 'Save Game' / 'Zapisz grę' entry (saving is impossible in a maze); 'Continue' and 'New Game' are present." }
+        ]
+    },
+    {
+        "name": "Quick Slot Cannot Be Edited",
+        "slug": "quick_slot_cannot_be_edited",
+        "platform": ["desktop", "web"],
+        "cleanup_saves": [0, 1, 2],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 0.5 },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "open_save_panel", "commands": ["down", "accept"], "wait": 1.0 },
+            { "slug": "select_quick_slot", "commands": ["up"], "wait": 0.3 },
+            { "slug": "quick_slot_selected", "commands": ["screenshot"] },
+            { "slug": "try_overwrite", "commands": ["accept"], "wait": 0.5 },
+            { "slug": "try_delete", "commands": ["slot_delete"], "wait": 0.5 },
+            { "slug": "quick_slot_still_there", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
+            { "type": "screenshot_review", "target": "quick_slot_selected", "expect": "A 'Save Game' panel with the first row - the occupied quick save slot ('<quick save>' / '<szybki zapis>') - selected, and NO {Enter} save hint in the footer for it." },
+            { "type": "screenshot_review", "target": "quick_slot_still_there", "expect": "The quick save slot is still listed and occupied (with its timestamp); no confirmation dialog appeared and nothing was overwritten or deleted." },
+            { "type": "process_alive" }
         ]
     }
 ]

@@ -334,11 +334,11 @@ class MenuScreen(State):
 
 
 #######################################################################################################################
-# MARK: LoadMenuScreen helpers
+# MARK: Save/Load menu screens
 
 
-class _LoadUIManagerProxy:
-    """Minimal ``scene.ui`` stand-in so :class:`LoadPanel` can close itself in a menu."""
+class _PanelUIManagerProxy:
+    """Minimal ``scene.ui`` stand-in so a save/load panel can close itself in a menu."""
 
     def __init__(self, manager: UIManager) -> None:
         self._manager = manager
@@ -352,16 +352,59 @@ class _LoadUIManagerProxy:
                 break
 
 
-class _LoadSceneProxy:
-    """Minimal ``scene`` stand-in for :class:`LoadPanel` when no real Scene exists yet."""
+class _PanelSceneProxy:
+    """Minimal ``scene`` stand-in for a save/load panel opened from the menu.
+
+    Notifications are forwarded to the live Scene when there is one (saving from the
+    menu happens with the game still in the state stack), so the player sees the toast
+    the moment they return to it.
+    """
 
     def __init__(self, game: game.Game, manager: UIManager) -> None:
         self.game = game
-        self.ui = _LoadUIManagerProxy(manager)
+        self.ui = _PanelUIManagerProxy(manager)
 
     def add_notification(self, text: str, notification_type: NotificationTypeEnum) -> None:
-        # Notifications are not shown over the main menu; loading will switch to the game.
-        pass
+        scene = self.game.save_manager.current_scene()
+        if scene is not None:
+            scene.add_notification(text, notification_type)
+
+
+class SaveMenuScreen(State):
+    """Menu state hosting :class:`SavePanel`, the only way to save into a named slot.
+
+    Only offered while a non-maze game is in progress (see ``MainMenuScreen``), because
+    the panel writes the Scene sitting underneath this menu in the state stack.
+    """
+
+    def __init__(self, game: game.Game, bg_image: pygame.Surface | None = None) -> None:
+        super().__init__(game)
+        self.bg_image = bg_image
+        self.manager = UIManager(game.HUD)
+        self._scene_proxy = _PanelSceneProxy(game, self.manager)
+        from ui.panels.save_load import SavePanel
+
+        self._panel = SavePanel(self._scene_proxy, None)  # type: ignore[arg-type]
+        self.manager.add(self._panel)
+        self._panel.open()
+
+    def _on_cancel(self) -> None:
+        # the panel consumed the Esc *pygame event*, but INPUTS["quit"] is still set;
+        # clear it so the MainMenuScreen underneath doesn't read it next frame and quit.
+        self.game.reset_inputs()
+        self.exit_state()
+
+    def update(self, dt: float, events: list[pygame.event.Event]) -> None:
+        self.manager.handle_events(events)
+        self.manager.update(dt)
+        if self._panel not in self.manager.widgets:
+            self._on_cancel()
+
+    def draw(self, screen: pygame.Surface, dt: float) -> None:
+        screen.fill((85, 99, 77))
+        if self.bg_image:
+            screen.blit(self.bg_image, (0, 0))
+        self.manager.draw(screen)
 
 
 class LoadMenuScreen(State):
@@ -371,7 +414,7 @@ class LoadMenuScreen(State):
         super().__init__(game)
         self.bg_image = bg_image
         self.manager = UIManager(game.HUD)
-        self._scene_proxy = _LoadSceneProxy(game, self.manager)
+        self._scene_proxy = _PanelSceneProxy(game, self.manager)
         from ui.panels.save_load import LoadPanel
 
         self._load_panel = LoadPanel(self._scene_proxy, None, on_load=self._on_load)  # type: ignore[arg-type]
@@ -431,8 +474,10 @@ class MainMenuScreen(MenuScreen):
         if self._is_game_in_progress():
             options.append(("menu.continue", self._continue_game))
 
+        if self._can_save():
+            options.append(("menu.save", self._open_save_panel))
         if self._has_saved_games():
-            options.append(("menu.load", lambda: self._open_load_panel()))
+            options.append(("menu.load", self._open_load_panel))
         options.extend([
             ("menu.new_game", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
             ("menu.settings", lambda: SettingsMenu(self.game, _("menu.settings"), self.bg_image).enter_state()),
@@ -442,12 +487,21 @@ class MainMenuScreen(MenuScreen):
             options.append(("menu.quit", self._quit_game))
         return MenuPanel(options, bg_file="nine_patch_06b.png", anchor="midleft", pos=(60, settings.HEIGHT // 2))
 
+    def _can_save(self) -> bool:
+        """Saving needs a live scene, and a maze is never persistable - so no Save
+        entry at all while the player is down in a dungeon."""
+        scene = self.game.save_manager.current_scene()
+        return scene is not None and not scene.is_maze
+
     def _has_saved_games(self) -> bool:
         slots = self.game.save_manager.list_slots()
         return any(slot is not None and slot.is_occupied for slot in slots)
 
     def _continue_game(self) -> None:
         self.exit_state()
+
+    def _open_save_panel(self) -> None:
+        SaveMenuScreen(self.game, self.bg_image).enter_state()
 
     def _open_load_panel(self) -> None:
         LoadMenuScreen(self.game, self.bg_image).enter_state()

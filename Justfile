@@ -57,9 +57,20 @@ serve-web *args:
     #!powershell
     .venv\Scripts\python.exe -m pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
 
-# Run agent-driven UI tests (DESKTOP). Optional scenario name: `just test "Save and Load Basic"`; Run `python tests/automate_display_test.py -h` for more.
+# Run the plain-Python unit tests (no pytest - each `tests/test_*.py` is its own runner). Optional filter: `just test-unit save_load`
 [unix]
-test scenario="":
+test-unit pattern="" *flags:
+    .venv/bin/python3 scripts/run_unit_tests.py {{flags}} {{pattern}}
+
+# Run the plain-Python unit tests (no pytest - each `tests/test_*.py` is its own runner). Optional filter: `just test-unit save_load`
+[windows]
+test-unit pattern="" *flags:
+    #!powershell
+    .venv\Scripts\python.exe scripts/run_unit_tests.py {{flags}} {{pattern}}
+
+# Run agent-driven UI tests (DESKTOP). Optional scenario name: `just test-agent "Save and Load Basic"`; Run `python tests/automate_display_test.py -h` for more.
+[unix]
+test-agent scenario="":
     #!/usr/bin/env bash
     if [ -z "{{scenario}}" ]; then
         .venv/bin/python3 tests/automate_display_test.py

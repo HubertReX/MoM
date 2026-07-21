@@ -42,7 +42,7 @@ jobs:
           for s in \
             "Corrupt Save Handling" \
             "Web Save in localStorage" \
-            "Empty Slot Load" \
+            "Quick Load With No Save" \
             "Save and Load Basic"; do
             echo "::group::$s"
             # CI runners are slower than a dev box: give the WASM game more boot

@@ -9,8 +9,16 @@ import pygame
 from enums import NotificationTypeEnum
 from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo
 import settings
-from settings import FONT_SIZE_LARGE, FONT_SIZE_SMALL, MAX_SAVE_SLOTS, PANEL_BG_COLOR, _
+from settings import (
+    FONT_SIZE_LARGE,
+    FONT_SIZE_SMALL,
+    MAX_SAVE_SLOTS,
+    PANEL_BG_COLOR,
+    QUICK_SAVE_SLOT,
+    _,
+)
 
+from .. import icons as ui_icons
 from .. import keycap, theme
 from ..widget import Widget
 from ..widgets import Button, Label, TextInput
@@ -26,23 +34,20 @@ _PAD = 20
 _GAP = 10
 _BUTTON_SIZE = 28
 _SLOT_FONT = 16          # save-slot row text (>= SMALL 14, design-system minimum)
+_ROW_H = 30              # slot row height
+_ROW_STEP = 34           # row pitch (height + spacing)
+_QUICK_GAP = 16          # extra space under the quick save row, holding its divider
 _ROW_INSET = 12          # left/right text inset inside a slot row
 _CAP_ROW_H = 32          # native keycap height (design-system: caps render at 32px)
 _BOX_NINE_PATCH = "nine_patch_12b.png"  # darker sub-panel for confirm / rename dialogs
+_FLASH_SECONDS = 3.0     # how long a refusal message stays in the footer
 
 _RICH_TAG = re.compile(r"\[/?[a-zA-Z]+\]")
-_KEY_MARKUP = re.compile(r"[{}]")
 
 
 def _strip_rich(text: str) -> str:
     """Drop RichText ``[tag]`` markup so a plain font render doesn't show the tags."""
     return _RICH_TAG.sub("", text)
-
-
-def _strip_key_markup(text: str) -> str:
-    """Fallback for hint strings when no keycap sprites are available (main-menu load):
-    turn ``{Enter} zapisz`` into ``Enter zapisz``."""
-    return _KEY_MARKUP.sub("", text)
 
 
 def _slot_name_char(ch: str) -> bool:
@@ -74,6 +79,11 @@ class _SlotButton:
         self.occupied = info is not None and info.is_occupied
 
     @property
+    def is_quick(self) -> bool:
+        """The reserved F5/F9 + autosave slot: read-only from the player's side."""
+        return self.idx == QUICK_SAVE_SLOT
+
+    @property
     def label(self) -> str:
         name, meta = self.parts
         return name if not meta else f"{name}   {meta}"
@@ -83,12 +93,19 @@ class _SlotButton:
         """Row text split into (name, meta). ``meta`` (timestamp + playtime) is drawn
         right-aligned so a long name can never push the playtime off the panel edge -
         the clipping bug from the single concatenated label."""
-        if not self.occupied or self.info is None or self.info.metadata is None:
+        m = self.info.metadata if self.occupied and self.info is not None else None
+        # The quick save slot ignores whatever name is stored in it: it is always
+        # labelled from the current locale, so the row follows a live language switch
+        # and reads as reserved whether or not it holds a save.
+        if self.is_quick:
+            name = _("save.quick_slot_name")
+        elif m is None:
             return _("save.slot_empty", n=self.idx + 1), ""
-        m = self.info.metadata
-        name = m.slot_name or _("save.slot_default_name", n=self.idx + 1)
-        meta = f"{_format_timestamp(m.timestamp)}  {_format_playtime(m.playtime)}"
-        return name, meta
+        else:
+            name = m.slot_name or _("save.slot_default_name", n=self.idx + 1)
+        if m is None:
+            return name, ""
+        return name, f"{_format_timestamp(m.timestamp)}  {_format_playtime(m.playtime)}"
 
 
 def _draw_slot_row(surface: pygame.Surface, slot: "_SlotButton", selected: bool) -> None:
@@ -152,7 +169,7 @@ class _LoadSlotSelector:
         self._confirm_action = "load"
         self._confirm_slot_idx = slot.idx
         self._confirm_selected = 0
-        self._confirm_text = _("save.load_confirm", n=slot.idx + 1)
+        self._confirm_text = _("save.load_confirm", name=slot.parts[0])
         cx = self.rect.centerx
         cy = self.rect.centery
         self._confirm_buttons = [
@@ -241,13 +258,22 @@ class _LoadSlotSelector:
 
 class SaveLoadPanel(Widget):
     _TITLE_KEY = ""
+    _ACTION_HINT_KEY = ""   # {Enter} hint for the panel's primary action
 
     def __init__(self, scene: Scene, hud: HUD | None = None) -> None:
         super().__init__()
         self.scene = scene
         self.game = scene.game
         self.hud = hud
+        # Keycaps come from the shared atlas, not from the HUD, so this panel looks
+        # identical whether it is opened over a scene or from the main menu (which has
+        # no HUD). That difference was the whole reason the two modals diverged.
+        self.icons = ui_icons.get_icons(self.game)
 
+        self._divider_y: int | None = None
+        # transient footer message (e.g. "the quick save slot is read-only")
+        self._flash_text: str = ""
+        self._flash_left: float = 0.0
         self._slots: list[_SlotButton] = []
         self._selected_idx: int = 0
         self._confirm_action: str | None = None
@@ -284,15 +310,31 @@ class SaveLoadPanel(Widget):
     def _list_top(self) -> int:
         return self.rect.top + self._HEADER_Y + self._title_surf.get_height() + 12
 
+    def _include_slot(self, idx: int, info: SaveSlotInfo | None) -> bool:
+        """Whether slot *idx* gets a row. Save lists every slot; load only occupied ones."""
+        return True
+
     def _refresh_slots(self) -> None:
         infos = self.game.save_manager.list_slots()
         self._slots.clear()
+        self._divider_y = None
         y = self._list_top()
         for i in range(MAX_SAVE_SLOTS):
-            slot_rect = pygame.Rect(self.rect.left + _PAD, y, self.rect.width - 2 * _PAD, 30)
             info = infos[i] if i < len(infos) else None
+            if not self._include_slot(i, info):
+                continue
+            slot_rect = pygame.Rect(self.rect.left + _PAD, y, self.rect.width - 2 * _PAD, _ROW_H)
             self._slots.append(_SlotButton(i, info, slot_rect))
-            y += 34
+            y += _ROW_STEP
+            if i == QUICK_SAVE_SLOT:
+                # the reserved slot is set apart from the player's own saves by a rule,
+                # centred in the widened gap below its row
+                self._divider_y = slot_rect.bottom + (_ROW_STEP - _ROW_H + _QUICK_GAP) // 2
+                y += _QUICK_GAP
+
+    def _default_index(self) -> int:
+        """Row selected when the panel opens (Save skips the read-only quick slot)."""
+        return 0
 
     def _confirm_yes(self) -> None:
         if self._confirm_action == "save":
@@ -325,13 +367,14 @@ class SaveLoadPanel(Widget):
         self._confirm_action = None
         self._confirm_slot_idx = -1
         self._confirm_selected = 0
-        self._selected_idx = 0
+        self._flash_left = 0.0
         self._close_editor()
         # Re-fit to the current viewport (the panel is cached; the resolution may have
         # changed since it was built). Slot rects derive from self.rect, so rebuild the
         # background first, then the slots.
         self._build_background()
         self._refresh_slots()
+        self._selected_idx = self._default_index()
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         # while the rename editor is open it swallows input (Esc cancels, Enter commits)
@@ -393,8 +436,20 @@ class SaveLoadPanel(Widget):
     #############################################################################################################
     # MARK: rename / delete slot actions
 
+    def _notify_locked(self) -> None:
+        """Tell the player why the quick save slot refused an edit.
+
+        Shown in the panel's own footer rather than as a scene notification: this
+        panel lives in a menu state, and the scene's toasts are not drawn there.
+        """
+        self._flash_text = _("save.quick_slot_locked")
+        self._flash_left = _FLASH_SECONDS
+
     def _begin_rename(self, slot: _SlotButton) -> None:
         """Open the inline TextInput to rename an occupied slot (no-op for empty slots)."""
+        if slot.is_quick:
+            self._notify_locked()
+            return
         if not slot.occupied or slot.info is None or slot.info.metadata is None:
             return
         editor = TextInput(
@@ -425,27 +480,27 @@ class SaveLoadPanel(Widget):
 
     def _begin_delete(self, slot: _SlotButton) -> None:
         """Ask for confirmation before deleting an occupied slot (no-op for empty slots)."""
+        if slot.is_quick:
+            self._notify_locked()
+            return
         if not slot.occupied:
             return
         self._show_confirm("delete", slot)
 
     def _on_slot_click(self, slot: _SlotButton) -> None:
-        if not slot.occupied:
-            self._do_save(slot.idx)
-            self._refresh_slots()
-        else:
-            self._show_confirm("overwrite", slot)
+        """The panel's primary action on a row - implemented by Save/Load."""
 
     def _show_confirm(self, action: str, slot: _SlotButton) -> None:
+        name = slot.parts[0]
         if action == "overwrite":
             self._confirm_action = "save"
-            msg = _("save.overwrite", n=slot.idx + 1)
+            msg = _("save.overwrite", name=name)
         elif action == "delete":
             self._confirm_action = "delete"
             msg = _("save.delete_confirm")
         else:
             self._confirm_action = "load"
-            msg = _("save.load_confirm", n=slot.idx + 1)
+            msg = _("save.load_confirm", name=name)
         self._confirm_slot_idx = slot.idx
         self._confirm_selected = 0
         self._confirm_text = msg
@@ -484,6 +539,8 @@ class SaveLoadPanel(Widget):
             row_x += btn.rect.width + self._BOX_BTN_SPACING
 
     def update(self, dt: float) -> None:
+        if self._flash_left > 0.0:
+            self._flash_left = max(0.0, self._flash_left - dt)
         for btn in self._confirm_buttons:
             btn.update(dt)
         if self._editor is not None:
@@ -493,8 +550,14 @@ class SaveLoadPanel(Widget):
             # the player's real first keystroke is kept.
             self._swallow_next_textinput = False
 
-    def _selected_is_occupied(self) -> bool:
-        return bool(self._slots) and self._slots[self._selected_idx].occupied
+    def _selected_slot(self) -> _SlotButton | None:
+        if not self._slots:
+            return None
+        return self._slots[self._selected_idx]
+
+    def _can_act_on(self, slot: _SlotButton) -> bool:
+        """Whether Enter does anything on *slot* (Save refuses the quick slot)."""
+        return True
 
     def draw(self, surface: pygame.Surface) -> None:
         if not self.visible:
@@ -507,6 +570,10 @@ class SaveLoadPanel(Widget):
         if self._slots:
             for i, slot in enumerate(self._slots):
                 _draw_slot_row(surface, slot, i == self._selected_idx)
+            if self._divider_y is not None:
+                pygame.draw.line(surface, theme.RULE,
+                                 (self.rect.left + _PAD, self._divider_y),
+                                 (self.rect.right - _PAD, self._divider_y), 2)
         else:
             # empty list (e.g. LoadPanel with no saves) — say so instead of a blank box
             msg = theme.menu_font(20).render(_("save.no_saves"), False, theme.GREY)
@@ -526,32 +593,45 @@ class SaveLoadPanel(Widget):
     #############################################################################################################
     # MARK: footer + hint rendering (design-system keycaps)
 
+    def _footer_hint(self) -> str:
+        """Left-hand footer markup for the current selection: the primary {Enter}
+        action plus rename/delete, both dropped where they do not apply."""
+        slot = self._selected_slot()
+        if slot is None:
+            return ""
+        parts: list[str] = []
+        if self._can_act_on(slot):
+            parts.append(_(self._ACTION_HINT_KEY))
+        if slot.occupied and not slot.is_quick:
+            parts.append(_("save.action_hint"))
+        return "   ".join(parts)
+
     def _draw_footer(self, surface: pygame.Surface) -> None:
         """Panel shortcuts strip (design-system: shortcuts live in the footer, on
-        sprite keycaps, above a RULE divider). Left = rename/delete (while an occupied
-        slot is selected); right = Esc-to-close (always)."""
+        sprite keycaps, above a RULE divider). Left = the primary action plus
+        rename/delete for the selected slot; right = Esc-to-close (always)."""
         inner_l = self.rect.left + _PAD
         inner_r = self.rect.right - _PAD
         rule_y = self.rect.bottom - self._FOOTER_RULE_Y
         cy = self.rect.bottom - self._FOOTER_Y
         pygame.draw.line(surface, theme.RULE, (inner_l, rule_y), (inner_r, rule_y), 2)
-        if self._selected_is_occupied():
-            self._blit_hint(surface, _("save.action_hint"), (inner_l, cy), align="left")
+        if self._flash_left > 0.0:
+            # a refusal message takes the hint's place for a few seconds
+            msg = theme.get_font(FONT_SIZE_SMALL).render(self._flash_text, False, theme.WARN)
+            surface.blit(msg, msg.get_rect(midleft=(inner_l, cy)))
+            return
+        hint = self._footer_hint()
+        if hint:
+            self._blit_hint(surface, hint, (inner_l, cy), align="left")
         self._blit_hint(surface, _("save.close_hint"), (inner_r, cy), align="right")
 
     def _blit_hint(self, surface: pygame.Surface, markup: str,
                    pos: tuple[int, int], *, align: str = "left") -> None:
         """Render a ``{TOKEN}`` hint anchored at ``pos`` (a point on the row's vertical
-        centre) using shared keycaps, with a plain-text fallback when no sprite sheet is
-        available (main-menu load path). ``align`` is left / center / right."""
+        centre) using the shared keycap sprites. ``align`` is left / center / right."""
         text_font = theme.get_font(FONT_SIZE_SMALL)
         cx, cy = pos
-        icons = self.hud.icons if self.hud is not None else None
-        if icons is None:
-            plain = theme.menu_font(16).render(_strip_key_markup(markup), False, theme.GREY)
-            anchor = {"left": "midleft", "right": "midright"}.get(align, "center")
-            surface.blit(plain, plain.get_rect(**{anchor: (cx, cy)}))
-            return
+        icons = self.icons
         glyph_font = theme.get_font(FONT_SIZE_SMALL)
         sep_font = theme.get_font(FONT_SIZE_LARGE)
         y = cy - _CAP_ROW_H // 2
@@ -619,11 +699,38 @@ class SaveLoadPanel(Widget):
 
 
 class SavePanel(SaveLoadPanel):
+    """Full save-slot list, reachable from the main menu only (see ``SaveMenuScreen``).
+
+    Lists every slot including the reserved quick save one, which is shown above the
+    divider as a read-only row: it cannot be written, renamed or deleted by hand.
+    """
+
     _TITLE_KEY = "save.title_save"
+    _ACTION_HINT_KEY = "save.save_hint"
+
+    def _default_index(self) -> int:
+        # start on the first slot the player may actually write to
+        for i, slot in enumerate(self._slots):
+            if not slot.is_quick:
+                return i
+        return 0
+
+    def _can_act_on(self, slot: _SlotButton) -> bool:
+        return not slot.is_quick
+
+    def _on_slot_click(self, slot: _SlotButton) -> None:
+        if slot.is_quick:
+            self._notify_locked()
+        elif not slot.occupied:
+            self._do_save(slot.idx)
+            self._refresh_slots()
+        else:
+            self._show_confirm("overwrite", slot)
 
 
 class LoadPanel(SaveLoadPanel):
     _TITLE_KEY = "save.title_load"
+    _ACTION_HINT_KEY = "save.load_hint"
 
     def __init__(self, scene: Scene, hud: HUD | None = None, on_load: Callable[[int], None] | None = None) -> None:
         super().__init__(scene, hud)
@@ -637,17 +744,8 @@ class LoadPanel(SaveLoadPanel):
                 self.on_load(slot_idx)
         self._confirm_action = None
 
-    def _refresh_slots(self) -> None:
-        infos = self.game.save_manager.list_slots()
-        self._slots.clear()
-        y = self._list_top()
-        for i in range(MAX_SAVE_SLOTS):
-            slot_rect = pygame.Rect(self.rect.left + _PAD, y, self.rect.width - 2 * _PAD, 30)
-            info = infos[i] if i < len(infos) else None
-            occ = info is not None and info.is_occupied
-            if occ:
-                self._slots.append(_SlotButton(i, info, slot_rect))
-            y += 34
+    def _include_slot(self, idx: int, info: SaveSlotInfo | None) -> bool:
+        return info is not None and info.is_occupied
 
     def _on_slot_click(self, slot: _SlotButton) -> None:
         self._show_confirm("load", slot)

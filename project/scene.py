@@ -49,20 +49,13 @@ from settings import (
     CIRCLE_RADIUS,
     CUTSCENE_BG_COLOR,
     DAY_FILTER,
-    EMOTE_SHEET_DEFINITION,
-    EMOTE_SHEET_FILE,
     FILTER_SCALE,
-    FONT_COLOR,
     FONT_SIZE_MEDIUM,
-    FONT_SIZE_SMALL,
-    FONT_SIZE_TINY,
     FRIENDLY_WAKE_DISTANCE,
     FULL_WHITE_COLOR,
     GAME_TIME_SPEED,
     GEMS_SHEET_DEFINITION,
     GEMS_SHEET_FILE,
-    HUD_SHEET_DEFINITION,
-    HUD_SHEET_FILE,
     INITIAL_DAY,
     INITIAL_HOUR,
     INPUTS,
@@ -81,6 +74,7 @@ from settings import (
     # PANEL_BG_COLOR,
     EMITTER_SCHEDULES,
     PARTICLES,
+    QUICK_SAVE_SLOT,
     SHADERS_NAMES,
     SHOW_DEBUG_INFO,
     SHOW_UI,
@@ -107,6 +101,7 @@ from settings import (
 )
 from state import State
 from transition import Transition, TransitionCircle
+from ui import icons as ui_icons
 from ui.game_ui import GameUI
 from ui.panels.hud import NOTIFICATION_TYPE_ICONS
 from ui.panels.trade import TradePanel
@@ -155,6 +150,9 @@ class Scene(State):
             # the player already smashed on a map they are not standing on
             "destructibles",
             "destroyed_walls",
+            # per-map for the same reason as `destroyed_walls`: a killed monster
+            # leaves nothing behind on the map to read the fact off
+            "dead_monsters",
             "label_sprites",
             "shadow_sprites",
             "obstacles_sprites",
@@ -223,6 +221,11 @@ class Scene(State):
         # taken at save time - the snapshot was captured lazily on the first save,
         # so everything destroyed before that first save was invisible to it.
         self.destroyed_walls: list[tuple[int, int]] = []
+        # Names of monsters killed on the current map. Needed for the same reason as
+        # `destroyed_walls`: `NPC.die()` drops the sprite from `self.NPCs`, so once it
+        # is gone nothing on the map says it ever existed. Without this list a save
+        # made after a load would report an empty kill list and resurrect everything.
+        self.dead_monsters: list[str] = []
 
         self.label_sprites: pygame.sprite.Group = pygame.sprite.Group()
         self.shadow_sprites: pygame.sprite.Group = pygame.sprite.Group()
@@ -234,13 +237,9 @@ class Scene(State):
         # self.transition = Transition(self)
         self.transition = TransitionCircle(self)
 
-        self.icons: dict[str, list[pygame.Surface]] = self.import_sheet(
-            str(EMOTE_SHEET_FILE), EMOTE_SHEET_DEFINITION, width=14, height=13)
-
-        self.icons.update(self.import_sheet(
-            str(HUD_SHEET_FILE), HUD_SHEET_DEFINITION, width=16, height=16, scale=2)
-        )
-        self.generate_icons()
+        # one shared atlas for the whole run (see ui/icons.py) - menus need the same
+        # keycaps as the scene, and rebuilding it per scene only duplicated surfaces
+        self.icons: dict[str, list[pygame.Surface]] = ui_icons.get_icons(self.game)
         # self.import_emote_sheet(str(EMOTE_SHEET_FILE))
         self.items_sheet: dict[str, list[pygame.Surface]] = self.import_sheet(
             str(ITEMS_SHEET_FILE), ITEMS_SHEET_DEFINITION, width=16, height=16)
@@ -315,52 +314,14 @@ class Scene(State):
 
     #############################################################################################################
 
-    def generate_icons(self) -> None:
-        icons = self.icons
-        small_font = self.game.fonts[FONT_SIZE_SMALL]
-        tiny_font = self.game.fonts[FONT_SIZE_TINY]
+    def note_monster_death(self, name: str) -> None:
+        """Record a kill on the current map, called from :meth:`NPC.die`.
 
-        # Lico pustego `key` (i wszystkich kafli arkusza) jest już przyciemnione
-        # w samym sprite'cie HUD.png, więc biały glif ma kontrast bez mnożenia w kodzie.
-
-        # generate keys with letter buttons (A-Z)
-        center = icons["key"][0].get_rect().center
-        for letter in range(ord("A"), ord("Z") + 1):
-            text_surf = small_font.render(chr(letter), False, FONT_COLOR)
-            text_rect = text_surf.get_rect(center = center).move(0, -1)
-            bg = icons["key"][0].copy()
-            bg.blit(text_surf, text_rect)
-            icons[f"key_{chr(letter)}"] = [bg]
-
-        # 0 to 9
-
-        for digit in range(0, 10):
-            text_surf = tiny_font.render(str(digit), False, FONT_COLOR)
-            text_rect = text_surf.get_rect(center = center).move(0, -2)
-            bg = icons["key"][0].copy()
-            bg.blit(text_surf, text_rect)
-            icons[f"key_{str(digit)}"] = [bg]
-
-        # F1 to F12
-        # tiny_font = self.game.fonts[FONT_SIZE_TINY]
-        for letter in range(1, 13):
-            text_surf = tiny_font.render(f"F{str(letter)}", False, FONT_COLOR)
-            text_rect = text_surf.get_rect(center = center).move(0, -2)
-            bg = icons["key"][0].copy()
-            bg.blit(text_surf, text_rect)
-            icons[f"key_F{str(letter)}"] = [bg]
-
-        # other keys
-        for sign in "<>`[]+-,.":
-            text_surf = small_font.render(sign, False, FONT_COLOR)
-            text_rect = text_surf.get_rect(center = center).move(0, -1)
-            bg = icons["key"][0].copy()
-            bg.blit(text_surf, text_rect)
-            icons[f"key_{sign}"] = [bg]
-
-        # arrow keys (key_up/down/left/right) come from the HUD sheet directly
-        # (HUD_SHEET_DEFINITION, rows 2) - hand-drawn arrows on dark keycaps, no
-        # code-side placeholder needed anymore.
+        The sprite is gone by the time a save runs, so this list is the only
+        durable evidence of it - see ``self.dead_monsters``.
+        """
+        if name and name not in self.dead_monsters:
+            self.dead_monsters.append(name)
 
     #############################################################################################################
 
@@ -1465,15 +1426,15 @@ class Scene(State):
         # firing it now keeps the sweep quiet when it lands.
         self.quests.on_event("map_change")
 
-        # Autosave into slot 0 on a map change - including the one that takes the
-        # player from the overworld down into the dungeon, which is the only save a
-        # maze run ever gets (manual saving stays blocked in a maze, see
-        # Game.update). It gets a toast because it silently overwrites slot 0 and
-        # the player has to know.
+        # Autosave into the quick save slot on a map change - including the one that
+        # takes the player from the overworld down into the dungeon, which is the only
+        # save a maze run ever gets (manual saving stays blocked in a maze, see
+        # Game.update). It gets a toast because it silently overwrites the quick save
+        # and the player has to know.
         if (hasattr(self.game, "save_manager")
                 and self.game.save_manager.should_autosave_on_map_change(was_maze)
-                and self.game.save_manager.save(0)):
-            self.add_notification(_("notify.autosaved_slot", n=1), NotificationTypeEnum.info)
+                and self.game.save_manager.save(QUICK_SAVE_SLOT)):
+            self.add_notification(_("notify.autosaved_quick"), NotificationTypeEnum.info)
 
         self.transition.exiting = False
 
@@ -1494,14 +1455,14 @@ class Scene(State):
         self.quests.update(dt)
 
         # sample this before ui.update() so that on the frame a modal panel closes
-        # itself (e.g. Esc in LoadPanel) we still freeze this frame - that keeps the
+        # itself (e.g. Esc in QuestPanel) we still freeze this frame - that keeps the
         # closing keypress from also leaking to the scene (Esc would open the menu).
         modal_open = self.ui.is_modal_open()
 
         if self.display_ui_flag:
             self.ui.update(self.game.time_elapsed, events)
 
-        # while a Save/Load panel is open the world is frozen and input goes only to
+        # while a modal panel is open the world is frozen and input goes only to
         # the panel; clear INPUTS so nothing queued fires when the panel closes.
         if modal_open:
             # Dialog/Trade freeze the world, but keep the animated emotes above

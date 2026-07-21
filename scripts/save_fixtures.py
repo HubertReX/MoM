@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Helper for corrupt-save tests in the save/load agent test suite.
+"""Save-file fixtures for the agent test suite - NOT a test file itself.
+
+Used by `tests/automate_display_test.py` to plant a corrupt / minimal save before
+a scenario runs, and usable by hand as a CLI (see `__main__` at the bottom).
+
+Lives in `scripts/` rather than `tests/` for two reasons: it is a helper script
+(the repo keeps those together), and under its old `test_*.py` name any runner
+globbing the test dir collected it and reported a file "passing" that defines no
+tests and asserts nothing.
 
 Functions:
 - corrupt_save(slot_idx) — overwrite a save file with invalid JSON
@@ -59,6 +67,17 @@ def minimal_save_dict(slot_idx: int, version: int = 1) -> dict:
 
 
 def _get_save_dir() -> Path:
+    """Where the game keeps its saves - must match ``FileSaveBackend`` exactly.
+
+    ``XDG_DATA_HOME`` wins over the per-OS default, like it does in the backend
+    and in the test runner. Without that branch this module wrote to the macOS
+    default while the game read the XDG path: fixtures landed somewhere the game
+    never looked (so corrupt-save scenarios silently tested nothing), and the
+    runner's sandbox could not contain them.
+    """
+    xdg_data_home = os.environ.get("XDG_DATA_HOME")
+    if xdg_data_home:
+        return Path(xdg_data_home) / "mom" / "saves"
     system = _platform.system()
     if system == "Darwin":
         base = Path.home() / "Library" / "Application Support" / "mom" / "saves"

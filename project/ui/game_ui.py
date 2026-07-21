@@ -34,7 +34,6 @@ from .panels.help import HelpPanel
 from .panels.hud import HUD
 from .panels.inventory import InventoryPanel
 from .panels.modal import ModalPanel
-from .panels.save_load import LoadPanel, SavePanel
 from .panels.trade import TradePanel
 
 if TYPE_CHECKING:
@@ -50,11 +49,12 @@ _QUEST_EVENT_PANELS = (DialogPanel, TradePanel)
 # the hotbar is not drawn while one of these is up: it would show through the panel
 _BLOCKING = (DialogPanel, TradePanel, QuestPanel, HelpPanel)
 # panels that fully freeze the world while open: input must go to the panel only,
-# not to the scene underneath (otherwise e.g. R renames a slot *and* reloads the map).
-# The journal is here so its arrow keys drive the list instead of walking the hero
-# around behind it, and so Esc closes it rather than opening the main menu. The help
-# panel is here too — that is what "pause the game until it is closed" means.
-_MODAL = (DialogPanel, TradePanel, LoadPanel, SavePanel, QuestPanel, HelpPanel)
+# not to the scene underneath. The journal is here so its arrow keys drive the list
+# instead of walking the hero around behind it, and so Esc closes it rather than
+# opening the main menu. The help panel is here too — that is what "pause the game
+# until it is closed" means. (Save/Load are not in-scene panels: they are main-menu
+# states, and F5/F9 are silent one-key actions that open nothing.)
+_MODAL = (DialogPanel, TradePanel, QuestPanel, HelpPanel)
 
 
 class GameUI:
@@ -110,7 +110,7 @@ class GameUI:
         return panel is not None and panel in self._open
 
     def is_modal_open(self) -> bool:
-        """True if a panel that should freeze the scene (Save/Load) is open."""
+        """True if a panel that should freeze the scene is open."""
         return any(isinstance(p, _MODAL) for p in self._open)
 
     def reset(self) -> None:

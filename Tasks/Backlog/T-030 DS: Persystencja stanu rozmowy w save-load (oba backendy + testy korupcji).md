@@ -25,7 +25,7 @@ state: review
 
 - **Kontekst wspólny (przeczytaj najpierw):** [[DS-epic-brief]] - lokalizacje repo (RPG i MoM), mapa źródeł RPG↔MoM, decyzje D1-D11.
 - Decyzja **D5** (pełny stan per-NPC) - `../doc/dialog-migration-plan.html`.
-- MoM: `project/save_load/`, `project/config_model/`, testy `tests/test_save_load_backends.py`, `tests/test_save_load_corrupt.py`, `tests/test_save_load_models.py`.
+- MoM: `project/save_load/`, `project/config_model/`, testy `tests/test_save_load_backends.py`, `scripts/save_fixtures.py`, `tests/test_save_load_models.py`.
 - Zależy od: [[T-023 DS: Model NPC i pola sentymentu (dialog_key, sentiment, disposition)]], [[T-033 DS: UI DialogPanel - lista opcji i wybor (hybryda kursor + 1-9 + mysz)]], [[T-034 DS: Efekty wezlow - adapter ResultSink (zloto, itemy, HP, sentyment)]].
 - Odblokowuje: [[T-028 DS: Migracja pozostalych postaci + web smoke-test + testy wizualne]].
 

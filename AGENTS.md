@@ -84,10 +84,32 @@ Zarządzanie zadaniami (człowiek ↔ agenci) odbywa się przez **MOAB**
 ([HubertReX/moab](https://github.com/HubertReX/moab)) dodany do katalogu `Tasks`.
 Pełny protokół i opis: `Tasks/AGENTS.md`.
 
+## Testy jednostkowe - szybki start dla agenta
+
+**Nie używamy pytesta** (nie ma go w zależnościach). Każdy `tests/test_*.py` to samodzielny
+skrypt: `main()` woła ręcznie utrzymywaną listę `tests = [...]` i wychodzi z kodem != 0 przy
+błędzie. Runner `scripts/run_unit_tests.py` odpala wszystkie pliki i **pilnuje, żeby każdy
+zdefiniowany `test_*` był na tej liście** - inaczej test nigdy by się nie wykonał, a plik i tak
+zwróciłby 0.
+
+```bash
+just test-unit                # wszystko (23 pliki, 285 testów)
+just test-unit save_load      # tylko pliki z "save_load" w nazwie
+just test-unit quest -v       # z pełnym outputem każdego pliku
+```
+
+Dodając nowy test, **dopisz go do listy `tests = [...]`** w swoim pliku - `just test-unit`
+zgłosi to jako `WARN` i zwróci 1, jeśli o tym zapomnisz.
+
 ## Testy wizualne i save/load - szybki start dla agenta
 
 Testowanie przez agenta AI: `tests/scenarios.json` + `tests/automate_display_test.py` (runner)
 + `project/agent_ctrl.py` (interpreter komend w grze). Główny sposób weryfikacji UI i save/load.
+Skrót: `just test-agent "<scenariusz>"` (desktop), `just test-web "<scenariusz>"` (web).
+
+Runner odpala grę z `XDG_DATA_HOME` przestawionym na `.test-data/` w repo, więc scenariusze
+**nie ruszają prawdziwych zapisów ani `settings.json`**. Dotyczy to też wywołania wprost
+(`python tests/automate_display_test.py`), nie tylko przez `just`.
 
 ```bash
 # Pojedynczy scenariusz - ZAWSZE uruchamiaj tak do weryfikacji:

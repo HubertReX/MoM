@@ -903,6 +903,11 @@ class NPC(pygame.sprite.Sprite):
         # drop items and money on the ground
         if self.model.name_EN != "Player" and drop_items:
             self.is_dead = True
+            # The line above is the only thing that makes this a *death* - an NPC
+            # leaving the map via an exit also calls die(), but with drop_items=False.
+            # Record it here so the save still knows about the kill after this sprite
+            # is gone from scene.NPCs (see Scene.dead_monsters).
+            self.scene.note_monster_death(self.name)
 
             for item in self.items:
                 self.selected_item_idx = len(self.items) - 1

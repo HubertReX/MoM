@@ -177,6 +177,59 @@ def test_manager_rename_empty_slot_fails() -> None:
         assert not mgr.rename_slot(-1, "Bad"), "out-of-range index returns False"
 
 
+def test_every_save_dir_resolver_agrees() -> None:
+    """The three independent copies of "where do saves live" must not drift.
+
+    `FileSaveBackend`, the agent runner's `get_save_dir()` and the fixture helper
+    each compute the path themselves. When the fixture helper alone ignored
+    `XDG_DATA_HOME` it planted corrupt saves where the game never looked - the
+    corrupt-save scenario passed while testing nothing - and the runner's sandbox
+    could not contain it, so real saves were still reachable.
+    """
+    import importlib
+
+    here = Path(__file__).resolve().parent
+    sys.path.insert(0, str(here))
+    sys.path.insert(0, str(here.parent / "scripts"))
+    import save_fixtures
+    import automate_display_test as runner
+
+    with tempfile.TemporaryDirectory() as td:
+        old = os.environ.get("XDG_DATA_HOME")
+        os.environ["XDG_DATA_HOME"] = td
+        try:
+            importlib.reload(save_fixtures)
+            expected = Path(td) / "mom" / "saves"
+            assert_eq(save_fixtures._get_save_dir(), expected, "fixture helper honours XDG_DATA_HOME")
+            assert_eq(runner.get_save_dir(), expected, "test runner honours XDG_DATA_HOME")
+            assert_eq(FileSaveBackend().save_dir, expected, "the game backend honours XDG_DATA_HOME")
+        finally:
+            if old is None:
+                os.environ.pop("XDG_DATA_HOME", None)
+            else:
+                os.environ["XDG_DATA_HOME"] = old
+
+
+def test_the_agent_runner_sandboxes_game_data() -> None:
+    """`isolate_game_data()` must move the save dir off the developer's real one."""
+    import automate_display_test as runner
+
+    old = os.environ.get("XDG_DATA_HOME")
+    try:
+        os.environ.pop("XDG_DATA_HOME", None)
+        real = runner.get_save_dir()
+        runner.isolate_game_data()
+        sandboxed = runner.get_save_dir()
+        assert sandboxed != real, "the runner must not write to the real save dir"
+        assert runner.SANDBOX_DIR in sandboxed.parents, \
+            f"sandboxed save dir {sandboxed} is not under {runner.SANDBOX_DIR}"
+    finally:
+        if old is None:
+            os.environ.pop("XDG_DATA_HOME", None)
+        else:
+            os.environ["XDG_DATA_HOME"] = old
+
+
 if __name__ == "__main__":
     tests = [
         ("write and read", test_file_backend_write_read),
@@ -190,6 +243,8 @@ if __name__ == "__main__":
         ("manager rename slot", test_manager_rename_slot),
         ("manager rename sanitizes", test_manager_rename_sanitizes),
         ("manager rename empty fails", test_manager_rename_empty_slot_fails),
+        ("save dir resolvers agree", test_every_save_dir_resolver_agrees),
+        ("agent runner sandboxes game data", test_the_agent_runner_sandboxes_game_data),
     ]
     failures = 0
     for name, func in tests:
