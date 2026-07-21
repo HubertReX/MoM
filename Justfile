@@ -5,14 +5,21 @@
 default:
     @just --list
 
-# Initialize virtual environment and install dependencies (uses `uv` if available)
+# Initialize virtual environment and install dependencies (uses `uv` if available).
+# `--python 3.12` is also in `.python-version`; stated here too because an unpinned
+# `uv venv` silently takes the newest interpreter on the box (Homebrew's python3 is
+# 3.14), and several pinned deps have no wheels for it.
 [unix]
 setup:
     @if [ ! -d ".venv" ]; then \
         echo "Creating virtual environment using uv..."; \
-        uv venv; \
+        uv venv --python 3.12; \
     fi
-    .venv/bin/uv pip install -r requirements.txt -r requirements-dev.txt
+    @if command -v uv >/dev/null 2>&1; then \
+        uv pip install --python .venv/bin/python -r requirements.txt -r requirements-dev.txt; \
+    else \
+        .venv/bin/pip install -r requirements.txt -r requirements-dev.txt; \
+    fi
 
 # Initialize virtual environment and install dependencies (uses `uv` if available, falls back to standard `pip`)
 [windows]
@@ -21,13 +28,14 @@ setup:
     if (!(Test-Path .venv)) {
         Write-Host "Creating virtual environment..."
         if (Get-Command uv -ErrorAction SilentlyContinue) {
-            uv venv
+            uv venv --python 3.12
         } else {
             python -m venv .venv
         }
     }
-    if (Test-Path .venv\Scripts\uv.exe) {
-        .venv\Scripts\uv.exe pip install -r requirements.txt -r requirements-dev.txt
+    # uv lives on PATH, not inside the venv - `uv venv` does not install it there
+    if (Get-Command uv -ErrorAction SilentlyContinue) {
+        uv pip install --python .venv\Scripts\python.exe -r requirements.txt -r requirements-dev.txt
     } else {
         .venv\Scripts\pip.exe install -r requirements.txt -r requirements-dev.txt
     }
