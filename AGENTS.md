@@ -17,6 +17,10 @@ IS_WEB = __import__("sys").platform == "emscripten" or USE_WEB_SIMULATOR
 Web ma ograniczenia wydajności i runtime'u (m.in. brak Pydantic, wyłączone shadery/filtr
 dzień-noc). Szczegóły rozgałęzień: [`project/AGENTS.md`](./project/AGENTS.md).
 
+## 🔑 CodeGraph: use MCP tool before grep
+
+**Before any grep/find/read for code questions: USE `codegraph_codegraph_explore` FIRST.** It returns verbatim source + call paths in one call. grep misses dynamic dispatch and costs more tokens.
+
 ## 🔑 Złota zasada: pixel-perfect rendering (natywny 1:1, więcej kafelków)
 
 Gra **musi renderować się pixel-perfect** i **nigdy nie skaluje** obrazu na ekran.
