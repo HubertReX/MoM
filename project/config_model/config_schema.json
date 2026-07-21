@@ -96,6 +96,21 @@
                     "title": "Money",
                     "type": "integer"
                 },
+                "money_cap": {
+                    "default": 0,
+                    "description": "ceiling the purse regenerates up to; 0 means 'use `money`'",
+                    "minimum": 0,
+                    "title": "Money Cap",
+                    "type": "integer"
+                },
+                "money_regen_pct": {
+                    "default": 0.25,
+                    "description": "fraction of `money_cap` restored per elapsed day",
+                    "maximum": 1.0,
+                    "minimum": 0.0,
+                    "title": "Money Regen Pct",
+                    "type": "number"
+                },
                 "damage": {
                     "default": 10,
                     "description": "amount of damage delt to others",

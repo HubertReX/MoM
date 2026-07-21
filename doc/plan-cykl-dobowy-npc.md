@@ -299,6 +299,13 @@ Losowanie musi być zaziarnione: `Random(hash((save_seed, day, npc_name)))`. Ina
 
 ### Odnawianie sakiewki: regeneracja do limitu
 
+Status: **zrobione**, krok 2. `Scene.update_next_day()` to teraz `Scene.apply_days(n)`, a po stronie NPC są dwie metody: `regenerate_money(days)` i przepisane `restock_items()`. `sell_all_bought_items()` usunięte w całości - to ono było źródłem nieskończonego wzrostu sakiewki.
+
+Co wyszło przy implementacji, a nie było w planie:
+
+- **`restock_items()` nie zerowało `total_items_weight`.** Lista `items` szła do kosza, ale bieżąca waga jest osobnym licznikiem prowadzonym przez `pick_up()` / `drop_item()`, więc każdy świt dokładał kolejny komplet towaru do sumy. Po kilku dobach handlarz miał nominalnie ponad `max_carry_weight` trzymając dwa klejnoty - i przestawał kupować na stałe. To dokładnie ten sam objaw, przed którym plan chronił wyrzucaniem skupionego towaru, tylko drugą drogą. Naprawione, przypięte testem.
+- **`money_cap` = 0 znaczy "użyj `money` z CSV".** Dzięki temu krok 2 nie czeka na regenerację `characters.csv` (krok 4) - dopóki kolumna jest pusta, sufitem jest kwota startowa z configu, czyli 3000 zł dla JOHNY'ego. Sufit czyta się z `game.conf.characters[config_key].money`, bo `self.model` to własna kopia postaci i jej `money` jest stanem bieżącym, nie bazą.
+
 ```text
 money = min(money_cap, money + n_dni * round(money_cap * money_regen_pct))
 ```
@@ -327,7 +334,7 @@ To jest dobra wiadomość: handel po 1 sztuce plus skończona sakiewka *już str
 |---|---|---|
 | Sakiewka handlarza w panelu | `_draw_merchant_stats` (`trade.py:131`) już rysuje pieniądze i wagę | gotowe |
 | Powód odmowy | trzy osobne powiadomienia: pieniądze, waga, sloty (`characters.py:1302-1341`) | gotowe |
-| Sufit sakiewki widoczny | panel pokazuje samo `money`, bez `money_cap` | pokazać `money / money_cap`, na wzór istniejącego wiersza z wagą |
+| Sufit sakiewki widoczny | `_draw_merchant_stats` pokazuje `money/money_cap`, na wzór wiersza z wagą | gotowe |
 
 ## Brakujące kolumny w `characters.csv`
 
@@ -392,7 +399,7 @@ Modyfikowane:
 ## Kolejność budowy
 
 1. ~~`NpcRuntime` + rozdzielenie od configu + pola w zapisie.~~ **Zrobione**, commit `404d274`.
-2. Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu. To realizuje cel zadania.
+2. ~~Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu.~~ **Zrobione**, plus naprawa niezerowanej wagi w `restock_items` i testy `tests/test_merchant_economy.py`.
 3. Zaziarnione losowanie + gating klawisza `next_day` za `IS_DEBUG_MODE`. Bez tego drugiego własne testy kłamią.
 4. Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci. Osobny, czysty commit - diff będzie duży, więc nie warto go mieszać ze zmianami logiki.
 5. `routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.

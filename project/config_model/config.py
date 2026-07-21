@@ -72,6 +72,8 @@ class Character():
     items:                 Annotated[list[str],          field(repr=False)]
     max_carry_weight:      Annotated[float,              field(repr=False)]
     money:                 Annotated[int,                field(repr=False)]
+    money_cap:             Annotated[int,                field(repr=False)]
+    money_regen_pct:       Annotated[float,              field(repr=False)]
     damage:                Annotated[int,                field(repr=False)]
     speed_walk:            Annotated[int,                field(repr=False)]
     speed_run:             Annotated[int,                field(repr=False)]
@@ -99,6 +101,8 @@ class Character():
             items = data.get("items", []),
             max_carry_weight = data.get("max_carry_weight", 15.0),
             money = data.get("money", 0),
+            money_cap = data.get("money_cap", 0),
+            money_regen_pct = float(data.get("money_regen_pct", 0.25)),
             damage = data.get("damage", 10),
             speed_walk = data.get("speed_walk", 30),
             speed_run = data.get("speed_run", 40),

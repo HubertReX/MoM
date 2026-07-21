@@ -1443,9 +1443,20 @@ class Scene(State):
         self.transition.exiting = False
 
     #############################################################################################################
-    def update_next_day(self) -> None:
+    def apply_days(self, days: int = 1) -> None:
+        """Run the day-turn upkeep for `days` elapsed days in one go.
+
+        Every step here has to be a function of the current state and the number
+        of days, never a loop over days - coming back from a three-day trip is a
+        single call, and `apply_days(3)` must land on the same state as three
+        `apply_days(1)`.
+        """
+        if days <= 0:
+            return
+
         for npc in self.loaded_NPCs.values():
             if npc.model.is_merchant:
+                npc.regenerate_money(days)
                 npc.restock_items()
 
     #############################################################################################################
@@ -1501,7 +1512,7 @@ class Scene(State):
             if self.hour >= 24:
                 self.day += 1
                 self.hour = 0
-                self.update_next_day()
+                self.apply_days(1)
 
         # check if the Player's feet are colliding with wall
         # Player must have a rect called feet, slide and move_back methods,
@@ -1649,7 +1660,7 @@ class Scene(State):
             INPUTS["alpha"] = False
 
         if INPUTS["next_day"]:
-            self.update_next_day()
+            self.apply_days(1)
             INPUTS["next_day"] = False
 
         if INPUTS["intro"]:

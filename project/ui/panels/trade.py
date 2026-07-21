@@ -132,7 +132,9 @@ class TradePanel(Widget):
         properties = [
             {"icon_name": "pan_balance",
              "value": f"{npc.total_items_weight:4.2f}/{npc.model.max_carry_weight:4.2f}"},
-            {"icon_name": "golden_coin", "value": f"{npc.model.money}"},
+            # purse as current/ceiling, mirroring the weight row above it: the limit
+            # only shapes play if the player can see how close the merchant is to it
+            {"icon_name": "golden_coin", "value": f"{npc.model.money}/{npc.money_cap}"},
         ]
         tradeable = npc.model.tradeable_items_types
         if tradeable:

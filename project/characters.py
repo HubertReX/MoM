@@ -1,5 +1,4 @@
 # from dataclasses import dataclass
-from collections import Counter
 import copy
 import math
 import os
@@ -309,23 +308,57 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
 
-    def sell_all_bought_items(self) -> None:
-        # turn items bought from player into money (and later remove)
-        # counted_curr_items = Counter([item.name for item in self.items])
-        counted_items = Counter(self.model.items)
-        for item in self.items:
-            if item.name not in counted_items:
-                self.model.money += item.model.value * item.model.count
-            else:
-                # trader has more particular items then at the beginning
-                if item.model.count > counted_items[item.name]:
-                    self.model.money += item.model.value * (item.model.count - counted_items[item.name])
+    @property
+    def money_cap(self) -> int:
+        """Ceiling the purse regenerates up to.
+
+        `self.model` is this character's own deep copy, so `model.money` is the
+        *live* purse and cannot serve as the baseline. The pristine config can:
+        an unset `money_cap` means "whatever the CSV row starts you with".
+        """
+        cap = self.model.money_cap
+        if cap > 0:
+            return cap
+        return self.game.conf.characters[self.config_key].money
+
+    #############################################################################################################
+
+    def regenerate_money(self, days: int = 1) -> None:
+        """Refill the purse by a flat share of its ceiling per elapsed day.
+
+        Linear growth with a ceiling has a closed form, which is what keeps this
+        N-safe: coming back from a three-day trip is one call, not a loop over
+        days. (A percentage compounded from the current amount would not be.)
+
+        Emptying a merchant is therefore felt for a few days - at the default 25%
+        a purse drained to zero needs four dawns to come back - which is the
+        gentle nudge towards selling gradually, or to somebody else.
+        """
+        cap = self.money_cap
+        per_day = round(cap * self.model.money_regen_pct)
+        self.model.money = min(cap, self.model.money + days * per_day)
 
     #############################################################################################################
 
     def restock_items(self) -> None:
-        self.sell_all_bought_items()
+        """Dawn re-roll of the stock: back to the list from the config, nothing else.
+
+        Whatever the player sold here is gone rather than resold. Keeping it would
+        silt up `max_carry_weight` with the player's junk across sessions until the
+        merchant permanently stopped buying.
+
+        The money side of the day turn is `regenerate_money`, deliberately *not*
+        the value of those items: the old `sell_all_bought_items` credited the
+        merchant the full value of everything it had ever bought, so the purse only
+        ever grew and the limit could never bite.
+        """
         self.items = []
+        # `total_items_weight` is a running total maintained by pick_up/drop_item, so
+        # dropping the item list on the floor without zeroing it left every dawn's
+        # stock weighing on top of the previous one - after a few days the merchant
+        # was over `max_carry_weight` while visibly holding two gems, and refused to
+        # buy anything ever again.
+        self.total_items_weight = 0.0
         self.load_items()
 
     #############################################################################################################

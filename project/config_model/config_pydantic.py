@@ -72,6 +72,10 @@ class Character(BaseModel):
     items:         Annotated[list[str],    Field(description="list of character's items", default_factory=list)]
     max_carry_weight: Annotated[float,     Field(15.0, ge=0, description="maximal carrying weight in kg", repr=False)]
     money:         Annotated[int,          Field(0,  ge=0, description="initial amount of possessed money", repr=False)]
+    money_cap:     Annotated[int,          Field(0,  ge=0, repr=False,
+                                                 description="ceiling the purse regenerates up to; 0 means 'use `money`'")]
+    money_regen_pct: Annotated[float,      Field(0.25, ge=0.0, le=1.0, repr=False,
+                                                 description="fraction of `money_cap` restored per elapsed day")]
     damage:        Annotated[int,          Field(10, ge=0, description="amount of damage delt to others", repr=False)]
     speed_walk:    Annotated[int,          Field(30, gr=0, description="walking speed", repr=False)]
     speed_run:     Annotated[int,          Field(40, gr=0, description="walking speed", repr=False)]
