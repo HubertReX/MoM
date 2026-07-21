@@ -264,13 +264,25 @@ Dwa do dodania, trzeci już istnieje:
 
 ### `NpcRuntime` - fundament
 
-Rozdzielenie stanu mutowalnego od współdzielonego `Character` z configu, dla NPC i gracza.
+Status: **zrobione** (commit `404d274`). Zrealizowane jako wariant hybrydowy, po tym jak przy implementacji wyszły dwie rzeczy nieznane w chwili pisania planu.
 
-Warstwa zapisu już ma właściwy kształt: `NPCState` (`save_load/models.py:273`) trzyma `money` i `inventory` per nazwa NPC, `manager.py:278` zapisuje, `manager.py:699` przywraca. Zostaje więc obiekt runtime w pamięci plus nowe pola w `NPCState`.
+Co wyszło w trakcie:
 
-- Nowe pola instancyjne: `money`, `stock`, `routine_key`.
-- `Character` z configu staje się tylko do odczytu - żaden kod nie pisze do `npc.model.*`.
-- `NPCState` dostaje nowe pola z wartościami domyślnymi, żeby stare zapisy się wczytywały.
+- Bug dotyczy nie tylko `money`, ale też **`health`** - wszystkie potwory tego samego typu czerpały z jednej puli. Objawem nie było "giną naraz" (bo `oponent.die()` jest celowo zakomentowane, a śmierć następuje po wygaśnięciu ogłuszenia, którego timer jest per instancja), tylko drugi potwór ginący od jednego ciosu.
+- **Przedmioty i skrzynie już kopiują swój config per instancja** - `copy.copy` w `scene.py:372`, `copy.deepcopy` w `scene.py:667`. NPC był jedynym, który tego nie robił, więc naprawa poszła istniejącym wzorcem, a nie nowym.
+
+Co powstało:
+
+- `NPC.__init__` robi `copy.deepcopy(game.conf.characters[model_name])`. Głęboka, bo `Character` niesie listy (`items`, `allowed_zones`) i słownik (`disposition`), a na desktopie jest modelem pydantic. Naprawia przy okazji złoto gracza, bo `Player` dziedziczy po `NPC`.
+- `project/npc_runtime.py` - `NpcRuntime` na stan, który celowo **nie** trafia do modelu configu, bo ten jest zdefiniowany dwa razy (`config.py` dla weba, `config_pydantic.py` dla desktopu) i każde nowe pole trzeba by dublować. Na razie `routine_key` i `stock`.
+- `NPCState` dostaje pole `runtime` z wartością domyślną, więc stare zapisy się wczytują. Zapis i odczyt przez `deepcopy`, żeby snapshot nie był aliasem żywego obiektu.
+- Usunięta płytka kopia modelu w `_apply_npc_states` - łatała objaw tylko przy wczytywaniu.
+
+Czego świadomie **nie** zrobiono: przenoszenia `health`, `max_health`, `money` i `damage` do `NpcRuntime`. To 78 odwołań w 9 plikach, w tym kod walki i zapisu, przy zerowym zysku zachowania - kopia już daje każdej postaci własne wartości. Config zostaje nietknięty, więc `conf.characters[k].money` jest gotową wartością bazową dla regeneracji sakiewki.
+
+Skutek dla rozgrywki: liczba ciosów potrzebnych do zabicia drugiego i kolejnych potworów tego samego typu **wraca do wartości ze zdrowia w CSV**. To nie regresja, tylko powrót do zamierzonych liczb.
+
+Szczegóły z dowodem empirycznym: [wspoldzielony-config-npc.html](_attachements/wspoldzielony-config-npc.html)
 
 ### `npc_schedule.py` - dostawca celu, nie drugi kontroler
 
@@ -379,7 +391,7 @@ Modyfikowane:
 
 ## Kolejność budowy
 
-1. `NpcRuntime` + rozdzielenie od configu + pola w zapisie. Blokuje wszystko inne; naprawia przy okazji globalny bug ze złotem gracza.
+1. ~~`NpcRuntime` + rozdzielenie od configu + pola w zapisie.~~ **Zrobione**, commit `404d274`.
 2. Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu. To realizuje cel zadania.
 3. Zaziarnione losowanie + gating klawisza `next_day` za `IS_DEBUG_MODE`. Bez tego drugiego własne testy kłamią.
 4. Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci. Osobny, czysty commit - diff będzie duży, więc nie warto go mieszać ze zmianami logiki.
