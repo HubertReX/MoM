@@ -252,6 +252,16 @@ Pięć wartości, nic więcej. Każda mapuje się na kod, który już istnieje -
 | `patrol` | podążanie nazwaną łamaną | `follow_waypoints()` |
 | `idle` | stanie + emotka | `EmoteSprite` |
 
+Status: **wszystkie pięć zrobione** (kroki 6-7). `update_schedule()` rozpadło się na dwie części, bo to dwa różne rytmy: `_begin_slot()` odpala raz, na granicy slotu (rozwiązuje destynację, woła A* - drogo i rzadko), a `_continue_slot()` co klatkę, żeby zauważyć *dotarcie* (tanie, bo wychodzi natychmiast, gdy postać jeszcze idzie).
+
+Jak każda z nich wyszła:
+
+- **`sleep`** - zasypianie to opuszczenie `scene.group`: koniec rysowania, animacji, fizyki i szukania drogi. Robi to `Scene.update_sleepers()`, **nie** sama postać: sprite wypisujący się z grupy, po której właśnie leci `update()`, to rodzaj rzeczy, która działa do czasu. Postać wyraża tylko chęć (`wants_to_sleep`), scena zamienia ją w fakt. Śpiący **zostaje** w `scene.NPCs`, bo z tej listy budowany jest zapis (`_build_map_states`) - wypisanie go stamtąd gubiłoby sakiewkę handlarza na noc. Dwie pętle, które wpadałyby na niewidzialne ciało (kolizja gracza i "kto jest blisko, żeby pogadać"), pomijają śpiących jawnie. Śpiący nie dostaje własnego update'u, więc nigdy by się nie obudził - dlatego `update_sleepers()` odpytuje mu harmonogram.
+- **`patrol`** - `route:` oddaje nazwaną łamaną prosto do starej pętli waypointów. `target` zostaje zerem, bo to dokładnie ta flaga, która każe `follow_waypoints()` zawinąć na początek zamiast się zatrzymać. Zero nowego kodu ruchu, dokładnie jak zakładał plan.
+- **`wander`** - kluczowa jest **pauza** (`WANDER_PAUSE`, 3 s) i to, że dryf liczy się od **kotwicy** (miejsca ze slotu), nie od poprzedniego kroku. Bez pauzy postać przelosowuje cel w tej samej klatce, w której dotarła, i ślizga się po okolicy zamiast w niej stać. Bez kotwicy dostajemy błądzenie losowe, które po kilku minutach wyprowadza postać z wioski.
+- **`idle`** - jedna emotka na dotarcie, nie co klatkę.
+- **`stand`** - bez zmian, działało od kroku 5.
+
 ### Parametry żywości
 
 Dwa do dodania, trzeci już istnieje:
@@ -432,8 +442,8 @@ Modyfikowane:
 3. ~~Zaziarnione losowanie + gating klawisza `next_day`.~~ **Zrobione**: `world_rng.py`, `Scene.world_seed` w zapisie, bramka na `SHOW_DEBUG_INFO` (nie `IS_DEBUG_MODE` - patrz wyżej), testy `tests/test_world_rng.py`.
 4. ~~Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci.~~ **Zrobione**: 17 -> 30 kolumn, plus dwie naprawy eksportera (kolumny z modelu, tożsamość na przód).
 5. ~~`routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.~~ **Kod zrobiony**; brakuje danych: punktów na warstwie `places` w Tiled i czterech kolumn destynacji w `characters.csv` (tabelka poniżej). Do tego czasu system jest bezczynny i nic nie psuje.
-6. `sleep` z zanikiem na progu.
-7. `wander` / `patrol` / `idle` + jitter kroków.
+6. ~~`sleep` z zanikiem na progu.~~ **Zrobione.**
+7. ~~`wander` / `patrol` / `idle` + jitter kroków.~~ **Zrobione** (jitter wszedł już w kroku 5).
 
 Punkty 1-3 to ekonomia, 4-7 to cykl dobowy. Obie połówki są niezależne, byle `NpcRuntime` był pierwszy.
 

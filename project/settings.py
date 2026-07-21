@@ -367,6 +367,12 @@ STEP_COST_GROUND: int = -100
 # travel when that is larger, because a window narrower than a single step makes
 # the character overshoot and shiver in place instead of arriving.
 WAYPOINT_ARRIVE_RADIUS_SQ: float = 2.0
+# How long a `wander` character stands still before drifting to its next spot.
+# Without a pause it re-rolls a destination the moment it arrives and skates
+# around the place instead of loitering in it.
+WANDER_PAUSE: float = 3.0
+# How long the emote hangs over a character on an `idle` step.
+IDLE_EMOTE_DURATION: float = 4.0
 # frames per second
 ANIMATION_SPEED = 10
 ANIMATION_SPEED_UI: int = 5

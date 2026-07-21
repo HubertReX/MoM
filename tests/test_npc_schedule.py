@@ -271,6 +271,8 @@ def test_destinations_come_off_both_model_mirrors() -> None:
 # NPC.update_schedule - the seam between the pure schedule and the movement code
 # ---------------------------------------------------------------------------
 
+from pygame.math import Vector2 as pvec
+
 
 class _FakeScene:
     """Just enough scene for `update_schedule`: a clock, a map and the routines."""
@@ -279,8 +281,20 @@ class _FakeScene:
         self.routines = routines
         self.hour = hour
         self.minute = minute
-        self.places = {"market_stall_1": (100, 200), "house_3": (300, 400)}
-        self.waypoints = {"patrol_north": ()}
+        self.places = {"market_stall_1": (100, 200), "house_3": (300, 400), "well": (150, 150)}
+        self.waypoints = {"patrol_north": ((1, 1), (2, 2), (3, 3))}
+
+
+class _FakeEmote:
+    def __init__(self) -> None:
+        self.emotes: list[str] = []
+
+    def set_temporary_emote(self, emote: str, duration: float) -> None:
+        self.emotes.append(emote)
+
+
+class _FakeGame:
+    time_elapsed = 0.0
 
 
 def _npc(routine_key: str, destinations: dict, scene: "_FakeScene", name: str = "Johny"):
@@ -289,17 +303,37 @@ def _npc(routine_key: str, destinations: dict, scene: "_FakeScene", name: str = 
     npc = NPC.__new__(NPC)
     npc.name = name
     npc.scene = scene
+    npc.game = _FakeGame()
+    npc.emote = _FakeEmote()
     npc.runtime = type("R", (), {"routine_key": routine_key})()
     npc.model = type("M", (), destinations)()
     npc._schedule_slot = None
     npc._schedule_jitter = 0          # pin the jitter so the clock reads literally
-    npc.target = None
+    npc._schedule_destination = None
+    npc._wander_anchor = None
+    npc._wander_next_time = 0.0
+    npc._idle_emoted = False
+    npc.wants_to_sleep = False
+    npc.is_asleep = False
+    npc.target = pvec(0, 0)
+    npc.waypoints = ()
+    npc.waypoints_cnt = 0
+    npc.current_waypoint_no = 0
     npc.paths_found = 0
 
     def find_path() -> None:
         npc.paths_found += 1
+        npc.waypoints_cnt = 3          # a path was found, so it is now travelling
 
     npc.find_path = find_path
+
+    def arrive() -> None:
+        """Pretend the walk finished, exactly as `clear_waypoints` leaves things."""
+        npc.waypoints = ()
+        npc.waypoints_cnt = 0
+        npc.target = pvec(0, 0)
+
+    npc.arrive = arrive
     return npc
 
 
@@ -321,7 +355,7 @@ def test_no_routine_is_a_no_op() -> None:
     npc.update_schedule()
 
     assert npc.paths_found == 0, "routine-less NPC was retargeted"
-    assert npc.target is None
+    assert npc.target == pvec(0, 0)
 
 
 def test_a_resolvable_slot_sets_the_target_once() -> None:
@@ -357,7 +391,7 @@ def test_an_unmapped_village_leaves_everyone_alone() -> None:
     npc.update_schedule()
 
     assert npc.paths_found == 0, "NPC was sent to a place the map does not have"
-    assert npc.target is None
+    assert npc.target == pvec(0, 0)
 
 
 def test_empty_destination_column_leaves_the_npc_alone() -> None:
@@ -367,20 +401,273 @@ def test_empty_destination_column_leaves_the_npc_alone() -> None:
     npc.update_schedule()
 
     assert npc.paths_found == 0
-    assert npc.target is None
+    assert npc.target == pvec(0, 0)
 
 
-def test_a_route_slot_does_not_move_the_npc_yet() -> None:
-    """`patrol` is not built; until it is, the honest behaviour is to do nothing."""
-    patrol = {"routine": {"guard": {"slot": [
+# ---------------------------------------------------------------------------
+# sleep
+# ---------------------------------------------------------------------------
+
+def test_sleep_is_only_requested_after_arriving() -> None:
+    """Vanishing halfway down the street would look like a bug, because it is one."""
+    scene = _FakeScene(parse_routines(_STANDING), hour=21)
+    npc = _npc("townsfolk", _DESTS, scene)
+
+    npc.update_schedule()
+    assert not npc.wants_to_sleep, "went to bed while still walking home"
+
+    npc.arrive()
+    npc.update_schedule()
+    assert npc.wants_to_sleep, "arrived home and stayed up"
+
+
+def test_morning_ends_the_night_even_before_walking_anywhere() -> None:
+    """Waking is not something a character can be too far from home to do."""
+    scene = _FakeScene(parse_routines(_STANDING), hour=21)
+    npc = _npc("townsfolk", _DESTS, scene)
+    npc.update_schedule()
+    npc.arrive()
+    npc.update_schedule()
+    assert npc.wants_to_sleep
+
+    scene.hour = 9
+    npc.update_schedule()
+
+    assert not npc.wants_to_sleep, "still asleep after the slot changed"
+
+
+def test_a_sleeper_without_a_home_never_goes_to_bed() -> None:
+    """No `home` cell means no threshold to vanish on - it just stands there."""
+    scene = _FakeScene(parse_routines(_STANDING), hour=21)
+    npc = _npc("townsfolk", {"home": "", "work": "market_stall_1", "social": "", "hobby": ""}, scene)
+
+    npc.update_schedule()
+    npc.arrive()
+    npc.update_schedule()
+
+    assert not npc.wants_to_sleep, "fell asleep on the spot with nowhere to sleep"
+
+
+# ---------------------------------------------------------------------------
+# patrol
+# ---------------------------------------------------------------------------
+
+_PATROL = {
+    "routine": {"guard": {"slot": [
         {"from": "06:00", "at": "route:patrol_north", "activity": "patrol"},
-    ]}}, "assign": {"Johny": "guard"}}
-    scene = _FakeScene(parse_routines(patrol), hour=9)
+    ]}},
+    "assign": {"Johny": "guard"},
+}
+
+
+def test_patrol_hands_the_route_to_the_waypoint_loop() -> None:
+    scene = _FakeScene(parse_routines(_PATROL), hour=9)
     npc = _npc("guard", _DESTS, scene)
 
     npc.update_schedule()
 
-    assert npc.paths_found == 0, "patrol pretended to work"
+    assert npc.waypoints == ((1, 1), (2, 2), (3, 3)), f"route not loaded: {npc.waypoints}"
+    assert npc.waypoints_cnt == 3
+    assert npc.current_waypoint_no == 0
+    assert npc.paths_found == 0, "patrol should follow the polyline, not pathfind to it"
+
+
+def test_patrol_leaves_target_zero_so_the_route_loops() -> None:
+    """A non-zero `target` is exactly what makes follow_waypoints stop at the end."""
+    scene = _FakeScene(parse_routines(_PATROL), hour=9)
+    npc = _npc("guard", _DESTS, scene)
+
+    npc.update_schedule()
+
+    assert npc.target == pvec(0, 0), f"patrol would stop at the last point: {npc.target}"
+
+
+def test_an_unknown_route_leaves_the_npc_alone() -> None:
+    scene = _FakeScene(parse_routines(_PATROL), hour=9)
+    scene.waypoints = {}
+    npc = _npc("guard", _DESTS, scene)
+
+    npc.update_schedule()
+
+    assert npc.waypoints_cnt == 0, "invented a route that is not on the map"
+
+
+# ---------------------------------------------------------------------------
+# wander and idle
+# ---------------------------------------------------------------------------
+
+_DRIFTING = {
+    "routine": {"townsfolk": {"slot": [
+        {"from": "08:00", "at": "location:well", "activity": "wander"},
+        {"from": "20:00", "at": "location:well", "activity": "idle"},
+    ]}},
+    "assign": {"Johny": "townsfolk"},
+}
+
+
+def test_wander_waits_before_drifting_again() -> None:
+    """Without the pause it re-rolls on arrival and skates around without stopping."""
+    from settings import WANDER_PAUSE
+
+    scene = _FakeScene(parse_routines(_DRIFTING), hour=9)
+    npc = _npc("townsfolk", _DESTS, scene)
+    npc.get_random_safe_pos = lambda pos, range=1.0, **kw: pvec(pos) + pvec(range, 0)
+
+    npc.update_schedule()          # walk to the well
+    npc.arrive()
+    npc.update_schedule()          # first drift
+    first = npc.paths_found
+
+    for _ in range(10):            # same instant: must not re-roll
+        npc.arrive()
+        npc.update_schedule()
+    assert npc.paths_found == first, f"drifted {npc.paths_found - first} times without pausing"
+
+    npc.game.time_elapsed += WANDER_PAUSE + 0.1
+    npc.arrive()
+    npc.update_schedule()
+    assert npc.paths_found == first + 1, "never drifted again after the pause"
+
+
+def test_wander_stays_around_its_anchor_not_its_last_step() -> None:
+    """Drifting relative to the previous spot is a random walk out of the village."""
+    scene = _FakeScene(parse_routines(_DRIFTING), hour=9)
+    npc = _npc("townsfolk", _DESTS, scene)
+    anchors: list[tuple[float, float]] = []
+    npc.get_random_safe_pos = lambda pos, range=1.0, **kw: (anchors.append(tuple(pvec(pos))), pvec(pos))[1]
+
+    npc.update_schedule()
+    npc.arrive()
+    for _ in range(3):
+        npc.update_schedule()
+        npc.arrive()
+        npc.game.time_elapsed += 10.0
+
+    assert anchors, "never wandered"
+    assert set(anchors) == {(150.0, 150.0)}, f"anchor drifted: {set(anchors)}"
+
+
+def test_idle_emotes_once_on_arrival() -> None:
+    scene = _FakeScene(parse_routines(_DRIFTING), hour=21)
+    npc = _npc("townsfolk", _DESTS, scene)
+
+    npc.update_schedule()
+    assert npc.emote.emotes == [], "emoted while still walking"
+
+    npc.arrive()
+    for _ in range(10):
+        npc.update_schedule()
+
+    assert len(npc.emote.emotes) == 1, f"emote repeated every frame: {npc.emote.emotes}"
+
+
+# ---------------------------------------------------------------------------
+# Scene.update_sleepers - turning the intention into fact
+# ---------------------------------------------------------------------------
+
+
+class _FakeGroup:
+    def __init__(self) -> None:
+        self.members: set = set()
+
+    def add(self, *sprites, layer: int = 0) -> None:
+        self.members.update(sprites)
+
+    def remove(self, *sprites) -> None:
+        self.members.difference_update(sprites)
+
+
+class _Sleeper:
+    """A character that only knows how to want to sleep."""
+
+    def __init__(self, wants: bool = False) -> None:
+        self.wants_to_sleep = wants
+        self.is_asleep = False
+        self.shadow, self.health_bar, self.emote = object(), object(), object()
+        self.schedule_checks = 0
+
+    def update_schedule(self) -> None:
+        self.schedule_checks += 1
+
+    def sprites(self) -> tuple:
+        return (self, self.shadow, self.health_bar, self.emote)
+
+
+def _scene_with(*npcs):
+    from scene import Scene
+
+    scene = Scene.__new__(Scene)
+    scene.NPCs = list(npcs)
+    scene.group = _FakeGroup()
+    scene.sprites_layer = 4
+    for npc in npcs:
+        scene.group.add(*npc.sprites())
+    return scene
+
+
+def test_falling_asleep_leaves_the_draw_group() -> None:
+    """Out of the group means no drawing, no animation, no physics - sleep is free."""
+    npc = _Sleeper(wants=True)
+    scene = _scene_with(npc)
+
+    scene.update_sleepers()
+
+    assert npc.is_asleep
+    assert not (scene.group.members & set(npc.sprites())), "sprite still in the draw group"
+
+
+def test_a_sleeper_stays_in_the_list_the_save_is_built_from() -> None:
+    """`_build_map_states` iterates `scene.NPCs`; dropping a sleeper loses its purse."""
+    npc = _Sleeper(wants=True)
+    scene = _scene_with(npc)
+
+    scene.update_sleepers()
+
+    assert npc in scene.NPCs, "sleeping NPC would vanish from the save file"
+
+
+def test_sleepers_are_not_collidable_or_talkable() -> None:
+    awake, asleep = _Sleeper(), _Sleeper(wants=True)
+    scene = _scene_with(awake, asleep)
+
+    scene.update_sleepers()
+
+    assert scene.awake_NPCs() == [awake], "an invisible body is still in the way"
+
+
+def test_a_sleeper_still_gets_its_schedule_checked() -> None:
+    """It gets no update of its own, so this is the only thing that can wake it."""
+    npc = _Sleeper(wants=True)
+    scene = _scene_with(npc)
+
+    scene.update_sleepers()          # falls asleep
+    before = npc.schedule_checks
+    scene.update_sleepers()          # and is still consulted afterwards
+
+    assert npc.schedule_checks > before, "asleep forever - nothing would ever wake it"
+
+
+def test_waking_puts_every_sprite_back() -> None:
+    npc = _Sleeper(wants=True)
+    scene = _scene_with(npc)
+    scene.update_sleepers()
+
+    npc.wants_to_sleep = False
+    scene.update_sleepers()
+
+    assert not npc.is_asleep
+    assert set(npc.sprites()) <= scene.group.members, "came back from bed half invisible"
+
+
+def test_an_awake_character_is_left_alone() -> None:
+    npc = _Sleeper()
+    scene = _scene_with(npc)
+    before = set(scene.group.members)
+
+    scene.update_sleepers()
+
+    assert scene.group.members == before
+    assert npc.schedule_checks == 0, "awake NPCs are updated by the group, not from here"
 
 
 if __name__ == "__main__":
@@ -412,7 +699,21 @@ if __name__ == "__main__":
         ("crossing a boundary retargets", test_crossing_a_boundary_retargets),
         ("unmapped village leaves everyone alone", test_an_unmapped_village_leaves_everyone_alone),
         ("empty destination column is safe", test_empty_destination_column_leaves_the_npc_alone),
-        ("route slot does not move the NPC yet", test_a_route_slot_does_not_move_the_npc_yet),
+        ("sleep only after arriving", test_sleep_is_only_requested_after_arriving),
+        ("morning ends the night", test_morning_ends_the_night_even_before_walking_anywhere),
+        ("no home, no bed", test_a_sleeper_without_a_home_never_goes_to_bed),
+        ("patrol loads the route", test_patrol_hands_the_route_to_the_waypoint_loop),
+        ("patrol keeps target zero so it loops", test_patrol_leaves_target_zero_so_the_route_loops),
+        ("unknown route leaves the NPC alone", test_an_unknown_route_leaves_the_npc_alone),
+        ("wander pauses between drifts", test_wander_waits_before_drifting_again),
+        ("wander stays around its anchor", test_wander_stays_around_its_anchor_not_its_last_step),
+        ("idle emotes once on arrival", test_idle_emotes_once_on_arrival),
+        ("falling asleep leaves the draw group", test_falling_asleep_leaves_the_draw_group),
+        ("sleeper stays in the save list", test_a_sleeper_stays_in_the_list_the_save_is_built_from),
+        ("sleepers not collidable or talkable", test_sleepers_are_not_collidable_or_talkable),
+        ("sleeper still gets its schedule checked", test_a_sleeper_still_gets_its_schedule_checked),
+        ("waking puts every sprite back", test_waking_puts_every_sprite_back),
+        ("awake character left alone", test_an_awake_character_is_left_alone),
     ]
     failures = 0
     for name, func in tests:

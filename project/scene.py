@@ -1477,6 +1477,48 @@ class Scene(State):
         self.transition.exiting = False
 
     #############################################################################################################
+    def update_sleepers(self) -> None:
+        """Take characters whose routine put them to bed out of the world, and back.
+
+        Done here, once a frame, rather than by the character itself: falling
+        asleep means leaving `self.group`, and a sprite removing itself from the
+        very group whose `update()` is running is the kind of thing that works
+        until it doesn't. The character only ever states an intention
+        (`wants_to_sleep`); this turns it into fact.
+
+        Leaving the group is what makes sleeping cheap - no animation, no physics,
+        no pathfinding, and nothing drawn. But the character stays in `self.NPCs`,
+        because that list is what the save file is built from (`_build_map_states`)
+        and a sleeping merchant must not lose its purse overnight. The two loops
+        that would otherwise bump into an invisible body skip sleepers explicitly.
+
+        A sleeping character gets no update of its own, so it could never notice
+        the morning. Consulting its schedule from here is what wakes it.
+        """
+        for npc in self.NPCs:
+            if npc.is_asleep:
+                npc.update_schedule()
+
+            if npc.wants_to_sleep and not npc.is_asleep:
+                npc.is_asleep = True
+                self.group.remove(npc, npc.shadow, npc.health_bar, npc.emote)
+            elif not npc.wants_to_sleep and npc.is_asleep:
+                npc.is_asleep = False
+                self.group.add(npc, layer=self.sprites_layer)
+                self.group.add(npc.shadow, layer=self.sprites_layer - 2)
+                self.group.add(npc.health_bar, layer=self.sprites_layer + 1)
+                self.group.add(npc.emote, layer=self.sprites_layer + 1)
+
+    #############################################################################################################
+    def awake_NPCs(self) -> list[Any]:
+        """`self.NPCs` minus the ones currently indoors asleep.
+
+        Used for collision and for "who is close enough to talk to": a character
+        that is not drawn must not be bumped into or traded with either.
+        """
+        return [npc for npc in self.NPCs if not npc.is_asleep]
+
+    #############################################################################################################
     def day_rng(self, name: str = "", day_offset: int = 0) -> random.Random:
         """Generator for `name`'s rolls on the current day (or a later one).
 
@@ -1535,6 +1577,8 @@ class Scene(State):
             return
 
         self.group.update(dt)
+        # after group.update, so nobody is mutating the group mid-pass
+        self.update_sleepers()
         self.animations.update(dt)
         self.transition.update(dt)
 
@@ -1567,10 +1611,13 @@ class Scene(State):
 
         # check if the Player is colliding with an NPC
         if not self.player.is_flying:
+            # sleepers are indoors and not drawn - walking through where they stood
+            # is correct; bumping into an invisible body is not
+            awake_NPCs = self.awake_NPCs()
             # collision with body of NPC
-            collided_index = self.player.feet.collidelist(self.NPCs)  # type: ignore[type-var]
+            collided_index = self.player.feet.collidelist(awake_NPCs)  # type: ignore[type-var]
             if collided_index > -1 and not self.player.is_stunned:
-                oponent = self.NPCs[collided_index]
+                oponent = awake_NPCs[collided_index]
                 # if self.player.mask.overlap(
                 #     oponent.mask,
                 #     (oponent.rect.x - self.player.rect.x, oponent.rect.y - self.player.rect.y)
@@ -1579,15 +1626,15 @@ class Scene(State):
                 # engage fight with enemy or push back friendly NPC
                 self.player.encounter(oponent)
                 # slide along wall or do a step_back
-                self.player.slide(self.NPCs)
+                self.player.slide(awake_NPCs)
 
             # collision of weapon with other NPC and destructibles
             if self.player.is_attacking and self.player.selected_weapon:
                 # check collision with NPCs
-                collided_index = self.player.selected_weapon.rect.collidelist(self.NPCs)  # type: ignore[type-var]
+                collided_index = self.player.selected_weapon.rect.collidelist(awake_NPCs)  # type: ignore[type-var]
                 # collided with weapon rect
                 if collided_index > -1:
-                    oponent = self.NPCs[collided_index]
+                    oponent = awake_NPCs[collided_index]
                     # weapon rect is big, check if it collides with the mask of weapon
                     if self.player.selected_weapon.mask.overlap(
                         oponent.mask,
@@ -1595,7 +1642,7 @@ class Scene(State):
                          oponent.rect.y - self.player.selected_weapon.rect.y)  # type: ignore[union-attr]
                     ):
                         # deal damage with weapon to enemy or nothing if friendly NPC
-                        self.player.hit(self.NPCs[collided_index])
+                        self.player.hit(oponent)
 
                 # check collision with destructibles
                 collided_index = self.player.selected_weapon.rect.collidelist(
@@ -1661,6 +1708,9 @@ class Scene(State):
 
         self.player.npc_met = None
         for npc in self.NPCs:
+            if npc.is_asleep:
+                # a shop that is not there cannot be walked into or traded with
+                continue
             npc.npc_met = None
             if npc.feet.collidelist(colliders) > -1:
                 # npc.move_back(dt)

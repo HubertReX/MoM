@@ -15,6 +15,7 @@ import settings
 from maze_generator.maze_utils import a_star_cached, nearest_walkable
 from pygame.math import Vector2 as vec
 from settings import (
+    IDLE_EMOTE_DURATION,
     INVENTORY_ITEM_SCALE,
     MAX_NO_ATTEMPTS_TO_FIND_RANDOM_POS,
     NPC_MAX_REST_TIME,
@@ -42,6 +43,7 @@ from settings import (
     STUNNED_COLOR,
     STUNNED_TIME,
     TILE_SIZE,
+    WANDER_PAUSE,
     WAYPOINT_ARRIVE_RADIUS_SQ,
     WEAPON_DIRECTION_OFFSET,
     WEAPON_DIRECTION_OFFSET_FROM,
@@ -63,7 +65,7 @@ from dialog.graph import get_start_node, init_dialog
 import game
 import npc_state
 from npc_runtime import NpcRuntime
-from npc_schedule import Slot, current_slot, destinations_of, resolve_at, slot_jitter
+from npc_schedule import Destination, Slot, current_slot, destinations_of, resolve_at, slot_jitter
 import scene
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, HealthBarUI, ItemSprite, NotificationTypeEnum, Shadow
@@ -135,6 +137,18 @@ class NPC(pygame.sprite.Sprite):
         # path continuously and the NPC would never actually get anywhere.
         self._schedule_slot: Slot | None = None
         self._schedule_jitter: int | None = None
+        self._schedule_destination: Destination | None = None
+        # Anchor for `wander`: the place the character drifts *around*, kept apart
+        # from `target`, which is wherever the current little stroll is heading.
+        self._wander_anchor: vec | None = None
+        self._wander_next_time: float = 0.0
+        self._idle_emoted: bool = False
+        # `wants_to_sleep` is the character's own opinion; `is_asleep` is the world
+        # acting on it. They are separate because taking a sprite out of the draw
+        # group from inside that group's own update pass is asking for trouble -
+        # `Scene.update_sleepers` reconciles the two once a frame, from outside.
+        self.wants_to_sleep: bool = False
+        self.is_asleep: bool = False
 
         self.load_dialogs()
 
@@ -585,9 +599,11 @@ class NPC(pygame.sprite.Sprite):
         A goal provider, not a controller: the most it does is set `self.target`
         and ask the existing pathfinder for a route. Nothing here writes `vel`.
 
-        Deliberately does nothing at all unless the active slot *changed*, so the
-        A* call happens on boundaries (a handful per in-game day, spread out by
-        the per-character jitter) and not once a frame.
+        Split in two on purpose. Crossing a slot boundary is rare and expensive
+        (it resolves a destination and runs A*), so `_begin_slot` fires once, on
+        the boundary. What the character does *after* it gets there - drift around
+        a well, go to bed - has to be checked while it stands there, so
+        `_continue_slot` runs every frame and is cheap when there is nothing to do.
 
         Every way of having no destination - no routine, no place named in the
         CSV, no such object on the map - ends the same way: the character is left
@@ -606,9 +622,28 @@ class NPC(pygame.sprite.Sprite):
 
         minutes = self.scene.hour * 60 + self.scene.minute
         slot = current_slot(routine, minutes, self._schedule_jitter)
-        if slot is None or slot == self._schedule_slot:
+        if slot is None:
             return
-        self._schedule_slot = slot
+        if slot != self._schedule_slot:
+            self._schedule_slot = slot
+            self._begin_slot(slot)
+        self._continue_slot(slot)
+
+    #############################################################################################################
+    @property
+    def is_travelling(self) -> bool:
+        """On its way somewhere - either a path to walk or a target to reach."""
+        return self.waypoints_cnt > 0 or self.target != vec(0, 0)
+
+    #############################################################################################################
+    def _begin_slot(self, slot: Slot) -> None:
+        """React to a slot boundary: work out where to go, and start going."""
+        # A new slot always ends the night, even before the character has walked
+        # anywhere - waking up is not something it can be too far away to do.
+        self.wants_to_sleep = False
+        self._wander_anchor = None
+        self._wander_next_time = 0.0
+        self._idle_emoted = False
 
         destination = resolve_at(
             slot.at,
@@ -619,16 +654,62 @@ class NPC(pygame.sprite.Sprite):
             # `from settings import` copy would never see the ` / Z toggle
             warn=print if scene.SHOW_DEBUG_INFO else None,
         )
-        if destination is None or destination.kind != "place":
-            # `route:` (patrol) and the not-yet-built activities land here; leaving
-            # the character alone is the honest behaviour until they are written.
+        self._schedule_destination = destination
+        if destination is None:
             return
 
-        # `stand`: walk there, then stop. Every other activity currently degrades
-        # to this - going to the right place is the part that already works, and
-        # sleeping/wandering/patrolling on arrival come later.
-        self.target = vec(self.scene.places[destination.name])
+        if destination.kind == "route":
+            # `patrol`: hand the named polyline straight to the legacy waypoint
+            # loop. `target` stays zero, which is exactly the flag that makes
+            # `follow_waypoints` wrap around to the start instead of stopping - the
+            # same mechanism the Tiled `waypoints` layer has always used.
+            route = self.scene.waypoints.get(destination.name, ())
+            if route:
+                self.target = vec(0, 0)
+                self.waypoints = route
+                self.waypoints_cnt = len(route)
+                self.current_waypoint_no = 0
+            return
+
+        place = vec(self.scene.places[destination.name])
+        self._wander_anchor = place
+        self.target = place
         self.find_path()
+
+    #############################################################################################################
+    def _continue_slot(self, slot: Slot) -> None:
+        """What the character does once it has arrived. Cheap while it walks."""
+        if self._schedule_destination is None or self.is_travelling:
+            return
+
+        if slot.activity == "sleep":
+            # Only an opinion; `Scene.update_sleepers` is what takes the sprite out
+            # of the world, and it is also what keeps consulting the schedule
+            # afterwards - a sleeping character gets no update of its own, so it
+            # could never wake itself.
+            self.wants_to_sleep = True
+        elif slot.activity == "wander":
+            self._wander_step()
+        elif slot.activity == "idle" and not self._idle_emoted:
+            self._idle_emoted = True
+            self.emote.set_temporary_emote("dots_anim", IDLE_EMOTE_DURATION)
+        # `stand` and `patrol` need nothing here: one is standing still, and the
+        # other never stops travelling, so it never reaches this line.
+
+    #############################################################################################################
+    def _wander_step(self) -> None:
+        """Drift to another spot near the anchor, after a pause.
+
+        The pause is the whole point - without it the character re-rolls a
+        destination the instant it arrives and skates around without ever looking
+        like it stopped anywhere.
+        """
+        if self._wander_anchor is None or self.game.time_elapsed < self._wander_next_time:
+            return
+        radius = self.scene.routines.defaults.wander_radius
+        self.target = self.get_random_safe_pos(self._wander_anchor, range=radius, check_allowed_zones=False)
+        self.find_path()
+        self._wander_next_time = self.game.time_elapsed + WANDER_PAUSE
 
     #############################################################################################################
     # MARK: movement
