@@ -44,8 +44,28 @@ def _cell_to_json(raw: str) -> object:
         return raw
 
 
-def parse_value(raw: str, current: object) -> object:
-    """Parse a CSV cell value to match the type of the current value."""
+def _parse_list(raw: str) -> list:
+    """Parse a CSV cell holding a list.
+
+    Lists are authored comma-separated (``water,shore``) because a cell of JSON
+    is miserable to hand-edit and the column separator is ``;``, so the comma is
+    free. The JSON form is still accepted so cells written by older exports (and
+    anything pasted from `config.json`) keep working.
+    """
+    parsed = _cell_to_json(raw)
+    if isinstance(parsed, list):
+        return parsed
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
+def parse_value(raw: str, current: object, is_list: bool = False) -> object:
+    """Parse a CSV cell value to match the type of the current value.
+
+    ``is_list`` marks a column that holds a list in *some* entity of the section,
+    which is the only clue available when this particular entity has no value yet
+    (a freshly created row) - without it a one-element list would land as a bare
+    string.
+    """
     if raw == "":
         return current
     if isinstance(current, bool):
@@ -55,16 +75,15 @@ def parse_value(raw: str, current: object) -> object:
     if isinstance(current, float):
         return float(raw)
     if isinstance(current, list):
-        parsed = _cell_to_json(raw)
-        if isinstance(parsed, list):
-            return parsed
-        return current  # failed to parse as list, leave unchanged
+        return _parse_list(raw)
     if isinstance(current, dict):
         parsed = _cell_to_json(raw)
         if isinstance(parsed, dict):
             return parsed
         return current
     if current is None:
+        if is_list:
+            return _parse_list(raw)
         # New field with no existing value to match (e.g. a freshly created
         # character row) - infer the JSON type so booleans/ints/lists don't
         # land as strings (e.g. has_dialog "true" -> True).
@@ -90,6 +109,15 @@ def import_csv(entity_name: str, data: dict) -> dict:
     section = data.get(entity_name, {})
     updated = 0
     created = 0
+
+    # Columns that hold a list somewhere in this section. Needed for rows that do
+    # not carry the field yet, where the value's own type cannot be consulted.
+    list_fields = {
+        field
+        for entity in section.values()
+        for field, value in entity.items()
+        if isinstance(value, list)
+    }
 
     for line in lines[1:]:
         parts = line.split(";")
@@ -127,7 +155,7 @@ def import_csv(entity_name: str, data: dict) -> dict:
                     obj[field] = float(raw)
                     continue
                 current = obj.get(field)
-                obj[field] = parse_value(raw, current)
+                obj[field] = parse_value(raw, current, is_list=field in list_fields)
         if sentiment_updates:
             # fresh dict from defaults: stale keys (e.g. pre-rename emote
             # names) are dropped, neutral/technical come from the defaults
@@ -180,7 +208,10 @@ def _export_csv(entity_name: str, data: dict) -> None:
                 row.append("")
             elif isinstance(v, bool):
                 row.append("true" if v else "false")
-            elif isinstance(v, (list, dict)):
+            elif isinstance(v, list):
+                # comma-separated, not JSON - see _parse_list
+                row.append(",".join(str(item) for item in v))
+            elif isinstance(v, dict):
                 row.append(json.dumps(v, ensure_ascii=False))
             else:
                 row.append(str(v))

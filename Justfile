@@ -127,9 +127,10 @@ update-config-schema:
     ..\..\.venv\Scripts\python.exe config_pydantic.py
 
 # Import entity data from CSV files into `config.json` (overwrites character, item, chest, and maze sections)
+# Pass `--export` to go the other way: `config.json` -> CSV files (regenerates all columns).
 [unix]
-import-entities:
-    .venv/bin/python project/config_model/import_entities.py
+import-entities *ARGS:
+    .venv/bin/python project/config_model/import_entities.py {{ARGS}}
 
 # Import dialog Markdown sources from the `doc/` vault into `config.json`.
 # Pipeline: MD frontmatter -> characters.csv -> config.json (import-entities
