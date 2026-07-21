@@ -480,7 +480,25 @@ Po wypełnieniu: `just import-entities` (CSV -> config.json). Puste komórki nie
 
 Obserwacje z pierwszego przejścia z prawdziwą mapą, obie naprawione.
 
-**Dygotanie po dotarciu na miejsce (stary bug, dotyczył też zwierząt).** Sterowanie w `follow_waypoints()` jest bang-bang: `force = 2000` przykładane w pełni w stronę punktu niezależnie od odległości. Okno dotarcia było stałe i wynosiło `distance² <= 2.0`, czyli promień ~1,41 px. Krok jednej klatki to `1.5 * vel * dt`, co przy `speed_run = 40` i 60 FPS daje 1,0 px, a przy spadku do 40 FPS - 1,5 px. Postać, która nie trafi *do wnętrza* okna, przelatuje nad nim, dostaje pełną siłę z powrotem i drga w nieskończoność. Stąd pozorna losowość: zależało od klatkażu, od `step_cost` terenu i od tego, czy dana postać wylosowała przy spawnie `speed_walk` czy `speed_run` (`characters.py:226`). Zwierzęta mają domyślne `speed_run = 40`, więc łapały to samo. Naprawa: okno nie może być węższe niż jeden krok klatki - `max(WAYPOINT_ARRIVE_RADIUS_SQ, step²)`, gdzie `step` to `pos - prev_pos`, czyli dosłownie przebyty dystans z poprzedniej klatki (`physics()` próbkuje `prev_pos` przed ruchem). Samo się skaluje i dla wolnych postaci zostaje ciasne.
+**Dygotanie po dotarciu - prawdziwa przyczyna siedzi w integratorze fizyki.** Pierwsza naprawa (okno dotarcia, niżej) była potrzebna, ale nie ta. `physics()` robiło:
+
+```python
+self.acc.x += self.vel.x * self.friction
+self.vel.x += self.acc.x * dt
+```
+
+`acc` jest polem obiektu, więc przeżywa klatkę - a to znaczy, że tarcie wpadało z powrotem samo w siebie. Dopóki jakiś kontroler nadpisywał `acc` co klatkę, było nieszkodliwe (stąd marsz zawsze wyglądał dobrze). W momencie, w którym nikt już `acc` nie pisał - postać dotarła, `clear_waypoints()` wyzerowało `acc`, a `follow_waypoints()` zaczęło wychodzić od razu na `waypoints_cnt <= 0` - te dwie linijki domykały się w pętlę:
+
+```text
+acc' = acc + f*v
+v'   = v + acc'*dt
+```
+
+To jest oscylator harmoniczny o module wartości własnej **dokładnie 1,0**, czyli bez tłumienia - nigdy nie wygasa. Okres 13,9 klatki (0,23 s przy 60 FPS), amplituda ~2,4 px. Zmierzone, nie oszacowane. Gracz był odporny przez przypadek: jego obsługa wejścia przypisuje `self.acc.x = 0` w klatkach bez wciśniętego klawisza, co rozrywa pętlę.
+
+Naprawa: `acc` to siła *na tę klatkę*. Tarcie liczone na kopii, a `acc` zerowane na końcu `physics()` - każdy kontroler i tak pisze je w `movement()` tuż przed. Po zmianie moduły wartości własnych to 0,8 i 0, czyli tłumienie: postać dojeżdża 3 px za cel i **staje**, rozrzut 0,000 px przez 10 sekund.
+
+**Zbyt wąskie okno dotarcia (osobna sprawa, też naprawiona).** Sterowanie w `follow_waypoints()` jest bang-bang: `force = 2000` przykładane w pełni w stronę punktu niezależnie od odległości. Okno dotarcia było stałe i wynosiło `distance² <= 2.0`, czyli promień ~1,41 px. Krok jednej klatki to `1.5 * vel * dt`, co przy `speed_run = 40` i 60 FPS daje 1,0 px, a przy spadku do 40 FPS - 1,5 px. Postać, która nie trafi *do wnętrza* okna, przelatuje nad nim, dostaje pełną siłę z powrotem i drga w nieskończoność. Stąd pozorna losowość: zależało od klatkażu, od `step_cost` terenu i od tego, czy dana postać wylosowała przy spawnie `speed_walk` czy `speed_run` (`characters.py:226`). Zwierzęta mają domyślne `speed_run = 40`, więc łapały to samo. Naprawa: okno nie może być węższe niż jeden krok klatki - `max(WAYPOINT_ARRIVE_RADIUS_SQ, step²)`, gdzie `step` to `pos - prev_pos`, czyli dosłownie przebyty dystans z poprzedniej klatki (`physics()` próbkuje `prev_pos` przed ruchem). Samo się skaluje i dla wolnych postaci zostaje ciasne.
 
 **Nikt nie szedł na noc do domu - i to nie `sleep` był winny.** Pomiar na `Village.tmx`: **pięć z jedenastu** postawionych miejsc siedzi na kaflach ściany - `tavern` i wszystkie cztery `house_*`. A* nie wchodzi na kafel z `grid[r][c] > 0`, więc `a_star` zwracał `None`, a gałąź `else` w `find_path()` czyści łamaną i zeruje prędkość, czyli **zamraża postać w miejscu**. To ten sam objaw co obserwacja "jak nie zdąży dojść, to się zatrzymuje" - o 13:00 cała czwórka szła do `tavern`, dostawała "Path not found" i stawała. Naprawa: `nearest_walkable()` w `maze_utils.py` dosuwa cel do najbliższego przejezdnego kafla, pierścieniami. To nie jest obejście błędu autora - marker *zawsze* ląduje na tym, co oznacza (drzwi, stragan, karczma), a "podejdź pod drzwi" jest tym, o co chodziło. Po naprawie wszystkie 11 miejsc jest osiągalnych ze spawnu Johny'ego.
 

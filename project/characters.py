@@ -939,11 +939,29 @@ class NPC(pygame.sprite.Sprite):
 
         self.prev_pos = self.pos.copy()
 
-        self.acc.x += self.vel.x * self.friction
-        self.vel.x += self.acc.x * dt
+        # `acc` is the steering force *for this frame*, written by whoever drives
+        # this character just before physics runs: input in `Player.movement`,
+        # `follow_waypoints` for everyone else. Friction is a force too, but it
+        # must be applied to a copy, never folded back into the member.
+        #
+        # It used to be `self.acc.x += self.vel.x * self.friction`, and because
+        # `acc` survives the frame, that fed friction back into itself. As long as
+        # a controller kept overwriting `acc` every frame it was harmless - which
+        # is why walking looked fine. The moment nobody wrote `acc` any more (the
+        # character arrived, `clear_waypoints` zeroed it, `follow_waypoints` then
+        # returned early on `waypoints_cnt <= 0`) the two lines became a closed
+        # loop: acc' = acc + f*v, v' = v + acc'*dt. That is a harmonic oscillator
+        # with |eigenvalue| == 1.0 exactly - undamped, so it never decays. Period
+        # 13.9 frames (0.23 s at 60 FPS), amplitude ~2.4 px: the character
+        # shivering between two positions on the spot, forever.
+        #
+        # The player was immune only by accident: its input code assigns
+        # `self.acc.x = 0` on the frames no key is held, which breaks the loop.
+        acc_x = self.acc.x + self.vel.x * self.friction
+        self.vel.x += acc_x * dt
 
-        self.acc.y += self.vel.y * self.friction
-        self.vel.y += self.acc.y * dt
+        acc_y = self.acc.y + self.vel.y * self.friction
+        self.vel.y += acc_y * dt
 
         if 0 <= self.tileset_coord.y < len(self.scene.path_finding_grid) and \
                 0 <= self.tileset_coord.x < len(self.scene.path_finding_grid[0]):
@@ -983,6 +1001,13 @@ class NPC(pygame.sprite.Sprite):
 
         self.pos.x += self.vel.x * dt + (self.vel.x / 2) * dt
         self.pos.y += self.vel.y * dt + (self.vel.y / 2) * dt
+
+        # The steering force is spent. A controller that stops writing `acc` means
+        # "I am not pushing any more", which has to leave the character coasting to
+        # a stop under friction - not still leaning on last frame's force. Every
+        # controller writes `acc` in `movement()`, immediately before this runs, so
+        # nothing is lost by clearing it here.
+        self.acc.update(0, 0)
 
         self.adjust_rect()
 
