@@ -269,6 +269,52 @@ def clear_maze_cache() -> None:
 #######################################################################################################################
 
 
+def nearest_walkable(
+    grid: list[list[int]],
+    goal: tuple[int, int],
+    max_radius: int = 5,
+) -> tuple[int, int] | None:
+    """The closest tile to *goal* that A* is allowed to enter, or ``None``.
+
+    A* refuses to step onto a blocked tile (``grid[r][c] > 0``), so a goal that
+    sits on one is simply unreachable and `a_star` returns nothing at all. That is
+    the right answer for "walk into this wall" and the wrong one for every named
+    destination an author actually places: a door, a market stall, the tavern -
+    you put the marker *on* the thing, and the thing is solid. Snapping to the
+    nearest free tile turns "impossible" into "as close as you can get".
+
+    Searched ring by ring, so a tile one step away always beats one two steps
+    away, and within a ring the euclidean-closest wins.
+    """
+    rows = len(grid)
+    cols = len(grid[0]) if rows else 0
+
+    def free(row: int, col: int) -> bool:
+        return 0 <= row < rows and 0 <= col < cols and grid[row][col] <= 0
+
+    goal_row, goal_col = goal
+    if free(goal_row, goal_col):
+        return goal
+
+    for radius in range(1, max_radius + 1):
+        best: tuple[int, int] | None = None
+        best_distance = 0
+        for d_row in range(-radius, radius + 1):
+            for d_col in range(-radius, radius + 1):
+                if max(abs(d_row), abs(d_col)) != radius:
+                    continue  # only the ring itself; the inside was already searched
+                row, col = goal_row + d_row, goal_col + d_col
+                if not free(row, col):
+                    continue
+                distance = d_row * d_row + d_col * d_col
+                if best is None or distance < best_distance:
+                    best, best_distance = (row, col), distance
+        if best is not None:
+            return best
+
+    return None
+
+
 def a_star(grid: list[list[int]], start: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]] | None:
     # MARK: A*
     def heuristic(point: tuple[int, int], goal: tuple[int, int]) -> int:

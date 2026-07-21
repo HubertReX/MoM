@@ -476,9 +476,31 @@ Karczma rozwiązana tak, jak chciał plan: BARMAN ma ją jako `work`, wszyscy po
 
 Po wypełnieniu: `just import-entities` (CSV -> config.json). Puste komórki nie nadpisują niczego, więc można wypełniać po jednej.
 
+### Dwa bugi wykryte po postawieniu punktów
+
+Obserwacje z pierwszego przejścia z prawdziwą mapą, obie naprawione.
+
+**Dygotanie po dotarciu na miejsce (stary bug, dotyczył też zwierząt).** Sterowanie w `follow_waypoints()` jest bang-bang: `force = 2000` przykładane w pełni w stronę punktu niezależnie od odległości. Okno dotarcia było stałe i wynosiło `distance² <= 2.0`, czyli promień ~1,41 px. Krok jednej klatki to `1.5 * vel * dt`, co przy `speed_run = 40` i 60 FPS daje 1,0 px, a przy spadku do 40 FPS - 1,5 px. Postać, która nie trafi *do wnętrza* okna, przelatuje nad nim, dostaje pełną siłę z powrotem i drga w nieskończoność. Stąd pozorna losowość: zależało od klatkażu, od `step_cost` terenu i od tego, czy dana postać wylosowała przy spawnie `speed_walk` czy `speed_run` (`characters.py:226`). Zwierzęta mają domyślne `speed_run = 40`, więc łapały to samo. Naprawa: okno nie może być węższe niż jeden krok klatki - `max(WAYPOINT_ARRIVE_RADIUS_SQ, step²)`, gdzie `step` to `pos - prev_pos`, czyli dosłownie przebyty dystans z poprzedniej klatki (`physics()` próbkuje `prev_pos` przed ruchem). Samo się skaluje i dla wolnych postaci zostaje ciasne.
+
+**Nikt nie szedł na noc do domu - i to nie `sleep` był winny.** Pomiar na `Village.tmx`: **pięć z jedenastu** postawionych miejsc siedzi na kaflach ściany - `tavern` i wszystkie cztery `house_*`. A* nie wchodzi na kafel z `grid[r][c] > 0`, więc `a_star` zwracał `None`, a gałąź `else` w `find_path()` czyści łamaną i zeruje prędkość, czyli **zamraża postać w miejscu**. To ten sam objaw co obserwacja "jak nie zdąży dojść, to się zatrzymuje" - o 13:00 cała czwórka szła do `tavern`, dostawała "Path not found" i stawała. Naprawa: `nearest_walkable()` w `maze_utils.py` dosuwa cel do najbliższego przejezdnego kafla, pierścieniami. To nie jest obejście błędu autora - marker *zawsze* ląduje na tym, co oznacza (drzwi, stragan, karczma), a "podejdź pod drzwi" jest tym, o co chodziło. Po naprawie wszystkie 11 miejsc jest osiągalnych ze spawnu Johny'ego.
+
 ### 3. Co wtedy zobaczysz
 
 Johny i Bart zaczną chodzić między straganem a domem wg zegara (`` ` `` pokazuje godzinę). Granice slotów są rozjechane o jitter z hasha nazwy, więc nie ruszą jednocześnie. Aktywności inne niż `stand` jeszcze nic nie robią - postać po prostu dochodzi na miejsce i staje.
+
+### Zasięg marszu na slot - liczby, nie wrażenia
+
+`GAME_TIME_SPEED = 0.25`, więc **godzina w grze to 4 sekundy realne**, a doba 96 s. Przy `speed_walk = 30` px/s postać robi 120 px na godzinę gry, czyli **8 kafli**; biegiem (40) 10 kafli.
+
+| Trasa | Odległość | Ile godzin gry marszem |
+|---|---|---|
+| stragan Johny'ego -> `well` | 5 kafli | poniżej godziny |
+| stragan -> `smithy` | 11 kafli | ~1,5 h |
+| stragan -> `pier` | 29 kafli | ~3,5 h |
+| stragan -> `house_johny` | 31 kafli | ~4 h |
+| stragan -> `shrine` | 63 kafle | **~8,5 h** |
+
+Stąd obserwacja, że do `shrine` nikt nie dochodzi: slot `hobby` trwa 18:30-20:00, czyli półtorej godziny gry - dystans dziesięć razy za duży. Trzy wyjścia, do wyboru: przybliżyć `shrine`, wydłużyć slot, albo podnieść `speed_walk` tym postaciom. Sloty i tak trzeba przemyśleć pod kątem tych liczb - `home` w 4 godziny marszu zjada połowę nocy.
 
 ## Weryfikacja
 

@@ -362,6 +362,11 @@ DESTRUCTIBLE_MIN_DAMAGE: dict[str, int] = {
 # path finding step costs used in map grid (path_finding_grid)
 STEP_COST_WALL: int = 100
 STEP_COST_GROUND: int = -100
+# Squared radius within which a character counts as having reached a waypoint.
+# A floor, not the whole story: `follow_waypoints` widens it to one frame's
+# travel when that is larger, because a window narrower than a single step makes
+# the character overshoot and shiver in place instead of arriving.
+WAYPOINT_ARRIVE_RADIUS_SQ: float = 2.0
 # frames per second
 ANIMATION_SPEED = 10
 ANIMATION_SPEED_UI: int = 5

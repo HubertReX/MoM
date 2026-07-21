@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 import pygame
 import settings
-from maze_generator.maze_utils import a_star_cached
+from maze_generator.maze_utils import a_star_cached, nearest_walkable
 from pygame.math import Vector2 as vec
 from settings import (
     INVENTORY_ITEM_SCALE,
@@ -42,6 +42,7 @@ from settings import (
     STUNNED_COLOR,
     STUNNED_TIME,
     TILE_SIZE,
+    WAYPOINT_ARRIVE_RADIUS_SQ,
     WEAPON_DIRECTION_OFFSET,
     WEAPON_DIRECTION_OFFSET_FROM,
     Point,
@@ -830,8 +831,22 @@ class NPC(pygame.sprite.Sprite):
         npc_pos = self.pos
         current_way_point_vec = self.waypoints[self.current_waypoint_no].as_vector
         current_way_point_vec.y += 4
-        # skip to next waypoint when within around 1 pixel
-        if current_way_point_vec.distance_squared_to(npc_pos) <= 2.0:
+        # The arrival window has to be at least as wide as one frame's travel.
+        # Steering here is bang-bang - `force` is applied at full strength towards
+        # the waypoint no matter how close it is - so a character that cannot land
+        # *inside* the window overshoots, gets full force back, overshoots again,
+        # and shivers between two positions forever instead of arriving. The fixed
+        # ~1.4px window was narrower than a single step at run speed (1.5 * 40 *
+        # dt), which is why it looked intermittent: it depended on the frame rate,
+        # on the terrain's step cost, and on whether that character happened to
+        # roll walk or run speed at spawn.
+        #
+        # `pos - prev_pos` is exactly last frame's displacement (physics() samples
+        # prev_pos before moving), so the window measures itself and stays tight
+        # for slow characters.
+        step = (self.pos - self.prev_pos).length()
+        arrive_radius_sq = max(WAYPOINT_ARRIVE_RADIUS_SQ, step * step)
+        if current_way_point_vec.distance_squared_to(npc_pos) <= arrive_radius_sq:
             self.current_waypoint_no += 1
             # if following target and reached goal do not start over again
             if self.current_waypoint_no >= self.waypoints_cnt:
@@ -868,6 +883,14 @@ class NPC(pygame.sprite.Sprite):
         start = (self.tileset_coord.y, self.tileset_coord.x)
         target = self.get_tileset_coord(self.target)
         goal = (target.y, target.x)
+        # A destination is a marker, not a promise that the tile under it is floor.
+        # Every named place an author puts on the map lands on something solid -
+        # the tavern, a market stall, a doorway - and A* will not enter a blocked
+        # tile, so the search fails outright and the branch below freezes the
+        # character where it stands. Aim at the closest tile it *can* reach
+        # instead; "walk up to the door" is what was meant anyway.
+        if walkable := nearest_walkable(self.scene.path_finding_grid, goal):
+            goal = walkable
         # fps = f"FPS:\t{self.game.fps: 6.1f}\t3s:\t{self.game.avg_fps_3s: 6.1f}
         # \t10s:\t{self.game.avg_fps_10s: 6.1f}\ttime:\t{self.game.time_elapsed:4.1f}"
         if path := a_star_cached(start=start, goal=goal, grid=self.scene.path_finding_grid):
