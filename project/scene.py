@@ -600,6 +600,18 @@ class Scene(State):
     def load_interactions(self, exits_layer: TiledTileLayer) -> None:
         self.exits = []
         self.chests = []
+        # how many chests of each config template we have built on this map so far.
+        # A chest's save key is `<template>#<n>`, so the count is what makes the key
+        # unique when one template is reused - which is the normal case in a maze,
+        # where every small chest comes from the same template. Keying by the bare
+        # template name silently collapsed them all into a single save entry.
+        template_counts: dict[str, int] = {}
+
+        def _chest_name(model_name: str) -> str:
+            idx = template_counts.get(model_name, 0)
+            template_counts[model_name] = idx + 1
+            return f"{model_name}#{idx}"
+
         if "interactions" in self.layers:
             for obj in exits_layer:
                 if getattr(obj, "obj_type", "") == "exit":
@@ -651,10 +663,15 @@ class Scene(State):
                             self.walls.append(rect)
 
                             model_name = level_properties.small_chest_template
+                            # deep, not shallow: a shallow copy shares the `items`
+                            # list with the config object, and ChestSprite mutates
+                            # it in place via generate_random_items() - see the big
+                            # chest below for the full story
                             chest = ChestSprite(self.obstacles_sprites,
                                                 (x, y),
-                                                copy.copy(self.game.conf.chests[model_name]),
+                                                copy.deepcopy(self.game.conf.chests[model_name]),
                                                 self.items_sheet,
+                                                name=_chest_name(model_name),
                                                 )
                             self.chests.append(chest)
                     else:
@@ -670,10 +687,18 @@ class Scene(State):
                         else:
                             model_name = obj.name
 
+                        # deepcopy, not copy: `Chest` is a pydantic model on desktop
+                        # and a slots dataclass on web, and a shallow copy of either
+                        # shares the `items` list with the entry in `game.conf`.
+                        # ChestSprite.generate_random_items() appends to that list in
+                        # place, so every maze chest built from the same template both
+                        # saw the same rolled loot and permanently polluted the config
+                        # for the rest of the process.
                         chest = ChestSprite(self.obstacles_sprites,
                                             (obj.x, obj.y),
-                                            copy.copy(self.game.conf.chests[model_name]),
+                                            copy.deepcopy(self.game.conf.chests[model_name]),
                                             self.items_sheet,
+                                            name=_chest_name(model_name),
                                             )
                         self.chests.append(chest)
 

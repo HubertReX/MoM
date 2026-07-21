@@ -383,6 +383,37 @@ def test_loading_reseeds_the_scene_destroyed_walls() -> None:
               "a re-save keeps what the loaded save had destroyed")
 
 
+def test_chests_from_one_template_do_not_collapse() -> None:
+    """Several chests built from the same config template are distinct entries.
+
+    Every small chest in a maze comes from `level_properties.small_chest_template`,
+    so keying the save by the bare template name folded them all into one entry:
+    the save recorded whatever the last chest happened to be, and on load exactly
+    one chest got that state while the rest silently reset to their TMX defaults.
+    The scene now names them `<template>#<n>`.
+    """
+    scene = _make_scene("Maze_01", [])
+    mgr = SaveManager.__new__(SaveManager)
+
+    looted = _make_chest("SmallChest_Maze_01#0")
+    looted.open()
+    untouched = _make_chest("SmallChest_Maze_01#1")
+    scene.chests = [looted, untouched]
+
+    states = mgr._build_chest_states(scene)
+    assert_eq(len(states), 2, "two chests, two save entries")
+    assert_true(not states["SmallChest_Maze_01#0"].is_closed, "the looted one is open")
+    assert_true(states["SmallChest_Maze_01#1"].is_closed, "the other one is still shut")
+
+    # ...and the state comes back onto the right chest
+    rebuilt = [_make_chest("SmallChest_Maze_01#0"), _make_chest("SmallChest_Maze_01#1")]
+    scene.chests = rebuilt
+    mgr._apply_chest_states(scene, states)
+
+    assert_eq(rebuilt[0].image, "open", "first chest restored as open")
+    assert_eq(rebuilt[1].image, "closed", "second chest stayed closed")
+
+
 def main() -> None:
     tests = [
         test_other_maps_are_kept_pending_not_dropped,
@@ -395,6 +426,7 @@ def main() -> None:
         test_first_save_records_already_destroyed_walls,
         test_destroyed_walls_of_other_maps_survive_a_save,
         test_loading_reseeds_the_scene_destroyed_walls,
+        test_chests_from_one_template_do_not_collapse,
     ]
     for t in tests:
         t()

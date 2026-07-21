@@ -434,7 +434,9 @@ class ChestSprite(Object):
         pos: tuple[int, int],
         # name: str,
         model: Chest,
-        chests_sprites: dict[str, list[pygame.Surface]]
+        chests_sprites: dict[str, list[pygame.Surface]],
+        name: str | None = None,
+        rng: random.Random | None = None,
         # image_open: pygame.Surface = pygame.Surface((TILE_SIZE, TILE_SIZE)),
         # image_closed: pygame.Surface = pygame.Surface((TILE_SIZE, TILE_SIZE)),
     ) -> None:
@@ -445,16 +447,32 @@ class ChestSprite(Object):
         super().__init__(group, pos, image)
         # self.rect.center = pos
         self.model = model
-        self.name = model.name
+        # `name` is the chest's identity in the save file and must be unique within
+        # a map; the scene builds it as `<template>#<n>`. Falling back to the model
+        # name keeps direct construction (tests, tools) working.
+        self.name = name if name is not None else model.name
 
-        self.generate_random_items()
+        self.generate_random_items(rng)
         # self.is_closed = True
         # self.items: list[Item] = []
 
 #################################################################################################################
-    def generate_random_items(self) -> None:
+    def generate_random_items(self, rng: random.Random | None = None) -> None:
+        """Top the chest up to ``total_items_count`` with random loot.
+
+        ``rng`` must be the maze generator for a maze chest: the drawn loot has to
+        come back identical when the level is rebuilt from its seed. Outside a maze
+        the global ``random`` is fine - those chests have fixed contents anyway.
+
+        ``self.model`` must be a *deep* copy of the config entry. It used to be a
+        shallow one, which shares the ``items`` list, so this loop appended straight
+        into ``game.conf``: every chest built from the same template ended up with
+        the same loot and the config stayed polluted for the rest of the process.
+        """
         if len(self.model.random_items) == 0:
             return
+
+        r = rng or random
 
         # self.model.items = []
         curr_count = len(self.model.items)
@@ -463,9 +481,8 @@ class ChestSprite(Object):
             return
 
         # random.shuffle(self.model.random_items)
-        # random.seed()
         for _ in range(self.model.total_items_count - curr_count):
-            self.model.items.append(random.choice(self.model.random_items))
+            self.model.items.append(r.choice(self.model.random_items))
 
 #################################################################################################################
     def open(self) -> None:
