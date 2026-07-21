@@ -1,16 +1,18 @@
 Konieczne do ukończenia prologu:
 
-- [ ] panel quest w sekcji nagród - jest jakaś dziwna skala, poprawić do 16 lub 32
-- [ ] toast mają za małe emocji - nieczytelne, powiększ.
-
-Zmiany layout HUD:
-- [ ] panel statystyk postaci przesunąć w prawy górny róg i upewnić się, że toasty jadą teraz po lewej do samej góry ekranu
-- [ ] zachować spójne odległości od granicy ekranu stałych elementów HUD: stats, broń (lewy dolny róg), sloty itemów (dolna krawędź), etykiety akcji z keycap (prawy dolny róg), toasty - preferowana odległość taka jak obecnie ma panel broni (blisko krawędzi, ale trochę widać mapę gry).
-- [ ] wyrównać keycap akcji w prawym dolnym rogu tak, aby prawa krawędź keycap pokrywała się z prawą krawędzią panelu z opisem akcji
+- [ ] nowa mapa na bazie Village z dodatkowymi budynkami i docelowym rozmieszczeniem postaci oraz przedmiotów
+- [ ] system odnawiania stanu posiadania handlarzy kolejnego dnia
+- [ ] prosty dobowy cykl życia NPC
+- [ ] balancing atrybutów postaci, przedmiotów (bohatera, na mapie, w lochu, u handlarzy)
 
 Inne:
 
-- [ ] co się stanie jak zwiększę max_inventory
+- [ ] gra nie zapisuje lub źle odczytuje stań skrzyni (otwarta/zamknięta) oraz stan obiektów, które da się zniszczyć (krzaki, kamienie) - po wczytaniu gry, stan tych obiektów jest jak przy wczytaniu nowej mapy
+- [ ] podczas odczytu gry (F9), zmiany nazwy zapisu gry, i handlu klawisze 'i', 'j' oraz 'h' otwierają panele (inventory, quest, help) - to powinno być zablokowane.
+- [ ] system cząsteczkowy destrukcji źle wyświetla swoje sprite'y w nocy kiedy działa shader - tło sprite'a jest czarne a ma być przeźroczyste.
+- [ ] w polach input, jak się wciśnie i przytrzyma przycisk to działa on tylko raz - kolejne litery powinny pojawiać się z małym opóźnieniem, a strzałki powinny przesuwać kursor, aż do zwolnienia klawisza 
+- [ ] scrollbar.png nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
+- [ ] co się stanie jak zwiększę max_inventory?
 - [ ] po zmianie rozdzielczości ekran wraca na monitor na którym był uruchomiony
 - [ ] przydało by się włączyć FOW w labiryncie w trybie web
 - [ ] zwierzęta mają być tylko w określonych strefach (np.: łąka), bo przeszkadzają
