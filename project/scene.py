@@ -76,6 +76,7 @@ from settings import (
     EMITTER_SCHEDULES,
     PARTICLES,
     QUICK_SAVE_SLOT,
+    ROUTINES_FILE,
     SHADERS_NAMES,
     SHOW_DEBUG_INFO,
     SHOW_UI,
@@ -106,6 +107,7 @@ from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
 from ui.game_ui import GameUI
 from ui.panels.hud import NOTIFICATION_TYPE_ICONS
+from npc_schedule import Routines, load_routines
 from ui.panels.trade import TradePanel
 from world_rng import day_rng, new_world_seed
 
@@ -142,6 +144,8 @@ class Scene(State):
             "return_map",
             "return_entry_point",
             "waypoints",
+            # named destinations for daily routines - per map, like `waypoints`
+            "places",
             "items",
             "zones",
             "exits",
@@ -212,6 +216,13 @@ class Scene(State):
         self.return_map: str = return_map
         self.return_entry_point: str = return_entry_point
         self.waypoints: dict[str, tuple[Point, ...]] = {}
+        # Named points from the `places` layer - the destinations a daily routine
+        # can name. Per-map, like `waypoints`, hence in `self.properties`.
+        self.places: dict[str, vec] = {}
+        # Parsed routines.toml. Global (the rhythm of a day is not per-map) and
+        # read once per scene; an unreadable file yields empty routines and the
+        # game behaves exactly as it did before routines existed.
+        self.routines: Routines = load_routines(ROUTINES_FILE, warn=print)
         self.items: list[ItemSprite] = []
         # self.items_defs: dict[str, pygame.Surface] = {}
         self.exits: list[Collider] = []
@@ -430,6 +441,18 @@ class Scene(State):
         if "waypoints" in self.layers:
             for obj in cast(TiledObjectGroup, tileset_map.get_layer_by_name("waypoints")):
                 self.waypoints[obj.name] = tuple(to_point(point) for point in obj.points)
+
+        self.places = {}
+        # Named points a daily routine can send an NPC to (`places` layer in Tiled).
+        # The objects carry nothing but a name - which place is whose is decided in
+        # characters.csv, because the same tavern is the barman's `work` and
+        # everybody else's `social`, and a property on the object could only say
+        # one of those. A map without this layer is fine: every routine step then
+        # resolves to "no destination" and nobody moves differently than before.
+        if "places" in self.layers:
+            for obj in cast(TiledObjectGroup, tileset_map.get_layer_by_name("places")):
+                rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                self.places[obj.name] = vec(rect.midbottom)
 
         self.entry_points = {}
         # layer of invisible objects being single points on map where NPCs show up coming from linked map
@@ -907,6 +930,10 @@ class Scene(State):
                         waypoint,
                         model_name=obj.model_name,
                     )
+                    # Keyed by the *spawn point* name, not the model: one model can
+                    # stand on the map several times and each copy may keep its own
+                    # rhythm. Empty means "no routine" - the legacy waypoint loop.
+                    npc.runtime.routine_key = self.routines.assign.get(obj.name, "")
                     self.loaded_NPCs[obj.name] = npc
 
         if self.is_maze and self.current_map not in self.loaded_maps:

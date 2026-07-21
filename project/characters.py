@@ -62,6 +62,7 @@ from dialog.graph import get_start_node, init_dialog
 import game
 import npc_state
 from npc_runtime import NpcRuntime
+from npc_schedule import Slot, current_slot, destinations_of, resolve_at, slot_jitter
 import scene
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, HealthBarUI, ItemSprite, NotificationTypeEnum, Shadow
@@ -126,6 +127,13 @@ class NPC(pygame.sprite.Sprite):
         self.sentiment: int = round(self.model.friendly * 100)
         self.disposition: dict[str, int] = dict(self.model.disposition)
         self.known_disposition: dict[str, int] = {}
+
+        # Daily routine bookkeeping. `_schedule_slot` remembers which slot was last
+        # acted on, so the schedule is consulted every frame but only *does*
+        # anything on a boundary - retargeting every frame would restart the A*
+        # path continuously and the NPC would never actually get anywhere.
+        self._schedule_slot: Slot | None = None
+        self._schedule_jitter: int | None = None
 
         self.load_dialogs()
 
@@ -569,10 +577,69 @@ class NPC(pygame.sprite.Sprite):
             return "up"
 
     #############################################################################################################
+    # MARK: schedule
+    def update_schedule(self) -> None:
+        """Point this character at whatever its routine says it should be doing.
+
+        A goal provider, not a controller: the most it does is set `self.target`
+        and ask the existing pathfinder for a route. Nothing here writes `vel`.
+
+        Deliberately does nothing at all unless the active slot *changed*, so the
+        A* call happens on boundaries (a handful per in-game day, spread out by
+        the per-character jitter) and not once a frame.
+
+        Every way of having no destination - no routine, no place named in the
+        CSV, no such object on the map - ends the same way: the character is left
+        exactly as it was, still walking its old Tiled polyline if it had one.
+        That is what lets the village be mapped one place at a time.
+        """
+        routine_key = self.runtime.routine_key
+        if not routine_key:
+            return
+        routine = self.scene.routines.routines.get(routine_key)
+        if routine is None:
+            return
+
+        if self._schedule_jitter is None:
+            self._schedule_jitter = slot_jitter(self.name, self.scene.routines.defaults.slot_jitter_minutes)
+
+        minutes = self.scene.hour * 60 + self.scene.minute
+        slot = current_slot(routine, minutes, self._schedule_jitter)
+        if slot is None or slot == self._schedule_slot:
+            return
+        self._schedule_slot = slot
+
+        destination = resolve_at(
+            slot.at,
+            destinations_of(self.model),
+            self.scene.places,
+            self.scene.waypoints,
+            # live read of the scene module's global, like `debug()` below - a
+            # `from settings import` copy would never see the ` / Z toggle
+            warn=print if scene.SHOW_DEBUG_INFO else None,
+        )
+        if destination is None or destination.kind != "place":
+            # `route:` (patrol) and the not-yet-built activities land here; leaving
+            # the character alone is the honest behaviour until they are written.
+            return
+
+        # `stand`: walk there, then stop. Every other activity currently degrades
+        # to this - going to the right place is the part that already works, and
+        # sleeping/wandering/patrolling on arrival come later.
+        self.target = vec(self.scene.places[destination.name])
+        self.find_path()
+
+    #############################################################################################################
     # MARK: movement
     def movement(self) -> None:
         if self.is_stunned or self.is_talking:
             return
+
+        # After the `is_talking` guard on purpose: a slot boundary crossed mid
+        # dialog is applied when the panel closes, not during it. Otherwise the
+        # merchant walks off in the middle of a transaction and TradePanel is left
+        # holding a reference to somebody who is no longer there.
+        self.update_schedule()
 
         if self.model.race == RaceEnum.monster:
             self.movement_monster()

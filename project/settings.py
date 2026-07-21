@@ -666,6 +666,7 @@ CURRENT_DIR = Path(__file__).parent
 CONFIG_DIR = CURRENT_DIR / "config_model"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 SCHEMA_FILE = CONFIG_DIR / "config_schema.json"
+ROUTINES_FILE = CONFIG_DIR / "routines.toml"
 SCREENSHOTS_DIR = CURRENT_DIR if IS_WEB else CURRENT_DIR / ".." / "screenshots"
 # pliki/ katalog dla zewnętrznego sterowania agentów (patrz agent_ctrl.py, USE_AGENT_CONTROL)
 AGENT_INPUT_FILE = CURRENT_DIR / ".." / "agent_input.txt"

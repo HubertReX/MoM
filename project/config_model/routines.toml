@@ -1,0 +1,130 @@
+# Rutyny NPC - rytm dnia wspolny dla wielu postaci.
+#
+# `at` ma trzy warianty:
+#   type:<typ>       -> kolumna `home`/`work`/`social`/`hobby` w characters.csv
+#                       wskazuje nazwe obiektu z warstwy `places` w Tiled.
+#                       To on czyni rutyne uniwersalna - kazda postac idzie
+#                       "do swojego" miejsca danego typu.
+#   location:<nazwa> -> wprost nazwa obiektu z warstwy `places` (wyjatki,
+#                       miejsca wspolne dla wszystkich)
+#   route:<nazwa>    -> nazwana lamana z istniejacej warstwy `waypoints`
+#
+# Kolejnosc wykonania bierze sie z pola `from`, nie z kolejnosci w pliku.
+# Przestawienie blokow ani dopisanie kroku w srodku niczego nie psuje.
+#
+# Pusta komorka destynacji w characters.csv nie jest bledem: taki krok
+# degraduje sie do "zostan gdzie jestes", a nie do wyjatku. Dzieki temu
+# niekompletne dane nigdy nie wywalaja gry i nie trzeba mapowac calej wioski
+# na raz.
+
+[defaults]
+wander_radius       = 3     # promien mikro-wedrowki, w kaflach
+slot_jitter_minutes = 20    # +/- , deterministycznie z hasha nazwy NPC
+
+
+# =====================================================================
+#  townsfolk - kupiec, kowal, barman: dom, praca, przerwa, praca, dom
+# =====================================================================
+
+[[routine.townsfolk.slot]]
+from     = "06:30"
+at       = "type:home"
+activity = "idle"
+
+[[routine.townsfolk.slot]]
+from     = "08:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.townsfolk.slot]]
+from     = "13:00"
+at       = "type:social"
+activity = "wander"
+
+[[routine.townsfolk.slot]]
+from     = "14:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.townsfolk.slot]]
+from     = "18:30"
+at       = "type:hobby"
+activity = "wander"
+
+[[routine.townsfolk.slot]]
+from     = "20:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  farmer - wstaje przed switem, dluga praca w polu, wczesniej spi
+# =====================================================================
+
+[[routine.farmer.slot]]
+from     = "04:30"
+at       = "type:work"
+activity = "stand"
+
+[[routine.farmer.slot]]
+from     = "11:00"
+at       = "location:well"      # wspolna studnia, nie "swoja" - stad location:
+activity = "idle"
+
+[[routine.farmer.slot]]
+from     = "12:00"
+at       = "type:work"
+activity = "stand"
+
+[[routine.farmer.slot]]
+from     = "18:00"
+at       = "type:social"
+activity = "wander"
+
+[[routine.farmer.slot]]
+from     = "21:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  guard - patrol dzienny, patrol wieczorny, krotka noc
+# =====================================================================
+
+[[routine.guard.slot]]
+from     = "06:00"
+at       = "route:patrol_north"
+activity = "patrol"
+
+[[routine.guard.slot]]
+from     = "18:00"
+at       = "route:patrol_south"
+activity = "patrol"
+
+[[routine.guard.slot]]
+from     = "02:00"
+at       = "type:home"
+activity = "sleep"
+
+
+# =====================================================================
+#  Przypisanie rutyn do postaci.
+#
+#  Klucz = nazwa obiektu ze `spawn_points` w Tiled (NIE nazwa modelu z
+#  characters.csv - jeden model moze stac na mapie w kilku egzemplarzach).
+#
+#  Celowo zaczynamy od czworki, ktora dzis i tak stoi w miejscu (Johny i
+#  Bart maja swoje lamane odlozone w Tiled jako `Johny_BCKP` / `Bart_BCKP`,
+#  dialogowi NPC nigdy zadnych nie mieli), zeby wlaczenie rutyn nie zabralo
+#  ruchu nikomu, kto dzis chodzi. Rob, Robin i Marry chodza po lamanych i
+#  dopisuje sie ich tutaj dopiero wtedy, gdy beda mialy komplet destynacji.
+#
+#  Rutyny `farmer` i `guard` stoja na razie bez przypisania - sa gotowymi
+#  szablonami na postacie, ktorych na mapie jeszcze nie ma.
+# =====================================================================
+
+[assign]
+Johny                = "townsfolk"
+Bart                 = "townsfolk"
+BARMAN_ABSINTHRAYNER = "townsfolk"
+HAMMER_HOAXHEART     = "townsfolk"

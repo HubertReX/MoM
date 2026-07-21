@@ -286,6 +286,17 @@ Szczegóły z dowodem empirycznym: [wspoldzielony-config-npc.html](_attachements
 
 ### `npc_schedule.py` - dostawca celu, nie drugi kontroler
 
+Status: **zrobione**, krok 5 w wariancie "kod bez mapy" - wszystko gotowe, czeka na punkty w Tiled i uzupełnione kolumny w CSV. Do tego czasu nic się nie zmienia w zachowaniu: każdy krok rutyny rozwiązuje się do "brak destynacji", a NPC zostaje przy swojej starej łamanej.
+
+Poprawka do planu: **FSM z `npc_state.py` nie jest kontrolerem ruchu.** To maszyna stanów *animacji* - `get_new_state()` czyta `character.vel` i flagi, żeby wybrać klatki. Ruchem steruje `NPC.movement()` -> `find_path()` (A*) -> `follow_waypoints()`. Harmonogram wpina się więc w `movement()`, a nie w FSM, ale zasada z planu zostaje spełniona: `update_schedule()` ustawia najwyżej `self.target` i woła istniejący pathfinder, nigdy nie dotyka `vel`.
+
+Detale, które wyszły w implementacji:
+
+- **Kluczem `[assign]` jest nazwa obiektu ze `spawn_points`, nie nazwa modelu.** Jeden model może stać na mapie w kilku egzemplarzach i każdy może mieć inny rytm.
+- **Plan zakładał nieistniejące postacie.** Na `Village.tmx` nie ma `KOWAL`, `BARMAN`, `FARMER` ani `STRAZNIK`; są `Johny`, `Bart`, `Marry`, `Rob`, `Robin`, `HAMMER_HOAXHEART` (kowal), `BARMAN_ABSINTHRAYNER` i reszta dialogowych. `[assign]` obsadza na start tylko czwórkę, która **i tak dziś stoi w miejscu** (Johny i Bart mają łamane odłożone w Tiled jako `Johny_BCKP` / `Bart_BCKP`), żeby włączenie rutyn nie zabrało ruchu nikomu, kto dziś chodzi. `farmer` i `guard` zostają szablonami bez obsady.
+- **`update_schedule()` działa tylko na granicy slotu.** Przeliczanie trasy co klatkę restartowałoby A* w kółko i NPC nigdy by nie dotarł. Zapamiętany ostatni slot + jitter per postać rozkładają te przeliczenia w czasie.
+- **Aktywności poza `stand` na razie nic nie robią** - `route:` (patrol) i reszta kończą na "zostaw postać w spokoju". To uczciwsze niż udawanie, że działają.
+
 Harmonogram nie steruje ruchem. Ustawia `npc.goal = (place, activity)`, a istniejący FSM z `npc_state.py` decyduje jak tam dotrzeć. Dwa systemy piszące do `npc.vel` to gwarantowany bug "NPC drga w drzwiach".
 
 - `Talk` jest stanem pochłaniającym - zmiana slotu w trakcie dialogu jest kolejkowana i stosowana po zamknięciu panelu. Inaczej handlarz odchodzi w środku transakcji, a `TradePanel` zostaje z wiszącą referencją (`trade.py:120`).
@@ -420,11 +431,54 @@ Modyfikowane:
 2. ~~Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu.~~ **Zrobione**, plus naprawa niezerowanej wagi w `restock_items` i testy `tests/test_merchant_economy.py`.
 3. ~~Zaziarnione losowanie + gating klawisza `next_day`.~~ **Zrobione**: `world_rng.py`, `Scene.world_seed` w zapisie, bramka na `SHOW_DEBUG_INFO` (nie `IS_DEBUG_MODE` - patrz wyżej), testy `tests/test_world_rng.py`.
 4. ~~Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci.~~ **Zrobione**: 17 -> 30 kolumn, plus dwie naprawy eksportera (kolumny z modelu, tożsamość na przód).
-5. `routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.
+5. ~~`routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.~~ **Kod zrobiony**; brakuje danych: punktów na warstwie `places` w Tiled i czterech kolumn destynacji w `characters.csv` (tabelka poniżej). Do tego czasu system jest bezczynny i nic nie psuje.
 6. `sleep` z zanikiem na progu.
 7. `wander` / `patrol` / `idle` + jitter kroków.
 
 Punkty 1-3 to ekonomia, 4-7 to cykl dobowy. Obie połówki są niezależne, byle `NpcRuntime` był pierwszy.
+
+## Do zrobienia ręcznie: punkty w Tiled i kolumny w CSV
+
+Kod kroku 5 jest kompletny, ale bezczynny, dopóki nie ma danych. Dwie rzeczy, obie po stronie autora.
+
+### 1. Warstwa obiektów `places` w `Village.tmx`
+
+Nowa warstwa obiektów o nazwie **`places`**, obok istniejących `waypoints` / `spawn_points` / `entry_points`. Same nazwane punkty - **żadnych custom properties**. Nazwa musi być unikalna w obrębie mapy. Scena czyta `rect.midbottom`, więc zwykły Point działa.
+
+| Nazwa obiektu | Gdzie postawić | Komu służy |
+|---|---|---|
+| `tavern` | wnętrze/próg karczmy | praca BARMANA, przerwa reszty |
+| `market_stall_1` | stragan Johny'ego | praca Johny'ego |
+| `market_stall_2` | stragan Barta | praca Barta |
+| `smithy` | kuźnia | praca HAMMER_HOAXHEART |
+| `well` | studnia na środku wioski | wspólna, używana przez `location:well` |
+| `house_johny` | próg domu Johny'ego | jego `home` |
+| `house_bart` | próg domu Barta | jego `home` |
+| `house_barman` | próg domu barmana (albo sama karczma) | jego `home` |
+| `house_smith` | próg domu kowala | jego `home` |
+| `pier` | pomost nad wodą | `hobby` - miejsce charakterystyczne |
+| `shrine` | kapliczka | `hobby` |
+
+Minimum, żeby zobaczyć efekt: `market_stall_1` i `house_johny`. Reszta może dojść później - brakujące miejsce nie jest błędem, tylko krokiem "zostań gdzie jesteś".
+
+### 2. Kolumny destynacji w `characters.csv`
+
+Cztery nowe kolumny są już w pliku, na razie puste. Wypełnia się je **nazwami obiektów z warstwy `places`**. Wiersz jest kluczowany nazwą modelu, a `[assign]` w `routines.toml` - nazwą obiektu ze `spawn_points`; dla tej czwórki to te same napisy z dokładnością do wielkości liter.
+
+| Wiersz w `characters.csv` | `home` | `work` | `social` | `hobby` |
+|---|---|---|---|---|
+| `JOHNY` | `house_johny` | `market_stall_1` | `tavern` | `pier` |
+| `BART` | `house_bart` | `market_stall_2` | `tavern` | `well` |
+| `BARMAN_ABSINTHRAYNER` | `house_barman` | `tavern` | `well` | `shrine` |
+| `HAMMER_HOAXHEART` | `house_smith` | `smithy` | `tavern` | `shrine` |
+
+Karczma rozwiązana tak, jak chciał plan: BARMAN ma ją jako `work`, wszyscy pozostali jako `social`. Jeden obiekt w Tiled, dwie role, zero duplikatów.
+
+Po wypełnieniu: `just import-entities` (CSV -> config.json). Puste komórki nie nadpisują niczego, więc można wypełniać po jednej.
+
+### 3. Co wtedy zobaczysz
+
+Johny i Bart zaczną chodzić między straganem a domem wg zegara (`` ` `` pokazuje godzinę). Granice slotów są rozjechane o jitter z hasha nazwy, więc nie ruszą jednocześnie. Aktywności inne niż `stand` jeszcze nic nie robią - postać po prostu dochodzi na miejsce i staje.
 
 ## Weryfikacja
 
