@@ -14,8 +14,8 @@ Inne:
 - [x] F5 i F9 to mają działać jak autentyczne quick save/load (obecnie F5 jest ok, F9 otwiera panel) używające slot 0, który zawsze nazywa się 'quick save' w wersji EN a 'szybki zapis' w wersji PL. Slot 0 ma być specjalnie traktowany: nie da się zapisać manualnie gry na nim, nie można go skasować. Może być oddzielony kreską na liście. Pełne menu save i load ma pokazywać się dopiero z poziomu menu głównego - load już jest, save trzeba dodać. `SavePanel` jest już zdefiniowany, ale nigdzie nie otwierany - użyj go i dostosuj do design system (project/ui/AGENTS.md), pamiętaj o keycap dla skrótów klawiszowych. Menu Save ma być niedostępne w labiryncie.
 - [x] podczas odczytu gry (F9), zmiany nazwy zapisu gry, i handlu klawisze 'i', 'j' oraz 'h' otwierają panele (inventory, quest, help) - to powinno być zablokowane.
 - [ ] mypy 24 błędy
-- [ ] system cząsteczkowy destrukcji źle wyświetla swoje sprite'y (nie zawsze, chyba głównie w nocy kiedy działa shader) - tło sprite'a jest czarne a ma być przeźroczyste.
-- [ ] przy nieudanej próbie zniszczenia obiektu (kamienie, krzaki), bo broń jest za słaba powinien pojawić się toast z informacją, aby gracz wiedział, że "pomysł był dobry" (da się niszczyć niektóre obiekty), ale "wykonanie złe" (broń musi być dostatecznie mocna)
+- [x] system cząsteczkowy destrukcji źle wyświetla swoje sprite'y (nie zawsze, chyba głównie w nocy kiedy działa shader) - tło sprite'a jest czarne a ma być przeźroczyste.
+- [x] przy nieudanej próbie zniszczenia obiektu (kamienie, krzaki), bo broń jest za słaba powinien pojawić się toast z informacją, aby gracz wiedział, że "pomysł był dobry" (da się niszczyć niektóre obiekty), ale "wykonanie złe" (broń musi być dostatecznie mocna)
 - [ ] w polach input, jak się wciśnie i przytrzyma przycisk to działa on tylko raz - kolejne litery powinny pojawiać się z małym opóźnieniem, a strzałki powinny przesuwać kursor, aż do zwolnienia klawisza 
 - [ ] scrollbar.png nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
 - [ ] co się stanie jak zwiększę max_inventory?
