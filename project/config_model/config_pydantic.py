@@ -92,6 +92,11 @@ class Character(BaseModel):
     work:          Annotated[str,          Field("", description="place object the character works at", repr=False)]
     social:        Annotated[str,          Field("", description="place object the character spends its break at", repr=False)]
     hobby:         Annotated[str,          Field("", description="place object characteristic for this character", repr=False)]
+    # Which rhythm of the day this character follows - a key of `[routine.*]` in
+    # routines.toml. It sits here, next to the destinations it works with, so that
+    # "who does what and where" is answerable from one row. Empty means no routine:
+    # the character keeps the legacy Tiled waypoint loop.
+    routine:       Annotated[str,          Field("", description="key of the daily routine from routines.toml", repr=False)]
 
     @field_validator("disposition", mode="before")
     @classmethod

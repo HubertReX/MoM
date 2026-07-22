@@ -930,10 +930,16 @@ class Scene(State):
                         waypoint,
                         model_name=obj.model_name,
                     )
-                    # Keyed by the *spawn point* name, not the model: one model can
-                    # stand on the map several times and each copy may keep its own
-                    # rhythm. Empty means "no routine" - the legacy waypoint loop.
-                    npc.runtime.routine_key = self.routines.assign.get(obj.name, "")
+                    # The rhythm comes off the character's own row in characters.csv,
+                    # next to the destinations it works with, so "who does what and
+                    # where" is answerable from one line. Empty means "no routine" -
+                    # the legacy waypoint loop. `npc.model` is this NPC's own copy,
+                    # so a routine can still be swapped per instance at runtime.
+                    routine_key = getattr(npc.model, "routine", "")
+                    if routine_key and routine_key not in self.routines.routines:
+                        print(f"[routines] '{obj.name}' wants unknown routine '{routine_key}'")
+                        routine_key = ""
+                    npc.runtime.routine_key = routine_key
                     self.loaded_NPCs[obj.name] = npc
 
         if self.is_maze and self.current_map not in self.loaded_maps:

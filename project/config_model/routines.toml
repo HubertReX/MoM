@@ -1,5 +1,11 @@
 # Rutyny NPC - rytm dnia wspolny dla wielu postaci.
 #
+# Ten plik trzyma SAME rutyny. Kto ktora rutyne ma, mowi kolumna `routine`
+# w characters.csv - obok kolumn `home`/`work`/`social`/`hobby`, z ktorymi
+# rutyna i tak wspolpracuje. Dzieki temu caly "kto, co, gdzie" jednej postaci
+# czyta sie z jednego wiersza. Pusta komorka = brak rutyny (stara lamana
+# z warstwy `waypoints`).
+#
 # `at` ma trzy warianty:
 #   type:<typ>       -> kolumna `home`/`work`/`social`/`hobby` w characters.csv
 #                       wskazuje nazwe obiektu z warstwy `places` w Tiled.
@@ -106,25 +112,6 @@ from     = "02:00"
 at       = "type:home"
 activity = "sleep"
 
-
-# =====================================================================
-#  Przypisanie rutyn do postaci.
-#
-#  Klucz = nazwa obiektu ze `spawn_points` w Tiled (NIE nazwa modelu z
-#  characters.csv - jeden model moze stac na mapie w kilku egzemplarzach).
-#
-#  Celowo zaczynamy od czworki, ktora dzis i tak stoi w miejscu (Johny i
-#  Bart maja swoje lamane odlozone w Tiled jako `Johny_BCKP` / `Bart_BCKP`,
-#  dialogowi NPC nigdy zadnych nie mieli), zeby wlaczenie rutyn nie zabralo
-#  ruchu nikomu, kto dzis chodzi. Rob, Robin i Marry chodza po lamanych i
-#  dopisuje sie ich tutaj dopiero wtedy, gdy beda mialy komplet destynacji.
-#
-#  Rutyny `farmer` i `guard` stoja na razie bez przypisania - sa gotowymi
-#  szablonami na postacie, ktorych na mapie jeszcze nie ma.
-# =====================================================================
-
-[assign]
-Johny                = "townsfolk"
-Bart                 = "townsfolk"
-BARMAN_ABSINTHRAYNER = "townsfolk"
-HAMMER_HOAXHEART     = "townsfolk"
+# Rutyny `farmer` i `guard` nie maja dzis zadnej obsady - sa gotowymi
+# szablonami na postacie, ktorych na mapie jeszcze nie ma. Zeby ktoras
+# obsadzic, wpisz jej klucz w kolumnie `routine` w characters.csv.

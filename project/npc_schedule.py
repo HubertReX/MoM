@@ -13,9 +13,12 @@ The three-way split the routines rest on:
 
 - **Tiled** says *where*: named objects on the `places` layer, nothing else on
   them. No `tag`, no `owner`.
-- **characters.csv** says *whose is which*: the `home`/`work`/`social`/`hobby`
-  columns name a place per character.
-- **routines.toml** says *when and what*: the rhythm, shared by many characters.
+- **characters.csv** says *whose is which* and *which rhythm*: the
+  `home`/`work`/`social`/`hobby` columns name a place per character, and the
+  `routine` column names the rhythm that character follows.
+- **routines.toml** says *when and what*: the rhythm itself, shared by many
+  characters. It holds routines only - who follows which one is a character's
+  property, so it lives in the row that already carries the destinations.
 
 The reason the role of a place lives on the character and not on the map object:
 the same tavern is the barman's `work` and everybody else's `social`. A property
@@ -84,12 +87,10 @@ class Routines:
 
     defaults: Defaults
     routines: Mapping[str, Routine]
-    #: Tiled spawn-point name -> routine key.
-    assign: Mapping[str, str]
 
-    def for_character(self, spawn_name: str) -> Routine | None:
-        key = self.assign.get(spawn_name, "")
-        return self.routines.get(key) if key else None
+    def for_character(self, routine_key: str) -> Routine | None:
+        """The routine a character follows, by the key from its CSV `routine` cell."""
+        return self.routines.get(routine_key) if routine_key else None
 
 
 @dataclass(frozen=True)
@@ -151,12 +152,13 @@ def parse_routines(data: dict[str, Any], *, warn: Any = None) -> Routines:
         # order carries no meaning - that is what makes reordering it safe.
         routines[key] = Routine(key=key, slots=tuple(sorted(slots, key=lambda s: s.from_minutes)))
 
-    assign = {str(k): str(v) for k, v in (data.get("assign") or {}).items()}
-    for spawn_name, routine_key in assign.items():
-        if routine_key not in routines:
-            _warn(warn, f"[assign] '{spawn_name}' points at unknown routine '{routine_key}'")
+    if "assign" in data:
+        # The mapping moved to the `routine` column in characters.csv. Left as a
+        # warning rather than silently ignored: an [assign] block still sitting in
+        # the file looks like it works, and would be the first place someone edits.
+        _warn(warn, "[assign] in routines.toml is obsolete - use the `routine` column in characters.csv")
 
-    return Routines(defaults=defaults, routines=routines, assign=assign)
+    return Routines(defaults=defaults, routines=routines)
 
 
 def load_routines(path: str | Path, *, warn: Any = None) -> Routines:
@@ -171,10 +173,10 @@ def load_routines(path: str | Path, *, warn: Any = None) -> Routines:
             data = tomllib.load(handle)
     except FileNotFoundError:
         _warn(warn, f"routines file not found: {path}")
-        return Routines(defaults=Defaults(), routines={}, assign={})
+        return Routines(defaults=Defaults(), routines={})
     except tomllib.TOMLDecodeError as exc:
         _warn(warn, f"routines file {path} is not valid TOML: {exc}")
-        return Routines(defaults=Defaults(), routines={}, assign={})
+        return Routines(defaults=Defaults(), routines={})
     return parse_routines(data, warn=warn)
 
 

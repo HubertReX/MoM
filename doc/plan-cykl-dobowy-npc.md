@@ -2,7 +2,7 @@
 
 Dokument decyzyjny z tabelami opcji: [cykl-dobowy-npc.html](_attachements/cykl-dobowy-npc.html)
 
-Wersja 3, po drugiej turze uwag.
+Wersja 4: obsada rutyn przeniesiona z sekcji `[assign]` w `routines.toml` do kolumny `routine` w `characters.csv`.
 
 ## Kontekst
 
@@ -41,7 +41,7 @@ Obserwacja poboczna, poza zakresem zadania: klejnoty "big" są per kilogram gors
 | Warstwa | Odpowiada za | Nośnik | Kto edytuje |
 |---|---|---|---|
 | Tiled | *Gdzie* - nazwane punkty na mapie i trasy | warstwa obiektów `places` (same nazwy) + istniejąca `waypoints` | edytor map |
-| Postacie | *Czyje jest które miejsce* - destynacje per postać | kolumny `home`, `work`, `social`, `hobby` w `characters.csv` | istniejący pipeline CSV |
+| Postacie | *Czyje jest które miejsce i czyj jest który rytm* - destynacje i rutyna per postać | kolumny `home`, `work`, `social`, `hobby`, `routine` w `characters.csv` | istniejący pipeline CSV |
 | Rutyny | *Kiedy i co* - rytm dnia wspólny dla wielu postaci | `project/config_model/routines.toml` | ręcznie, w edytorze tekstu |
 | Kod | *Jak* - generyczny wykonawca, zero logiki per-NPC | `project/npc_schedule.py` | Python |
 
@@ -51,6 +51,7 @@ Test poprawności podziału:
 - "nowe miejsce w wiosce" - jeden nazwany obiekt w Tiled
 - "ten NPC ma pracować gdzie indziej" - jedna komórka w `characters.csv`
 - "cała wioska ma wstawać godzinę wcześniej" - jedna liczba w TOML-u
+- "ten NPC ma żyć rytmem farmera" - jedna komórka w `characters.csv`
 
 Jeśli któreś wymaga Pythona, podział jest zły.
 
@@ -74,10 +75,21 @@ Rozwiązanie: **destynacje w `characters.csv`, obiekty w Tiled tylko nazwane.**
 | `work` | gdzie pracuje | BARMAN: `tavern`, JOHNY: `market_stall_1`, FARMER: `field_north` |
 | `social` | gdzie spędza przerwę | JOHNY: `tavern`, FARMER: `well` |
 | `hobby` | miejsce charakterystyczne dla postaci | JOHNY: `pier`, KOWAL: `shrine` |
+| `routine` | którym rytmem dnia żyje | JOHNY: `townsfolk`, FARMER: `farmer` |
 
 Karczma rozwiązana: BARMAN ma `work = tavern`, JOHNY ma `social = tavern`. Jeden obiekt w Tiled, dwie różne role, zero duplikatów. Rutyna mówi tylko "o 13:00 idź do swojego `social`" i nie wie, czym to jest dla konkretnej postaci.
 
 Jedna postać ma najwyżej jedno miejsce danego typu. Lista typów jest zamknięta.
+
+#### Kolumna `routine` zamiast sekcji `[assign]` (zmiana planu)
+
+Pierwotnie przypisanie rutyny do postaci siedziało w `routines.toml`, w sekcji `[assign]` kluczowanej nazwą obiektu ze `spawn_points`. Zostało przeniesione do kolumny `routine` w `characters.csv`, obok czterech destynacji, z którymi rutyna i tak współpracuje. Powód jest ten sam, dla którego destynacje nie siedzą w Tiled: **całe "kto, co, gdzie" jednej postaci ma się czytać z jednego wiersza.** Przy `[assign]` odpowiedź na "dokąd chodzi kowal i kiedy" wymagała skakania między dwoma plikami i porównywania dwóch różnych przestrzeni nazw.
+
+`routines.toml` trzyma teraz **same rutyny** - jest katalogiem rytmów, a nie obsadą.
+
+Cena, świadoma: klucz nie jest już nazwą egzemplarza ze `spawn_points`, tylko nazwą modelu, więc **wszystkie kopie tego samego modelu na mapie żyją jednym rytmem**. Dziś to nic nie kosztuje (każdy model humanoidalny stoi w jednym egzemplarzu), a gdyby kiedyś było trzeba, `NpcRuntime.routine_key` jest polem per instancja i zapisywanym - da się je nadpisać po spawnie, bez wracania do drugiego pliku obsady.
+
+Walidacja przeniosła się razem z danymi: `parse_routines` nie ma już czego sprawdzać w `[assign]` (zostaje tylko ostrzeżenie, gdy stara sekcja została w pliku - inaczej wyglądałaby na działającą), a nieznany klucz z CSV wyłapuje `Scene.load_NPCs` przy spawnie: ostrzeżenie i degradacja do "brak rutyny". Sam fakt, że oba pliki łączy goły string, pilnuje test `test_every_routine_named_in_characters_csv_exists`.
 
 ### Warstwa `places` w Tiled
 
@@ -117,7 +129,8 @@ Naturalny odruch, czyli `[[routine.townsfolk.slots]]` a pod nim `[[morning]]`, p
 **Kolejność kroków bierze się z pola `from`, nie z kolejności w pliku.** Przestawienie bloków czy dopisanie kroku w środku nigdy niczego nie psuje. Sortowanie po `from` obsługuje też noc przechodzącą przez północ - u strażnika krok o 02:00 jest aktywny do 06:00, a o 23:00 aktywny jest krok wieczorny.
 
 ```toml
-# Rutyny NPC.
+# Rutyny NPC. Ten plik trzyma SAME rutyny - kto ktora ma, mowi kolumna
+# `routine` w characters.csv.
 #
 # `at` ma trzy warianty:
 #   type:<typ>       -> kolumna `home`/`work`/`social`/`hobby` w characters.csv
@@ -218,19 +231,6 @@ activity = "patrol"
 from     = "02:00"
 at       = "type:home"
 activity = "sleep"
-
-
-# =====================================================================
-#  Przypisanie rutyn do postaci. Klucz = nazwa obiektu NPC z Tiled.
-# =====================================================================
-
-[assign]
-JOHNY    = "townsfolk"
-BART     = "townsfolk"
-KOWAL    = "townsfolk"
-BARMAN   = "townsfolk"
-FARMER   = "farmer"
-STRAZNIK = "guard"
 ```
 
 Zmiany względem wersji 2:
@@ -239,6 +239,7 @@ Zmiany względem wersji 2:
 - `at` **rozszerzone** o jawne prefiksy `type:` / `location:` / `route:`. Bez nich nie było widać, czy chodzi o typ destynacji, czy o konkretny obiekt.
 - `tag` i `owner` w Tiled **usunięte** - zastąpione kolumnami w `characters.csv`.
 - `fade_duration` usunięte już w v2 - nie robiło nic, a jako stała renderowania należy do `settings.py`.
+- Sekcja `[assign]` **usunięta** - obsada przeniesiona do kolumny `routine` w `characters.csv` (patrz wyżej).
 
 ### Aktywności
 
@@ -302,8 +303,8 @@ Poprawka do planu: **FSM z `npc_state.py` nie jest kontrolerem ruchu.** To maszy
 
 Detale, które wyszły w implementacji:
 
-- **Kluczem `[assign]` jest nazwa obiektu ze `spawn_points`, nie nazwa modelu.** Jeden model może stać na mapie w kilku egzemplarzach i każdy może mieć inny rytm.
-- **Plan zakładał nieistniejące postacie.** Na `Village.tmx` nie ma `KOWAL`, `BARMAN`, `FARMER` ani `STRAZNIK`; są `Johny`, `Bart`, `Marry`, `Rob`, `Robin`, `HAMMER_HOAXHEART` (kowal), `BARMAN_ABSINTHRAYNER` i reszta dialogowych. `[assign]` obsadza na start tylko czwórkę, która **i tak dziś stoi w miejscu** (Johny i Bart mają łamane odłożone w Tiled jako `Johny_BCKP` / `Bart_BCKP`), żeby włączenie rutyn nie zabrało ruchu nikomu, kto dziś chodzi. `farmer` i `guard` zostają szablonami bez obsady.
+- **Obsada jest kluczowana nazwą modelu z `characters.csv`** (kolumna `routine`), więc kopie tego samego modelu dzielą rytm - patrz "Kolumna `routine` zamiast sekcji `[assign]`" wyżej. Pierwsza implementacja kluczowała ją nazwą obiektu ze `spawn_points`; przeniesienie do CSV to świadoma wymiana tej granulacji na czytelność jednego wiersza.
+- **Plan zakładał nieistniejące postacie.** Na `Village.tmx` nie ma `KOWAL`, `BARMAN`, `FARMER` ani `STRAZNIK`; są `Johny`, `Bart`, `Marry`, `Rob`, `Robin`, `HAMMER_HOAXHEART` (kowal), `BARMAN_ABSINTHRAYNER` i reszta dialogowych. Kolumna `routine` obsadza na start tylko czwórkę, która **i tak dziś stoi w miejscu** (Johny i Bart mają łamane odłożone w Tiled jako `Johny_BCKP` / `Bart_BCKP`), żeby włączenie rutyn nie zabrało ruchu nikomu, kto dziś chodzi. `farmer` i `guard` zostają szablonami bez obsady.
 - **`update_schedule()` działa tylko na granicy slotu.** Przeliczanie trasy co klatkę restartowałoby A* w kółko i NPC nigdy by nie dotarł. Zapamiętany ostatni slot + jitter per postać rozkładają te przeliczenia w czasie.
 - **Aktywności poza `stand` na razie nic nie robią** - `route:` (patrol) i reszta kończą na "zostaw postać w spokoju". To uczciwsze niż udawanie, że działają.
 
@@ -387,7 +388,7 @@ Jak to zrobić:
 just import-entities --export
 ```
 
-Status: **zrobione**, krok 4. `characters.csv` ma teraz 30 kolumn zamiast 17 (7 brakujących + `money_cap`, `money_regen_pct` + 4 destynacje). `chests.csv` przy okazji odzyskał `random_items` i `items`, a `maze_configs.csv` listy po przecinku zamiast JSON-a.
+Status: **zrobione**, krok 4. `characters.csv` ma teraz 31 kolumn zamiast 17 (7 brakujących + `money_cap`, `money_regen_pct` + 4 destynacje + `routine`). `chests.csv` przy okazji odzyskał `random_items` i `items`, a `maze_configs.csv` listy po przecinku zamiast JSON-a.
 
 Dwie rzeczy trzeba było naprawić w eksporterze, bo bez nich krok się nie domykał:
 
@@ -412,7 +413,7 @@ Separator kolumn to średnik, więc przecinek jest wolny i nie trzeba niczego cy
 
 Recepta `import-entities` dostaje przelot argumentów, więc eksport to `just import-entities --export` - bez mnożenia recept.
 
-Do tego samego pliku dochodzą cztery kolumny destynacji: `home`, `work`, `social`, `hobby`. Trzeba je dodać także do modelu postaci (`config.py` i `config_pydantic.py`) z domyślną wartością pustego stringa, żeby importer je rozpoznał.
+Do tego samego pliku dochodzą cztery kolumny destynacji: `home`, `work`, `social`, `hobby`, oraz piąta - `routine` - z kluczem rutyny. Trzeba je dodać także do modelu postaci (`config.py` i `config_pydantic.py`) z domyślną wartością pustego stringa, żeby importer je rozpoznał.
 
 ## Pliki
 
@@ -430,8 +431,8 @@ Modyfikowane:
 - `project/scene.py` - wczytanie warstwy `places` (obok `waypoints`, ~`:424`), `update_next_day` -> `apply_days(n)`, gating klawisza debug za `IS_DEBUG_MODE`
 - `project/save_load/models.py` + `manager.py` - nowe pola `NPCState`, domyślne wartości dla starych zapisów
 - `project/ui/panels/trade.py` - sakiewka jako `bieżąca / sufit`
-- `project/config_model/config.py` + `config_pydantic.py` - `money_cap`, `money_regen_pct`, pula asortymentu, cztery kolumny destynacji
-- `project/config_model/characters.csv` - regeneracja przez `--export` (7 brakujących kolumn) + 4 kolumny destynacji
+- `project/config_model/config.py` + `config_pydantic.py` - `money_cap`, `money_regen_pct`, pula asortymentu, cztery kolumny destynacji + `routine`
+- `project/config_model/characters.csv` - regeneracja przez `--export` (7 brakujących kolumn) + 4 kolumny destynacji + `routine`
 - `project/config_model/import_entities.py` - listy po przecinku, odczyt tolerujący też stary JSON
 - `Justfile` - przelot argumentów w `import-entities`
 
@@ -440,7 +441,7 @@ Modyfikowane:
 1. ~~`NpcRuntime` + rozdzielenie od configu + pola w zapisie.~~ **Zrobione**, commit `404d274`.
 2. ~~Regeneracja sakiewki + sakiewka jako `bieżąca / sufit` w panelu.~~ **Zrobione**, plus naprawa niezerowanej wagi w `restock_items` i testy `tests/test_merchant_economy.py`.
 3. ~~Zaziarnione losowanie + gating klawisza `next_day`.~~ **Zrobione**: `world_rng.py`, `Scene.world_seed` w zapisie, bramka na `SHOW_DEBUG_INFO` (nie `IS_DEBUG_MODE` - patrz wyżej), testy `tests/test_world_rng.py`.
-4. ~~Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci.~~ **Zrobione**: 17 -> 30 kolumn, plus dwie naprawy eksportera (kolumny z modelu, tożsamość na przód).
+4. ~~Regeneracja `characters.csv` przez `--export` + cztery kolumny destynacji w modelu postaci.~~ **Zrobione**: 17 -> 31 kolumn (z `routine`), plus dwie naprawy eksportera (kolumny z modelu, tożsamość na przód).
 5. ~~`routines.toml` + `npc_schedule.py` + warstwa `places`, na razie z jedną aktywnością `stand`.~~ **Kod zrobiony**; brakuje danych: punktów na warstwie `places` w Tiled i czterech kolumn destynacji w `characters.csv` (tabelka poniżej). Do tego czasu system jest bezczynny i nic nie psuje.
 6. ~~`sleep` z zanikiem na progu.~~ **Zrobione.**
 7. ~~`wander` / `patrol` / `idle` + jitter kroków.~~ **Zrobione** (jitter wszedł już w kroku 5).
@@ -471,16 +472,16 @@ Nowa warstwa obiektów o nazwie **`places`**, obok istniejących `waypoints` / `
 
 Minimum, żeby zobaczyć efekt: `market_stall_1` i `house_johny`. Reszta może dojść później - brakujące miejsce nie jest błędem, tylko krokiem "zostań gdzie jesteś".
 
-### 2. Kolumny destynacji w `characters.csv`
+### 2. Kolumny destynacji i rutyny w `characters.csv`
 
-Cztery nowe kolumny są już w pliku, na razie puste. Wypełnia się je **nazwami obiektów z warstwy `places`**. Wiersz jest kluczowany nazwą modelu, a `[assign]` w `routines.toml` - nazwą obiektu ze `spawn_points`; dla tej czwórki to te same napisy z dokładnością do wielkości liter.
+Pięć nowych kolumn jest już w pliku. Cztery destynacje wypełnia się **nazwami obiektów z warstwy `places`**, a `routine` - kluczem sekcji `[routine.*]` z `routines.toml`. Wiersz jest kluczowany nazwą modelu, więc kopie tego samego modelu dostają ten sam rytm.
 
-| Wiersz w `characters.csv` | `home` | `work` | `social` | `hobby` |
-|---|---|---|---|---|
-| `JOHNY` | `house_johny` | `market_stall_1` | `tavern` | `pier` |
-| `BART` | `house_bart` | `market_stall_2` | `tavern` | `well` |
-| `BARMAN_ABSINTHRAYNER` | `house_barman` | `tavern` | `well` | `shrine` |
-| `HAMMER_HOAXHEART` | `house_smith` | `smithy` | `tavern` | `shrine` |
+| Wiersz w `characters.csv` | `home` | `work` | `social` | `hobby` | `routine` |
+|---|---|---|---|---|---|
+| `JOHNY` | `house_johny` | `market_stall_1` | `tavern` | `pier` | `townsfolk` |
+| `BART` | `house_bart` | `market_stall_2` | `tavern` | `well` | `townsfolk` |
+| `BARMAN_ABSINTHRAYNER` | `house_barman` | `tavern` | `well` | `shrine` | `townsfolk` |
+| `HAMMER_HOAXHEART` | `house_smith` | `smithy` | `tavern` | `shrine` | `townsfolk` |
 
 Karczma rozwiązana tak, jak chciał plan: BARMAN ma ją jako `work`, wszyscy pozostali jako `social`. Jeden obiekt w Tiled, dwie role, zero duplikatów.
 
@@ -535,6 +536,7 @@ Stąd obserwacja, że do `shrine` nikt nie dochodzi: slot `hobby` trwa 18:30-20:
 | Co | Jak |
 |---|---|
 | Harmonogram | Test jednostkowy `current_slot()`: granice kroków, zawijanie przez północ (krok o 02:00 aktywny do 06:00), determinizm jittera, niezależność od kolejności kroków w pliku. Bez pygame - czysta funkcja. |
+| Obsada rutyn | Każdy klucz z kolumny `routine` w `characters.csv` istnieje w `routines.toml` (`test_every_routine_named_in_characters_csv_exists`) - oba pliki łączy goły string, więc literówka musi być błędem testu, nie odkryciem w grze. Nieznany klucz przy spawnie degraduje się do "brak rutyny" plus ostrzeżenie. |
 | Rozwiązywanie `at` | Trzy warianty: `type:` trafia w kolumnę postaci, `location:` w obiekt mapy, `route:` w łamaną. Pusta komórka destynacji degraduje krok do `idle` w miejscu, nie wyjątek. |
 | Round-trip CSV | `--export` a potem `import_entities.py` daje `config.json` identyczny semantycznie z wyjściowym (puste komórki nie nadpisują wartości domyślnych). |
 | Regeneracja | `apply_days(3)` daje ten sam stan co trzykrotne `apply_days(1)`. Sakiewka nie przekracza `money_cap`. Pusta odbudowuje się w 4 doby przy 25%. |

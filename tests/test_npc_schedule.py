@@ -50,7 +50,6 @@ _TOWNSFOLK = {
             ]
         }
     },
-    "assign": {"Johny": "townsfolk"},
 }
 
 
@@ -104,11 +103,12 @@ def test_a_broken_slot_is_skipped_not_fatal() -> None:
     assert len(warnings) == 3, f"expected three complaints, got {warnings}"
 
 
-def test_assign_pointing_at_an_unknown_routine_warns() -> None:
+def test_a_leftover_assign_block_warns() -> None:
+    """The mapping lives in characters.csv now; a stale [assign] must not look alive."""
     warnings: list[str] = []
-    parse_routines({"routine": {}, "assign": {"Johny": "nope"}}, warn=warnings.append)
+    parse_routines({"routine": {}, "assign": {"Johny": "townsfolk"}}, warn=warnings.append)
 
-    assert any("nope" in w for w in warnings), f"silent bad assignment: {warnings}"
+    assert any("assign" in w for w in warnings), f"stale [assign] passed silently: {warnings}"
 
 
 def test_missing_file_yields_empty_routines() -> None:
@@ -117,7 +117,6 @@ def test_missing_file_yields_empty_routines() -> None:
     parsed = load_routines("/nonexistent/routines.toml", warn=warnings.append)
 
     assert parsed.routines == {}
-    assert parsed.assign == {}
     assert warnings, "missing file should at least complain"
 
 
@@ -129,8 +128,24 @@ def test_the_shipped_file_parses() -> None:
 
     assert not warnings, f"routines.toml has problems: {warnings}"
     assert "townsfolk" in parsed.routines
-    for spawn_name, key in parsed.assign.items():
-        assert key in parsed.routines, f"{spawn_name} assigned to missing routine {key}"
+
+
+def test_every_routine_named_in_characters_csv_exists() -> None:
+    """The two files are joined by a bare string, so the join has to be checked."""
+    import csv
+    import os
+
+    from settings import ROUTINES_FILE
+
+    parsed = load_routines(ROUTINES_FILE)
+    path = os.path.join(os.path.dirname(ROUTINES_FILE), "characters.csv")
+    with open(path, encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle, delimiter=";"))
+
+    named = {(row["key"], row.get("routine", "")) for row in rows if row.get("routine")}
+    assert named, "no character follows any routine - the join is untested"
+    for key, routine_key in named:
+        assert routine_key in parsed.routines, f"{key} follows missing routine {routine_key}"
 
 
 # ---------------------------------------------------------------------------
@@ -342,7 +357,6 @@ _STANDING = {
         {"from": "08:00", "at": "type:work", "activity": "stand"},
         {"from": "20:00", "at": "type:home", "activity": "sleep"},
     ]}},
-    "assign": {"Johny": "townsfolk"},
 }
 _DESTS = {"home": "house_3", "work": "market_stall_1", "social": "", "hobby": ""}
 
@@ -456,7 +470,6 @@ _PATROL = {
     "routine": {"guard": {"slot": [
         {"from": "06:00", "at": "route:patrol_north", "activity": "patrol"},
     ]}},
-    "assign": {"Johny": "guard"},
 }
 
 
@@ -501,7 +514,6 @@ _DRIFTING = {
         {"from": "08:00", "at": "location:well", "activity": "wander"},
         {"from": "20:00", "at": "location:well", "activity": "idle"},
     ]}},
-    "assign": {"Johny": "townsfolk"},
 }
 
 
@@ -675,9 +687,10 @@ if __name__ == "__main__":
         ("time parsing", test_time_parsing),
         ("slots sorted regardless of file order", test_slots_are_sorted_regardless_of_file_order),
         ("broken slot is skipped, not fatal", test_a_broken_slot_is_skipped_not_fatal),
-        ("bad assignment warns", test_assign_pointing_at_an_unknown_routine_warns),
+        ("leftover [assign] warns", test_a_leftover_assign_block_warns),
         ("missing file yields empty routines", test_missing_file_yields_empty_routines),
         ("the shipped routines.toml parses", test_the_shipped_file_parses),
+        ("CSV routine keys all exist", test_every_routine_named_in_characters_csv_exists),
         ("slot boundaries", test_slot_boundaries),
         ("night wraps past midnight", test_night_wraps_past_midnight),
         ("guard night step lasts until morning", test_guard_night_step_stays_active_until_morning),

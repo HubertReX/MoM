@@ -1,36 +1,36 @@
-key;name_EN;name_PL;sprite;race;attitude;health;max_health;items;money;has_dialog;is_merchant;tradeable_items_types;max_carry_weight;allowed_zones;speed_walk;damage;speed_run;friendly;money_cap;money_regen_pct;home;work;social;hobby;kind;weak;angry;smart;funny
-BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;house_barman;tavern;well;shrine;1;-1;-2;-1;2
-BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;house_bart;market_stall_2;tavern;well;;;;;
-BOAR;Boar;Dzik;Boar;animal;afraid;;;;;false;;;;;20;;;;;;;;;;;;;;
-CAT;Cat;Kotek;Cat;animal;friendly;;;;;false;;;;;15;;;;;;;;;;;;;;
-CAVE_LION;CaveLion;Lew jaskiniowy;CaveLion;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
-CAVE_LION2;CaveLion;Lew jaskiniowy;CaveLion2;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
-CHICKEN_BLACK;Chicken;Kurczak;ChickenBlack;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;
-CHICKEN_BROWN;Chicken;Kurczak;ChickenBrown;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;
-CHICKEN_CUTE;Chicken;Kurczak;ChickenCute;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;
-CHICKEN_WHITE;Chicken;Kurczak;ChickenWhite;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;
-CLAPBACK_SWORD;Clapback Sword;Miecz Ciętej-riposty;Knight;humanoid;friendly;;;;100;true;;;;;;;;0.7;;;;;;;1;-2;-1;1;2
-COW;Cow;Krówka;Cow;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;
-DOG_ORANGE;Dog;Piesek;Dog1;animal;friendly;;;;;false;;;;backyard;15;;;;;;;;;;;;;;
-DOG_PURPLE;Dog;Piesek;Dog2;animal;friendly;;;;;false;;;;backyard;15;;;;;;;;;;;;;;
-FISH_RED;red fish;Czerwona rybka;FishRed;animal;friendly;;;;;false;;;;water;10;;;;;;;;;;;;;;
-FLAM;Flame;Płomień;Flam;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
-FRED;Fred;Franek;Villager2;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;
-FROG;Frog;Żabcia;Frog;animal;afraid;;;;;false;;;;shore;10;;;;;;;;;;;;;;
-HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;;30;true;;;;;;;;0.3;;;house_smith;smithy;tavern;shrine;-1;1;2;-1;-2
-HORSE;Horse;Konik;Horse;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;
-JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;;;;;;;house_johny;market_stall_1;tavern;pier;;;;;
-LION_YELLOW;LionYellow;Żółty lew;LionYellow;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
-MADAME_SARCASMIA;Madame Sarcasmia;Madame Sarkażmijka;SorcererBlack;humanoid;friendly;;;POTION_CURSE_NO_MORE;100;true;;;;;;;;0.5;;;;;;;1;-2;-1;1;2
-MARRY;Marry;Marysia;Woman;humanoid;friendly;120;120;;25;false;;;;;;;;;;;;;;;;;;;
-MISS_INFORMATION;Miss Information;Bibliofilistka des Informacja;SorcererOrange;humanoid;friendly;;;;;true;;;;;;;;0.5;;;;;;;1;1;1;1;1
-PIG;Pig;Świnka;Pig;animal;friendly;;;;;false;;;;plains;20;;;;;;;;;;;;;;
-POTIONEER_PUZZLEMINT;Potioneer Puzzlemint;Zielarka Zmora;EggGirl;humanoid;friendly;;;;100;true;;;;;;;;0.4;;;;;;;1;2;-2;-1;-1
-Player;Player;Player;GreenNinja;humanoid;friendly;80;80;lance,stick,gem_small_green,shashlik,shashlik,gem_crystal_blue,gem_big_orange;20;false;;;;;;;;;;;;;;;;;;;
-RACOON;Racoon;Szop;Racoon;animal;afraid;;;;;false;;;;;10;;;;;;;;;;;;;;
-ROB;Rob;Kuba;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;
-ROBIN;Robin;Robin;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;
-SLIME_01;Slime;Śluzak;Slime;monster;enemy;40;40;;;false;;;;;;;;;;;;;;;;;;;
-SNAKE_01;Snake;Wąż;Snake;monster;enemy;50;50;life_pot;;false;;;;;;20;75;;;;;;;;;;;;
-SPIDER_01;Spider;Pająk;SpiderRed;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;
-SPIRIT_01;Spirit;Duszek;Spirit;monster;enemy;;;;;false;;;;;;;;;;;;;;;;;;;
+key;name_EN;name_PL;sprite;race;attitude;health;max_health;items;money;has_dialog;is_merchant;tradeable_items_types;max_carry_weight;allowed_zones;speed_walk;damage;speed_run;friendly;money_cap;money_regen_pct;home;work;social;hobby;kind;weak;angry;smart;funny;routine
+BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;house_barman;tavern;well;shrine;1;-1;-2;-1;2;townsfolk
+BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;house_bart;market_stall_2;tavern;well;;;;;;townsfolk
+BOAR;Boar;Dzik;Boar;animal;afraid;;;;;false;;;;;20;;;;;;;;;;;;;;;
+CAT;Cat;Kotek;Cat;animal;friendly;;;;;false;;;;;15;;;;;;;;;;;;;;;
+CAVE_LION;CaveLion;Lew jaskiniowy;CaveLion;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+CAVE_LION2;CaveLion;Lew jaskiniowy;CaveLion2;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+CHICKEN_BLACK;Chicken;Kurczak;ChickenBlack;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
+CHICKEN_BROWN;Chicken;Kurczak;ChickenBrown;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
+CHICKEN_CUTE;Chicken;Kurczak;ChickenCute;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
+CHICKEN_WHITE;Chicken;Kurczak;ChickenWhite;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
+CLAPBACK_SWORD;Clapback Sword;Miecz Ciętej-riposty;Knight;humanoid;friendly;;;;100;true;;;;;;;;0.7;;;;;;;1;-2;-1;1;2;
+COW;Cow;Krówka;Cow;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;;
+DOG_ORANGE;Dog;Piesek;Dog1;animal;friendly;;;;;false;;;;backyard;15;;;;;;;;;;;;;;;
+DOG_PURPLE;Dog;Piesek;Dog2;animal;friendly;;;;;false;;;;backyard;15;;;;;;;;;;;;;;;
+FISH_RED;red fish;Czerwona rybka;FishRed;animal;friendly;;;;;false;;;;water;10;;;;;;;;;;;;;;;
+FLAM;Flame;Płomień;Flam;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+FRED;Fred;Franek;Villager2;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;
+FROG;Frog;Żabcia;Frog;animal;afraid;;;;;false;;;;shore;10;;;;;;;;;;;;;;;
+HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;;30;true;;;;;;;;0.3;;;house_smith;smithy;tavern;shrine;-1;1;2;-1;-2;townsfolk
+HORSE;Horse;Konik;Horse;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;;
+JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;;;;;;;house_johny;market_stall_1;tavern;pier;;;;;;townsfolk
+LION_YELLOW;LionYellow;Żółty lew;LionYellow;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+MADAME_SARCASMIA;Madame Sarcasmia;Madame Sarkażmijka;SorcererBlack;humanoid;friendly;;;POTION_CURSE_NO_MORE;100;true;;;;;;;;0.5;;;;;;;1;-2;-1;1;2;
+MARRY;Marry;Marysia;Woman;humanoid;friendly;120;120;;25;false;;;;;;;;;;;;;;;;;;;;
+MISS_INFORMATION;Miss Information;Bibliofilistka des Informacja;SorcererOrange;humanoid;friendly;;;;;true;;;;;;;;0.5;;;;;;;1;1;1;1;1;
+PIG;Pig;Świnka;Pig;animal;friendly;;;;;false;;;;plains;20;;;;;;;;;;;;;;;
+POTIONEER_PUZZLEMINT;Potioneer Puzzlemint;Zielarka Zmora;EggGirl;humanoid;friendly;;;;100;true;;;;;;;;0.4;;;;;;;1;2;-2;-1;-1;
+Player;Player;Player;GreenNinja;humanoid;friendly;80;80;lance,stick,gem_small_green,shashlik,shashlik,gem_crystal_blue,gem_big_orange;20;false;;;;;;;;;;;;;;;;;;;;
+RACOON;Racoon;Szop;Racoon;animal;afraid;;;;;false;;;;;10;;;;;;;;;;;;;;;
+ROB;Rob;Kuba;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;
+ROBIN;Robin;Robin;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;
+SLIME_01;Slime;Śluzak;Slime;monster;enemy;40;40;;;false;;;;;;;;;;;;;;;;;;;;
+SNAKE_01;Snake;Wąż;Snake;monster;enemy;50;50;life_pot;;false;;;;;;20;75;;;;;;;;;;;;;
+SPIDER_01;Spider;Pająk;SpiderRed;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+SPIRIT_01;Spirit;Duszek;Spirit;monster;enemy;;;;;false;;;;;;;;;;;;;;;;;;;;

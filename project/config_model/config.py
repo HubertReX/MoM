@@ -85,6 +85,8 @@ class Character():
     work:                  Annotated[str,                field(repr=False)] = ""
     social:                Annotated[str,                field(repr=False)] = ""
     hobby:                 Annotated[str,                field(repr=False)] = ""
+    #: Key of `[routine.*]` in routines.toml; empty means no routine.
+    routine:               Annotated[str,                field(repr=False)] = ""
 
     @classmethod
     def from_dict(cls: type["Character"], data: dict[str, Any]) -> "Character":
@@ -118,6 +120,7 @@ class Character():
             work = data.get("work", ""),
             social = data.get("social", ""),
             hobby = data.get("hobby", ""),
+            routine = data.get("routine", ""),
         )
 
 

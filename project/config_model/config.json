@@ -43,7 +43,8 @@
             "home": "house_johny",
             "work": "market_stall_1",
             "social": "tavern",
-            "hobby": "pier"
+            "hobby": "pier",
+            "routine": "townsfolk"
         },
         "FRED": {
             "sprite": "Villager2",
@@ -76,7 +77,8 @@
             "home": "house_bart",
             "work": "market_stall_2",
             "social": "tavern",
-            "hobby": "well"
+            "hobby": "well",
+            "routine": "townsfolk"
         },
         "ROB": {
             "sprite": "Villager4",
@@ -373,7 +375,8 @@
             "home": "house_smith",
             "work": "smithy",
             "social": "tavern",
-            "hobby": "shrine"
+            "hobby": "shrine",
+            "routine": "townsfolk"
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
@@ -396,7 +399,8 @@
             "home": "house_barman",
             "work": "tavern",
             "social": "well",
-            "hobby": "shrine"
+            "hobby": "shrine",
+            "routine": "townsfolk"
         },
         "CLAPBACK_SWORD": {
             "sprite": "Knight",
