@@ -128,20 +128,16 @@ class SaveManager:
         info = slots[QUICK_SAVE_SLOT] if QUICK_SAVE_SLOT < len(slots) else None
         return info is not None and info.is_occupied
 
-    def should_autosave_on_map_change(self, was_maze: bool) -> bool:
+    def should_autosave_on_map_change(self, is_maze: bool) -> bool:
         """Whether a map change should autosave slot 0.
 
-        A dungeon run gets exactly one autosave: the step from the overworld into
-        maze level 1. Descending further, climbing back up, and walking out to the
-        surface all leave it alone, so slot 0 keeps pointing at the mouth of the
-        dungeon instead of following the player around inside it.
-
-        All three excluded cases share one property - the map being *left* is a
-        maze - so that is the whole rule. Ordinary overworld map changes still
-        autosave, and so does the overworld -> maze-level-1 step, because there the
-        map being left is not a maze.
+        Autosave only when entering a maze (the map change that takes the player
+        from the overworld into a dungeon). Ordinary room-to-room transitions are
+        not autosaved; the quick save slot is reserved for the single entry point
+        into the dungeon, so it always points at the mouth of the dungeon rather
+        than following the player around between rooms.
         """
-        return not was_maze
+        return is_maze
 
     def current_scene(self) -> "Scene | None":
         """The live scene to save, or ``None`` if no game is in progress.
@@ -259,9 +255,9 @@ class SaveManager:
         )
 
         # Maps restored from a save but not re-entered yet have no live objects to
-        # read, so carry their state through untouched. Without this, saving (and
-        # every map change autosaves) would drop the progress of every map the
-        # player has not revisited since loading.
+        # read, so carry their state through untouched. Without this, saving (which
+        # includes the autosave on entering a maze) would drop the progress of every
+        # map the player has not revisited since loading.
         for name, state in (getattr(scene, "pending_map_states", None) or {}).items():
             if name not in maps:
                 maps[name] = state

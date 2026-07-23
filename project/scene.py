@@ -1461,10 +1461,6 @@ class Scene(State):
         if self.weather:
             self.weather.stop_all()
 
-        # captured before `is_maze` is overwritten below - the autosave policy at the
-        # end of this method needs to know what we are leaving, not what we enter
-        was_maze = self.is_maze
-
         self.return_map = self.current_map
         self.return_entry_point = self.new_scene.return_entry_point
 
@@ -1508,13 +1504,11 @@ class Scene(State):
         # firing it now keeps the sweep quiet when it lands.
         self.quests.on_event("map_change")
 
-        # Autosave into the quick save slot on a map change - including the one that
-        # takes the player from the overworld down into the dungeon, which is the only
-        # save a maze run ever gets (manual saving stays blocked in a maze, see
-        # Game.update). It gets a toast because it silently overwrites the quick save
-        # and the player has to know.
-        if (hasattr(self.game, "save_manager")
-                and self.game.save_manager.should_autosave_on_map_change(was_maze)
+        # Autosave only when entering a maze (entry point into a dungeon). Regular
+        # room-to-room transitions are not autosaved. The toast lets the player know
+        # the quick save slot was silently overwritten.
+        if (self.is_maze
+                and hasattr(self.game, "save_manager")
                 and self.game.save_manager.save(QUICK_SAVE_SLOT)):
             self.add_notification(_("notify.autosaved_quick"), NotificationTypeEnum.info)
 
