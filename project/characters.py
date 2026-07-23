@@ -111,6 +111,12 @@ class NPC(pygame.sprite.Sprite):
         # npc_runtime.NpcRuntime for why it lives outside it.
         self.runtime: NpcRuntime = NpcRuntime()
         self.current_map = self.scene.current_map
+        # The map this character belongs to - where it spawned. It is the anchor a
+        # daily routine walks it away from and back to, the map its state is saved
+        # under, and the default map for any destination written without a `map:`
+        # prefix. `logical_map` starts here too; the schedule moves it from here.
+        self.origin_map = self.current_map
+        self.runtime.logical_map = self.current_map
         self.has_dialog: bool = False
         # How many item slots this character has. Used to be the module constant
         # MAX_HOTBAR_ITEMS everywhere; it is a per-character field now because a
@@ -143,6 +149,15 @@ class NPC(pygame.sprite.Sprite):
         self._wander_anchor: vec | None = None
         self._wander_next_time: float = 0.0
         self._idle_emoted: bool = False
+        # Which map this character just walked in from, set on the frame a cross-map
+        # transit completes and consumed by the presence reconciler to pick the
+        # doorway it should appear at. Transient - never saved, never trusted stale.
+        self._arrived_from: str | None = None
+        # True once a departing character has reached (walked through) the door on the
+        # map it is leaving: it then goes invisible even though the arrival timer -
+        # which alone decides when it turns up on the far side - has not fired yet.
+        # Off-screen departures set it immediately (no walk to show).
+        self._transit_gone: bool = False
         # `wants_to_sleep` is the character's own opinion; `is_asleep` is the world
         # acting on it. They are separate because taking a sprite out of the draw
         # group from inside that group's own update pass is asking for trouble -
@@ -650,12 +665,20 @@ class NPC(pygame.sprite.Sprite):
             destinations_of(self.model),
             self.scene.places,
             self.scene.waypoints,
+            origin_map=self.origin_map,
+            current_map=self.scene.current_map,
             # live read of the scene module's global, like `debug()` below - a
             # `from settings import` copy would never see the ` / Z toggle
             warn=print if scene.SHOW_DEBUG_INFO else None,
         )
         self._schedule_destination = destination
         if destination is None:
+            return
+
+        if destination.map and destination.map != self.scene.current_map:
+            # Target is on another map, resolved by name only - its pixels are not
+            # loaded. Moving the character across maps is the cross-map tick's job
+            # (Scene.update_routine_npcs); here there is nothing physical to do.
             return
 
         if destination.kind == "route":
@@ -1116,6 +1139,14 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def check_scene_exit(self) -> None:
+        # Routine NPCs move between maps through the schedule's transit system, not by
+        # stepping onto an exit collider. This guard is not an optimisation: the
+        # presence reconciler materialises an arriving NPC *on* the doorway, so
+        # without it the character would die() on the very next frame. Everyone else
+        # keeps the legacy "walk into an exit and leave" behaviour (unused today).
+        if self.runtime.routine_key:
+            return
+
         for exit in self.scene.exit_sprites:
             if self.feet.colliderect(exit.rect):
                 self.current_map = exit.to_map

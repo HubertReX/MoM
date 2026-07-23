@@ -158,13 +158,18 @@
 <body>
 <div class="wrap">
 
-  <p class="eyebrow">Dokument decyzyjny &middot; MoM &middot; 21 lipca 2026 &middot; wersja 3</p>
+  <p class="eyebrow">Dokument decyzyjny &middot; MoM &middot; 21 lipca 2026 &middot; wersja 5</p>
   <h1>Cykl dobowy NPC + odnawianie zasobów handlarzy</h1>
   <p class="lead">Cykl życia postaci sterowany danymi, nie kodem. Czysty rozdział Tiled / konfiguracja / kod, żeby dało się go zmieniać bez dotykania Pythona. Odnawianie handlarzy jest konsumentem tego samego haka przełomu dnia.</p>
 
   <div class="callout warn">
     <p><strong>Co zmieniła wersja 3</strong> (po drugiej turze uwag):</p>
     <p style="margin-top:var(--s2)"><strong>Wiązanie miejsc przeniesione z Tiled do <code>characters.csv</code></strong>: to samo miejsce bywa <code>work</code> dla jednej postaci i <code>social</code> dla innej, więc relacja nie jest własnością obiektu na mapie. Trzy warianty <code>at</code>: <code>type:</code>, <code>location:</code>, <code>route:</code>. <strong>Rutyna <code>farmer</code> przywrócona</strong> - wstaje wcześniej. Plus sekcja o brakujących kolumnach w <code>characters.csv</code>.</p>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>Co dodaje wersja 5</strong> - NPC wchodzą do budynków (innych map Tiled) i kontynuują tam rutyny.</p>
+    <p style="margin-top:var(--s2)"><strong>Model timer-tranzytu</strong>: gdy gracz jest na innej mapie, silnik nie przelicza chodzenia NPC - pamięta tylko jego <code>logical_map</code> i moment przejścia. Cross-map ruch uzbraja timer (<code>transit_arrive_min</code>), a <strong>reconciler obecności</strong> co klatkę materializuje / dematerializuje sprite'y dla mapy gracza. Gramatyka <code>at</code> zyskuje wymiar mapy: <code>location:VillageHouse:bar</code>, a kolumny destynacji w CSV - prefiks <code>mapa:</code>. Pełna sekcja na końcu: <a href="#crossmap">Wersja 5</a>.</p>
   </div>
 
   <details>
@@ -207,6 +212,7 @@
       </li>
       <li><a href="#pliki">Pliki</a></li>
       <li><a href="#weryfikacja">Weryfikacja</a></li>
+      <li><a href="#crossmap">Wersja 5: NPC wchodzą do budynków</a> <span class="tocnote">nowe w v5</span></li>
     </ol>
   </nav>
 
@@ -1209,8 +1215,195 @@ STRAZNIK = "guard"</code></pre>
     </table>
   </div>
 
+  <h2 id="crossmap">Wersja 5: NPC wchodzą do budynków (rutyny cross-map)</h2>
+
+  <div class="prose">
+    <p>Dotąd rutyna działała wyłącznie w obrębie jednej mapy: <code>resolve_at</code> (<code>npc_schedule.py:236</code>) czyta <code>scene.places</code> i <code>scene.waypoints</code>, które trzymają miejsca <strong>tylko aktualnie wczytanej</strong> mapy, a <code>npc.current_map</code> (<code>characters.py:113</code>) ustawia się raz przy spawnie i nigdy się nie zmienia. Cel v5: barman idzie z Village do tawerny (mapa <code>VillageHouse</code>, LOST_CORK_TAVERN) do pracy (<code>VillageHouse:bar</code>), a mieszkańcy z rutyną <code>townsfolk</code> schodzą tam na lunch (<code>VillageHouse:tables</code>) - sterowane danymi, bez logiki per-NPC w kodzie.</p>
+    <p>Uproszczenie, świadome: gdy gracz jest na innej mapie niż NPC, silnik <strong>nie przelicza chodzenia</strong> tego NPC (żadnego A* dla niewczytanych map). Pamięta tylko, na której mapie NPC ma logicznie być i kiedy przechodzi między mapami - ten sam kompromis, co znikanie NPC na noc (<code>sleep</code> opuszcza <code>scene.group</code>).</p>
+  </div>
+
+  <div class="callout">
+    <p><strong>Model wybrany:</strong> timer tranzytu dla przejść między mapami + reconciler obecności co klatkę. Zakres pełny - z poprawnym zapisem/odczytem NPC-ów, którzy w chwili zapisu są logicznie poza mapą gracza.</p>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>Status: zaimplementowane, przetestowane i potwierdzone na żywo.</strong> 67 testów jednostkowych (<code>test_npc_schedule.py</code> + <code>test_save_load_routine_npc.py</code>), zero regresji w 30 plikach testów. Dane wpięte: barman <code>work=VillageHouse:bar</code>, mieszkańcy <code>social=VillageHouse:tables</code>; <code>import-entities</code> dał czysty diff 5 linii. Po dwóch turach playtestu naprawione: klony NPC, za krótki lunch i znikanie w miejscu przy wyjściu (patrz "Bugi z playtestu" niżej). Zweryfikowane krokowaniem prawdziwej sceny: handlarze idą do tawerny i znikają w drzwiach, wracają o 16:00.</p>
+  </div>
+
+  <h3>Fakty z kodu, na których stoi projekt</h3>
+
+  <div class="prose">
+    <ul>
+      <li><code>loaded_NPCs</code> (<code>scene.py:943</code>) to jeden słownik <strong>wszystkich</strong> NPC sceny, tworzony leniwie z <code>spawn_points</code> każdej mapy przy pierwszym wczytaniu i trzymany na stałe.</li>
+      <li><code>self.NPCs</code> - lista aktywna - budowana jest <strong>tylko przy wczytaniu mapy</strong> w <code>populate_sprite_groups</code> (<code>scene.py:532-535</code>), filtrem <code>npc.current_map == self.current_map</code>.</li>
+      <li><code>update_schedule()</code> leci co klatkę tylko dla NPC w grupie (przez <code>NPC.movement</code>, <code>characters.py:724</code>) i dla śpiących (<code>scene.py:1506</code>). <strong>NPC poza mapą gracza nie dostaje żadnego ticku</strong> - to trzeba dodać.</li>
+      <li>Wszyscy czterej NPC z rutyną (BARMAN, HAMMER, Johny, Bart) spawnują na <code>Village</code> - mapie startowej, więc są instancjonowani od startu gry. Jedyna mapa docelowa cross-map w tym scenariuszu to <code>VillageHouse</code>.</li>
+      <li>Drzwi: Village ma exit <code>to_map=VillageHouse</code> (obj <code>x=672 y=720</code>); powrót ląduje w <code>VillageHouseDoor</code>. VillageHouse ma exit <code>to_map=Village</code> oraz <code>places</code> <code>bar</code> (56,40) i <code>tables</code> (28,72).</li>
+      <li>Martwy zaczątek <code>NPC.check_scene_exit</code> (<code>characters.py:1864</code>) z <code>// TODO NPC goes to another map</code> każe NPC "umrzeć" na kolizji z exitem. Nowy mechanizm nie może z nim kolidować.</li>
+    </ul>
+  </div>
+
+  <h3>Pułapki i problemy (poza tymi wskazanymi w zadaniu)</h3>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:6%">#</th><th style="width:28%">Pułapka</th><th style="width:66%">Dlaczego groźna / jak rozwiązana</th></tr></thead>
+      <tbody>
+        <tr><td>P1</td><td>Leniwa instancja NPC per-mapa</td><td>NPC pojawiał się dopiero po pierwszym wczytaniu jego mapy spawnu, więc tick off-map pomijał nieutworzone obiekty. Rozwiązane <strong>ogólnym rejestrem</strong>: przy starcie czytamy <code>characters.csv</code> i instancjonujemy każdy NPC z niepustą kolumną <code>routine</code>, niezależnie od mapy spawnu (dedup ze <code>spawn_points</code> darmowy).</td></tr>
+        <tr><td>P2</td><td><code>self.NPCs</code> odświeżane tylko przy zmianie mapy</td><td>Jeśli NPC zmieni mapę, gdy gracz stoi w miejscu, lista aktywna się nie przebuduje. Stąd reconciler co klatkę.</td></tr>
+        <tr><td>P3</td><td><code>resolve_at</code> waliduje po <code>places</code> bieżącej mapy</td><td>Celu na niewczytanej mapie nie da się zwalidować ani zamienić na piksele. Rezolucja rozdziela się na logiczną (mapa+nazwa, zawsze) i fizyczną (piksele+A*, tylko na mapie gracza).</td></tr>
+        <tr><td>P4</td><td><code>npc.current_map</code> niemutowalne</td><td>Musi stać się sterowane harmonogramem (<code>runtime.logical_map</code>), inaczej filtr obecności nigdy nie ruszy NPC.</td></tr>
+        <tr><td>P5</td><td>Zapis/odczyt buduje stany tylko z <code>scene.NPCs</code></td><td>NPC logicznie poza mapą gracza wypadłby z zapisu albo zapisał się ze stałego (nieaktualnego) snapshotu cache. Realna dziura w danych - patrz "Zapis/odczyt".</td></tr>
+        <tr><td>P6</td><td>Który entry_point przy materializacji "w drzwiach"</td><td>Bez rejestru cross-map: użyć pozycji <strong>exitu bieżącej mapy prowadzącego z powrotem do mapy źródłowej</strong> - to fizycznie te drzwi. Dosunąć <code>nearest_walkable</code>.</td></tr>
+        <tr><td>P7</td><td><code>check_scene_exit</code> NPC (<code>die()</code> na exicie)</td><td>Kolidowałoby z reconcilerem - NPC idący do drzwi "umierałby". Wyłączyć dla NPC z <code>routine_key</code>.</td></tr>
+        <tr><td>P8</td><td>Dialog/handel pochłaniający a tranzyt</td><td>Jeśli slot wyjazdowy odpali w trakcie rozmowy, arm tranzytu trzeba zakolejkować do zamknięcia panelu - jak już jest z "Talk pochłaniającym" dla zmiany slotu.</td></tr>
+        <tr><td>P9</td><td>Zegar przez północ i skok <code>apply_days(n)</code></td><td>Czas tranzytu w <strong>absolutnych minutach gry</strong> (<code>day*1440 + hour*60 + minute</code>), nie w minutach doby. Tranzyt z przeszłą godziną przyjazdu domyka się natychmiast - N-bezpieczne, spójne z <code>apply_days</code>.</td></tr>
+        <tr><td>P10</td><td>Kolizja z mechaniką <code>sleep</code></td><td><code>sleep</code> zostawia NPC w <code>scene.NPCs</code> (usuwa z grupy). Dematerializacja cross-map usuwa też z <code>scene.NPCs</code>. Kolejność: logika &rarr; tranzyt &rarr; reconciler obecności &rarr; <code>update_sleepers</code>.</td></tr>
+        <tr><td>P11</td><td>Nakładanie się NPC na jednym <code>place</code></td><td>Kilku mieszkańców zbiega się w punkt <code>tables</code>. <code>wander</code> ich rozsuwa; przy <code>stand</code>/<code>idle</code> mogą stać w jednym miejscu - do odnotowania.</td></tr>
+        <tr><td>P12</td><td>Stała <code>pos</code> między mapami</td><td><code>pos</code> NPC poza mapą gracza jest bez znaczenia i przy materializacji zawsze nadpisywana. Nie wolno jej użyć jako cel A* dla obcej mapy.</td></tr>
+        <tr class="chosen"><td>P13</td><td>Marsz do drzwi a moment pojawienia się</td><td><strong>Czas przyjazdu ustala się w chwili granicy slotu, niezależnie od dotarcia do drzwi.</strong> Marsz do drzwi na mapie źródłowej jest kosmetyczny i nie bramkuje przyjazdu. To rozwiązuje problem "gracz wyszedł, NPC jeszcze nie".</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Model docelowy: timer tranzytu + reconciler obecności</h3>
+
+  <div class="prose">
+    <p>Stan dochodzi do <code>NpcRuntime</code> (<code>npc_runtime.py</code>) - trzy pola serializowane plus jedno pole instancji:</p>
+  </div>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:30%">Pole</th><th style="width:70%">Rola</th></tr></thead>
+      <tbody>
+        <tr><td><code>logical_map</code></td><td>mapa, na której NPC <strong>logicznie</strong> przebywa (domyślnie mapa spawnu)</td></tr>
+        <tr><td><code>transit_to_map</code></td><td>cel tranzytu; <code>""</code> = nie w tranzycie</td></tr>
+        <tr><td><code>transit_arrive_min</code></td><td>absolutna minuta gry, o której NPC pojawia się na <code>transit_to_map</code></td></tr>
+        <tr><td><code>origin_map</code> <span class="badge">nie do zapisu</span></td><td><code>current_map</code> z chwili spawnu; domyślna mapa dla destynacji bez prefiksu mapy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Ogólny rejestr NPC z rutyną.</strong> Żeby tick off-map obejmował każdego NPC z rutyną - także takiego, którego <code>spawn_point</code> leży na mapie jeszcze niewczytanej - instancjonujemy rejestr przy starcie gry, odczepiony od <code>spawn_points</code>. Po wczytaniu mapy startowej iterujemy <code>game.conf.characters</code>; dla każdej postaci z niepustą kolumną <code>routine</code>, której nie ma jeszcze w <code>loaded_NPCs</code>, tworzymy obiekt NPC. Dedup jest darmowy: <code>load_NPCs</code> już pomija spawn_point o nazwie obecnej w <code>loaded_NPCs</code> (<code>scene.py:917</code>). <code>origin_map</code> = mapa realnego spawn_pointu, a gdy go brak - prefiks mapy z kolumny <code>home</code>, w ostateczności mapa startowa (hub).</p>
+  </div>
+
+  <div class="prose">
+    <p>Nowy tick świata poza mapą gracza - <code>Scene.update_routine_npcs()</code>, wołany raz na klatkę obok <code>update_sleepers</code> (<code>scene.py:1587</code>), iteruje <strong>wszystkie</strong> NPC z <code>loaded_NPCs</code> z <code>routine_key</code>, niezależnie od mapy:</p>
+    <ol class="steps">
+      <li><strong>Tick logiczny.</strong> Policz bieżący slot (<code>current_slot</code>, ten sam jitter per NPC). Na granicy slotu wyznacz <code>dest_map</code> przez logiczną rezolucję <code>at</code>.</li>
+      <li><strong>Arm tranzytu.</strong> Jeśli <code>dest_map != logical_map</code>, nie w tranzycie i nie w dialogu: <code>transit_to_map = dest_map</code>, <code>transit_arrive_min = now_abs + transit_minutes</code>. Jeśli NPC jest akurat zmaterializowany na mapie gracza - ustaw mu intencję "idź do drzwi" (cel = pozycja exitu do <code>dest_map</code>), czysto kosmetycznie.</li>
+      <li><strong>Domknięcie tranzytu.</strong> Jeśli w tranzycie i <code>now_abs &gt;= transit_arrive_min</code>: <code>logical_map = transit_to_map</code>, wyczyść pola tranzytu.</li>
+      <li>Same-map off-map: nic więcej - dokładna pozycja nieistotna, dopóki gracz nie wejdzie na tę mapę.</li>
+    </ol>
+    <p>Reconciler obecności, w tej samej pętli, po logice, dla mapy gracza:</p>
+    <ul>
+      <li>NPC z <code>logical_map == player_map</code>, <strong>nie</strong> w tranzycie, <strong>nie</strong> w <code>self.NPCs</code> &rarr; <strong>materializuj</strong>: gdy tranzyt domknął się przy graczu obecnym &rarr; <code>pos</code> = pozycja drzwi (exit do mapy źródłowej, <code>nearest_walkable</code>), cel = miejsce ze slotu, <code>find_path()</code>; gdy NPC był już logicznie tutaj w chwili wczytania mapy &rarr; <code>pos</code> = piksele miejsca ze slotu, bez marszu (akceptowany "teleport do celu").</li>
+      <li>NPC w <code>self.NPCs</code>, ale <code>logical_map != player_map</code> lub w tranzycie &rarr; <strong>dematerializuj</strong> (usuń z <code>self.NPCs</code> i z grupy, zachowaj w <code>loaded_NPCs</code>).</li>
+    </ul>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>Dlaczego to rozwiązuje "gracz wyszedł, a NPC jeszcze nie":</strong> <code>transit_arrive_min</code> ustala się w chwili granicy slotu wyjazdowego, nie w chwili dotarcia do drzwi. Marsz do drzwi na mapie źródłowej jest kosmetyczny i zostaje ucięty przez dematerializację (gracz zmienił mapę / NPC dotarł do drzwi / minął timer - co pierwsze). Odpowiedź na "kiedy NPC ma się pojawić" jest zawsze policzona z góry, więc reconciler daje spójny stan niezależnie, kiedy gracz wejdzie na mapę docelową.</p>
+  </div>
+
+  <h3>Rozszerzenie gramatyki <code>at</code> i kolumn CSV</h3>
+
+  <div class="prose">
+    <p>Gramatyka wartości destynacji: <code>[&lt;mapa&gt;:]&lt;nazwa&gt;</code>. Brak prefiksu mapy = <strong>mapa spawnu NPC</strong> (<code>origin_map</code>), więc wszystkie dotychczasowe jednomapowe rutyny działają bez zmian.</p>
+  </div>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:36%">Zapis</th><th style="width:64%">Rozwiązanie</th></tr></thead>
+      <tbody>
+        <tr><td><code>type:work</code></td><td>kolumna <code>work</code> postaci; jej wartość to <code>[mapa:]miejsce</code> (np. <code>VillageHouse:bar</code>)</td></tr>
+        <tr><td><code>location:VillageHouse:bar</code></td><td>wprost mapa+miejsce z warstwy <code>places</code> mapy docelowej</td></tr>
+        <tr><td><code>route:Village:patrol_north</code></td><td>mapa+trasa z warstwy <code>waypoints</code> mapy docelowej</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="prose">
+    <p>Parsowanie: <code>at.partition(":")</code> daje prefiks i resztę; reszta przez <code>partition(":")</code> daje <code>mapa</code> i <code>nazwa</code> (dla <code>type</code> mapa bierze się z wartości komórki CSV, nie z <code>at</code>). <code>resolve_at</code> zwraca <code>Destination(kind, name, map)</code>. Walidacja <code>known_places</code>/<code>known_routes</code> obowiązuje <strong>tylko</strong> gdy <code>map == current_map</code>; dla obcej mapy rezolucja jest logiczna - zasada "półzmapowana wioska ma być grywalna" zostaje.</p>
+  </div>
+
+  <h3>Zapis / odczyt (najtrudniejsza część)</h3>
+
+  <div class="callout warn">
+    <p>Problem P5: <code>_build_npc_states</code> (<code>save_load/manager.py:271</code>) czyta tylko <code>scene.NPCs</code> (mapa gracza), a NPC z rutyną bywa logicznie gdzie indziej. Rozwiązanie stoi na fakcie, że NPC z rutyną <strong>zawsze</strong> żyją w <code>loaded_NPCs</code> (spawn na Village).</p>
+  </div>
+
+  <div class="prose">
+    <ul>
+      <li>Zapisuj każdy NPC z rutyną z <strong>żywego obiektu</strong> z <code>loaded_NPCs</code>, przypięty do jego <code>origin_map</code> (Village), a nie ze stałego snapshotu cache. W <code>_build_map_states</code> dla mapy origin preferuj żywy obiekt nad cache dla NPC z <code>routine_key</code>.</li>
+      <li><code>NpcRuntime</code> (już serializowany przez <code>NPCState.runtime</code> deepcopy) niesie <code>logical_map</code> i pola tranzytu; <code>from_dict</code> je odczytuje. Stare zapisy dostają wartości domyślne (<code>logical_map=""</code> traktowane jak <code>origin_map</code>).</li>
+      <li>Po wczytaniu reconciler odtwarza obecność i pozycję z <code>logical_map</code> + tranzytu; zapisany <code>pos</code> używany tylko gdy NPC jest osiadły na <code>origin_map</code>.</li>
+    </ul>
+  </div>
+
+  <h3>Kolejność budowy</h3>
+
+  <div class="prose">
+    <ol class="steps">
+      <li><code>NpcRuntime</code> + <code>origin_map</code> + <code>resolve_at</code> z wymiarem mapy (czysta logika, testy bez pygame).</li>
+      <li><code>Scene.update_routine_npcs()</code> - tick logiczny + arm/domknięcie tranzytu (bez sprite'ów), <code>abs_minutes()</code>.</li>
+      <li>Ogólny rejestr NPC z rutyną (instancja z <code>characters.csv</code> przy starcie, dedup ze <code>spawn_points</code>).</li>
+      <li>Reconciler obecności + helper pozycji drzwi + przełączenie filtra na <code>logical_map</code>.</li>
+      <li>Rozdział <code>_begin_slot</code> na logiczny/fizyczny; wyłączenie <code>check_scene_exit</code> dla rutyny.</li>
+      <li>Dialog pochłaniający obejmuje arm tranzytu.</li>
+      <li>Zapis/odczyt off-map.</li>
+      <li>Dane: CSV (<code>VillageHouse:bar</code>, <code>VillageHouse:tables</code>), <code>transit_minutes</code>, <code>import-entities</code>.</li>
+    </ol>
+  </div>
+
+  <h3>Weryfikacja v5</h3>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:24%">Co</th><th style="width:76%">Jak</th></tr></thead>
+      <tbody>
+        <tr><td>Tick logiczny</td><td>Test: <code>current_slot</code> &rarr; <code>dest_map</code>; granica slotu cross-map ustawia <code>transit_arrive_min = now_abs + transit_minutes</code>; przez północ i przy <code>apply_days(n)</code> domyka się poprawnie. Bez pygame.</td></tr>
+        <tr><td>Gramatyka <code>at</code></td><td><code>type:</code>/<code>location:</code>/<code>route:</code> z prefiksem mapy i bez; brak mapy = <code>origin_map</code>; obca mapa nie waliduje pikseli i nie rzuca.</td></tr>
+        <tr><td>Scenariusz na żywo</td><td>Przez <code>agent_ctrl</code>: godzina ~8:00 - barman rusza do tawerny, znika w drzwiach, po <code>transit_minutes</code> jest na <code>bar</code>. ~13:00 - kowal schodzi na lunch do <code>tables</code>.</td></tr>
+        <tr><td>"Gracz wyszedł, NPC jeszcze nie"</td><td>Wejdź do tawerny pod koniec lunchu, zobacz jak NPC rusza do drzwi, wyjdź przed nim na Village, poczekaj do <code>transit_arrive_min</code> - NPC pojawia się na Village (przy <code>VillageHouseDoor</code> idąc do celu albo już osiadły).</td></tr>
+        <tr><td>Wejście po fakcie</td><td>Wejdź do tawerny grubo po starcie lunchu - NPC są od razu przy <code>tables</code> (teleport, akceptowany).</td></tr>
+        <tr><td>Zapis / odczyt</td><td>Zapis gdy NPC off-map lub w tranzycie; po wczytaniu obecność i pozycje się zgadzają.</td></tr>
+        <tr><td>Wizualnie</td><td><span class="badge warn">u usera</span> Zrzuty headless nie są wierne dla kompozycji klatki i paneli modalnych.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Bugi z playtestu (naprawione)</h3>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th style="width:26%">Objaw</th><th style="width:74%">Przyczyna i poprawka</th></tr></thead>
+      <tbody>
+        <tr><td>NPC lądowali na kaflu drzwi i utykali (powrót)</td><td><code>exit_to()</code> zwracał pozycję kolizji exitu, a to ściana - A* nie schodzi z zablokowanego startu. Poprawka: <code>_arrival_pos()</code> bierze <strong>entry_point</strong> najbliższy drzwiom (ten, na który ląduje gracz - <code>VillageHouseDoor</code>), na przejezdnym kaflu.</td></tr>
+        <tr><td>Klony przy straganach</td><td>Spawn <code>Johny</code> dziedziczy <code>model_name=JOHNY</code> z kafla, więc <code>loaded_NPCs</code> kluczowane <code>"Johny"</code> a <code>config_key="JOHNY"</code>. Rejestr dedup po nazwie obiektu tworzył duplikat. Poprawka: <strong>dedup po <code>config_key</code></strong> → rejestr tworzy 0.</td></tr>
+        <tr><td>Za krótki lunch</td><td>Slot <code>social</code> trwał 13:00-14:00; marsz + tranzyt zjadał większość. Powrót do pracy przesunięty na <strong>16:00</strong>.</td></tr>
+        <tr class="chosen"><td>Handlarze znikali "w miejscu" przy wyjściu na lunch</td><td>Sentinel "w tranzycie" dematerializował NPC natychmiast przy uzbrojeniu (ta sama klatka). Nowy model: <strong>czas przyjazdu liczy się od przejścia przez drzwi, nie od granicy slotu</strong>. Odchodzący zostaje widoczny, idzie do drzwi (<code>logical_map</code> trzyma się źródła), znika dopiero na progu (flaga <code>_transit_gone</code> zapala się gdy <code>is_travelling</code> gaśnie), a <code>transit_arrive_min</code> przestawia się na <code>now + transit_minutes</code> (~1 s) - pojawia się przy stołach chwilę później.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Weryfikacja headless: krokować scenę, nie bootować grę.</strong> Boot <code>main.py run</code> ląduje w <code>MainMenuScreen</code>, nie w <code>Scene</code> - "boot smoke" <strong>nie wykonuje</strong> logiki rutyn. Wierny test: <code>scene.INITIAL_HOUR = 12</code>, potem <code>sc = Scene(g, "Village", ""); sc.enter_state()</code> i pętla <code>sc.update(0.1, [])</code> - zegar rusza sam. Tak potwierdzono, że handlarze idą do drzwi i znikają w progu, bez <code>Path not found</code>.</p>
+  </div>
+
+  <h3>Znane ograniczenia (świadome)</h3>
+
+  <div class="prose nongoal">
+    <ul>
+      <li><strong>Teleport przy wejściu po fakcie</strong> - świadomy kompromis; brak animacji dojścia od drzwi, gdy gracz wchodzi długo po starcie slotu.</li>
+      <li><strong><code>transit_minutes</code> globalne</strong> - jedna wartość dla wszystkich drzwi. Per-link i zależność od realnej odległości map to refinement.</li>
+      <li><strong>Nakładanie się NPC na jednym <code>place</code></strong> (<code>tables</code>) - rozsuwa <code>wander</code>, ale przy <code>stand</code>/<code>idle</code> mogą stać w jednym punkcie.</li>
+    </ul>
+  </div>
+
   <footer class="pg">
-    <p style="margin:0">MoM &middot; dokument decyzyjny, wersja 2, 21 lipca 2026. Plan tekstowy: <code>doc/plan-cykl-dobowy-npc.md</code>.</p>
+    <p style="margin:0">MoM &middot; dokument decyzyjny, wersja 5, 23 lipca 2026. Plan tekstowy: <code>doc/plan-cykl-dobowy-npc.md</code>.</p>
   </footer>
 
 </div>

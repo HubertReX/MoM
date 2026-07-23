@@ -79,6 +79,10 @@ class Routine:
 class Defaults:
     wander_radius: int = 3
     slot_jitter_minutes: int = 20
+    #: Game-minutes a character spends "in transit" between two maps, invisible on
+    #: both, before it shows up at the far map's door. The one knob for how long a
+    #: doorway crossing takes. At GAME_TIME_SPEED 0.25 the default 30 is ~2 real s.
+    transit_minutes: int = 30
 
 
 @dataclass(frozen=True)
@@ -99,10 +103,18 @@ class Destination:
 
     - ``"place"``: a single named point; walk to it and stay.
     - ``"route"``: a named polyline from the `waypoints` layer; walk it in a loop.
+
+    ``map`` is which Tiled map the target lives on. Empty means "the character's
+    own map" - the default when a destination carries no ``map:`` prefix, which is
+    every single-map routine that existed before buildings became enterable. A
+    non-empty value different from the loaded map means the target is somewhere the
+    player is not, so it is resolved *logically* (name only) and never turned into
+    pixels until that map is the one on screen.
     """
 
     kind: str
     name: str
+    map: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +141,7 @@ def parse_routines(data: dict[str, Any], *, warn: Any = None) -> Routines:
     defaults = Defaults(
         wander_radius=int(raw_defaults.get("wander_radius", 3)),
         slot_jitter_minutes=int(raw_defaults.get("slot_jitter_minutes", 20)),
+        transit_minutes=int(raw_defaults.get("transit_minutes", 30)),
     )
 
     routines: dict[str, Routine] = {}
@@ -233,14 +246,35 @@ def current_slot(routine: Routine, minutes_of_day: int, jitter: int = 0) -> Slot
 # ---------------------------------------------------------------------------
 
 
+def split_map(value: str, origin_map: str) -> tuple[str, str]:
+    """``"VillageHouse:bar"`` -> ``("VillageHouse", "bar")``; ``"bar"`` -> ``(origin_map, "bar")``.
+
+    The grammar of a destination is ``[<map>:]<name>``. A bare name means "on this
+    character's own map", which is what keeps every routine written before
+    buildings were enterable working unchanged.
+    """
+    map_name, sep, name = value.partition(":")
+    if sep:
+        return map_name, name
+    return origin_map, value
+
+
 def resolve_at(at: str, destinations: Mapping[str, str], known_places: Iterable[str],
-               known_routes: Iterable[str], *, warn: Any = None) -> Destination | None:
+               known_routes: Iterable[str], *, origin_map: str = "", current_map: str = "",
+               warn: Any = None) -> Destination | None:
     """Turn a slot's `at` into a concrete named target, or ``None``.
 
     ``None`` means "no destination for this character right now" and the caller is
     expected to leave the character where it is. Every way of failing lands here:
     an empty CSV cell, a place that Tiled does not have (yet), a typo in the
     prefix. None of them may raise - a half-mapped village has to be playable.
+
+    Destinations carry a map (``[<map>:]<name>``, see :func:`split_map`). A target
+    on ``current_map`` - the loaded one - is validated against ``known_places`` /
+    ``known_routes`` as before. A target on any *other* map cannot be checked
+    (that map's layers are not loaded) and is resolved by name only: the caller
+    materialises it once the player walks onto that map. ``origin_map`` fills in
+    the map for a bare, unprefixed name.
     """
     prefix, _, value = at.partition(":")
     if not value:
@@ -251,25 +285,28 @@ def resolve_at(at: str, destinations: Mapping[str, str], known_places: Iterable[
         if value not in DESTINATION_TYPES:
             _warn(warn, f"unknown destination type '{value}' (have: {', '.join(DESTINATION_TYPES)})")
             return None
-        place = (destinations.get(value) or "").strip()
-        if not place:
+        cell = (destinations.get(value) or "").strip()
+        if not cell:
             return None  # empty CSV cell - normal, character stays put
-        if place not in known_places:
-            _warn(warn, f"'{value}' points at place '{place}', which the map does not define")
+        dest_map, place = split_map(cell, origin_map)
+        if dest_map == current_map and place not in known_places:
+            _warn(warn, f"'{value}' points at place '{place}', which map '{dest_map}' does not define")
             return None
-        return Destination("place", place)
+        return Destination("place", place, dest_map)
 
     if prefix == "location":
-        if value not in known_places:
-            _warn(warn, f"location '{value}' is not on the map's `places` layer")
+        dest_map, place = split_map(value, origin_map)
+        if dest_map == current_map and place not in known_places:
+            _warn(warn, f"location '{place}' is not on the `places` layer of map '{dest_map}'")
             return None
-        return Destination("place", value)
+        return Destination("place", place, dest_map)
 
     if prefix == "route":
-        if value not in known_routes:
-            _warn(warn, f"route '{value}' is not on the map's `waypoints` layer")
+        dest_map, route = split_map(value, origin_map)
+        if dest_map == current_map and route not in known_routes:
+            _warn(warn, f"route '{route}' is not on the `waypoints` layer of map '{dest_map}'")
             return None
-        return Destination("route", value)
+        return Destination("route", route, dest_map)
 
     _warn(warn, f"unknown `at` prefix '{prefix}' in {at!r}")
     return None
@@ -282,3 +319,92 @@ def destinations_of(model: Any) -> dict[str, str]:
     because it only ever reads attributes.
     """
     return {name: str(getattr(model, name, "") or "") for name in DESTINATION_TYPES}
+
+
+def slot_target_map(at: str, destinations: Mapping[str, str], origin_map: str) -> str | None:
+    """Which map a slot points at, by name only - or ``None`` for "no opinion".
+
+    The logical half of :func:`resolve_at`: it needs no map data, so it can run
+    every frame for *every* routine character, including the ones on maps that are
+    not loaded. That is what the off-map world tick uses to notice a character has
+    to cross into another map. ``None`` (empty CSV cell, malformed `at`, unknown
+    type) means the slot does not pin a map, so the caller keeps the character on
+    whatever map it is already on.
+    """
+    prefix, _, value = at.partition(":")
+    if not value:
+        return None
+    if prefix == "type":
+        if value not in DESTINATION_TYPES:
+            return None
+        cell = (destinations.get(value) or "").strip()
+        if not cell:
+            return None
+        dest_map, _name = split_map(cell, origin_map)
+        return dest_map
+    if prefix in ("location", "route"):
+        dest_map, _name = split_map(value, origin_map)
+        return dest_map
+    return None
+
+
+def step_logical_map(logical_map: str, transit_to_map: str, transit_arrive_min: int,
+                     target_map: str | None, now_abs: int, transit_minutes: int
+                     ) -> tuple[str, str, int]:
+    """One tick of a character's cross-map bookkeeping. Pure - no scene, no sprite.
+
+    Returns the new ``(logical_map, transit_to_map, transit_arrive_min)``. This is
+    the whole "engine remembers where an NPC is" mechanism, and it runs for every
+    routine character each frame regardless of which map the player is looking at,
+    so it must stay cheap and side-effect-free.
+
+    Three cases, in order:
+
+    - **Already in transit** (``transit_to_map`` set): once ``now_abs`` reaches the
+      arrival minute the character lands on the far map; until then it keeps
+      travelling. The arrival time was fixed when the transit was armed, so the
+      player changing maps in the meantime changes nothing here.
+    - **Settled, and the slot points at another map**: arm a transit that will
+      arrive ``transit_minutes`` from now. This fires once, because the next tick
+      finds ``transit_to_map`` already set.
+    - **Settled, slot points at the same map (or nowhere)**: nothing changes.
+    """
+    if transit_to_map:
+        if now_abs >= transit_arrive_min:
+            return transit_to_map, "", 0
+        return logical_map, transit_to_map, transit_arrive_min
+    if target_map and target_map != logical_map:
+        return logical_map, target_map, now_abs + transit_minutes
+    return logical_map, transit_to_map, transit_arrive_min
+
+
+def routine_roster_keys(characters: Mapping[str, Any], already_loaded: Iterable[str]) -> list[str]:
+    """Config keys that follow a routine but have no NPC object yet.
+
+    The off-map schedule tick can only move a character that exists, and a
+    character only exists once its spawn map has been loaded. To lift that
+    restriction - so a routine works even for someone whose ``spawn_point`` is on a
+    map the player has not visited - the game instantiates every routine character
+    from ``characters.csv`` at start. This returns the ones still missing, so the
+    ones already spawned from the loaded map's ``spawn_points`` are not duplicated.
+    """
+    loaded = set(already_loaded)
+    return [
+        key for key, model in characters.items()
+        if str(getattr(model, "routine", "") or "").strip() and key not in loaded
+    ]
+
+
+def roster_origin_map(model: Any, hub_map: str) -> str:
+    """Which map a roster character belongs to, when it has no spawn on a loaded map.
+
+    Its ``home`` destination is the honest anchor - that is where it sleeps and
+    returns to - so a ``map:`` prefix there names its origin. Failing that (a bare
+    or empty ``home``), fall back to the hub the game started on.
+    """
+    home = str(getattr(model, "home", "") or "").strip()
+    if home:
+        map_name, sep, _ = home.partition(":")
+        if sep and map_name:
+            return map_name
+    return hub_map

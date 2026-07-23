@@ -266,34 +266,65 @@ class SaveManager:
             if name not in maps:
                 maps[name] = state
 
+        # Last, so it overrides whatever the current-map / cache builds put down:
+        # routine NPCs belong to their home map, wherever they physically are now.
+        self._pin_routine_npcs_to_origin(scene, maps)
+
         return maps
 
+    def _npc_state_from(self, npc: Any) -> NPCState:
+        """Snapshot one live NPC. Shared by the current-map build and the routine
+        pinning below, so an off-map merchant is captured the same way as an on-map one."""
+        return NPCState(
+            name=npc.name,
+            config_key=getattr(npc, "config_key", ""),
+            attitude=npc.model.attitude,
+            pos_x=npc.pos.x,
+            pos_y=npc.pos.y,
+            health=npc.model.health,
+            money=npc.model.money,
+            is_dead=npc.is_dead,
+            inventory=[ItemState(
+                name=item.name,
+                type=item.model.type,
+                count=item.model.count,
+                value=item.model.value,
+                weight=item.model.weight,
+                damage=item.model.damage,
+                cooldown_time=int(item.model.cooldown_time),
+                health_impact=item.model.health_impact,
+            ) for item in npc.items],
+            dialog_state=self._build_npc_dialog_state(npc),
+            runtime=copy.deepcopy(getattr(npc, "runtime", NpcRuntime())),
+        )
+
     def _build_npc_states(self, scene: Scene) -> dict[str, NPCState]:
-        return {
-            npc.name: NPCState(
-                name=npc.name,
-                config_key=getattr(npc, "config_key", ""),
-                attitude=npc.model.attitude,
-                pos_x=npc.pos.x,
-                pos_y=npc.pos.y,
-                health=npc.model.health,
-                money=npc.model.money,
-                is_dead=npc.is_dead,
-                inventory=[ItemState(
-                    name=item.name,
-                    type=item.model.type,
-                    count=item.model.count,
-                    value=item.model.value,
-                    weight=item.model.weight,
-                    damage=item.model.damage,
-                    cooldown_time=int(item.model.cooldown_time),
-                    health_impact=item.model.health_impact,
-                ) for item in npc.items],
-                dialog_state=self._build_npc_dialog_state(npc),
-                runtime=copy.deepcopy(getattr(npc, "runtime", NpcRuntime())),
-            )
-            for npc in scene.NPCs
-        }
+        return {npc.name: self._npc_state_from(npc) for npc in scene.NPCs}
+
+    def _pin_routine_npcs_to_origin(self, scene: Scene, maps: dict[str, MapState]) -> None:
+        """Save every routine NPC once, under its home map, from the live object (v5).
+
+        `_build_npc_states` only sees `scene.NPCs`, i.e. the player's current map, so
+        a routine character that is off doing its rounds on another map - a merchant
+        at lunch in the tavern while the player is in the village - would be dropped
+        from the save and reset to config defaults on load. These characters always
+        live in `loaded_NPCs`, so read them straight from there and file each under
+        its `origin_map`, removing any stale copy the current-map or cache build left
+        on another map. Its logical map and transit ride along in `runtime`; even if
+        that were lost, the schedule re-derives position from the clock, but money,
+        stock and conversation state would not come back on their own.
+        """
+        loaded = getattr(scene, "loaded_NPCs", None) or {}
+        for npc in loaded.values():
+            if not getattr(npc.runtime, "routine_key", ""):
+                continue
+            origin = getattr(npc, "origin_map", "") or scene.current_map
+            for name, ms in maps.items():
+                if name != origin and npc.name in ms.npc_states:
+                    del ms.npc_states[npc.name]
+            if origin not in maps:
+                maps[origin] = MapState(name=origin)
+            maps[origin].npc_states[npc.name] = self._npc_state_from(npc)
 
     def _build_npc_dialog_state(self, npc: Any) -> NPCDialogState | None:
         """Capture the conversation state for an NPC, if it has a dialog graph."""
@@ -485,6 +516,11 @@ class SaveManager:
         new_scene.world_seed = save.world_seed
         self._apply_player_state(new_scene, save.player)
         self._apply_map_states(new_scene, save.maps)
+        # Off-map routine NPCs are not in `scene.NPCs`, so `_apply_npc_states` (which
+        # only walks the current map's live list) cannot reach them. Restore them
+        # straight onto the `loaded_NPCs` objects, from wherever their state was
+        # pinned - the schedule then puts each back on its map from the clock.
+        self._apply_routine_npc_states(new_scene, save.maps)
         self._apply_game_clock(new_scene, save.clock)
         self._apply_quest_state(new_scene, save.quests)
 
@@ -713,6 +749,36 @@ class SaveManager:
                 npc.is_dead = saved.is_dead
                 if saved.dialog_state is not None and hasattr(npc, "restore_dialog_state"):
                     npc.restore_dialog_state(saved.dialog_state)
+
+    def _apply_routine_npc_states(self, scene: Scene, maps: dict[str, MapState]) -> None:
+        """Restore routine NPCs' live state onto `loaded_NPCs`, on-map or off (v5).
+
+        The counterpart to `_pin_routine_npcs_to_origin`. `_apply_npc_states` only
+        touches the current map's `scene.NPCs`, so a character that is logically on a
+        different map at load time - a merchant mid-lunch in the tavern - would keep
+        the config defaults its fresh object was built with. Its state was pinned to
+        its home map, which may not be the loaded one, so search every saved map for
+        it by name and apply money, health, runtime and conversation directly.
+        """
+        saved_by_name: dict[str, NPCState] = {}
+        for ms in maps.values():
+            for name, ns in ms.npc_states.items():
+                saved_by_name.setdefault(name, ns)
+
+        loaded = getattr(scene, "loaded_NPCs", None) or {}
+        for npc in loaded.values():
+            if not getattr(npc.runtime, "routine_key", ""):
+                continue
+            saved = saved_by_name.get(npc.name)
+            if saved is None:
+                continue
+            npc.model.health = saved.health
+            npc.model.money = saved.money
+            npc.runtime = copy.deepcopy(saved.runtime)
+            npc.pos = vec(saved.pos_x, saved.pos_y)
+            npc.is_dead = saved.is_dead
+            if saved.dialog_state is not None and hasattr(npc, "restore_dialog_state"):
+                npc.restore_dialog_state(saved.dialog_state)
 
     def _apply_maze_mobs(self, scene: Scene, ms: MapState) -> None:
         """Nothing to do: maze monsters are rebuilt by regenerating the level.

@@ -43,6 +43,22 @@ class NpcRuntime:
     #: at dawn; everyone else leaves it empty.
     stock: list[str] = field(default_factory=list)
 
+    #: Which map the character is *logically* on, which the daily schedule drives
+    #: and which need not be the map the player is looking at. Empty on a fresh
+    #: object or an old save means "wherever it spawned" - the reconciler treats it
+    #: as `origin_map`. This is the field that lets a routine walk an NPC from the
+    #: village into the tavern (a separate Tiled map) and back.
+    logical_map: str = ""
+
+    #: Cross-map transit: while walking between two maps the character is on
+    #: neither's active roster. `transit_to_map` is where it is headed (empty =
+    #: not in transit) and `transit_arrive_min` is the absolute game-minute it
+    #: arrives. The arrival time is fixed at the slot boundary, *not* when the
+    #: sprite reaches the door - so the player leaving the source map mid-walk
+    #: never loses track of when the character shows up on the far side.
+    transit_to_map: str = ""
+    transit_arrive_min: int = 0
+
     # No `to_dict`: this is nested inside `NPCState`, whose `_to_dict` runs
     # `dataclasses.asdict` recursively and picks these fields up on its own.
 
@@ -54,4 +70,7 @@ class NpcRuntime:
         return cls(
             routine_key=str(data.get("routine_key", "")),
             stock=[str(item) for item in data.get("stock", [])],
+            logical_map=str(data.get("logical_map", "")),
+            transit_to_map=str(data.get("transit_to_map", "")),
+            transit_arrive_min=int(data.get("transit_arrive_min", 0) or 0),
         )

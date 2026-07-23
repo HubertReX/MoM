@@ -26,6 +26,10 @@
 [defaults]
 wander_radius       = 3     # promien mikro-wędrowki, w kaflach
 slot_jitter_minutes = 20    # +/- czasu 'from', deterministycznie z hasha nazwy NPC
+transit_minutes     = 15    # minuty gry od przejscia przez drzwi do pojawienia sie po
+                            # drugiej stronie (v5). NPC najpierw dochodzi do drzwi na
+                            # oczach gracza (dowolnie dlugo), potem znika, a po tylu
+                            # minutach jest przy celu na drugiej mapie. ~1 s realne.
 
 
 # =====================================================================
@@ -47,8 +51,11 @@ from     = "13:00"
 at       = "type:social"
 activity = "wander"
 
+# Lunch trwa do 16:00 (nie 14:00): przy transit_minutes=30 mieszkaniec dochodzi do
+# tawerny ~13:30, wiec 1-godzinny lunch dawal ~30 min gry na miejscu (~2 s realne) -
+# za malo, zeby gracz zdazyl wejsc i ich zobaczyc. Do stuningu razem z transit_minutes.
 [[routine.townsfolk.slot]]
-from     = "14:00"
+from     = "16:00"
 at       = "type:work"
 activity = "stand"
 

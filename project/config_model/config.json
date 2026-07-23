@@ -42,7 +42,7 @@
             "has_dialog": false,
             "home": "house_johny",
             "work": "market_stall_1",
-            "social": "tavern",
+            "social": "VillageHouse:tables",
             "hobby": "pier",
             "routine": "townsfolk"
         },
@@ -76,7 +76,7 @@
             "has_dialog": false,
             "home": "house_bart",
             "work": "market_stall_2",
-            "social": "tavern",
+            "social": "VillageHouse:tables",
             "hobby": "well",
             "routine": "townsfolk"
         },
@@ -374,7 +374,7 @@
             "friendly": 0.3,
             "home": "house_smith",
             "work": "smithy",
-            "social": "tavern",
+            "social": "VillageHouse:tables",
             "hobby": "shrine",
             "routine": "townsfolk"
         },
@@ -397,10 +397,10 @@
             "has_dialog": true,
             "friendly": 0.6,
             "home": "house_barman",
-            "work": "tavern",
+            "work": "VillageHouse:bar",
             "social": "well",
             "hobby": "shrine",
-            "routine": "townsfolk"
+            "routine": "barman"
         },
         "CLAPBACK_SWORD": {
             "sprite": "Knight",
