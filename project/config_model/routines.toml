@@ -1,31 +1,31 @@
-# Rutyny NPC - rytm dnia wspolny dla wielu postaci.
+# Rutyny NPC - rytm dnia wspólny dla wielu postaci.
 #
-# Ten plik trzyma SAME rutyny. Kto ktora rutyne ma, mowi kolumna `routine`
-# w characters.csv - obok kolumn `home`/`work`/`social`/`hobby`, z ktorymi
-# rutyna i tak wspolpracuje. Dzieki temu caly "kto, co, gdzie" jednej postaci
-# czyta sie z jednego wiersza. Pusta komorka = brak rutyny (stara lamana
-# z warstwy `waypoints`).
+# Ten plik trzyma SAME rutyny. O tym kto używa którą rutyną, mówi kolumna `routine`
+# w `characters.csv` - obok kolumn `home`/`work`/`social`/`hobby`, z którymi
+# rutyna i tak współpracuje. Dzięki temu cały "kto, co, gdzie" jednej postaci
+# czyta się z jednego wiersza. Pusta komórka = brak rutyny (stara krzywej
+# z warstwy `waypoints` na mapie Tiled).
 #
 # `at` ma trzy warianty:
 #   type:<typ>       -> kolumna `home`/`work`/`social`/`hobby` w characters.csv
-#                       wskazuje nazwe obiektu z warstwy `places` w Tiled.
-#                       To on czyni rutyne uniwersalna - kazda postac idzie
+#                       wskazuje nazwę obiektu z warstwy `places` w Tiled.
+#                       To on czyni rutynę uniwersalną - każda postać idzie
 #                       "do swojego" miejsca danego typu.
-#   location:<nazwa> -> wprost nazwa obiektu z warstwy `places` (wyjatki,
+#   location:<nazwa> -> wprost nazwa obiektu z warstwy `places` (wyjątki,
 #                       miejsca wspolne dla wszystkich)
-#   route:<nazwa>    -> nazwana lamana z istniejacej warstwy `waypoints`
+#   route:<nazwa>    -> nazwana krzywej z istniejacej warstwy `waypoints`
 #
-# Kolejnosc wykonania bierze sie z pola `from`, nie z kolejnosci w pliku.
-# Przestawienie blokow ani dopisanie kroku w srodku niczego nie psuje.
+# Kolejność wykonania bierze się z pola `from`, nie z kolejnosci w pliku.
+# Przestawienie bloków ani dopisanie kroku w środku niczego nie psuje.
 #
-# Pusta komorka destynacji w characters.csv nie jest bledem: taki krok
-# degraduje sie do "zostan gdzie jestes", a nie do wyjatku. Dzieki temu
-# niekompletne dane nigdy nie wywalaja gry i nie trzeba mapowac calej wioski
+# Pusta komórka destynacji w `characters.csv` nie jest bledem: taki krok
+# degraduje sie do "zostań gdzie jesteś", a nie do wyjatku. Dzięki temu
+# niekompletne dane nigdy nie wywalają gry i nie trzeba mapować całej wioski
 # na raz.
 
 [defaults]
-wander_radius       = 3     # promien mikro-wedrowki, w kaflach
-slot_jitter_minutes = 20    # +/- , deterministycznie z hasha nazwy NPC
+wander_radius       = 3     # promien mikro-wędrowki, w kaflach
+slot_jitter_minutes = 20    # +/- czasu 'from', deterministycznie z hasha nazwy NPC
 
 
 # =====================================================================
@@ -64,7 +64,7 @@ activity = "sleep"
 
 
 # =====================================================================
-#  farmer - wstaje przed switem, dluga praca w polu, wczesniej spi
+#  farmer - wstaje przed świtem, długa praca w polu, wczesniej śpi
 # =====================================================================
 
 [[routine.farmer.slot]]
@@ -74,7 +74,7 @@ activity = "stand"
 
 [[routine.farmer.slot]]
 from     = "11:00"
-at       = "location:well"      # wspolna studnia, nie "swoja" - stad location:
+at       = "location:well"      # wspólna studnia, nie "swoja" - stad location:
 activity = "idle"
 
 [[routine.farmer.slot]]
@@ -112,6 +112,6 @@ from     = "02:00"
 at       = "type:home"
 activity = "sleep"
 
-# Rutyny `farmer` i `guard` nie maja dzis zadnej obsady - sa gotowymi
-# szablonami na postacie, ktorych na mapie jeszcze nie ma. Zeby ktoras
-# obsadzic, wpisz jej klucz w kolumnie `routine` w characters.csv.
+# Rutyny `farmer` i `guard` nie maja dziś żadnej obsady - są gotowymi
+# szablonami na postacie, których na mapie jeszcze nie ma. Żeby którąś
+# obsadzic, wpisz jej klucz w kolumnie `routine` w `characters.csv`.
