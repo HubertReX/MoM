@@ -1709,20 +1709,30 @@ class Scene(State):
         Called once from `populate_sprite_groups`, i.e. whenever a map is (re)built.
         A visitor - a character whose home is elsewhere - is dropped straight at its
         current destination, which is the accepted "already sitting at the table
-        when the player walks in" teleport. Its own residents keep the position they
-        had. Characters mid-transit are parked off the map on the sentinel.
+        when the player walks in" teleport. The same drop applies to a character
+        whose home *is* this map but which the roster created at the (0,0)
+        placeholder (its spawn map had not been loaded when it was instantiated) -
+        without it the character would be frozen in the wall at (0,0), since A*
+        cannot step off a blocked start tile. Its own residents that spawned from a
+        real point keep the position they had. Characters mid-transit are parked off
+        the map on the sentinel.
         """
         for npc in self.loaded_NPCs.values():
             if not npc.runtime.routine_key:
                 continue
             physical = self._routine_physical_map(npc)
             npc.current_map = physical
-            if physical == self.current_map and npc.origin_map != self.current_map:
+            if physical != self.current_map:
+                continue
+            if npc.origin_map != self.current_map or npc._roster_unplaced:
                 place = self._slot_place(npc)
                 if place is not None:
                     npc.pos = vec(place)
                     npc.prev_pos = npc.pos.copy()
                     npc.adjust_rect()
+                    # Anchored on a real map now - keep this position on re-entry
+                    # instead of being teleported to the slot place every time.
+                    npc._roster_unplaced = False
 
     #############################################################################################################
     def _slot_place(self, npc: "Any") -> "vec | None":
@@ -1896,6 +1906,9 @@ class Scene(State):
             npc.current_map = origin
             npc.runtime.routine_key = routine_key
             npc.runtime.logical_map = origin
+            # Created at the (0,0) placeholder - `_settle_routine_npcs` gives it a
+            # real position the first time its map is loaded.
+            npc._roster_unplaced = True
             self.loaded_NPCs[key] = npc
 
     #############################################################################################################

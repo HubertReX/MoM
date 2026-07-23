@@ -158,6 +158,13 @@ class NPC(pygame.sprite.Sprite):
         # which alone decides when it turns up on the far side - has not fired yet.
         # Off-screen departures set it immediately (no walk to show).
         self._transit_gone: bool = False
+        # A routine character created by the roster (its spawn map was not loaded
+        # yet) sits at the (0,0) placeholder until it is first settled on a real
+        # map. A visitor gets a real position the moment it materialises, but a
+        # character whose *home* map is a non-hub map is never a visitor there, so
+        # `_settle_routine_npcs` has to notice this flag and drop it at its slot
+        # destination instead of leaving it stuck in the wall at (0,0).
+        self._roster_unplaced: bool = False
         # `wants_to_sleep` is the character's own opinion; `is_asleep` is the world
         # acting on it. They are separate because taking a sprite out of the draw
         # group from inside that group's own update pass is asking for trouble -
