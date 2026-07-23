@@ -244,11 +244,9 @@ class HUD(Widget):
         self._location_text = map_name
         self._location_display = self._format_map_name(map_name)
         from ..widgets.rich_text import RichText
-        raw_w = theme.measure(self._location_display, FONT_SIZE_LARGE)[0]
-        shadow_offset = 2
         rt = RichText(
             f"[center][shadow]{self._location_display}[/shadow][/center]",
-            (0, 0, raw_w + shadow_offset, 100),
+            (0, 0, 400, 100),
             self.icons,
             base_size=FONT_SIZE_LARGE,
             base_color=theme.TITLE,
