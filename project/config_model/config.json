@@ -396,7 +396,7 @@
             "name_PL": "Barman Absyntnent",
             "has_dialog": true,
             "friendly": 0.6,
-            "home": "house_barman",
+            "home": "VillageHouse:badroom",
             "work": "VillageHouse:bar",
             "social": "well",
             "hobby": "shrine",

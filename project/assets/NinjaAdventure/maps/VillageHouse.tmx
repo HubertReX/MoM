@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="12" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="13" nextobjectid="9">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="12" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="13" nextobjectid="10">
  <properties>
   <property name="outdoor" type="bool" value="false"/>
  </properties>
@@ -54,7 +54,7 @@
  <layer id="3" name="walls" width="12" height="10">
   <data encoding="csv">
 494,498,498,498,498,498,495,498,498,498,498,499,
-542,943,944,933,1620,936,576,941,942,965,937,547,
+542,943,944,933,1620,936,576,941,942,0,937,547,
 542,0,0,0,0,0,576,0,0,0,0,547,
 605,608,608,608,527,0,576,1406,0,0,1856,547,
 542,0,0,0,0,0,511,0,0,0,0,547,
@@ -67,7 +67,7 @@
  </layer>
  <layer id="10" name="walls_decors" width="12" height="10">
   <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,1152,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,971,0,0,0,0,0,0,0,0,
@@ -126,7 +126,7 @@
   <object id="2" name="Door" x="56" y="120">
    <point/>
   </object>
-  <object id="5" name="start" x="56" y="72">
+  <object id="5" name="start" x="56" y="100">
    <point/>
   </object>
  </objectgroup>
@@ -135,7 +135,10 @@
   <object id="7" name="bar" x="56" y="40">
    <point/>
   </object>
-  <object id="8" name="tables" x="28" y="72">
+  <object id="8" name="tables" x="48" y="96">
+   <point/>
+  </object>
+  <object id="9" name="badroom" x="152" y="16">
    <point/>
   </object>
  </objectgroup>

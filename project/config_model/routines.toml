@@ -24,7 +24,7 @@
 # na raz.
 
 [defaults]
-wander_radius       = 3     # promien mikro-wędrowki, w kaflach
+wander_radius       = 2     # promien mikro-wędrowki, w kaflach
 slot_jitter_minutes = 20    # +/- czasu 'from', deterministycznie z hasha nazwy NPC
 transit_minutes     = 15    # minuty gry od przejscia przez drzwi do pojawienia sie po
                             # drugiej stronie (v5). NPC najpierw dochodzi do drzwi na
@@ -39,25 +39,26 @@ transit_minutes     = 15    # minuty gry od przejscia przez drzwi do pojawienia 
 [[routine.townsfolk.slot]]
 from     = "06:30"
 at       = "type:home"
-activity = "idle"
+activity = "wander"
 
 [[routine.townsfolk.slot]]
 from     = "08:00"
 at       = "type:work"
 activity = "stand"
 
+# Lunch w tawernie
+
 [[routine.townsfolk.slot]]
 from     = "13:00"
 at       = "type:social"
 activity = "wander"
 
-# Lunch trwa do 16:00 (nie 14:00): przy transit_minutes=30 mieszkaniec dochodzi do
-# tawerny ~13:30, wiec 1-godzinny lunch dawal ~30 min gry na miejscu (~2 s realne) -
-# za malo, zeby gracz zdazyl wejsc i ich zobaczyc. Do stuningu razem z transit_minutes.
 [[routine.townsfolk.slot]]
 from     = "16:00"
 at       = "type:work"
 activity = "stand"
+
+# czas na hobby
 
 [[routine.townsfolk.slot]]
 from     = "18:30"
@@ -74,17 +75,36 @@ activity = "sleep"
 # =====================================================================
 
 [[routine.barman.slot]]
-from     = "07:30"
-at       = "type:home"
-activity = "idle"
+from     = "06:30"
+at       = "location:VillageHouse:badroom"
+activity = "wander"
 
 [[routine.barman.slot]]
 from     = "08:00"
 at       = "type:work"
 activity = "stand"
 
+# sprząta stoły przed lunchem
+
 [[routine.barman.slot]]
-from     = "22:00"
+from     = "12:00"
+at       = "location:VillageHouse:tables"
+activity = "wander"
+
+[[routine.barman.slot]]
+from     = "13:30"
+at       = "type:work"
+activity = "stand"
+
+# sprząta stoły na koniec dnia
+
+[[routine.barman.slot]]
+from     = "19:00"
+at       = "location:VillageHouse:tables"
+activity = "wander"
+
+[[routine.barman.slot]]
+from     = "21:00"
 at       = "type:home"
 activity = "sleep"
 
@@ -96,7 +116,7 @@ activity = "sleep"
 [[routine.farmer.slot]]
 from     = "05:30"
 at       = "type:work"
-activity = "stand"
+activity = "wander"
 
 [[routine.farmer.slot]]
 from     = "11:00"

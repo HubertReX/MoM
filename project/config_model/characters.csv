@@ -1,5 +1,5 @@
 key;name_EN;name_PL;sprite;race;attitude;health;max_health;items;money;has_dialog;is_merchant;tradeable_items_types;max_carry_weight;allowed_zones;speed_walk;damage;speed_run;friendly;money_cap;money_regen_pct;home;work;social;hobby;kind;weak;angry;smart;funny;routine
-BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;house_barman;VillageHouse:bar;well;shrine;1;-1;-2;-1;2;barman
+BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;VillageHouse:badroom;VillageHouse:bar;well;shrine;1;-1;-2;-1;2;barman
 BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;house_bart;market_stall_2;VillageHouse:tables;well;;;;;;townsfolk
 BOAR;Boar;Dzik;Boar;animal;afraid;;;;;false;;;;;20;;;;;;;;;;;;;;;
 CAT;Cat;Kotek;Cat;animal;friendly;;;;;false;;;;;15;;;;;;;;;;;;;;;

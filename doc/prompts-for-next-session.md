@@ -17,6 +17,11 @@ Co jest potrzebne:
 
 Inne:
 
+- [ ] czasami po wyjściu z tawerny gracz pojawia się w lesie blisko lewego krańca mapy (wysokość jest ok)
+- [ ] dodać do rutyn szczególne zachowanie w wybrane dni (niedziela tylko hobby), handel tylko poniedziałek, środa i piątek
+- [ ] dodać nazwę lokalizacji na górze ekranu (przy lochach dodać poziom zagnieżdżenia)
+- [ ] usunąć autozapis przy wchodzeniu i wychodzeniu ze zwykłych pomieszczeń
+- [ ] `wander_radius` jest większy niż wynika z wpisu w `routines.toml`
 - [ ] scrollbar.png nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
 - [ ] przydało by się włączyć fog-of-war (FoW) w labiryncie w trybie web, ale to się wiąże z shaderami
 - [ ] mypy 24 błędy

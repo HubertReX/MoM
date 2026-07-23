@@ -501,7 +501,7 @@
   <object id="20" name="NextToMaze" x="904" y="688">
    <point/>
   </object>
-  <object id="87" name="start" gid="2817" x="912" y="704" width="16" height="16"/>
+  <object id="87" name="start" gid="2817" x="688" y="752" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="8" name="waypoints" visible="0">
   <object id="12" name="Rob" x="1032" y="904">
@@ -531,7 +531,6 @@
   <object id="116" name="house_johny" x="376" y="872"/>
   <object id="117" name="market_stall_2" x="712" y="840"/>
   <object id="118" name="house_bart" x="376" y="872"/>
-  <object id="119" name="tavern" x="680" y="728"/>
   <object id="120" name="house_barman" x="376" y="872"/>
   <object id="121" name="smithy" x="808" y="712"/>
   <object id="122" name="house_smith" x="376" y="872"/>
@@ -576,12 +575,12 @@
   <object id="102" name="Boar" gid="2837" x="760" y="432" width="16" height="16"/>
   <object id="95" name="Marry" gid="2822" x="792" y="800" width="16" height="16"/>
   <object id="75" name="Rob" gid="2821" x="1024" y="912" width="16" height="16"/>
-  <object id="96" name="Bart" gid="2820" x="752" y="744" width="16" height="16"/>
-  <object id="97" name="Johny" gid="2818" x="686.4" y="753.6" width="16" height="16"/>
+  <object id="96" name="Bart" gid="2820" x="832" y="736" width="16" height="16"/>
+  <object id="97" name="Johny" gid="2818" x="720" y="800" width="16" height="16"/>
   <object id="108" name="MADAME_SARCASMIA" gid="2845" x="1008" y="736" width="16" height="16"/>
   <object id="109" name="MISS_INFORMATION" gid="2846" x="1008" y="688" width="16" height="16"/>
   <object id="110" name="CLAPBACK_SWORD" gid="2848" x="896" y="736" width="16" height="16"/>
-  <object id="111" name="BARMAN_ABSINTHRAYNER" gid="2847" x="928" y="736" width="16" height="16"/>
+  <object id="111" name="BARMAN_ABSINTHRAYNER" gid="2847" x="724" y="752" width="16" height="16"/>
   <object id="112" name="POTIONEER_PUZZLEMINT" gid="2849" x="960" y="736" width="16" height="16"/>
   <object id="113" name="HAMMER_HOAXHEART" gid="2819" x="960" y="688" width="16" height="16"/>
   <object id="114" name="Robin" gid="2821" x="640" y="832" width="16" height="16">
