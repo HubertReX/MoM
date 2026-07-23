@@ -6,6 +6,21 @@ Konieczne do ukończenia prologu:
 - [x] system odnawiania stanu posiadania handlarzy kolejnego dnia
 - [x] prosty dobowy cykl życia NPC
 
+Wchodzenie do innych map:
+
+Zadanie polega na umożliwieniu NPC wchodzenie do budynków (innych map z Tiled) i kontynuowaniu rutyn oraz powrót do głównej mapy.
+- mamy już VillageHouse - to jednocześnie nazwa mapy Tiled (mały budynek) jak i obiektu na warstwie 'interactions' z atrybutami obj_type (exit - przejście do innej mapy), to_map (nazwa mapy docelowej), entry_point (nazwa obiektu z punktem startu na docelowej mapie).
+- na potrzeby scenariusza przyjmujemy, że VillageHouse to Tawerna Brakująca klepka (LOST_CORK_TAVERN), gdzie pracuje barman (BARMAN_ABSINTHRAYNER) a mieszkańcy wioski się "socjalizują"
+- chcemy zasymulować sytuację, w której barman idzie do tawerny do pracy, a NPC mający jako miejsce 'social' (w characters.csv) tawernę, idą tam w trakcie przerwy na lunch - wszystko zgodnie z ich rutynami
+- Rozszerzamy mechanizm wskazywania celu w rutynach ('at'), w następujący sposób:
+    - location:nazwa => location:map:nazwa (np.: location:VillageHouse:bar)
+
+    - route:nazwa => route:map:nazwa (np.: route:Village:patrol_north)
+    - type:typ zostaje, ale w characters.csv kolumny home, work itd mają wartość: map:name (np.: VillageHause:tables)
+- dla uproszczenia - gdy główny bohater (gracz) jest na mapie Village, to gra nie przelicza chodzenia NPC będących na innych mapach. Sillnik gry jedynie pamięta, że zgodnie z rutyną o danej godzinie dany NPC musi pojawić się z powrotem (jeżeli jego kolejny slot rutyn prowadzi do Villlage). To chyba jest podobne do sytuacji, kiedy NPC 'znika' na noc i pojawia się rano. To ma działać nie tylko na głównej mapie, tzn.: jeżeli gracz jest w tawernie, a NPC'om zacznie się rutyna 'lunch' w tawernie, to mają się pojawić w drzwiach i iść w stronę miejsca docelowego (lunch -> social -> VillageHouse:tables).
+- jak gracz wejdzie do tawerny po rozpoczęciu się pory 'lunch', a wg. rutyny kowal jest teraz w tawernie (lunch -> social -> VillageHouse:tables) i barman też tam jest (work -> VillageHouse:bar), to wszystkie postacie od razu są w ich docelowych lokacjach, bez symulowania chodzenia od wejścia do miejsca docelowego. Jak gracz wejdzie zaraz za NPC'em to może być wrażenie, że NPC "teleportował" się do miejsca docelowego na nowej mapie, ale na razie akceptuję ten kompromis.
+- Jest to uproszczenie, aby nie musieć przeliczać A* NPC'ów dla niewczytanych jeszcze map - innych niż gracza. Problem, który tu się pojawia, to że jak NPC ruszy do wyjścia z tawerny (zaczął się następny slot rutyny), ale jeszcze nie wyszedł i w tym czasie gracz wyjdzie z tawerny to nie wiadomo, kiedy NPC ma się pojawić na mapie głównej. Zaproponuj jakieś rozwiązania.
+
 Inne:
 
 - [ ] scrollbar.png nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
