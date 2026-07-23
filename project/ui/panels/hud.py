@@ -23,6 +23,7 @@ from objects import ItemSprite, InventorySlot, Notification, NotificationTypeEnu
 from settings import (
     ACTIONS,
     FONT_COLOR,
+    FONT_SIZE_LARGE,
     FONT_SIZE_MEDIUM,
     FONT_SIZE_SMALL,
     INVENTORY_ITEM_SCALE,
@@ -114,6 +115,15 @@ class HUD(Widget):
         self.weapon_bg = theme.nine_patch("nine_patch_04.png", weapon_s, weapon_s)
         self.stats_bg = theme.nine_patch("nine_patch_04.png", 300, 190)
         self.available_action_bg = theme.nine_patch("panel_brown.png", 216, 36, border=3)
+
+        # location panel: centred at the top, same vertical band as the stats panel
+        self._location_text: str = ""
+        self._location_display: str = ""
+        self._location_rt_surf: pygame.Surface | None = None
+        self._location_panel_w: int = 0
+        self._location_panel_h: int = 0
+        self._location_bg: pygame.Surface | None = None
+        self._update_location_cache()
 
         # cache: notification message string -> pre-rendered rich-text surface
         self._notification_cache: dict[str, pygame.Surface] = {}
@@ -215,6 +225,56 @@ class HUD(Widget):
         hb.set_bar(player.model.health / player.model.max_health,
                    (top_left[0] + 3 * TILE_SIZE + left_margin, top_left[1] + top_margin - 8))
         surface.blit(hb.image, hb.rect)
+
+    #############################################################################################################
+    # MARK: location panel
+
+    @staticmethod
+    def _format_map_name(raw: str) -> str:
+        """Human-readable map name: 'Maze_01' -> 'Maze 1'."""
+        if raw.startswith("Maze_") and raw[5:].isdigit():
+            return f"Maze {int(raw[5:])}"
+        return raw
+
+    def _update_location_cache(self) -> None:
+        """Re-render the location name text when the map changes."""
+        map_name = self.scene.current_map
+        if map_name == self._location_text and self._location_rt_surf is not None:
+            return
+        self._location_text = map_name
+        self._location_display = self._format_map_name(map_name)
+        from ..widgets.rich_text import RichText
+        raw_w = theme.measure(self._location_display, FONT_SIZE_LARGE)[0]
+        shadow_offset = 2
+        rt = RichText(
+            f"[center][shadow]{self._location_display}[/shadow][/center]",
+            (0, 0, raw_w + shadow_offset, 100),
+            self.icons,
+            base_size=FONT_SIZE_LARGE,
+            base_color=theme.TITLE,
+            show_scrollbar=False,
+        )
+        surf = rt.render_static()
+        self._location_rt_surf = surf
+        tw = surf.get_width()
+        self._location_panel_w = tw + 80
+        self._location_panel_h = 76
+        self._location_bg = theme.nine_patch(
+            "nine_patch_04.png", self._location_panel_w, self._location_panel_h,
+        )
+
+    def show_location_panel(self, surface: pygame.Surface) -> None:
+        """Draw the current map name centred at the top of the screen."""
+        self._update_location_cache()
+        if self._location_rt_surf is None or self._location_bg is None:
+            return
+        panel_x = (settings.WIDTH - self._location_panel_w) // 2
+        panel_y = HUD_EDGE
+        surface.blit(self._location_bg, (panel_x, panel_y))
+        text_x = settings.WIDTH // 2
+        text_y = panel_y + self._location_panel_h // 2
+        surface.blit(self._location_rt_surf,
+                     self._location_rt_surf.get_rect(center=(text_x, text_y)))
 
     #############################################################################################################
     # MARK: hotbar
@@ -441,3 +501,4 @@ class HUD(Widget):
         # transient news and the player should not miss one for having the log open.
         if stats:
             self.show_stats_panel(surface, self.scene.player)
+            self.show_location_panel(surface)
