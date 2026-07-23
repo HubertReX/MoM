@@ -580,7 +580,6 @@
   <object id="108" name="MADAME_SARCASMIA" gid="2845" x="1008" y="736" width="16" height="16"/>
   <object id="109" name="MISS_INFORMATION" gid="2846" x="1008" y="688" width="16" height="16"/>
   <object id="110" name="CLAPBACK_SWORD" gid="2848" x="896" y="736" width="16" height="16"/>
-  <object id="111" name="BARMAN_ABSINTHRAYNER" gid="2847" x="724" y="752" width="16" height="16"/>
   <object id="112" name="POTIONEER_PUZZLEMINT" gid="2849" x="960" y="736" width="16" height="16"/>
   <object id="113" name="HAMMER_HOAXHEART" gid="2819" x="960" y="688" width="16" height="16"/>
   <object id="114" name="Robin" gid="2821" x="640" y="832" width="16" height="16">

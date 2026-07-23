@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="12" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="13" nextobjectid="10">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="12" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="13" nextobjectid="11">
  <properties>
   <property name="outdoor" type="bool" value="false"/>
  </properties>
@@ -9,6 +9,7 @@
  <tileset firstgid="805" source="Element.tsx"/>
  <tileset firstgid="1045" source="tilesets/House.tsx"/>
  <tileset firstgid="1804" source="../items/items.tsx"/>
+ <tileset firstgid="1914" source="tilesets/CharacterTileset.tsx"/>
  <layer id="1" name="floor" width="12" height="10">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,
@@ -142,5 +143,7 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="8" name="spawn_points"/>
+ <objectgroup id="8" name="spawn_points">
+  <object id="10" name="BARMAN_ABSINTHRAYNER" gid="1944" x="144" y="32" width="16" height="16"/>
+ </objectgroup>
 </map>
