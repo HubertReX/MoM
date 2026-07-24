@@ -1,4 +1,7 @@
-Konieczne do ukończenia prologu:
+
+# do zrobienia
+
+## Konieczne do ukończenia prologu:
 
 - [ ] nowa mapa na bazie Village z dodatkowymi budynkami i docelowym rozmieszczeniem postaci oraz przedmiotów
 - [ ] balancing atrybutów postaci, przedmiotów (bohatera, na mapie, w lochu, u handlarzy)
@@ -6,7 +9,7 @@ Konieczne do ukończenia prologu:
 - [x] system odnawiania stanu posiadania handlarzy kolejnego dnia
 - [x] prosty dobowy cykl życia NPC
 
-Nowa mapa [[Gafowo Kolonia]] na bazie `Village`:
+### Nowa mapa [[Gafowo Kolonia]] na bazie `Village`:
 
 Co jest potrzebne:
 
@@ -15,14 +18,14 @@ Co jest potrzebne:
 - nowa mapa [[Tawerna Brakująca klepka]] i osobna mapa stajni
 - ukrywamy [[Madame Sarkażmijka]] i [[Bibliofilistka des Informacja]]
 
-Inne:
+### Inne:
 
-- [ ] czasami po wyjściu z tawerny gracz pojawia się w lesie blisko lewego krańca mapy (wysokość jest ok)
+- [ ] czasami po wyjściu z tawerny gracz pojawia się w lesie blisko lewego krańca mapy zamiast w miejscu obiektu VillageHouseDoor  (pozycja od góry mapy jest ok). Zdarza się to rzadziej niż raz na 3 próby.
 - [ ] dodać do rutyn szczególne zachowanie w wybrane dni (niedziela tylko hobby), handel tylko poniedziałek, środa i piątek
 - [ ] dodać nazwę lokalizacji na górze ekranu (przy lochach dodać poziom zagnieżdżenia)
 - [ ] usunąć autozapis przy wchodzeniu i wychodzeniu ze zwykłych pomieszczeń
 - [ ] `wander_radius` jest większy niż wynika z wpisu w `routines.toml`
-- [ ] scrollbar.png nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
+- [ ] `scrollbar.png` nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
 - [ ] przydało by się włączyć fog-of-war (FoW) w labiryncie w trybie web, ale to się wiąże z shaderami
 - [ ] mypy 24 błędy
 - [ ] w polach input, jak się wciśnie i przytrzyma przycisk to działa on tylko raz - kolejne litery powinny pojawiać się z małym opóźnieniem, a strzałki powinny przesuwać kursor, aż do zwolnienia klawisza
@@ -53,7 +56,10 @@ Inne:
 - [x] po zmianie języka interfejs w menu się nie aktualizuje, a w samej grze nie widać zupełnie HUD
 - [x] czy cały ekran jest na koniec pipeline renderu skalowany 3.xx?
 
-Problemy ze źle wyskalowanymi emoji:
+
+## Zrobione
+
+### Problemy ze źle wyskalowanymi emoji:
 
 - [x] panel quest w sekcji nagród - jest jakaś dziwna skala, poprawić do 16 lub 32
 - [x] toast mają za małe emocji - nieczytelne
@@ -61,7 +67,7 @@ Problemy ze źle wyskalowanymi emoji:
 - [x] zachować spójne odległości od granicy ekranu stałych elementów HUD: stats, broń, sloty itemów, show help, toasty - preferowana odległość taka jak obecnie ma panel broni.
 - [x] wyrównać keycap akcji w prawym dolnym rogu tak, aby prawa krawędź keycap pokrywała się z prawą krawędzią panelu z opisem akcji
 
-Wchodzenie do innych map:
+### Wchodzenie do innych map:
 
 Zadanie polega na umożliwieniu NPC wchodzenie do budynków (innych map z Tiled) i kontynuowaniu rutyn oraz powrót do głównej mapy.
 - mamy już VillageHouse - to jednocześnie nazwa mapy Tiled (mały budynek) jak i obiektu na warstwie 'interactions' z atrybutami obj_type (exit - przejście do innej mapy), to_map (nazwa mapy docelowej), entry_point (nazwa obiektu z punktem startu na docelowej mapie).

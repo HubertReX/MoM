@@ -45,6 +45,7 @@ To report a **security vulnerability**, do not open a public issue - see [SECURI
 
 ## Table of contents <!-- omit in toc -->
 
+- [Contributing](#contributing)
 - [Features](#features)
 - [Known bugs](#known-bugs)
 - [Ideas for future](#ideas-for-future)
@@ -127,11 +128,11 @@ To report a **security vulnerability**, do not open a public issue - see [SECURI
 - ✅ ~~add UI (**health bar**, player stats)~~ -  `done`
 - ⏳ ~~add **particles** system~~ ✅ (~~leafs~~ ✅, ~~wind~~ ✅, _rain_ ✅, _footsteps_, _smoke_) - `WIP`
 - ✅ ~~add **day/night** cycle~~ - `done`
-- add **weather** conditions changing over time (e.g.: _rain_)
-- add **fog of war** and/or **line of sight** - try [this](https://www.redblobgames.com/grids/circle-drawing/)
+- ✅ ~~add **weather** conditions changing over time (e.g.: _rain_)~~
+- ⏳ add **fog of war** and/or **line of sight** - try [this](https://www.redblobgames.com/grids/circle-drawing/) - `WIP` ready at night and in maze (Desktop only)
 - ⏳ add **light** sources (~~_around NPCs_~~ ✅, _camp fire_, _torch_, _houses_ ✅) - `WIP`
 - ✅ ~~add NPC, enemies with movements (add shadows)~~ - `done`
-- ⏳ add more sophisticated NPC AI like `Behaviour Tree` or `GOAP` - `WIP`
+- ⏳ add more sophisticated NPC AI like `Behaviour Tree` or `GOAP` - `WIP` there are daily `routines.toml`
 - ✅ ~~add **animals**~~ - `done`
 - add NPC and Player the ability to move on different **ground levels** (_hills_, _valley_, _bridge_ over lower level)
 - add separate `walls` layer used for collision detection when **Player** is **airborn** (e.g.: _jump_, _flying_)
@@ -144,11 +145,11 @@ To report a **security vulnerability**, do not open a public issue - see [SECURI
 - ⏳ add **fighting** system - `WIP`
 - ✅ ~~add **gamepad** controller mapping~~ - `done` - not so easy on **SteamDeck**
 - add option to play using **touchscreen** - use [this](https://forums.raspberrypi.com/viewtopic.php?t=354101) - first check performance on **mobile** devices
-- ⏳ add **dialog** system - `WIP`
-- add **quest** system
+- ✅ ~~add **dialog** system~~ - `done`
+- ✅ ~~add **quest** system~~ - `done`
 - ✅ ~~add **merchants**~~ - `done`
 - ✅ ~~add **cutscenes**~~ - `done`
-- ⏳ add game **save/load** system - `WIP`
+- ✅ ~~add game **save/load** system~~ - `done`
 - add game **highscore** table
 - add game **achievements**
 - add **music** and **sfx**
@@ -172,7 +173,7 @@ To report a **security vulnerability**, do not open a public issue - see [SECURI
   - [PixelVive] - `free` online asset generator
   - [OpenPoseAI] - use **OpenPoseAI** with SD to get best pose - see [video]
 - create **workflow** to quickly create **new assets** (_characters_, _animations_, _tiles_):
-  - use **Stable Diffusion**
+  - 🤔 use **Stable Diffusion** -
   - find pixelation filter and apply to images found on net (eg.: for different types of trees)
 - test how hard it is to switch to new **assets pack** - at current game state is still doable
   - customize sprite animation config `SPRITE_SHEET_DEFINITION` in [settings.py] to new layout, add missing options (mirror, copy default)
@@ -241,19 +242,12 @@ To report a **security vulnerability**, do not open a public issue - see [SECURI
 ## Setup
 
 ```bash
-# create venv
-python3 -m venv .venv
-# activate it
-# on Linux/MacOS
-source .venv/bin/activate
-# on Windows
+# create venv and import `requirements.txt` plus `requirements-dev.txt`
+just setup
+
+# activate venv
 .venv\Scripts\activate
 
-# install packages
-pip install -r requirements.txt
-
-# install packages for development
-pip install -r requirements-dev.txt
 ```
 
 ## Run
@@ -270,6 +264,9 @@ Browser mode:
 
 ```bash
 just serve-web
+
+# or like this to access it on any machine inside LAN
+just serve-web --bind your-maine-name.local --port 8989
 ```
 
 open [http://localhost:8000/](http://localhost:8000/) in browser

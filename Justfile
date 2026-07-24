@@ -6,11 +6,9 @@ default:
     @just --list
 
 # Initialize virtual environment and install dependencies (uses `uv` if available). Rerun tu update modules.
-# `--python 3.12` is also in `.python-version`; stated here too because an unpinned
-# `uv venv` silently takes the newest interpreter on the box (Homebrew's python3 is
-# 3.14), and several pinned deps have no wheels for it.
 [unix]
 setup:
+    # `--python 3.12` is also in `.python-version`;
     @if [ ! -d ".venv" ]; then \
         echo "Creating virtual environment using uv..."; \
         uv venv --python 3.12; \
@@ -127,17 +125,17 @@ update-config-schema:
     ..\..\.venv\Scripts\python.exe config_pydantic.py
 
 # Import entity data from CSV files into `config.json` (overwrites character, item, chest, and maze sections)
-# Pass `--export` to go the other way: `config.json` -> CSV files (regenerates all columns).
 [unix]
 import-entities *ARGS:
+    # Pass `--export` to go the other way: `config.json` -> CSV files (regenerates all columns).
     .venv/bin/python project/config_model/import_entities.py {{ARGS}}
 
 # Import dialog Markdown sources from the `doc/` vault into `config.json`.
-# Pipeline: MD frontmatter -> characters.csv -> config.json (import-entities
-# is the sole writer of the `characters` section, hence the cascade).
-# By default imports all compatible characters; pass a character name to import one.
 [unix]
 import-dialogs *name:
+    # Pipeline: MD frontmatter -> characters.csv -> config.json (import-entities
+    # is the sole writer of the `characters` section, hence the cascade).
+    # By default imports all compatible characters; pass a character name to import one.
     #!/usr/bin/env bash
     set -e
     if [ -z "{{name}}" ]; then
@@ -148,12 +146,12 @@ import-dialogs *name:
     just import-entities
 
 # Import quest Markdown sources from the `doc/` vault into `config.json`.
-# PL (doc/PL/Misje/) is the source of truth: machine fields (Test, Requires,
-# Nagroda) are read from PL only, EN (doc/EN/Quests/) supplies prose. An invalid
-# condition or a broken graph fails the import and leaves config.json untouched.
-# By default imports every chain found; pass a chain key to import one (e.g. Q03).
 [unix]
 import-quests *chain:
+    # PL (doc/PL/Misje/) is the source of truth: machine fields (Test, Requires,
+    # Nagroda) are read from PL only, EN (doc/EN/Quests/) supplies prose. An invalid
+    # condition or a broken graph fails the import and leaves config.json untouched.
+    # By default imports every chain found; pass a chain key to import one (e.g. Q03).
     #!/usr/bin/env bash
     set -e
     if [ -z "{{chain}}" ]; then
@@ -185,10 +183,10 @@ gen-faces:
     .venv\Scripts\python.exe scripts\gen_face_attachments.py
 
 # Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
-# Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
-# (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
 [unix]
 dialog-graph *key:
+    # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
+    # (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
     #!/usr/bin/env bash
     set -e
     if [ -z "{{key}}" ]; then
@@ -198,9 +196,10 @@ dialog-graph *key:
     fi
 
 # Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
-# Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one.
 [windows]
 dialog-graph *key:
+    # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
+    # (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
     #!powershell
     if ("{{key}}" -eq "") {
         .venv\Scripts\python.exe scripts\dialog_graph.py --all --format json
@@ -209,25 +208,27 @@ dialog-graph *key:
     }
 
 # Regenerate the interactive quest DAG (DataviewJS + vis-network) in `doc/_graphs/`.
-# Run AFTER `just import-quests`: the graph is built from config.json, so it shows
-# what the game sees. One note for every chain - the edges that matter cross them.
-# Needs Dataview "Enable JavaScript Queries" in Obsidian.
 [unix]
 quest-graph:
+    # Run AFTER `just import-quests`: the graph is built from config.json, so it shows
+    # what the game sees. One note for every chain - the edges that matter cross them.
+    # Needs Dataview "Enable JavaScript Queries" in Obsidian.
     .venv/bin/python scripts/quest_graph.py
 
 # Regenerate the interactive quest DAG (DataviewJS + vis-network) in `doc/_graphs/`.
-# Run AFTER `just import-quests`. Needs Dataview "Enable JavaScript Queries" in Obsidian.
 [windows]
 quest-graph:
+    # Run AFTER `just import-quests`: the graph is built from config.json, so it shows
+    # what the game sees. One note for every chain - the edges that matter cross them.
+    # Needs Dataview "Enable JavaScript Queries" in Obsidian.
     #!powershell
     .venv\Scripts\python.exe scripts\quest_graph.py
 
 # Regenerate the quest authoring cheat sheet at `doc/quest-cheatsheet.md`.
-# Everything in it is derived from the code (enums, condition whitelist, validators),
-# so run it after changing any of them - a hand-kept cheat sheet lies with authority.
 [unix]
 quest-cheatsheet:
+    # Everything in it is derived from the code (enums, condition whitelist, validators),
+    # so run it after changing any of them - a hand-kept cheat sheet lies with authority.
     .venv/bin/python scripts/gen_quest_cheatsheet.py
 
 # Regenerate the quest authoring cheat sheet at `doc/quest-cheatsheet.md`.
@@ -317,7 +318,7 @@ cpu-profiling:
 build-itchio:
     .venv/bin/pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt --archive project
 
-# Start the OpenCode watch agent to automatically process tasks from board
+# Start the OpenCode watcher agent to automatically process tasks from board (run `Tasks/bin/moab` for more options)
 [unix]
 start-oc-agent:
     Tasks/bin/moab watch --agent opencode --model "opencode/big-pickle" --interval 5
