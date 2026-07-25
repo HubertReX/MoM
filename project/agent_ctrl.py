@@ -671,8 +671,13 @@ if __name__ == "__main__":
         print("Usage: python project/agent_ctrl.py <action[:frames]> [more...]")
         print("  e.g. python project/agent_ctrl.py down accept")
         print("       python project/agent_ctrl.py up:30 right:15 attack screenshot")
-    print("  special: screenshot, exit, debug_map_change")
-    sys.exit(1)
+        print(
+            "  special: screenshot, exit, debug_map_change, debug_enter_maze,"
+            " debug_set_maze, debug_ui_state, debug_text_input,"
+            " talk_to_char:<key>, walk_to_char:<key>, walk_to_point:<x>,<y>,"
+            " type:<tekst>, backspace (pełny opis: docstring modułu)"
+        )
+        sys.exit(1)
 
     AgentController.send(sys.argv[1:], input_file)
     print(f"sent: {' '.join(sys.argv[1:])}  ->  {input_file}")
