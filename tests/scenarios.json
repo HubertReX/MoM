@@ -411,8 +411,37 @@
             { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 2.0 }
         ],
         "assertions": [
-            { "type": "screenshot_review", "target": "dialog_open", "expect": "A dialog panel is open showing text from Hammer and a numbered list of reply options (at least one visible)." },
-            { "type": "screenshot_review", "target": "hub_node", "expect": "The dialog panel shows Hammer's hub node after the player's first reply, with a numbered list of about six reply options that all fit inside the panel frame (no option overlaps or spills below the border)." },
+            {
+                "type": "screenshot_review",
+                "target": "dialog_open",
+                "expected_state": "DIALOG",
+                "expect": "A dialog panel is open showing text from Hammer and a numbered list of reply options (at least one visible).",
+                "expected_elements": [
+                    "dialog panel at the bottom of the screen",
+                    "two large character face portraits above the dialog panel, one on each side (which face belongs to whom is NOT checkable - do not judge it)",
+                    "yellow NPC name plate",
+                    "numbered list of reply options"
+                ],
+                "ui_quality_checks": [
+                    "no text overflows or touches any panel frame",
+                    "all reply options are fully inside the panel",
+                    "no literal markup tags such as [italic] are shown as plain text"
+                ]
+            },
+            {
+                "type": "screenshot_review",
+                "target": "hub_node",
+                "expected_state": "DIALOG",
+                "expect": "The dialog panel shows Hammer's hub node after the player's first reply, with a numbered list of about six reply options that all fit inside the panel frame (no option overlaps or spills below the border).",
+                "expected_elements": [
+                    "numbered list of about six reply options",
+                    "NPC dialog text above the option list"
+                ],
+                "ui_quality_checks": [
+                    "no option overlaps or spills below the panel border",
+                    "no text overflows or touches any panel frame"
+                ]
+            },
             { "type": "screenshot_review", "target": "dialog_closed", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; the dialog panel is closed after the player picked the final farewell option." },
             { "type": "process_alive" }
         ]
@@ -436,8 +465,34 @@
             { "slug": "scrolled_options", "commands": ["screenshot"], "wait": 2.0 }
         ],
         "assertions": [
-            { "type": "screenshot_review", "target": "formatted_options", "expect": "A dialog panel is open showing Hammer's reply options; at least one option contains an italic-styled (slanted) word fragment such as 'francuskim pieskom' or 'wielcy panicze'. NO literal markup tags like [italic] or [/italic] appear as plain text, and the option text has NO drop shadow behind it. All options fit inside the panel frame (none spill below the border)." },
-            { "type": "screenshot_review", "target": "scrolled_options", "expect": "The dialog option list has scrolled after pressing Down repeatedly: the highlighted selection is on a lower option, the first option is no longer shown (an up-arrow indicator is visible), and every visible option still fits inside the panel frame without spilling past the bottom border." },
+            {
+                "type": "screenshot_review",
+                "target": "formatted_options",
+                "expected_state": "DIALOG",
+                "expect": "A dialog panel is open showing Hammer's reply options; at least one option contains an italic-styled (slanted) word fragment such as 'francuskim pieskom' or 'wielcy panicze'.",
+                "expected_elements": [
+                    "at least one reply option with an italic-styled (slanted) word fragment"
+                ],
+                "ui_quality_checks": [
+                    "no literal markup tags like [italic] or [/italic] appear as plain text",
+                    "option text has no drop shadow behind it",
+                    "all options fit inside the panel frame, none spills below the border"
+                ]
+            },
+            {
+                "type": "screenshot_review",
+                "target": "scrolled_options",
+                "expected_state": "DIALOG",
+                "expect": "The dialog option list has scrolled after pressing Down repeatedly: the highlighted selection is on a lower option and the first option is no longer shown.",
+                "expected_elements": [
+                    "an up-arrow scroll indicator above the option list",
+                    "selection highlight on a lower option"
+                ],
+                "ui_quality_checks": [
+                    "every visible option fits inside the panel frame without spilling past the bottom border",
+                    "no text overflows or touches any panel frame"
+                ]
+            },
             { "type": "process_alive" }
         ]
     },
@@ -565,7 +620,22 @@
         ],
         "assertions": [
             { "type": "process_alive" },
-            { "type": "screenshot_review", "target": "barman_dialog", "expect": "A dialog panel is open showing the Barman Absinthrayner NPC's dialog text, with the yellow name plate, a thick sentiment bar above it, and a numbered list of reply options." }
+            {
+                "type": "screenshot_review",
+                "target": "barman_dialog",
+                "expected_state": "DIALOG",
+                "expect": "A dialog panel is open showing the barman NPC's dialog text (the game may run in Polish, where he is called 'Barman Absyntnent', or in English, 'Barman Absinthrayner').",
+                "expected_elements": [
+                    "yellow NPC name plate with the barman's name",
+                    "thick sentiment bar above the name plate",
+                    "numbered list of reply options",
+                    "two large character face portraits above the dialog panel, one on each side (which face belongs to whom is NOT checkable - do not judge it)"
+                ],
+                "ui_quality_checks": [
+                    "no text overflows or touches any panel frame",
+                    "all UI elements are fully inside their panels"
+                ]
+            }
         ]
     },
     {

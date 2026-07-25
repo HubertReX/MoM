@@ -36,6 +36,13 @@ Assertions (per scenario, opcjonalne):
     file_exists          desktop: plik ``<save_dir>/save_N.mom`` istnieje (min_size opcjonalny);
                          web: tłumaczone na obecność klucza ``MoM.save_N`` w localStorage.
     localstorage_exists  web: klucz ``key`` (np. ``MoM.save_0``) obecny w localStorage.
+    screenshot_review    ss-reviewer (model z vision) ocenia screenshot. Pola:
+                         ``target`` (slug akcji; brak = ostatni screenshot),
+                         ``expect`` (opis oczekiwania), ``expected_state`` (np. ``GAMEPLAY``),
+                         oraz OPCJONALNE checklisty trafiające wprost do prompta:
+                         ``expected_elements`` - lista elementów, które MUSZĄ być widoczne,
+                         ``ui_quality_checks`` - lista kontroli jakości UI (np. brak overflow).
+                         Bez tych pól zachowanie jest jak dotychczas.
 """
 from __future__ import annotations
 
@@ -101,10 +108,15 @@ WEB_AGENT_FLAG = "MoM.agent_control"
 SS_PREFIX_ENV = "MOM_AGENT_SS_PREFIX"  # desktop: prefix "{run_ts}_{scenario_slug}" przekazany do gry
 
 # --- ss-reviewer (analiza screenshotów przez subagenta z vision) ---
-# Kolejność prób: najpierw tani model z vision (mimo-v2.5), potem fallback Gemini.
+# Kolejność prób: najpierw Gemini (stabilny, odpowiada w kilka sekund), potem mimo-v2.5
+# jako fallback. Odwrotna kolejność (mimo jako primary) powodowała regularne timeouty
+# rc=124 - runner czekał 60 s na martwy model przed każdym fallbackiem.
+# KAŻDY model na tej liście MUSI mieć vision (`attachment: true`,
+# `modalities.input: ["text","image"]`), bo screenshot idzie jako załącznik `-f`;
+# `-f` z modelem bez vision kończy się BŁĘDEM, nie degradacją.
 # Gdy żaden model nie zwróci werdyktu -> asercja twardo pada (decyzja usera: hard-fail).
 SS_REVIEW_AGENT = "ss-reviewer"
-SS_REVIEW_MODELS: list[str | None] = ["opencode-go/mimo-v2.5", "google/gemini-3.1-flash-lite"]
+SS_REVIEW_MODELS: list[str | None] = ["google/gemini-3.1-flash-lite", "opencode-go/mimo-v2.5"]
 SS_REVIEW_TIMEOUT = 60.0
 SS_REVIEW_SKIP_ENV = "MOM_SKIP_SS_REVIEW"  # ustaw =1, by pominąć (szybka iteracja)
 
@@ -121,8 +133,31 @@ def slugify(text: str, max_len: int = 48) -> str:
     return text[:max_len] or "shot"
 
 
+def parse_review_json(text: str) -> tuple[str | None, list[str]]:
+    """Znajdź ostatni blok JSON z polem ``verdict``; zwróć ``(verdict, failed_checks)``.
+
+    Preferowana ścieżka parsowania werdyktu: ss-reviewer kończy odpowiedź fenced blokiem
+    ``{"verdict": ..., "state": ..., "failed_checks": [...]}``. Regex łapie goły obiekt,
+    więc otoczenie ```json ...``` nie przeszkadza, a blok nie musi być ostatnią linią.
+    Gdy model nie umie w JSON (np. fallback), woła się :func:`parse_review_verdict`.
+    """
+    candidates = re.findall(r"\{[^{}]*\"verdict\"[^{}]*\}", text, re.DOTALL)
+    for raw in reversed(candidates):
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        verdict = str(data.get("verdict", "")).upper()
+        if verdict in ("PASS", "FAIL"):
+            return verdict, [str(c) for c in data.get("failed_checks", [])]
+    return None, []
+
+
 def parse_review_verdict(text: str) -> str | None:
-    """Wyciągnij PASS/FAIL z odpowiedzi ss-reviewera (kilka wariantów formatu)."""
+    """Wyciągnij PASS/FAIL z odpowiedzi ss-reviewera (kilka wariantów formatu).
+
+    Fallback dla modeli, które nie wyprodukowały bloku JSON (patrz :func:`parse_review_json`).
+    """
     for pattern in (
         r"RESULT:\s*(PASS|FAIL)",
         r"\*\*Result\*\*:\s*(PASS|FAIL)",
@@ -142,35 +177,63 @@ def _timeout_cmd(cmd: list[str], timeout: int = 60) -> list[str]:
     return cmd
 
 
-def review_screenshot(path: Path, expect: str, expected_state: str | None) -> tuple[str | None, str]:
+def build_review_prompt(
+    expect: str,
+    expected_state: str | None,
+    expected_elements: list[str] | None = None,
+    ui_quality_checks: list[str] | None = None,
+) -> str:
+    """Złóż prompt dla ss-reviewera z checklist scenariusza.
+
+    ``expected_elements`` i ``ui_quality_checks`` są opcjonalne - scenariusze bez nich
+    dostają prompt jak dotąd. Bez jawnego pytania o jakość UI model jej NIE ocenia
+    (zweryfikowane 2026-07-25: ten sam model z pytaniem o overflow wykrywa wadę 2/2,
+    bez pytania - przepuszcza).
+    """
+    return (
+        "You are validating an automated test screenshot (attached) from the game "
+        '"Misadventures of Malachi" (MoM). '
+        f"Expected game state: {expected_state or 'described below'}. "
+        f"Expectation to verify: {expect} "
+        + (f"Expected visible elements: {'; '.join(expected_elements)}. " if expected_elements else "")
+        + (f"UI quality checks (each must hold): {'; '.join(ui_quality_checks)}. " if ui_quality_checks else "")
+        + "Analyze the attached screenshot and produce your structured report. "
+        "Then output, as the FINAL fenced code block, a JSON object exactly of the form: "
+        '{"verdict": "PASS"|"FAIL", "state": "<detected state>", "failed_checks": ["..."]}'
+    )
+
+
+def review_screenshot(
+    path: Path,
+    expect: str,
+    expected_state: str | None,
+    expected_elements: list[str] | None = None,
+    ui_quality_checks: list[str] | None = None,
+) -> tuple[str | None, str]:
     """Poproś subagenta ss-reviewer o werdykt PASS/FAIL dla screenshotu.
 
     Zwraca ``(verdict, detail)`` gdzie verdict to 'PASS'/'FAIL'/None (żaden model nie dał werdyktu).
     Próbuje kolejno modeli z ``SS_REVIEW_MODELS``; pierwszy zwracający czytelny werdykt wygrywa.
 
-    UWAGA: ścieżka screenshotu jest przekazywana inline w prompcie, a nie przez ``-f``.
-    ``-f`` wymaga modelu z vision (``attachment: true``, ``modalities.input: ["text","image"]``),
-    a nie każdy model go ma. Modele użyte w ``SS_REVIEW_MODELS`` (mimo-v2.5, Gemini)
-    mają vision, ale inne modele (deepseek-v4, glm) — nie. Przekazując ścieżkę inline,
-    model bez vision może przynajmniej odpowiedzieć że nie widzi obrazka, zamiast błędu.
+    Screenshot jest przekazywany jako ZAŁĄCZNIK przez ``-f`` (ścieżka inline w prompcie
+    już nie działa - zmiana zachowania OpenCode zweryfikowana 2026-07-25). Kolejność
+    argumentów ma znaczenie: message PIERWSZY, ``-f`` PO nim, bo ``-f`` jest greedy
+    (``[array]``) i połknąłby trailing positional message jako nazwę pliku.
+    Konsekwencja: każdy model w ``SS_REVIEW_MODELS`` musi mieć vision - patrz komentarz
+    przy tej stałej.
+
+    Werdykt parsowany jest najpierw z bloku JSON (:func:`parse_review_json`), a dopiero
+    gdy go brak - starym regexem po markdownie (:func:`parse_review_verdict`).
     """
-    prompt = (
-        "You are validating an automated test screenshot from the game "
-        '"Misadventures of Malachi" (MoM). '
-        f"Expected game state: {expected_state or 'described below'}. "
-        f"Expectation to verify: {expect} "
-        f"Screenshot file path: {path} "
-        "Analyze the screenshot located at the given path and produce your structured report. "
-        "Then, on the FINAL line, output exactly 'RESULT: PASS' if the screenshot "
-        "matches the expectation, or 'RESULT: FAIL' if it does not."
-    )
+    prompt = build_review_prompt(expect, expected_state, expected_elements, ui_quality_checks)
     # MOM_SS_REVIEW_MODEL wymusza jeden konkretny model (pomija dead primary).
     forced = os.environ.get("MOM_SS_REVIEW_MODEL")
     models: list[str | None] = [forced] if forced else SS_REVIEW_MODELS
     last_detail = "no model attempted"
     for model in models:
         label = model or "agent-default"
-        cmd = ["opencode", "run", "--pure", prompt, "--agent", SS_REVIEW_AGENT]
+        # message PIERWSZY, -f PO nim (patrz docstring) - inaczej `-f` połyka prompt.
+        cmd = ["opencode", "run", "--pure", prompt, "--agent", SS_REVIEW_AGENT, "-f", str(path)]
         if model:
             cmd += ["--model", model]
         cmd = _timeout_cmd(cmd, int(SS_REVIEW_TIMEOUT))
@@ -186,13 +249,21 @@ def review_screenshot(path: Path, expect: str, expected_state: str | None) -> tu
         except FileNotFoundError:
             return None, "opencode CLI not found on PATH"
         out = (proc.stdout or "") + "\n" + (proc.stderr or "")
+        verdict, failed_checks = parse_review_json(out)
+        if verdict:
+            print(f"[ss-review] {label} -> {verdict}"
+                  + (f" failed_checks={failed_checks}" if failed_checks else ""))
+            detail = f"[{label}]"
+            if failed_checks:
+                detail += " failed_checks: " + "; ".join(failed_checks)
+            return verdict, detail
         verdict = parse_review_verdict(out)
         if verdict:
             # dołącz krótki kontekst z raportu (ostatnie niepuste linie) do detalu
             tail = " ".join(
                 ln.strip() for ln in out.strip().splitlines()[-4:] if ln.strip()
             )
-            print(f"[ss-review] {label} -> {verdict}")
+            print(f"[ss-review] {label} -> {verdict} (no JSON block, regex fallback)")
             return verdict, f"[{label}] {tail}"
         last_detail = f"{label}: no verdict (rc={proc.returncode})"
         print(f"[ss-review] {last_detail}")
@@ -426,7 +497,14 @@ class RunnerBase:
             return [f"screenshot_review: screenshot file missing: {path}"]
         expect = assertion.get("expect", "")
         expected_state = assertion.get("expected_state")
-        verdict, detail = review_screenshot(path, expect, expected_state)
+        # opcjonalne checklisty per-scenariusz (brak = prompt jak dotąd)
+        expected_elements = assertion.get("expected_elements")
+        ui_quality_checks = assertion.get("ui_quality_checks")
+        verdict, detail = review_screenshot(
+            path, expect, expected_state,
+            expected_elements=expected_elements,
+            ui_quality_checks=ui_quality_checks,
+        )
         if verdict == "PASS":
             return []
         if verdict == "FAIL":

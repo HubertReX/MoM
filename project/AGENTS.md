@@ -391,27 +391,63 @@ Asercja `screenshot_review` w `scenarios.json` woła `review_screenshot()` w
 
 **Ważne zasady:**
 
-1. **Ścieżkę screenshotu przekazuj inline w prompcie**, nie przez `-f`. Flaga `-f` wymaga
-   modelu z vision (`attachment: true`, `modalities.input: ["text","image"]`), a nie każdy
-   model go ma — `-f` z modelem bez vision powoduje błąd. Modele w `SS_REVIEW_MODELS`
-   (``opencode-go/mimo-v2.5``, ``google/gemini-3.1-flash-lite``) mają vision i potrafią
-   czytać plik ze ścieżki w treści prompta.
-2. **Wymuś model z vision** przez `MOM_SS_REVIEW_MODEL='google/gemini-3.1-flash-lite'` lub
-   parametr `--model` w wywołaniu opencode. Bez tego test używa domyślnego modelu agenta.
-3. **Używaj `--pure`** w komendzie `opencode run`, żeby wyłączyć plugin `discover-models.js`.
+1. **Screenshot idzie jako ZAŁĄCZNIK przez `-f`**, nie jako ścieżka inline w prompcie
+   (ścieżka inline przestała działać — zmiana zachowania OpenCode, zweryfikowana 2026-07-25).
+   Kolejność argumentów ma znaczenie: **message PIERWSZY, `-f` PO nim**, bo `-f` jest greedy
+   (`[array]`) i połknąłby trailing positional message jako nazwę pliku
+   (`Error: File not found: <twój prompt>`).
+2. **Każdy model w `SS_REVIEW_MODELS` MUSI mieć vision** (`attachment: true`,
+   `modalities.input: ["text","image"]`) — `-f` z modelem bez vision kończy się **błędem**,
+   nie degradacją. Oba obecne modele (Gemini, mimo) vision mają; np. deepseek-v4 czy glm — nie.
+3. **Primary to `google/gemini-3.1-flash-lite`**, fallback `opencode-go/mimo-v2.5`.
+   Odwrotna kolejność (mimo jako primary) powodowała regularne timeouty rc=124 — runner
+   czekał 60 s na martwy model przed każdym fallbackiem. Wymuszenie jednego modelu:
+   `MOM_SS_REVIEW_MODEL='opencode-go/mimo-v2.5'`.
+4. **Używaj `--pure`** w komendzie `opencode run`, żeby wyłączyć plugin `discover-models.js`.
    Bez tego plugin robi HTTP requesty do wszystkich providerów przy starcie, co może
    powodować logi na stderr i opóźnienia. `--pure` uruchamia opencode bez zewnętrznych pluginów.
-4. **Hard timeout**: subprocess jest dodatkowo owinięty w `gtimeout` (GNU coreutils, macOS)
+5. **Hard timeout**: subprocess jest dodatkowo owinięty w `gtimeout` (GNU coreutils, macOS)
    lub `timeout` (Linux), żeby ubić wiszący proces gdy model discovery hanguje.
    `SS_REVIEW_TIMEOUT = 60s`.
-5. **Pomiń ss-review** przez `MOM_SKIP_SS_REVIEW=1` — szybka iteracja bez vision.
+6. **Pomiń ss-review** przez `MOM_SKIP_SS_REVIEW=1` — szybka iteracja bez vision.
 
-Konfiguracja w `automate_display_test.py:96-103`:
+Konfiguracja w `automate_display_test.py` (stałe `SS_REVIEW_*`):
 ```python
 SS_REVIEW_AGENT = "ss-reviewer"
-SS_REVIEW_MODELS: list[str | None] = ["opencode-go/mimo-v2.5", "google/gemini-3.1-flash-lite"]
+SS_REVIEW_MODELS: list[str | None] = ["google/gemini-3.1-flash-lite", "opencode-go/mimo-v2.5"]
 SS_REVIEW_TIMEOUT = 60.0
 ```
+
+**Checklisty per-scenariusz.** Asercja `screenshot_review` ma dwa opcjonalne pola, które
+trafiają wprost do prompta modelu:
+
+```json
+{
+  "type": "screenshot_review",
+  "target": "barman_dialog",
+  "expected_state": "DIALOG",
+  "expect": "opis oczekiwania (pole istniejące)",
+  "expected_elements": ["yellow NPC name plate", "numbered list of reply options"],
+  "ui_quality_checks": ["no text overflows or touches any panel frame"]
+}
+```
+
+Bez tych pól scenariusz działa jak dotąd. **Model NIE ocenia jakości UI, jeśli go o to
+nie poprosisz** — ten sam model z pytaniem o overflow wykrywa wadę 2/2, bez pytania
+przepuszcza. Wzorcowo wypełnione są scenariusze dialogowe (`Hammer Dialog Flow`,
+`Dialog Option Formatting`, `Dialog Open Deterministic`); do reszty dopisujemy przy okazji.
+
+Pisząc checklistę pamiętaj, że model **nie zna** encji gry: nie każ mu rozstrzygać, który
+portret należy do NPC, a który do gracza (gracz to zielony `GreenNinja`, barman to rudy
+`Hunter` — model zgaduje odwrotnie), ani nie wpisuj angielskiej nazwy NPC, gdy gra chodzi
+po polsku. Sprawdzalne jest to, co widać bez wiedzy o świecie: obecność elementu, jego
+położenie na ekranie, przepełnienia, literalne tagi markupu.
+
+**Werdykt jest parsowany z JSON.** ss-reviewer kończy odpowiedź fenced blokiem
+`{"verdict": "PASS"|"FAIL", "state": "...", "failed_checks": ["..."]}`; runner czyta go
+przez `parse_review_json()`, a `failed_checks` ląduje w logu i w komunikacie błędu asercji.
+Stary regex po markdownie (`parse_review_verdict()`) został jako fallback dla modeli,
+które nie wyprodukowały bloku JSON.
 
 ## Persystencja stanu
 
