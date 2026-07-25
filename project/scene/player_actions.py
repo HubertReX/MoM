@@ -5,10 +5,9 @@ na klatkę, po kolizjach. Mechanizm wejścia bez zmian - ``INPUTS`` to ten sam
 współdzielony słownik z ``settings``, konsumowany przez ustawienie klucza na
 ``False`` po obsłużeniu.
 
-Globale ``SHOW_DEBUG_INFO`` / ``USE_ALPHA_FILTER`` nadal MUSZĄ być przestawiane
-w module ``scene.scene`` (kontrakt K9: ``help.py`` i ``characters.py`` czytają je
-przez ``scene.<flaga>``, a ``Scene.draw`` przez własną globalną). Docelowo
-przeprowadzka do ``scene/debug_overlay.py`` - krok 9 planu.
+``SHOW_DEBUG_INFO`` mieszka w ``scene/debug_overlay.py`` i jest czytana żywo
+przez ``Scene.draw``, ``characters.py`` i panel pomocy (K9); ``USE_ALPHA_FILTER``
+pozostaje globalną modułu ``scene.scene``, bo tylko ``Scene.draw`` ją czyta.
 """
 from __future__ import annotations
 
@@ -20,7 +19,7 @@ from objects import ItemSprite, NotificationTypeEnum
 from rich import print
 from ui.panels.trade import TradePanel
 
-from scene import world_clock
+from scene import debug_overlay, world_clock
 from settings import _, INPUTS, USE_AGENT_CONTROL, entity_name
 
 if TYPE_CHECKING:
@@ -46,9 +45,8 @@ def handle(scene: "Scene") -> None:
         INPUTS["quit"] = False
 
     if INPUTS["debug"]:
-        # flaga żyje w module scene.scene (K9) - patrz docstring modułu
-        from scene import scene as scene_module
-        scene_module.SHOW_DEBUG_INFO = not scene_module.SHOW_DEBUG_INFO
+        # flaga żyje w scene/debug_overlay.py i jest czytana żywo (K9)
+        debug_overlay.SHOW_DEBUG_INFO = not debug_overlay.SHOW_DEBUG_INFO
         INPUTS["debug"] = False
 
     if INPUTS["alpha"]:
@@ -65,8 +63,7 @@ def handle(scene: "Scene") -> None:
         # already uses to decide whether to advertise this key, so the two now
         # agree. `USE_AGENT_CONTROL` keeps it available to the agent-driven
         # tests, which skip a day on purpose and run without the overlay.
-        from scene import scene as scene_module
-        if scene_module.SHOW_DEBUG_INFO or USE_AGENT_CONTROL:
+        if debug_overlay.SHOW_DEBUG_INFO or USE_AGENT_CONTROL:
             # Advance the counter too. Firing the day turn while `scene.day` sat
             # still made the key lie in the other direction: merchants restocked
             # on a day that, as far as anything reading the clock was concerned,

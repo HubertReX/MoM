@@ -237,12 +237,13 @@ class HelpPanel(Widget):
     def _debug_on() -> bool:
         """Live read of the runtime debug flag.
 
-        ``` ``/``Z`` rebind ``scene.SHOW_DEBUG_INFO`` (the *scene module* global);
-        a ``from settings import`` copy would go stale. Local import avoids the
-        game_ui → help → scene import cycle at load time.
+        ``` ``/``Z`` rebind ``debug_overlay.SHOW_DEBUG_INFO`` (the runtime flag of
+        the scene package, B01 krok 9); a ``from settings import`` copy would go
+        stale. Local import avoids the game_ui → help → scene import cycle at load
+        time.
         """
-        import scene as scene_module
-        return bool(scene_module.SHOW_DEBUG_INFO)
+        from scene import debug_overlay
+        return bool(debug_overlay.SHOW_DEBUG_INFO)
 
     def _visible_groups(self, groups: tuple[_Group, ...]) -> list[tuple[_Group, list[_Row]]]:
         out: list[tuple[_Group, list[_Row]]] = []

@@ -1,6 +1,6 @@
 # B01 - stan realizacji (handoff do wznowienia)
 
-Ostatnia aktualizacja: 2026-07-25, sesja Fable (Faza 2). Architektura
+Ostatnia aktualizacja: 2026-07-25, sesja Fable (kroki 3-9). Architektura
 **zaakceptowana przez autora** - obowiązuje
 [doc/refactor-rdzenia-B01.md](../refactor-rdzenia-B01.md) + pełny dokument
 HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
@@ -20,15 +20,34 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
 - `d5728c5` **krok 2**: `scene/map_loader.py` - ładowanie mapy jako funkcje
   modułowe; na Scene delegaty tylko `create_item` i `load_map`; jedyny lokalny
   import NPC w pakiecie scene mieszka w map_loader. `scene.py` 2652 → 2072 linii.
+- `100ce4c` **krok 3**: `scene/world_clock.py` - tick zegara, `apply_days`,
+  `day_rng`, `abs_minutes`, `reset`, `next_day`; `settings.INITIAL_HOUR/INITIAL_DAY/
+  GAME_TIME_SPEED` czytane dynamicznie (K6), koniec importu by-value.
+- `f0923b0` **krok 4**: `scene/collisions.py` - jedna funkcja `resolve(scene)`
+  (hot path, bez podfunkcji per pętla).
+- `b49036b` **krok 5**: `scene/player_actions.py` (D4) - cały blok `INPUTS`.
+  `Scene.update` jest spisem treści: freeze → grupy/rutyny → zegar → kolizje → akcje.
+- `b776626` **krok 6**: `scene/routines_director.py` - harmonogram NPC-ów
+  (tranzyty, reconcile/settle, materializacja, sen, roster, sloty) + stałe
+  `_NOWHERE` / `_DEPARTURE_FALLBACK_MIN`.
+- `2ef41ac` **krok 7**: `scene/map_state.py` - store/restore/go_to/reload/
+  reset_sprite_groups + `MAP_PROPERTIES` (K1). Test
+  `test_dead_monsters_is_a_cached_map_property` importuje teraz listę zamiast
+  parsować AST scene.py.
+- **krok 8**: `scene/night_filter.py` (filtry dnia/nocy, światła, framing)
+  + `scene/intro.py` (cutscena); `intro_cutscene` przestał być atrybutem Scene.
+- **krok 9**: `scene/agent_api.py` (delegaty `agent_*`, K3) + `scene/debug_overlay.py`
+  z flagą `SHOW_DEBUG_INFO`; konsumenci (`characters.py`, `ui/panels/help.py`,
+  `player_actions`) czytają ją z `debug_overlay`, a `scene/__init__.__getattr__`
+  ma fallback na ten moduł, więc `scene.SHOW_DEBUG_INFO` nadal działa (K9).
+  `scene/scene.py` 2072 → 669 linii.
 
-## Następny krok: **krok 3 - world_clock.py**
+## Następny krok: **krok 10 - pakiet `characters/`**
 
-Wg planu (sekcja 5 dokumentu): tick zegara z `Scene.update` (minute_f/hour/day,
-~linie 1430-1445 w scene/scene.py), `apply_days`, `day_rng`, `abs_minutes`;
-`settings.INITIAL_HOUR` czytać DYNAMICZNIE (K6 - dziś scene.py robi
-`from settings import INITIAL_HOUR` by-value; usunąć ten import przy okazji);
-sprawdzić `tests/test_deterministic_mode.py` i scenariusz ze `start_hour`.
-Potem kroki 4-16 wg tabeli w dokumencie.
+Wg planu: przeniesienie `characters.py` do pakietu (`npc.py` / `player.py` +
+`__init__.py`), rename bez podziału metod - jak krok 1. Po tym kroku
+OBOWIĄZKOWO pełny `just test-web` (pygbag musi spakować nowy podpakiet).
+Potem kroki 11-16 wg tabeli w dokumencie HTML.
 
 ## Bramki po każdym kroku (przypomnienie)
 
@@ -65,6 +84,16 @@ nie przechodzi albo krok nie mieści się w ~600 liniach diffu.
   potem oglądaj screenshoty z `screenshots/agent/` (Read czyta PNG).
 - `_roster_loaded` i podobne dynamiczne atrybuty: przy wynoszeniu kodu z klasy
   mypy wymaga jawnej deklaracji w `__init__`.
+- Duże bloki (kroki 6, 8, 9) najtaniej wynosić skryptem: wytnij zakres linii,
+  `textwrap.dedent`, podmień sygnatury, `re.sub(r'\bself\b', 'scene')` - potem
+  mypy i `just test-unit` wyłapią resztę. Ręczne przepisywanie 400 linii to
+  czysta strata tokenów.
+- Zmienna, która w metodzie trzymała raz `Player`, raz `NPC`, po wyniesieniu do
+  funkcji traci szerszy kontekst wnioskowania - mypy wymaga jawnego `npc: Any`
+  (import `characters` w pakiecie scene zrobiłby cykl).
+- Testy potrafią czytać KSZTAŁT kodu, nie tylko zachowanie
+  (`test_dead_monsters_is_a_cached_map_property` parsował AST `scene.py`).
+  Przy przenoszeniu stałych szukaj `ast.parse` / `inspect.getsourcefile` w testach.
 
 ## Prompt wznowienia (do nowej sesji, np. Opus)
 

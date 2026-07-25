@@ -67,6 +67,7 @@ import npc_state
 from npc_runtime import NpcRuntime
 from npc_schedule import Destination, Slot, current_slot, destinations_of, resolve_at, slot_jitter
 import scene
+from scene import debug_overlay
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, HealthBarUI, ItemSprite, NotificationTypeEnum, Shadow
 from animation.transitions import AnimationTransition
@@ -674,9 +675,10 @@ class NPC(pygame.sprite.Sprite):
             self.scene.waypoints,
             origin_map=self.origin_map,
             current_map=self.scene.current_map,
-            # live read of the scene module's global, like `debug()` below - a
-            # `from settings import` copy would never see the ` / Z toggle
-            warn=print if scene.SHOW_DEBUG_INFO else None,
+            # live read of the runtime flag from scene/debug_overlay.py, like
+            # `debug()` below - a `from settings import` copy would never see
+            # the ` / Z toggle
+            warn=print if debug_overlay.SHOW_DEBUG_INFO else None,
         )
         self._schedule_destination = destination
         if destination is None:
@@ -1476,7 +1478,7 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def debug(self, msgs: list[str]) -> None:
-        if scene.SHOW_DEBUG_INFO:
+        if debug_overlay.SHOW_DEBUG_INFO:
             for i, msg in enumerate(msgs):
                 self.game.render_text(msg, (0, settings.HEIGHT - 25 - i * 25))
 

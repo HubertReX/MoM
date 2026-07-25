@@ -8,10 +8,6 @@ import pyscroll.data
 from camera import Camera
 from maze_generator.maze import Maze
 from maze_generator.maze_utils import (
-    MARGIN,
-    SUBTILE_COLS,
-    SUBTILE_ROWS,
-    TILE_SIZE,
     clear_maze_cache,
     get_gid_from_tmx_id,
     timeit
@@ -33,7 +29,6 @@ from settings import (
     CIRCLE_RADIUS,
     DAY_FILTER,
     FILTER_SCALE,
-    FONT_SIZE_MEDIUM,
     FULL_WHITE_COLOR,
     GEMS_SHEET_DEFINITION,
     GEMS_SHEET_FILE,
@@ -52,13 +47,11 @@ from settings import (
     QUICK_SAVE_SLOT,
     ROUTINES_FILE,
     SHADERS_NAMES,
-    SHOW_DEBUG_INFO,
     SHOW_UI,
     TRANSPARENT_COLOR,
     USE_ALPHA_FILTER,
     USE_PARTICLES,
     USE_SHADERS,
-    WAYPOINTS_LINE_COLOR,
     ZOOM_LEVEL,
     # ColorValue,
     Point,
@@ -68,8 +61,8 @@ from settings import (
     vec3,
     vector_to_tuple
 )
-from scene import (collisions, intro, map_loader, map_state, night_filter, player_actions,
-                   routines_director, world_clock)
+from scene import (agent_api, collisions, debug_overlay, intro, map_loader, map_state,
+                   night_filter, player_actions, routines_director, world_clock)
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
@@ -389,114 +382,23 @@ class Scene(State):
     # MARK: agent test helpers (deterministic navigation)
 
     def agent_find_entity(self, key: str) -> "Any | None":
-        """Return the NPC / item / chest whose key matches ``key`` (case-insensitive).
-
-        Deterministic-test helper. Matches on the map-object name (``loaded_NPCs``
-        key / sprite ``name``) or the entity's bilingual display name, and accepts a
-        prefix so ``barman`` finds ``Barman_Absyntnent``. NPCs are searched first,
-        then items, then chests.
-        """
-        k = key.strip().lower()
-
-        def _matches(ent: "Any") -> bool:
-            names = [str(getattr(ent, "name", "")).lower()]
-            model = getattr(ent, "model", None)
-            if model is not None:
-                names += [str(getattr(model, "name_EN", "")).lower(),
-                          str(getattr(model, "name_PL", "")).lower()]
-            names = [n for n in names if n]
-            return any(n == k or n.startswith(k) or k in n for n in names)
-
-        for name, npc in self.loaded_NPCs.items():
-            if name.lower() == k or name.lower().startswith(k) or _matches(npc):
-                return npc
-        # flattened rather than a tuple of the two lists: `list` is invariant, so
-        # `(self.items, self.chests)` joins to plain `object` and stops being iterable
-        # as far as the type checker is concerned
-        for ent in [*self.items, *self.chests]:
-            if _matches(ent):
-                return ent
-        return None
+        # delegaty do systemu agent_api (B01 krok 9) - API testów/agenta (K3)
+        return agent_api.find_entity(self, key)
 
     def agent_walk_target(self, key: str) -> "vec | None":
-        """Walkable world point next to entity ``key`` that the player can reach.
-
-        Returns the centre of a walkable tile adjacent (8-neighbourhood) to the
-        entity and reachable from the player via A*, or ``None`` if the entity is
-        unknown or has no reachable adjacent tile ("brak ścieżki").
-        """
-        ent = self.agent_find_entity(key)
-        if ent is None:
-            return None
-        return self.agent_point_near(getattr(ent, "pos", None))
+        return agent_api.walk_target(self, key)
 
     def agent_point_near(self, pos: "vec | None") -> "vec | None":
-        """Walkable, player-reachable world point next to world ``pos`` (or ``pos``
-        itself if already free). ``None`` when nothing adjacent is reachable."""
-        if pos is None:
-            return None
-        from maze_generator.maze_utils import a_star_cached
-
-        grid = self.path_finding_grid
-        rows, cols = len(grid), len(grid[0]) if grid else 0
-        p_tile = self.player.get_tileset_coord()
-        start = (p_tile.y, p_tile.x)
-        col0 = int(pos.x // TILE_SIZE)
-        row0 = int(pos.y // TILE_SIZE)
-        # try the entity's own tile first, then the 8 neighbours (nearest first)
-        offsets = [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0),
-                   (-1, -1), (-1, 1), (1, -1), (1, 1)]
-        for dr, dc in offsets:
-            r, c = row0 + dr, col0 + dc
-            if not (0 <= r < rows and 0 <= c < cols):
-                continue
-            if grid[r][c] > 0:                      # wall / not walkable
-                continue
-            if (r, c) != start and not a_star_cached(start=start, goal=(r, c), grid=grid):
-                continue                            # unreachable from the player
-            return vec(c * TILE_SIZE + TILE_SIZE // 2, r * TILE_SIZE + TILE_SIZE // 2)
-        return None
+        return agent_api.point_near(self, pos)
 
     def agent_walk_player_to(self, point: "vec") -> bool:
-        """Send the player walking to ``point`` via the normal A* path. Returns
-        ``True`` if a path was found (movement started), ``False`` otherwise."""
-        self.player.target = vec(point.x, point.y)
-        self.player.find_path()
-        started = self.player.waypoints_cnt > 0 or self.player.target == vec(0, 0)
-        if not started:
-            self.player.target = vec(0, 0)
-        return started
+        return agent_api.walk_player_to(self, point)
 
     def agent_player_arrived(self) -> bool:
-        """True when the player is no longer walking a queued path."""
-        return self.player.target == vec(0, 0) and self.player.waypoints_cnt == 0
+        return agent_api.player_arrived(self)
 
     def agent_open_dialog(self, key: str) -> bool:
-        """Deterministically open ``key``'s dialog — no walking to a wandering NPC.
-
-        NPCs random-walk, so ``walk_to_char`` + ``talk`` races the target. For a
-        repeatable dialog screenshot this snaps the player next to the NPC and opens
-        the panel through the game's own talk path (``npc_met`` + ``ui.open``).
-        Returns ``True`` if a dialog panel was opened.
-        """
-        from settings import get_msg
-        from ui.panels.dialog import DialogPanel
-
-        npc = self.agent_find_entity(key)
-        if npc is None or not getattr(npc, "has_dialog", False) or getattr(npc, "dialog", None) is None:
-            return False
-        # freeze the NPC where it stands so it can't wander off; do NOT move the
-        # player (snapping onto item piles triggers auto-pickup churn).
-        npc.target = vec(0, 0)
-        npc.waypoints = ()
-        npc.waypoints_cnt = 0
-        self.player.npc_met = npc
-        npc.npc_met = self.player
-        text = get_msg(self.game.conf.messages, npc.dialog.text)
-        self.ui.open(DialogPanel, npc=npc, text=text)
-        self.player.is_talking = True
-        npc.is_talking = True
-        return True
+        return agent_api.open_dialog(self, key)
 
     #############################################################################################################
 
@@ -745,8 +647,8 @@ class Scene(State):
         if self.cutscene_framing:
             night_filter.apply_cutscene_framing(self, screen, self.cutscene_framing)
 
-        if SHOW_DEBUG_INFO:
-            self.show_debug()
+        if debug_overlay.SHOW_DEBUG_INFO:
+            debug_overlay.show_debug(self)
             self.debug([f"FPS: {self.game.fps: 7.1f} M: {self.current_map}",])
 
         if self.display_ui_flag:
@@ -759,89 +661,3 @@ class Scene(State):
         return night_filter.get_lights(self)
 
     #############################################################################################################
-    def show_debug(self) -> None:
-        # MARK: show_debug
-        # prepare shader info
-
-        # shader_index = SHADERS_NAMES.index(self.game.shader.shader_name)
-        # shader_index = max(shader_index, 0)
-        # shader_name = SHADERS_NAMES[shader_index] if USE_SHADERS else "n/a"
-        # prepare debug messages displayed in upper left corner
-        # msgs = [
-        #     f"FPS: {self.game.fps: 5.1f} Shader: {shader_name}",
-        #     # f"Eye: x:{self.camera.target.x:6.2f} y:{self.camera.target.y:6.2f}",
-        #     f"Time: {self.hour}:{self.minute:02}",
-        #     # f"vel: {self.player.vel.x: 6.1f} {self.player.vel.y: 6.1f}",
-        #     # f"x  : {self.player.pos.x: 3.0f}   y : {self.player.pos.y: 3.0f}",
-        #     # f"g x:  {self.player.tileset_coord.x: 3.0f} g y : {self.player.tileset_coord.y: 3.0f}",
-        #     # f"up_vel: {self.player.up_vel: 3.1f} up_acc{self.player.up_acc: 3.1f}",
-        #     # f"t x:  {self.player.target.x: 3.0f} t y : {self.player.target.y: 3.0f}",
-        #     # f"offset: {self.player.jumping_offset: 6.1f}",
-        #     # f"col: {self.player.rect.collidelist(self.walls):06.02f}",
-        #     # f"bored={self.player.state.enter_time: 5.1f} time_elapsed={self.game.time_elapsed: 5.1f}",
-        # ]
-        # self.debug(msgs)
-
-        if self.is_maze:
-            current_map_level: int = int(self.current_map.split("_")[1])
-            if current_map_level == 1:
-                path = self.maze_stats["longest_N_wall_path"]
-            else:
-                path = self.maze_stats["longest_dead_end_path"]
-            self.mark_maze_sub_grid(path[0], "red")
-            self.mark_maze_sub_grid(path[-1], "blue")
-            for step in path[1:-1]:
-                self.mark_maze_sub_grid(step, "green")
-            pass
-
-        # display npc (and players) debug messages
-        for npc in self.NPCs + [self.player]:
-            # prepare text displayed under NPC
-            texts = [
-                npc.name,
-                # f"px={npc.pos.x // 1:3} y={(npc.pos.y - 4) // 1:3}",
-                f"gx={npc.tileset_coord.x:3} y={npc.tileset_coord.y:3}",
-                # f"s ={npc.state} j={npc.is_flying}",
-                # f"st ={npc.state} sp = {npc.speed}",
-                # f"wc={npc.waypoints_cnt} wn={npc.current_waypoint_no}",
-                # f"tx={npc.get_tileset_coord(npc.target).x:3} y={npc.get_tileset_coord(npc.target).y:3}",
-            ]
-            # draw lines connecting waypoints
-            if npc.waypoints_cnt > 0:
-                # curr_wp = npc.waypoints[npc.current_waypoint_no]
-                # add current waypoint as text under NPC
-                # texts.append(f"cw={npc.get_tileset_coord(curr_wp).x:3} {npc.get_tileset_coord(curr_wp).y:3}")
-                prev_point = Point(int(npc.pos.x), int(npc.pos.y - 4))
-                for point in list(npc.waypoints)[npc.current_waypoint_no:]:
-                    from_p = self.map_view.translate_point(vec(prev_point.x, prev_point.y))
-                    to_p = self.map_view.translate_point(vec(point.x, point.y))
-                    pygame.draw.line(self.game.canvas, WAYPOINTS_LINE_COLOR, from_p, to_p, width=2)
-                    prev_point = point
-
-            pos = self.map_view.translate_point(npc.pos)
-            self.game.render_texts(texts, pos, font_size=FONT_SIZE_MEDIUM, centred=True)
-
-            # render red square indicating hitbox
-            rect = self.map_view.translate_rect(npc.feet)
-            pygame.draw.rect(self.game.canvas, "red", rect, width=2)
-
-        # # draw walls (colliders)
-        # for y, row in enumerate(self.path_finding_grid):
-        #     for x, tile in enumerate(row):
-        #         if tile > 0:
-        #             rect_w = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-        #             rect_s = self.map_view.translate_rect(rect_w)
-        #             img = pygame.Surface(rect_s.size, pygame.SRCALPHA)
-        #             pygame.draw.rect(img, (0,0,200,64), img.get_rect())
-        #             self.game.canvas.blit(img, rect_s)
-
-    def mark_maze_sub_grid(self, start: tuple[int, int], color: str) -> None:
-        # MARGIN = 3
-        # MARGIN_X = 3
-        # MARGIN_Y = 3
-        # SUBTILE_GRID = 6
-
-        left = MARGIN * TILE_SIZE + start[0] * SUBTILE_COLS * TILE_SIZE
-        top  = MARGIN * TILE_SIZE + start[1] * SUBTILE_ROWS * TILE_SIZE
-        rect = self.map_view.translate_rect((left, top, SUBTILE_COLS * TILE_SIZE, SUBTILE_ROWS * TILE_SIZE))
-        pygame.draw.rect(self.game.canvas, color, rect, width=4)
