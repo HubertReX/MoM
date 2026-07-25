@@ -5,7 +5,6 @@ import game
 import pygame
 import pyscroll
 import pyscroll.data
-from animation import animator
 from camera import Camera
 from maze_generator.maze import Maze
 from maze_generator.maze_utils import (
@@ -32,7 +31,6 @@ from settings import (
     # CIRCLE_GRADIENT,
     BG_COLOR,
     CIRCLE_RADIUS,
-    CUTSCENE_BG_COLOR,
     DAY_FILTER,
     FILTER_SCALE,
     FONT_SIZE_MEDIUM,
@@ -46,7 +44,6 @@ from settings import (
     ITEMS_SHEET_FILE,
     MAX_HOTBAR_ITEMS,
     MONSTER_WAKE_DISTANCE,
-    NIGHT_FILTER,
     NOTIFICATION_DURATION,
     NOTIFICATION_STAGGER,
     # PANEL_BG_COLOR,
@@ -57,25 +54,22 @@ from settings import (
     SHADERS_NAMES,
     SHOW_DEBUG_INFO,
     SHOW_UI,
-    TEXT_ROW_SPACING,
     TRANSPARENT_COLOR,
     USE_ALPHA_FILTER,
     USE_PARTICLES,
     USE_SHADERS,
     WAYPOINTS_LINE_COLOR,
     ZOOM_LEVEL,
-    ZOOM_WIDE,
     # ColorValue,
     Point,
-    to_vector,
-    tuple_to_vector,
     # to_vector,
     # tuple_to_vector,
     vec,
     vec3,
     vector_to_tuple
 )
-from scene import collisions, map_loader, map_state, player_actions, routines_director, world_clock
+from scene import (collisions, intro, map_loader, map_state, night_filter, player_actions,
+                   routines_director, world_clock)
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
@@ -552,203 +546,8 @@ class Scene(State):
 
     #############################################################################################################
     def start_intro(self) -> None:
-        # MARK: start_intro
-
-        self.set_camera_free()
-        # in_out_quad out_sine # in_out_elastic - anticipate and overshoot
-        # in_out_back - anticipate # in_out_bounce - well, bouncy
-        CAMERA_TRANSITION = "out_sine"
-
-        waypoints = self.waypoints["intro"]
-
-        self.intro_cutscene = {
-            "steps": [
-                # ########## INITIAL SETUP #######################
-                {
-                    "name": "step_01",
-                    "description": "move camera the big tree",
-                    "type": "animation",
-                    "target": self.camera.target,
-                    "args": {"x": waypoints[0].x,  "y": waypoints[0].y},
-                    "duration": 0.1,
-                    "transition": CAMERA_TRANSITION,
-                    "from": "<root>",
-                    "trigger": "<begin>"
-                },
-                {
-                    "name": "step_01a",
-                    "description": "night time",
-                    "type": "animation",
-                    "target": self,
-                    "args": {"hour": 3},
-                    "round_values": True,
-                    "duration": 0.1,
-                    "transition": "linear",
-                    "from": "step_01",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_01b",
-                    "description": "hide UI",
-                    "type": "animation",
-                    "target": self,
-                    "args": {"display_ui_flag": 0},
-                    "round_values": True,
-                    "duration": 0.1,
-                    "transition": "linear",
-                    "from": "step_01",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_02",
-                    "description": "show cutscene bars",
-                    "type": "animation",
-                    "target": self,
-                    "args": {"cutscene_framing": 1.00},
-                    "duration": 2.0,
-                    "transition": "linear",
-                    "from": "step_01",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_03",
-                    "description": "camera zoom out",
-                    "type": "animation",
-                    "target": self.camera,
-                    "args": {"zoom": ZOOM_WIDE},
-                    "duration": 2.0,
-                    "transition": "linear",
-                    "from": "step_01",
-                    "trigger": "on finish"
-                },
-                # ################# START #################
-                {
-                    "name": "step_04",
-                    "description": "move camera to waypoint 1",
-                    "type": "animation",
-                    "target": self.camera.target,
-                    "args": {"x": waypoints[1].x,  "y": waypoints[1].y},
-                    "duration": 2.0,
-                    "transition": CAMERA_TRANSITION,
-                    "from": "step_03",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_05",
-                    "description": "move camera to waypoint 3",
-                    "type": "animation",
-                    "target": self.camera.target,
-                    "args": {"x": waypoints[3].x,  "y": waypoints[3].y},
-                    "duration": 2.5,
-                    "transition": CAMERA_TRANSITION,
-                    "from": "step_04",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_05a",
-                    "description": "move camera to waypoint 7",
-                    "type": "animation",
-                    "target": self.camera.target,
-                    "args": {"x": waypoints[7].x,  "y": waypoints[7].y},
-                    "duration": 2.5,
-                    "transition": CAMERA_TRANSITION,
-                    "from": "step_05",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_05b",
-                    "description": "move camera to waypoint 10 (house)",
-                    "type": "animation",
-                    "target": self.camera.target,
-                    "args": {"x": waypoints[10].x,  "y": waypoints[10].y},
-                    "duration": 2.5,
-                    "transition": CAMERA_TRANSITION,
-                    "from": "step_05a",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_06",
-                    "description": "camera zoom in on village house",
-                    "type": "animation",
-                    "target": self.camera,
-                    "args": {"zoom": ZOOM_LEVEL},
-                    "duration": 3.0,
-                    "transition": "linear",
-                    "from": "step_05b",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_07",
-                    "description": "steady take",
-                    "type": "animation",
-                    "target": self.camera.target,
-                    "args": {"x": self.camera.target.x,  "y": self.camera.target.y},
-                    "duration": 1.0,
-                    "transition": CAMERA_TRANSITION,
-                    "from": "step_06",
-                    "trigger": "on finish"
-                },
-                # ############# CLEAN UP ############################
-                {
-                    "name": "step_08",
-                    "description": "move camera back to player pos",
-                    "type": "animation",
-                    "target": self.camera.target,
-                    "args": {"x": self.player.pos.x,  "y": self.player.pos.y},
-                    "duration": 1.0,
-                    "transition": CAMERA_TRANSITION,
-                    "from": "step_07",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_08a",
-                    "description": "day time",
-                    "type": "animation",
-                    "target": self,
-                    "args": {"hour": 12},
-                    "round_values": True,
-                    "duration": .250,
-                    "transition": "linear",
-                    "from": "step_07",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_09",
-                    "description": "revert camera target to the player",
-                    "type": "task",
-                    "target": self.set_camera_on_player,
-                    "args": {},
-                    "interval": 0.1,
-                    "times": 1,
-                    "from": "step_08",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_10",
-                    "description": "hide cutscene framing",
-                    "type": "animation",
-                    "target": self,
-                    "args": {"cutscene_framing": 0.0},
-                    "duration": 1.0,
-                    "transition": "out_cubic",
-                    "from": "step_08",
-                    "trigger": "on finish"
-                },
-                {
-                    "name": "step_11",
-                    "description": "show UI",
-                    "type": "animation",
-                    "target": self,
-                    "args": {"display_ui_flag": 1},
-                    "round_values": True,
-                    "duration": 0.1,
-                    "transition": "linear",
-                    "from": "step_10",
-                    "trigger": "on finish"
-                },
-            ]
-        }
-        animator(self.intro_cutscene, self.animations)
+        # delegat do systemu intro (B01 krok 8)
+        intro.start_intro(self)
 
     #############################################################################################################
     def set_camera_on_player(self) -> None:
@@ -939,12 +738,12 @@ class Scene(State):
 
         # alpha filter demo
         if USE_ALPHA_FILTER and not IS_WEB:
-            self.apply_time_of_day_filter(screen)
-            # self.apply_alpha_filter(screen)
+            night_filter.apply_time_of_day_filter(self, screen)
+            # night_filter.apply_alpha_filter(self, screen)
 
         # draw black bars at the top and bottom when during cutscene
         if self.cutscene_framing:
-            self.apply_cutscene_framing(screen, self.cutscene_framing)
+            night_filter.apply_cutscene_framing(self, screen, self.cutscene_framing)
 
         if SHOW_DEBUG_INFO:
             self.show_debug()
@@ -955,152 +754,9 @@ class Scene(State):
 
     #############################################################################################################
 
-    def apply_time_of_day_filter(self, screen: pygame.Surface) -> None:
-        # MARK: apply_time_of_day_filter
-        # do not apply night and day filter indoors
-        if not self.outdoor and not self.is_maze:
-            return
-
-        filter = list(BG_COLOR)
-        hour: float = self.hour + (self.minute / 60)
-
-        if self.is_maze:
-            filter = list(NIGHT_FILTER)
-        else:
-            if hour < 6 or hour >= 20:
-                filter = list(NIGHT_FILTER)
-            elif 6 <= hour < 9:
-                weight = (hour - 6) / (9 - 6)
-                for i in range(4):
-                    filter[i] = pygame.math.lerp(NIGHT_FILTER[i], DAY_FILTER[i], weight)  # type: ignore[call-overload]
-            elif 9 <= hour < 17:
-                filter = list(DAY_FILTER)
-            elif 17 <= hour < 20:
-                weight = (hour - 17) / (20 - 17)
-                for i in range(4):
-                    filter[i] = pygame.math.lerp(DAY_FILTER[i], NIGHT_FILTER[i], weight)  # type: ignore[call-overload]
-
-        self.filter_surf.fill(filter)
-
-        if (hour > 17 or hour < 9) or self.is_maze:
-            scale = (self.camera.zoom / ZOOM_LEVEL)
-            for npc in self.NPCs + [self.player]:
-                pos = self.map_view.translate_point(npc.pos + vec(0, -8))
-                pos_vec = (tuple_to_vector(pos) / FILTER_SCALE) - vec(CIRCLE_RADIUS, CIRCLE_RADIUS) * scale
-                self.filter_surf.blit(
-                    # self.b_and_w_circle,
-                    pygame.transform.scale_by(self.b_and_w_circle, scale),
-                    pos_vec,
-                    special_flags=pygame.BLEND_RGBA_MIN)
-
-            if "intro" in self.waypoints:
-                scale = 2 * (self.camera.zoom / ZOOM_LEVEL)
-                village_pos = to_vector(self.waypoints["intro"][0])
-                pos = self.map_view.translate_point(village_pos + vec(0, 0))
-                pos_vec = (tuple_to_vector(pos) / FILTER_SCALE) - vec(CIRCLE_RADIUS, CIRCLE_RADIUS) * scale
-                self.filter_surf.blit(
-                    pygame.transform.scale_by(self.b_and_w_circle, scale),
-                    pos_vec,
-                    special_flags=pygame.BLEND_RGBA_MIN)
-
-                village_pos = to_vector(self.waypoints["intro"][-1])
-                pos = self.map_view.translate_point(village_pos)
-                pos_vec = (tuple_to_vector(pos) / FILTER_SCALE) - vec(CIRCLE_RADIUS, CIRCLE_RADIUS) * scale
-                self.filter_surf.blit(
-                    pygame.transform.scale_by(self.b_and_w_circle, scale),
-                    pos_vec,
-                    special_flags=pygame.BLEND_RGBA_MIN)
-
-        screen.blit(pygame.transform.scale(self.filter_surf, (settings.WIDTH, settings.HEIGHT)))  # FILTER_SCALE
-        # print(screen.get_bitsize(), self.filter_surf.get_bitsize())
-        # pygame.transform.scale(self.filter_surf, (WIDTH, HEIGHT), screen)  # FILTER_SCALE
-
-    #############################################################################################################
-
     def get_lights(self) -> tuple[list[vec3], float]:
-        # return list of light source coordinates with sizes and day/night ratio as float
-        # in range [0.0, 1.0] (0.0 ==> day)
-        light_sources: list[vec3] = []
-        ratio: float = 0.0
-
-        # indoors it's always day except mazes
-        # no light sources
-        if not self.outdoor and not self.is_maze:
-            ratio = 0.0
-        else:
-            # in maze it's always night
-            if self.is_maze:
-                ratio = 1.0
-            else:
-                hour: float = self.hour + (self.minute / 60)
-                if hour < 6.00 or hour >= 20.00:
-                    ratio = 1.0
-                elif 6.00 <= hour < 9.00:
-                    ratio = 1.0 - ((hour - 6.00) / (9.00 - 6.00))
-                    # for i in range(4):
-                    #     filter[i] = pygame.math.lerp(NIGHT_FILTER[i], DAY_FILTER[i], weight)
-                elif 9.00 <= hour < 17.00:
-                    ratio = 0.0
-                else:
-                    ratio = (hour - 17.00) / (20.00 - 17.00)
-            # if it's not full day add light sources
-            if ratio > 0.0:
-                for npc in self.NPCs + [self.player]:
-                    pos = self.map_view.translate_point(npc.pos + vec(0, -8))
-                    # pos_list = scene.map_view.translate_point(npc.pos + vec(0, -8))
-                    light = vec3(pos[0], settings.HEIGHT - pos[1], 64.0)
-                    light_sources.append(light)
-                    # pygame.draw.circle(filter_surf, DAY_FILTER, pos, 196)
-                if "intro" in self.waypoints:
-                    self.get_light_from_intro(light_sources)
-                    # pygame.draw.circle(filter_surf, DAY_FILTER, pos, 256)
-
-        return (light_sources, ratio)
-
-    #############################################################################################################
-    def get_light_from_intro(self, light_sources: list[vec3]) -> None:
-        village_pos = self.waypoints["intro"][0].as_vector
-        pos = self.map_view.translate_point(village_pos + vec(0, 0))
-        light = vec3(pos[0], settings.HEIGHT - pos[1], 64.0)
-        light_sources.append(light)
-
-        village_pos = self.waypoints["intro"][-1].as_vector
-        pos = self.map_view.translate_point(village_pos + vec(0, 0))
-        light = vec3(pos[0], settings.HEIGHT - pos[1], 64.0)
-        light_sources.append(light)
-
-    #############################################################################################################
-    def apply_alpha_filter(self, screen: pygame.Surface) -> None:
-        # MARK: apply_alpha_filter
-        h = settings.HEIGHT // 2
-        self.game.render_text(_("scene.day_label"),   (0, int(h - FONT_SIZE_MEDIUM * TEXT_ROW_SPACING)))
-        self.game.render_text(_("scene.night_label"), (0, int(h +                    TEXT_ROW_SPACING)))
-
-        # sunny, warm yellow light during daytime
-        half_screen = pygame.Surface((settings.WIDTH, h), pygame.SRCALPHA)
-        half_screen.fill(DAY_FILTER)
-        screen.blit(half_screen, (0, 0))
-
-        # cold, dark and bluish light at night
-        half_screen.fill(NIGHT_FILTER)
-        screen.blit(half_screen, (0, h))
-
-    #############################################################################################################
-
-    def apply_cutscene_framing(self, screen: pygame.Surface, percentage: float) -> None:
-        # MARK: apply_cutscene_framing
-        if percentage <= 0.001:
-            return
-
-        surface_h = settings.HEIGHT // 2
-        framing_h = int(settings.HEIGHT * 0.1)
-        framing_offset = int(framing_h * percentage)
-        half_screen = pygame.Surface((settings.WIDTH, surface_h), pygame.SRCALPHA)
-        half_screen.fill(CUTSCENE_BG_COLOR)
-        # blit a black rect at the top of the screen
-        screen.blit(half_screen, (0, -surface_h + framing_offset))
-        # blit a black rect at the bottom of the screen
-        screen.blit(half_screen, (0, settings.HEIGHT - framing_offset))
+        # delegat do systemu night_filter (B01 krok 8) - czyta go shader w game.py
+        return night_filter.get_lights(self)
 
     #############################################################################################################
     def show_debug(self) -> None:
