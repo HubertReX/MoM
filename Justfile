@@ -129,6 +129,10 @@ update-config-schema:
 import-entities *ARGS:
     # Pass `--export` to go the other way: `config.json` -> CSV files (regenerates all columns).
     .venv/bin/python project/config_model/import_entities.py {{ARGS}}
+    # A consistency error should surface while the author is editing content, not in
+    # runtime as a silent print or a missing NPC. `import-dialogs` inherits this
+    # through its cascade into this recipe, so it is not repeated there.
+    just validate-world
 
 # Import dialog Markdown sources from the `doc/` vault into `config.json`.
 [unix]
@@ -159,6 +163,8 @@ import-quests *chain:
     else
         .venv/bin/python project/quest/markdown_importer.py "{{chain}}"
     fi
+    # see the note in `import-entities`: content edits get validated on the spot
+    just validate-world
 
 # Regenerate dialog-system doc images (emote sheet + RichText tag palette) in `doc/_attachements/` from real MoM modules
 [unix]
@@ -282,8 +288,20 @@ validate-locale:
     #!powershell
     .venv\Scripts\python.exe scripts\validate_locale.py
 
-# Run all static analysis and code checks (Sourcery + mypy + locale)
-check: sourcery mypy validate-locale
+# Validate world entity consistency across maps, CSVs, config and routines
+[unix]
+validate-world *ARGS:
+    # `--strict` makes warnings fail too; `--json` emits machine-readable output.
+    .venv/bin/python scripts/validate_world.py {{ARGS}}
+
+# Validate world entity consistency across maps, CSVs, config and routines
+[windows]
+validate-world *ARGS:
+    #!powershell
+    .venv\Scripts\python.exe scripts\validate_world.py {{ARGS}}
+
+# Run all static analysis and code checks (Sourcery + mypy + locale + world)
+check: sourcery mypy validate-locale validate-world
 
 # Fix all PNGs that have sRGB/gAMA/cHRM/iCCP chunks (strips profile chunks via `mogrify`)
 [unix]
