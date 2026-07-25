@@ -63,6 +63,11 @@ pułapki. Status: `[ ]` do napisania, `[x]` gotowy do realizacji, a sufiks
 - [x] [F02 - aktualizacja AGENTS.md i docs design systemu do stanu kodu](F02-aktualizacja-dokumentacji.md) - P1 ✅ 2026-07-25
 - [x] [F03 - mypy do zera: usunięcie stałego szumu 23 błędów (przed B01!)](F03-mypy-do-zera.md) - P1 ✅ 2026-07-25
 
+Dopisane po realizacji Fazy 1 (znaleziska z sesji 2026-07-25, oba zastane - nie regresje):
+
+- [x] [A05 - scenariusz autosave po zmianie reguły (tylko wejście do labiryntu)](A05-scenariusz-autosave-po-zmianie-reguly.md) - P2
+- [x] [A06 - CLI `agent_ctrl.py` nic nie wysyła (martwy blok po `sys.exit`)](A06-agent-ctrl-cli-nieosiagalne.md) - P2
+
 ### Faza 2 - wielki refactor rdzenia
 
 - [x] [B01 - refactor `scene.py`/`characters.py`: dokument architektury docelowej + wykonanie (epic, model Fable/Opus)](B01-refactor-rdzenia.md) - P0

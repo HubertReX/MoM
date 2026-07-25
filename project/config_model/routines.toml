@@ -145,12 +145,12 @@ activity = "sleep"
 
 [[routine.guard.slot]]
 from     = "06:00"
-at       = "route:patrol_north"
+at       = "route:Robin"
 activity = "patrol"
 
 [[routine.guard.slot]]
 from     = "18:00"
-at       = "route:patrol_south"
+at       = "route:Rob"
 activity = "patrol"
 
 [[routine.guard.slot]]

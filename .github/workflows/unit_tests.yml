@@ -57,3 +57,12 @@ jobs:
         env:
           NO_COLOR: "1"
         run: just test-unit
+
+      # Cross-source entity consistency (scripts/validate_world.py): a typo in a
+      # spawn point's model_name, a place name or a routine is otherwise only found
+      # by playing the game. Deliberately last: it needs no display and no extra
+      # deps (raw JSON/CSV/TOML/XML, no pygame), so it costs a couple of seconds.
+      - name: Validate world consistency
+        env:
+          NO_COLOR: "1"
+        run: just validate-world
