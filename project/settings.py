@@ -426,9 +426,10 @@ INITIAL_HOUR: int = 9
 # Opcjonalne wymuszenie godziny startu (MOM_TEST_START_HOUR=0..23), NIEZALEŻNE od
 # trybu deterministycznego: gra normalnie zaczyna o 9 i scenariusze mają widzieć rutyny
 # NPC takie jak gracz. Ta zmienna jest dla testów, które potrzebują konkretnej pory
-# (noc, zamknięty sklep). Nadpisanie musi siedzieć TUTAJ, w treści settings.py, bo
-# scene.py robi `from settings import INITIAL_HOUR` (import by-value) - później byłoby
-# już za późno.
+# (noc, zamknięty sklep). Nadpisanie siedzi TUTAJ, w treści settings.py, żeby zadziałało
+# jeszcze przed pierwszym odczytem. Od B01 kroku 3 scene/world_clock.py czyta
+# `settings.INITIAL_HOUR` dynamicznie (kontrakt K6), więc nie jest to już warunek
+# konieczny - ale nadal najbezpieczniejsze miejsce.
 _start_hour = _ENV.get("MOM_TEST_START_HOUR")
 if _start_hour is not None:
     try:

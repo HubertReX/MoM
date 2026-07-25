@@ -44,11 +44,8 @@ from settings import (
     FONT_SIZE_MEDIUM,
     FRIENDLY_WAKE_DISTANCE,
     FULL_WHITE_COLOR,
-    GAME_TIME_SPEED,
     GEMS_SHEET_DEFINITION,
     GEMS_SHEET_FILE,
-    INITIAL_DAY,
-    INITIAL_HOUR,
     INPUTS,
     INVENTORY_ITEM_SCALE,
     IS_WEB,
@@ -87,14 +84,13 @@ from settings import (
     vec3,
     vector_to_tuple
 )
-from scene import map_loader
+from scene import map_loader, world_clock
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
 from ui.game_ui import GameUI
 from ui.panels.hud import NOTIFICATION_TYPE_ICONS
 from npc_schedule import (
-    MINUTES_PER_DAY,
     Routines,
     current_slot,
     destinations_of,
@@ -118,7 +114,7 @@ _NOWHERE = "\x00transit"
 #: this large value is only a floor that stops a stuck traveller vanishing forever.
 _DEPARTURE_FALLBACK_MIN = 240
 from ui.panels.trade import TradePanel
-from world_rng import day_rng, new_world_seed
+from world_rng import new_world_seed
 
 
 ################################################################################################################
@@ -303,8 +299,8 @@ class Scene(State):
         # percentage of black bars shown during cutscene
         self.cutscene_framing: float = 0.0
         # it's high noon
-        self.day: int = INITIAL_DAY
-        self.hour: int = INITIAL_HOUR
+        self.day: int = settings.INITIAL_DAY
+        self.hour: int = settings.INITIAL_HOUR
         self.minute: int = 0
         self.minute_f: float = 0.0
         # Identity of this playthrough, rolled once and then carried in the save.
@@ -994,13 +990,8 @@ class Scene(State):
 
     #############################################################################################################
     def abs_minutes(self) -> int:
-        """Absolute game-minute (day + clock), monotonic across midnight and day turns.
-
-        Cross-map transit arrival is stored in this unit so a boundary at 23:50 and
-        an arrival at 00:10 next day compare correctly, and a multi-day `apply_days`
-        jump simply lands past any in-flight transit's arrival, which then completes.
-        """
-        return self.day * MINUTES_PER_DAY + self.hour * 60 + self.minute
+        # delegat do systemu world_clock (B01 krok 3)
+        return world_clock.abs_minutes(self)
 
     #############################################################################################################
     def update_routine_npcs(self) -> None:
@@ -1343,30 +1334,13 @@ class Scene(State):
 
     #############################################################################################################
     def day_rng(self, name: str = "", day_offset: int = 0) -> random.Random:
-        """Generator for `name`'s rolls on the current day (or a later one).
-
-        `day_offset=1` asks for tomorrow, which is what makes a day-ahead preview
-        - "the merchant will want amber tomorrow" - cost nothing to store: it is
-        recomputed, not remembered. See world_rng.py.
-        """
-        return day_rng(self.world_seed, self.day + day_offset, name)
+        # delegat do systemu world_clock (B01 krok 3)
+        return world_clock.day_rng(self, name, day_offset)
 
     #############################################################################################################
     def apply_days(self, days: int = 1) -> None:
-        """Run the day-turn upkeep for `days` elapsed days in one go.
-
-        Every step here has to be a function of the current state and the number
-        of days, never a loop over days - coming back from a three-day trip is a
-        single call, and `apply_days(3)` must land on the same state as three
-        `apply_days(1)`.
-        """
-        if days <= 0:
-            return
-
-        for npc in self.loaded_NPCs.values():
-            if npc.model.is_merchant:
-                npc.regenerate_money(days)
-                npc.restock_items()
+        # delegat do systemu world_clock (B01 krok 3)
+        world_clock.apply_days(self, days)
 
     #############################################################################################################
     # @timeit
@@ -1414,21 +1388,8 @@ class Scene(State):
         if USE_PARTICLES and self.weather:
             self.weather.update(dt)
 
-        # absolute time calculation
-        # self.hour   = int((self.game.time_elapsed + INITIAL_HOUR) % 24)
-        # self.minute = int((self.game.time_elapsed + INITIAL_HOUR) % 1 * 60)
-
-        # relative time calculation
-        self.minute_f += dt * 60 * GAME_TIME_SPEED
-        self.minute = int(self.minute_f)
-        if self.minute >= 60:
-            self.hour   += 1
-            self.minute  = 0
-            self.minute_f  -= 60.0
-            if self.hour >= 24:
-                self.day += 1
-                self.hour = 0
-                self.apply_days(1)
+        # zegar świata (B01 krok 3): upływ minut, przełom doby i upkeep dnia
+        world_clock.tick(self, dt)
 
         # check if the Player's feet are colliding with wall
         # Player must have a rect called feet, slide and move_back methods,
@@ -1596,8 +1557,7 @@ class Scene(State):
                 # still made the key lie in the other direction: merchants restocked
                 # on a day that, as far as anything reading the clock was concerned,
                 # had never happened.
-                self.day += 1
-                self.apply_days(1)
+                world_clock.next_day(self)
             INPUTS["next_day"] = False
 
         if INPUTS["intro"]:
@@ -1775,10 +1735,7 @@ class Scene(State):
 
     def reload_map(self) -> None:
         self.game.time_elapsed = 0.0
-        self.day = INITIAL_DAY
-        self.hour = INITIAL_HOUR
-        self.minute = 0
-        self.minute_f = 0.0
+        world_clock.reset(self)
         self.display_ui_flag = True
         self.cutscene_framing = 0.0
 
