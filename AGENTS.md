@@ -52,10 +52,19 @@ Kafelek i postać mają zawsze ten sam rozmiar w pikselach (`TILE_SIZE = 16` nat
 | `.github/workflows/` | CI: `pygbag.yml` (GitHub Pages), `itch_io.yml` (itch.io) | ✅ ostrożnie                                                                  |
 | `tests`              | Zestawy scenariuszy testów automatycznych                | ✅ tak - patrz [`project/AGENTS.md`](./project/AGENTS.md)                     |
 | `Tasks`              | Zadania dla Ciebie do wykonania                          | ✅ tak, ale zgodnie ze ściśle określonymi zasadami                            |
-| `utils/`             | Śmietnik skryptów/eksperymentów                          | ⛔ **pomijać**                                                                |
+| `scripts/`           | Skrypty narzędziowe repo (walidatory, generatory, fixtures, szablon pygbag) | ✅ tak — tu trafia każdy skrypt, od którego coś zależy       |
+| `utils/`             | Śmietnik skryptów/eksperymentów                          | ⛔ **pomijać** — patrz uwaga niżej                                            |
 | `references/`        | Screenshoty z innych gier (referencje)                   | ⛔ **pomijać**                                                                |
 | `screenshots/`       | Migawki z rozwoju gry                                    | ⛔ **pomijać**                                                                |
 | `.venv/`             | Wirtualne środowisko                                     | ⛔ **pomijać**                                                                |
+
+> **`utils/` to piaskownica i nic produkcyjnego nie może z niej korzystać.** Szablon
+> pygbag (`scripts/pygbag/black.tmpl`) oraz narzędzia PNG (`scripts/find_bad_png.py`,
+> `scripts/fix_bad_png.py`) mieszkały tam wcześniej i zostały przeniesione do `scripts/`
+> — jeśli piszesz recepturę `just`, workflow CI albo test, który czegoś potrzebuje,
+> **to coś ma leżeć w `scripts/`**, nie w `utils/`. Sama piaskownica zostaje nietknięta.
+> `utils/`, `screenshots/` i `references/` są wyłączone z indeksu CodeGraph przez
+> `codegraph.json` (`exclude`), żeby eksploracja kodu nie zwracała szumu.
 
 ## Uruchamianie i build
 

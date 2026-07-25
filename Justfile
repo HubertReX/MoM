@@ -55,13 +55,13 @@ run *args:
 # Start pygbag local web server. e.g: `--bind mac-mini.kamori-vector.ts.net --port 8989`. Append `#debug` to the URL to show debug console.
 [unix]
 serve-web *args:
-    .venv/bin/python -m pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
+    .venv/bin/python -m pygbag --ume_block 0 --template scripts/pygbag/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
 
 # Start pygbag local web server. e.g: `--bind mac-mini.kamori-vector.ts.net --port 8989`. Append `#debug` to the URL to show debug console.
 [windows]
 serve-web *args:
     #!powershell
-    .venv\Scripts\python.exe -m pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
+    .venv\Scripts\python.exe -m pygbag --ume_block 0 --template scripts/pygbag/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
 
 # Run the plain-Python unit tests (no pytest - each `tests/test_*.py` is its own runner). Optional filter: `just test-unit save_load`
 [unix]
@@ -306,18 +306,18 @@ check: sourcery mypy validate-locale validate-world
 # Fix all PNGs that have sRGB/gAMA/cHRM/iCCP chunks (strips profile chunks via `mogrify`)
 [unix]
 fix-bad-png:
-    @python3 utils/find_bad_png.py | xargs -r mogrify -strip
+    @python3 scripts/find_bad_png.py | xargs -r mogrify -strip
 
 # Fix libpng sRGB profile warnings in PNG files using Python
 [windows]
 fix-bad-png:
     #!powershell
-    .venv\Scripts\python.exe utils\fix_bad_png.py
+    .venv\Scripts\python.exe scripts\fix_bad_png.py
 
 # Find PNGs with sRGB/gAMA/cHRM/iCCP chunks (potential libpng header warnings)
 [unix]
 find-bad-png:
-    @python3 utils/find_bad_png.py
+    @python3 scripts/find_bad_png.py
 
 # Run memray live memory profiling (Unix only)
 [unix]
@@ -334,7 +334,7 @@ cpu-profiling:
 # Build the pygbag `web.zip` archive ready for `itch.io` deployment
 [unix]
 build-itchio:
-    .venv/bin/pygbag --ume_block 0 --template utils/black.tmpl --icon project/assets/icon.png --no_opt --archive project
+    .venv/bin/pygbag --ume_block 0 --template scripts/pygbag/black.tmpl --icon project/assets/icon.png --no_opt --archive project
 
 # Start the OpenCode watcher agent to automatically process tasks from board (run `Tasks/bin/moab` for more options)
 [unix]

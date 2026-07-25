@@ -88,7 +88,7 @@ TEST_CONFIG = {
     "PYGBAG_CMD": [
         sys.executable, "-m", "pygbag",
         "--ume_block", "0",
-        "--template", "utils/black.tmpl",
+        "--template", "scripts/pygbag/black.tmpl",
         "--icon", "project/assets/icon.png",
         "--no_opt",
         "--bind", "127.0.0.1",

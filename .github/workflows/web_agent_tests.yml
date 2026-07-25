@@ -8,7 +8,7 @@ name: Web agent tests (pygbag + Playwright)
 # Manual trigger only (matches the repo's other workflows). To also run on PRs,
 # add:
 #   pull_request:
-#     paths: [ "project/**", "tests/**", "utils/**" ]
+#     paths: [ "project/**", "tests/**", "scripts/**" ]
 on: [workflow_dispatch]
 
 jobs:
