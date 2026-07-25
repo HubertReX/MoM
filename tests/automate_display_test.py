@@ -419,19 +419,69 @@ def acquire_singleton_lock(port: int | None) -> None:
     atexit.register(release_singleton_lock)
 
 
+def _descendants(pid: int) -> list[int]:
+    """PID-y wszystkich potomków *pid* (wszerz). Bez grup procesów - `killpg`
+    na grupie dziecka potrafi trafić w naszą własną grupę (powłokę `just`)."""
+    found: list[int] = []
+    frontier = [pid]
+    while frontier:
+        current = frontier.pop()
+        try:
+            out = subprocess.run(
+                ["pgrep", "-P", str(current)],
+                capture_output=True, text=True, timeout=5,
+            ).stdout
+        except Exception:
+            continue
+        kids = [int(x) for x in out.split() if x.isdigit()]
+        found.extend(kids)
+        frontier.extend(kids)
+    return found
+
+
+def kill_descendants() -> None:
+    """Ubij pygbaga, driver Playwrighta i chromium wprost, po drzewie procesów."""
+    kids = _descendants(os.getpid())
+    if not kids:
+        return
+    for pid in kids:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except OSError:
+            pass
+    time.sleep(1.5)
+    for pid in kids:
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except OSError:
+            pass
+
+
 def install_cleanup_handlers(runner: "RunnerBase") -> None:
     """Zwiń pygbag i przeglądarkę także przy `kill`/`pkill`, nie tylko przy Ctrl-C.
 
     Domyślna obsługa SIGTERM ubija proces natychmiast - `atexit` ani `finally`
     się nie wykonują i po runnerze zostaje żywy pygbag na 8001 plus osierocone
-    `chrome-headless-shell`. Zamiana sygnału na ``SystemExit`` wraca do normalnej
-    ścieżki wyjścia, gdzie sprzątanie już jest.
+    `chrome-headless-shell`.
+
+    Handler NIE podnosi wyjątku i NIE woła `runner.cleanup()`: przez większość
+    przebiegu główny wątek siedzi w synchronicznym API Playwrighta, które kręci
+    się w greenlecie i wyjątek z handlera po prostu ginie (sprawdzone: proces
+    stawał się odporny na `pkill` i trzeba go było ubijać `-9`). Zamiast tego
+    handler robi to, co w sygnale jest bezpieczne - ubija potomków po PID-ach
+    i wychodzi przez ``os._exit``. Normalne wyjście dalej idzie przez
+    ``atexit``/``finally``, czyli czysty teardown Playwrighta.
     """
     atexit.register(runner.cleanup)
 
     def _handler(signum: int, _frame: Any) -> None:
-        print(f"\n[{get_timestamp()}] Sygnał {signum} - sprzątam (pygbag, przeglądarka)...")
-        raise SystemExit(128 + signum)
+        print(f"\n[{get_timestamp()}] Sygnał {signum} - sprzątam (pygbag, przeglądarka)...",
+              flush=True)
+        try:
+            kill_descendants()
+            release_singleton_lock()
+        finally:
+            os._exit(128 + signum)
 
     for sig in (signal.SIGTERM, signal.SIGHUP):
         signal.signal(sig, _handler)
