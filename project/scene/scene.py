@@ -1,4 +1,3 @@
-import contextlib
 import random
 from typing import Any, cast
 from rich import print
@@ -10,7 +9,6 @@ from animation import animator
 from camera import Camera
 from maze_generator.maze import Maze
 from maze_generator.maze_utils import (
-    _TIMEIT_CACHE,
     MARGIN,
     SUBTILE_COLS,
     SUBTILE_ROWS,
@@ -30,7 +28,6 @@ from quest.runtime import QuestRuntime
 import settings
 from settings import (
     _,
-    entity_name,
     # ACTIONS,
     # BG_COLOR,
     # CIRCLE_GRADIENT,
@@ -43,7 +40,6 @@ from settings import (
     FULL_WHITE_COLOR,
     GEMS_SHEET_DEFINITION,
     GEMS_SHEET_FILE,
-    INPUTS,
     INVENTORY_ITEM_SCALE,
     IS_WEB,
     ITEMS_DIR,
@@ -64,7 +60,6 @@ from settings import (
     SHOW_UI,
     TEXT_ROW_SPACING,
     TRANSPARENT_COLOR,
-    USE_AGENT_CONTROL,
     USE_ALPHA_FILTER,
     USE_PARTICLES,
     USE_SHADERS,
@@ -81,7 +76,7 @@ from settings import (
     vec3,
     vector_to_tuple
 )
-from scene import collisions, map_loader, world_clock
+from scene import collisions, map_loader, player_actions, world_clock
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
@@ -110,7 +105,6 @@ _NOWHERE = "\x00transit"
 #: is (re)set to `transit_minutes` from the moment it walks through the door, so
 #: this large value is only a floor that stops a stuck traveller vanishing forever.
 _DEPARTURE_FALLBACK_MIN = 240
-from ui.panels.trade import TradePanel
 from world_rng import new_world_seed
 
 
@@ -1343,7 +1337,6 @@ class Scene(State):
     # @timeit
     def update(self, dt: float, events: list[pygame.event.EventType]) -> None:
         # MARK: update
-        global INPUTS
         self.remove_old_notifications()
         # Quest safety net (D12=C). Events do the real work; this only catches a
         # hook we failed to wire, and complains when it has to.
@@ -1392,213 +1385,8 @@ class Scene(State):
         # skrzynia i NPC w zasięgu rozmowy
         collisions.resolve(self)
 
-        # Esc opens the main menu *on top of* the running scene (not exit_state, which
-        # would discard the game). The menu offers Continue (resume unchanged), so the
-        # player can return to the exact game state.
-        if INPUTS["quit"]:
-            if not self.ui.is_open(TradePanel):
-                for fun, val in _TIMEIT_CACHE.items():
-                    cnt, time = val
-                    print(f"{fun};{cnt};{time:.10f};{time / cnt:.10f}")
-                from ui.panels.main_menu import MainMenuScreen
-                bg = getattr(self.game, "menu_bg_image", None)
-                MainMenuScreen(self.game, "MainMenu", bg).enter_state()
-                self.game.reset_inputs()
-            INPUTS["quit"] = False
-
-        global SHOW_DEBUG_INFO
-        if INPUTS["debug"]:
-            SHOW_DEBUG_INFO = not SHOW_DEBUG_INFO
-            INPUTS["debug"] = False
-
-        global USE_ALPHA_FILTER
-        if INPUTS["alpha"]:
-            USE_ALPHA_FILTER = not USE_ALPHA_FILTER
-            INPUTS["alpha"] = False
-
-        if INPUTS["next_day"]:
-            # Debug-only, and deliberately so: left ungated this key is a free
-            # merchant refill on demand, which makes any economy observation - mine
-            # or the player's - meaningless. Gated on the *runtime* overlay flag
-            # (` / Z) rather than `IS_DEBUG_MODE`, which is a hardcoded False that
-            # nothing ever sets; SHOW_DEBUG_INFO is also exactly what the help panel
-            # already uses to decide whether to advertise this key, so the two now
-            # agree. `USE_AGENT_CONTROL` keeps it available to the agent-driven
-            # tests, which skip a day on purpose and run without the overlay.
-            if SHOW_DEBUG_INFO or USE_AGENT_CONTROL:
-                # Advance the counter too. Firing the day turn while `self.day` sat
-                # still made the key lie in the other direction: merchants restocked
-                # on a day that, as far as anything reading the clock was concerned,
-                # had never happened.
-                world_clock.next_day(self)
-            INPUTS["next_day"] = False
-
-        if INPUTS["intro"]:
-            self.start_intro()
-            INPUTS["intro"] = False
-
-        # help (H / F1) is handled in GameUI.update: it is a modal panel now, so it
-        # must be toggled before the scene freezes, not here.
-
-        if INPUTS["show_ui"]:
-            self.display_ui_flag = not self.display_ui_flag
-            INPUTS["show_ui"] = False
-
-        if INPUTS["use_item"]:
-            if not self.player.is_talking:
-                self.player.use_item()
-            INPUTS["use_item"] = False
-
-        for idx in range(1, self.player.max_items + 1):
-            if INPUTS[f"item_{idx}"]:
-                # tradable_items: list[ItemSprite] = []
-                items: list[ItemSprite] = []
-                if not self.player.is_talking:
-                    npc = self.player
-                    items = npc.items
-                else:
-                    if self.player.npc_met and self.player.npc_met.model.is_merchant:
-                        if self.ui.is_buying:
-                            npc = self.player.npc_met
-                            items = npc.items
-                        else:
-                            npc = self.player
-                            items = self.player.get_tradable_items()
-
-                if idx - 1 < len(items):
-                    # selected_item = items[idx - 1]
-                    # npc.selected_item_idx = idx - 1
-                    npc.selected_item_idx = idx - 1  # npc.items.index(selected_item)
-                INPUTS[f"item_{idx}"] = False
-
-        if INPUTS["next_item"]:
-            if not self.player.is_talking:
-                self.player.select_next_item()
-            else:
-                if self.player.npc_met and self.player.npc_met.model.is_merchant:
-                    if self.ui.is_buying:
-                        self.player.npc_met.select_next_item()
-                    else:
-                        filtered_items = self.player.get_tradable_items()
-                        self.player.select_next_item(filtered_items)
-            INPUTS["next_item"] = False
-
-        if INPUTS["prev_item"]:
-            if not self.player.is_talking:
-                self.player.select_prev_item()
-            else:
-                if self.player.npc_met and self.player.npc_met.model.is_merchant:
-                    if self.ui.is_buying:
-                        self.player.npc_met.select_prev_item()
-                    else:
-                        filtered_items = self.player.get_tradable_items()
-                        self.player.select_prev_item(filtered_items)
-            INPUTS["prev_item"] = False
-
-        if INPUTS["drop"]:
-            # drop item from inventory to ground
-            if len(self.player.items) > 0 and not self.player.is_attacking and not \
-                    self.player.is_stunned and not self.player.is_talking:
-                if item := self.player.drop_item():
-                    self.items.append(item)
-                    self.item_sprites.add(item)
-                    self.group.add(item, layer=self.sprites_layer - 1)
-                    # inventory changed: has_item()/item_count() conditions may flip
-                    self.quests.on_event("item_dropped")
-
-                    # print(f"Dropped '[item]{item.name}[/item]' [[magenta]{item.model.type}[/magenta]]")
-                    self.add_notification(
-                        _("notify.dropped", name=entity_name(item.model)), NotificationTypeEnum.info)
-                else:
-                    print("[red]ERROR![/red] No item to drop!")
-            INPUTS["drop"] = False
-
-        if INPUTS["pick_up"]:
-            if not self.player.is_flying and not self.player.is_attacking and not self.player.is_stunned and \
-                    not self.player.is_talking:
-                items = self.item_sprites.sprites()
-                collided_index = self.player.feet.collidelist(items)   # type: ignore[type-var]
-                if collided_index > -1:
-                    item = items[collided_index]
-                    if self.player.pick_up(item):
-                        self.add_notification(_("notify.picked_up", name=entity_name(item.model)), NotificationTypeEnum.success)
-                        with contextlib.suppress(KeyError):
-                            # if self.group.has(item):
-                            self.group.remove(item)
-                            if item in self.items:
-                                self.items.remove(item)
-                            if item in self.item_sprites:
-                                self.item_sprites.remove(item)
-                        # inventory changed: has_item()/item_count() conditions may flip
-                        self.quests.on_event("item_picked_up")
-                    # else:
-                    #     print(f"You can't pick up '{item.model.name}' - it's too heavy.")
-            INPUTS["pick_up"] = False
-
-        if INPUTS["run"]:
-            # toggle between run and walk
-            if self.player.speed == self.player.speed_run:
-                self.player.speed = self.player.speed_walk
-            else:
-                self.player.speed = self.player.speed_run
-            INPUTS["run"] = False
-
-        if INPUTS["jump"]:
-            # self.player.is_jumping = not self.player.is_jumping
-            if not self.player.is_flying and not self.player.is_attacking and \
-                not self.player.is_stunned and not self.player.is_jumping and \
-                    not self.player.is_talking:
-                self.player.is_jumping = True
-                self.player.jump()
-                # when airborn move one layer above so it's not colliding with obstacles on the ground
-                self.group.change_layer(self.player, self.sprites_layer + 1)
-
-            INPUTS["jump"] = False
-
-        if INPUTS["fly"]:
-            # toggle flying mode
-            if not self.player.is_jumping and not self.player.is_attacking and not self.player.is_stunned and \
-                    not self.player.is_talking:
-                self.player.is_flying = not self.player.is_flying
-                if self.player.is_flying:
-                    # when airborn move one layer above so it's not colliding with obstacles on the ground
-                    self.group.change_layer(self.player, self.sprites_layer + 1)
-                else:
-                    self.group.change_layer(self.player, self.sprites_layer)
-
-            INPUTS["fly"] = False
-
-        if INPUTS["menu"]:
-            # next_scene = None #  self # Scene(self.game, "grasslands", "start")
-            # AboutMenuScreen(self.game, next_scene).enter_state()
-            from ui.panels.main_menu import MainMenuScreen
-            bg = getattr(self.game, "menu_bg_image", None)
-            MainMenuScreen(self.game, "MainMenu", bg).enter_state()
-            # self.game.reset_inputs()
-            INPUTS["menu"] = False
-
-        # live reload map (R) - irreversible reset of the current map, so confirm first
-        if INPUTS["reload"]:
-            from ui.panels.main_menu import ConfirmMenuScreen
-            ConfirmMenuScreen(
-                self.game,
-                _("scene.reload_confirm"),
-                self._confirm_reload_map,
-            ).enter_state()
-            self.game.reset_inputs()
-            INPUTS["reload"] = False
-
-        # camera zoom in/out
-        if INPUTS["zoom_in"]:
-            self.camera.zoom += 0.25
-            # self.map_view.zoom = self.camera.zoom
-            INPUTS["zoom_in"] = False
-
-        if INPUTS["zoom_out"]:
-            self.camera.zoom -= 0.25
-            self.camera.zoom = max(self.camera.zoom, 0.25)
-            # self.map_view.zoom = self.camera.zoom
-            INPUTS["zoom_out"] = False
+        # akcje gracza (B01 krok 5): cały blok INPUTS
+        player_actions.handle(self)
 
     # TODO Rename this here and in `update`
     def _confirm_reload_map(self) -> None:
