@@ -132,6 +132,16 @@ class Game:
         if task != TaskEnum.run:
             exit()
 
+        # Deterministic test mode: seed the GLOBAL generator once, so the remaining
+        # ad-hoc `random.*` calls (NPC random walk and friends) repeat between runs.
+        # Only under the flag - never in production. Emitters and the weather director
+        # get their own seeded generators (see Scene._particle_rng); this covers the
+        # macro differences, frame-for-frame repeatability is not the goal.
+        if settings.TEST_DETERMINISTIC and settings.TEST_WORLD_SEED is not None:
+            random.seed(settings.TEST_WORLD_SEED)
+            self.log(f"[test] deterministic mode: world seed {settings.TEST_WORLD_SEED}, "
+                     f"start hour {settings.INITIAL_HOUR}")
+
         pygame.init()
 
         # initialise the joystick module

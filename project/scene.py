@@ -589,6 +589,19 @@ class Scene(State):
 
     #############################################################################################################
 
+    def _particle_rng(self) -> "random.Random | None":
+        """Seeded generator for particles/weather, or ``None`` for the live world.
+
+        Under ``MOM_TEST_DETERMINISTIC=1`` every emitter and the director draw from a
+        generator seeded with ``settings.TEST_WORLD_SEED``, so two runs of a scenario
+        produce the same sequence of weather decisions. Particles are NOT switched off:
+        a test would then be looking at a different game than the player's, and a
+        scenario may want to check the emitter itself.
+        """
+        if settings.TEST_WORLD_SEED is None:
+            return None
+        return random.Random(settings.TEST_WORLD_SEED)
+
     def load_particles(self, tileset_map: TiledMap) -> None:
         map_particles = tileset_map.properties.get("particles", "").replace(" ", "").strip().lower().split(",")
         # string with coma separated names of particle systems active in this map
@@ -599,13 +612,14 @@ class Scene(State):
         for particle in map_particles:
             if particle in PARTICLES:
                 particle_class = PARTICLES[particle]
-                system = particle_class(self.game.canvas, self.group, self.camera)
+                system = particle_class(self.game.canvas, self.group, self.camera,
+                                        rng=self._particle_rng())
                 self.particles.append(system)
                 weather_systems[particle] = system
 
         # WeatherDirector turns the map's allowed emitters into random, mutually-exclusive
         # episodes (see EMITTER_SCHEDULES); only emitters with a schedule are scheduled
-        self.weather = WeatherDirector(weather_systems, EMITTER_SCHEDULES)
+        self.weather = WeatherDirector(weather_systems, EMITTER_SCHEDULES, rng=self._particle_rng())
 
     #############################################################################################################
 
@@ -2076,7 +2090,8 @@ class Scene(State):
                             # trigger destruction particle system
                             rect = self.map_view.translate_rect(destructible.rect)
                             particle = ParticleDestructible(self.game.canvas, self.group,
-                                                            self.camera, rect, destructible.type)
+                                                            self.camera, rect, destructible.type,
+                                                            rng=self._particle_rng())
                             particle.add()
                             self.particles.append(particle)
                             # destroy object

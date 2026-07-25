@@ -315,6 +315,15 @@ USE_SHADERS = False
 # zewnętrzne sterowanie grą + screenshoty dla agentów AI (debug, desktop-only, opt-in)
 # włączane zmienną środowiskową: MOM_AGENT_CONTROL=1 just run
 USE_AGENT_CONTROL = __import__("os").environ.get("MOM_AGENT_CONTROL", "0") == "1"
+
+# Tryb deterministyczny testów (MOM_TEST_DETERMINISTIC=1). Cząstki NIE są wyłączane -
+# testowalibyśmy inną grę niż realna, a scenariusz może chcieć sprawdzić właśnie emiter.
+# Zamiast tego losowość świata i pogody dostaje stały seed, więc dwa uruchomienia tego
+# samego scenariusza dają tę samą SEKWENCJĘ DECYZJI (ten emiter, te długości epizodów).
+# Identyczność co do piksela nie jest celem: spawn napędzają timery pygame, a momenty
+# klatek nigdy nie są równe co do milisekundy.
+TEST_DETERMINISTIC = __import__("os").environ.get("MOM_TEST_DETERMINISTIC", "0") == "1"
+TEST_WORLD_SEED: "int | None" = 12345 if TEST_DETERMINISTIC else None
 IS_DEBUG_MODE = False
 SHOW_DEBUG_INFO = False
 SHOW_HELP_INFO = False
@@ -389,6 +398,18 @@ PUSHED_TIME: int = 1000
 INITIAL_DAY: int = 1
 # initial game time hour
 INITIAL_HOUR: int = 9
+# Opcjonalne wymuszenie godziny startu (MOM_TEST_START_HOUR=0..23), NIEZALEŻNE od
+# trybu deterministycznego: gra normalnie zaczyna o 9 i scenariusze mają widzieć rutyny
+# NPC takie jak gracz. Ta zmienna jest dla testów, które potrzebują konkretnej pory
+# (noc, zamknięty sklep). Nadpisanie musi siedzieć TUTAJ, w treści settings.py, bo
+# scene.py robi `from settings import INITIAL_HOUR` (import by-value) - później byłoby
+# już za późno.
+_start_hour = __import__("os").environ.get("MOM_TEST_START_HOUR")
+if _start_hour is not None:
+    try:
+        INITIAL_HOUR = max(0, min(23, int(_start_hour)))
+    except ValueError:
+        print(f"[settings] MOM_TEST_START_HOUR={_start_hour!r} is not an int - ignored")
 # game time speed (N game hours / 1 real time second)
 GAME_TIME_SPEED: float = 0.25
 # how many seconds a notification will be displayed. Long enough to read a

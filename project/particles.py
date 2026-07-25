@@ -65,8 +65,13 @@ class ParticleImageBased:
         alpha_speed: float = 1.0,
         spawn_rect: pygame.Rect | pygame.FRect | None = None,
         x_oscillation: Callable | None = None,
+        rng: random.Random | None = None,
     ):
 
+        # Every random decision this emitter makes goes through self.rng, so a test can
+        # hand it a seeded generator and get the same sequence twice (MOM_TEST_DETERMINISTIC).
+        # Without one it is an ordinary unseeded generator - production is unchanged.
+        self.rng: random.Random = rng or random.Random()
         self.particles: list[Particle] = []
 
         self.screen = screen
@@ -213,8 +218,8 @@ class ParticleImageBased:
 
         # if spawn area is provided use it; otherwise use the middle of the screen
         if self.spawn_rect:
-            pos_x = int(self.spawn_rect.x + random.random() * self.spawn_rect.width)
-            pos_y = int(self.spawn_rect.y + random.random() * self.spawn_rect.height)
+            pos_x = int(self.spawn_rect.x + self.rng.random() * self.spawn_rect.width)
+            pos_y = int(self.spawn_rect.y + self.rng.random() * self.spawn_rect.height)
         elif start_pos:
             pos_x = int(start_pos[0] - self.width / 2)
             pos_y = int(start_pos[1] - self.height / 2)
@@ -273,7 +278,11 @@ class ParticleSystem(ABC):
 
 
 class ParticleLeafs(ParticleSystem):
-    def __init__(self, canvas: pygame.Surface, group: PyscrollGroup, camera: Camera) -> None:
+    def __init__(self, canvas: pygame.Surface, group: PyscrollGroup, camera: Camera,
+                 rng: random.Random | None = None) -> None:
+        # shared with the underlying emitter, so one seeded generator drives the whole
+        # system (see ParticleImageBased.rng)
+        self.rng: random.Random = rng or random.Random()
         # leafs appears at the top half of the screen
         spawn_rect = pygame.Rect(0, 0, settings.WIDTH, settings.HEIGHT // 2)
 
@@ -290,6 +299,7 @@ class ParticleLeafs(ParticleSystem):
             rotation_speed=0.0,
             spawn_rect=spawn_rect,
             x_oscillation=self.x_oscillation,
+            rng=self.rng,
         )
         self.custom_event_id = self.particle.custom_event_id
 
@@ -304,7 +314,7 @@ class ParticleLeafs(ParticleSystem):
         # (spawn_rect drives the position; no mouse involved for weather particles)
         self.particle.add_particles(
             move_speed=80,
-            move_dir=210 + random.randint(-30, 30),
+            move_dir=210 + self.rng.randint(-30, 30),
             scale=5.0,
             lifetime=4.0
         )
@@ -325,7 +335,9 @@ class ParticleLeafs(ParticleSystem):
 
 class ParticleRain(ParticleSystem):
     # MARK: Rain
-    def __init__(self, canvas: pygame.Surface, group: PyscrollGroup, camera: Camera) -> None:
+    def __init__(self, canvas: pygame.Surface, group: PyscrollGroup, camera: Camera,
+                 rng: random.Random | None = None) -> None:
+        self.rng: random.Random = rng or random.Random()
         # rain appears at the top of the screen (16 pixels high, full width)
         spawn_rect = pygame.Rect(0, -settings.HEIGHT // 2, settings.WIDTH + 256, settings.HEIGHT)
         # leaf_img = pygame.image.load(PARTICLES_DIR / "Rain.png").convert_alpha()
@@ -350,6 +362,7 @@ class ParticleRain(ParticleSystem):
             alpha_speed=0.0,
             rotation_speed=0.0,
             spawn_rect=spawn_rect,
+            rng=self.rng,
         )
         self.custom_event_id = self.particle.custom_event_id
 
@@ -385,8 +398,10 @@ class ParticleDestructible(ParticleSystem):
                  group: PyscrollGroup,
                  camera: Camera,
                  spawn_rect: pygame.Rect | pygame.FRect,
-                 type: str
+                 type: str,
+                 rng: random.Random | None = None,
                  ) -> None:
+        self.rng: random.Random = rng or random.Random()
         self.spawn_rect = spawn_rect
         self.type = type
 
@@ -444,6 +459,7 @@ class ParticleDestructible(ParticleSystem):
             alpha_speed     = alpha_speed,
             rotation_speed  = 0.0,
             spawn_rect      = spawn_rect,
+            rng             = self.rng,
         )
 
         # leaf particles moving right
@@ -460,6 +476,7 @@ class ParticleDestructible(ParticleSystem):
             alpha_speed     = alpha_speed,
             rotation_speed  = 0.0,
             spawn_rect      = spawn_rect,
+            rng             = self.rng,
         )
 
         # destructible particle in place
@@ -476,6 +493,7 @@ class ParticleDestructible(ParticleSystem):
             scale_speed     = 0.0,
             alpha_speed     = 0.0,
             rotation_speed  = 0.0,
+            rng             = self.rng,
         )
         self.custom_event_id = self.particle_left.custom_event_id
 
@@ -492,7 +510,7 @@ class ParticleDestructible(ParticleSystem):
             self.particle_right.add_particles(
                 # start_pos=pygame.mouse.get_pos(),
                 move_speed = move_speed,
-                move_dir   = 90 + random.randint(-dir_span, dir_span),
+                move_dir   = 90 + self.rng.randint(-dir_span, dir_span),
                 scale      = scale,
                 lifetime   = lifetime
             )
@@ -500,7 +518,7 @@ class ParticleDestructible(ParticleSystem):
             self.particle_left.add_particles(
                 # start_pos=pygame.mouse.get_pos(),
                 move_speed = move_speed,
-                move_dir   = 270 + random.randint(-dir_span, dir_span),
+                move_dir   = 270 + self.rng.randint(-dir_span, dir_span),
                 scale      = scale,
                 lifetime   = lifetime
             )
@@ -553,7 +571,14 @@ class WeatherDirector:
         self,
         systems: dict[str, ParticleSystem],
         schedules: "dict[str, EmitterSchedule]",
+        rng: random.Random | None = None,
     ) -> None:
+        # Seeded generator (MOM_TEST_DETERMINISTIC) makes the whole schedule repeatable:
+        # same emitter picked, same episode lengths, same gaps. Without one it is an
+        # ordinary unseeded generator - production weather stays random.
+        # NOTE: this is plain runtime state, so it survives store_map/restore_map like
+        # the rest of the director; it must never be written into a save.
+        self.rng: random.Random = rng or random.Random()
         # keep only emitters that have both a live system on this map and a schedule
         self.schedules = {name: schedules[name] for name in systems if name in schedules}
         self.systems = {name: systems[name] for name in self.schedules}
@@ -568,7 +593,7 @@ class WeatherDirector:
         self._timer: dict[str, float] = {}
         for group in self.groups:
             self._active[group] = None
-            self._timer[group] = random.uniform(self.INITIAL_DELAY_MIN, self.INITIAL_DELAY_MAX)
+            self._timer[group] = self.rng.uniform(self.INITIAL_DELAY_MIN, self.INITIAL_DELAY_MAX)
 
     ###################################################################################################################
     def update(self, dt: float) -> None:
@@ -583,19 +608,19 @@ class WeatherDirector:
                 self.systems[active].stop()
                 self._active[group] = None
                 sched = self.schedules[active]
-                self._timer[group] = random.uniform(sched.gap_min, sched.gap_max)
+                self._timer[group] = self.rng.uniform(sched.gap_min, sched.gap_max)
             else:
                 # idle ended -> pick a weighted-random emitter and run it for a while
                 chosen = self._pick(names)
                 self.systems[chosen].start()
                 self._active[group] = chosen
                 sched = self.schedules[chosen]
-                self._timer[group] = random.uniform(sched.active_min, sched.active_max)
+                self._timer[group] = self.rng.uniform(sched.active_min, sched.active_max)
 
     ###################################################################################################################
     def _pick(self, names: list[str]) -> str:
         weights = [self.schedules[name].weight for name in names]
-        return random.choices(names, weights=weights, k=1)[0]
+        return self.rng.choices(names, weights=weights, k=1)[0]
 
     ###################################################################################################################
     def pause(self) -> None:

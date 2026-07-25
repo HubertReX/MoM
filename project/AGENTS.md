@@ -385,6 +385,50 @@ publikując `screenshots/agent/` jako artifact.
 - Port 8001 jest używany domyślnie (konfigurowalny przez `--url`).
 - Nie wspiera `USE_WEB_SIMULATOR` — web runner uruchamia prawdziwy pygbag.
 
+### Tryb deterministyczny świata (`MOM_TEST_DETERMINISTIC`, `MOM_TEST_START_HOUR`)
+
+Scenariusze chodzą na "żywej" grze: epizody pogody startują w losowych momentach,
+NPC-e wędrują random-walkiem, seed świata jest losowy przy każdej nowej grze. Efekt:
+screenshoty nieporównywalne między uruchomieniami.
+
+| zmienna | działanie |
+|---|---|
+| `MOM_TEST_DETERMINISTIC=1` | stały seed świata (`settings.TEST_WORLD_SEED = 12345`), zaseedowana pogoda i cząstki, `random.seed()` na globalnym generatorze |
+| `MOM_TEST_START_HOUR=0..23` | wymusza godzinę startu; **niezależne** od powyższej |
+| `MOM_TEST_LIVE_WORLD=1` | opt-out w runnerze: wraca w pełni losowy świat |
+
+**Runner włącza tryb deterministyczny domyślnie** (`apply_determinism_env` w
+`tests/automate_display_test.py`) i wypisuje jedną linię `[world] ...` z wybranym trybem.
+Zwykłe `just run` bez zmiennych zachowuje się dokładnie jak dotąd.
+
+Dwie decyzje projektowe, które warto znać, zanim się to "poprawi":
+
+- **Cząstek NIE wyłączamy.** Test na wyłączonych cząstkach sprawdzałby inną grę niż ta,
+  w którą gra gracz, a scenariusz może chcieć zweryfikować właśnie emiter. Zamiast tego
+  `WeatherDirector` i emitery dostają wstrzyknięty `rng` (`Scene._particle_rng()`).
+- **Godziny startu NIE wymuszamy globalnie.** Gra zaczyna o 9:00 i scenariusze mają
+  widzieć rutyny NPC takie jak gracz. Godzina to **opcjonalne pole scenariusza**:
+
+  ```json
+  { "name": "Sklep zamkniety w nocy", "start_hour": 21, "actions": [ ... ] }
+  ```
+
+  Runner odpala osobną instancję gry per scenariusz, więc env jest per scenariusz.
+  Brak pola = zmienna jest **usuwana** z env gry (pole scenariusza jest źródłem prawdy,
+  odziedziczone `MOM_TEST_START_HOUR` nie przecieka do scenariusza, który go nie chce).
+
+Czego tryb NIE robi: nie zamraża zegara gry (scenariusze polegają na upływie czasu) i nie
+daje identyczności co do piksela - spawn cząstek napędzają timery pygame, a momenty klatek
+nigdy nie są równe co do milisekundy. Powtarzalna jest **sekwencja decyzji**: ten sam
+emiter, te same długości epizodów, ten sam seed świata.
+
+Ograniczenie: tryb jest **desktop-only**. Gra w przeglądarce nie dziedziczy env procesu
+runnera, więc `--web` zawsze chodzi na losowym świecie.
+
+Testy mechanizmu: `tests/test_deterministic_mode.py` (zmienne czytane są przy imporcie
+`settings`, więc każdy przypadek leci w świeżym subprocessie - przeładowanie modułu nie
+odtworzyłoby prawdziwej kolejności).
+
 ### Asercje stanu (`debug_ui_state` + `ui_state`) — weryfikacja bez vision
 
 Vision (ss-review) jest niedeterministyczne z natury, a większość faktów, które testy chcą

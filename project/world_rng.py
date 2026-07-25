@@ -42,5 +42,13 @@ def day_rng(world_seed: int, day: int, name: str = "") -> random.Random:
 
 
 def new_world_seed() -> int:
-    """Roll the seed for a fresh game. Stored in the save from then on."""
+    """Roll the seed for a fresh game. Stored in the save from then on.
+
+    Under ``MOM_TEST_DETERMINISTIC=1`` returns the fixed test seed instead, so two
+    runs of the same scenario meet the same world (same merchant stock, same
+    day-rolled decisions). See ``settings.TEST_WORLD_SEED``.
+    """
+    import settings
+    if settings.TEST_WORLD_SEED is not None:
+        return settings.TEST_WORLD_SEED
     return random.randrange(2 ** 31)

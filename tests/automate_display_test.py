@@ -285,6 +285,38 @@ def review_screenshot(
     return None, last_detail
 
 
+# --- tryb deterministyczny świata (A04) ---
+LIVE_WORLD_ENV = "MOM_TEST_LIVE_WORLD"      # =1 przywraca w pełni losowy świat (opt-out)
+DETERMINISTIC_ENV = "MOM_TEST_DETERMINISTIC"
+START_HOUR_ENV = "MOM_TEST_START_HOUR"
+
+
+def apply_determinism_env(env: dict[str, str], start_hour: int | None) -> None:
+    """Ustaw w ``env`` procesu gry tryb deterministyczny i (opcjonalnie) godzinę startu.
+
+    Domyślnie testy chodzą deterministycznie: ten sam seed świata i ta sama sekwencja
+    decyzji pogodowych, więc screenshoty są porównywalne między uruchomieniami. Cząstki
+    NIE są wyłączane - testowalibyśmy inną grę niż realna. ``MOM_TEST_LIVE_WORLD=1``
+    wraca do w pełni losowego świata.
+
+    ``start_hour`` pochodzi z pola scenariusza i działa niezależnie od trybu: gra
+    normalnie zaczyna o 9:00 i scenariusze mają widzieć rutyny NPC takie jak gracz;
+    wymuszamy porę tylko tam, gdzie test tego wprost potrzebuje (noc, zamknięty sklep).
+    Env jest per scenariusz, bo runner odpala osobną instancję gry dla każdego.
+    """
+    if os.environ.get(LIVE_WORLD_ENV):
+        env.pop(DETERMINISTIC_ENV, None)
+        print(f"[world] live (random) - {LIVE_WORLD_ENV} is set")
+    else:
+        env[DETERMINISTIC_ENV] = "1"
+        print("[world] deterministic (seeded world + weather)")
+    if start_hour is not None:
+        env[START_HOUR_ENV] = str(start_hour)
+        print(f"[world] start hour forced to {start_hour}:00")
+    else:
+        env.pop(START_HOUR_ENV, None)
+
+
 REAL_SAVES_ENV = "MOM_TEST_USE_REAL_SAVES"   # opt out of the sandbox (see isolate_game_data)
 SANDBOX_DIR = Path(__file__).resolve().parent.parent / ".test-data"
 
@@ -386,8 +418,11 @@ class TestScenario:
         platform_spec: str | List[str] | None = None,
         setup_saves: List[dict[str, Any]] | None = None,
         slug: str | None = None,
+        start_hour: int | None = None,
     ):
         self.name = name
+        # opcjonalne wymuszenie pory dnia dla tego scenariusza (patrz apply_determinism_env)
+        self.start_hour = start_hour
         self.actions = actions
         self.assertions = assertions or []
         self.cleanup_saves = cleanup_saves or []
@@ -431,6 +466,7 @@ class RunnerBase:
         self.counter = 0
         self.run_ts = ""            # jeden znacznik czasu na przebieg jednego scenariusza
         self.scenario_slug = ""
+        self.start_hour: int | None = None  # z pola `start_hour` bieżącego scenariusza
         self.screenshots: List[dict[str, Any]] = []  # {slug, label, path} w kolejności zrobienia
 
     def start_game(self) -> None: ...
@@ -446,6 +482,7 @@ class RunnerBase:
         self.counter = 0
         self.run_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.scenario_slug = scenario.slug
+        self.start_hour = scenario.start_hour
         self.screenshots = []
         # zrzut stanu z poprzedniego scenariusza nie może wyciec do tego
         self.clear_ui_state()
@@ -650,6 +687,7 @@ class DesktopRunner(RunnerBase):
         # Prefix nazw screenshotów przekazany do gry — patrz SS_PREFIX_ENV.
         env = dict(os.environ)
         env[SS_PREFIX_ENV] = self.screenshot_prefix()
+        apply_determinism_env(env, self.start_hour)
         self.game_proc = subprocess.Popen(
             TEST_CONFIG["GAME_CMD"], shell=True, preexec_fn=os.setsid, env=env
         )
@@ -854,6 +892,9 @@ class WebRunner(RunnerBase):
 
     def start_game(self) -> None:
         print(f"[{get_timestamp()}] Starting pygbag (web)...")
+        # UWAGA: tryb deterministyczny jest desktop-only. Gra w przeglądarce nie
+        # dziedziczy env tego procesu (pygbag serwuje WASM, a `os.environ` po stronie
+        # gry to stub), więc MOM_TEST_DETERMINISTIC / MOM_TEST_START_HOUR tu nie działają.
         env = dict(os.environ)
         self.pygbag_proc = subprocess.Popen(
             TEST_CONFIG["PYGBAG_CMD"],
@@ -1115,6 +1156,7 @@ def load_scenarios(path: str) -> List[TestScenario]:
             platform_spec=s.get("platform"),
             setup_saves=s.get("setup_saves"),
             slug=s.get("slug"),
+            start_hour=s.get("start_hour"),
         ))
     return scenarios
 
