@@ -5,7 +5,9 @@ kontrakty, ryzyka):
 [refactor-rdzenia-b01-2026-07-25.html](_attachements/refactor-rdzenia-b01-2026-07-25.html)
 (podgląd: `docserve start doc/_attachements/refactor-rdzenia-b01-2026-07-25.html`).
 
-Status: **czeka na akceptację autora** - etap 1 (przenoszenie kodu) nie rusza bez niej.
+Status: **zaakceptowany 2026-07-25**, etap 1 w toku - postęp i instrukcja
+wznowienia: [audyt/B01-stan-realizacji.md](audyt/B01-stan-realizacji.md)
+(zrobione kroki 0-2, następny: krok 3 world_clock).
 
 ## Decyzje (rekomendacje)
 
