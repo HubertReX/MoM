@@ -36,10 +36,21 @@ Potem kroki 4-16 wg tabeli w dokumencie.
 test-agent "Save and Load Basic"` i `"Hammer Dialog Flow"` 4. `just
 validate-world` 5. `SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy
 .venv/bin/python3 scripts/bench_scene.py` (< +20% od baseline) 6.
-`... scripts/b01_fixture.py check` (kontrakt K1). Raz na 2-3 kroki pełny
-desktop i web (obowiązkowo po krokach 5, 7, 9, 10, 13, 16). Commit
+`... scripts/b01_fixture.py check` (kontrakt K1). **Pełne zestawy OSZCZĘDNIE
+(decyzja autora 2026-07-25, koszty):** pełny desktop tylko po krokach 9 i 16,
+pełny web tylko po 10 i 16; poza tym wystarczą bramki wyżej. Commit
 `B01 krok N: <co>` po każdym kroku; STOP i pytanie do autora, gdy bramka
 nie przechodzi albo krok nie mieści się w ~600 liniach diffu.
+
+## Higiena kosztów sesji (obowiązuje agenta)
+
+- Output pełnych zestawów ZAWSZE do pliku w scratchpadzie + grep licznika;
+  nigdy do kontekstu. Jeden waiter w tle zamiast pollingu.
+- Czytaj wąskie zakresy plików (offset/limit), nie całe moduły; codegraph
+  tylko gdy grep-outline nie wystarcza.
+- Kandydat na zadanie A08 (rozpisać w sesji audytowej): web-runner reużywa
+  jednego serwera pygbag zamiast restartu per scenariusz (~25 → ~10 min);
+  plus `just test-smoke` (5-6 kluczowych scenariuszy desktop).
 
 ## Pułapki świeżo potwierdzone w praktyce
 
