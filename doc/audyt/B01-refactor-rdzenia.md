@@ -84,6 +84,10 @@ Bramki po KAŻDYM kroku (wszystkie muszą być zielone przed następnym):
 6. Raz na 2-3 kroki: pełny przebieg wszystkich scenariuszy desktop
    (`MOM_SKIP_SS_REVIEW=1 just test-agent`) i raz web (`just test-web`)
 
+Koszt bramek 3 i 6 obniża [A08](A08-web-runner-jeden-pygbag-i-smoke.md) (jeden serwer
+pygbag na przebieg web + `just test-smoke`); po jego realizacji bramka 3 = `just
+test-smoke`.
+
 Po zakończeniu każdego kroku - commit na `main` z opisem "B01 krok N: <co>".
 
 ## Kryteria akceptacji całego epica

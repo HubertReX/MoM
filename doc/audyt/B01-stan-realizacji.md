@@ -48,9 +48,11 @@ nie przechodzi albo krok nie mieści się w ~600 liniach diffu.
   nigdy do kontekstu. Jeden waiter w tle zamiast pollingu.
 - Czytaj wąskie zakresy plików (offset/limit), nie całe moduły; codegraph
   tylko gdy grep-outline nie wystarcza.
-- Kandydat na zadanie A08 (rozpisać w sesji audytowej): web-runner reużywa
-  jednego serwera pygbag zamiast restartu per scenariusz (~25 → ~10 min);
-  plus `just test-smoke` (5-6 kluczowych scenariuszy desktop).
+- Rozpisane jako [A08](A08-web-runner-jeden-pygbag-i-smoke.md): web-runner
+  reużywa jednego serwera pygbag zamiast restartu per scenariusz (~25 → < 15 min)
+  plus `just test-smoke` (6 kluczowych scenariuszy). Zadanie jest niezależne od
+  kroków B01 - gdy pełne zestawy zaczną boleć, zrób je przed kolejnym krokiem
+  i podmień bramkę "3 scenariusze z nazwy" na `just test-smoke`.
 
 ## Pułapki świeżo potwierdzone w praktyce
 

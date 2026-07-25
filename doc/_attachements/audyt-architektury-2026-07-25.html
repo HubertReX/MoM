@@ -592,6 +592,7 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
   <div class="card"><h3>Faza 2 - Wielki refactor rdzenia <span class="badge err">priorytet</span></h3>
     <p>Cel: scene.py/characters.py rozbite wg zaplanowanej architektury; testy z Fazy 1 pilnują regresji.</p>
     <ul style="margin:0"><li>B01 plan architektury + wykonanie (mocny model)</li>
+    <li>A08 tani web-runner + <code>just test-smoke</code> (obniża koszt bramek B01)</li>
     <li>G01 codegen configu web (przy okazji zmian struktur)</li><li>B02 polityka wersji save</li></ul></div>
   <div class="card"><h3>Faza 3 - Brakujące mechaniki</h3>
     <p>Cel: gra brzmi i nagradza; noc działa wszędzie.</p>
@@ -632,6 +633,7 @@ jako osobny moduł z czystym API - i tak ma powstać).</p></div>
     <tr><td>F02</td><td>Aktualizacja AGENTS.md / design-system docs do stanu kodu</td><td class="prio-p1">P1</td><td>1</td><td>D-5: nieaktualne zasady psują pracę słabszych agentów</td><td>S</td></tr>
     <tr><td>F03</td><td>mypy do zera: naprawa 23 błędów, czysta bramka typów</td><td class="prio-p1">P1</td><td>1</td><td>D-12: usunięcie stałego szumu sesji; warunek bramki mypy w B01</td><td>S</td></tr>
     <tr><td>B01</td><td>Wielki refactor scene.py/characters.py (plan + wykonanie)</td><td class="prio-p0">P0</td><td>2</td><td>D-1: decyzja „jeden duży refactor teraz"; osobny dokument architektury docelowej do akceptacji</td><td>XL</td></tr>
+    <tr><td>A08</td><td>Web-runner: jeden serwer pygbag na przebieg (zamiast restartu per scenariusz) + <code>just test-smoke</code></td><td class="prio-p1">P1</td><td>2</td><td>Znalezione w trakcie B01: pełny web ~25 min zabija częstotliwość bramek; build WASM jest w przebiegu identyczny</td><td>M</td></tr>
     <tr><td>G01</td><td>Codegen: config.py (web) generowany z config_pydantic.py</td><td class="prio-p1">P1</td><td>2</td><td>D-2: koniec ręcznego lustra i web-only crashy</td><td>M</td></tr>
     <tr><td>B02</td><td>Polityka wersji save + minimalna migracja</td><td class="prio-p2">P2</td><td>2</td><td>D-8: przed publikacją prologu</td><td>S</td></tr>
     <tr><td>D01</td><td>AudioManager: muzyka per mapa, SFX eventy, głośność, web-safe</td><td class="prio-p1">P1</td><td>3</td><td>Największy odczuwalny brak; wzorce z ~/Projects/RPG</td><td>L</td></tr>
