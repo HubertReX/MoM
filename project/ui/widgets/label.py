@@ -27,8 +27,11 @@ class Label(Widget):
         shadow: bool = True,
         outline_color: pygame._common.ColorValue | None = PANEL_BG_COLOR,
         anchor: str = "topleft",
+        name: str = "",
     ) -> None:
         super().__init__()
+        # human-readable id in layout-violation reports (see ui/layout.py)
+        self.name = name
         self._text = str(text)
         self._size = size
         self._color = color
@@ -77,12 +80,32 @@ class Label(Widget):
     def _reanchor(self) -> None:
         setattr(self.rect, self._anchor, self._pos)
 
+    def _check_clipped(self, text_surf: pygame.Surface) -> None:
+        """Report ``clipped`` when the rendered text does not fit the widget's rect.
+
+        ``_relayout`` sizes the rect to the text, so this can only fire when a caller
+        has overwritten ``rect.size`` afterwards (a fixed-width slot, a panel forcing
+        a column width). That is exactly the case worth catching: the surface is
+        allocated at ``rect.size``, so the excess is silently cut off, never wrapped.
+        """
+        needed_w = text_surf.get_width() + 2 * self._pad
+        needed_h = text_surf.get_height() + 2 * self._pad
+        if needed_w <= self.rect.width and needed_h <= self.rect.height:
+            return
+        from ..layout import report_violation
+        label = self.name or f"'{self._text[:24]}'"
+        report_violation(
+            f"Label({label})", "clipped",
+            f"text needs {needed_w}x{needed_h}px, rect is {self.rect.width}x{self.rect.height}px",
+        )
+
     #############################################################################################################
     def render(self) -> pygame.Surface:
         surf = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         font = self.font
         pad = self._pad
         text_surf = font.render(self._text, False, self._color)
+        self._check_clipped(text_surf)
 
         if self._outline_color:
             border_surf = font.render(self._text, False, self._outline_color)

@@ -351,6 +351,12 @@ class Game:
         # stack (in-game settings menu), let it re-fit its viewport-sized surfaces and
         # panel positions. Guarded with getattr: at startup set_display() runs before
         # self.states exists.
+        # Panels are about to recompute their geometry, so anything the layout
+        # self-checks flagged applies to the OLD resolution - drop it, or the next
+        # `no_layout_violations` assertion blames the new layout for a stale finding.
+        from ui.layout import reset_violations
+        reset_violations()
+
         for state in getattr(self, "states", []):
             on_resize = getattr(state, "on_resize", None)
             if callable(on_resize):

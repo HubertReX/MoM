@@ -37,7 +37,7 @@ from settings import (
     get_msg,
 )
 
-from .. import keycap, theme
+from .. import keycap, layout, theme
 from ..text.markup import cut_markup, strip_tags
 from ..widget import Widget
 from ..widgets import bar
@@ -420,6 +420,10 @@ class QuestPanel(Widget):
         # when the quest is taller than this box.
         top = self._content_y(_LIST_TOP - 26)
         viewport = pygame.Rect(_RIGHT_X, top, _RIGHT_EDGE - _RIGHT_X, _LIST_BOTTOM - top)
+        # the pane itself must sit inside the frame; its CONTENT may be taller than the
+        # pane - that is what the ScrollView is for, so it is not a violation
+        layout.check_inside(
+            "QuestPanel(details)", viewport, self.rect.inflate(-2 * _INNER_PAD, -2 * _INNER_PAD))
         self._details_scroll.draw(
             surface, viewport,
             lambda top_y, width: self._render_details(surface, row, top_y, width),

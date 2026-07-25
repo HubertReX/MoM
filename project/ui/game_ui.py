@@ -28,6 +28,7 @@ from settings import (
 )
 from objects import NotificationTypeEnum
 
+from . import layout
 from .panels.dialog import DialogPanel
 from .panels.quest import QuestPanel
 from .panels.help import HelpPanel
@@ -127,6 +128,9 @@ class GameUI:
         for panel in self._open:
             panel.visible = False
         self._open.clear()
+        # findings belong to the panels that were open; a fresh UI starts with a
+        # clean slate (see "Layout self-checks" in ui/AGENTS.md)
+        layout.reset_violations()
 
     #############################################################################################################
     # MARK: convenience proxies used by scene/characters

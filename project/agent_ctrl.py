@@ -126,6 +126,15 @@ WEB_INPUT_KEY = "MoM.agent_input"
 WEB_UI_STATE_KEY = "MoM.agent_ui_state"
 
 
+def _layout_violations() -> "list[str]":
+    """Naruszenia layoutu zebrane przez self-checki UI (pusta lista, gdy UI niedostępne)."""
+    try:
+        from ui.layout import violations
+    except ImportError:
+        return []
+    return violations()
+
+
 class AgentController:
     """Czyta komendy (z pliku lub localStorage) i wysyła zdarzenia klawiszy do gry.
 
@@ -227,6 +236,9 @@ class AgentController:
             "open_panels": [],
             "player": None,
             "dialog": None,
+            # layout self-checks (ui/layout.py) - deterministyczna detekcja overflow,
+            # niezależna od sceny: raportują też panele menu
+            "layout_violations": _layout_violations(),
         }
         if scene is None:
             return info

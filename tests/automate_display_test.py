@@ -44,6 +44,10 @@ Assertions (per scenario, opcjonalne):
                          otwarta), ``<ścieżka>_min``/``<ścieżka>_max`` (porównanie liczbowe,
                          np. ``"player.hp_min": 1``) oraz dowolny inny klucz = równość
                          (``"map": "Village"``, ``"dialog.npc": "BARMAN_ABSINTHRAYNER"``).
+    no_layout_violations FAIL, gdy UI zgłosiło naruszenie layoutu (tekst poza panelem,
+                         overflow bez scrolla - patrz ``project/ui/layout.py``). Czyta
+                         ``layout_violations`` z tego samego zrzutu, więc scenariusz
+                         też musi wcześniej wysłać ``debug_ui_state``.
     screenshot_review    ss-reviewer (model z vision) ocenia screenshot. Pola:
                          ``target`` (slug akcji; brak = ostatni screenshot),
                          ``expect`` (opis oczekiwania), ``expected_state`` (np. ``GAMEPLAY``),
@@ -496,7 +500,25 @@ class RunnerBase:
             return self._assert_process_alive(assertion)
         if a_type == "ui_state":
             return self._assert_ui_state(assertion)
+        if a_type == "no_layout_violations":
+            return self._assert_no_layout_violations(assertion)
         return None
+
+    def _assert_no_layout_violations(self, assertion: dict[str, Any]) -> List[str]:
+        """Twardy błąd, gdy UI zgłosiło jakiekolwiek naruszenie layoutu.
+
+        Źródłem jest ``layout_violations`` w zrzucie ``debug_ui_state`` - scenariusz
+        musi więc wysłać tę komendę PO otwarciu paneli, które chce sprawdzić
+        (naruszenie jest raportowane dopiero, gdy widżet faktycznie się rysuje).
+        """
+        state = self.read_ui_state()
+        if state is None:
+            return ["no_layout_violations: no state dump - the scenario must send the "
+                    "`debug_ui_state` command as an action before this assertion"]
+        found = state.get("layout_violations") or []
+        if found:
+            return [f"layout violations ({len(found)}): " + " | ".join(str(v) for v in found)]
+        return []
 
     # ---------------------------------------------------------------- ui_state
     def read_ui_state(self) -> dict[str, Any] | None:

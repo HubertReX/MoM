@@ -185,6 +185,64 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   mówcy `name_tag`). To dozwolony wyjątek od panelu standardowego.
 - Linie działowe: kolor `RULE`, grubość 2px.
 
+## Layout self-checks — overflow to twardy błąd
+
+Zasady z tego dokumentu były dotąd egzekwowane wyłącznie okiem: „panel za mały na tekst"
+i „tekst najeżdża na ramkę" widać było dopiero na screenshocie, a ocena wizualna przez
+LLM bywa niedeterministyczna. Widżety **znają** swoją geometrię, więc detekcja jest w 100%
+pewna — rejestr naruszeń mieszka w `ui/layout.py`.
+
+**Ten mechanizm tylko mierzy i raportuje.** Nigdy nie przycina, nie clampuje i nie
+„naprawia" layoutu. Naruszenie to błąd do naprawienia u źródła, nie coś do zaklejenia tutaj.
+
+### Jak zgłaszać
+
+```python
+from .. import layout
+
+layout.report_violation("DialogPanel(option 3)", "outside-panel", "opis co i o ile wystaje")
+layout.check_inside("QuestPanel(details)", viewport, panel_inner)  # gotowy helper
+```
+
+Rodzaje (`kind`) w użyciu:
+
+| kind | znaczenie |
+|---|---|
+| `h-overflow` | najdłuższa linia szersza niż obszar — nierozrywalne słowo lub ikona inline, których zawijanie nie uratuje |
+| `v-overflow` | treść wyższa niż obszar **i brak paska przewijania** |
+| `clipped` | `Label` z rectem mniejszym niż jego tekst (ktoś nadpisał `rect.size` po `_relayout`) |
+| `outside-panel` | sekcja treści wystaje poza wewnętrzny obszar panelu (rect panelu minus ramka) |
+
+### Scroll = legalny nadmiar
+
+Treść wyższa niż okno **nie jest** naruszeniem, jeśli da się ją przewinąć — to zaprojektowane
+zachowanie `ScrollView` i `RichText(show_scrollbar=True)`. Dlatego `v-overflow` zgłasza się
+tylko przy `show_scrollbar=False`.
+
+### Mierz przy layoucie, raportuj przy rysowaniu
+
+`RichText` liczy naruszenia w `_bake()`, ale zgłasza je dopiero w `draw()`. Powód: część
+instancji `RichText` powstaje **wyłącznie do pomiaru** (`render_static()` w toastach HUD,
+binarne szukanie długości linii w `quest.py`) i nigdy nie trafia na ekran — bez tego
+rozdziału pośrednie kandydatury sypałyby fałszywymi alarmami.
+
+### Deduplikacja i reset
+
+`report_violation` zapamiętuje `(widget, kind)` i loguje raz na sesję — checki siedzą na
+ścieżce rysowania, więc bez tego log rósłby o linię na klatkę. `reset_violations()` wołane
+jest tam, gdzie geometria legalnie się zmienia: przy zmianie rozdzielczości (`game.py`,
+`set_display`) i w `GameUI.reset()`.
+
+### Jak czytać wyniki
+
+- w logu gry: linie `[layout] <kind> in <widget>: <detail>`
+- w testach agentowych: komenda `debug_ui_state` wkłada listę do pola `layout_violations`,
+  a asercja `{"type": "no_layout_violations"}` twardo pada, gdy lista jest niepusta
+- testy jednostkowe mechanizmu: `tests/test_layout_checks.py`
+
+Nowy panel? Jeśli rysujesz sekcje sam (bez `RichText`/`Label`), dopisz `layout.check_inside`
+po złożeniu layoutu — wzorzec w `panels/dialog.py` (`_check_layout`) i `panels/quest.py`.
+
 ## Zmiana języka w locie (i18n)
 
 - **Nigdy nie importuj `LANG` przez wartość** (`from settings import LANG`). To wiązanie

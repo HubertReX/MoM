@@ -35,7 +35,7 @@ from settings import (
     get_msg,
     )
 
-from .. import theme
+from .. import layout, theme
 from ..widget import Widget
 from ..widgets import Label, bar
 from ..widgets.rich_text import RichText, render_rich_text_surface
@@ -148,7 +148,8 @@ class DialogPanel(Widget):
             bg_w - 2 * _BORDER,
             body_h,
         )
-        self.body = RichText("", self.body_rect, self.scene.icons, base_size=_BODY_FONT, line_spacing=4)
+        self.body = RichText("", self.body_rect, self.scene.icons, base_size=_BODY_FONT,
+                             line_spacing=4, name="DialogPanel.speech")
 
     #############################################################################################################
     def open(self, npc: "NPC | None" = None, text: str = "") -> None:
@@ -288,6 +289,21 @@ class DialogPanel(Widget):
             self.option_rects[i] = rect
             self.option_weight_indicators[i] = self._weight_pos(self._option_surfaces[i], rect)
             y += surf_h + _OPTION_PAD + _OPTION_GAP
+        self._check_layout(start, end)
+
+    def _check_layout(self, start: int, end: int) -> None:
+        """Report option rows or the speech area sticking out of the panel frame.
+
+        The one option row that ``_fitting_count`` always keeps (so the list is never
+        empty) is not height-checked against the remaining space, so a single very tall
+        option - a long reply wrapped over many lines - can spill past the bottom
+        border. That is precisely the historic bug in this panel, and the check below
+        is what catches it without waiting for someone to look at a screenshot.
+        """
+        inner = self.rect.inflate(-2 * _BORDER, -2 * _BORDER)
+        layout.check_inside("DialogPanel(speech)", self.body_rect, inner)
+        for i in range(start, end):
+            layout.check_inside(f"DialogPanel(option {i + 1})", self.option_rects[i], inner)
 
     def _build_weight_indicator(self, opt: DialogOption) -> pygame.Surface:
         """Return the sentiment-weight surface for an option (position set on layout).

@@ -47,9 +47,13 @@ class RichText(Widget):
         line_spacing: int = 0,
         extra_emojis: frozenset[str] = frozenset(),
         icon_scale: float = _ICON_SCALE,
+        name: str = "",
     ) -> None:
         super().__init__(rect)
         self.icons = icons
+        # human-readable id in layout-violation reports (see ui/layout.py); worth
+        # setting for any RichText that is actually drawn on screen
+        self.name = name
         # Inline-icon height as a multiple of the font height, before the integer
         # snap. The default (~1.35x) reads as "a touch larger than the text". Dense
         # chips/toasts at a small font want the icon a *whole* step bigger so a 16px
@@ -74,6 +78,8 @@ class RichText(Widget):
         self.image_items: list[tuple[str, pygame.Rect, int]] = []
         self._scaled_icons: dict[tuple[str, int], list[pygame.Surface]] = {}
         self._content: pygame.Surface | None = None
+        # (kind, detail) measured in _bake(), reported from draw() - see _report_layout()
+        self._layout_issues: list[tuple[str, str]] = []
 
         self._text = text
         self.tokens: list[Token] = parse(text, self.base_style, extra_emojis=self.extra_emojis)
@@ -264,6 +270,46 @@ class RichText(Widget):
         self.content_width = max((line["width"] for line in lines), default=0)
         self.max_scroll = max(0, total_h - self.rect.height)
         self.scroll = min(self.scroll, self.max_scroll)
+        self._measure_layout(total_h)
+
+    #############################################################################################################
+    # MARK: layout self-checks
+
+    def _measure_layout(self, total_h: int) -> None:
+        """Record (do not yet report) how the baked content fits its rect.
+
+        Word wrap keeps lines inside ``rect.width``, so a too-wide line means a single
+        unbreakable item - a long word or an inline icon - that no wrap can save; that
+        one really does paint over the frame. Height is only a violation when nothing
+        can scroll: with a scrollbar, more content than viewport is the *designed*
+        behaviour, not a bug.
+
+        Measured here (once per layout) but reported from :meth:`draw`, because a
+        RichText built purely to measure text - ``render_static`` callers like the HUD
+        toasts or the quest panel's ``_fit_line`` binary search - is never drawn and
+        must not raise alarms about intermediate candidates.
+        """
+        issues: list[tuple[str, str]] = []
+        if self.content_width > self.rect.width:
+            issues.append((
+                "h-overflow",
+                f"longest line {self.content_width}px > {self.rect.width}px available "
+                f"(unbreakable word or inline icon)",
+            ))
+        if total_h > self.rect.height and not self.show_scrollbar:
+            issues.append((
+                "v-overflow",
+                f"content {total_h}px tall > {self.rect.height}px available, no scrollbar",
+            ))
+        self._layout_issues = issues
+
+    def _report_layout(self) -> None:
+        if not self._layout_issues:
+            return
+        from ..layout import report_violation
+        label = self.name or f"'{self._text[:24]}'"
+        for kind, detail in self._layout_issues:
+            report_violation(f"{type(self).__name__}({label})", kind, detail)
 
     #############################################################################################################
     # MARK: scrolling
@@ -326,6 +372,7 @@ class RichText(Widget):
     def draw(self, surface: pygame.Surface) -> None:
         if not self.visible or self._content is None:
             return
+        self._report_layout()
         view = self.rect
         prev_clip = surface.get_clip()
         surface.set_clip(view)

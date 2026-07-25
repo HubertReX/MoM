@@ -466,6 +466,7 @@
                     "player.hp_min": 1
                 }
             },
+            { "type": "no_layout_violations" },
             { "type": "process_alive" }
         ]
     },
@@ -525,6 +526,7 @@
                     "dialog.npc": "HAMMER_HOAXHEART"
                 }
             },
+            { "type": "no_layout_violations" },
             { "type": "process_alive" }
         ]
     },
@@ -664,6 +666,7 @@
                     "player.hp_min": 1
                 }
             },
+            { "type": "no_layout_violations" },
             {
                 "type": "screenshot_review",
                 "target": "barman_dialog",
