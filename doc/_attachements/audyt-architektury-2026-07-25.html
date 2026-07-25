@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoM - Audyt architektury 2026-07-25</title>
+<style>
+  /* ---------- Design tokens ---------- */
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  :root[data-theme="dark"] {
+    --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+    --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+    --accent:#748ffc; --accent-soft:#26304d;
+    --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6;
+    font-size: 16px; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: var(--s6) var(--s5) var(--s7); }
+  .prose { max-width: 76ch; }
+
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.45rem; line-height: 1.25; margin: var(--s7) 0 var(--s3); letter-spacing: -.01em;
+       padding-top: var(--s3); border-top: 2px solid var(--border); }
+  h3 { font-size: 1.1rem; margin: var(--s5) 0 var(--s2); }
+  h4 { font-size: 1rem; margin: var(--s4) 0 var(--s2); }
+  p { margin: 0 0 var(--s4); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.08rem; color: var(--muted); }
+  .backlink { font-size: .85rem; display: inline-block; margin-top: var(--s4); }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: var(--s3);
+    margin-bottom: var(--s5); }
+  #themeToggle { font: inherit; font-weight: 600; cursor: pointer; border-radius: 999px;
+    padding: 6px 16px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+  #themeToggle:hover { background: var(--surface-2); }
+
+  .grid { display: grid; gap: var(--s4); }
+  .cols-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .cols-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .cols-4 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: var(--s4) var(--s5); box-shadow: var(--shadow); }
+  .card h3:first-child { margin-top: 0; }
+  .metric .num { font-size: 1.7rem; font-weight: 700; letter-spacing: -.02em; }
+  .metric .label { color: var(--muted); font-size: .82rem; }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: .74rem;
+    font-weight: 600; padding: 2px 10px; border-radius: 999px; line-height: 1.6; white-space: nowrap; }
+  .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .badge.err{background:var(--err-soft);color:var(--err)}
+  .badge.info{background:var(--info-soft);color:var(--info)}
+
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: var(--s2) var(--s3); border-bottom: 1px solid var(--border);
+    vertical-align: top; }
+  thead th { position: sticky; top: 0; background: var(--surface);
+    font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  tbody tr:hover { background: var(--surface-2); }
+
+  code { font-family: var(--mono); font-size: .87em; background: var(--surface-2);
+    padding: 1px 5px; border-radius: 5px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: var(--s4); overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: var(--s3) var(--s4); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: var(--s4) 0; }
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .callout.err{border-color:var(--err);background:var(--err-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .callout p:last-child { margin-bottom: 0; }
+
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s3) var(--s4); margin-bottom: var(--s3); background: var(--surface); }
+  details[open] { box-shadow: var(--shadow); }
+  summary { cursor: pointer; font-weight: 600; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; display: inline-block; margin-right: var(--s2);
+    transition: transform .15s; color: var(--muted); }
+  details[open] summary::before { transform: rotate(90deg); }
+  details > :nth-child(2) { margin-top: var(--s3); }
+
+  .toc { columns: 2; column-gap: var(--s6); }
+  .toc li { margin-bottom: 6px; break-inside: avoid; }
+  @media (max-width: 640px) { .toc { columns: 1; } }
+
+  .flow { width: 100%; height: auto; }
+  .flow text { font-family: var(--mono); font-size: 11.5px; fill: var(--text); }
+  .flow .lbl { font-size: 10px; fill: var(--muted); }
+  .flow rect { fill: var(--surface-2); stroke: var(--border); rx: 6; }
+  .flow rect.src { stroke: var(--ok); }
+  .flow rect.gen { stroke: var(--warn); }
+  .flow rect.game { stroke: var(--accent); }
+  .flow line, .flow path { stroke: var(--muted); stroke-width: 1.3; fill: none; marker-end: url(#arr); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .prio-p0 { color: var(--err); font-weight: 700; }
+  .prio-p1 { color: var(--warn); font-weight: 700; }
+  .prio-p2 { color: var(--info); font-weight: 700; }
+  .prio-p3 { color: var(--muted); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <p class="eyebrow" style="margin:0">Audyt architektury · 2026-07-25 · główny architekt: Claude (Opus)</p>
+  <button id="themeToggle" title="Przełącz motyw">🌗 Motyw</button>
+</div>
+
+<h1>Misadventures of Malachi - audyt całego projektu</h1>
+<p class="lead prose">Pogłębiony audyt architektury, długów technicznych i projektu gry
+pod kątem długofalowego rozwoju (dużo więcej map, postaci, dialogów i questów).
+Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/audyt/</code>.</p>
+
+<div class="grid cols-4" style="margin:var(--s5) 0">
+  <div class="card metric"><div class="num">26,2K</div><div class="label">LOC własnego kodu (project/)</div></div>
+  <div class="card metric"><div class="num">407 <span class="badge ok">100% pass</span></div><div class="label">testów jednostkowych (30 plików)</div></div>
+  <div class="card metric"><div class="num">35 / 39 / 8</div><div class="label">postaci / przedmiotów / questów</div></div>
+  <div class="card metric"><div class="num">~1,7 ms</div><div class="label">klatka desktop (32 NPC, headless)</div></div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="toc">1. Spis treści</h2>
+<ol class="toc">
+  <li><a href="#toc">Spis treści</a></li>
+  <li><a href="#summary">Podsumowanie wykonawcze</a></li>
+  <li><a href="#arch">Ocena architektury</a></li>
+  <li><a href="#debt">Błędy projektowe i długi techniczne</a></li>
+  <li><a href="#entities">Spójność encji i przepływ danych (4.4)</a></li>
+  <li><a href="#tests">Testy automatyczne i ss-review (4.1)</a></li>
+  <li><a href="#design">Design system i UI (4.2)</a></li>
+  <li><a href="#perf">Wydajność i shadery web (4.3)</a></li>
+  <li><a href="#gameplay">Projekt gry: mechaniki, nuda, regrywalność</a></li>
+  <li><a href="#roadmap">Plan rozwoju (roadmap)</a></li>
+  <li><a href="#backlog">Backlog z priorytetami</a></li>
+  <li><a href="#tools">Narzędzia i workflow</a></li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="summary">2. Podsumowanie wykonawcze</h2>
+<div class="prose">
+  <p><strong>Ogólna ocena: solidne fundamenty, dwa systemy klasy wzorcowej, jeden rdzeń-monolit
+  do rozbicia, oraz infrastruktura testowa wymagająca stabilizacji zanim urośnie treść gry.</strong></p>
+
+  <p>Warstwy <strong>dialogów i questów</strong> to najlepsza część projektu: czysta logika bez pygame,
+  mini-DSL warunków z walidacją przy imporcie, twarde błędy zamiast cichych fallbacków,
+  dobre pokrycie testami i pipeline treści (Obsidian → CSV → config.json) z generowanymi
+  grafami. Ta architektura <em>uniesie</em> „dużo więcej dialogów i questów" bez zmian.</p>
+
+  <p>Rdzeń silnika (<code>scene.py</code> 2635 linii, <code>characters.py</code> 1962 linie) to
+  klasyczne god-objects: mapa, kolizje, czas, pogoda, rutyny NPC, intro, debug i API agenta
+  w jednej klasie. Dziś działa, ale każda nowa mechanika podnosi koszt zmian, a słabszym
+  agentom AI rośnie ryzyko regresji. <strong>Decyzja (potwierdzona): jeden duży refactor teraz.</strong></p>
+
+  <p>Główny hamulec tempa pracy to <strong>niestabilny ss-review</strong> - diagnoza w rozdz. 6:
+  to nie wina formatu odpowiedzi, tylko (a) padającego modelu primary, (b) prompta pytającego
+  wyłącznie o stan gry, (c) braku deterministycznych asercji tam, gdzie vision jest zbędny.</p>
+
+  <h3>Decyzje podjęte w tej sesji</h3>
+  <ul>
+    <li><strong>ss-review:</strong> gemini jako primary + checklisty per-scenariusz + asercje stanu
+      z runtime + layout self-checks w kodzie UI. Bez golden images (żywa gra = pułapka utrzymaniowa).</li>
+    <li><strong>Noc/FoW na web:</strong> najpierw tani fallback bez shaderów (jedna ścieżka kodu
+      desktop+web); WebGL w pygbag jako późniejszy eksperyment.</li>
+    <li><strong>Config:</strong> generować wersję web (dataclassy) z modeli pydantic - koniec ręcznego lustra.</li>
+    <li><strong>Rdzeń:</strong> jeden duży, zaplanowany refactor scene.py/characters.py (mocnym modelem).</li>
+    <li><strong>Encje:</strong> walidator <code>just validate-world</code> + mapa przepływu + stopniowe ujednolicenie kluczy.</li>
+    <li><strong>Audio:</strong> pełny szkielet od razu (muzyka per mapa, SFX eventy, głośność, web-safe).</li>
+    <li><strong>Progresja statystyk:</strong> najpierw dokument decyzyjny, kod po akceptacji.</li>
+    <li><strong>Priorytety:</strong> (1) naprawa ss-review i testów, (2) wielki refactor rdzenia.</li>
+  </ul>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="arch">3. Ocena architektury</h2>
+
+<div class="prose">
+  <p>Gra: FSM stanów na stosie (<code>game.states</code>), pętla asynchroniczna (pygbag-safe),
+  render pyscroll 1:1 pixel-perfect (od zmiany <code>SCALE = 1.0</code> większa rozdzielczość =
+  większy viewport). Dual-target desktop + web z rozgałęzieniami <code>IS_WEB</code>.</p>
+</div>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Moduł</th><th>Rozmiar</th><th>Ocena</th><th>Komentarz</th></tr></thead>
+  <tbody>
+    <tr><td><code>dialog/</code></td><td>~103K</td><td><span class="badge ok">wzorcowy</span></td>
+      <td>Czysta logika, mini-DSL z whitelistą AST (zero eval), walidacja przy imporcie z błędami file:line, historia bugów udokumentowana. Skaluje się na dużo więcej treści.</td></tr>
+    <tr><td><code>quest/</code></td><td>~90K</td><td><span class="badge ok">wzorcowy</span></td>
+      <td>„Unlocked" wyliczane, nie przechowywane (D6); jawny tryb ukończenia (D5); kaskada z twardym limitem iteracji. Świetne decyzje projektowe z uzasadnieniami w docstringach.</td></tr>
+    <tr><td><code>ui/</code></td><td>~250K</td><td><span class="badge ok">dobry</span></td>
+      <td>Własny toolkit (cache powierzchni, dirty-flag), współdzielone komponenty (keycap, bar, scroll_view), tokeny w theme.py. Braki: brak automatycznej detekcji overflow (rozdz. 7).</td></tr>
+    <tr><td><code>save_load/</code></td><td>~65K</td><td><span class="badge ok">dobry</span></td>
+      <td>Modele + backendy (dysk/localStorage), stan wielu map, pending_map_states, pin rutynowych NPC do mapy domowej. Dobre testy. Wersjonowanie save = odrzucenie starego (brak migracji - patrz D-8).</td></tr>
+    <tr><td><code>maze_generator/</code></td><td>~60K</td><td><span class="badge info">ok</span></td>
+      <td>Hunt-and-Kill + rendering jak zwykła mapa Tiled (dobra unifikacja). A* z cache. <code>maze_utils.py</code> 34K do przejrzenia przy refactorze.</td></tr>
+    <tr><td><code>scene.py</code></td><td>2635 linii</td><td><span class="badge err">god-object</span></td>
+      <td>~30 odpowiedzialności: ładowanie map, kolizje, zegar świata, pogoda, rutyny cross-map, intro-cutscene, filtr nocy, debug, API agenta. <code>Scene.update</code> = ~400 linii.</td></tr>
+    <tr><td><code>characters.py</code></td><td>1962 linie</td><td><span class="badge err">god-object</span></td>
+      <td>NPC (animacje, A*, FSM, dialog, sentyment, handel, sen) + Player (input, walka, inventory) w jednym pliku; Player dziedziczy po NPC.</td></tr>
+    <tr><td><code>game.py</code></td><td>1234 linie</td><td><span class="badge warn">do uporządkowania</span></td>
+      <td>Pętla + input + rendering + CSV import/eksport + screenshoty + recording + localStorage. Część to narzędzia deweloperskie, nie runtime gry.</td></tr>
+    <tr><td><code>settings.py</code></td><td>1157 linii</td><td><span class="badge warn">do uporządkowania</span></td>
+      <td>Stałe + definicje sprite-sheetów + <em>mutowalne globalne</em> (WIDTH/HEIGHT/LANG) z pułapką importu by-value (udokumentowaną, ale łatwą do złamania przez słabsze modele).</td></tr>
+    <tr><td><code>config_model/</code></td><td>~100K</td><td><span class="badge warn">ryzyko</span></td>
+      <td>Podwójny model pydantic/dataclass utrzymywany ręcznie - potwierdzone źródło web-only crashy. Decyzja: codegen (rozdz. 4, D-2).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Mocne strony do zachowania</h3>
+<div class="grid cols-2">
+  <div class="card"><h3>Pipeline treści</h3><p style="margin:0">Obsidian (PL = źródło prawdy) → importery z walidacją → config.json → grafy vis-network do diagnozy. Autor pisze w markdown, gra dostaje zwalidowany graf. To przewaga konkurencyjna tego projektu.</p></div>
+  <div class="card"><h3>Kultura dokumentacji decyzji</h3><p style="margin:0">AGENTS.md z uzasadnieniami, historią bugów i pułapkami; decyzje (D1, D5, D6, D12) opisane przy kodzie. Utrzymać przy refactorze - to jest to, co czyni słabsze modele skutecznymi.</p></div>
+  <div class="card"><h3>Testy bez frameworka</h3><p style="margin:0">407 testów czystej logiki bez SDL, runner pilnujący rejestracji testów po AST. Szybkie, deterministyczne, odporne.</p></div>
+  <div class="card"><h3>agent_ctrl</h3><p style="margin:0">Kanał komend do prawdziwej gry (desktop plik / web localStorage + Playwright), deterministyczne otwieranie dialogów (talk_to_char), asercje plikowe. Dobra baza pod rozbudowę o asercje stanu.</p></div>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="debt">4. Błędy projektowe i długi techniczne</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>Problem</th><th>Waga</th><th>Skutek za rok</th><th>Zadanie</th></tr></thead>
+  <tbody>
+    <tr><td>D-1</td><td>God-objects <code>scene.py</code> / <code>characters.py</code>; <code>Scene.update</code> ~400 linii miesza kolizje, czas, input i UI</td><td><span class="badge err">wysoka</span></td>
+      <td>Każda nowa mechanika (audio, progresja, pogoda) dopisywana do monolitu; agenci AI psują sąsiednie systemy; koszt zmiany rośnie nieliniowo</td><td>B01</td></tr>
+    <tr><td>D-2</td><td>Podwójny model configu (pydantic desktop / dataclass web) utrzymywany ręcznie</td><td><span class="badge err">wysoka</span></td>
+      <td>Web-only crashe przy każdej zmianie struktury (już się zdarzały; traceback tylko w konsoli JS)</td><td>G01</td></tr>
+    <tr><td>D-3</td><td>Brak walidatora mapy Tiled ↔ config/CSV/routines - błędny klucz = cichy <code>print</code> w runtime</td><td><span class="badge err">wysoka</span></td>
+      <td>Przy 10x większej liczbie map i postaci literówka w <code>model_name</code>/<code>place</code>/<code>routine</code> = niewidoczny NPC lub martwa rutyna, wykrywane ręcznie</td><td>C01</td></tr>
+    <tr><td>D-4</td><td><code>utils/</code> („piaskownica do pominięcia") jest realną zależnością produkcyjną: <code>black.tmpl</code> w serve-web, build-itchio, CI (pygbag.yml, itch_io.yml) i testach web; <code>find_bad_png.py</code> w receptach just</td><td><span class="badge warn">średnia</span></td>
+      <td>Sprzątanie utils/ psuje build web i CI</td><td>F01</td></tr>
+    <tr><td>D-5</td><td>Dokumentacja architektury rozjechana z kodem: ui/AGENTS.md i design-system-ui.md opisują „render 1280×720 + SCALE" (już nieprawda, SCALE=1.0), project/AGENTS.md ma sekcję „Brak save/load" obok opisu save/load, root AGENTS.md „11,9K LOC" (jest 26,2K), „285 testów" (jest 407), „brak fabuły" (fabuła jest)</td><td><span class="badge warn">średnia</span></td>
+      <td>Agenci AI wykonują nieaktualne zasady - to jedna z przyczyn „elementarnych błędów" słabszych modeli</td><td>F02</td></tr>
+    <tr><td>D-6</td><td><code>FPS_CAP = 0</code> - pętla bez limitu klatek</td><td><span class="badge warn">średnia</span></td>
+      <td>Palenie CPU/baterii na desktopie, niestabilne dt, głośne wiatraki; na web throttling przeglądarki maskuje problem</td><td>E02</td></tr>
+    <tr><td>D-7</td><td>Filtr nocy: <code>transform.scale_by</code> per NPC per klatka + pełnoekranowy <code>transform.scale</code> co klatkę, bez cache</td><td><span class="badge info">niska</span></td>
+      <td>Desktop ma zapas (0,6 ms), ale to wzorzec, który na web kosztuje wielokrotnie więcej; do naprawy przy zadaniu noc/FoW</td><td>E01</td></tr>
+    <tr><td>D-8</td><td>Save: <code>version mismatch</code> = odmowa wczytania, brak migracji</td><td><span class="badge info">niska</span></td>
+      <td>Po wydaniu prologu każda zmiana formatu save unieważnia zapisy graczy; przed publikacją potrzebny choć minimalny mechanizm migracji lub polityka</td><td>B02</td></tr>
+    <tr><td>D-9</td><td>Śmierć gracza = pełny reset ekwipunku do stanu z configu + respawn w wiosce (zebrane przedmioty przepadają)</td><td><span class="badge warn">średnia</span></td>
+      <td>Kara rodem z roguelike w grze, która „nie ma być roguelike ani trudna" - frustracja zamiast przygody; szczegóły rozdz. 9</td><td>H02</td></tr>
+    <tr><td>D-10</td><td>CodeGraph indeksuje <code>utils/</code> (w tym zengl_examples) - zaśmieca wyniki eksploracji</td><td><span class="badge info">niska</span></td>
+      <td>Agenci dostają przykłady zengl zamiast kodu gry; marnowanie tokenów przy każdej sesji</td><td>F01</td></tr>
+    <tr><td>D-11</td><td>Testy agentowe POSIX-only (os.setsid/killpg, gtimeout) - deklarowany dual-target Windows nie obejmuje testów</td><td><span class="badge info">niska</span></td>
+      <td>Jeśli Windows desktop ma być wspierany na premierę, CI nie weryfikuje niczego na Windows</td><td>backlog</td></tr>
+    <tr><td>D-12</td><td><code>just mypy</code> zgłasza 23 błędy w 7 plikach - stały szum: kolejne sesje agentów przekopują się przez nie i kończą stwierdzeniem „to już było wcześniej"</td><td><span class="badge warn">średnia</span></td>
+      <td>Zamulony sygnał: nowe, realne błędy typów giną w starym szumie; bramka mypy w refactorze B01 wymaga czystej bazy</td><td>F03</td></tr>
+    <tr><td>D-13</td><td><code>bar.py</code> rysuje suwaki proceduralnie, a <code>scrollbar.png</code> jest tylko „referencją wyglądu" w komentarzu - edycja assetu w Aseprite nic nie zmienia w grze (wynik nieporozumienia z wcześniejszej sesji)</td><td><span class="badge info">niska</span></td>
+      <td>Autor traci kontrolę nad wyglądem komponentu, którą miał mieć przez asset; rozjazd asset ↔ render pogłębia się z każdą zmianą</td><td>U01</td></tr>
+  </tbody>
+</table>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="entities">5. Spójność encji i przepływ danych (wyzwanie 4.4)</h2>
+
+<div class="prose">
+  <p>Klucze encji żyją dziś w <strong>ośmiu przestrzeniach nazw</strong>. Diagram pokazuje przepływ
+  (zielone = źródła edytowane ręcznie, pomarańczowe = generowane, niebieskie = runtime gry):</p>
+</div>
+
+<svg class="flow" viewBox="0 0 980 470" role="img" aria-label="Diagram przepływu danych encji">
+  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+    <path d="M0,0 L7,3 L0,6" fill="none" stroke="context-stroke" stroke-width="1.2"/></marker></defs>
+  <!-- sources (lewa kolumna) -->
+  <rect class="src" x="10"  y="10"  width="215" height="52"/><text x="20" y="32">doc/PL/Postacie/*.md</text><text class="lbl" x="20" y="48">frontmatter: aliases, sprite, wagi</text>
+  <rect class="src" x="10"  y="76"  width="215" height="52"/><text x="20" y="98">doc/PL/Misje/*.md</text><text class="lbl" x="20" y="114">klucze questów, Requires, Test</text>
+  <rect class="src" x="10"  y="142" width="215" height="52"/><text x="20" y="164">characters.csv (tuning)</text><text class="lbl" x="20" y="180">home/work/social/hobby, routine</text>
+  <rect class="src" x="10"  y="208" width="215" height="52"/><text x="20" y="230">routines.toml</text><text class="lbl" x="20" y="246">rutyny: at = type:/location:/route:</text>
+  <rect class="src" x="10"  y="274" width="215" height="52"/><text x="20" y="296">mapy Tiled (.tmx)</text><text class="lbl" x="20" y="312">spawn(name, model_name), places, waypoints</text>
+  <rect class="src" x="10"  y="340" width="215" height="52"/><text x="20" y="362">locale/PL.toml + EN.toml</text><text class="lbl" x="20" y="378">komunikaty UI (walidowane)</text>
+  <!-- pipeline (środkowa kolumna, kaskada pionowa) -->
+  <rect class="gen" x="330" y="30"  width="200" height="52"/><text x="340" y="52">markdown_importer</text><text class="lbl" x="340" y="68">dialogi + questy (walidacja)</text>
+  <rect class="gen" x="330" y="142" width="200" height="52"/><text x="340" y="164">import_entities</text><text class="lbl" x="340" y="180">jedyny writer sekcji characters</text>
+  <rect class="gen" x="330" y="240" width="200" height="52"/><text x="340" y="262">config.json</text><text class="lbl" x="340" y="278">źródło prawdy dla gry</text>
+  <!-- runtime (prawa kolumna, poniżej pipeline'u - mniej krzyżowań) -->
+  <rect class="game" x="640" y="240" width="190" height="52"/><text x="650" y="262">dialogi / questy</text><text class="lbl" x="650" y="278">grafy + warunki DSL</text>
+  <rect class="game" x="640" y="322" width="190" height="52"/><text x="650" y="344">Scene / NPC</text><text class="lbl" x="650" y="360">spawn po model_name</text>
+  <rect class="game" x="640" y="404" width="190" height="52"/><text x="650" y="426">rutyny NPC</text><text class="lbl" x="650" y="442">places ← home/work/…</text>
+  <!-- edges -->
+  <path d="M225,30 C280,26 285,48 330,50"/>
+  <path d="M225,96 C280,96 285,70 330,66"/>
+  <path d="M430,82 L430,142"/><text class="lbl" x="440" y="118">characters.csv</text>
+  <path d="M225,168 L330,168"/>
+  <path d="M430,194 L430,240"/>
+  <path d="M530,56 C592,56 592,252 534,262"/><text class="lbl" x="600" y="140">sekcje dialogs/quests</text>
+  <path d="M530,270 L640,266"/>
+  <path d="M530,282 C580,292 590,336 640,344"/>
+  <path d="M225,300 C420,304 520,336 640,338"/>
+  <path d="M225,234 C320,242 480,420 640,426"/>
+  <path d="M225,316 C380,398 520,428 640,434"/>
+  <path d="M225,366 C430,368 540,356 640,354" opacity=".35"/>
+</svg>
+
+<h3>Przestrzenie kluczy i kto je łączy</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Przestrzeń</th><th>Przykład</th><th>Łączy się z</th><th>Walidacja dziś</th></tr></thead>
+  <tbody>
+    <tr><td>Klucz configu postaci</td><td><code>BARMAN_ABSINTHRAYNER</code></td><td>frontmatter aliases, characters.csv, Tiled <code>model_name</code>, dialog_key</td><td><span class="badge warn">częściowa</span> importer dialogów tak, Tiled nie</td></tr>
+    <tr><td>Nazwa obiektu Tiled (instancja)</td><td><code>barman</code></td><td>waypoints (po nazwie!), loaded_NPCs, save/load</td><td><span class="badge err">brak</span></td></tr>
+    <tr><td>Miejsca (warstwa places)</td><td><code>VillageHouse:bar</code></td><td>kolumny home/work/social/hobby w CSV</td><td><span class="badge err">brak</span> (cichy brak celu rutyny)</td></tr>
+    <tr><td>Rutyny</td><td><code>barman</code> (routines.toml)</td><td>kolumna routine w CSV</td><td><span class="badge warn">runtime print</span></td></tr>
+    <tr><td>Klucze przedmiotów</td><td><code>MERMAIDS_TEAR</code></td><td>items.csv, warunki DSL <code>has_item()</code>, nagrody questów, chests</td><td><span class="badge warn">częściowa</span> (pydantic desktop-only)</td></tr>
+    <tr><td>Klucze questów</td><td><code>Q01_S00_…</code></td><td>Requires/parent, panel questów, save</td><td><span class="badge ok">importer</span></td></tr>
+    <tr><td>Sprite'y</td><td><code>Hunter</code></td><td>katalogi NinjaAdventure/characters</td><td><span class="badge err">brak</span> (crash przy ładowaniu)</td></tr>
+    <tr><td>Locale</td><td><code>notify.bought</code></td><td>PL.toml ↔ EN.toml ↔ wywołania <code>_()</code></td><td><span class="badge warn">częściowa</span> (symetria plików tak, użycia w kodzie nie)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout"><p><strong>Plan (decyzja: walidator + mapa + stopniowe ujednolicenie).</strong>
+Zadanie C01: <code>just validate-world</code> - jeden skrypt czytający wszystkie źródła
+(pytmx dla .tmx, csv, toml, config.json) i raportujący rozjazdy z twardym exit code
+(użyteczny w CI i przed commitem). Zadanie C02: seria małych rename'ów doprowadzających
+nazwy instancji Tiled do konwencji (docelowo: nazwa instancji = klucz configu małymi literami,
+chyba że na mapie jest wiele instancji tego samego modelu). Mapa przepływu (ten rozdział)
+wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="tests">6. Testy automatyczne i ss-review (wyzwanie 4.1)</h2>
+
+<div class="prose">
+  <p>Stan: 407 testów jednostkowych (wzorowe), scenariusze agentowe desktop + web (Playwright),
+  ale wizyjna weryfikacja (ss-review) niestabilna. Diagnoza potwierdzona empirycznie w tej sesji.</p>
+</div>
+
+<details>
+<summary>Diagnoza: dlaczego ss-review szwankuje (omówione w sesji - zwinięte)</summary>
+<div class="prose">
+  <ol>
+    <li><strong>Primary model pada.</strong> <code>opencode-go/mimo-v2.5</code> regularnie timeoutuje
+      (rc=124, zewnętrzny serwer). Runner czeka 60 s, potem dopiero fallback - stąd „niespójne
+      odpowiedzi": czasem werdykt daje mimo, czasem gemini, czasem nikt.</li>
+    <li><strong>Prompt pyta tylko o stan.</strong> Runner wysyła „Expected state: GAMEPLAY" -
+      model nie ocenia jakości UI, bo nikt go o to nie prosi. Test 2026-07-25: ten sam model
+      (gemini-3.1-flash-lite) na screenshocie z realną wadą (tekst za ramką panelu dialogu)
+      dał <strong>2/2 FAIL z trafną diagnozą</strong>, gdy prompt zawierał pytanie o overflow;
+      i <strong>3/3 spójny PASS</strong> na poprawnym GAMEPLAY. Model wystarcza - brief nie.</li>
+    <li><strong>Werdykt z regexa na free-text</strong> (<code>_parse_verdict</code>) - kruche.</li>
+    <li><strong>Niewierność headless</strong> (SDL dummy): kompozycja pełnej klatki i snapshoty
+      pojedynczych powierzchni potrafią różnić się od realnego ekranu; dummy ma Amask==0, więc
+      bugi kanału alfa są w testach niewidzialne (historia: F6, biały screenshot, reload-confirm).
+      Wnioski w memory: dla paneli in-scene (przez <code>scene.draw → ui.draw</code>) zrzuty SĄ wierne;
+      dla modali-State i zmian pipeline'u renderowania - weryfikacja u autora na realnym ekranie.</li>
+  </ol>
+</div>
+</details>
+
+<h3>Plan naprawy (zadania A01-A04)</h3>
+<div class="grid cols-2">
+  <div class="card"><h3>A01 - stabilny vision</h3>
+    <p style="margin:0">Gemini primary (mimo out albo jako drugi), checklisty per-scenariusz w
+    <code>scenarios.json</code> (<code>expected_elements</code>, <code>ui_quality_checks</code>) wstrzykiwane do prompta,
+    werdykt jako blok JSON w odpowiedzi zamiast regexa po markdown. Aktualizacja promptu
+    ss-reviewera o realne stany MoM (DIALOG, TRADE, QUEST_LOG, HELP, SAVE_LOAD…).</p></div>
+  <div class="card"><h3>A02 - asercje stanu z runtime</h3>
+    <p style="margin:0">Komenda <code>debug_ui_state</code> w agent_ctrl: zrzut JSON do pliku -
+    otwarte panele + ich rect'y, bieżąca mapa, HP/złoto, treść aktywnego węzła dialogu.
+    Runner asertuje fakty bez patrzenia na piksele. Vision zostaje do ocen estetycznych.</p></div>
+  <div class="card"><h3>A03 - layout self-checks</h3>
+    <p style="margin:0">Widżety UI (RichText, panele) same wykrywają overflow (treść poza
+    rect/clip) i logują <code>[layout] overflow in …</code>. W trybie testowym = twardy FAIL.
+    Klasa błędów „tekst najeżdża na ramkę" łapana w 100% deterministycznie - to też
+    egzekwowanie design systemu (rozdz. 7).</p></div>
+  <div class="card"><h3>A04 - tryb deterministyczny</h3>
+    <p style="margin:0"><code>MOM_TEST_DETERMINISTIC=1</code>: cząstki off, stały seed świata,
+    stała godzina, zamrożone random-walki NPC. Stabilne scenariusze i porównywalne zrzuty
+    między uruchomieniami (bez ambicji pixel-perfect diffów).</p></div>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="design">7. Design system i UI (wyzwanie 4.2)</h2>
+
+<div class="prose">
+  <p>Design system (tokeny palety, keycap-sprite, bar.py, scroll_view, zasady skalowania) jest
+  dobrze opisany w <code>ui/AGENTS.md</code>. Problem: to <strong>zasady prozą</strong>, a słabsi agenci
+  nie czytają ich rzetelnie albo nie umieją zastosować („panel za mały na tekst").</p>
+  <p><strong>Kierunek: przenieść egzekwowanie z prozy do kodu.</strong> Zasada, której nie da się
+  złamać bez błędu w konsoli, nie wymaga zrozumienia przez model:</p>
+  <ul>
+    <li>Layout self-checks (A03) - overflow tekstu = błąd, nie opinia recenzenta.</li>
+    <li>Panele wyliczają rozmiar z treści (metryki fontu + SECTION_LABEL_GAP), nie odwrotnie -
+      wzorzec <code>_content_y</code> z quest.py rozciągnąć na wszystkie panele przy refactorze B01.</li>
+    <li>Lint tokenów: prosty test skanujący <code>ui/</code> po literałach RGB poza theme.py
+      (dziś zasada „nigdy literały RGB" jest tylko prozą).</li>
+    <li>Aktualizacja nieaktualnej sekcji „Context" (1280×720 + SCALE) w obu dokumentach (F02).</li>
+    <li>Komponenty „asset-driven" naprawdę z assetu: <code>bar.py</code> deklaruje
+      <code>scrollbar.png</code> jako referencję, ale rysuje suwak proceduralnie - edycja pliku
+      w Aseprite nic nie zmienia (D-13, zadanie U01: wczytywać model z pikseli assetu,
+      kolory dynamiczne przez podmianę palety tokenów).</li>
+  </ul>
+</div>
+
+<details>
+<summary>Stan wdrożenia design systemu (tabela A-H z design-system-ui.md - zwinięte)</summary>
+<div class="prose">
+  <p>Z tabeli decyzji: C (paleta-tokeny), B (cień), D (kanty/2px), E (min font), G (skala ikon),
+  H (pasek sentymentu), F (wzorce paneli) - zrobione. A (klawisz = sprite wszędzie) - w toku:
+  zostały ręczne sprite'y strzałek i ciemne lico kafli w arkuszu HUD.png (po Twojej stronie,
+  Aseprite). Nowe elementy (stopka skrótów, ScrollView, bar.py) konsekwentnie wdrożone.</p>
+</div>
+</details>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="perf">8. Wydajność i shadery web (wyzwanie 4.3)</h2>
+
+<div class="prose">
+  <p>Benchmark headless (mac-mini, Village, 32 NPC): <strong>update 0,41 ms + draw 1,31 ms ≈ 1,7 ms/klatkę</strong>
+  - desktop ma ogromny zapas. Problem web to narzut interpretera WASM (typowo 5-20x),
+  czyli budżet klatki na web jest realnie bliski wyczerpania przy 60 FPS.</p>
+</div>
+
+<details>
+<summary>Plan optymalizacji web + noc/FoW bez shaderów (decyzje zapadły - zwinięte)</summary>
+<div class="prose">
+  <h4>Szybkie wygrane</h4>
+  <ul>
+    <li><code>FPS_CAP = 60</code> (D-6) - stabilne dt, mniejsze zużycie CPU; na web pętla i tak
+      jest throttlowana przez przeglądarkę, na desktopie to czysty zysk.</li>
+    <li>Cache skalowanych gradientów w filtrze nocy (D-7): słownik <code>{rozmiar: surface}</code>
+      zamiast <code>transform.scale_by</code> per NPC per klatka; pełnoekranowy scale filtra tylko
+      przy zmianie rozmiaru/zoomu.</li>
+    <li>Profil web z realnymi liczbami: jednorazowa sesja z <code>#debug</code> + prosty licznik czasów
+      sekcji (update/draw/flip) logowany do konsoli - zanim cokolwiek „optymalizujemy w ciemno".</li>
+  </ul>
+  <h4>Noc/FoW fallback (E01)</h4>
+  <p>Jedna ścieżka kodu na obie platformy: mała powierzchnia (już jest FILTER_SCALE=8) +
+  cache wycięć świateł per (encja, promień, zoom) + blit z BLEND_RGBA_MIN jak dziś, ale bez
+  realokacji. Cel: włączyć <code>USE_ALPHA_FILTER</code> także na web po zmierzeniu kosztu.
+  FoW w labiryncie: identyczna technika (ciemna nakładka + wycięcie wokół gracza).
+  Shadery WebGL (zengl ES) zostają jako eksperyment badawczy o niskim priorytecie -
+  jeśli kiedyś zadziałają, fallback pozostaje dla słabszych maszyn.</p>
+  <h4>Miejsca do obserwacji przy skalowaniu treści</h4>
+  <ul>
+    <li><code>clear_maze_cache()</code> woływane przy każdym załadowaniu mapy i zniszczeniu ściany -
+      A* cache czyszczony globalnie; przy większych mapach rozważyć invalidację lokalną.</li>
+    <li>Rutyny cross-map tykają co klatkę po całym rosterze - przy 100+ NPC przejść na tick co N klatek.</li>
+    <li>pygbag: assets pakowane w całości (204K config.json + wszystkie tilesety) - budżet
+      rozmiaru paczki web do pilnowania przy dodawaniu map/muzyki (audio na web = ogg, małe bitrate'y).</li>
+  </ul>
+</div>
+</details>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="gameplay">9. Projekt gry: mechaniki, nuda, regrywalność</h2>
+
+<div class="prose">
+  <p>Ocena z perspektywy kierunku: <em>przygodowe RPG z bogatą fabułą, nie roguelike, nie hack&slash,
+  stosowne od wieku szkolnego, PL+EN</em>. Mechaniki silnika w większości gotowe - poniżej to,
+  co jest <strong>niespójne z kierunkiem</strong> albo grozi nudą.</p>
+</div>
+
+<h3>Mechaniki niespójne z kierunkiem</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>Obserwacja</th><th>Dlaczego to problem</th><th>Propozycja</th></tr></thead>
+  <tbody>
+    <tr><td>G-1</td><td>Śmierć = utrata całego zebranego ekwipunku + respawn w wiosce (D-9)</td>
+      <td>Kara roguelike'owa w grze fabularnej; gracz-dziecko traci godzinę postępu i wyłącza grę</td>
+      <td><strong>Decyzja autora (2026-07-25):</strong> nie zmiękczać kary wprost (gra byłaby za łatwa; realne ryzyko śmierci jest w labiryncie, a przed nim jest autosave). Zamiast tego: codzienny autosave (rano lub o północy) + po śmierci od razu ekran wczytania gry</td></tr>
+    <tr><td>G-2</td><td>Brak progresji statystyk postaci (progresja przez przedmioty już istnieje; questy dają nagrody max_health/damage, ale nie ma systemu, który je spina)</td>
+      <td>Walka w labiryntach nie buduje postaci - „zręczniościowy przerywnik" nie zasila rdzenia RPG</td>
+      <td><strong>Kierunek autora:</strong> mini-progresja statystyk: szybkość, max_health, damage oraz bazowy sentyment („jak bardzo jest lubiany na starcie" - rosnący, ale też malejący przez niektóre decyzje). Design doc (D02) projektuje źródła zmian i separację Tiled/config/kod; liczby w CSV</td></tr>
+    <tr><td>G-3</td><td>Sentyment NPC wpływa na ceny i opcje dialogowe, ale świat na niego nie reaguje szerzej</td>
+      <td>System jest głębszy niż jego widoczne skutki - gracz może go nie zauważyć</td>
+      <td>Tanie wzmocnienia: emote'y przy powitaniu wg progu sentymentu, 1-2 questy odblokowywane wysokim sentymentem, plotki między NPC (cross-NPC visited już działa!)</td></tr>
+    <tr><td>G-4</td><td>Noc zmienia tylko wizualia (+ sen NPC z rutyn)</td>
+      <td>Cykl dobowy to koszt bez nagrody gameplayowej</td>
+      <td>Po E01: 1-2 questy/eventy tylko-nocne, zamknięte sklepy nocą już są (rutyny) - dodać komunikat „wróć rano" zamiast ciszy</td></tr>
+    <tr><td>G-5</td><td>4 poziomy labiryntu na tym samym tilesecie, nagrody = skrzynie z configu</td>
+      <td>Powtarzalność bez haczyka; „coraz trudniejsze labirynty" szybko spowszednieją</td>
+      <td>Modyfikatory poziomów (mgła gęstsza, inne potwory - już w maze_configs.csv), unikatowy przedmiot fabularny na dnie, wpis do dziennika po bossie</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Gdzie gracz może się nudzić</h3>
+<div class="prose">
+  <ul>
+    <li><strong>Cisza.</strong> Brak muzyki i SFX to dziś największy pojedynczy brak odczuwalny
+      w pierwszej minucie gry - żaden feedback uderzenia, podniesienia, otwarcia panelu. (D01)</li>
+    <li><strong>Chodzenie.</strong> Przy większym świecie dystanse bez szybkiej podróży zaczną boleć;
+      zaplanować mechanikę w fabule (np. „absurdalny środek transportu" w tonie gry) zanim
+      powstanie 10 map. Na razie wystarczy świadomość przy projektowaniu map.</li>
+    <li><strong>Martwe odpowiedzi.</strong> Dialogi są mocne, ale NPC bez questa po wyczerpaniu drzewka
+      wraca do tej samej pętli; tanie „ambient barks" (jednolinijkowce zależne od pory dnia/sentymentu)
+      ożywią świat przy zerowym koszcie silnika (resume_node już to umie).</li>
+    <li><strong>Brak celu krótkoterminowego na HUD.</strong> Panel questów jest, ale nic nie prowadzi
+      wzroku „co teraz?"; wskaźnik aktywnego questa (1 linia na HUD) to mały koszt, duży zysk.</li>
+  </ul>
+</div>
+
+<h3>Regrywalność (w tonie gry, tanim kosztem)</h3>
+<div class="prose">
+  <ul>
+    <li>Rutyny dobowe + proceduralne labirynty już dają fundament.</li>
+    <li>Ścieżki sentymentu w dialogach = naturalne „przejdź inaczej" - warto to pokazać graczowi
+      (np. statystyka na końcu prologu: „Miecz obraził Cię 14 razy; 2 postacie Cię polubiły").</li>
+    <li>Easter eggs i nawiązania: zaplanować rejestr w doc/ (osobna notatka), żeby nie zginęły
+      w dialogach; achievementy (już na liście pomysłów) domkną pętlę kolekcjonerską.</li>
+    <li>Nie inwestować w NG+/random eventy przed ukończeniem prologu - najpierw treść Aktu 1.</li>
+  </ul>
+</div>
+
+<h3>Co uprościć w grze</h3>
+<div class="prose">
+  <ul>
+    <li><strong>Udźwig (max_carry_weight)</strong> - sprawdzić, czy realnie coś wnosi w grze fabularnej;
+      jeśli tylko irytuje przy zbieractwie, podnieść limit lub usunąć (decyzja projektowa, tania).</li>
+    <li><strong>Ekonomia money_cap/money_regen</strong> u kupców - zostawić, ale opisać w game_economy.md
+      z liczbami z CSV (dziś częściowo udokumentowana).</li>
+    <li><strong>Dwa systemy ruchu NPC</strong> (waypoints legacy vs rutyny) - po C01/B01 zmigrować
+      wędrujących NPC na rutyny, waypoints zostawić tylko dla intro/cutscenek.</li>
+  </ul>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="roadmap">10. Plan rozwoju (roadmap)</h2>
+
+<div class="grid cols-2">
+  <div class="card"><h3>Faza 1 - Fundament autonomii <span class="badge err">priorytet</span></h3>
+    <p>Cel: agenci AI samodzielnie weryfikują efekty wizualne, a rozjazdy danych wykrywa maszyna.</p>
+    <ul style="margin:0"><li>A01-A04 (ss-review + asercje + tryb deterministyczny)</li>
+    <li>C01 validate-world</li><li>F01 utils cleanup + codegraph</li><li>F02 aktualizacja AGENTS.md</li>
+    <li>F03 mypy do zera (warunek bramki B01)</li></ul></div>
+  <div class="card"><h3>Faza 2 - Wielki refactor rdzenia <span class="badge err">priorytet</span></h3>
+    <p>Cel: scene.py/characters.py rozbite wg zaplanowanej architektury; testy z Fazy 1 pilnują regresji.</p>
+    <ul style="margin:0"><li>B01 plan architektury + wykonanie (mocny model)</li>
+    <li>G01 codegen configu web (przy okazji zmian struktur)</li><li>B02 polityka wersji save</li></ul></div>
+  <div class="card"><h3>Faza 3 - Brakujące mechaniki</h3>
+    <p>Cel: gra brzmi i nagradza; noc działa wszędzie.</p>
+    <ul style="margin:0"><li>D01 audio (pełny szkielet)</li><li>D02 design progresji → implementacja</li>
+    <li>E01 noc/FoW fallback (desktop+web)</li><li>E02 FPS_CAP + profil web</li><li>H02 autosave dzienny + load po śmierci</li></ul></div>
+  <div class="card"><h3>Faza 4 - Treść prologu (Akt 1)</h3>
+    <p>Cel: grywalny prolog od intro do cliffhangera; Ty piszesz, agenci importują i testują.</p>
+    <ul style="margin:0"><li>mapy Aktu 1 (Tiled), dialogi i questy w Obsidian</li>
+    <li>G-3/G-4/G-5 wzmocnienia mechanik w treści</li><li>ambient barks, wskaźnik questa na HUD</li>
+    <li>polerowanie + publikacja itch.io/GH Pages</li></ul></div>
+</div>
+
+<div class="callout warn"><p><strong>Zasada kolejności:</strong> Faza 1 przed Fazą 2 nie jest
+przypadkowa - refactor bez stabilnych testów wizualnych i walidatora danych to loteria.
+Fazy 3 i 4 mogą się częściowo przeplatać (audio nie zależy od refactoru, jeśli powstanie
+jako osobny moduł z czystym API - i tak ma powstać).</p></div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="backlog">11. Backlog z priorytetami</h2>
+
+<div class="prose">
+  <p>Każde zadanie dostanie szczegółowy plik w <code>doc/audyt/</code> (spis: <code>doc/audyt/audyt.md</code>),
+  napisany tak, by poradziły sobie modele słabsze niż Fable/Opus: kontekst, pliki do zmiany,
+  kryteria akceptacji, komendy weryfikacji, pułapki. Lista do iteracyjnego ustalenia w tej sesji.</p>
+</div>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>ID</th><th>Zadanie</th><th>Prio</th><th>Faza</th><th>Uzasadnienie</th><th>Rozmiar</th></tr></thead>
+  <tbody>
+    <tr><td>A01</td><td>ss-review: gemini primary, checklisty per-scenariusz, werdykt JSON</td><td class="prio-p0">P0</td><td>1</td><td>Odblokowuje autonomię agentów; empirycznie potwierdzone, że model wystarcza</td><td>M</td></tr>
+    <tr><td>A02</td><td>agent_ctrl: <code>debug_ui_state</code> + asercje stanu w runnerze</td><td class="prio-p0">P0</td><td>1</td><td>Deterministyczna weryfikacja bez vision; tania i pewna</td><td>M</td></tr>
+    <tr><td>A03</td><td>Layout self-checks w UI (overflow = błąd)</td><td class="prio-p0">P0</td><td>1</td><td>Egzekwuje design system kodem; łapie klasę „tekst za ramką" w 100%</td><td>M</td></tr>
+    <tr><td>A04</td><td>Tryb deterministyczny testów (seed, cząstki, godzina)</td><td class="prio-p1">P1</td><td>1</td><td>Stabilne scenariusze desktop i web</td><td>S</td></tr>
+    <tr><td>C01</td><td><code>just validate-world</code> - walidator encji cross-source</td><td class="prio-p0">P0</td><td>1</td><td>D-3: literówka w mapie nie może być cichym printem</td><td>M</td></tr>
+    <tr><td>F01</td><td>Cleanup: black.tmpl i find_bad_png do scripts/, CI, codegraph ignore utils/</td><td class="prio-p1">P1</td><td>1</td><td>D-4, D-10: utils/ przestaje być zależnością</td><td>S</td></tr>
+    <tr><td>F02</td><td>Aktualizacja AGENTS.md / design-system docs do stanu kodu</td><td class="prio-p1">P1</td><td>1</td><td>D-5: nieaktualne zasady psują pracę słabszych agentów</td><td>S</td></tr>
+    <tr><td>F03</td><td>mypy do zera: naprawa 23 błędów, czysta bramka typów</td><td class="prio-p1">P1</td><td>1</td><td>D-12: usunięcie stałego szumu sesji; warunek bramki mypy w B01</td><td>S</td></tr>
+    <tr><td>B01</td><td>Wielki refactor scene.py/characters.py (plan + wykonanie)</td><td class="prio-p0">P0</td><td>2</td><td>D-1: decyzja „jeden duży refactor teraz"; osobny dokument architektury docelowej do akceptacji</td><td>XL</td></tr>
+    <tr><td>G01</td><td>Codegen: config.py (web) generowany z config_pydantic.py</td><td class="prio-p1">P1</td><td>2</td><td>D-2: koniec ręcznego lustra i web-only crashy</td><td>M</td></tr>
+    <tr><td>B02</td><td>Polityka wersji save + minimalna migracja</td><td class="prio-p2">P2</td><td>2</td><td>D-8: przed publikacją prologu</td><td>S</td></tr>
+    <tr><td>D01</td><td>AudioManager: muzyka per mapa, SFX eventy, głośność, web-safe</td><td class="prio-p1">P1</td><td>3</td><td>Największy odczuwalny brak; wzorce z ~/Projects/RPG</td><td>L</td></tr>
+    <tr><td>D02</td><td>Design doc mini-progresji statystyk: szybkość, max_health, damage, bazowy sentyment (±)</td><td class="prio-p2">P2</td><td>3</td><td>G-2: kierunek autora; parametry w CSV (Twoja domena)</td><td>M</td></tr>
+    <tr><td>U01</td><td>bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven, nie hardcode)</td><td class="prio-p2">P2</td><td>3</td><td>D-13: edycja assetu w Aseprite ma być widoczna w grze; kolory dynamiczne przez podmianę palety</td><td>S</td></tr>
+    <tr><td>E01</td><td>Noc/FoW fallback bez shaderów, wspólny dla desktop+web</td><td class="prio-p1">P1</td><td>3</td><td>Decyzja: jedna ścieżka kodu; ważna mechanika klimatu</td><td>L</td></tr>
+    <tr><td>E02</td><td>FPS_CAP=60 + profil wydajności web z liczbami</td><td class="prio-p2">P2</td><td>3</td><td>D-6, D-7: szybkie wygrane; pomiar przed optymalizacją</td><td>S</td></tr>
+    <tr><td>H02</td><td>Śmierć gracza: codzienny autosave + ekran wczytania po śmierci</td><td class="prio-p2">P2</td><td>3</td><td>G-1/D-9: decyzja autora - trudność zostaje, ratuje autosave i szybki load</td><td>S</td></tr>
+    <tr><td>C02</td><td>Stopniowe ujednolicenie kluczy (Tiled ↔ config)</td><td class="prio-p3">P3</td><td>2-3</td><td>Po C01; seria małych, bezpiecznych rename'ów</td><td>M</td></tr>
+    <tr><td>H01</td><td>Ambient barks + wskaźnik aktywnego questa na HUD</td><td class="prio-p3">P3</td><td>4</td><td>G-3/G-4: tanie ożywienie świata pod treść Aktu 1</td><td>M</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><button class="btn primary" onclick="copyBacklog()">Kopiuj backlog jako Markdown</button></p>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="tools">12. Narzędzia i workflow</h2>
+
+<div class="prose">
+  <h3>Konsolidacja recept just (bez rewolucji)</h3>
+  <p>Pipeline treści działa, ale wymaga pamiętania kolejności. Propozycja: jedna recepta-parasol
+  <code>just sync-content</code> = import-dialogs → import-quests → validate-world → dialog-graph →
+  quest-graph → quest-cheatsheet, z czytelnym raportem co się zmieniło. Istniejące recepty zostają
+  (do pracy punktowej), parasol staje się domyślnym „po edycji w Obsidian odpal jedno".</p>
+
+  <h3>Wrapper CLI w Twoim stylu (wzorzec „sm"/„lca")</h3>
+  <p>Skrypt <code>mom</code> (scripts/, rich): bez argumentów = dashboard (liczba testów, wynik
+  validate-world, stan configu vs CSV, rozmiar paczki web, TODO z backlogu); podkomendy:
+  <code>mom run / web / test / sync / validate / bench</code>. Jedno wejście zamiast kartki ze ściągą.</p>
+
+  <h3>Drobiazgi</h3>
+  <ul>
+    <li>CodeGraph: wykluczyć <code>utils/</code> (i <code>screenshots/</code>) z indeksu (F01).</li>
+    <li><code>rich</code>-owy raport walidatora C01 (tabelka rozjazdów z kolorami) - pasuje do Twoich preferencji terminalowych.</li>
+    <li>GitHub Issues/Projects zamiast MOAB: backlog z doc/audyt/ da się zmigrować skryptem
+      (gh CLI) gdy podejmiesz decyzję - zadania md piszę tak, by treść dała się wkleić w issue 1:1.</li>
+  </ul>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<p style="margin-top:var(--s7); color:var(--muted); font-size:.85rem">
+Audyt wygenerowany 2026-07-25 w sesji Claude Code (Opus). Źródła: pełne repo MoM,
+benchmark headless, testy empiryczne ss-reviewera, historia sesji i memory projektu.
+Backlog szczegółowy: <code>doc/audyt/audyt.md</code>.</p>
+
+</div>
+
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none"></div>
+
+<script>
+  /* ---------- Theme toggle (persisted) ---------- */
+  (function(){
+    const root = document.documentElement;
+    const btn = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('mom-audit-theme');
+    if (saved) root.dataset.theme = saved;
+    function label(){
+      const dark = root.dataset.theme === 'dark' ||
+        (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+      btn.textContent = dark ? '☀️ Jasny' : '🌙 Ciemny';
+    }
+    btn.addEventListener('click', () => {
+      const dark = root.dataset.theme === 'dark' ||
+        (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+      root.dataset.theme = dark ? 'light' : 'dark';
+      localStorage.setItem('mom-audit-theme', root.dataset.theme);
+      label();
+    });
+    label();
+  })();
+
+  /* ---------- Copy helpers ---------- */
+  function copyToClipboard(text, msg) {
+    msg = msg || 'Skopiowano do schowka';
+    navigator.clipboard.writeText(text).then(() => showToast(msg))
+      .catch(() => {
+        const ta = document.createElement('textarea'); ta.value = text;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        ta.remove(); showToast(msg);
+      });
+  }
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    t.style.opacity = 1; t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.opacity = 0;
+      t.style.transform = 'translateX(-50%) translateY(20px)'; }, 1800);
+  }
+  function copyBacklog() {
+    const rows = [...document.querySelectorAll('#backlog ~ .tablewrap tbody tr')]
+      .map(tr => [...tr.cells].map(td => td.textContent.trim()));
+    const md = ['| ID | Zadanie | Prio | Faza | Uzasadnienie | Rozmiar |',
+                '| --- | --- | --- | --- | --- | --- |',
+                ...rows.map(r => '| ' + r.join(' | ') + ' |')].join('\n');
+    copyToClipboard(md, 'Backlog skopiowany jako Markdown');
+  }
+</script>
+</body>
+</html>
