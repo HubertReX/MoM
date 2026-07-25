@@ -21,10 +21,10 @@ from maze_generator.maze_utils import (
     timeit
 )
 from objects import (ChestSprite, Collider, DestructibleSprite, ItemSprite, Notification, NotificationTypeEnum)
-from particles import ParticleDestructible, ParticleSystem, WeatherDirector
+from particles import ParticleSystem, WeatherDirector
 from pyscroll.group import PyscrollGroup
 from pytmx import TiledMap
-from config_model.config import AttitudeEnum, RaceEnum
+from config_model.config import RaceEnum
 from quest.entities import QuestState
 from quest.runtime import QuestRuntime
 import settings
@@ -35,14 +35,11 @@ from settings import (
     # BG_COLOR,
     # CIRCLE_GRADIENT,
     BG_COLOR,
-    CHEST_OPEN_DISTANCE,
     CIRCLE_RADIUS,
     CUTSCENE_BG_COLOR,
     DAY_FILTER,
-    DESTRUCTIBLE_MIN_DAMAGE,
     FILTER_SCALE,
     FONT_SIZE_MEDIUM,
-    FRIENDLY_WAKE_DISTANCE,
     FULL_WHITE_COLOR,
     GEMS_SHEET_DEFINITION,
     GEMS_SHEET_FILE,
@@ -84,7 +81,7 @@ from settings import (
     vec3,
     vector_to_tuple
 )
-from scene import map_loader, world_clock
+from scene import collisions, map_loader, world_clock
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
@@ -1391,133 +1388,9 @@ class Scene(State):
         # zegar świata (B01 krok 3): upływ minut, przełom doby i upkeep dnia
         world_clock.tick(self, dt)
 
-        # check if the Player's feet are colliding with wall
-        # Player must have a rect called feet, slide and move_back methods,
-        # otherwise this will fail
-        if self.player.feet.collidelist(self.walls) > -1:
-            # slide along wall or do a step_back
-            self.player.slide(self.walls)
-
-        # check if the Player is colliding with an NPC
-        if not self.player.is_flying:
-            # sleepers are indoors and not drawn - walking through where they stood
-            # is correct; bumping into an invisible body is not
-            awake_NPCs = self.awake_NPCs()
-            # collision with body of NPC
-            collided_index = self.player.feet.collidelist(awake_NPCs)  # type: ignore[type-var]
-            if collided_index > -1 and not self.player.is_stunned:
-                oponent = awake_NPCs[collided_index]
-                # if self.player.mask.overlap(
-                #     oponent.mask,
-                #     (oponent.rect.x - self.player.rect.x, oponent.rect.y - self.player.rect.y)
-                # ):
-
-                # engage fight with enemy or push back friendly NPC
-                self.player.encounter(oponent)
-                # slide along wall or do a step_back
-                self.player.slide(awake_NPCs)
-
-            # collision of weapon with other NPC and destructibles
-            if self.player.is_attacking and self.player.selected_weapon:
-                # check collision with NPCs
-                collided_index = self.player.selected_weapon.rect.collidelist(awake_NPCs)  # type: ignore[type-var]
-                # collided with weapon rect
-                if collided_index > -1:
-                    oponent = awake_NPCs[collided_index]
-                    # weapon rect is big, check if it collides with the mask of weapon
-                    if self.player.selected_weapon.mask.overlap(
-                        oponent.mask,
-                        (oponent.rect.x - self.player.selected_weapon.rect.x,  # type: ignore[union-attr]
-                         oponent.rect.y - self.player.selected_weapon.rect.y)  # type: ignore[union-attr]
-                    ):
-                        # deal damage with weapon to enemy or nothing if friendly NPC
-                        self.player.hit(oponent)
-
-                # check collision with destructibles
-                collided_index = self.player.selected_weapon.rect.collidelist(
-                    self.destructibles)  # type: ignore[type-var]
-
-                if collided_index > -1:
-                    destructible = self.destructibles[collided_index]
-                    # weapon rect is big, check if it collides with the mask of weapon
-                    if self.player.selected_weapon.mask.overlap(
-                        destructible.mask,
-                        (destructible.rect.x - self.player.selected_weapon.rect.x,  # type: ignore[union-attr]
-                         destructible.rect.y - self.player.selected_weapon.rect.y)  # type: ignore[union-attr]
-                    ):
-                        # too weak a weapon bounces off: tell the player *why* nothing
-                        # happened, otherwise a destructible obstacle is indistinguishable
-                        # from plain scenery.
-                        min_damage = DESTRUCTIBLE_MIN_DAMAGE.get(destructible.type, 0)
-                        if (self.player.selected_weapon.model.damage or 0) < min_damage:
-                            # once per swing, not once per frame of the swing - the
-                            # collision holds for the whole attack animation
-                            if self._weak_hit_notified_at != self.player.attack_time:
-                                self._weak_hit_notified_at = self.player.attack_time
-                                self.add_notification(
-                                    _("notify.weapon_too_weak",
-                                      name=entity_name(self.player.selected_weapon.model)),
-                                    NotificationTypeEnum.warning)
-                        else:
-                            # make the tile walkable
-                            x = int(destructible.rect.x // TILE_SIZE)
-                            y = int(destructible.rect.y // TILE_SIZE)
-
-                            self.path_finding_grid[y][x] = destructible.step_cost
-                            # unfortunately, the whole A* paths cache need to be recalculated
-                            clear_maze_cache()
-                            # destroy wall rect
-                            wall = destructible.wall
-                            self.walls.remove(wall)
-                            self.destroyed_walls.append((wall.x, wall.y))
-                            # trigger destruction particle system
-                            rect = self.map_view.translate_rect(destructible.rect)
-                            particle = ParticleDestructible(self.game.canvas, self.group,
-                                                            self.camera, rect, destructible.type,
-                                                            rng=self._particle_rng())
-                            particle.add()
-                            self.particles.append(particle)
-                            # destroy object
-                            destructible.kill()
-                            self.destructibles.remove(destructible)
-
-        colliders = self.walls
-        # if self.player.is_flying:
-        #     colliders = self.walls
-        # else:
-        #     colliders = self.walls + [self.player]
-
-        self.player.chest_in_range = None
-        for chest in self.chests:
-            # if self.player.feet.colliderect(chest.rect):
-            distance_from_player = (chest.rect.center - self.player.pos).magnitude_squared()
-            # chest_model = self.game.conf.chests[chest]
-            if distance_from_player < CHEST_OPEN_DISTANCE**2 and chest.model.is_closed:
-                self.player.chest_in_range = chest
-                break
-
-        self.player.npc_met = None
-        for npc in self.NPCs:
-            if npc.is_asleep:
-                # a shop that is not there cannot be walked into or traded with
-                continue
-            npc.npc_met = None
-            if npc.feet.collidelist(colliders) > -1:
-                # npc.move_back(dt)
-                npc.slide(colliders)
-
-            distance_from_player = (npc.pos - self.player.pos).magnitude_squared()
-            # enable talk to npc when player is near
-            if npc.model.attitude == AttitudeEnum.friendly:
-                if distance_from_player < FRIENDLY_WAKE_DISTANCE**2:
-                    npc.health_bar.show()
-
-                    if (npc.has_dialog and npc.dialog is not None) or (npc.model.is_merchant):
-                        self.player.npc_met = npc
-                        npc.npc_met = self.player
-                        break
-                else:
-                    npc.health_bar.hide()
+        # kolizje klatki (B01 krok 4): ściany, NPC-e, broń, destruktible,
+        # skrzynia i NPC w zasięgu rozmowy
+        collisions.resolve(self)
 
         # Esc opens the main menu *on top of* the running scene (not exit_state, which
         # would discard the game). The menu offers Continue (resume unchanged), so the
