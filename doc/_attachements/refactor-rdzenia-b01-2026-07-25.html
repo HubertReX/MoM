@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoM - B01: architektura docelowa refactoru rdzenia</title>
+<style>
+  /* ---------- Design tokens (wspólne z raportem audytu 2026-07-25) ---------- */
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  :root[data-theme="dark"] {
+    --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+    --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+    --accent:#748ffc; --accent-soft:#26304d;
+    --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6; font-size: 16px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: var(--s6) var(--s5) var(--s7); }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.45rem; line-height: 1.25; margin: var(--s7) 0 var(--s3);
+       padding-top: var(--s3); border-top: 2px solid var(--border); }
+  h3 { font-size: 1.1rem; margin: var(--s5) 0 var(--s2); }
+  p { margin: 0 0 var(--s4); max-width: 82ch; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.08rem; color: var(--muted); max-width: 82ch; }
+  .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s3); }
+  .theme-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .85rem; }
+  code, pre { font-family: var(--mono); font-size: .86em; }
+  code { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 5px; white-space: nowrap; }
+  pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s4); overflow-x: auto; line-height: 1.5; }
+  pre code { background: none; border: none; padding: 0; white-space: pre; }
+  table { border-collapse: collapse; width: 100%; margin: var(--s4) 0 var(--s5);
+    font-size: .92rem; background: var(--surface); border-radius: var(--radius-sm);
+    overflow: hidden; box-shadow: var(--shadow); }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  tr:last-child td { border-bottom: none; }
+  .tablewrap { overflow-x: auto; }
+  .badge { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: .75rem;
+    font-weight: 600; white-space: nowrap; }
+  .b-ok { background: var(--ok-soft); color: var(--ok); }
+  .b-warn { background: var(--warn-soft); color: var(--warn); }
+  .b-err { background: var(--err-soft); color: var(--err); }
+  .b-info { background: var(--info-soft); color: var(--info); }
+  .b-acc { background: var(--accent-soft); color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: var(--s5); margin: var(--s4) 0; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft);
+    border-radius: var(--radius-sm); padding: var(--s4) var(--s5); margin: var(--s4) 0; max-width: 88ch; }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .callout.err { border-color: var(--err); background: var(--err-soft); }
+  .callout.ok { border-color: var(--ok); background: var(--ok-soft); }
+  .callout p:last-child { margin-bottom: 0; }
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); margin: var(--s3) 0; }
+  details summary { cursor: pointer; padding: var(--s3) var(--s4); font-weight: 600; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  details .inner { padding: var(--s4); }
+  .rec td { background: var(--ok-soft); }
+  .toc { columns: 2; gap: var(--s6); font-size: .92rem; }
+  .toc a { display: block; padding: 2px 0; }
+  .filetree { line-height: 1.75; }
+  .filetree .dir { font-weight: 700; }
+  .filetree .cm { color: var(--muted); }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px;
+    padding: 0 6px; font-family: var(--mono); font-size: .82em; background: var(--surface); }
+  @media (max-width: 720px) { .toc { columns: 1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <div>
+    <p class="eyebrow">MoM - Faza 2 audytu - zadanie B01 - etap 0 (do akceptacji autora)</p>
+    <h1>Architektura docelowa refactoru rdzenia<br><code>scene.py</code> + <code>characters.py</code></h1>
+    <p class="lead">Dokument decyzyjny: podział modułów, kontrakty nietykalne, plan kroków
+    commitowalnych, strategia testowa i ryzyka. Sesja Fable, 2026-07-25.
+    Kontekst: <a href="audyt-architektury-2026-07-25.html">raport audytu</a>,
+    zadanie <code>doc/audyt/B01-refactor-rdzenia.md</code>.</p>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">◐ motyw</button>
+</div>
+
+<div class="callout">
+  <p><strong>Bramka akceptacji.</strong> Etap 1 (przenoszenie kodu) NIE rusza bez wyraźnego
+  "akceptuję" autora dla tego dokumentu. Wszystkie decyzje D1-D6 mają rekomendację
+  (zielony wiersz), ale każdą można odwrócić przed startem.</p>
+</div>
+
+<h2 id="toc">Spis treści</h2>
+<nav class="toc">
+  <a href="#stan">1. Stan obecny (skrót)</a>
+  <a href="#decyzje">2. Decyzje projektowe D1-D6</a>
+  <a href="#struktura">3. Docelowa struktura modułów</a>
+  <a href="#kontrakty">4. Kontrakty nietykalne</a>
+  <a href="#plan">5. Plan wykonania (16 kroków)</a>
+  <a href="#testy">6. Strategia testowa i benchmark</a>
+  <a href="#ryzyka">7. Ryzyka i plan odwrotu</a>
+  <a href="#akceptacja">8. Kryteria akceptacji epica</a>
+</nav>
+
+<h2 id="stan">1. Stan obecny (skrót)</h2>
+<p>Liczby z drzewa roboczego 2026-07-25 (po Fazie 1, mypy = 0):</p>
+<div class="tablewrap"><table>
+  <tr><th>Plik</th><th>Linie</th><th>Metody</th><th>Główne odpowiedzialności (dziś w jednym pliku)</th></tr>
+  <tr><td><code>project/scene.py</code></td><td>2652</td><td>70</td>
+      <td>ładowanie TMX, generacja labiryntów, kolizje, zegar świata, pogoda/cząstki, rutyny NPC
+      cross-map, intro-cutscene, filtr nocy, debug overlay, API agenta, notyfikacje, przejścia
+      między mapami, snapshot map (save). <code>Scene.update</code> = ~400 linii (1953-2349).</td></tr>
+  <tr><td><code>project/characters.py</code></td><td>1962</td><td>71</td>
+      <td><code>NPC</code>: animacje, A*/waypointy, FSM, dialog-state, sentyment, handel/ekwipunek,
+      sen/rutyny, walka. <code>Player(NPC)</code>: input, walka, inventory, wyjścia ze sceny.</td></tr>
+  <tr><td><code>project/game.py</code></td><td>1247</td><td>~25</td>
+      <td>pętla async, input (klawiatura/pad/mysz), render helpers, shadery, narzędzia dev
+      (CSV import/eksport configu, nagrywanie inputu), quick save/load, agent_ctrl bootstrap.</td></tr>
+</table></div>
+<p>Decyzja kierunkowa autora (audyt): <strong>jeden duży, zaplanowany refactor teraz</strong>,
+nie stopniowa ekstrakcja. Baza do bramek: benchmark klatki z audytu -
+<code>update</code> 0,41 ms + <code>draw</code> 1,31 ms (mac-mini, headless stepping).</p>
+
+<h2 id="decyzje">2. Decyzje projektowe</h2>
+<p>Każda tabela: opcje, koszty, rekomendacja (zielony wiersz). To są decyzje architektury -
+liczby balansowe i zachowanie gry nie zmieniają się w ogóle.</p>
+
+<h3 id="d1">D1. Mechanika podziału: jak wyprowadzić kod z klas-molochów</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Funkcje modułowe + cienkie delegaty</strong> <span class="badge b-ok">rekomendacja</span></td>
+      <td>Systemy = moduły z funkcjami przyjmującymi <code>scene</code>/<code>npc</code> jawnie
+      (np. <code>collisions.resolve(scene)</code>). Klasa <code>Scene</code>/<code>NPC</code> trzyma
+      <em>stan</em> (atrybuty zostają!) i 1-linijkowe delegaty dla nazw publicznych.</td>
+      <td>zero zmian atrybutów (save działa), publiczne API bez zmian (agent_ctrl, testy,
+      monkeypatch), mypy proste, łatwy revert per krok</td>
+      <td>funkcje dostają szeroki obiekt <code>scene</code> (świadomie: to etap podziału,
+      nie budowa pełnej separacji zależności)</td></tr>
+  <tr><td>B. Mixiny (Scene dziedziczy z 8 klas)</td>
+      <td><code>class Scene(MapLoaderMixin, ClockMixin, ...)</code></td>
+      <td>metody zostają metodami</td>
+      <td>MRO-magia, mypy na mixinach cierpi, "skąd jest ta metoda?" wraca jak bumerang,
+      dalej jedna wielka klasa logicznie</td></tr>
+  <tr><td>C. Komponenty-obiekty (scene.clock.tick())</td>
+      <td>Każdy system jako obiekt z własnym stanem</td>
+      <td>najczystsza docelowa architektura</td>
+      <td>przenosi atrybuty z <code>Scene</code> = łamie kontrakt save/load
+      (<code>properties</code>, <code>_build_*</code> po nazwach) i wymaga migracji save -
+      wprost zakazane w zadaniu</td></tr>
+</table></div>
+<p>Konsekwencja D1: <strong>wszystkie atrybuty zostają na <code>Scene</code>/<code>NPC</code></strong>.
+Moduły są bezstanowe (wyjątek: <code>debug_overlay</code> trzyma flagi debug - patrz D3).
+Prywatne helpery (np. <code>_slot_place</code>) przenoszą się bez delegatów; delegaty dostają
+tylko nazwy z sekcji <a href="#kontrakty">kontraktów</a>.</p>
+
+<h3 id="d2">D2. <code>Player(NPC)</code>: dziedziczenie czy rozdzielenie</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Zostaje <code>Player(NPC)</code></strong> <span class="badge b-ok">rekomendacja</span></td>
+      <td>Podział na pliki (<code>npc.py</code>, <code>player.py</code>) bez zmiany hierarchii.</td>
+      <td>kolizje/grupy sprite'ów/save traktują gracza jak NPC w dziesiątkach miejsc
+      (<code>feet</code>, <code>slide</code>, <code>encounter</code>, <code>hit</code>,
+      <code>pick_up</code>, FSM); zmiana = ogromny diff bez zysku dla gracza</td>
+      <td>Player dźwiga ~30 pól NPC, których nie używa (akceptowalny koszt pamięci: 1 obiekt)</td></tr>
+  <tr><td>B. Wspólna baza <code>Character</code>, osobne <code>NPC</code>/<code>Player</code></td>
+      <td>Wyciągnięcie wspólnego rdzenia</td><td>czystszy model</td>
+      <td>dotyka każdej pętli kolizji i każdego <code>isinstance</code>; ryzyko regresji
+      nieproporcjonalne do zysku; można wrócić do tego PO stabilizacji podziału na pliki</td></tr>
+</table></div>
+
+<h3 id="d3">D3. Żywe globale modułu <code>scene</code> (<code>SHOW_DEBUG_INFO</code>)</h3>
+<p><span class="badge b-warn">pułapka wykryta w rekonesansie</span> - <code>scene.py</code> robi
+<code>global SHOW_DEBUG_INFO</code> (toggle klawiszem <span class="kbd">`</span>/<span class="kbd">Z</span>),
+a <code>ui/panels/help.py:245</code> i <code>characters.py:679,1479</code> czytają
+<code>scene.SHOW_DEBUG_INFO</code> <em>na żywo</em>. Po zamianie modułu w pakiet
+<code>scene/</code> atrybut pakietu byłby snapshotem z chwili importu - toggle przestałby działać.</p>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. PEP 562: <code>__getattr__</code> w <code>scene/__init__.py</code></strong> <span class="badge b-ok">rekomendacja</span></td>
+      <td><code>def __getattr__(name)</code> deleguje odczyt nieznanych atrybutów pakietu do
+      modułu, w którym flaga mieszka (docelowo <code>scene/debug_overlay.py</code>).</td>
+      <td><code>scene.SHOW_DEBUG_INFO</code> działa żywo bez dotykania konsumentów;
+      jeden mechanizm chroni też inne nazwy modułowe w trakcie migracji</td>
+      <td>odczyt przez funkcję (koszt pomijalny - to ścieżki debug)</td></tr>
+  <tr><td>B. Migracja konsumentów na <code>debug_overlay.is_on()</code></td>
+      <td>help.py i characters.py przechodzą na jawny odczyt</td>
+      <td>czyściej docelowo</td><td>więcej plików w jednym kroku; zrobimy to PRZY OKAZJI
+      kroku 9, ale <code>__getattr__</code> zostaje jako siatka bezpieczeństwa</td></tr>
+  <tr><td>C. Flaga w <code>settings</code></td><td>przenieść do settings.py</td>
+      <td>-</td><td><code>settings.SHOW_DEBUG_INFO</code> już istnieje jako stała startowa;
+      mieszanie stałej z runtime-togglem to źródło dzisiejszego zamieszania</td></tr>
+</table></div>
+
+<h3 id="d4">D4. Obsługa <code>INPUTS</code> w scenie (~200 linii update)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Osobny moduł <code>player_actions.py</code></strong> <span class="badge b-ok">rekomendacja</span></td>
+      <td>Cały blok <code>if INPUTS["..."]</code> (hotbar, drop/pick_up, jump/fly, menu, zoom,
+      next_day, intro, reload) jako <code>player_actions.handle(scene)</code>.</td>
+      <td>bez tego <code>scene.py</code> nie zejdzie czytelnie poniżej 500 linii;
+      to spójna odpowiedzialność ("co robi klawisz w scenie")</td>
+      <td>+1 moduł względem szkicu z zadania (szkic zostawiał to w update)</td></tr>
+  <tr><td>B. Zostaje inline w <code>Scene.update</code></td>
+      <td>jak w szkicu zadania</td><td>mniejszy diff</td>
+      <td><code>update</code> nie będzie "spisem treści" - kryterium akceptacji nr 2 epica</td></tr>
+</table></div>
+
+<h3 id="d5">D5. Narzędzia CSV z <code>game.py</code> - dokąd</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. <code>config_model/csv_tools.py</code></strong> <span class="badge b-ok">rekomendacja</span></td>
+      <td><code>store_config_to_csv(conf, entities)</code> / <code>load_config_from_csv(conf, entities)</code>
+      jako funkcje na obiekcie configu; <code>game.py</code> woła je 1-linijkowo (CLI
+      <code>--task</code> bez zmian).</td>
+      <td>operują wyłącznie na <code>game.conf</code> i <code>CONFIG_DIR</code> - to domena
+      configu, nie pętli gry; zero zmiany zachowania CLI</td>
+      <td>-</td></tr>
+  <tr><td>B. <code>scripts/</code> (standalone)</td><td>osobny skrypt poza grą</td>
+      <td>konwencja repo dla narzędzi</td>
+      <td>wymagają załadowanego configu pydantic + są wpięte w CLI gry (<code>--task</code>);
+      standalone = duplikacja bootstrapu</td></tr>
+</table></div>
+
+<h3 id="d6">D6. Zakres pakietu <code>characters/</code></h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. 6 modułów: npc / player / movement / combat / animation / inventory</strong> <span class="badge b-ok">rekomendacja</span></td>
+      <td>Szkic z zadania + <code>inventory.py</code> (handel/ekwipunek: ~350 linii metod
+      <code>pick_up</code>, <code>drop_item</code>, <code>can_buy/can_sell</code>,
+      <code>get_tradable_items</code>, <code>restock_items</code>, <code>regenerate_money</code>,
+      selekcja hotbara).</td>
+      <td>handel to największa spójna grupa poza ruchem; bez niej <code>npc.py</code>
+      zostałby &gt; 800 linii (limit epica)</td>
+      <td>+1 moduł względem szkicu</td></tr>
+  <tr><td>B. 5 modułów (szkic z zadania)</td><td>handel zostaje w <code>npc.py</code></td>
+      <td>mniejszy diff</td><td>ryzyko złamania limitu 800 linii na moduł</td></tr>
+</table></div>
+<p>Dialog-state NPC (<code>load_dialogs</code>, <code>restore_dialog_state</code>,
+<code>apply_option_sentiment</code>, <code>reset_dialog</code>) zostaje w <code>npc.py</code> -
+jest małe (~120 linii) i mocno sklejone ze stanem NPC oraz kontraktem save.</p>
+
+<h2 id="struktura">3. Docelowa struktura modułów</h2>
+<pre class="filetree"><code><span class="dir">project/scene/</span>
+  __init__.py         <span class="cm"># eksport Scene + PEP 562 __getattr__ (D3); `from scene import Scene` działa bez zmian</span>
+  scene.py            <span class="cm"># orkiestrator: klasa Scene(State), __init__ (stan + properties), update/draw jako</span>
+                      <span class="cm">#   sekwencja wywołań systemów, delegaty publicznego API, notyfikacje (~450 linii)</span>
+  map_loader.py       <span class="cm"># load_map, load_tileset_map, load_walls/items/zones/interactions/step_cost,</span>
+                      <span class="cm">#   load_NPCs, add_NPC_at_grid_pos, populate_sprite_groups, set_entry_point,</span>
+                      <span class="cm">#   _resolve_maze_seed, create_item (~550 linii)</span>
+  world_clock.py      <span class="cm"># tick (minute_f/hour/day z update), apply_days, day_rng, abs_minutes;</span>
+                      <span class="cm">#   czyta settings.INITIAL_HOUR DYNAMICZNIE (kontrakt K6) (~120 linii)</span>
+  collisions.py       <span class="cm"># środek dzisiejszego update: ściany gracza, NPC awake, broń vs NPC/destructibles</span>
+                      <span class="cm">#   (z clear_maze_cache przy niszczeniu ściany), chest_in_range, npc_met (~220 linii)</span>
+  player_actions.py   <span class="cm"># blok INPUTS[...] w scenie (D4): hotbar, drop/pick_up, jump/fly, menu, zoom,</span>
+                      <span class="cm">#   next_day, intro, reload-confirm (~230 linii)</span>
+  routines_director.py<span class="cm"># roster, update_routine_npcs, update_sleepers, awake_NPCs, reconcile/settle,</span>
+                      <span class="cm">#   materializacja/dematerializacja, sloty, exit_to, _arrival_pos, _walkable_pixel (~420 linii)</span>
+  map_state.py        <span class="cm"># store_map/restore_map + lista properties + go_to_map/reload_map/reset_sprite_groups</span>
+                      <span class="cm">#   (KONTRAKT z save_load - klucze cache bez zmian) (~200 linii)</span>
+  night_filter.py     <span class="cm"># apply_time_of_day_filter, get_lights, get_light_from_intro, apply_alpha_filter</span>
+                      <span class="cm">#   (przyszłe E01 zmienia TYLKO ten moduł) (~180 linii)</span>
+  intro.py            <span class="cm"># start_intro (deklaratywna cutscena), apply_cutscene_framing (~230 linii)</span>
+  debug_overlay.py    <span class="cm"># SHOW_DEBUG_INFO (dom flagi, D3), show_debug, mark_maze_sub_grid, _TIMEIT_CACHE (~120 linii)</span>
+  agent_api.py        <span class="cm"># agent_find_entity, agent_walk_target, agent_point_near, agent_walk_player_to,</span>
+                      <span class="cm">#   agent_player_arrived, agent_open_dialog (kontrakt K3) (~130 linii)</span>
+<span class="dir">project/characters/</span>
+  __init__.py         <span class="cm"># eksport NPC, Player; `from characters import NPC, Player` bez zmian</span>
+  npc.py              <span class="cm"># klasa NPC: __init__ (stan + model), FSM change_state, schedule (update_schedule,</span>
+                      <span class="cm">#   _begin/_continue_slot), dialog-state, emote, die, delegaty (~700 linii)</span>
+  player.py           <span class="cm"># Player(NPC) (D2): input-movement, check_scene_exit, use_item, health_bar_ui (~320 linii)</span>
+  movement.py         <span class="cm"># A*/find_path, waypointy, follow/clear/generate, physics, slide, move_back,</span>
+                      <span class="cm">#   get_direction_360/RL/RDL/RDLU, wander, get_random_safe_pos, jump (~450 linii)</span>
+  combat.py           <span class="cm"># encounter, hit, check_cooldown, stun/push, set_event_timer (~180 linii)</span>
+  animation.py        <span class="cm"># set_sprite_sheet_type, animate, generate_masks, create_shadow/health_bar,</span>
+                      <span class="cm">#   get_tileset_coord (~160 linii)</span>
+  inventory.py        <span class="cm"># handel/ekwipunek (D6): pick_up, drop_item, can_buy/can_sell, get_tradable_items,</span>
+                      <span class="cm">#   restock_items, regenerate_money, money_cap, select_next/prev_item, load_items (~350 linii)</span>
+<span class="dir">project/game.py</span>       <span class="cm"># zostaje plikiem (~1050 linii): pętla, input, render helpers; CSV-tools wychodzą (D5)</span>
+<span class="dir">project/config_model/csv_tools.py</span> <span class="cm"># store/load_config_from_csv jako funkcje (D5) (~110 linii)</span>
+</code></pre>
+
+<h3>Zależności (kierunek importów)</h3>
+<p>Zasada: moduły systemów importują <code>settings</code> (dynamicznie, K6) i typy przez
+<code>TYPE_CHECKING</code>; <strong>żaden moduł systemu nie importuje drugiego systemu</strong> -
+sekwencję wywołań zna wyłącznie orkiestrator <code>scene/scene.py</code>. Cykl
+<code>scene ↔ characters</code> (dziś: lokalne importy "moved here to avoid circular imports")
+rozwiązujemy jawnie: <code>characters/*</code> importuje typ <code>Scene</code> tylko pod
+<code>TYPE_CHECKING</code>, a <code>scene/map_loader.py</code> importuje <code>NPC</code>/<code>Player</code>
+lokalnie w funkcjach ładowania (jeden, skomentowany punkt zamiast czterech rozsianych).
+Żywy odczyt <code>scene.SHOW_DEBUG_INFO</code> w <code>characters.py</code> przechodzi na
+<code>debug_overlay</code> w kroku 9.</p>
+
+<h2 id="kontrakty">4. Kontrakty nietykalne</h2>
+<div class="callout err"><p><strong>Złamanie któregokolwiek = STOP kroku i powrót do planu.</strong>
+Te nazwy i zachowania są wgrzane w save'y, testy, agent_ctrl i pamięć projektu.</p></div>
+<div class="tablewrap"><table>
+  <tr><th>#</th><th>Kontrakt</th><th>Szczegół / konsument</th></tr>
+  <tr><td>K1</td><td><strong>Format save/load</strong></td>
+      <td><code>save_load/models.py</code> i <code>manager.py</code> czytają atrybuty
+      <code>Scene</code>/<code>NPC</code>/<code>Player</code> po nazwach
+      (<code>_build_map_states</code>, <code>_build_player_state</code>,
+      <code>_build_*_from_cache</code> po kluczach cache = liście
+      <code>Scene.properties</code>, 36 pozycji, scene.py:158-204). Refactor NIE zmienia żadnej
+      nazwy atrybutu ani klucza. Test: fixture sprzed refactoru wczytuje się po każdym kroku.</td></tr>
+  <tr><td>K2</td><td><strong>Konstruktor <code>Scene(...)</code></strong></td>
+      <td>Sygnatura <code>Scene(game, map_name, entry_point, is_maze, maze_cols, maze_rows,
+      maze_seed, return_map, return_entry_point)</code> - używana przez save_load (odtworzenie
+      sceny z labiryntem), testy headless (memory: headless-scene-stepping) i menu.</td></tr>
+  <tr><td>K3</td><td><strong>API agenta i testów</strong></td>
+      <td>Nazwy metod na <code>Scene</code>: <code>agent_find_entity</code>,
+      <code>agent_walk_target</code>, <code>agent_point_near</code>, <code>agent_walk_player_to</code>,
+      <code>agent_player_arrived</code>, <code>agent_open_dialog</code>, <code>go_to_map</code>,
+      <code>update_routine_npcs</code> (sonda w test_npc_schedule), <code>store_map</code>/<code>restore_map</code>,
+      <code>add_notification</code>, <code>apply_days</code>, <code>day_rng</code>, <code>exit_to</code>.
+      Atrybuty czytane przez <code>agent_ctrl._collect_ui_state</code>: <code>current_map</code>,
+      <code>entry_point</code>, <code>is_maze</code>, <code>day/hour/minute</code>,
+      <code>world_seed</code>, <code>ui.open_panel_names</code>, <code>player.*</code>,
+      <code>npc_met.dialog</code>. Zostają jako delegaty/atrybuty na <code>Scene</code>.</td></tr>
+  <tr><td>K4</td><td><strong>Importy publiczne</strong></td>
+      <td><code>from scene import Scene</code> (12 plików) i
+      <code>from characters import NPC, Player</code> (10 plików) działają bez zmian -
+      zapewnia <code>__init__.py</code> pakietów. Zero zmian w plikach konsumenckich poza
+      krokami, które jawnie je wymieniają.</td></tr>
+  <tr><td>K5</td><td><strong>Dual-target desktop+web</strong></td>
+      <td>Import configu przez gałąź <code>IS_WEB</code> (dataclass web / pydantic desktop) -
+      żadnych importów pydantic poza gałęzią desktop. Nowe podpakiety muszą przejść pakowanie
+      pygbag (krok 1 i 10 kończą się <code>just test-web</code>). Web bez zmian zachowania.</td></tr>
+  <tr><td>K6</td><td><strong>Import by-value z <code>settings</code></strong></td>
+      <td>Nowe moduły: wyłącznie <code>import settings</code> + odczyt dynamiczny
+      (<code>settings.INITIAL_HOUR</code>, <code>settings.LANG</code>, <code>settings.WIDTH</code>).
+      Dzisiejsze <code>from settings import INITIAL_HOUR</code> w scene.py znika wraz z
+      przeniesieniem zegara (krok 3); memory projektu do aktualizacji po epicu.</td></tr>
+  <tr><td>K7</td><td><strong><code>clear_maze_cache()</code></strong></td>
+      <td>Jeden wspólny punkt inwalidacji cache A*; wołany z <code>load_map</code>,
+      <code>restore_map</code> i przy niszczeniu ścian (collisions). Pozostaje jedna funkcja
+      z <code>maze_generator</code> - moduły NIE robią własnych cache.</td></tr>
+  <tr><td>K8</td><td><strong>Emote przy zamrożonym świecie</strong></td>
+      <td>Gałąź modal-open w <code>update</code> (scene.py:1971-1980): emote'y NPC i gracza
+      animują się także, gdy świat stoi (dialog/handel). Zostaje w orkiestratorze - to reguła
+      sekwencji, nie systemu.</td></tr>
+  <tr><td>K9</td><td><strong>Żywe globale <code>scene</code></strong></td>
+      <td><code>scene.SHOW_DEBUG_INFO</code> czytane na żywo przez help.py i characters.py
+      (D3). Chronione przez <code>__getattr__</code> od kroku 1.</td></tr>
+</table></div>
+
+<h2 id="plan">5. Plan wykonania - 16 kroków commitowalnych</h2>
+<p>Każdy krok: osobny commit <code>B01 krok N: &lt;co&gt;</code>, diff &lt; ~600 linii,
+odwracalny przez <code>git revert</code>. Bramki po KAŻDYM kroku (sekcja 6). Kolejność wg
+zadania: map_loader → world_clock → collisions → routines → night/intro/debug/agent →
+characters → game.py.</p>
+<div class="tablewrap"><table>
+  <tr><th>Krok</th><th>Zakres</th><th>~Diff</th><th>Uwagi / ryzyka lokalne</th></tr>
+  <tr><td><strong>0</strong></td><td>Przygotowanie: save-fixture referencyjny
+      (<code>scripts/save_fixtures.py create 0</code> na kodzie SPRZED refactoru), skrypt
+      benchmarku klatki do <code>scripts/bench_scene.py</code> + zapis baseline.</td>
+      <td>~150</td><td>fixture NIE wchodzi do repo (katalog testowy); baseline w opisie commita</td></tr>
+  <tr><td><strong>1</strong></td><td>Pakiet <code>scene/</code>: przeniesienie
+      <code>scene.py</code> → <code>scene/scene.py</code> w całości + <code>__init__.py</code>
+      (eksport <code>Scene</code> + <code>__getattr__</code> PEP 562). Zero podziału logiki.</td>
+      <td>~80 + rename</td><td><span class="badge b-warn">ryzyko R2/R3</span> pygbag i żywe
+      globale - dlatego krok kończy pełny <code>just test-web</code>, nie tylko 2 scenariusze</td></tr>
+  <tr><td><strong>2</strong></td><td><code>map_loader.py</code>: load_map + load_* + populate +
+      set_entry_point + _resolve_maze_seed + create_item; w <code>Scene</code> delegaty
+      <code>load_map</code>/<code>create_item</code>.</td>
+      <td>~600</td><td>największy pojedynczy transfer; lokalne importy NPC w jednym miejscu</td></tr>
+  <tr><td><strong>3</strong></td><td><code>world_clock.py</code>: tick z update + apply_days +
+      day_rng + abs_minutes; <code>settings.INITIAL_HOUR</code> dynamicznie (K6);
+      usunięcie by-value importu z scene.py.</td>
+      <td>~180</td><td>sprawdzić <code>test_deterministic_mode</code> + scenariusz ze
+      <code>start_hour</code> (A07 dał kanał na web)</td></tr>
+  <tr><td><strong>4</strong></td><td><code>collisions.py</code>: blok kolizji z update
+      (ściany, NPC, broń, destructibles + clear_maze_cache, skrzynie, npc_met).</td>
+      <td>~280</td><td><span class="badge b-warn">hot path</span> - benchmark obowiązkowo;
+      jedna funkcja <code>resolve(scene)</code>, bez podfunkcji per pętla</td></tr>
+  <tr><td><strong>5</strong></td><td><code>player_actions.py</code> (D4): blok INPUTS z update;
+      update staje się sekwencją: freeze-check → clock → collisions → actions → kamera.</td>
+      <td>~260</td><td>INPUTS to współdzielony dict z settings - bez zmian mechanizmu</td></tr>
+  <tr><td><strong>6</strong></td><td><code>routines_director.py</code>: update_routine_npcs,
+      update_sleepers, awake_NPCs, roster, reconcile/settle, materializacja, sloty, exit_to,
+      _arrival_pos, _walkable_pixel.</td>
+      <td>~500</td><td>sonda <code>Scene.update_routine_npcs</code> zostaje delegatem (K3);
+      pełny przebieg test_npc_schedule</td></tr>
+  <tr><td><strong>7</strong></td><td><code>map_state.py</code>: store_map/restore_map +
+      properties + go_to_map + reload_map + reset_sprite_groups.</td>
+      <td>~300</td><td><span class="badge b-err">K1</span> - po kroku OBOWIĄZKOWO wczytanie
+      fixture z kroku 0 + scenariusze Maze Persists / Auto Save on Maze Entry</td></tr>
+  <tr><td><strong>8</strong></td><td><code>night_filter.py</code> + <code>intro.py</code>:
+      filtry dnia/nocy, światła, cutscena intro, framing.</td>
+      <td>~450</td><td>przygotowuje E01; scenariusz intro + zrzut nocny (start_hour 21)</td></tr>
+  <tr><td><strong>9</strong></td><td><code>debug_overlay.py</code> + <code>agent_api.py</code>;
+      migracja konsumentów <code>SHOW_DEBUG_INFO</code> (help.py, characters) na
+      <code>debug_overlay</code>; <code>scene/scene.py</code> schodzi &lt; 500 linii.</td>
+      <td>~350</td><td>po kroku: pełny zestaw desktop (co 2-3 kroki i tu wypada)</td></tr>
+  <tr><td><strong>10</strong></td><td>Pakiet <code>characters/</code>: przeniesienie klas do
+      <code>npc.py</code>/<code>player.py</code> + <code>__init__.py</code>. Zero podziału metod.</td>
+      <td>~100 + rename</td><td>jak krok 1: kończy pełny <code>just test-web</code> (pygbag)</td></tr>
+  <tr><td><strong>11</strong></td><td><code>characters/movement.py</code>: A*, waypointy,
+      physics, slide, kierunki, wander.</td>
+      <td>~500</td><td><span class="badge b-warn">hot path</span> - benchmark; test_movement_physics</td></tr>
+  <tr><td><strong>12</strong></td><td><code>characters/combat.py</code>: encounter, hit,
+      cooldowny, stun/push, event timer.</td>
+      <td>~230</td><td>scenariusz walki w labiryncie (Maze Persists pokrywa spawn potworów)</td></tr>
+  <tr><td><strong>13</strong></td><td><code>characters/animation.py</code>: sheet/klatki,
+      animate, maski, shadow/health-bar factory.</td>
+      <td>~200</td><td>wizualnie wrażliwe - zrzuty ss-review na kluczowych ekranach</td></tr>
+  <tr><td><strong>14</strong></td><td><code>characters/inventory.py</code> (D6): handel,
+      ekwipunek, hotbar, restock.</td>
+      <td>~400</td><td>test_merchant_economy + scenariusz Hammer Dialog Flow (handel)</td></tr>
+  <tr><td><strong>15</strong></td><td><code>game.py</code> sprzątanie (D5): CSV-tools →
+      <code>config_model/csv_tools.py</code>; bez zmian pętli i inputu.</td>
+      <td>~180</td><td>smoke CLI: <code>--task</code> eksport/import na jednej encji</td></tr>
+  <tr><td><strong>16</strong></td><td>Finalizacja: <code>project/AGENTS.md</code> (mapa plików,
+      odsyłacze), aktualizacja memory (headless-scene-stepping, INITIAL_HOUR), odhaczenie B01,
+      pełne zestawy desktop+web Z ss-review, weryfikacja wizualna autora na realnym ekranie.</td>
+      <td>~200 dok.</td><td>kryterium 5 epica wymaga oka autora - headless nie jest wierny</td></tr>
+</table></div>
+
+<h2 id="testy">6. Strategia testowa i benchmark</h2>
+<h3>Bramki po każdym kroku (wszystkie zielone przed następnym)</h3>
+<ol>
+  <li><code>just test-unit</code> - 100% pass (32 pliki / 427 testów; importy w testach
+      NIE wymagają zmian dzięki K4).</li>
+  <li><code>just mypy</code> - 0 błędów (baza wyzerowana w F03).</li>
+  <li><code>MOM_SKIP_SS_REVIEW=1 just test-agent "Save and Load Basic"</code> oraz
+      <code>"Hammer Dialog Flow"</code>.</li>
+  <li><code>just validate-world</code> - bez nowych naruszeń.</li>
+  <li>Benchmark klatki (niżej) - regresja &gt; 20% względem baseline = STOP kroku.</li>
+  <li>Kontrola save (K1): <code>quick_load</code> fixture z kroku 0 - gra wstaje, mapa/gracz
+      zgodne (w krokach 2, 6, 7, 10, 14 obowiązkowo; w pozostałych wyrywkowo).</li>
+</ol>
+<p>Raz na 2-3 kroki (po 1, 5, 7, 9, 10, 13, 16): pełny przebieg desktop
+(<code>MOM_SKIP_SS_REVIEW=1 just test-agent</code>) i web (<code>just test-web</code>).
+Po krokach 1 i 10 (nowe pakiety) web jest OBOWIĄZKOWY - pygbag pakuje katalogi inaczej niż
+CPython importuje.</p>
+
+<h3>Benchmark (skrypt <code>scripts/bench_scene.py</code>, krok 0)</h3>
+<p>Podejście z audytu - konstrukcja Scene wprost + krokowanie headless (memory:
+headless-scene-stepping; boot main.py ląduje w MainMenuScreen, więc scenę budujemy ręcznie):</p>
+<pre><code>SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 scripts/bench_scene.py
+# szkic: zbuduj Game bez pętli, Scene(game, "Village", "start"),
+# 500 x scene.update(1/60, []) i 500 x scene.draw(canvas, 1/60), median czasu klatki.
+# Baseline (mac-mini, audyt): update 0,41 ms | draw 1,31 ms. Budżet: +20%.</code></pre>
+<h3>Testy jednostkowe - co obserwować</h3>
+<ul>
+  <li><code>test_npc_schedule</code> - konstruuje Scene wprost i woła
+      <code>scene.update_routine_npcs()</code>; po kroku 6 to jest test kontraktu delegata.</li>
+  <li><code>test_deterministic_mode</code> - subprocess na settings; krok 3 nie może zmienić
+      miejsca nadpisania <code>INITIAL_HOUR</code> w settings.py (zmienia tylko odczyt w scenie).</li>
+  <li><code>test_save_load_multi_map</code> - buduje MapState z atrybutów sceny; czerwony =
+      złamany K1.</li>
+  <li>Semantyka testów NIE zmienia się w żadnym kroku - jeśli test wymaga "dostosowania",
+      to sygnał złamanego kontraktu, nie powód do edycji testu (STOP + pytanie do autora).</li>
+</ul>
+
+<h2 id="ryzyka">7. Ryzyka i plan odwrotu</h2>
+<div class="tablewrap"><table>
+  <tr><th>#</th><th>Ryzyko</th><th>Sygnał</th><th>Mitygacja / odwrót</th></tr>
+  <tr><td>R1</td><td>Złamanie kontraktu save (K1) przy przenoszeniu atrybutów</td>
+      <td>fixture z kroku 0 nie wczytuje się / test_save_load_multi_map czerwony</td>
+      <td>atrybuty NIE opuszczają Scene (D1); kontrola fixture w bramkach;
+      <code>git revert</code> kroku</td></tr>
+  <tr><td>R2</td><td>pygbag nie pakuje/nie importuje nowego podpakietu</td>
+      <td><code>just test-web</code> pada po kroku 1 lub 10; czarny canvas</td>
+      <td>kroki 1/10 to czyste przeniesienia (mały revert); wzorzec istnieje - <code>dialog/</code>
+      i <code>save_load/</code> są już podpakietami i działają na web</td></tr>
+  <tr><td>R3</td><td>Żywe globale przestają być żywe (K9)</td>
+      <td>toggle <span class="kbd">`</span>/<span class="kbd">Z</span> nie działa; help pokazuje zły stan</td>
+      <td><code>__getattr__</code> od kroku 1; test ręczny toggla w krokach 1 i 9</td></tr>
+  <tr><td>R4</td><td>Regresja wydajności hot-path (kolizje, movement)</td>
+      <td>benchmark &gt; +20% po kroku 4 lub 11</td>
+      <td>funkcje systemów wołane RAZ na klatkę (nie per sprite); brak dodatkowych warstw
+      w pętlach wewnętrznych; revert kroku i podział grubszy</td></tr>
+  <tr><td>R5</td><td>Cykl importów scene ↔ characters wraca w nowym układzie</td>
+      <td>ImportError przy starcie (desktop lub TYLKO web - pygbag importuje inaczej)</td>
+      <td>reguła z sekcji 3: typy przez TYPE_CHECKING, import NPC lokalnie tylko w
+      map_loader; web-smoke po każdym kroku dotykającym importów</td></tr>
+  <tr><td>R6</td><td>Rozjazd planu z kodem w trakcie (odkryta zależność, której plan nie widzi)</td>
+      <td>krok nie domyka się w ~600 linii diffu albo wymaga edycji testów</td>
+      <td>zasada z promptu Fazy 2: STOP, opis problemu, pytanie do autora -
+      bez improwizowanych obejść i poszerzania zakresu kroku</td></tr>
+  <tr><td>R7</td><td>Wizualna regresja niewykrywalna headless (kompozycja klatki)</td>
+      <td>ss-review przechodzi, a gra "wygląda inaczej" na realnym ekranie</td>
+      <td>kryterium 5 epica: finalna weryfikacja autora; zrzuty ss-review na kluczowych
+      ekranach w krokach 8/13/16</td></tr>
+</table></div>
+<p>Plan odwrotu globalny: każdy krok jest osobnym commitem na <code>main</code> -
+<code>git revert &lt;sha&gt;</code> przywraca stan sprzed kroku bez ruszania pozostałych.
+Kroki czystego przeniesienia (1, 10) są buforami: gdyby seria kroków po nich okazała się
+błędna koncepcyjnie, revert do granicy pakietu jest tani.</p>
+
+<h2 id="akceptacja">8. Kryteria akceptacji całego epica (z zadania, bez zmian)</h2>
+<ol>
+  <li><code>scene/scene.py</code> (orkiestrator) &lt; 500 linii; żaden nowy moduł &gt; 800 linii.</li>
+  <li><code>Scene.update</code> czyta się jak spis treści: sekwencja wywołań systemów.</li>
+  <li>Wszystkie bramki zielone; save sprzed refactoru wczytuje się po nim.</li>
+  <li><code>project/AGENTS.md</code> zaktualizowany (mapa plików, odsyłacze).</li>
+  <li>Gra działa wizualnie identycznie - ss-review + finalna weryfikacja autora na realnym
+      ekranie.</li>
+</ol>
+
+<div class="callout ok">
+  <p><strong>Następny ruch:</strong> akceptacja (lub korekty) decyzji D1-D6 i planu kroków.
+  Po "akceptuję" zaczynam od kroku 0 (fixture + benchmark), commit po każdym kroku.</p>
+</div>
+
+<p><a class="backlink" href="audyt-architektury-2026-07-25.html">← Raport audytu 2026-07-25</a></p>
+</div>
+<script>
+function toggleTheme() {
+  const r = document.documentElement;
+  const cur = r.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  r.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+}
+</script>
+</body>
+</html>
