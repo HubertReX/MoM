@@ -110,6 +110,9 @@ AGENT_SCREENSHOT_DIR = REPO_ROOT / "screenshots" / "agent"
 WEB_SAVE_KEY_PREFIX = "MoM.save_"
 WEB_INPUT_KEY = "MoM.agent_input"
 WEB_AGENT_FLAG = "MoM.agent_control"
+# jeden kanał na WSZYSTKIE zmienne testowe web (A07): JSON {"MOM_...": "..."} czytany
+# przez settings._test_env przy imporcie settings (dlatego pisany PRZED reload())
+WEB_ENV_KEY = "MoM.env"
 # zrzut stanu gry z komendy `debug_ui_state` (musi zgadzać się z agent_ctrl.WEB_UI_STATE_KEY)
 WEB_UI_STATE_KEY = "MoM.agent_ui_state"
 
@@ -892,9 +895,6 @@ class WebRunner(RunnerBase):
 
     def start_game(self) -> None:
         print(f"[{get_timestamp()}] Starting pygbag (web)...")
-        # UWAGA: tryb deterministyczny jest desktop-only. Gra w przeglądarce nie
-        # dziedziczy env tego procesu (pygbag serwuje WASM, a `os.environ` po stronie
-        # gry to stub), więc MOM_TEST_DETERMINISTIC / MOM_TEST_START_HOUR tu nie działają.
         env = dict(os.environ)
         self.pygbag_proc = subprocess.Popen(
             TEST_CONFIG["PYGBAG_CMD"],
@@ -919,13 +919,30 @@ class WebRunner(RunnerBase):
         self.pw = self._sync_playwright().start()
         self.browser = self.pw.chromium.launch(headless=True)
         self.page = self.browser.new_page(viewport={"width": 1280, "height": 720})
+        # log gry idzie do konsoli przeglądarki; przekaż diagnostykę testową do stdout
+        # runnera (selektywnie - pełna konsola pygbag to spory szum)
+        self.page.on(
+            "console",
+            lambda msg: print(f"[browser] {msg.text}")
+            if ("[test]" in msg.text or "[world]" in msg.text or "[agent" in msg.text)
+            else None,
+        )
 
-        # Najpierw basic load, ustaw flagę agenta, potem RELOAD - gra czyta flagę w __init__.
+        # Najpierw basic load, ustaw zmienne testowe, potem RELOAD - gra czyta je
+        # przy imporcie `settings`, więc muszą siedzieć w localStorage przed startem gry.
         self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
-        # ustawienie agent_control + clear ewentualnych poprzednich komend/save
+        # Jeden kanał MoM.env na wszystkie zmienne (A07): ta sama funkcja co desktop
+        # decyduje o trybie deterministycznym i godzinie startu (pole `start_hour`).
+        test_env: dict[str, str] = {"MOM_AGENT_CONTROL": "1"}
+        apply_determinism_env(test_env, self.start_hour)
         self.page.evaluate(
             "([k,v]) => localStorage.setItem(k, v)",
-            [WEB_AGENT_FLAG, "1"],
+            [WEB_ENV_KEY, json.dumps(test_env)],
+        )
+        # stary klucz per-flaga: czyść, żeby fallback w game.py nie włączał agenta
+        # w sesji, która używa już wyłącznie MoM.env
+        self.page.evaluate(
+            "() => localStorage.removeItem('" + WEB_AGENT_FLAG + "')"
         )
         self.page.evaluate(
             "() => localStorage.removeItem('" + WEB_INPUT_KEY + "')"
@@ -935,7 +952,7 @@ class WebRunner(RunnerBase):
         # wstrzyknij ewentualne saves (corrupt/minimal) zadeklarowane przez scenario.
         # Robione TU (po first goto, przed reloadem), bo gra czyta localStorage w __init__.
         self._inject_setup_saves()
-        print(f"[{get_timestamp()}] localStorage[MoM.agent_control]=1; reloading...")
+        print(f"[{get_timestamp()}] localStorage[{WEB_ENV_KEY}]={json.dumps(test_env)}; reloading...")
         self.page.reload(wait_until="domcontentloaded", timeout=30000)
 
         # czekaj aż gra zacznie rysować canvas (pygbag generuje <canvas>)

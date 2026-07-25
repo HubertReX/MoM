@@ -67,7 +67,7 @@ Dopisane po realizacji Fazy 1 (znaleziska z sesji 2026-07-25, oba zastane - nie 
 
 - [x] [A05 - scenariusz autosave po zmianie reguły (tylko wejście do labiryntu)](A05-scenariusz-autosave-po-zmianie-reguly.md) - P2 ✅ 2026-07-25
 - [x] [A06 - CLI `agent_ctrl.py` nic nie wysyła (martwy blok po `sys.exit`)](A06-agent-ctrl-cli-nieosiagalne.md) - P2 ✅ 2026-07-25
-- [x] [A07 - zmienne środowiskowe testów na web (domknięcie A04 - jeden kanał `MoM.env`)](A07-zmienne-srodowiskowe-na-web.md) - P1
+- [x] [A07 - zmienne środowiskowe testów na web (domknięcie A04 - jeden kanał `MoM.env`)](A07-zmienne-srodowiskowe-na-web.md) - P1 ✅ 2026-07-25
 
 ### Faza 2 - wielki refactor rdzenia
 

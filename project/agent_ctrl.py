@@ -29,10 +29,10 @@ Ustaw zmienną środowiskową przed startem gry:
     MOM_AGENT_CONTROL=1 just run
 
 ### Web (pygbag)
-Runner (`tests/automate_display_test.py --web`) ustawia flagę w `window.localStorage`
-przed przeładowaniem strony:
+Runner (`tests/automate_display_test.py --web`) ustawia flagę w kanale zmiennych
+testowych `MoM.env` w `window.localStorage` przed przeładowaniem strony:
 
-    window.localStorage.setItem("MoM.agent_control", "1")
+    window.localStorage.setItem("MoM.env", '{"MOM_AGENT_CONTROL": "1"}')
 
 ## Wysyłanie komend (z innego terminala / procesu, gdy gra działa)
 
@@ -241,6 +241,9 @@ class AgentController:
             "day": getattr(scene, "day", None),
             "hour": getattr(scene, "hour", None),
             "minute": getattr(scene, "minute", None),
+            # diagnostyka determinizmu (A07): dwa przebiegi tego samego scenariusza
+            # w trybie deterministycznym muszą zgłosić ten sam seed
+            "world_seed": getattr(scene, "world_seed", None),
             "open_panels": [],
             "player": None,
             "dialog": None,

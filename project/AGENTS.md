@@ -422,10 +422,14 @@ daje identyczności co do piksela - spawn cząstek napędzają timery pygame, a 
 nigdy nie są równe co do milisekundy. Powtarzalna jest **sekwencja decyzji**: ten sam
 emiter, te same długości epizodów, ten sam seed świata.
 
-Ograniczenie (na dziś): tryb jest **desktop-only**. Gra w przeglądarce nie dziedziczy env
-procesu runnera, więc `--web` zawsze chodzi na losowym świecie. Domknięcie zaplanowane -
-jeden kanał `localStorage['MoM.env']` na wszystkie zmienne testowe: patrz
-[`doc/audyt/A07-zmienne-srodowiskowe-na-web.md`](../doc/audyt/A07-zmienne-srodowiskowe-na-web.md).
+Tryb działa na **obu targetach** (A07). Desktop: zwykły `env` podprocesu gry. Web: gra
+nie dziedziczy env runnera, więc runner wkłada te same zmienne do **jednego** klucza
+`localStorage['MoM.env']` (JSON `{"MOM_TEST_DETERMINISTIC": "1", ...}`) po pierwszym
+`goto()`, a **przed** `reload()` - `settings._test_env()` czyta ten klucz przy imporcie
+`settings`, później byłoby za późno. Każdą kolejną zmienną testową wystarczy ustawić
+w env/`MoM.env`; nie dodawaj osobnych kluczy localStorage per flaga.
+`MOM_AGENT_CONTROL` przechodzi tym samym kanałem (stary klucz `MoM.agent_control`
+zostaje w `game.py` tylko jako przejściowy fallback dla otwartych starych kart).
 
 Testy mechanizmu: `tests/test_deterministic_mode.py` (zmienne czytane są przy imporcie
 `settings`, więc każdy przypadek leci w świeżym subprocessie - przeładowanie modułu nie

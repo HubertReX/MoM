@@ -232,27 +232,24 @@ class Game:
         self.states.append(start_state)
 
         # external control & screenshots for AI agents (debug, opt-in)
-        # - desktop: czytane z pliku (MOM_AGENT_CONTROL=1 env)
-        # - web: czytane z window.localStorage['MoM.agent_control'] (runner Playwright)
+        # MOM_AGENT_CONTROL=1 w env (desktop) lub w localStorage['MoM.env'] (web) -
+        # oba targety przechodzą przez settings._test_env, więc flaga jest tu jedna.
         self.agent_ctrl: AgentController | None = None
-        if USE_AGENT_CONTROL and not IS_WEB:
-            from agent_ctrl import AgentController
-
-            self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=False)
-            self.log("[agent_ctrl] external control ENABLED (desktop)")
-        elif IS_WEB and not USE_WEB_SIMULATOR:
-            web_agent_enabled = False
+        use_agent = USE_AGENT_CONTROL
+        if not use_agent and IS_WEB and not USE_WEB_SIMULATOR:
+            # przejściowy fallback: stary klucz 'MoM.agent_control' sprzed kanału
+            # MoM.env - otwarta karta ze starą sesją runnera ma dalej działać
             try:
                 from platform import window  # type: ignore[attr-defined]
 
-                web_agent_enabled = window.localStorage.getItem("MoM.agent_control") == "1"
+                use_agent = window.localStorage.getItem("MoM.agent_control") == "1"
             except Exception:
                 pass
-            if web_agent_enabled:
-                from agent_ctrl import AgentController
+        if use_agent and not USE_WEB_SIMULATOR:
+            from agent_ctrl import AgentController
 
-                self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=True)
-                self.log("[agent_ctrl] external control ENABLED (web)")
+            self.agent_ctrl = AgentController(AGENT_INPUT_FILE, AGENT_SCREENSHOT_DIR, log=self.log, web_mode=IS_WEB)
+            self.log(f"[agent_ctrl] external control ENABLED ({'web' if IS_WEB else 'desktop'})")
 
         # import scene
         # start_state = scene.Scene(self, "Village", "start")

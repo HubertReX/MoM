@@ -303,6 +303,30 @@ SAVE_FILE_EXT = ".mom"
 USE_WEB_SIMULATOR = False
 IS_WEB = __import__("sys").platform == "emscripten" or USE_WEB_SIMULATOR
 IS_LINUX = __import__("sys").platform == "linux"
+
+
+def _test_env() -> dict[str, str]:
+    """Zmienne sterujące trybami testowymi, niezależnie od targetu.
+
+    Desktop: ``os.environ``. Web: jeden klucz localStorage ``MoM.env`` z obiektem JSON
+    (``{"MOM_TEST_DETERMINISTIC": "1", ...}``), wstrzykiwany przez runner PRZED
+    przeładowaniem strony - ten moduł czyta go przy imporcie, więc później byłoby za późno.
+    Każdy błąd (brak klucza, zły JSON, brak ``window``) => ``{}``: gra musi wstać
+    także bez runnera. ``USE_WEB_SIMULATOR`` (desktop udający web) dalej czyta
+    ``os.environ`` - symulator jest zwykłym procesem z prawdziwym env.
+    """
+    if IS_WEB and not USE_WEB_SIMULATOR:
+        try:
+            from platform import window  # type: ignore[attr-defined]
+            data = json.loads(window.localStorage.getItem("MoM.env") or "{}")
+            return {str(k): str(v) for k, v in data.items()}
+        except Exception:
+            return {}
+    return dict(__import__("os").environ)
+
+
+# jeden odczyt na proces - flagi niżej (i nadpisanie INITIAL_HOUR) czytają z tej stałej
+_ENV = _test_env()
 # IS_FULLSCREEN = True
 IS_FULLSCREEN = False
 _IS_FULLSCREEN = False  # mutable runtime toggle
@@ -314,7 +338,8 @@ USE_SOD = False
 USE_SHADERS = False
 # zewnętrzne sterowanie grą + screenshoty dla agentów AI (debug, desktop-only, opt-in)
 # włączane zmienną środowiskową: MOM_AGENT_CONTROL=1 just run
-USE_AGENT_CONTROL = __import__("os").environ.get("MOM_AGENT_CONTROL", "0") == "1"
+# (web: przez klucz localStorage MoM.env - patrz _test_env wyżej)
+USE_AGENT_CONTROL = _ENV.get("MOM_AGENT_CONTROL", "0") == "1"
 
 # Tryb deterministyczny testów (MOM_TEST_DETERMINISTIC=1). Cząstki NIE są wyłączane -
 # testowalibyśmy inną grę niż realna, a scenariusz może chcieć sprawdzić właśnie emiter.
@@ -322,7 +347,7 @@ USE_AGENT_CONTROL = __import__("os").environ.get("MOM_AGENT_CONTROL", "0") == "1
 # samego scenariusza dają tę samą SEKWENCJĘ DECYZJI (ten emiter, te długości epizodów).
 # Identyczność co do piksela nie jest celem: spawn napędzają timery pygame, a momenty
 # klatek nigdy nie są równe co do milisekundy.
-TEST_DETERMINISTIC = __import__("os").environ.get("MOM_TEST_DETERMINISTIC", "0") == "1"
+TEST_DETERMINISTIC = _ENV.get("MOM_TEST_DETERMINISTIC", "0") == "1"
 TEST_WORLD_SEED: "int | None" = 12345 if TEST_DETERMINISTIC else None
 IS_DEBUG_MODE = False
 SHOW_DEBUG_INFO = False
@@ -404,7 +429,7 @@ INITIAL_HOUR: int = 9
 # (noc, zamknięty sklep). Nadpisanie musi siedzieć TUTAJ, w treści settings.py, bo
 # scene.py robi `from settings import INITIAL_HOUR` (import by-value) - później byłoby
 # już za późno.
-_start_hour = __import__("os").environ.get("MOM_TEST_START_HOUR")
+_start_hour = _ENV.get("MOM_TEST_START_HOUR")
 if _start_hour is not None:
     try:
         INITIAL_HOUR = max(0, min(23, int(_start_hour)))
