@@ -75,7 +75,7 @@ from settings import (
     vec3,
     vector_to_tuple
 )
-from scene import collisions, map_loader, player_actions, routines_director, world_clock
+from scene import collisions, map_loader, map_state, player_actions, routines_director, world_clock
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
@@ -105,53 +105,9 @@ class Scene(State):
     ) -> None:
 
         super().__init__(game)
-        self.properties: list[str] = [
-            "is_maze",
-            "maze_stats",
-            "maze_cols",
-            "maze_rows",
-            # a maze level is reproduced from its seed alone, so both the seed and
-            # the grid it produced belong to the per-map cache
-            "maze_seed",
-            "maze",
-            # where this map's exit leads back to - per map, like everything else here
-            "return_map",
-            "return_entry_point",
-            "waypoints",
-            # named destinations for daily routines - per map, like `waypoints`
-            "places",
-            "items",
-            "zones",
-            "exits",
-            "chests",
-            "walls",
-            # both are per-map: `destructibles` used to leak across maps (walls were
-            # restored from the cache, the destructible sprites were not), and
-            # `destroyed_walls` is what the save reads to know which bushes/rocks
-            # the player already smashed on a map they are not standing on
-            "destructibles",
-            "destroyed_walls",
-            # per-map for the same reason as `destroyed_walls`: a killed monster
-            # leaves nothing behind on the map to read the fact off
-            "dead_monsters",
-            "label_sprites",
-            "shadow_sprites",
-            "obstacles_sprites",
-            "exit_sprites",
-            "item_sprites",
-            "animations",
-            "NPCs",
-            "loaded_NPCs",
-            "outdoor",
-            "layers",
-            "path_finding_grid",
-            "entry_points",
-            "map_view",
-            "sprites_layer",
-            "group",
-            "particles",
-            "weather",
-        ]
+        # lista atrybutów per-mapa mieszka w scene/map_state.py (K1 - format save);
+        # kopia, bo store/restore czyta ją z instancji
+        self.properties: list[str] = list(map_state.MAP_PROPERTIES)
 
         self.notifications: list[Notification] = []
         self.game.time_elapsed = 0.0
@@ -426,28 +382,14 @@ class Scene(State):
     #############################################################################################################
 
     def store_map(self) -> None:
-        map: dict[str, Any] = {}
-        for property in self.properties:
-            # if hasattr(self, property):
-            map[property] = getattr(self, property)
-        self.loaded_maps[self.current_map] = map
+        # delegat do systemu map_state (B01 krok 7)
+        map_state.store_map(self)
 
     #############################################################################################################
 
     def restore_map(self) -> None:
-        map = self.loaded_maps[self.current_map]
-        for property in map:
-            setattr(self, property, map[property])
-
-        # check from which scene we came here
-        if len(self.game.states) > 0:
-            self.prev_state = self.game.states[-1]
-
-        clear_maze_cache()
-
-        self.set_camera_on_player()
-        self.group.center(self.camera.target)
-        # self.group.center(self.player.pos)
+        # delegat do systemu map_state (B01 krok 7)
+        map_state.restore_map(self)
 
     #############################################################################################################
     # MARK: agent test helpers (deterministic navigation)
@@ -854,66 +796,8 @@ class Scene(State):
         )
 
     def go_to_map(self) -> None:
-        if not self.new_scene:
-            return
-
-        # cancel the leaving map's armed spawn timers so they don't keep firing for
-        # emitters that are about to be swapped out (each map keeps its own director)
-        if self.weather:
-            self.weather.stop_all()
-
-        self.return_map = self.current_map
-        self.return_entry_point = self.new_scene.return_entry_point
-
-        self.current_map = self.new_scene.to_map
-        # print(f"{self.entry_point=} {self.new_scene.entry_point}")
-        self.entry_point = self.new_scene.entry_point
-        self.is_maze = self.new_scene.is_maze
-        self.maze_cols = self.new_scene.maze_cols
-        self.maze_rows = self.new_scene.maze_rows
-        # The seed belongs to the level we are leaving. Clearing it lets
-        # `_resolve_maze_seed` decide for the level we are entering: reproduce the
-        # one waiting in `pending_map_states`, or roll a fresh one. A cached level
-        # gets its seed back from `restore_map` (it is in `properties`).
-        self.maze_seed = None
-
-        if self.current_map not in self.loaded_maps:
-            self.reset_sprite_groups()
-            self.player.shadow = self.player.create_shadow()
-            self.player.emote = self.player.create_emote()
-            self.player.health_bar = self.player.create_health_bar()
-            self.load_map()
-        else:
-            self.reset_sprite_groups()
-
-            self.restore_map()
-            map_loader.set_entry_point(self)
-
-            self.player.shadow = self.player.create_shadow()
-            self.player.emote = self.player.create_emote()
-            self.player.health_bar = self.player.create_health_bar()
-
-            self.game.unregister_custom_events()
-            map_loader.populate_sprite_groups(self)
-
-        if USE_PARTICLES:
-            self.start_particles()
-
-        # Quest event: arriving somewhere can satisfy a quest. Nothing uses
-        # location conditions yet (`at_location()` is still hypothetical - see
-        # Q01_S07 in the plan), but the hook is where it will need to be, and
-        # firing it now keeps the sweep quiet when it lands.
-        self.quests.on_event("map_change")
-
-        # Autosave only when entering a maze (entry point into a dungeon). Regular
-        # room-to-room transitions are not autosaved. The toast lets the player know
-        # the quick save slot was silently overwritten.
-        if (self.is_maze
-                and hasattr(self.game, "save_manager")
-                and self.game.save_manager.save(QUICK_SAVE_SLOT)):
-            self.add_notification(_("notify.autosaved_quick"), NotificationTypeEnum.info)
-
-        self.transition.exiting = False
+        # delegat do systemu map_state (B01 krok 7)
+        map_state.go_to_map(self)
 
     #############################################################################################################
     def update_sleepers(self) -> None:
@@ -1029,29 +913,12 @@ class Scene(State):
         self.ui.reset()
 
     def reload_map(self) -> None:
-        self.game.time_elapsed = 0.0
-        world_clock.reset(self)
-        self.display_ui_flag = True
-        self.cutscene_framing = 0.0
-
-        # shadow = self.player.shadow
-        self.reset_sprite_groups()
-        # self.map_view.reload()
-        self.player.reset()
-        # stop the old director's timers before load_map() rebuilds the emitters
-        if self.weather:
-            self.weather.stop_all()
-        self.load_map()
-        if USE_PARTICLES:
-            self.start_particles()
+        # delegat do systemu map_state (B01 krok 7)
+        map_state.reload_map(self)
 
     def reset_sprite_groups(self) -> None:
-        self.label_sprites.empty()
-        self.exit_sprites.empty()
-        self.item_sprites.empty()
-        self.obstacles_sprites.empty()
-        self.shadow_sprites.empty()
-        self.group.empty()
+        # delegat do systemu map_state (B01 krok 7)
+        map_state.reset_sprite_groups(self)
 
     #############################################################################################################
     # @timeit

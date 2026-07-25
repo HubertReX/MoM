@@ -438,28 +438,13 @@ def test_dead_monsters_is_a_cached_map_property() -> None:
     field missing from that list silently does not survive a map change - which is
     how the kill list got lost for any map other than the live one.
     """
-    import ast
-    import inspect
-    import pathlib
+    # od B01 kroku 7 lista jest stałą modułu scene/map_state.py, a `Scene.__init__`
+    # dostaje jej kopię - czytamy źródło prawdy wprost, bez parsowania AST
+    from scene.map_state import MAP_PROPERTIES
 
-    # źródło namierzane przez klasę, nie zaszytą ścieżkę - scene.py jest w trakcie
-    # refactoru B01 pakietem (project/scene/scene.py) i może się jeszcze przesuwać
-    from scene import Scene
-    source = pathlib.Path(inspect.getsourcefile(Scene) or "")
-    tree = ast.parse(source.read_text(encoding="utf-8"))
-    listed: list[str] = []
-    for node in ast.walk(tree):
-        # `self.properties: list[str] = [...]` is an AnnAssign; plain `=` an Assign
-        targets = [node.target] if isinstance(node, ast.AnnAssign) else \
-                  node.targets if isinstance(node, ast.Assign) else []
-        if (targets
-                and any(isinstance(t, ast.Attribute) and t.attr == "properties" for t in targets)
-                and isinstance(node.value, ast.List)):
-            listed = [e.value for e in node.value.elts
-                      if isinstance(e, ast.Constant) and isinstance(e.value, str)]
-            break
+    listed = list(MAP_PROPERTIES)
 
-    assert_true(bool(listed), "found the Scene.properties list in scene.py")
+    assert_true(bool(listed), "found the per-map properties list")
     for field in ("dead_monsters", "destroyed_walls", "NPCs"):
         assert_true(field in listed, f"{field!r} is cached per map")
 
