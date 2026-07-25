@@ -69,14 +69,19 @@ Assertions (per scenario, opcjonalne):
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
 import platform
 import re
 import shutil
+import signal
+import socket
 import subprocess
 import sys
+import tempfile
 import time
+import urllib.parse
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -342,6 +347,94 @@ def apply_determinism_env(env: dict[str, str], start_hour: int | None) -> None:
 
 REAL_SAVES_ENV = "MOM_TEST_USE_REAL_SAVES"   # opt out of the sandbox (see isolate_game_data)
 SANDBOX_DIR = Path(__file__).resolve().parent.parent / ".test-data"
+
+
+# ============================================================================
+# Singleton guard - jeden przebieg naraz
+# ============================================================================
+# Runner jest singletonem: jeden serwer pygbag na porcie 8001, wspólny
+# `agent_input.txt`/`agent_status.txt` i wspólny `screenshots/agent/`. Dwa
+# równoległe przebiegi NIE wywalają się głośno - mieszają sobie wejście
+# i zrzuty, a wyniki są nieważne (zdarzyło się: trzy równoległe `just test-web`).
+# Blokada + kontrola portu zatrzymują to na starcie, zanim cokolwiek zbuduje.
+LOCK_FILE = Path(tempfile.gettempdir()) / "mom-automate-display-test.pid"
+
+
+def _is_other_runner(pid: int) -> bool:
+    """Czy *pid* żyje i jest innym przebiegiem tego runnera (nie recyklingiem PID)."""
+    try:
+        out = subprocess.run(
+            ["ps", "-o", "command=", "-p", str(pid)],
+            capture_output=True, text=True, timeout=5,
+        ).stdout
+    except Exception:
+        return False
+    return "automate_display_test" in out
+
+
+def _pygbag_port() -> int | None:
+    """Port lokalnego pygbaga z ``WEB_URL`` (jedno źródło prawdy z ``PYGBAG_CMD``)."""
+    parsed = urllib.parse.urlparse(str(TEST_CONFIG["WEB_URL"]))
+    if parsed.hostname not in ("127.0.0.1", "localhost", "::1"):
+        return None
+    return parsed.port or (443 if parsed.scheme == "https" else 80)
+
+
+def _port_in_use(port: int, host: str = "127.0.0.1") -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(1.0)
+        return sock.connect_ex((host, port)) == 0
+
+
+def release_singleton_lock() -> None:
+    try:
+        if LOCK_FILE.exists() and LOCK_FILE.read_text().strip() == str(os.getpid()):
+            LOCK_FILE.unlink()
+    except Exception:
+        pass
+
+
+def acquire_singleton_lock(port: int | None) -> None:
+    """Przerwij od razu, gdy inny przebieg (albo jego pygbag) jeszcze żyje."""
+    if LOCK_FILE.exists():
+        try:
+            other = int(LOCK_FILE.read_text().strip())
+        except (ValueError, OSError):
+            other = -1
+        if other > 0 and other != os.getpid() and _is_other_runner(other):
+            raise SystemExit(
+                f"Error: inny przebieg automate_display_test.py już działa (PID {other}).\n"
+                f"  Runner jest singletonem - zaczekaj albo ubij: kill {other}\n"
+                f"  (blokada: {LOCK_FILE})"
+            )
+        print(f"[lock] nieaktualna blokada po PID {other} - przejmuję")
+    if port is not None and _port_in_use(port):
+        raise SystemExit(
+            f"Error: port {port} jest zajęty - leci inny przebieg albo został pygbag "
+            "po przerwanym.\n"
+            "  Sprzątanie: pkill -f 'tests/automate_display_test.py'; pkill -f 'm pygbag'; "
+            "pkill -f chromium_headless_shell"
+        )
+    LOCK_FILE.write_text(str(os.getpid()))
+    atexit.register(release_singleton_lock)
+
+
+def install_cleanup_handlers(runner: "RunnerBase") -> None:
+    """Zwiń pygbag i przeglądarkę także przy `kill`/`pkill`, nie tylko przy Ctrl-C.
+
+    Domyślna obsługa SIGTERM ubija proces natychmiast - `atexit` ani `finally`
+    się nie wykonują i po runnerze zostaje żywy pygbag na 8001 plus osierocone
+    `chrome-headless-shell`. Zamiana sygnału na ``SystemExit`` wraca do normalnej
+    ścieżki wyjścia, gdzie sprzątanie już jest.
+    """
+    atexit.register(runner.cleanup)
+
+    def _handler(signum: int, _frame: Any) -> None:
+        print(f"\n[{get_timestamp()}] Sygnał {signum} - sprzątam (pygbag, przeglądarka)...")
+        raise SystemExit(128 + signum)
+
+    for sig in (signal.SIGTERM, signal.SIGHUP):
+        signal.signal(sig, _handler)
 
 
 def isolate_game_data() -> None:
@@ -1346,6 +1439,9 @@ def main() -> int:
         print("Error: --smoke i nazwa scenariusza wykluczają się.")
         return 2
 
+    # zanim cokolwiek zbuduje/wystartuje - patrz acquire_singleton_lock()
+    acquire_singleton_lock(_pygbag_port() if args.web and not args.url else None)
+
     # before anything resolves a save path - see isolate_game_data()
     isolate_game_data()
 
@@ -1380,6 +1476,7 @@ def main() -> int:
         )
     else:
         runner = DesktopRunner()
+    install_cleanup_handlers(runner)
 
     print(f"Backend: {backend}; scenarios: {[s.name for s in selected]}")
     failures = run_scenarios(selected, runner)

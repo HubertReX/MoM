@@ -153,6 +153,21 @@ scenariusz startuje przez reload strony (build WASM jest w przebiegu identyczny)
 Gdy podejrzewasz przeciekanie stanu między scenariuszami, odpal
 `just test-web --web-restart-per-scenario` (zachowanie sprzed A08).
 
+**Runner jest singletonem - jeden przebieg naraz.** Wszystkie tryby dzielą
+`agent_input.txt`, `agent_status.txt` i `screenshots/agent/`, a web dodatkowo port 8001,
+więc dwa równoległe przebiegi nie failują głośno - mieszają sobie wejście i zrzuty,
+a wyniki są nieważne. Runner pilnuje tego sam: blokada PID
+(`$TMPDIR/mom-automate-display-test.pid`) + kontrola portu, oba sprawdzane **przed**
+buildem, z komunikatem, co ubić. Zasady dla agenta:
+
+- każde uruchomienie kieruj do **własnego pliku loga** - `>` na plik, do którego pisze
+  żywy przebieg, obcina go i przebieg wygląda na martwy (urwany log ≠ martwy proces:
+  najpierw `pgrep -f automate_display_test`, potem diagnoza),
+- po przerwanym przebiegu:
+  `pkill -f tests/automate_display_test.py` → `pkill -f "m pygbag"` →
+  `pkill -f chromium_headless_shell` (`SIGTERM` jest obsłużony i runner sprząta sam;
+  `kill -9` zostawia sieroty), potem sprawdź `lsof -ti :8001`.
+
 Runner odpala grę z `XDG_DATA_HOME` przestawionym na `.test-data/` w repo, więc scenariusze
 **nie ruszają prawdziwych zapisów ani `settings.json`**. Dotyczy to też wywołania wprost
 (`python tests/automate_display_test.py`), nie tylko przez `just`.
