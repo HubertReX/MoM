@@ -428,7 +428,7 @@
         "platform": ["desktop", "web"],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "move_to_hammer", "commands": ["walk_to_point:960,720"], "wait": 6.0 },
             { "slug": "near_hammer", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
             { "slug": "start_dialog", "commands": ["talk_to_char:hammer"], "wait": 1.5 },
@@ -493,7 +493,7 @@
         "platform": ["desktop"],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "move_to_hammer", "commands": ["walk_to_point:960,720"], "wait": 6.0 },
             { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
             { "slug": "start_dialog", "commands": ["talk_to_char:hammer"], "wait": 1.5 },
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
@@ -554,7 +554,7 @@
         "cleanup_saves": [0],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "move_to_hammer", "commands": ["walk_to_point:960,720"], "wait": 6.0 },
             { "slug": "near_hammer", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
             { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.0 },
@@ -627,7 +627,7 @@
             { "slug": "settings_en_shot", "commands": ["screenshot"] },
             { "slug": "back_to_menu", "commands": ["down", "accept"] },
             { "slug": "start_new_game_en", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "move_to_hammer_en", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "move_to_hammer_en", "commands": ["walk_to_point:960,720"], "wait": 6.0 },
             { "slug": "start_dialog_en", "commands": ["talk:5"], "wait": 1.5 },
             { "slug": "dialog_in_english", "commands": ["screenshot"], "wait": 2.0 }
         ],
@@ -645,7 +645,7 @@
         "platform": ["desktop"],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
-            { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
+            { "slug": "move_to_hammer", "commands": ["walk_to_point:960,720"], "wait": 6.0 },
             { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.5 },
             { "slug": "dialog_open", "commands": ["screenshot"], "wait": 1.0 },
             { "slug": "press_escape", "commands": ["quit"], "wait": 1.0 },
