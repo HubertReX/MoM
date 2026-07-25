@@ -152,6 +152,28 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
   <div class="card metric"><div class="num">~1,7 ms</div><div class="label">klatka desktop (32 NPC, headless)</div></div>
 </div>
 
+<div class="card" style="margin:var(--s5) 0">
+  <h3 style="margin-top:0">Legenda oznaczeń</h3>
+  <p style="margin-bottom:var(--s2)"><strong>Znaleziska audytu</strong> (litera-myślnik-numer; opisują problem, nie pracę):</p>
+  <ul style="margin:0 0 var(--s3)">
+    <li><code>D-1…D-13</code> - <strong>D</strong>ług techniczny / błąd projektowy (rozdz. 4)</li>
+    <li><code>G-1…G-5</code> - <strong>G</strong>ameplay: obserwacja o projekcie gry (rozdz. 9)</li>
+  </ul>
+  <p style="margin-bottom:var(--s2)"><strong>Zadania backlogu</strong> (litera obszaru + numer, bez myślnika; opisują pracę do wykonania, pliki w <code>doc/audyt/</code>):</p>
+  <ul style="margin:0 0 var(--s3)">
+    <li><code>Axx</code> - testy <strong>A</strong>utomatyczne i ss-review (autonomia agentów)</li>
+    <li><code>Bxx</code> - rdzeń silnika: wielki refactor, save/load (<strong>B</strong>ig refactor)</li>
+    <li><code>Cxx</code> - spójność encji i kluczy (<strong>C</strong>onsistency)</li>
+    <li><code>Dxx</code> - nowe mechaniki gry: audio, progresja (<strong>D</strong>odatkowe mechaniki)</li>
+    <li><code>Exx</code> - wydajność i <strong>E</strong>fekty (noc/FoW, FPS, web)</li>
+    <li><code>Fxx</code> - <strong>F</strong>ixy porządkowe (utils, dokumentacja, mypy)</li>
+    <li><code>Gxx</code> - <strong>G</strong>enerowanie configu (codegen pydantic → web)</li>
+    <li><code>Hxx</code> - świat gry i treść (barks, śmierć gracza, <strong>H</strong>umor)</li>
+    <li><code>Uxx</code> - <strong>U</strong>I / design system</li>
+  </ul>
+  <p style="margin:0" class="lead" style="font-size:.9rem"><strong>Uwaga:</strong> myślnik odróżnia znalezisko od zadania: <code>D-2</code> (dług: podwójny model configu) ≠ <code>D02</code> (zadanie: design progresji); <code>G-1</code> (znalezisko: kara śmierci) ≠ <code>G01</code> (zadanie: codegen configu). Kolumna „Zadanie" w tabeli długów wskazuje, które zadanie naprawia dane znalezisko.</p>
+</div>
+
 <!-- ============================================================ -->
 <h2 id="toc">1. Spis treści</h2>
 <ol class="toc">

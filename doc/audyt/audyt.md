@@ -7,6 +7,27 @@ Claude Code (Opus) jako podstawa długofalowego planu rozwoju.
   [audyt-architektury-2026-07-25.html](../_attachements/audyt-architektury-2026-07-25.html)
   (podgląd: `docserve start doc/_attachements/audyt-architektury-2026-07-25.html`)
 
+## Legenda oznaczeń
+
+Dwa poziomy identyfikatorów - myślnik odróżnia znalezisko od zadania:
+
+- **Znaleziska audytu** (litera-myślnik-numer, opisują problem; szczegóły w raporcie HTML):
+  - `D-1…D-13` - Dług techniczny / błąd projektowy (rozdz. 4 raportu)
+  - `G-1…G-5` - Gameplay: obserwacja o projekcie gry (rozdz. 9 raportu)
+- **Zadania backlogu** (litera obszaru + numer, bez myślnika; pliki w tym katalogu):
+  - `Axx` - testy Automatyczne i ss-review (autonomia agentów)
+  - `Bxx` - rdzeń silnika: wielki refactor, save/load (Big refactor)
+  - `Cxx` - spójność encji i kluczy (Consistency)
+  - `Dxx` - nowe mechaniki gry: audio, progresja (Dodatkowe mechaniki)
+  - `Exx` - wydajność i Efekty (noc/FoW, FPS, web)
+  - `Fxx` - Fixy porządkowe (utils, dokumentacja, mypy)
+  - `Gxx` - Generowanie configu (codegen pydantic → web)
+  - `Hxx` - świat gry i treść (barks, śmierć gracza, Humor)
+  - `Uxx` - UI / design system
+
+Przykład kolizji liter: `D-2` (dług: podwójny model configu) to nie `D02` (zadanie:
+design progresji); `G-1` (znalezisko: kara śmierci) to nie `G01` (zadanie: codegen).
+
 ## Decyzje kierunkowe (ustalone w sesji)
 
 - ss-review: gemini jako primary + checklisty per-scenariusz + asercje stanu z runtime + layout self-checks; bez golden images
@@ -17,6 +38,12 @@ Claude Code (Opus) jako podstawa długofalowego planu rozwoju.
 - audio: pełny szkielet od razu (muzyka per mapa, SFX eventy, głośność, web-safe)
 - progresja statystyk: najpierw dokument decyzyjny, kod po akceptacji
 - priorytety: (1) naprawa ss-review i testów, (2) wielki refactor rdzenia
+
+## Prompty startowe sesji
+
+- [Faza 1 - Opus](prompt-faza-1.md) - zadania A01-A04, C01, F01-F03; wznawialny
+  (agent pomija odhaczone zadania)
+- [Faza 2 - Fable](prompt-faza-2.md) - B01 z bramką akceptacji architektury po etapie 0
 
 ## Zadania
 
