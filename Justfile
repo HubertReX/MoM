@@ -133,10 +133,10 @@ import-entities *ARGS:
 # Import dialog Markdown sources from the `doc/` vault into `config.json`.
 [unix]
 import-dialogs *name:
+    #!/usr/bin/env bash
     # Pipeline: MD frontmatter -> characters.csv -> config.json (import-entities
     # is the sole writer of the `characters` section, hence the cascade).
     # By default imports all compatible characters; pass a character name to import one.
-    #!/usr/bin/env bash
     set -e
     if [ -z "{{name}}" ]; then
         .venv/bin/python project/dialog/markdown_importer.py
@@ -148,11 +148,11 @@ import-dialogs *name:
 # Import quest Markdown sources from the `doc/` vault into `config.json`.
 [unix]
 import-quests *chain:
+    #!/usr/bin/env bash
     # PL (doc/PL/Misje/) is the source of truth: machine fields (Test, Requires,
     # Nagroda) are read from PL only, EN (doc/EN/Quests/) supplies prose. An invalid
     # condition or a broken graph fails the import and leaves config.json untouched.
     # By default imports every chain found; pass a chain key to import one (e.g. Q03).
-    #!/usr/bin/env bash
     set -e
     if [ -z "{{chain}}" ]; then
         .venv/bin/python project/quest/markdown_importer.py
@@ -185,9 +185,9 @@ gen-faces:
 # Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
 [unix]
 dialog-graph *key:
+    #!/usr/bin/env bash
     # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
     # (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
-    #!/usr/bin/env bash
     set -e
     if [ -z "{{key}}" ]; then
         .venv/bin/python scripts/dialog_graph.py --all --format json
@@ -198,9 +198,9 @@ dialog-graph *key:
 # Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
 [windows]
 dialog-graph *key:
+    #!powershell
     # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
     # (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
-    #!powershell
     if ("{{key}}" -eq "") {
         .venv\Scripts\python.exe scripts\dialog_graph.py --all --format json
     } else {
