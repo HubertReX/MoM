@@ -35,6 +35,8 @@ funny: -1
 Tajemnicza kobieta, która sprzedaje mikstury i eliksiry, ale nigdy nie ujawnia ich składu. Klienci nigdy nie wiedzą, czy dostaną lekarstwo, czy truciznę.
 Jej ziołowe mikstury to wszystko na co mogą liczyć mieszkańcy [[Gafowo Kolonia]] - to musi wystarczyć zamiast lekarstw i magii.
 
+Siedzi w chałupie na końcu wioski, koło lasu.
+ 
 Szkoliła kiedyś [[Bibliofilistka des Informacja|Bibliofilistkę des Informację]] na zielarkę.
 
 ## 016
