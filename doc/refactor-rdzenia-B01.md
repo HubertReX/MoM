@@ -7,7 +7,7 @@ kontrakty, ryzyka):
 
 Status: **zaakceptowany 2026-07-25**, etap 1 w toku - postęp i instrukcja
 wznowienia: [audyt/B01-stan-realizacji.md](audyt/B01-stan-realizacji.md)
-(zrobione kroki 0-2, następny: krok 3 world_clock).
+(zrobione kroki 0-10, następny: krok 11 movement).
 
 ## Decyzje (rekomendacje)
 

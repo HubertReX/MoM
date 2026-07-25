@@ -41,13 +41,19 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   `player_actions`) czytają ją z `debug_overlay`, a `scene/__init__.__getattr__`
   ma fallback na ten moduł, więc `scene.SHOW_DEBUG_INFO` nadal działa (K9).
   `scene/scene.py` 2072 → 669 linii.
+- **krok 10**: `characters.py` → pakiet `project/characters/` - `npc.py` (klasa
+  `NPC`, 1667 linii) + `player.py` (klasa `Player`, 334 linie) + `__init__.py`
+  z eksportem `NPC`/`Player` i PEP 562 `__getattr__` (K4 + K9). Metody bez
+  zmian; z `npc.py` wypadły importy, których używał tylko `Player`
+  (`INVENTORY_ITEM_SCALE`, `INPUTS`, `get_msg`, `JOY_MOVE_MULTIPLIER`,
+  `HealthBarUI`, `DialogPanel`, `TradePanel`) - `characters.INPUTS` nadal
+  działa, bo `__getattr__` dogląda też `player`. Pełny web 25/25.
 
-## Następny krok: **krok 10 - pakiet `characters/`**
+## Następny krok: **krok 11 - `characters/movement.py`**
 
-Wg planu: przeniesienie `characters.py` do pakietu (`npc.py` / `player.py` +
-`__init__.py`), rename bez podziału metod - jak krok 1. Po tym kroku
-OBOWIĄZKOWO pełny `just test-web` (pygbag musi spakować nowy podpakiet).
-Potem kroki 11-16 wg tabeli w dokumencie HTML.
+Wg planu (D6): wyniesienie ruchu/A* z `NPC` do modułu funkcji przyjmujących
+`npc` jawnie. Potem kroki 12-16 (combat, animation, inventory, game.py/CSV,
+finalizacja) wg tabeli w dokumencie HTML.
 
 ## Bramki po każdym kroku (przypomnienie)
 
@@ -75,6 +81,15 @@ nie przechodzi albo krok nie mieści się w ~600 liniach diffu.
 
 ## Pułapki świeżo potwierdzone w praktyce
 
+- **`just test-web` / `just test-smoke` to singleton** (jeden pygbag na porcie
+  8001, wspólny `agent_input.txt` i `screenshots/agent/`). Przed startem:
+  `pgrep -f automate_display_test | wc -l` i `lsof -ti :8001 | wc -l` = 0.
+  Każdy run do WŁASNEGO pliku loga - `>` na plik, do którego pisze żywy run,
+  obcina go i run wygląda na martwy (tak powstały trzy równoległe runy).
+  Urwany log ≠ martwy proces: najpierw `pgrep`, potem diagnoza. Sprzątanie po
+  przerwaniu: `pkill -f tests/automate_display_test.py`, `pkill -f "m pygbag"`,
+  `pkill -f chromium_headless_shell-1228` (build 1228 = testy MoM; build 1208
+  to długodziałający `~/Projects/playwright-service` - nie ubijać).
 - Backticki w `git commit -m` zjada zsh - commituj przez `git commit -F <plik>`.
 - Rename + nowe pliki commituj z pathspecami obejmującymi TAKŻE stary plik,
   inaczej `D project/scene.py` zostaje poza commitem (naprawione amendem w kroku 1).
