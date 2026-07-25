@@ -422,8 +422,10 @@ daje identyczności co do piksela - spawn cząstek napędzają timery pygame, a 
 nigdy nie są równe co do milisekundy. Powtarzalna jest **sekwencja decyzji**: ten sam
 emiter, te same długości epizodów, ten sam seed świata.
 
-Ograniczenie: tryb jest **desktop-only**. Gra w przeglądarce nie dziedziczy env procesu
-runnera, więc `--web` zawsze chodzi na losowym świecie.
+Ograniczenie (na dziś): tryb jest **desktop-only**. Gra w przeglądarce nie dziedziczy env
+procesu runnera, więc `--web` zawsze chodzi na losowym świecie. Domknięcie zaplanowane -
+jeden kanał `localStorage['MoM.env']` na wszystkie zmienne testowe: patrz
+[`doc/audyt/A07-zmienne-srodowiskowe-na-web.md`](../doc/audyt/A07-zmienne-srodowiskowe-na-web.md).
 
 Testy mechanizmu: `tests/test_deterministic_mode.py` (zmienne czytane są przy imporcie
 `settings`, więc każdy przypadek leci w świeżym subprocessie - przeładowanie modułu nie

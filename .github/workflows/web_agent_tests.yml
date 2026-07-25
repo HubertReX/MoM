@@ -36,6 +36,14 @@ jobs:
         run: python -m playwright install --with-deps chromium
 
       - name: Run web agent smoke scenarios
+        env:
+          # No vision here on purpose. ss-review shells out to `opencode`, which is not
+          # installed on the runner, and a missing verdict is a hard failure - so without
+          # this the job fails on the first screenshot_review assertion instead of telling
+          # us anything about the game. What CI checks is what is deterministic: the WASM
+          # game boots, save/load works, nothing crashes. Visual judgement stays a local,
+          # on-demand call (see "ss-review" in project/AGENTS.md).
+          MOM_SKIP_SS_REVIEW: "1"
         run: |
           set -u
           fail=0
