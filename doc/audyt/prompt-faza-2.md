@@ -10,7 +10,8 @@ Realizujesz Fazę 2 backlogu audytu: wielki refactor rdzenia. Kontekst i zasady:
 
 1. Przeczytaj `doc/audyt/audyt.md` (indeks, legenda, decyzje kierunkowe - wiążące)
    oraz W CAŁOŚCI `doc/audyt/B01-refactor-rdzenia.md`. Sprawdź, że zadania Fazy 1
-   (A01-A03, C01, F03) są odhaczone - jeśli nie, STOP i zgłoś mi to.
+   (A01-A03, C01, F03) są odhaczone - jeśli nie, STOP i zgłoś mi to. wykonaj nowe zadania A05-A07.
+
 2. B01 ma dwa etapy z bramką akceptacji:
    - **Etap 0:** dokument architektury docelowej (HTML w `doc/_attachements/` + md
      w `doc/`) wg wytycznych z pliku zadania. Po jego ukończeniu ZATRZYMAJ SIĘ
