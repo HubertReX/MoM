@@ -103,13 +103,20 @@ zrzut z tej samej paczki jeszcze ich nie zobaczy.
 import json
 import os
 import time
-from typing import Any
+from pathlib import Path
+from typing import Any, Callable
 
 import pygame
 
+# Ten moduł ma też tryb CLI (`python project/agent_ctrl.py ...`) uruchamiany SPOZA gry,
+# gdzie `settings` nie jest na sys.path - stąd fallback. Anotacje są wypisane wprost,
+# żeby gałąź except nie zawężała typów do `None`.
+ACTIONS: dict[str, dict[str, Any]]
+AGENT_STATUS_FILE: "Path | None"
+AGENT_UI_STATE_FILE: "Path | None"
 try:
     # dostępne, gdy moduł działa wewnątrz gry (sys.path zawiera 'project')
-    from settings import ACTIONS, AGENT_STATUS_FILE, AGENT_UI_STATE_FILE
+    from settings import ACTIONS, AGENT_STATUS_FILE, AGENT_UI_STATE_FILE  # noqa: F811
 except ImportError:
     ACTIONS = {}
     AGENT_STATUS_FILE = None
@@ -143,7 +150,8 @@ class AgentController:
     Playwright przez ``page.screenshot()`` (zapis po stronie hosta).
     """
 
-    def __init__(self, input_file, screenshot_dir, log=print, web_mode: bool = False):
+    def __init__(self, input_file: "str | Path", screenshot_dir: "str | Path",
+                 log: Callable[..., Any] = print, web_mode: bool = False) -> None:
         self.input_file = str(input_file)
         self.screenshot_dir = str(screenshot_dir)
         self.log = log
@@ -182,7 +190,7 @@ class AgentController:
 
     # ---------------------------------------------------------------- wysyłanie
     @staticmethod
-    def send(commands, input_file) -> None:
+    def send(commands: "list[str] | tuple[str, ...] | str", input_file: "str | Path") -> None:
         """Zapisz komendy do pliku wejściowego (używane przez CLI / inne skrypty)."""
         text = " ".join(commands) if isinstance(commands, (list, tuple)) else str(commands)
         with open(str(input_file), "w") as f:
@@ -190,7 +198,7 @@ class AgentController:
 
     # ----------------------------------------------------------------- pomocnicze
     @staticmethod
-    def _key_for(action: str):
+    def _key_for(action: str) -> int | None:
         keys = ACTIONS.get(action, {}).get("keys", [])
         return keys[0] if keys else None
 
@@ -212,7 +220,7 @@ class AgentController:
             pass
 
     # ------------------------------------------------------------- zrzut stanu
-    def _collect_ui_state(self, game) -> "dict[str, Any]":
+    def _collect_ui_state(self, game: Any) -> "dict[str, Any]":
         """Zbierz fakty o stanie gry, które da się asertować deterministycznie.
 
         Wszystko przez ``getattr(..., None)``: komenda musi działać także w menu,
@@ -266,7 +274,7 @@ class AgentController:
                 }
         return info
 
-    def _dump_ui_state(self, game) -> None:
+    def _dump_ui_state(self, game: Any) -> None:
         """Zapisz zrzut stanu: plik JSON na desktopie, localStorage na web.
 
         Każde wywołanie NADPISUJE poprzedni zrzut - asercja czyta zawsze ten
@@ -435,7 +443,7 @@ class AgentController:
         self._keys[action] = key
 
     # ------------------------------------------------------------- pętla gry
-    def apply(self, game) -> None:
+    def apply(self, game: Any) -> None:
         """Woła raz na klatkę PO get_inputs(). Odlicza przytrzymania i czyta komendy."""
         # 1) odlicz istniejące przytrzymania; po wygaśnięciu wyślij KEYUP
         for action in list(self._held.keys()):
@@ -526,7 +534,7 @@ class AgentController:
             self._dump_ui_state(game)
 
     # ------------------------------------------------------- deterministic walk
-    def _apply_walk(self, game) -> None:
+    def _apply_walk(self, game: Any) -> None:
         """Resolve a pending walk request and monitor an active walk.
 
         Writes the outcome to the status file so the runner can poll deterministically:
@@ -599,7 +607,7 @@ class AgentController:
                 # reachable goal tile so the test stays deterministic.
                 self._finish_walk(scene, snap=True)
 
-    def _finish_walk(self, scene, *, snap: bool) -> None:
+    def _finish_walk(self, scene: Any, *, snap: bool) -> None:
         if snap and self._walk_goal is not None:
             scene.player.pos.update(self._walk_goal)
             scene.player.clear_waypoints()
@@ -611,7 +619,7 @@ class AgentController:
         self._write_status("arrived")
 
     # ------------------------------------------------------------- screenshot
-    def capture(self, surface) -> "str | None":
+    def capture(self, surface: "pygame.Surface | None") -> "str | None":
         """Zapisz bieżącą powierzchnię, jeśli zlecono komendę 'screenshot'.
 
         W ``web_mode`` to jest no-op: zrzuty ekranu robi runner Playwright po
@@ -654,11 +662,10 @@ if __name__ == "__main__":
 
     try:
         from settings import AGENT_INPUT_FILE
-        input_file = AGENT_INPUT_FILE
+        input_file: Path = AGENT_INPUT_FILE
     except ImportError:
         # uruchomione spoza gry (np. python project/agent_ctrl.py ...)
-        input_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "..", "agent_input.txt")
+        input_file = Path(__file__).resolve().parent.parent / "agent_input.txt"
 
     if len(sys.argv) < 2:
         print("Usage: python project/agent_ctrl.py <action[:frames]> [more...]")

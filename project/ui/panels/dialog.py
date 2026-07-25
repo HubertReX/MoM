@@ -590,13 +590,15 @@ class DialogPanel(Widget):
 
         sentiment = max(0, min(100, self.npc.sentiment))
         # Red -> yellow -> green as sentiment grows.
+        color: tuple[int, int, int]
         if sentiment < 50:
             color = (255, int(255 * sentiment / 50), 0)
         else:
             color = (int(255 * (100 - sentiment) / 50), 255, 0)
         # Flash brightens the fill toward white for emphasis on a change.
         if self._sentiment_flash_timer > 0.0 and int(self._sentiment_flash_timer * 10) % 2 == 0:
-            color = tuple((c + 255) // 2 for c in color)
+            r, g, b = color
+            color = ((r + 255) // 2, (g + 255) // 2, (b + 255) // 2)
         x = self.offset[0] + 4 * TILE_SIZE
         y = self.name_label.rect.top - _SENT_BAR_GAP - _SENT_BAR_H
         bar.draw_progress(

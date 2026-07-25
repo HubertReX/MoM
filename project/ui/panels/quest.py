@@ -16,7 +16,7 @@ the TOML via ``_()``; quest titles and descriptions are *content* and come from
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pygame
 
@@ -163,7 +163,10 @@ class QuestPanel(Widget):
         # (markup, width, size, colour) -> surface. Keyed on all four because the
         # same title is drawn narrow in the list and wide in the details pane, and
         # baking it is not free: fitting one to a column costs a handful of probes.
-        self._rich_cache: dict[tuple[str, int, int, tuple[int, ...]], pygame.Surface] = {}
+        # Two key shapes share this cache: `_rich_line` adds `icon_scale` as a 5th
+        # element, `_rich_block` does not. A 4-tuple never equals a 5-tuple, so they
+        # cannot collide - hence one loosely-typed key rather than two caches.
+        self._rich_cache: dict[tuple[object, ...], pygame.Surface] = {}
         # The details pane can be taller than its box (long description + many
         # steps + reward chips); this scrolls it and draws the scrollbar only when
         # it overflows. Reset whenever the selection changes so each quest opens
@@ -574,7 +577,7 @@ class QuestPanel(Widget):
         """
         from ..widgets.rich_text import RichText
 
-        extra = {} if icon_scale is None else {"icon_scale": icon_scale}
+        extra: dict[str, Any] = {} if icon_scale is None else {"icon_scale": icon_scale}
         return RichText(markup, (0, 0, max(1, width), max(size * 4, 64)), self._reward_icons(),
                         base_size=size, base_color=colour, show_scrollbar=False,
                         line_spacing=line_spacing, extra_emojis=_ITEM_EMOJIS, **extra)

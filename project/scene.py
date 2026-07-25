@@ -1089,10 +1089,12 @@ class Scene(State):
         for name, npc in self.loaded_NPCs.items():
             if name.lower() == k or name.lower().startswith(k) or _matches(npc):
                 return npc
-        for coll in (self.items, self.chests):
-            for ent in coll:
-                if _matches(ent):
-                    return ent
+        # flattened rather than a tuple of the two lists: `list` is invariant, so
+        # `(self.items, self.chests)` joins to plain `object` and stops being iterable
+        # as far as the type checker is concerned
+        for ent in [*self.items, *self.chests]:
+            if _matches(ent):
+                return ent
         return None
 
     def agent_walk_target(self, key: str) -> "vec | None":

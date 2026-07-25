@@ -19,6 +19,8 @@ import pygame
 
 if TYPE_CHECKING:
     Icons = dict[str, list[pygame.Surface]]
+    # RGB *or* RGBA - theme tokens come in both widths (the shadow colours are RGBA)
+    Colour = tuple[int, ...]
 
 # ↑↓←→ and mouse tokens map to their dedicated sprites; everything else is key_<token>.
 _ARROW_DIR = {"↑": "up", "↓": "down", "←": "left", "→": "right"}
@@ -30,8 +32,8 @@ _MARKUP = re.compile(r"\{([^}]+)\}")
 _cache: dict[tuple, "pygame.Surface | None"] = {}
 
 
-def build_cap(icons, token: str, glyph_font: pygame.font.Font,
-              glyph_color: tuple[int, int, int], *,
+def build_cap(icons: "Icons", token: str, glyph_font: pygame.font.Font,
+              glyph_color: "Colour", *,
               scale: float = 1.0) -> "pygame.Surface | None":
     """Return a keycap surface for ``token``, or ``None`` if it has no sprite.
 
@@ -46,13 +48,15 @@ def build_cap(icons, token: str, glyph_font: pygame.font.Font,
     return cap
 
 
-def _scaled(sprite_list, scale: float = 1.0) -> "pygame.Surface | None":
+def _scaled(sprite_list: "list[pygame.Surface] | None",
+            scale: float = 1.0) -> "pygame.Surface | None":
     if not sprite_list:
         return None
     return sprite_list[0] if scale == 1.0 else pygame.transform.scale_by(sprite_list[0], scale)
 
 
-def _make_cap(icons, token, glyph_font, glyph_color, scale: float = 1.0):
+def _make_cap(icons: "Icons", token: str, glyph_font: pygame.font.Font,
+              glyph_color: "Colour", scale: float = 1.0) -> "pygame.Surface | None":
     arrow = _ARROW_DIR.get(token)
     if arrow is not None:                       # ← ↑ → ↓ (placeholder or hand art)
         return _scaled(icons.get(f"key_{arrow}"), scale)
@@ -88,7 +92,8 @@ def _parts(text: str) -> list[tuple[str, str]]:
 _SEP_CHARS = set("/-·")
 
 
-def _part_font(val: str, text_font, sep_font):
+def _part_font(val: str, text_font: pygame.font.Font,
+               sep_font: "pygame.font.Font | None") -> pygame.font.Font:
     """The font a text part is drawn with: the bigger separator font for a part
     that is only separator punctuation, otherwise the normal text font."""
     if sep_font is not None and val.strip() and all(c in _SEP_CHARS for c in val.strip()):
@@ -96,8 +101,9 @@ def _part_font(val: str, text_font, sep_font):
     return text_font
 
 
-def measure(icons, glyph_font, text_font, text: str,
-            glyph_color=(255, 255, 255), *, scale: float = 1.0, sep_font=None) -> int:
+def measure(icons: "Icons", glyph_font: pygame.font.Font, text_font: pygame.font.Font,
+            text: str, glyph_color: "Colour" = (255, 255, 255), *,
+            scale: float = 1.0, sep_font: "pygame.font.Font | None" = None) -> int:
     """Total pixel width of the rendered hint row (for right alignment)."""
     w = 0
     for kind, val in _parts(text):
@@ -109,9 +115,12 @@ def measure(icons, glyph_font, text_font, text: str,
     return w
 
 
-def render_hint(surface, icons, glyph_font, text_font, text, pos, text_color,
-                *, align="left", glyph_color=(255, 255, 255), shadow_color=None,
-                scale: float = 1.0, sep_font=None) -> None:
+def render_hint(surface: pygame.Surface, icons: "Icons", glyph_font: pygame.font.Font,
+                text_font: pygame.font.Font, text: str, pos: tuple[int, int],
+                text_color: "Colour", *, align: str = "left",
+                glyph_color: "Colour" = (255, 255, 255),
+                shadow_color: "Colour | None" = None,
+                scale: float = 1.0, sep_font: "pygame.font.Font | None" = None) -> None:
     """Draw an inline hint row mixing keycaps (``{TOKEN}``) and text.
 
     Text parts get an optional +2 drop shadow (chrome model); keycaps never do

@@ -61,7 +61,7 @@ pułapki. Status: `[ ]` do napisania, `[x]` gotowy do realizacji, a sufiks
 - [x] [C01 - `just validate-world`: walidator encji cross-source](C01-validate-world.md) - P0 ✅ 2026-07-25
 - [x] [F01 - cleanup `utils/`: black.tmpl i find_bad_png do `scripts/`, CI, codegraph ignore](F01-utils-cleanup.md) - P1 ✅ 2026-07-25
 - [x] [F02 - aktualizacja AGENTS.md i docs design systemu do stanu kodu](F02-aktualizacja-dokumentacji.md) - P1
-- [x] [F03 - mypy do zera: usunięcie stałego szumu 23 błędów (przed B01!)](F03-mypy-do-zera.md) - P1
+- [x] [F03 - mypy do zera: usunięcie stałego szumu 23 błędów (przed B01!)](F03-mypy-do-zera.md) - P1 ✅ 2026-07-25
 
 ### Faza 2 - wielki refactor rdzenia
 

@@ -14,7 +14,7 @@ overlay (weapon/hotbar/help) is hidden while a blocking panel (dialog/trade) is 
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import pygame
 
@@ -78,7 +78,7 @@ class GameUI:
             self._panels[panel_type] = panel
         return panel
 
-    def open(self, panel_type: type, **kwargs) -> "Widget":
+    def open(self, panel_type: type, **kwargs: Any) -> "Widget":
         panel = self._panel(panel_type)
         panel.open(**kwargs)  # type: ignore[attr-defined]
         panel.visible = True

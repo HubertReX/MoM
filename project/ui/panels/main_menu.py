@@ -38,7 +38,9 @@ _LINE_SIZE = 12
 class MenuPanel(Widget):
     def __init__(
         self,
-        options: list[tuple[str, object]],
+        # (i18n key, callback) - every call site passes a zero-arg callable, so this
+        # is the real type; `object` here used to force two `type: ignore`s below.
+        options: "list[tuple[str, Callable[[], object] | None]]",
         *,
         title: str | None = None,
         title_key: str | None = None,
@@ -62,7 +64,7 @@ class MenuPanel(Widget):
         if min_width is None:
             min_width = settings.WIDTH // 5
         self.index: int = 0
-        self._i18n_keys: list[str] = [key for key, _ in options]  # type: ignore[misc]
+        self._i18n_keys: list[str] = [key for key, _cb in options]
         self._title_key: str | None = title_key
         self._title_size: int = title_size
         self._line_keys: list[str | tuple[str, dict[str, object]]] = line_keys or []
@@ -73,7 +75,7 @@ class MenuPanel(Widget):
 
         self.buttons: list[Button] = [
             Button(_(key), cb, size=button_size)
-            for key, cb in options  # type: ignore[arg-type]
+            for key, cb in options
         ]
         if lines is not None:
             self.line_labels: list[Label] = [
@@ -469,7 +471,7 @@ class MainMenuScreen(MenuScreen):
         import splash_screen
         from ui.panels.display_settings import SettingsMenu
 
-        options: list[tuple[str, object]] = []
+        options: "list[tuple[str, Callable[[], object] | None]]" = []
 
         if self._is_game_in_progress():
             options.append(("menu.continue", self._continue_game))
