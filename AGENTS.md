@@ -1,8 +1,11 @@
 # AGENTS.md — Misadventures of Malachi (root)
 
-Top-down RPG w **Pygame-CE** (~11.9K LOC własnego kodu), na etapie tech-demo: gotowe
-mechaniki (NPC AI + A*, inventory, dialogi, cutscene, proceduralne labirynty, cykl
-dzień/noc), brak fabuły i pełnej mapy świata. Pełna lista feature'ów: [`README.md`](./README.md).
+Top-down RPG w **Pygame-CE** (~26K LOC własnego kodu; aktualnie:
+`find project -name "*.py" -not -path "*/animation/*" | xargs wc -l | tail -1`).
+Mechaniki gotowe (NPC AI + A*, rutyny dobowe, inventory, dialogi, questy, save/load,
+cutscene, proceduralne labirynty, cykl dzień/noc); fabuła spisana (`doc/PL/fabuła.md`),
+**prolog (Akt 1) w budowie** - 8 questów i 6 grafów dialogowych. Pełna lista
+feature'ów: [`README.md`](./README.md).
 
 ## 🔑 Złota zasada: dual-target desktop + web
 
@@ -10,7 +13,7 @@ Gra działa **zarówno na desktopie, jak i w przeglądarce** (pygbag/WASM).
 **Każda zmiana musi działać w obu trybach.** Wykrywanie środowiska:
 
 ```python
-# project/settings.py:84
+# project/settings.py
 IS_WEB = __import__("sys").platform == "emscripten" or USE_WEB_SIMULATOR
 ```
 
@@ -123,7 +126,7 @@ zdefiniowany `test_*` był na tej liście** - inaczej test nigdy by się nie wyk
 zwróciłby 0.
 
 ```bash
-just test-unit                # wszystko (23 pliki, 285 testów)
+just test-unit                # wszystko (30+ plików, 400+ testów - dokładną liczbę wypisuje sam)
 just test-unit save_load      # tylko pliki z "save_load" w nazwie
 just test-unit quest -v       # z pełnym outputem każdego pliku
 ```

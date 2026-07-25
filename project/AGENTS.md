@@ -549,8 +549,15 @@ które nie wyprodukowały bloku JSON.
 
 ## Persystencja stanu
 
-- **Brak systemu save/load na dysk** — zamknięcie gry traci postęp (na liście TODO w README).
-- **Persystencja między mapami = tylko w RAM** podczas sesji: `Scene` cache'uje stan w
+- **Save/load na dysk ISTNIEJE** — sloty zapisu, quick save/load (F5/F9), autosave przy
+  wejściu do labiryntu; desktop pisze pliki `<data_dir>/mom/saves/save_N.mom`, web
+  localStorage (klucze `MoM.save_N`). Kod: pakiet `save_load/` (`manager.py` buduje
+  i przywraca `SaveGame`, `models.py` to schemat z wersją, `backends.py` wybiera
+  plik vs localStorage), UI w `ui/panels/save_load.py`. Zachowanie przypięte
+  scenariuszami agentowymi w `tests/scenarios.json` ("Save and Load Basic",
+  "Corrupt Save Handling", "Maze Save Blocked", ...).
+  Poniższe punkty opisują to, co **poza** tym systemem trzyma stan w RAM.
+- **Persystencja między mapami w obrębie sesji = w RAM**: `Scene` cache'uje stan w
   `loaded_maps` (`scene.py:158`) i `loaded_NPCs` (`scene.py:214`). Wyjście z mapy →
   `store_map()` (`scene.py:717`) robi snapshot; powrót → `restore_map()` (`scene.py:726`)
   przywraca. Wygenerowany labirynt zachowuje układ póki jest w `loaded_maps` (`scene.py:669`).

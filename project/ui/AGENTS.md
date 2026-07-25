@@ -6,10 +6,13 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 
 ## Dwie zasady nadrzędne
 
-1. **Nie zdradzać, że pixel-art jest skalowany.** Gra renderuje cały canvas (świat + UI) w
-   logicznej rozdzielczości 1280×720, po czym skaluje go jako jeden obraz
-   (`settings.py:266-269`, `SCALE`). Elementy UI skaluj **parzyście** (najlepiej potęgą
-   dwójki). Jedyny sankcjonowany wyjątek to czcionka.
+1. **Nie zdradzać pixel-artu.** Canvas nie jest skalowany: `settings.SCALE == 1.0` zawsze,
+   a finalny blit to 1:1 - wyższa rozdzielczość daje **większy viewport**, nie powiększony
+   obraz (patrz "Złota zasada: pixel-perfect rendering" w [root `AGENTS.md`](../../AGENTS.md)).
+   Skalowanie dotyczy więc pojedynczych elementów, nie całości: sprite'y i ikony UI
+   powiększaj **wyłącznie o całkowity mnożnik** (najlepiej potęgę dwójki) - mnożnik ułamkowy
+   duplikuje część rzędów pikseli i element wygląda na zniekształcony. Jedyny sankcjonowany
+   wyjątek to czcionka.
 2. **Te same komponenty wszędzie.** Jeden sposób na „klawisz", jeden na cień, jedna paleta,
    jeden minimalny rozmiar czcionki.
 
@@ -35,8 +38,9 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 - Zaokrąglenia (`border_radius`) łamią pixel-grid — 0 albo wielokrotność jednostki.
 - Panel standardowy = nine-patch (`theme.nine_patch`, `nine_patch_04.png`, scale 4,
   border 6). Sprite'y i nine-patch skaluj parzyście (×2, ×4).
-- Rozdzielczość ekranu — preferuj całkowite krotności bazy (1280×720 → 2560×1440 = ×2).
-  Skala ułamkowa (1920×1080 → ×1.5) daje miękkie krawędzie; unikać dla nowych opcji.
+- Rozdzielczość ekranu nie skaluje obrazu — zmienia rozmiar viewportu (więcej kafelków).
+  Nie ma więc „skali ułamkowej całego canvasa", której trzeba unikać; reguła integer
+  scale dotyczy pojedynczych sprite'ów i kształtów (punkty niżej).
 - **Ikony pixel-art (emoji/emote/przedmioty) skaluj tylko całkowitą krotnością.** Źródła są
   małe (emote 14×13, przedmioty 16×16); rozciąganie ułamkowe (np. `target_h / src_h`)
   dubluje część rzędów/kolumn i ikona wygląda na zniekształconą. Wzór: `k = max(1,
@@ -45,7 +49,7 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   wyższej rozdzielczości, nie skaluj ułamkowo.
 - **Kształty proceduralne (paski, ramki, zaokrąglenia) rysuj metodą nine-patch: model w
   natywnej siatce → integer scale (nearest).** Zamiast rysować cienkie 1–2px detale wprost
-  w rozdzielczości logicznej (po globalnym `SCALE` wychodzą wątłe, „za cienkie", nie widać
+  w rozdzielczości ekranu (przy natywnym 1:1 wychodzą wątłe, „za cienkie", nie widać
   grubych pikseli), zbuduj kształt w małej **natywnej** siatce (jak asset źródłowy) i
   powiększ **całkowitą krotnością** `pygame.transform.scale` (nearest-neighbour). Wtedy każdy
   natywny piksel = blok `k×k`, a kańciaste zaokrąglone końce zachowują proporcje. Tylko
@@ -154,12 +158,12 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 
 - Font pixel: `[8, 10, 14, 16, 24, 155]` (EXTRA_TINY…HUGE).
 - **Minimum:** chrome (etykiety, licznik) ≥ **10px** (`TINY`); treść czytana ≥ **14px**
-  (`SMALL`). `FONT_SIZE_EXTRA_TINY` (8) **nie używać w UI** — nieczytelne po downscale.
+  (`SMALL`). `FONT_SIZE_EXTRA_TINY` (8) **nie używać w UI** — nieczytelne w tym rozmiarze.
 - **Tekst w przestrzeni świata vs UI — inne skalowanie.** Powyższe minimum dotyczy
-  tekstu **UI** (rysowanego w logicznej rozdzielczości 1280×720 canvasu, potem
-  downscale przez `SCALE`). Tekst **wtopiony w sprite świata** (np. imię postaci nad
-  głową w `objects.py`) NIE jest downscalowany — jest skalowany kamerą (zoom ~3.8×), więc
-  ten sam rozmiar czcionki wychodzi znacznie większy. Dla takich etykiet używaj
+  tekstu **UI**, rysowanego 1:1 na canvasie — tyle pikseli, ile podasz. Tekst
+  **wtopiony w sprite świata** (np. imię postaci nad głową w `objects.py`) idzie inną
+  ścieżką: jest skalowany kamerą (zoom ~3.8×), więc ten sam rozmiar czcionki wychodzi
+  znacznie większy. Dla takich etykiet używaj
   `FONT_SIZE_EXTRA_TINY` (8) — reguła „min 10px" ich nie dotyczy (inna ścieżka renderu).
 
 ## Rytm pionowy — komponent „etykieta sekcji"

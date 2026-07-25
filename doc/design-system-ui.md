@@ -8,6 +8,12 @@
 
 ## Context
 
+> [!note] Stan na 2026-07: opis skalowania poniżej jest **historyczny** - gra renderuje
+> pixel-perfect 1:1 (`SCALE = 1.0` zawsze, canvas w rozmiarze okna, wyższa rozdzielczość
+> = większy viewport, nie powiększony obraz). Patrz sekcja "Złota zasada: pixel-perfect
+> rendering" w root [`AGENTS.md`](../AGENTS.md). Reszta dokumentu (paleta, komponenty,
+> decyzje) pozostaje aktualna.
+
 Gra (top-down RPG, Pygame-CE, dual-target desktop + web) udaje "retro pixel-art w
 niskiej rozdzielczości", ale realnie renderuje **cały canvas (świat + UI) w logicznej
 rozdzielczości 1280x720**, po czym skaluje go jako jeden obraz do fizycznej
