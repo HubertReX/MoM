@@ -93,7 +93,21 @@ test-agent scenario="":
     Write-Host "Run it under WSL or on macOS/Linux."
     exit 1
 
-# Run agent-driven UI tests (WEB). Example: `just test-web "Save and Load Basic" --timeout 25`. Run `playwright install chromium` (requirements-dev.txt).
+# Quick gate: smoke set of agent-driven scenarios (DESKTOP, ~4-5 min instead of ~18). List: TEST_CONFIG["SMOKE_SCENARIOS"].
+[unix]
+test-smoke *flags:
+    .venv/bin/python3 tests/automate_display_test.py --smoke {{flags}}
+
+# Not supported on Windows - see the [unix] recipe above.
+[windows]
+test-smoke *flags:
+    #!powershell
+    Write-Host "test-smoke is POSIX-only: tests/automate_display_test.py uses os.setsid/os.killpg,"
+    Write-Host "a shell env-prefix GAME_CMD with a .venv/bin/python3 path, and gtimeout."
+    Write-Host "Run it under WSL or on macOS/Linux."
+    exit 1
+
+# Run agent-driven UI tests (WEB). One pygbag server for the whole run; `--web-restart-per-scenario` restores the old per-scenario restart. Example: `just test-web "Save and Load Basic" --timeout 25`. Run `playwright install chromium` (requirements-dev.txt).
 [unix]
 test-web scenario="" *flags:
     #!/usr/bin/env bash

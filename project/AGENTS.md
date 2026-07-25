@@ -291,7 +291,16 @@ MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python
 
 # Wszystkie scenariusze naraz:
 MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 tests/automate_display_test.py
+
+# Zestaw smoke (6 scenariuszy z rozłącznych obszarów, ~4-5 min) - domyślna bramka
+# po zmianie w rdzeniu, gdy pełny przebieg (~18 min) jest za drogi:
+MOM_SKIP_SS_REVIEW=1 just test-smoke     # = tests/automate_display_test.py --smoke
 ```
+
+Lista smoke siedzi w `TEST_CONFIG["SMOKE_SCENARIOS"]` (runner). Zmieniając ją, pilnuj
+zasady "rozłączne obszary": save/load, dialog, labirynt+autosave, panele UI, ustawienia,
+text input. Literówka w nazwie = twardy błąd (`--smoke` nie przemilcza brakującego
+scenariusza). `--smoke` działa też z `--web`.
 
 Akcje są oddzielone pauzami (`TRANSITION_WAIT`), aby zapewnić stabilność przejść
 między stanami gry. Każda akcja może mieć własne `wait`.
@@ -363,6 +372,17 @@ rtk .venv/bin/playwright install chromium
 - `--timeout <s>` — ile czekać na boot gry po pojawieniu się canvasu (domyślnie 12s).
 - `--pygbag-timeout <s>` — ile czekać na zbudowanie + serwowanie przez pygbag (domyślnie 90s).
 - `--url <url>` — nadpisz URL pygbag (domyślnie `http://127.0.0.1:8001/`).
+- `--web-restart-per-scenario` — restart pygbag + przeglądarki dla każdego scenariusza
+  (zachowanie sprzed A08); używaj tylko przy podejrzeniu przeciekania stanu.
+
+**Cykl życia (A08):** pygbag i Chromium wstają **raz na cały przebieg**
+(`WebRunner.start_session()`), a scenariusz to wyczyszczenie kluczy `localStorage`,
+wstrzyknięcie `MoM.env` (z `start_hour`) + `setup_saves` i `page.reload()`
+(`_prepare_scenario_page()`). Reload daje świeży interpreter Pythona w świeżej instancji
+WASM, więc izolacja zostaje, a build WASM (identyczny w obrębie przebiegu) płacony jest
+raz: pełny web ~25 min → ~10 min. Gdy strona przestanie odpowiadać (crash WASM), runner
+odbudowuje ją **raz**; drugi taki wypadek przerywa przebieg (`RunnerFatal`), żeby nie
+raportować kaskady fałszywych porażek.
 
 **Różnice w stosunku do desktop runnera:**
 
@@ -380,8 +400,8 @@ publikując `screenshots/agent/` jako artifact.
 
 **Ograniczenia:**
 
-- pygbag potrzebuje ~40-60s na boot (assets packaging + WASM compile) przed rozpoczęciem
-  scenariusza — testy są wolniejsze niż desktop.
+- pygbag potrzebuje ~40-60s na boot (assets packaging + WASM compile) — od A08 płacone
+  raz na przebieg, ale pierwszy scenariusz nadal startuje wolniej niż na desktopie.
 - Port 8001 jest używany domyślnie (konfigurowalny przez `--url`).
 - Nie wspiera `USE_WEB_SIMULATOR` — web runner uruchamia prawdziwy pygbag.
 

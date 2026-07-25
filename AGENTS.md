@@ -140,6 +140,19 @@ Testowanie przez agenta AI: `tests/scenarios.json` + `tests/automate_display_tes
 + `project/agent_ctrl.py` (interpreter komend w grze). Główny sposób weryfikacji UI i save/load.
 Skrót: `just test-agent "<scenariusz>"` (desktop), `just test-web "<scenariusz>"` (web).
 
+Trzy poziomy bramki - wybieraj najtańszą, która pokrywa zmianę:
+
+| Komenda | Zakres | Czas |
+|---|---|---|
+| `just test-agent "<nazwa>"` | jeden scenariusz | ~30-60 s |
+| `just test-smoke` | zestaw smoke: 6 scenariuszy z rozłącznych obszarów (save/load, dialog, labirynt, panele UI, ustawienia, text input) - lista w `TEST_CONFIG["SMOKE_SCENARIOS"]` | ~4-5 min |
+| `just test-agent` / `just test-web` | wszystko na danym backendzie | ~18 / ~10 min |
+
+`just test-web` trzyma **jeden serwer pygbag i jedną przeglądarkę na cały przebieg** -
+scenariusz startuje przez reload strony (build WASM jest w przebiegu identyczny).
+Gdy podejrzewasz przeciekanie stanu między scenariuszami, odpal
+`just test-web --web-restart-per-scenario` (zachowanie sprzed A08).
+
 Runner odpala grę z `XDG_DATA_HOME` przestawionym na `.test-data/` w repo, więc scenariusze
 **nie ruszają prawdziwych zapisów ani `settings.json`**. Dotyczy to też wywołania wprost
 (`python tests/automate_display_test.py`), nie tylko przez `just`.

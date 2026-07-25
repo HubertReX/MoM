@@ -27,6 +27,16 @@ Opcje CLI (patrz też ``--help``):
     --timeout S         web: ile sekund czekać na boot gry po pojawieniu się canvasu
                         (domyślnie INIT_WAIT_WEB=12s); podbij na wolnym CI/sprzęcie
     --pygbag-timeout S  web: ile sekund czekać na build + serve pygbag (domyślnie 90s)
+    --web-restart-per-scenario
+                        web: restartuj pygbag + przeglądarkę dla KAŻDEGO scenariusza
+                        (zachowanie sprzed A08). Domyślnie serwer i przeglądarka żyją
+                        przez cały przebieg, a scenariusz startuje przez reload strony
+                        - build WASM jest w przebiegu identyczny, więc to czysty zysk
+                        czasu (~25 -> ~10 min). Użyj tej flagi, gdy podejrzewasz, że
+                        stan przecieka między scenariuszami.
+    --smoke             uruchom tylko zestaw smoke (TEST_CONFIG["SMOKE_SCENARIOS"]) -
+                        kilka scenariuszy z rozłącznych obszarów jako szybka bramka
+                        (`just test-smoke`); wyklucza się z podaniem nazwy scenariusza
 
 Scenarios selection:
     Scenariusze z polem ``platform`` w ``scenarios.json`` są filtrowane per backend:
@@ -101,6 +111,16 @@ TEST_CONFIG = {
     "SCENARIOS_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "scenarios.json"),
     "UI_STATE_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "agent_ui_state.json"),
     "WALK_TIMEOUT": 30.0,   # max seconds to wait for a walk_to_* to reach its target
+    # `--smoke`: szybka bramka (~4-5 min desktop) zamiast pełnego przebiegu (~18 min).
+    # Dobór: rozłączne obszary, wszystkie dostępne na desktop i web.
+    "SMOKE_SCENARIOS": [
+        "Save and Load Basic",          # menu zapisu/wczytania, format save
+        "Hammer Dialog Flow",           # dialog + wybór opcji + skutek w świecie
+        "Auto Save on Maze Entry",      # labirynt, autosave, przejście mapy
+        "UI Flow - Menu Save then Load",  # pełny obieg paneli UI
+        "Display Settings Flow",        # ustawienia, zmiana rozdzielczości/layout
+        "TextInput Basic",              # wejście tekstowe (klawiatura, kursor)
+    ],
 }
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -462,6 +482,10 @@ class TestScenario:
 # ============================================================================
 # Runner base + Desktop runner
 # ============================================================================
+class RunnerFatal(RuntimeError):
+    """Awaria infrastruktury runnera - przerywa cały przebieg, nie pojedynczy scenariusz."""
+
+
 class RunnerBase:
     backend = "desktop"
 
@@ -472,12 +496,23 @@ class RunnerBase:
         self.start_hour: int | None = None  # z pola `start_hour` bieżącego scenariusza
         self.screenshots: List[dict[str, Any]] = []  # {slug, label, path} w kolejności zrobienia
 
+    # Cykl życia (A08): sesja obejmuje CAŁY przebieg, `start_game`/`stop_game`
+    # jeden scenariusz. Desktop startuje grę per scenariusz (czyta env przy
+    # imporcie `settings`), web trzyma jeden serwer pygbag + przeglądarkę na
+    # całą sesję i per scenariusz tylko przeładowuje stronę.
+    def start_session(self) -> None: ...
+    def end_session(self) -> None: ...
     def start_game(self) -> None: ...
+    def stop_game(self) -> None: ...
     def execute_action(self, action: TestAction) -> None: ...
     def check_assertion(self, assertion: dict[str, Any]) -> List[str]: ...
     def cleanup_saves_before(self, scenario: TestScenario) -> None: ...
     def setup_saves(self, saves: List[dict[str, Any]]) -> None: ...
-    def cleanup(self) -> None: ...
+
+    def cleanup(self) -> None:
+        """Zamknij wszystko (scenariusz + sesja) - awaryjne wyjście."""
+        self.stop_game()
+        self.end_session()
 
     # ---------------------------------------------------------------- scenariusz
     def begin_scenario(self, scenario: TestScenario) -> None:
@@ -807,7 +842,7 @@ class DesktopRunner(RunnerBase):
             else:
                 create_minimal_save(slot)
 
-    def cleanup(self) -> None:
+    def stop_game(self) -> None:
         if self.game_proc:
             print(f"[{get_timestamp()}] Cleaning up...")
             try:
@@ -838,6 +873,7 @@ class WebRunner(RunnerBase):
         url: str | None = None,
         init_wait: float | None = None,
         pygbag_timeout: float | None = None,
+        restart_per_scenario: bool = False,
     ) -> None:
         super().__init__()
         try:
@@ -858,6 +894,12 @@ class WebRunner(RunnerBase):
         self.page = None
         # saves do wstrzyknięcia po pierwszym goto(), przed reloadem ze stroną z grą
         self._pending_setup_saves: List[dict[str, Any]] = []
+        # A08: domyślnie jeden serwer pygbag + jedna przeglądarka na CAŁY przebieg
+        # (build WASM jest w przebiegu identyczny). `--web-restart-per-scenario`
+        # przywraca stare zachowanie na wypadek podejrzenia, że stan przecieka
+        # między scenariuszami.
+        self.restart_per_scenario = restart_per_scenario
+        self._page_rebuilds = 0
 
     def _wait_for_pygbag_url(self, proc: subprocess.Popen, timeout: float | None = None) -> str:
         if timeout is None:
@@ -893,7 +935,19 @@ class WebRunner(RunnerBase):
         except Exception:
             return False
 
-    def start_game(self) -> None:
+    # ------------------------------------------------------------------ sesja
+    def start_session(self) -> None:
+        """Raz na przebieg: serwer pygbag + Chromium + pierwsze wejście na stronę."""
+        if self.restart_per_scenario:
+            return  # stary tryb: cała infrastruktura wstaje w start_game()
+        self._start_pygbag()
+        self._start_browser()
+        self._open_page()
+
+    def end_session(self) -> None:
+        self._teardown()
+
+    def _start_pygbag(self) -> None:
         print(f"[{get_timestamp()}] Starting pygbag (web)...")
         env = dict(os.environ)
         self.pygbag_proc = subprocess.Popen(
@@ -916,8 +970,17 @@ class WebRunner(RunnerBase):
         self.url = url
         print(f"[{get_timestamp()}] pygbag ready: {url}")
 
+    def _start_browser(self) -> None:
         self.pw = self._sync_playwright().start()
         self.browser = self.pw.chromium.launch(headless=True)
+
+    def _open_page(self) -> None:
+        """Otwórz stronę i wejdź na URL (bez per-scenariuszowego przygotowania).
+
+        Listener konsoli rejestrujemy RAZ na stronę - przy jednej stronie na sesję
+        wielokrotna rejestracja multiplikowałaby log.
+        """
+        assert self.browser is not None
         self.page = self.browser.new_page(viewport={"width": 1280, "height": 720})
         # log gry idzie do konsoli przeglądarki; przekaż diagnostykę testową do stdout
         # runnera (selektywnie - pełna konsola pygbag to spory szum)
@@ -927,10 +990,54 @@ class WebRunner(RunnerBase):
             if ("[test]" in msg.text or "[world]" in msg.text or "[agent" in msg.text)
             else None,
         )
+        # Basic load; zmienne testowe i reload robi _prepare_scenario_page().
+        self.page.goto(self.url, wait_until="domcontentloaded", timeout=30000)
 
-        # Najpierw basic load, ustaw zmienne testowe, potem RELOAD - gra czyta je
-        # przy imporcie `settings`, więc muszą siedzieć w localStorage przed startem gry.
-        self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
+    def _page_alive(self) -> bool:
+        if self.page is None:
+            return False
+        try:
+            self.page.evaluate("() => 1")
+            return True
+        except Exception:
+            return False
+
+    # -------------------------------------------------------------- scenariusz
+    def start_game(self) -> None:
+        if self.restart_per_scenario:
+            # stary tryb (--web-restart-per-scenario): pełny build na scenariusz
+            self._start_pygbag()
+            self._start_browser()
+            self._open_page()
+        elif not self._page_alive():
+            # crash WASM / zamknięta strona nie może kaskadować na kolejne scenariusze:
+            # jednorazowa odbudowa strony na tym samym serwerze pygbag.
+            self._page_rebuilds += 1
+            if self._page_rebuilds > 1:
+                raise RunnerFatal(
+                    "web: strona padła po raz drugi w tej sesji - przerywam przebieg "
+                    "(odpal z --web-restart-per-scenario, żeby izolować scenariusze)"
+                )
+            print(f"[{get_timestamp()}] [warn] strona nie odpowiada - odbudowuję (1/1)")
+            try:
+                if self.page is not None:
+                    self.page.close()
+            except Exception:
+                pass
+            self.page = None
+            self._open_page()
+        self._prepare_scenario_page()
+
+    def stop_game(self) -> None:
+        # Strona i serwer żyją dalej: `cleanup_saves_before()` i `clear_ui_state()`
+        # następnego scenariusza działają na żywym localStorage, a start scenariusza
+        # to tylko reload. W starym trybie zwijamy wszystko.
+        if self.restart_per_scenario:
+            self._teardown()
+
+    def _prepare_scenario_page(self) -> None:
+        """Per scenariusz: wyczyść klucze, wstrzyknij MoM.env + saves, przeładuj stronę."""
+        assert self.page is not None
         # Jeden kanał MoM.env na wszystkie zmienne (A07): ta sama funkcja co desktop
         # decyduje o trybie deterministycznym i godzinie startu (pole `start_hour`).
         test_env: dict[str, str] = {"MOM_AGENT_CONTROL": "1"}
@@ -947,10 +1054,11 @@ class WebRunner(RunnerBase):
         self.page.evaluate(
             "() => localStorage.removeItem('" + WEB_INPUT_KEY + "')"
         )
-        # begin_scenario() nie mogło tego wyczyścić - strony jeszcze nie było
+        # zrzut z poprzedniego scenariusza: begin_scenario() czyści go tylko wtedy,
+        # gdy strona już żyła - przy pierwszym scenariuszu jej jeszcze nie było
         self.clear_ui_state()
         # wstrzyknij ewentualne saves (corrupt/minimal) zadeklarowane przez scenario.
-        # Robione TU (po first goto, przed reloadem), bo gra czyta localStorage w __init__.
+        # Robione TU (po czyszczeniu, przed reloadem), bo gra czyta localStorage w __init__.
         self._inject_setup_saves()
         print(f"[{get_timestamp()}] localStorage[{WEB_ENV_KEY}]={json.dumps(test_env)}; reloading...")
         self.page.reload(wait_until="domcontentloaded", timeout=30000)
@@ -1106,7 +1214,8 @@ class WebRunner(RunnerBase):
             print(f"[setup] localStorage['{key}'] = {kind}")
         self._pending_setup_saves = []
 
-    def cleanup(self) -> None:
+    def _teardown(self) -> None:
+        """Zwiń całą infrastrukturę web: strona, przeglądarka, Playwright, pygbag."""
         if self.page:
             try:
                 self.page.close()
@@ -1180,22 +1289,31 @@ def load_scenarios(path: str) -> List[TestScenario]:
 
 def run_scenarios(scenarios: List[TestScenario], runner: RunnerBase) -> int:
     failures = 0
-    for scenario in scenarios:
-        runner.begin_scenario(scenario)
-        runner.cleanup_saves_before(scenario)
-        if scenario.setup_saves:
-            runner.setup_saves(scenario.setup_saves)
-        runner.start_game()
-        try:
-            scenario.run(runner)
-        except AssertionError as e:
-            print(f"Test failed: {e}")
-            failures += 1
-        except Exception as e:
-            print(f"Test failed: {e}")
-            failures += 1
-        finally:
-            runner.cleanup()
+    runner.start_session()
+    try:
+        for scenario in scenarios:
+            runner.begin_scenario(scenario)
+            runner.cleanup_saves_before(scenario)
+            if scenario.setup_saves:
+                runner.setup_saves(scenario.setup_saves)
+            try:
+                runner.start_game()
+                scenario.run(runner)
+            except RunnerFatal:
+                # infrastruktura padła (np. strona web drugi raz) - dalsze scenariusze
+                # i tak posypią się kaskadowo; przerwij przebieg
+                raise
+            except AssertionError as e:
+                print(f"Test failed: {e}")
+                failures += 1
+            except Exception as e:
+                print(f"Test failed: {e}")
+                failures += 1
+            finally:
+                runner.stop_game()
+    finally:
+        # musi się wykonać także przy KeyboardInterrupt - inaczej zostaje żywy pygbag
+        runner.end_session()
     return failures
 
 
@@ -1213,8 +1331,20 @@ def main() -> int:
         help="web mode: seconds to wait for the pygbag server to build + serve "
              f"(default {TEST_CONFIG['PYGBAG_BOOT_TIMEOUT']})",
     )
+    parser.add_argument(
+        "--web-restart-per-scenario", action="store_true",
+        help="web mode: restart pygbag + browser for every scenario (pre-A08 behaviour; "
+             "use when you suspect state leaking between scenarios)",
+    )
+    parser.add_argument(
+        "--smoke", action="store_true",
+        help="run only the smoke set (TEST_CONFIG['SMOKE_SCENARIOS']) instead of everything",
+    )
     parser.add_argument("scenario", nargs="?", default=None, help="scenario name; omit to run all")
     args = parser.parse_args()
+    if args.smoke and args.scenario:
+        print("Error: --smoke i nazwa scenariusza wykluczają się.")
+        return 2
 
     # before anything resolves a save path - see isolate_game_data()
     isolate_game_data()
@@ -1230,6 +1360,15 @@ def main() -> int:
             print(f"Error: scenario '{target_name}' not available for backend '{backend}'.")
             print(f"Available: {avail}")
             return 2
+    if args.smoke:
+        smoke_names = list(TEST_CONFIG["SMOKE_SCENARIOS"])
+        by_name = {s.name: s for s in selected}
+        missing = [n for n in smoke_names if n not in by_name]
+        if missing:
+            # literówka w SMOKE_SCENARIOS nie może cicho zmniejszyć bramki
+            print(f"Error: smoke scenarios not available for backend '{backend}': {missing}")
+            return 2
+        selected = [by_name[n] for n in smoke_names]
 
     runner: RunnerBase
     if args.web:
@@ -1237,6 +1376,7 @@ def main() -> int:
             url=args.url,
             init_wait=args.timeout,
             pygbag_timeout=args.pygbag_timeout,
+            restart_per_scenario=args.web_restart_per_scenario,
         )
     else:
         runner = DesktopRunner()
