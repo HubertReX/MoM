@@ -266,6 +266,8 @@ przytrzymywany. Dla ruchu sensowne wartości to 10–60; w menu wystarczy 1.
   - `debug_load_last_save` - wczytuje ostatni zajęty slot.
   - `debug_text_input` - pokazuje stan demo widgetu `TextInput` (`ui/panels/text_input_demo.py`).
   - `debug_set_maze` - wymusza `is_maze=True` na bieżącej scenie (test zakazu zapisu w lochu).
+  - `debug_ui_state` - zrzuca stan gry z runtime do `agent_ui_state.json` (web: localStorage
+    `MoM.agent_ui_state`) na potrzeby asercji `ui_state` - patrz "Asercje stanu" niżej.
   - `type:<tekst>` - wpisuje tekst do pola z fokusem (jedno słowo, bez spacji); wysyła
     realne zdarzenia `TEXTINPUT` (syntetyczne `KEYDOWN` ich nie generują). Np. `type:Abc123`.
   - `backspace` - kasuje znak przed kursorem w polu tekstowym (wysyła `KEYDOWN` Backspace).
@@ -382,6 +384,58 @@ publikując `screenshots/agent/` jako artifact.
   scenariusza — testy są wolniejsze niż desktop.
 - Port 8001 jest używany domyślnie (konfigurowalny przez `--url`).
 - Nie wspiera `USE_WEB_SIMULATOR` — web runner uruchamia prawdziwy pygbag.
+
+### Asercje stanu (`debug_ui_state` + `ui_state`) — weryfikacja bez vision
+
+Vision (ss-review) jest niedeterministyczne z natury, a większość faktów, które testy chcą
+sprawdzić ("panel dialogu jest otwarty", "gracz jest na mapie Village", "HP > 0"), gra
+**zna** i potrafi zrzucić. Zasada: **fakty asertuj z runtime, vision zostaw do ocen
+estetycznych**.
+
+Scenariusz wysyła `debug_ui_state` jako osobną akcję, a potem asertuje:
+
+```json
+{ "slug": "dump_state_in_dialog", "commands": ["debug_ui_state"], "wait": 0.5 }
+```
+
+```json
+{
+  "type": "ui_state",
+  "expect": {
+    "top_state": "Scene",
+    "map": "Village",
+    "open_panels_contains": ["DialogPanel"],
+    "dialog.npc": "BARMAN_ABSINTHRAYNER",
+    "player.hp_min": 1
+  }
+}
+```
+
+Trzy rodzaje kluczy w `expect` (i tylko te trzy):
+
+- `open_panels_contains` — każda nazwa klasy panelu musi być w `open_panels`
+- `<ścieżka>_min` / `<ścieżka>_max` — porównanie liczbowe pola po ścieżce z kropkami
+  (`"player.hp_min": 1` znaczy `player.hp >= 1`)
+- dowolny inny klucz — równość z wartością spod tej ścieżki (`map`, `is_maze`, `dialog.npc`)
+
+Zawartość zrzutu i pułapki opisuje docstring `project/agent_ctrl.py` (sekcja
+"Zrzut stanu gry"). Najważniejsze:
+
+- działa też w menu (`top_state: "MainMenuScreen"`, pola sceny `null` — to legalny wynik);
+  scena jest szukana **w dół stosu**, więc menu otwarte NAD grą nadal raportuje mapę i gracza
+- `debug_ui_state` wysyłaj jako **osobną akcję**, nie w paczce z klawiszami: komendy
+  klawiszowe lecą jako posted `KEYDOWN` i gra obsłuży je dopiero w następnej klatce
+- brak zrzutu = twardy FAIL asercji (runner kasuje zrzut na starcie każdego scenariusza,
+  więc nie da się przypadkiem asertować stanu z poprzedniego przebiegu)
+- panele czytane są przez publiczne `GameUI.open_panel_names`, nie przez prywatne `_open`
+
+Wzorcowo używają tego: `Save and Load Basic` (desktop + web), `Dialog Open Deterministic`,
+`Hammer Dialog Flow`, `Dialog Option Formatting`.
+
+> **Uwaga o determinizmie dialogów.** Scenariusze dialogowe otwierają rozmowę przez
+> `talk_to_char:<key>`, nie przez dojście "w ciemno" (`left:30 up:20`) i `talk`. NPC-e
+> wędrują, więc ślepa nawigacja trafiała w pustkę — a testy tego nie wykrywały, bo bez
+> asercji `ui_state` sprawdzały tylko `process_alive`.
 
 ### ss-review (wizualna analiza screenshotów)
 

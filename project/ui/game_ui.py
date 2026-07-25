@@ -113,6 +113,16 @@ class GameUI:
         """True if a panel that should freeze the scene is open."""
         return any(isinstance(p, _MODAL) for p in self._open)
 
+    @property
+    def open_panel_names(self) -> list[str]:
+        """Class names of the currently open panels, bottom-most first.
+
+        Public read-only view of ``_open`` for diagnostics - used by the
+        ``debug_ui_state`` agent command (``agent_ctrl.py``) so tests can assert
+        "the dialog panel is open" from runtime state instead of from a screenshot.
+        """
+        return [type(p).__name__ for p in self._open]
+
     def reset(self) -> None:
         for panel in self._open:
             panel.visible = False

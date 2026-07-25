@@ -36,6 +36,14 @@ Assertions (per scenario, opcjonalne):
     file_exists          desktop: plik ``<save_dir>/save_N.mom`` istnieje (min_size opcjonalny);
                          web: tłumaczone na obecność klucza ``MoM.save_N`` w localStorage.
     localstorage_exists  web: klucz ``key`` (np. ``MoM.save_0``) obecny w localStorage.
+    ui_state             porównuje zrzut stanu gry z komendy ``debug_ui_state`` (którą
+                         scenariusz MUSI wysłać jako akcję wcześniej). Desktop czyta
+                         ``agent_ui_state.json``, web - localStorage ``MoM.agent_ui_state``.
+                         W ``expect`` trzy rodzaje kluczy:
+                         ``open_panels_contains`` (lista nazw klas paneli, każda musi być
+                         otwarta), ``<ścieżka>_min``/``<ścieżka>_max`` (porównanie liczbowe,
+                         np. ``"player.hp_min": 1``) oraz dowolny inny klucz = równość
+                         (``"map": "Village"``, ``"dialog.npc": "BARMAN_ABSINTHRAYNER"``).
     screenshot_review    ss-reviewer (model z vision) ocenia screenshot. Pola:
                          ``target`` (slug akcji; brak = ostatni screenshot),
                          ``expect`` (opis oczekiwania), ``expected_state`` (np. ``GAMEPLAY``),
@@ -87,6 +95,7 @@ TEST_CONFIG = {
     "INPUT_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "agent_input.txt"),
     "STATUS_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "agent_status.txt"),
     "SCENARIOS_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "scenarios.json"),
+    "UI_STATE_FILE": os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "agent_ui_state.json"),
     "WALK_TIMEOUT": 30.0,   # max seconds to wait for a walk_to_* to reach its target
 }
 
@@ -97,6 +106,8 @@ AGENT_SCREENSHOT_DIR = REPO_ROOT / "screenshots" / "agent"
 WEB_SAVE_KEY_PREFIX = "MoM.save_"
 WEB_INPUT_KEY = "MoM.agent_input"
 WEB_AGENT_FLAG = "MoM.agent_control"
+# zrzut stanu gry z komendy `debug_ui_state` (musi zgadzać się z agent_ctrl.WEB_UI_STATE_KEY)
+WEB_UI_STATE_KEY = "MoM.agent_ui_state"
 
 # Nazewnictwo screenshotów: agent_{run_ts}_{scenario_slug}_{NN}_{action_slug}.png
 #   - run_ts        : jeden znacznik czasu na cały przebieg jednego scenariusza (grupuje pliki)
@@ -432,6 +443,8 @@ class RunnerBase:
         self.run_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.scenario_slug = scenario.slug
         self.screenshots = []
+        # zrzut stanu z poprzedniego scenariusza nie może wyciec do tego
+        self.clear_ui_state()
 
     def screenshot_prefix(self) -> str:
         return f"{self.run_ts}_{self.scenario_slug}"
@@ -481,7 +494,70 @@ class RunnerBase:
             return self._assert_screenshot_min_size(assertion)
         if a_type == "process_alive":
             return self._assert_process_alive(assertion)
+        if a_type == "ui_state":
+            return self._assert_ui_state(assertion)
         return None
+
+    # ---------------------------------------------------------------- ui_state
+    def read_ui_state(self) -> dict[str, Any] | None:
+        """Zwróć ostatni zrzut `debug_ui_state` albo None, gdy go nie ma."""
+        raise NotImplementedError
+
+    def clear_ui_state(self) -> None:
+        """Skasuj zrzut z poprzedniego przebiegu (żeby nie asertować cudzego stanu)."""
+
+    @staticmethod
+    def _dotted(state: dict[str, Any], path: str) -> Any:
+        """Wyłuskaj wartość po ścieżce z kropkami (``player.hp``); brak -> None."""
+        node: Any = state
+        for part in path.split("."):
+            if not isinstance(node, dict) or part not in node:
+                return None
+            node = node[part]
+        return node
+
+    def _assert_ui_state(self, assertion: dict[str, Any]) -> List[str]:
+        """Porównaj zrzut stanu gry z oczekiwaniami scenariusza.
+
+        Obsługiwane są dokładnie trzy rodzaje kluczy w ``expect``:
+
+        - ``open_panels_contains`` - każdy element listy musi być w ``open_panels``
+        - ``<ścieżka>_min`` / ``<ścieżka>_max`` - porównanie liczbowe pola po ścieżce
+          z kropkami (``player.hp_min: 1`` => ``player.hp >= 1``)
+        - dowolny inny klucz - równość z wartością spod tej ścieżki (``map``,
+          ``top_state``, ``is_maze``, ``dialog.npc``, ...)
+        """
+        state = self.read_ui_state()
+        if state is None:
+            return ["ui_state: no state dump - the scenario must send the "
+                    "`debug_ui_state` command as an action before this assertion"]
+        expect = assertion.get("expect") or {}
+        if not isinstance(expect, dict):
+            return [f"ui_state: 'expect' must be an object, got {type(expect).__name__}"]
+
+        failures: List[str] = []
+        for key, wanted in expect.items():
+            if key == "open_panels_contains":
+                open_panels = state.get("open_panels") or []
+                missing = [p for p in wanted if p not in open_panels]
+                if missing:
+                    failures.append(
+                        f"ui_state.open_panels: missing {missing} (open: {open_panels})")
+                continue
+            if key.endswith("_min") or key.endswith("_max"):
+                path, _, bound = key.rpartition("_")
+                actual = self._dotted(state, path)
+                if not isinstance(actual, (int, float)) or isinstance(actual, bool):
+                    failures.append(f"ui_state.{path}: not a number ({actual!r})")
+                elif bound == "min" and actual < wanted:
+                    failures.append(f"ui_state.{path}: {actual} < min {wanted}")
+                elif bound == "max" and actual > wanted:
+                    failures.append(f"ui_state.{path}: {actual} > max {wanted}")
+                continue
+            actual = self._dotted(state, key)
+            if actual != wanted:
+                failures.append(f"ui_state.{key}: expected {wanted!r}, got {actual!r}")
+        return failures
 
     def _assert_screenshot_review(self, assertion: dict[str, Any]) -> List[str]:
         if os.environ.get(SS_REVIEW_SKIP_ENV):
@@ -635,6 +711,20 @@ class DesktopRunner(RunnerBase):
             return ["process_alive: game process exited unexpectedly (crash or unwanted quit)"]
         return []
 
+    def read_ui_state(self) -> dict[str, Any] | None:
+        path = Path(TEST_CONFIG["UI_STATE_FILE"])
+        try:
+            with open(path, encoding="utf-8") as f:
+                return dict(json.load(f))
+        except (FileNotFoundError, OSError, json.JSONDecodeError, TypeError, ValueError):
+            return None
+
+    def clear_ui_state(self) -> None:
+        try:
+            Path(TEST_CONFIG["UI_STATE_FILE"]).unlink()
+        except (FileNotFoundError, OSError):
+            pass
+
     def cleanup_saves_before(self, scenario: TestScenario) -> None:
         clear_all_saves()
         for slot_idx in scenario.cleanup_saves:
@@ -777,6 +867,8 @@ class WebRunner(RunnerBase):
         self.page.evaluate(
             "() => localStorage.removeItem('" + WEB_INPUT_KEY + "')"
         )
+        # begin_scenario() nie mogło tego wyczyścić - strony jeszcze nie było
+        self.clear_ui_state()
         # wstrzyknij ewentualne saves (corrupt/minimal) zadeklarowane przez scenario.
         # Robione TU (po first goto, przed reloadem), bo gra czyta localStorage w __init__.
         self._inject_setup_saves()
@@ -858,6 +950,29 @@ class WebRunner(RunnerBase):
         except Exception as e:
             return [f"process_alive: web page unresponsive ({e})"]
         return []
+
+    def read_ui_state(self) -> dict[str, Any] | None:
+        # web: gra nie ma dostępu do dysku, więc zrzut ląduje w localStorage
+        if self.page is None:
+            return None
+        try:
+            raw = self.page.evaluate("([k]) => localStorage.getItem(k)", [WEB_UI_STATE_KEY])
+        except Exception:
+            return None
+        if not raw:
+            return None
+        try:
+            return dict(json.loads(raw))
+        except (json.JSONDecodeError, TypeError, ValueError):
+            return None
+
+    def clear_ui_state(self) -> None:
+        if self.page is None:
+            return
+        try:
+            self.page.evaluate("([k]) => localStorage.removeItem(k)", [WEB_UI_STATE_KEY])
+        except Exception:
+            pass
 
     def _check_localstorage_slot(self, slot: int, min_size: Any) -> List[str]:
         key = f"{WEB_SAVE_KEY_PREFIX}{slot}"

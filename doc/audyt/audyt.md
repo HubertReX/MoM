@@ -55,7 +55,7 @@ pułapki. Status: `[ ]` do napisania, `[x]` gotowy do realizacji, a sufiks
 ### Faza 1 - fundament autonomii agentów
 
 - [x] [A01 - ss-review: stabilny model, checklisty, werdykt JSON](A01-ss-review-stabilizacja.md) - P0 ✅ 2026-07-25
-- [x] [A02 - agent_ctrl: `debug_ui_state` + asercje stanu w runnerze](A02-agent-ctrl-asercje-stanu.md) - P0
+- [x] [A02 - agent_ctrl: `debug_ui_state` + asercje stanu w runnerze](A02-agent-ctrl-asercje-stanu.md) - P0 ✅ 2026-07-25
 - [x] [A03 - layout self-checks w UI (overflow = twardy błąd)](A03-layout-selfchecks.md) - P0
 - [x] [A04 - tryb deterministyczny testów (seed, cząstki, godzina)](A04-tryb-deterministyczny-testow.md) - P1
 - [x] [C01 - `just validate-world`: walidator encji cross-source](C01-validate-world.md) - P0

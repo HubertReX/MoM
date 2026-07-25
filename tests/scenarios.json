@@ -28,10 +28,22 @@
             { "slug": "scene_loaded", "commands": ["screenshot"] },
             { "slug": "quick_save", "commands": ["quick_save", "screenshot"], "wait": 0.5 },
             { "slug": "quick_load", "commands": ["quick_load"], "wait": 2.0 },
-            { "slug": "after_load", "commands": ["screenshot"] }
+            { "slug": "after_load", "commands": ["screenshot"] },
+            { "slug": "dump_state_after_load", "commands": ["debug_ui_state"], "wait": 0.5 }
         ],
         "assertions": [
-            { "type": "screenshot_review", "target": "after_load", "expected_state": "GAMEPLAY", "expect": "The game is back in active gameplay (a level/scene with the player character visible), NOT a menu or load panel - F9 loads straight away without opening any panel." }
+            { "type": "screenshot_review", "target": "after_load", "expected_state": "GAMEPLAY", "expect": "The game is back in active gameplay (a level/scene with the player character visible), NOT a menu or load panel - F9 loads straight away without opening any panel." },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "Village",
+                    "is_maze": false,
+                    "open_panels_contains": [],
+                    "player.hp_min": 1,
+                    "player.is_dead": false
+                }
+            }
         ]
     },
     {
@@ -402,10 +414,11 @@
             { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
             { "slug": "near_hammer", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
-            { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.5 },
+            { "slug": "start_dialog", "commands": ["talk_to_char:hammer"], "wait": 1.5 },
             { "slug": "dialog_open", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
             { "slug": "hub_node", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "dump_state_in_dialog", "commands": ["debug_ui_state"], "wait": 0.5 },
             { "slug": "pick_goodbye", "commands": ["item_6"], "wait": 1.5 },
             { "slug": "close_with_accept", "commands": ["accept"], "wait": 0.5 },
             { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 2.0 }
@@ -443,6 +456,16 @@
                 ]
             },
             { "type": "screenshot_review", "target": "dialog_closed", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; the dialog panel is closed after the player picked the final farewell option." },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "Village",
+                    "open_panels_contains": ["DialogPanel"],
+                    "dialog.npc": "HAMMER_HOAXHEART",
+                    "player.hp_min": 1
+                }
+            },
             { "type": "process_alive" }
         ]
     },
@@ -454,10 +477,11 @@
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "move_to_hammer", "commands": ["left:30 up:20"], "wait": 1.0 },
             { "slug": "wait_near_hammer", "commands": [], "wait": 1.0 },
-            { "slug": "start_dialog", "commands": ["talk:5"], "wait": 1.5 },
+            { "slug": "start_dialog", "commands": ["talk_to_char:hammer"], "wait": 1.5 },
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
             { "slug": "pick_villages_node", "commands": ["item_3"], "wait": 1.5 },
             { "slug": "formatted_options", "commands": ["screenshot"], "wait": 2.0 },
+            { "slug": "dump_state_in_dialog", "commands": ["debug_ui_state"], "wait": 0.5 },
             { "slug": "scroll_down_1", "commands": ["down"], "wait": 0.4 },
             { "slug": "scroll_down_2", "commands": ["down"], "wait": 0.4 },
             { "slug": "scroll_down_3", "commands": ["down"], "wait": 0.4 },
@@ -492,6 +516,14 @@
                     "every visible option fits inside the panel frame without spilling past the bottom border",
                     "no text overflows or touches any panel frame"
                 ]
+            },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "open_panels_contains": ["DialogPanel"],
+                    "dialog.npc": "HAMMER_HOAXHEART"
+                }
             },
             { "type": "process_alive" }
         ]
@@ -616,10 +648,22 @@
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "talk_to_barman", "commands": ["talk_to_char:barman"], "wait": 1.0 },
-            { "slug": "barman_dialog", "commands": ["screenshot"], "wait": 1.5 }
+            { "slug": "barman_dialog", "commands": ["screenshot"], "wait": 1.5 },
+            { "slug": "dump_state_in_dialog", "commands": ["debug_ui_state"], "wait": 0.5 }
         ],
         "assertions": [
             { "type": "process_alive" },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "Village",
+                    "is_maze": false,
+                    "open_panels_contains": ["DialogPanel"],
+                    "dialog.npc": "BARMAN_ABSINTHRAYNER",
+                    "player.hp_min": 1
+                }
+            },
             {
                 "type": "screenshot_review",
                 "target": "barman_dialog",

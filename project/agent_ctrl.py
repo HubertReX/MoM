@@ -58,6 +58,8 @@ przed przeładowaniem strony:
   `debug_map_change` (debugowa zmiana mapy - wywołuje auto-save),
   `debug_text_input` (pokaż panel demo widgetu TextInput),
   `debug_set_maze` (wymuś is_maze=True na bieżącej scenie - test zakazu zapisu w lochu),
+  `debug_ui_state` (zrzuć stan gry do `agent_ui_state.json` / localStorage `MoM.agent_ui_state`
+  - patrz "Zrzut stanu gry" niżej),
   `debug_enter_maze` (wejdź wyjściem prowadzącym do labiryntu - generacja poziomu + autosave slotu 0),
   `type:<tekst>` (wpisz tekst do pola z fokusem - jedno słowo, bez spacji; wysyła
   realne zdarzenia TEXTINPUT, np. `type:Abc123`),
@@ -74,21 +76,44 @@ przed przeładowaniem strony:
   Stan zapisywany do `agent_status.txt` (idle|walking|arrived|no_path|not_found); runner
   testów blokuje się do zakończenia zamiast zgadywać `wait` (patrz `_wait_for_walk`).
 
+## Zrzut stanu gry (`debug_ui_state`) - asercje bez vision
+Vision (ss-review) jest niedeterministyczne, a większość faktów, które testy chcą
+sprawdzić, gra po prostu ZNA. `debug_ui_state` zrzuca je do JSON-a, a runner porównuje
+je asercją `ui_state` (patrz `tests/automate_display_test.py`). Zawartość zrzutu:
+
+    {"top_state": "Scene", "map": "Village", "entry_point": "start", "is_maze": false,
+     "day": 1, "hour": 9, "minute": 45,
+     "open_panels": ["DialogPanel"],
+     "player": {"hp": 80, "max_hp": 80, "money": 20, "pos": [512, 384],
+                "items": ["lance", "stick"], "is_dead": false},
+     "dialog": {"npc": "BARMAN_ABSINTHRAYNER", "node": "hub", "sentiment": 50}}
+
+Działa też w menu - wtedy `top_state` to np. `MainMenuScreen`, a pola sceny są `null`
+(to legalny wynik, nie błąd). Scena jest szukana w dół stosu stanów, więc menu otwarte
+NAD grą nadal raportuje mapę i gracza.
+
+Wysyłaj `debug_ui_state` jako OSOBNĄ akcję, nie w jednej paczce z klawiszami: komendy
+klawiszowe lecą jako posted KEYDOWN i gra obsłuży je dopiero w następnej klatce, więc
+zrzut z tej samej paczki jeszcze ich nie zobaczy.
+
 ## Nawigacja po menu głównym (przydatne dla agenta)
     accept            # uruchom zaznaczoną pozycję (Play jest domyślnie zaznaczone)
     down / up         # zmień zaznaczenie
 """
+import json
 import os
 import time
+from typing import Any
 
 import pygame
 
 try:
     # dostępne, gdy moduł działa wewnątrz gry (sys.path zawiera 'project')
-    from settings import ACTIONS, AGENT_STATUS_FILE
+    from settings import ACTIONS, AGENT_STATUS_FILE, AGENT_UI_STATE_FILE
 except ImportError:
     ACTIONS = {}
     AGENT_STATUS_FILE = None
+    AGENT_UI_STATE_FILE = None
 
 # domyślny czas przytrzymania klawiszy ciągłych (ruch), gdy nie podano ':frames'
 DEFAULT_HOLD_FRAMES = 12
@@ -97,6 +122,8 @@ CONTINUOUS_ACTIONS = {"left", "right", "up", "down", "run", "fly"}
 
 # klucz localStorage dla komend agenta w trybie web
 WEB_INPUT_KEY = "MoM.agent_input"
+# klucz localStorage ze zrzutem stanu gry (`debug_ui_state`) w trybie web
+WEB_UI_STATE_KEY = "MoM.agent_ui_state"
 
 
 class AgentController:
@@ -131,6 +158,7 @@ class AgentController:
         self._type_pending: str = ""          # tekst do "wpisania" (posted TEXTINPUT)
         self._text_demo_pending = False       # żądanie pokazania panelu demo TextInput
         self._set_maze_pending = False        # wymuś tryb maze na bieżącej scenie (test zakazu zapisu)
+        self._ui_state_pending = False        # zrzuć stan gry do AGENT_UI_STATE_FILE / localStorage
         # deterministyczna nawigacja: walk_to_char / walk_to_point (patrz apply)
         self._walk_request: str | None = None  # "char:<key>" | "point:<x>,<y>" do rozwiązania
         self._talk_request: str | None = None  # klucz NPC do deterministycznego otwarcia dialogu
@@ -173,6 +201,89 @@ class AgentController:
                 f.write(word)
         except OSError:
             pass
+
+    # ------------------------------------------------------------- zrzut stanu
+    def _collect_ui_state(self, game) -> "dict[str, Any]":
+        """Zbierz fakty o stanie gry, które da się asertować deterministycznie.
+
+        Wszystko przez ``getattr(..., None)``: komenda musi działać także w menu,
+        gdzie nie ma sceny - wtedy ``top_state`` to np. ``MainMenuScreen``,
+        a reszta pól jest ``None``/pusta. To legalny wynik, nie błąd.
+        """
+        state = game.states[-1] if getattr(game, "states", None) else None
+        manager = getattr(game, "save_manager", None)
+        # current_scene() szuka sceny w dół stosu, więc znajdzie ją także gdy na
+        # wierzchu leży menu otwarte nad grą (Esc w trakcie rozgrywki).
+        scene = manager.current_scene() if manager is not None else None
+
+        info: dict[str, Any] = {
+            "top_state": type(state).__name__ if state is not None else None,
+            "map": getattr(scene, "current_map", None),
+            "entry_point": getattr(scene, "entry_point", None),
+            "is_maze": getattr(scene, "is_maze", None),
+            "day": getattr(scene, "day", None),
+            "hour": getattr(scene, "hour", None),
+            "minute": getattr(scene, "minute", None),
+            "open_panels": [],
+            "player": None,
+            "dialog": None,
+        }
+        if scene is None:
+            return info
+
+        ui = getattr(scene, "ui", None)
+        if ui is not None:
+            info["open_panels"] = list(ui.open_panel_names)
+
+        player = getattr(scene, "player", None)
+        if player is not None:
+            info["player"] = {
+                "hp": player.model.health,
+                "max_hp": player.model.max_health,
+                "money": player.model.money,
+                "pos": [round(player.pos.x), round(player.pos.y)],
+                "items": sorted(item.name for item in player.items),
+                "is_dead": player.is_dead,
+            }
+            npc = getattr(player, "npc_met", None)
+            if npc is not None and getattr(npc, "dialog", None) is not None:
+                info["dialog"] = {
+                    "npc": getattr(npc, "config_key", "") or npc.name,
+                    "node": npc.dialog.key,
+                    "sentiment": int(getattr(npc, "sentiment", 0)),
+                }
+        return info
+
+    def _dump_ui_state(self, game) -> None:
+        """Zapisz zrzut stanu: plik JSON na desktopie, localStorage na web.
+
+        Każde wywołanie NADPISUJE poprzedni zrzut - asercja czyta zawsze ten
+        z ostatniego ``debug_ui_state`` w scenariuszu.
+        """
+        try:
+            payload = json.dumps(self._collect_ui_state(game), ensure_ascii=False)
+        except (TypeError, ValueError) as e:
+            self.log(f"[agent_ctrl] ui_state serialization failed: {e}")
+            return
+        if self.web_mode:
+            try:
+                from platform import window  # type: ignore[attr-defined]
+                window.localStorage.setItem(WEB_UI_STATE_KEY, payload)
+            except Exception as e:
+                self.log(f"[agent_ctrl] ui_state localStorage write failed: {e}")
+                return
+        elif AGENT_UI_STATE_FILE is None:
+            self.log("[agent_ctrl] ui_state: AGENT_UI_STATE_FILE unavailable")
+            return
+        else:
+            try:
+                with open(AGENT_UI_STATE_FILE, "w", encoding="utf-8") as f:
+                    f.write(payload)
+            except OSError as e:
+                self.log(f"[agent_ctrl] ui_state write failed: {e}")
+                return
+        # celowo bez treści JSON-a w logu - byłby to spory szum w stdout gry
+        self.log("[agent] ui_state saved")
 
     # ----------------------------------------------------------------- odczyt
     def poll(self) -> None:
@@ -275,6 +386,11 @@ class AgentController:
         if action == "debug_set_maze":
             # wymuś is_maze=True na bieżącej scenie, żeby przetestować zakaz zapisu (F5) w lochu
             self._set_maze_pending = True
+            return
+
+        if action == "debug_ui_state":
+            # zrzuć stan gry z runtime (patrz _dump_ui_state) - asercje `ui_state` w runnerze
+            self._ui_state_pending = True
             return
 
         if action == "type":
@@ -389,6 +505,13 @@ class AgentController:
                 self.log("[agent_ctrl] debug_map_change: no scene/exits available")
 
         self._apply_walk(game)
+
+        # ostatnie w klatce: zrzut widzi skutki wszystkich komend z tej samej paczki
+        # (poza tymi realizowanymi przez posted KEYDOWN - te gra obsłuży dopiero
+        # w następnej klatce, więc `debug_ui_state` wysyłaj jako osobną akcję).
+        if self._ui_state_pending:
+            self._ui_state_pending = False
+            self._dump_ui_state(game)
 
     # ------------------------------------------------------- deterministic walk
     def _apply_walk(self, game) -> None:

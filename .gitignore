@@ -164,6 +164,7 @@ screenshots/intro_*.webm
 # external AI-agent control (agent_ctrl.py) — transient input + status + screenshots
 agent_input.txt
 agent_status.txt
+agent_ui_state.json
 screenshots/agent/
 profiling/
 _temp/**

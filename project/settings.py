@@ -684,6 +684,9 @@ AGENT_INPUT_FILE = CURRENT_DIR / ".." / "agent_input.txt"
 # status file the runner polls for deterministic navigation (walk_to_char / walk_to_point):
 # holds one word: idle | walking | arrived | no_path | not_found
 AGENT_STATUS_FILE = CURRENT_DIR / ".." / "agent_status.txt"
+# runtime state dump written by the `debug_ui_state` agent command and read back by the
+# `ui_state` assertion in tests/automate_display_test.py (web: localStorage MoM.agent_ui_state)
+AGENT_UI_STATE_FILE = CURRENT_DIR / ".." / "agent_ui_state.json"
 AGENT_SCREENSHOT_DIR = CURRENT_DIR / ".." / "screenshots" / "agent"
 ASSETS_DIR = CURRENT_DIR / "assets"
 # font_name = "font"
