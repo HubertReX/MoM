@@ -128,17 +128,6 @@ class SaveManager:
         info = slots[QUICK_SAVE_SLOT] if QUICK_SAVE_SLOT < len(slots) else None
         return info is not None and info.is_occupied
 
-    def should_autosave_on_map_change(self, is_maze: bool) -> bool:
-        """Whether a map change should autosave slot 0.
-
-        Autosave only when entering a maze (the map change that takes the player
-        from the overworld into a dungeon). Ordinary room-to-room transitions are
-        not autosaved; the quick save slot is reserved for the single entry point
-        into the dungeon, so it always points at the mouth of the dungeon rather
-        than following the player around between rooms.
-        """
-        return is_maze
-
     def current_scene(self) -> "Scene | None":
         """The live scene to save, or ``None`` if no game is in progress.
 

@@ -543,25 +543,6 @@ def test_maze_level_left_behind_keeps_its_seed() -> None:
     assert_eq(maps["Maze_01"].maze_return_map, "Village", "and where its exit leads")
 
 
-def test_autosave_only_on_the_way_into_the_dungeon() -> None:
-    """Slot 0 autosaves only when entering a maze.
-
-    A maze run gets one autosave - the step in from the overworld. Ordinary
-    room-to-room transitions, going deeper into the dungeon, climbing back up,
-    and walking out to the surface must not trigger it, so slot 0 always points
-    at the mouth of the dungeon.
-    """
-    mgr = SaveManager.__new__(SaveManager)
-
-    # is_maze=True: entering a maze (overworld -> maze level 1)
-    assert_true(mgr.should_autosave_on_map_change(is_maze=True),
-                "entering a maze autosaves")
-
-    # is_maze=False: ordinary room-to-room, or leaving a maze
-    assert_true(not mgr.should_autosave_on_map_change(is_maze=False),
-                "non-maze transitions never autosave")
-
-
 def main() -> None:
     tests = [
         test_other_maps_are_kept_pending_not_dropped,
@@ -581,7 +562,6 @@ def main() -> None:
         test_chests_from_one_template_do_not_collapse,
         test_maze_seed_is_the_one_that_built_the_level,
         test_maze_level_left_behind_keeps_its_seed,
-        test_autosave_only_on_the_way_into_the_dungeon,
     ]
     for t in tests:
         t()

@@ -1,6 +1,6 @@
-# 📋 Scenariusze testowe (stan drzewa roboczego: 30)
+# 📋 Scenariusze testowe (stan drzewa roboczego: 31)
 
-Filtrowanie per backend robi pole `platform` w `scenarios.json` - teraz **zawsze jawne** dla każdego scenariusza: `["desktop", "web"]` (oba) lub `["web"]` (tylko web). **Desktop: 29, Web: 24.**
+Filtrowanie per backend robi pole `platform` w `scenarios.json` - teraz **zawsze jawne** dla każdego scenariusza: `["desktop", "web"]` (oba) lub `["web"]` (tylko web). **Desktop: 30, Web: 25.**
 
 Każdy scenariusz ma też pole `slug` (krótka nazwa snake_case) używane w nazwach screenshotów.
 
@@ -54,31 +54,32 @@ Zmienne środowiskowe:
 | 3   | Quick Save and Load              | `quick_save_and_load`            |    ✓    |  ✓  | review (GAMEPLAY - powrót na start)                     |
 | 4   | Death then Load                  | `death_then_load`                |    ✓    |  ✓  | review ×2 (GAME_OVER, GAMEPLAY)                         |
 | 5   | Quick Save Owns Slot Zero        | `multiple_quick_saves`           |    ✓    |  ✓  | file_exists save_0 + save_absent save_1 + review        |
-| 6   | Auto Save on Map Change          | `auto_save_on_map_change`        |    ✓    |  ✓  | file_exists save_0 + review (slot `<quick save>`)       |
-| 7   | Corrupt Save Handling            | `corrupt_save_handling`          |    ✓    |  ✓  | review + process_alive (setup: corrupt save_0)          |
-| 8   | Web Save in localStorage         | `web_save_localstorage`          |    —    |  ✓  | localstorage_exists save_0                              |
-| 9   | Quick Load With No Save          | `empty_slot_load`                |    ✓    |  ✓  | review (toast "brak szybkiego zapisu") + process_alive  |
-| 10  | Load from Main Menu              | `load_from_main_menu`            |    ✓    |  ✓  | file_exists save_0 + review (GAMEPLAY)                  |
-| 11  | UI Flow - Menu Save then Load    | `ui_flow_full_save_load`         |    ✓    |  ✓  | review ×2 (SavePanel z kreską, GAMEPLAY)                |
-| 12  | TextInput Basic                  | `textinput_basic`                |    ✓    |  ✓  | review (ekran demo TextInput)                           |
-| 13  | Manage Saves                     | `manage_saves`                   |    ✓    |  ✓  | review ×2 (modal delete, pusta lista)                   |
-| 14  | Quick Keys Open No Panel         | `quick_keys_open_no_panel`       |    ✓    |  ✓  | review ×2 (GAMEPLAY) + process_alive                    |
-| 15  | Maze Save Blocked                | `maze_save_blocked`              |    ✓    |  ✓  | save_absent save_0 + review (blokada zapisu)            |
-| 16  | Maze Persists Across Save Load   | `maze_persists_across_save_load` |    ✓    |  —  | file_exists save_0 + review ×2 (labirynt przed/po load) |
-| 17  | In-Game Reload Confirm           | `ingame_reload_confirm`          |    ✓    |  ✓  | review (dialog reload) + process_alive                  |
-| 18  | In-Game Esc Shows Continue       | `ingame_esc_shows_continue`      |    ✓    |  ✓  | review ×2 (MENU_MAIN, GAMEPLAY) + process_alive         |
-| 19  | Load from Menu then Esc          | `load_from_menu_then_esc`        |    ✓    |  ✓  | review (MENU_MAIN) + process_alive                      |
-| 20  | Menu Load Cancel Returns to Menu | `menu_load_cancel_returns`       |    ✓    |  ✓  | review (MENU_MAIN) + process_alive                      |
-| 21  | TextInput Demo Hotkey            | `textinput_demo_hotkey`          |    ✓    |  ✓  | review ×2 (MENU_MAIN, ekran demo)                       |
-| 22  | Hammer Dialog Flow               | `hammer_dialog_flow`             |    ✓    |  ✓  | review ×3 + process_alive                               |
-| 23  | Dialog Option Formatting         | `dialog_option_formatting`       |    ✓    |  —  | review ×2 + process_alive                               |
-| 24  | Dialog Save and Load             | `dialog_save_and_load`           |    ✓    |  ✓  | file_exists save_0 + review + process_alive             |
-| 25  | Three Townsfolk Dialogs          | `three_townsfolk_dialogs`        |    ✓    |  —  | review ×6 + process_alive                               |
-| 26  | Language Switch                  | `language_switch`                |    ✓    |  —  | review ×4 + process_alive                               |
-| 27  | Dialog Escape Blocked            | `dialog_escape_blocked`          |    ✓    |  —  | review ×2                                               |
-| 28  | Dialog Open Deterministic        | `dialog_open_deterministic`      |    ✓    |  —  | review + process_alive                                  |
-| 29  | Menu Save Blocked In Maze        | `menu_save_blocked_in_maze`      |    ✓    |  ✓  | review (MENU_MAIN bez "Zapisz grę")                     |
-| 30  | Quick Slot Cannot Be Edited      | `quick_slot_cannot_be_edited`    |    ✓    |  ✓  | file_exists save_0 + review ×2 + process_alive          |
+| 6   | Auto Save on Maze Entry          | `auto_save_on_maze_entry`        |    ✓    |  ✓  | file_exists save_0 + review (slot `<quick save>`)       |
+| 7   | No Auto Save on Room Change      | `no_auto_save_on_room_change`    |    ✓    |  ✓  | save_absent save_0 + ui_state (mapa zmieniona)          |
+| 8   | Corrupt Save Handling            | `corrupt_save_handling`          |    ✓    |  ✓  | review + process_alive (setup: corrupt save_0)          |
+| 9   | Web Save in localStorage         | `web_save_localstorage`          |    —    |  ✓  | localstorage_exists save_0                              |
+| 10  | Quick Load With No Save          | `empty_slot_load`                |    ✓    |  ✓  | review (toast "brak szybkiego zapisu") + process_alive  |
+| 11  | Load from Main Menu              | `load_from_main_menu`            |    ✓    |  ✓  | file_exists save_0 + review (GAMEPLAY)                  |
+| 12  | UI Flow - Menu Save then Load    | `ui_flow_full_save_load`         |    ✓    |  ✓  | review ×2 (SavePanel z kreską, GAMEPLAY)                |
+| 13  | TextInput Basic                  | `textinput_basic`                |    ✓    |  ✓  | review (ekran demo TextInput)                           |
+| 14  | Manage Saves                     | `manage_saves`                   |    ✓    |  ✓  | review ×2 (modal delete, pusta lista)                   |
+| 15  | Quick Keys Open No Panel         | `quick_keys_open_no_panel`       |    ✓    |  ✓  | review ×2 (GAMEPLAY) + process_alive                    |
+| 16  | Maze Save Blocked                | `maze_save_blocked`              |    ✓    |  ✓  | save_absent save_0 + review (blokada zapisu)            |
+| 17  | Maze Persists Across Save Load   | `maze_persists_across_save_load` |    ✓    |  —  | file_exists save_0 + review ×2 (labirynt przed/po load) |
+| 18  | In-Game Reload Confirm           | `ingame_reload_confirm`          |    ✓    |  ✓  | review (dialog reload) + process_alive                  |
+| 19  | In-Game Esc Shows Continue       | `ingame_esc_shows_continue`      |    ✓    |  ✓  | review ×2 (MENU_MAIN, GAMEPLAY) + process_alive         |
+| 20  | Load from Menu then Esc          | `load_from_menu_then_esc`        |    ✓    |  ✓  | review (MENU_MAIN) + process_alive                      |
+| 21  | Menu Load Cancel Returns to Menu | `menu_load_cancel_returns`       |    ✓    |  ✓  | review (MENU_MAIN) + process_alive                      |
+| 22  | TextInput Demo Hotkey            | `textinput_demo_hotkey`          |    ✓    |  ✓  | review ×2 (MENU_MAIN, ekran demo)                       |
+| 23  | Hammer Dialog Flow               | `hammer_dialog_flow`             |    ✓    |  ✓  | review ×3 + process_alive                               |
+| 24  | Dialog Option Formatting         | `dialog_option_formatting`       |    ✓    |  —  | review ×2 + process_alive                               |
+| 25  | Dialog Save and Load             | `dialog_save_and_load`           |    ✓    |  ✓  | file_exists save_0 + review + process_alive             |
+| 26  | Three Townsfolk Dialogs          | `three_townsfolk_dialogs`        |    ✓    |  —  | review ×6 + process_alive                               |
+| 27  | Language Switch                  | `language_switch`                |    ✓    |  —  | review ×4 + process_alive                               |
+| 28  | Dialog Escape Blocked            | `dialog_escape_blocked`          |    ✓    |  —  | review ×2                                               |
+| 29  | Dialog Open Deterministic        | `dialog_open_deterministic`      |    ✓    |  —  | review + process_alive                                  |
+| 30  | Menu Save Blocked In Maze        | `menu_save_blocked_in_maze`      |    ✓    |  ✓  | review (MENU_MAIN bez "Zapisz grę")                     |
+| 31  | Quick Slot Cannot Be Edited      | `quick_slot_cannot_be_edited`    |    ✓    |  ✓  | file_exists save_0 + review ×2 + process_alive          |
 
 ## Postacie zmigrowane z RPG (dialogi i sentyment)
 

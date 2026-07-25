@@ -99,15 +99,15 @@
         ]
     },
     {
-        "name": "Auto Save on Map Change",
-        "slug": "auto_save_on_map_change",
+        "name": "Auto Save on Maze Entry",
+        "slug": "auto_save_on_maze_entry",
         "platform": ["desktop", "web"],
         "cleanup_saves": [0],
         "actions": [
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "starting_position", "commands": ["screenshot"] },
-            { "slug": "change_map", "commands": ["debug_map_change"], "wait": 2.0 },
-            { "slug": "new_map_loaded", "commands": ["screenshot"] },
+            { "slug": "enter_maze", "commands": ["debug_enter_maze"], "wait": 3.0 },
+            { "slug": "maze_loaded", "commands": ["screenshot"] },
             { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
             { "slug": "select_load", "commands": ["down", "down", "accept"], "wait": 1.0 },
             { "slug": "auto_save_slot_visible", "commands": ["screenshot"] },
@@ -117,6 +117,23 @@
         "assertions": [
             { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
             { "type": "screenshot_review", "target": "auto_save_slot_visible", "expect": "A Load Game panel is open showing an occupied quick save slot named '<quick save>' (or '<szybki zapis>' in Polish) at the top of the list, separated from the rest by a horizontal rule." }
+        ]
+    },
+    {
+        "name": "No Auto Save on Room Change",
+        "slug": "no_auto_save_on_room_change",
+        "platform": ["desktop", "web"],
+        "cleanup_saves": [0],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "starting_position", "commands": ["screenshot"] },
+            { "slug": "change_map", "commands": ["debug_map_change"], "wait": 2.0 },
+            { "slug": "dump_state", "commands": ["debug_ui_state"], "wait": 1.0 },
+            { "slug": "new_map_loaded", "commands": ["screenshot"] }
+        ],
+        "assertions": [
+            { "type": "save_absent", "path": "<save_dir>/save_0.mom" },
+            { "type": "ui_state", "expect": { "top_state": "Scene", "map": "VillageHouse", "is_maze": false } }
         ]
     },
     {
