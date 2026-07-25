@@ -439,9 +439,13 @@ def test_dead_monsters_is_a_cached_map_property() -> None:
     how the kill list got lost for any map other than the live one.
     """
     import ast
+    import inspect
     import pathlib
 
-    source = pathlib.Path(__file__).resolve().parent.parent / "project" / "scene.py"
+    # źródło namierzane przez klasę, nie zaszytą ścieżkę - scene.py jest w trakcie
+    # refactoru B01 pakietem (project/scene/scene.py) i może się jeszcze przesuwać
+    from scene import Scene
+    source = pathlib.Path(inspect.getsourcefile(Scene) or "")
     tree = ast.parse(source.read_text(encoding="utf-8"))
     listed: list[str] = []
     for node in ast.walk(tree):
