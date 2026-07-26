@@ -75,12 +75,21 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   zostaje `@property`). `npc.py` 967 → 745 linii, `inventory.py` 297. Podział
   pakietu `characters/` wg D6 jest kompletny.
 
-## Następny krok: **krok 15 - `config_model/csv_tools.py`**
+- **krok 15**: `config_model/csv_tools.py` (D5) - `store_config_to_csv` /
+  `load_config_from_csv` jako funkcje na `conf`; `Game.__init__` woła je LENIWYM
+  importem w gałęzi zadania CLI, bo moduł ciągnie pydantic (K5). CLI `--task`
+  bez zmian, round-trip `main.py store` + `main.py load` przechodzi.
+  **Uwaga (zastane, nie z refactoru):** `main.py load` na CSV-kach z repo pada
+  `ValueError: invalid literal for int()` - pliki są starsze niż obecna lista
+  `CONF_ENTITIES_TO_STORE` (mają kolumnę `monsters_list`, której już nie ma).
+  Po `store` (regeneracja) `load` działa; regeneracja to zmiana danych, więc
+  decyzja autora, czy CSV-ki przepisać.
 
-Wg planu (D5): narzędzia CSV z `game.py` do `config_model/csv_tools.py` jako
-funkcje na `conf`; CLI `--task` bez zmian. Potem krok 16 (finalizacja: AGENTS.md,
-memory, odhaczenie B01 w audycie, pełny desktop + pełny web, weryfikacja
-wizualna autora).
+## Następny krok: **krok 16 - finalizacja**
+
+AGENTS.md, memory, odhaczenie B01 w `doc/audyt/audyt.md`, pełny `just test`
+(desktop, ~18 min) + pełny `just test-web` (~11,5 min), ss-review i weryfikacja
+wizualna autora.
 
 ## Bramki po każdym kroku (przypomnienie)
 
