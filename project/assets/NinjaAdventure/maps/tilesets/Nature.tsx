@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.0" name="NA_Nature" tilewidth="16" tileheight="16" tilecount="504" columns="24">
+<tileset version="1.10" tiledversion="1.12.2" name="NA_Nature" tilewidth="16" tileheight="16" tilecount="504" columns="24">
  <image source="images/TilesetNature.png" width="384" height="336"/>
  <tile id="240">
   <properties>
@@ -133,17 +133,42 @@
    <property name="destructible" type="bool" value="true"/>
   </properties>
  </tile>
+ <tile id="316">
+  <properties>
+   <property name="destruct_type" value="rock"/>
+   <property name="destructible" type="bool" value="true"/>
+  </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="2" width="16" height="14"/>
+  </objectgroup>
+ </tile>
  <tile id="317">
   <properties>
    <property name="destruct_type" value="rock"/>
    <property name="destructible" type="bool" value="true"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="16" height="16"/>
+   <object id="2" x="0" y="4" width="16" height="12"/>
+  </objectgroup>
  </tile>
  <tile id="318">
   <properties>
    <property name="destruct_type" value="rock"/>
    <property name="destructible" type="bool" value="true"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="4" width="16" height="12"/>
+  </objectgroup>
+ </tile>
+ <tile id="319">
+  <properties>
+   <property name="destruct_type" value="rock"/>
+   <property name="destructible" type="bool" value="true"/>
+  </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="1" y="4" width="14" height="12"/>
+  </objectgroup>
  </tile>
  <tile id="336">
   <properties>

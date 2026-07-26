@@ -121,12 +121,14 @@
    ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
-   "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\")",
+   "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\") or visited(\"BARMAN_ABSINTHRAYNER\", \"009\")",
    "progress": null,
    "progress_total": 0,
    "is_thread": false,
    "is_root": false,
-   "rewards": [],
+   "rewards": [
+    "+20 HP"
+   ],
    "colour": {
     "bg": "#a5d8ff",
     "border": "#1971c2"
@@ -161,7 +163,9 @@
    "progress_total": 0,
    "is_thread": false,
    "is_root": false,
-   "rewards": [],
+   "rewards": [
+    "+50 złota"
+   ],
    "colour": {
     "bg": "#a5d8ff",
     "border": "#1971c2"

@@ -68,7 +68,7 @@ MODE_LABEL: dict[CompletionMode, str] = {
 }
 
 REWARD_UNIT: dict[str, str] = {
-    "money": "zł",
+    "money": "złota",
     "health": "HP",
     "max_health": "max HP",
     "damage": "obrażeń",
