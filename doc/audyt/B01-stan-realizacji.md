@@ -63,12 +63,18 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   `("npc", "player", "movement", "combat")` (K9). `npc.py` 1224 → 1058 linii,
   `combat.py` 216.
 
-## Następny krok: **krok 13 - `characters/animation.py`**
+- **krok 13**: `characters/animation.py` (D6) - `set_sprite_sheet_type`,
+  `generate_masks`, `animate`, `adjust_rect` + `load_sprites` (blok wczytywania
+  sprite sheetu wyjęty z `NPC.__init__`; w `__init__` zostały same deklaracje
+  atrybutów dla mypy, w tym nowe `image`/`mask`/`avatar`). `npc.py` 1058 → 967
+  linii, `animation.py` 142.
 
-Wg planu (D6): `animate`, `set_sprite_sheet_type`, klatki/sprite-sheety,
-`generate_masks`, `adjust_rect`(?) - tak samo funkcje na `npc` + delegaty.
-Potem kroki 14-16 (inventory, game.py/CSV, finalizacja) wg tabeli w dokumencie
-HTML.
+## Następny krok: **krok 14 - `characters/inventory.py`**
+
+Wg planu (D6): `pick_up`, `drop_item`, `can_buy`/`can_sell`,
+`get_tradable_items`, `select_next/prev_item`, `load_items`, `restock_items`,
+`regenerate_money` - tak samo funkcje na `npc` + delegaty. Potem kroki 15-16
+(game.py/CSV, finalizacja) wg tabeli w dokumencie HTML.
 
 ## Bramki po każdym kroku (przypomnienie)
 

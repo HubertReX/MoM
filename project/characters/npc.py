@@ -6,7 +6,6 @@ poszła do ``characters/player.py``). Szczegóły: doc/refactor-rdzenia-B01.md.
 """
 # from dataclasses import dataclass
 import copy
-import math
 import os
 import random
 from enum import Enum, auto
@@ -21,25 +20,16 @@ import settings
 from pygame.math import Vector2 as vec
 from settings import (
     IDLE_EMOTE_DURATION,
-    SPRITE_SHEET_DEFINITIONS,
     ANIMATION_SPEED,
-    AVATAR_SCALE,
     _,
-    CHARACTERS_DIR,
     IS_WEB,
     entity_name,
     get_buy_price_multiplier,
     get_sell_price_multiplier,
     MAX_HOTBAR_ITEMS,
     STEP_COST_WALL,
-    SPRITE_SHEET_DEFINITION_4x7,
-    STUNNED_COLOR,
     TILE_SIZE,
-    WEAPON_DIRECTION_OFFSET,
-    WEAPON_DIRECTION_OFFSET_FROM,
     Point,
-    import_sprite_sheet,
-    lerp_vectors,
     tuple_to_vector,
     vector_to_tuple,
 )
@@ -57,11 +47,10 @@ import npc_state
 from npc_runtime import NpcRuntime
 from npc_schedule import Destination, Slot, current_slot, destinations_of, resolve_at, slot_jitter
 import scene
-from characters import combat, movement
+from characters import animation, combat, movement
 from scene import debug_overlay
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, ItemSprite, Shadow
-from animation.transitions import AnimationTransition
 
 
 #################################################################################################################
@@ -179,34 +168,18 @@ class NPC(pygame.sprite.Sprite):
         self.total_items_weight: float = 0.0
         self.animations: dict[str, list[pygame.surface.Surface]] = {}
 
-        tile_width = 16
-        tile_height = 16
         self.sprite_sheet_type: str = ""
-
-        sprite_file_name = str(CHARACTERS_DIR / self.model.sprite / "SpriteSheet.png")
-        tile_width, sheet = self.set_sprite_sheet_type(sprite_file_name)
-
-        self.animations = import_sprite_sheet(
-            sprite_file_name,
-            tile_width,
-            tile_height,
-            sprite_sheet_definition=sheet,
-        )
         self.masks: dict[str, list[pygame.mask.Mask]] = {}
-        self.animation_speed = ANIMATION_SPEED
-        self.avatar = pygame.image.load(str(CHARACTERS_DIR / self.model.sprite / "Faceset.png")).convert_alpha()
-        # Player avatar will be shown on the right side of the screen
-        # and need to be flipped to face left
-        if self.model.name_EN != "Player":
-            self.avatar = pygame.transform.flip(self.avatar, True, False)
-
-        self.avatar = pygame.transform.scale(self.avatar, (TILE_SIZE * AVATAR_SCALE, TILE_SIZE * AVATAR_SCALE))
-        self.emote: EmoteSprite = EmoteSprite(label_group, pos, emotes)
-
-        self.generate_masks()
+        self.animation_speed: float = ANIMATION_SPEED
         self.frame_index: float = 0.0
-        self.image = self.animations["idle_down"][int(self.frame_index)]
-        self.mask = self.masks["idle_down"][int(self.frame_index)]
+        self.avatar: pygame.surface.Surface
+        # image/mask przypisuje animation.load_sprites - deklaracja tutaj dla mypy
+        self.image: pygame.surface.Surface
+        self.mask: pygame.mask.Mask
+        # sprite sheet -> klatki animacji, maski, avatar i pierwsza klatka
+        animation.load_sprites(self)
+
+        self.emote: EmoteSprite = EmoteSprite(label_group, pos, emotes)
 
         self.tileset_coord: Point = self.get_tileset_coord()
         self.rect: pygame.FRect = self.image.get_frect(midbottom = self.pos)
@@ -318,16 +291,7 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
 
     def set_sprite_sheet_type(self, sprite_file_name: str) -> tuple[int, dict[str, list[tuple[int, int]]]]:
-        width = pygame.image.load(sprite_file_name).get_width()
-        if width in SPRITE_SHEET_DEFINITIONS:
-            sheet = SPRITE_SHEET_DEFINITIONS[width]["sheet"]
-            tile_width = SPRITE_SHEET_DEFINITIONS[width]["tile_width"]
-            self.sprite_sheet_type = SPRITE_SHEET_DEFINITIONS[width]["type"]
-        else:
-            print(f"[red]ERROR![/] Unknown sprite sheet definitions width {width} for NPC {self.name}")
-            sheet = SPRITE_SHEET_DEFINITION_4x7
-            self.sprite_sheet_type = "4x7"
-        return tile_width, sheet
+        return animation.set_sprite_sheet_type(self, sprite_file_name)
 
     #############################################################################################################
 
@@ -484,10 +448,7 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def generate_masks(self) -> None:
-        # _mask = pygame.mask.from_surface(self.image)
-        for key, animation in self.animations.items():
-            masks = [pygame.mask.from_surface(frame) for frame in animation]
-            self.masks[key] = masks
+        animation.generate_masks(self)
 
     #############################################################################################################
 
@@ -525,32 +486,7 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
     # MARK: animate
     def animate(self, state: str, dt: float, loop: bool = True) -> None:
-        self.frame_index += dt
-
-        if self.frame_index >= len(self.animations[state]):
-            self.frame_index = 0.0 if loop else len(self.animations[state]) - 1.0
-
-        self.image = self.animations[state][int(self.frame_index)].copy()
-        self.mask = self.masks[state][int(self.frame_index)].copy()
-
-        self.emote.animate(dt)
-        if self.is_stunned:
-            # self.emote.set_emote("shocked_anim")
-            red_filter = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
-            red_filter.fill(STUNNED_COLOR)
-            # self.image.blit(red_filter, (0, 0))
-            # red_filter.blit(self.image, (0, 0))
-            # self.image = red_filter
-
-            value = math.sin(self.game.time_elapsed * 200.0)
-            value = 255 if value >= 0 else 0
-            self.image.set_alpha(value)
-            if self.selected_weapon and self.selected_weapon.image:
-                self.selected_weapon.image.set_alpha(value)
-        else:
-            self.image.set_alpha(255)
-            if self.selected_weapon and self.selected_weapon.image:
-                self.selected_weapon.image.set_alpha(255)
+        animation.animate(self, state, dt, loop)
 
     #############################################################################################################
     def get_direction_360(self) -> str:
@@ -843,34 +779,7 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def adjust_rect(self) -> None:
-        self.tileset_coord = self.get_tileset_coord()
-        # display sprite n pixels above position so the shadow doesn't stick out from the bottom
-        self.rect.midbottom = self.pos + vec(0,  -self.jumping_offset - 3)  # type: ignore[union-attr, assignment]
-        # 'hitbox' for collisions
-        self.feet.midbottom = vec(self.pos[0], self.pos[1])  # type: ignore[assignment]
-        # shadow
-        self.shadow.rect.midbottom =  vec(self.pos[0], self.pos[1])  # type: ignore[assignment]
-        self.health_bar.rect.midtop =  vec(self.pos[0], self.pos[1])  # type: ignore[assignment]
-
-        # if self.emote:
-        self.emote.rect.midbottom = self.rect.midtop
-
-        if self.selected_weapon and self.is_attacking:
-            direction = self.get_direction_360()
-            # how far between start attack time and weapon cooldown are we
-            factor: float = max(0, self.weapon_cooldown - self.game.time_elapsed) / \
-                (self.weapon_cooldown - self.attack_time)
-            weapon_offset_from = WEAPON_DIRECTION_OFFSET_FROM[direction]
-            weapon_offset_to = WEAPON_DIRECTION_OFFSET[direction]
-            # smooth out the move using a transition function
-            # shift by 0.5 to the weapon is moved away the farthest
-            # in the middle of the transition
-            # in_out_quad in_out_expo in_out_elastic in_out_back
-            factor = AnimationTransition.in_out_elastic(1.0 - abs(factor - 0.5) * 2.0)
-            offset = lerp_vectors(weapon_offset_from, weapon_offset_to, factor)
-            self.selected_weapon.rect.center = vec(self.pos[0], self.pos[1]) + offset   # type: ignore[assignment]
-            self.selected_weapon.image = self.selected_weapon.image_directions[direction].copy()
-            self.selected_weapon.mask = self.selected_weapon.masks[direction]
+        animation.adjust_rect(self)
 
     #############################################################################################################
     def debug(self, msgs: list[str]) -> None:
