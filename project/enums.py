@@ -62,7 +62,5 @@ class LanguageEnum(StrEnum):
 
 
 class TaskEnum(StrEnum):
-    load   = auto()
-    store  = auto()
     update = auto()
     run    = auto()

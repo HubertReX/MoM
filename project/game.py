@@ -109,7 +109,7 @@ traceback.install(show_locals=True, width=150)
 
 class Game:
     # MARK: Game
-    def __init__(self, task: str, entities: list[str]) -> None:  # 1_004_511
+    def __init__(self, task: str) -> None:  # 1_004_511
         import platform
 
         if IS_WEB and not USE_WEB_SIMULATOR:
@@ -118,15 +118,7 @@ class Game:
             self.log = print
         self.conf = load_config(CONFIG_FILE)
 
-        # print(task, entities)
-        if task in (TaskEnum.store, TaskEnum.load):
-            # desktop-only (pydantic) - import leniwy, żeby nie wciągać go na web (K5)
-            from config_model import csv_tools
-            if task == TaskEnum.store:
-                csv_tools.store_config_to_csv(self.conf, entities)
-            else:
-                csv_tools.load_config_from_csv(self.conf, entities)
-        elif task == TaskEnum.update:
+        if task == TaskEnum.update:
             update_config_schema()
 
         if task != TaskEnum.run:

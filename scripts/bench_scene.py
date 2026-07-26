@@ -42,7 +42,7 @@ def main() -> None:
     from game import Game
     from scene import Scene
 
-    game = Game("run", [])
+    game = Game("run")
     scene = Scene(game, "Village", "start")
     scene.enter_state()
 

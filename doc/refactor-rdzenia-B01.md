@@ -20,8 +20,9 @@ wznowienia: [audyt/B01-stan-realizacji.md](audyt/B01-stan-realizacji.md)
   docelowo flaga mieszka w `scene/debug_overlay.py`.
 - **D4 - obsługa INPUTS:** wychodzi z `Scene.update` do `scene/player_actions.py`
   (rozszerzenie szkicu z zadania - bez tego update nie będzie spisem treści).
-- **D5 - narzędzia CSV z `game.py`:** do `config_model/csv_tools.py` (funkcje na `conf`);
-  CLI `--task` bez zmian.
+- **D5 - narzędzia CSV z `game.py`:** wyszły z `Game`; ostatecznie (2026-07-26) usunięte
+  razem z komendami CLI `store`/`load` - jedyną ścieżką CSV↔`config.json` jest
+  `just import-entities`.
 - **D6 - pakiet `characters/`:** 6 modułów - `npc`, `player`, `movement`, `combat`,
   `animation`, `inventory` (handel/ekwipunek; rozszerzenie szkicu, żeby `npc.py`
   nie przekroczył 800 linii).

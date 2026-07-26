@@ -75,15 +75,17 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   zostaje `@property`). `npc.py` 967 → 745 linii, `inventory.py` 297. Podział
   pakietu `characters/` wg D6 jest kompletny.
 
-- **krok 15**: `config_model/csv_tools.py` (D5) - `store_config_to_csv` /
-  `load_config_from_csv` jako funkcje na `conf`; `Game.__init__` woła je LENIWYM
-  importem w gałęzi zadania CLI, bo moduł ciągnie pydantic (K5). CLI `--task`
-  bez zmian, round-trip `main.py store` + `main.py load` przechodzi.
-  **Uwaga (zastane, nie z refactoru):** `main.py load` na CSV-kach z repo pada
-  `ValueError: invalid literal for int()` - pliki są starsze niż obecna lista
-  `CONF_ENTITIES_TO_STORE` (mają kolumnę `monsters_list`, której już nie ma).
-  Po `store` (regeneracja) `load` działa; regeneracja to zmiana danych, więc
-  decyzja autora, czy CSV-ki przepisać.
+- **krok 15**: narzędzia CSV z `game.py` (D5). Najpierw przeniesione do
+  `config_model/csv_tools.py`, a po diagnozie **USUNIĘTE razem z komendami CLI
+  `main.py store` / `main.py load`** (decyzja autora 2026-07-26): żadna receptura
+  ich nie wołała, a jedyną żywą ścieżką CSV↔`config.json` jest
+  `just import-entities` (`config_model/import_entities.py`, `--export` w drugą
+  stronę). Stary `load` padał `ValueError: invalid literal for int()` na pustych
+  komórkach (CSV pisane przez `import_entities` mają WSZYSTKIE kolumny modelu,
+  pusta = default), a stary `store` zapisywał tylko wąską listę
+  `CONF_ENTITIES_TO_STORE` - uruchomiony skasowałby z `characters.csv` kolumny
+  `sprite`, `routine`, `home`/`work` i wagi sentymentu. `TaskEnum` ma już tylko
+  `run`/`update`, `Game(task)` i `main(task)` straciły parametr `entities`.
 
 ## Następny krok: **krok 16 - finalizacja**
 

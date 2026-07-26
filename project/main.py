@@ -27,7 +27,7 @@ environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 # https://www.reddit.com/r/pygame/comments/12twl0e/cannot_rumble_dualshock_4_via_bluetooth_in_pygame/
 environ["SDL_JOYSTICK_HIDAPI_PS4_RUMBLE"] = "1"
 
-from settings import IS_WEB, USE_WEB_SIMULATOR, CONF_ENTITIES_TO_STORE  # noqa: E402
+from settings import IS_WEB, USE_WEB_SIMULATOR  # noqa: E402
 
 if not IS_WEB:
     import click
@@ -46,15 +46,14 @@ random.seed(seed)
 # np.random.seed(seed)
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "/h", "-?", "/?", "--help"])
-ENTITIES = ["all"] + list(CONF_ENTITIES_TO_STORE.keys())
 
 #############################################################################################################
 
 
-def main(task: str, entities: list[str]) -> None:
+def main(task: str) -> None:
     print(rule.Rule(title="[bright_yellow]START[/]", characters="#"))
 
-    game = Game(task, entities)
+    game = Game(task)
     asyncio.run(game.loop())
     print(rule.Rule(title="[bright_yellow]END[/]", characters="#"))
 
@@ -63,7 +62,7 @@ def main(task: str, entities: list[str]) -> None:
 
 def init() -> None:
     if IS_WEB:
-        main(task=TaskEnum.run, entities=[])
+        main(task=TaskEnum.run)
     else:
         cli(max_content_width=120)
 
@@ -74,45 +73,26 @@ if not IS_WEB:
     @click.group(context_settings=CONTEXT_SETTINGS,
                  invoke_without_command=True,
                  help="There are several task that can be performed automatically.")
-    @click.option("-e", "--entity", "entities", default=["all"], type=click.Choice(ENTITIES), multiple=True,
-                  show_default=True,
-                  help="For load and store COMMAND, which entity to be processed")
     @click.pass_context
-    def cli(ctx: click.core.Context, entities: list[str]) -> None:
-        ctx.ensure_object(dict)
-        ctx.obj["entities"] = entities
+    def cli(ctx: click.core.Context) -> None:
+        # CSV <-> config.json obsługuje `just import-entities`
+        # (config_model/import_entities.py) - jedyna ścieżka do plików CSV.
         if ctx.invoked_subcommand is None:
-            main(task="run", entities=[])
-
-    #############################################################################################################
-    @cli.command()
-    @click.pass_context
-    def store(ctx: click.core.Context) -> None:
-        "read 'config.json' and store to '<entities>.csv'"
-
-        main(task=TaskEnum.store, entities=ctx.obj["entities"])
-
-    #############################################################################################################
-    @cli.command()
-    @click.pass_context
-    def load(ctx: click.core.Context) -> None:
-        "load '<entities>.csv' and write to 'config.json'"
-
-        main(task=TaskEnum.load, entities=ctx.obj["entities"])
+            main(task="run")
 
     #############################################################################################################
     @cli.command()
     def run() -> None:
         "run the game  [default]"
 
-        main(task=TaskEnum.run, entities=[])
+        main(task=TaskEnum.run)
 
     #############################################################################################################
     @cli.command()
     def update() -> None:
         "update config schema 'config_schema.json'"
 
-        main(task=TaskEnum.update, entities=[])
+        main(task=TaskEnum.update)
 
 #############################################################################################################
 
