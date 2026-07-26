@@ -31,11 +31,9 @@ from settings import (
     get_buy_price_multiplier,
     get_sell_price_multiplier,
     MAX_HOTBAR_ITEMS,
-    PUSHED_TIME,
     STEP_COST_WALL,
     SPRITE_SHEET_DEFINITION_4x7,
     STUNNED_COLOR,
-    STUNNED_TIME,
     TILE_SIZE,
     WEAPON_DIRECTION_OFFSET,
     WEAPON_DIRECTION_OFFSET_FROM,
@@ -45,7 +43,7 @@ from settings import (
     tuple_to_vector,
     vector_to_tuple,
 )
-from enums import AttitudeEnum, ItemTypeEnum, RaceEnum, NPCEventActionEnum
+from enums import ItemTypeEnum, RaceEnum, NPCEventActionEnum
 if IS_WEB:
     from config_model.config import Character
 else:
@@ -59,10 +57,10 @@ import npc_state
 from npc_runtime import NpcRuntime
 from npc_schedule import Destination, Slot, current_slot, destinations_of, resolve_at, slot_jitter
 import scene
-from characters import movement
+from characters import combat, movement
 from scene import debug_overlay
 import splash_screen
-from objects import ChestSprite, EmoteSprite, HealthBar, ItemSprite, NotificationTypeEnum, Shadow
+from objects import ChestSprite, EmoteSprite, HealthBar, ItemSprite, Shadow
 from animation.transitions import AnimationTransition
 
 
@@ -773,44 +771,7 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def die(self, drop_items: bool = True) -> None:
-        self.scene.NPCs = [npc for npc in self.scene.NPCs if npc != self]
-        self.shadow.kill()
-        self.health_bar.kill()
-        self.emote.kill()
-
-        # drop items and money on the ground
-        if self.model.name_EN != "Player" and drop_items:
-            self.is_dead = True
-            # The line above is the only thing that makes this a *death* - an NPC
-            # leaving the map via an exit also calls die(), but with drop_items=False.
-            # Record it here so the save still knows about the kill after this sprite
-            # is gone from scene.NPCs (see Scene.dead_monsters).
-            self.scene.note_monster_death(self.name)
-
-            for item in self.items:
-                self.selected_item_idx = len(self.items) - 1
-                if self.drop_item():
-                    item.rect.center = self.get_random_safe_pos(
-                        self.pos, check_allowed_zones=False)  # type: ignore[assignment]
-                    self.scene.items.append(item)
-                    self.scene.item_sprites.add(item)
-                    self.scene.group.add(item, layer=self.scene.sprites_layer - 1)
-
-            if self.model.money >  0:
-                pos: vec = self.get_random_safe_pos(self.pos, check_allowed_zones=False)  # type: ignore[assignment]
-                item = self.scene.create_item("golden_coin", int(pos[0]), int(pos[1]))
-                item.model.value = self.model.money
-                self.scene.items.append(item)
-                self.scene.item_sprites.add(item)
-                self.scene.group.add(item, layer=self.scene.sprites_layer - 1)
-
-        if self.model.name_EN == "Player" and self.model.health <= 0:
-            self.is_dead = True
-            self.scene.exit_state()
-            from ui.panels.save_load import DeadState
-            DeadState(self.game).enter_state()
-
-        self.kill()
+        combat.die(self, drop_items)
 
     #############################################################################################################
     def update(self, dt: float) -> None:
@@ -820,12 +781,7 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
 
     def check_cooldown(self) -> None:
-        if self.is_attacking and self.game.time_elapsed > self.weapon_cooldown:
-            self.is_attacking = False
-            self.scene.group.remove(self.selected_weapon)
-
-        if not self.can_switch_weapon and self.game.time_elapsed > self.switch_cooldown:
-            self.can_switch_weapon = True
+        combat.check_cooldown(self)
 
     #############################################################################################################
 
@@ -835,146 +791,22 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
     # MARK: process_custom_event
     def process_custom_event(self, **kwargs: str) -> None:
-        # if self.model.name_EN == "Player":
-        #     print(kwargs["action"])
-
-        action = kwargs.get("action", "")
-        if action == NPCEventActionEnum.pushed:
-            # pushed state is invalidated
-            # show health bar
-            self.health_bar.hide()
-        elif action ==  NPCEventActionEnum.stunned:
-            # stunned state is invalidated
-            # show health bar
-            self.health_bar.hide()
-            self.is_stunned = False
-            if self.model.health == 0:
-                self.die()
-
-        elif action ==  NPCEventActionEnum.attacking:
-            # attack cool off end
-            self.is_attacking = False
-            self.scene.group.remove(self.selected_weapon)
-        elif action ==  NPCEventActionEnum.switching_weapon:
-            # switching weapon cool off end
-            self.can_switch_weapon = True
-        else:
-            print(f"unknown action '{action}' for npc '{self.name}'")
-            self.scene.add_notification(
-                f"unknown action '[act]{action}[/act]' for npc '[char]{self.name}[/char]'", NotificationTypeEnum.debug)
+        combat.process_custom_event(self, **kwargs)
 
     #############################################################################################################
     # MARK: encounter
 
     def encounter(self, oponent: "NPC") -> None:
-        if oponent.model.attitude == AttitudeEnum.enemy:
-            # deal damage
-            self.model.health -= oponent.model.damage
-            if self.selected_weapon:
-                damage = self.selected_weapon.model.damage
-            else:
-                damage = self.model.damage
-            oponent.model.health -= damage
-
-            self.model.health = max(0, self.model.health)
-            oponent.model.health = max(0, oponent.model.health)
-
-            # print(f"{self.name}: {self.model.health} opponent {oponent.name} {oponent.model.health}")
-            if self.model.health == 0:
-                self.die()
-
-            # if oponent.model.health == 0:
-            #     oponent.die()
-
-            self.is_stunned = True
-            self.set_event_timer(self, NPCEventActionEnum.stunned, STUNNED_TIME, 1)
-            self.health_bar.show()
-
-            oponent.is_stunned = True
-            oponent.set_event_timer(oponent, NPCEventActionEnum.stunned, STUNNED_TIME, 1)
-            oponent.emote.set_temporary_emote("fight_anim", 4.0)
-
-            # show health bar (for STUNNED_TIME ms)
-            # self.health_bar.set_bar(self.model.health / self.model.max_health, self.game)
-            oponent.health_bar.show()
-
-            # push the npc
-            player_move = self.pos - oponent.pos
-            if not player_move == vec(0, 0):
-                # self.pos += player_move.normalize() * 8
-                oponent.pos -= player_move.normalize() * 8
-
-            # oponent_move = oponent.pos - oponent.prev_pos
-            # if not oponent_move == vec(0, 0):
-            #     oponent.pos += oponent_move.normalize() * TILE_SIZE
-            self.acc = vec(0, 0)
-            oponent.acc = vec(0, 0)
-            self.adjust_rect()
-            oponent.adjust_rect()
-        else:
-            # push the npc
-            player_move = self.pos - self.prev_pos
-            if player_move != vec(0, 0):
-                # oponent.pos += player_move.normalize() * TILE_SIZE
-                oponent.emote.set_temporary_emote("shocked_anim", 4.0)
-            oponent.adjust_rect()
-
-            self.set_event_timer(self,    NPCEventActionEnum.pushed, PUSHED_TIME, 1)
-            oponent.set_event_timer(oponent, NPCEventActionEnum.pushed, PUSHED_TIME, 1)
-
-            # show health bar (for PUSHED_TIME ms)
-            # self.health_bar.set_bar(self.model.health / self.model.max_health, self.game)
-            oponent.health_bar.show()
+        combat.encounter(self, oponent)
 
     #############################################################################################################
     # MARK: hit
     def hit(self, oponent: "NPC") -> None:
-        if oponent.model.attitude == AttitudeEnum.enemy and self.is_attacking and self.selected_weapon:
-            # deal damage to oponent only since we hit wit weapon
-            damage = self.selected_weapon.model.damage
-            oponent.model.health -= damage
-            oponent.model.health = max(0, oponent.model.health)
-
-            # print(f"{self.name}: {self.model.health} opponent {oponent.name} {oponent.model.health}")
-            # if oponent.model.health == 0:
-            #     oponent.die()
-
-            oponent.is_stunned = True
-            oponent.set_event_timer(oponent, NPCEventActionEnum.stunned, STUNNED_TIME, 1)
-
-            # show health bar (for STUNNED_TIME ms)
-            # self.health_bar.set_bar(self.model.health / self.model.max_health, self.game)
-            oponent.health_bar.show()
-
-            # push the npc
-            player_move = self.pos - oponent.pos
-            if not player_move == vec(0, 0):
-                # self.pos += player_move.normalize() * 8
-                oponent.pos -= player_move.normalize() * 8
-
-            # self.acc = vec(0, 0)
-            oponent.acc = vec(0, 0)
-            # self.adjust_rect()
-            oponent.adjust_rect()
-        # else:
-        #     pass
-            # push the npc
-            # player_move = self.pos - self.prev_pos
-            # if player_move != vec(0, 0):
-            #     oponent.pos += player_move.normalize() * TILE_SIZE
-            # oponent.adjust_rect()
-
-            # self.set_event_timer(self,    NPCEventActionEnum.pushed, PUSHED_TIME, 1)
-            # self.set_event_timer(oponent, NPCEventActionEnum.pushed, PUSHED_TIME, 1)
-
-            # # show health bar (for PUSHED_TIME ms)
-            # self.health_bar.set_bar(self.model.health / self.model.max_health, self.game)
-            # oponent.health_bar.set_bar(oponent.model.health / oponent.model.max_health, self.game)
+        combat.hit(self, oponent)
 
     #############################################################################################################
     def set_event_timer(self, npc: "NPC", action: NPCEventActionEnum, interval: int, repeat: int) -> None:
-        event = pygame.event.Event(npc.custom_event_id, action=action)
-        pygame.time.set_timer(event, interval, repeat)
+        combat.set_event_timer(self, npc, action, interval, repeat)
 
     #############################################################################################################
     def set_emote(self, emote: str) -> None:

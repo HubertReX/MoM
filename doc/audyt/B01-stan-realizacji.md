@@ -57,11 +57,18 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   działa. `__getattr__` pakietu ma teraz trzeci fallback na `movement` (K9).
   `npc.py` 1662 → 1224 linii, `movement.py` 560 linii.
 
-## Następny krok: **krok 12 - `characters/combat.py`**
+- **krok 12**: `characters/combat.py` (D6) - `die`, `encounter`, `hit`,
+  `check_cooldown`, `process_custom_event`, `set_event_timer` jako funkcje na
+  `npc` + delegaty na klasie. `__getattr__` pakietu przeszedł na pętlę po
+  `("npc", "player", "movement", "combat")` (K9). `npc.py` 1224 → 1058 linii,
+  `combat.py` 216.
 
-Wg planu (D6): `encounter`, `hit`, `die`, stun/cooldown - tak samo funkcje na
-`npc` + delegaty. Potem kroki 13-16 (animation, inventory, game.py/CSV,
-finalizacja) wg tabeli w dokumencie HTML.
+## Następny krok: **krok 13 - `characters/animation.py`**
+
+Wg planu (D6): `animate`, `set_sprite_sheet_type`, klatki/sprite-sheety,
+`generate_masks`, `adjust_rect`(?) - tak samo funkcje na `npc` + delegaty.
+Potem kroki 14-16 (inventory, game.py/CSV, finalizacja) wg tabeli w dokumencie
+HTML.
 
 ## Bramki po każdym kroku (przypomnienie)
 
