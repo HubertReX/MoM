@@ -71,7 +71,7 @@ Dopisane po realizacji Fazy 1 (znaleziska z sesji 2026-07-25, oba zastane - nie 
 
 ### Faza 2 - wielki refactor rdzenia
 
-- [x] [B01 - refactor `scene.py`/`characters.py`: dokument architektury docelowej + wykonanie (epic, model Fable/Opus)](B01-refactor-rdzenia.md) - P0
+- [x] [B01 - refactor `scene.py`/`characters.py`: dokument architektury docelowej + wykonanie (epic, model Fable/Opus)](B01-refactor-rdzenia.md) - P0 ✅ 2026-07-26 (kroki 0-16: pakiety `project/scene/` i `project/characters/`, `config_model/csv_tools.py`; stan: [B01-stan-realizacji.md](B01-stan-realizacji.md))
 - [x] [A08 - web-runner: jeden serwer pygbag na przebieg + `just test-smoke`](A08-web-runner-jeden-pygbag-i-smoke.md) - P1 ✅ 2026-07-25 (pełny web 25 → 11,5 min; `just test-smoke` 96 s)
 - [ ] G01 - codegen `config.py` (web) z `config_pydantic.py` - P1
 - [ ] B02 - polityka wersji save + minimalna migracja - P2

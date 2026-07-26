@@ -11,7 +11,7 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 - **Stos stanów: `game.states`** (lista). Bazowa klasa `State` w `state.py`:
   - `enter_state()` — wkłada stan na stos, `exit_state()` — zdejmuje.
   - **Tylko `states[-1]` (wierzch stosu) dostaje `update()` i `draw()`** w danej klatce.
-- **Stany:** `Scene` (`scene.py`, rozgrywka na mapie), `MenuScreen` i podklasy
+- **Stany:** `Scene` (`scene/scene.py`, rozgrywka na mapie), `MenuScreen` i podklasy
   (`ui/panels/main_menu.py`), `SplashScreen` (`splash_screen.py`). Przejścia ekranowe
   (fade/koło): `transition.py`.
 
@@ -19,8 +19,8 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 
 | Plik                       | Rola                                                                                            | Uwaga                                            |
 | -------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `scene.py`                 | Ładowanie mapy `.tmx` (pytmx), render pyscroll `BufferedRenderer`, kolizje, czas/dzień-noc, NPC | **73K — duży**                                   |
-| `characters.py`            | `NPC` i `Player`: animacja, A*, movement, walka, inventory                                      | **66K — duży**                                   |
+| `scene/`                   | Pakiet sceny (B01): `scene.py` orkiestrator + `map_loader`, `world_clock`, `collisions`, `player_actions`, `routines_director`, `map_state`, `night_filter`, `intro`, `debug_overlay`, `agent_api` | `from scene import Scene` bez zmian |
+| `characters/`              | Pakiet postaci (B01): `npc.py` (stan `NPC`) + `player.py`, `movement.py` (A*, waypointy, fizyka), `combat.py`, `animation.py`, `inventory.py` | `from characters import NPC, Player` bez zmian |
 | `ui/`                      | **Własny toolkit UI** (retained-mode, czysty pygame-ce). Patrz niżej.                           | zastąpił `ui.py`+`menus.py`+`rich_text.py`       |
 | `dialog/`                  | **System dialogów** (encje grafu, builder, silnik warunków mini-DSL). Patrz niżej.              | czysta logika, bez pygame; web-safe              |
 | `settings.py`              | **Wszystkie stałe** gry + definicje sprite-sheetów                                              | **30K**                                          |
@@ -200,9 +200,9 @@ weryfikuje to po AST i zwraca błąd, gdy któryś `test_*` nie jest nigdzie zar
 
 | Obszar                  | Desktop                         | Web                     | Lokalizacja                                                            |
 | ----------------------- | ------------------------------- | ----------------------- | ---------------------------------------------------------------------- |
-| Config                  | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters.py:48`, `objects.py:19`, `ui/panels/hud.py` |
+| Config                  | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters/npc.py:33`, `objects.py:19`, `ui/panels/hud.py` |
 | Shadery                 | dostępne (gdy `USE_SHADERS`)    | wyłączone (wydajność)   | `USE_SHADERS=False` `settings.py:141`                                  |
-| Filtr dzień-noc (alpha) | tak                             | **nie**                 | `scene.py:1515` `if USE_ALPHA_FILTER and not IS_WEB:`                  |
+| Filtr dzień-noc (alpha) | tak                             | **nie**                 | `scene/scene.py:642` `if USE_ALPHA_FILTER and not IS_WEB:`             |
 | Logowanie               | `print`                         | `platform.console.log`  | `game.py`                                                              |
 | Asyncio                 | stdlib                          | `pygbag.aio`            | `main.py`                                                              |
 | Wyjście z gry           | zamyka okno                     | zostaje w przeglądarce  | `state.py`                                                             |
@@ -584,11 +584,11 @@ które nie wyprodukowały bloku JSON.
   "Corrupt Save Handling", "Maze Save Blocked", ...).
   Poniższe punkty opisują to, co **poza** tym systemem trzyma stan w RAM.
 - **Persystencja między mapami w obrębie sesji = w RAM**: `Scene` cache'uje stan w
-  `loaded_maps` (`scene.py:158`) i `loaded_NPCs` (`scene.py:214`). Wyjście z mapy →
-  `store_map()` (`scene.py:717`) robi snapshot; powrót → `restore_map()` (`scene.py:726`)
-  przywraca. Wygenerowany labirynt zachowuje układ póki jest w `loaded_maps` (`scene.py:669`).
-- **Śmierć gracza** (`characters.py:811`): przy `health <= 0` → `exit_state()` bieżącej sceny,
-  `player.reset()` (`characters.py:1020`: pełne zdrowie, **przeładowanie startowego ekwipunku
+  `loaded_maps` (`scene/scene.py:102`) i `loaded_NPCs` (`scene/scene.py:202`). Wyjście z mapy →
+  `store_map()` (`scene/map_state.py:75`) robi snapshot; powrót → `restore_map()`
+  (`scene/map_state.py:83`) przywraca. Wygenerowany labirynt zachowuje układ póki jest w `loaded_maps`.
+- **Śmierć gracza** (`characters/combat.py`, `die()`): przy `health <= 0` → `exit_state()` bieżącej sceny,
+  `player.reset()` (`characters/npc.py:694`: pełne zdrowie, **przeładowanie startowego ekwipunku
   z configu — zebrane przedmioty przepadają**, wyczyszczenie flag), nowa `Scene("Village",
   "start")` + splash `"GAME OVER"`. To pełny respawn w wiosce, nie wczytanie zapisu.
 - **Persystencja ustawień** (`save_load/display_settings.py`): rozdzielczość, fullscreen
@@ -644,7 +644,7 @@ mapy (`store_map`/`restore_map`), a `go_to_map()`/`reload_map()` wołają `weath
 przed przebudową, żeby nie przeciekały uzbrojone timery między mapami.
 
 **Rozpad obiektów (`ParticleDestructible`)** działa **poza** reżyserem i flagą pogody:
-`scene.py` przy zniszczeniu krzaka/kamienia woła `add()` bezpośrednio; `start()/stop()`
+`scene/collisions.py:115` przy zniszczeniu krzaka/kamienia woła `add()` bezpośrednio; `start()/stop()`
 to no-opy. To jednorazowy wystrzał cząstek, nie cykl.
 
 **Pułapka (przezroczystość):** `emit()` blituje z `special_flags=pygame.BLEND_ALPHA_SDL2`.
@@ -668,7 +668,7 @@ klucz nigdy się nie powtarza, `@cache` = 0 trafień + nieograniczony wzrost pam
 - Definicje klatek: `SPRITE_SHEET_DEFINITION_*` (`settings.py:484+`) → mapowanie po szerokości
   sprite'a w `SPRITE_SHEET_DEFINITIONS` (`settings.py:605`, warianty 2x1/2x2/3x3/4x7).
 - Klucze animacji: `"{akcja}_{kierunek}"` (np. `run_left`, `weapon_up`).
-- Kierunek liczony z kąta wektora prędkości (`get_direction_360` w `characters.py`).
+- Kierunek liczony z kąta wektora prędkości (`get_direction_360` w `characters/movement.py`).
 - **Dodanie postaci:** assety w `assets/NinjaAdventure/...` + wpis w `config.json`
   (sprite, statystyki); jeśli nietypowy layout sheetu — dodaj definicję w `settings.py`.
 
@@ -679,8 +679,8 @@ klucz nigdy się nie powtarza, `@cache` = 0 trafień + nieograniczony wzrost pam
   podklasa `NPC_State` + warunek w `get_new_state()` + klucze animacji w sheetcie.
 - **AI ruchu:** waypointy z mapy Tiled / random-walk (animals) / pościg A* (monsters,
   budzą się w `MONSTER_WAKE_DISTANCE`, `settings.py:112`). Ścieżki: `find_path()`
-  (`characters.py:647`) → `a_star_cached` z `maze_generator` (`characters.py:11`).
-- **Dialog i sentyment (T-023):** instancja `NPC` (`characters.py`) rozszerzona o:
+  (`characters/movement.py:357`) → `a_star_cached` z `maze_generator` (`characters/movement.py:18`).
+- **Dialog i sentyment (T-023):** instancja `NPC` (`characters/npc.py`) rozszerzona o:
   `dialog_key` (z modelu), `dialog` (bieżący `DialogNode` / kursor w grafie),
   `selected_options_dict`, `sentiment` (0–100, start = `model.friendly * 100`), `disposition`
   (z modelu) oraz `known_disposition` (odkrywana przez gracza, pusta na start).
@@ -717,8 +717,8 @@ klucz nigdy się nie powtarza, `@cache` = 0 trafień + nieograniczony wzrost pam
   przefiltrowane opcje spełniające warunki mini-DSL.
 - Wejście hybrydowe: strzałki / drążek + `accept`, klawisze `1-9`, kliknięcia myszy.
 - `ui/game_ui.py` obsługuje nawigację i rising-edge dla `up`/`down`/`accept`/`talk`,
-  a `characters.py` otwiera panel gdy gracz naciśnie `talk` w zasięgu NPC.
+  a `characters/player.py:107` otwiera panel gdy gracz naciśnie `talk` w zasięgu NPC.
 - Zasięg rozmowy to `FRIENDLY_WAKE_DISTANCE` (`settings.py:175`); wymagana bliskość
-  NPC jest sprawdzana w `scene.py` (`npc.model.attitude == friendly` i warunek dialogu).
+  NPC jest sprawdzana w `scene/collisions.py:151` (`npc.model.attitude == friendly` i warunek dialogu).
 - Przykładowy dialog: Hammer w `config.json` + spawn w `Village.tmx`;
   scenariusz testowy: `tests/scenarios.json` → "Hammer Dialog Flow".
