@@ -87,11 +87,34 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   `sprite`, `routine`, `home`/`work` i wagi sentymentu. `TaskEnum` ma już tylko
   `run`/`update`, `Game(task)` i `main(task)` straciły parametr `entities`.
 
-## Następny krok: **krok 16 - finalizacja**
+- **krok 16 (finalizacja)**: `project/AGENTS.md` opisuje pakiety `scene/` i
+  `characters/` (wszystkie odwołania `scene.py:NNN` / `characters.py:NNN`
+  przepisane na nowe pliki i linie), B01 odhaczone w `doc/audyt/audyt.md`,
+  memory sesji zaktualizowane. Pełne zestawy przebiegły (wyniki niżej).
 
-AGENTS.md, memory, odhaczenie B01 w `doc/audyt/audyt.md`, pełny `just test`
-(desktop, ~18 min) + pełny `just test-web` (~11,5 min), ss-review i weryfikacja
-wizualna autora.
+## Stan po kroku 16: **B01 zamknięty od strony kodu**
+
+Zostaje tylko **weryfikacja wizualna autora** (gra odpalona ręcznie).
+
+Pełny desktop (`just test-agent`, ze ss-review): **19/30 zielonych**.
+Pełny web (`just test-web`, ze ss-review): **17/25 zielonych**.
+
+Rozbiór czerwonych - **żadna nie jest regresją refactoru**:
+
+- 10 (desktop) / 7 (web) to werdykty `screenshot_review[...]` modelu vision
+  (`dialog panel not visible`, `delete-confirmation modal missing`,
+  `expected DIALOG, found GAMEPLAY`). Programowe asercje `ui_state` (A02) w tych
+  samych scenariuszach przechodzą, więc gra była we właściwym stanie - to znany
+  limit: headless SDL nie renderuje modalnych paneli na zrzucie (memory
+  `deterministic-dialog-testing`, `headless-screenshot-not-faithful`). Kandydat
+  na osobne zadanie: albo zrzucać modale przez `prev_state.draw`, albo wyłączyć
+  ss-review dla scenariuszy z panelem modalnym.
+- 1 (na obu platformach) to dryf danych świata: `No Auto Save on Room Change`
+  oczekiwał mapy `VillageHouse`, a `debug_map_change` bierze pierwsze niemazowe
+  wyjście z `state.exits` - w `Village.tmx` jest nim dziś `LOST_CORK_TAVERN`
+  (mapa dodana commitem `7b4f3dc`, przodkiem kroku 9; wyjścia do `VillageHouse`
+  na Village już nie ma). Asercja poprawiona na `LOST_CORK_TAVERN` (decyzja
+  autora 2026-07-26), scenariusz zielony na desktopie i na web.
 
 ## Bramki po każdym kroku (przypomnienie)
 

@@ -133,7 +133,7 @@
         ],
         "assertions": [
             { "type": "save_absent", "path": "<save_dir>/save_0.mom" },
-            { "type": "ui_state", "expect": { "top_state": "Scene", "map": "VillageHouse", "is_maze": false } }
+            { "type": "ui_state", "expect": { "top_state": "Scene", "map": "LOST_CORK_TAVERN", "is_maze": false } }
         ]
     },
     {
