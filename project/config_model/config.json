@@ -42,7 +42,7 @@
             "has_dialog": false,
             "home": "house_johny",
             "work": "market_stall_1",
-            "social": "VillageHouse:tables",
+            "social": "LOST_CORK_TAVERN:tables",
             "hobby": "pier",
             "routine": "townsfolk"
         },
@@ -76,7 +76,7 @@
             "has_dialog": false,
             "home": "house_bart",
             "work": "market_stall_2",
-            "social": "VillageHouse:tables",
+            "social": "LOST_CORK_TAVERN:tables",
             "hobby": "well",
             "routine": "townsfolk"
         },
@@ -374,7 +374,7 @@
             "friendly": 0.3,
             "home": "house_smith",
             "work": "smithy",
-            "social": "VillageHouse:tables",
+            "social": "LOST_CORK_TAVERN:tables",
             "hobby": "shrine",
             "routine": "townsfolk"
         },
@@ -396,8 +396,8 @@
             "name_PL": "Barman Absyntnent",
             "has_dialog": true,
             "friendly": 0.6,
-            "home": "VillageHouse:badroom",
-            "work": "VillageHouse:bar",
+            "home": "LOST_CORK_TAVERN:badroom",
+            "work": "LOST_CORK_TAVERN:bar",
             "social": "well",
             "hobby": "shrine",
             "routine": "barman"

@@ -76,7 +76,7 @@ activity = "sleep"
 
 [[routine.barman.slot]]
 from     = "06:30"
-at       = "location:VillageHouse:badroom"
+at       = "location:LOST_CORK_TAVERN:badroom"
 activity = "wander"
 
 [[routine.barman.slot]]
@@ -88,7 +88,7 @@ activity = "stand"
 
 [[routine.barman.slot]]
 from     = "12:00"
-at       = "location:VillageHouse:tables"
+at       = "location:LOST_CORK_TAVERN:tables"
 activity = "wander"
 
 [[routine.barman.slot]]
@@ -100,7 +100,7 @@ activity = "stand"
 
 [[routine.barman.slot]]
 from     = "19:00"
-at       = "location:VillageHouse:tables"
+at       = "location:LOST_CORK_TAVERN:tables"
 activity = "wander"
 
 [[routine.barman.slot]]

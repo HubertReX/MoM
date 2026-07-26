@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="70" height="70" tilewidth="16" tileheight="16" infinite="0" nextlayerid="15" nextobjectid="126">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="70" height="70" tilewidth="16" tileheight="16" infinite="0" nextlayerid="15" nextobjectid="126">
  <properties>
   <property name="outdoor" type="bool" value="true"/>
   <property name="particles" value="leafs,rain"/>
@@ -458,12 +458,12 @@
 </data>
  </layer>
  <objectgroup id="7" name="interactions">
-  <object id="15" name="VillageHouse" x="672" y="720" width="16" height="16">
+  <object id="15" name="LOST_CORK_TAVERN" x="672" y="720" width="16" height="16">
    <properties>
     <property name="entry_point" value="Door"/>
     <property name="is_maze" type="bool" value="false"/>
     <property name="obj_type" value="exit"/>
-    <property name="to_map" value="VillageHouse"/>
+    <property name="to_map" value="LOST_CORK_TAVERN"/>
    </properties>
   </object>
   <object id="27" name="JacobsChamber" x="368" y="864" width="16" height="16">
@@ -503,7 +503,7 @@
   </object>
   <object id="87" name="start" gid="2817" x="688" y="752" width="16" height="16"/>
  </objectgroup>
- <objectgroup id="8" name="waypoints" visible="0">
+ <objectgroup id="8" name="waypoints">
   <object id="12" name="Rob" x="1032" y="904">
    <polyline points="0.106,0.181 0.106,-47.819 0.106,0.181"/>
   </object>
