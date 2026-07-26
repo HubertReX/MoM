@@ -15,7 +15,7 @@ from characters.player import Player
 __all__ = ["NPC", "Player"]
 
 # kolejność ma znaczenie: pierwszy moduł, który ma atrybut, wygrywa
-_IMPL_MODULES = ("npc", "player", "movement", "combat", "animation")
+_IMPL_MODULES = ("npc", "player", "movement", "combat", "animation", "inventory")
 
 
 def __getattr__(name: str) -> Any:

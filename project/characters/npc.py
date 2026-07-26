@@ -21,11 +21,7 @@ from pygame.math import Vector2 as vec
 from settings import (
     IDLE_EMOTE_DURATION,
     ANIMATION_SPEED,
-    _,
     IS_WEB,
-    entity_name,
-    get_buy_price_multiplier,
-    get_sell_price_multiplier,
     MAX_HOTBAR_ITEMS,
     STEP_COST_WALL,
     TILE_SIZE,
@@ -33,7 +29,7 @@ from settings import (
     tuple_to_vector,
     vector_to_tuple,
 )
-from enums import ItemTypeEnum, RaceEnum, NPCEventActionEnum
+from enums import RaceEnum, NPCEventActionEnum
 if IS_WEB:
     from config_model.config import Character
 else:
@@ -47,7 +43,7 @@ import npc_state
 from npc_runtime import NpcRuntime
 from npc_schedule import Destination, Slot, current_slot, destinations_of, resolve_at, slot_jitter
 import scene
-from characters import animation, combat, movement
+from characters import animation, combat, inventory, movement
 from scene import debug_overlay
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, ItemSprite, Shadow
@@ -259,29 +255,11 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def select_next_item(self, filtered_items: list[ItemSprite] | None = None) -> None:
-        if not filtered_items:
-            filtered_items = self.items
-
-        if len(filtered_items) > 0:
-            if self.selected_item_idx < len(filtered_items):
-                selected_item = filtered_items[self.selected_item_idx]
-            else:
-                selected_item = filtered_items[0]
-            new_idx = filtered_items.index(selected_item) + 1
-            self.selected_item_idx = 0 if new_idx >= len(filtered_items) else new_idx
+        inventory.select_next_item(self, filtered_items)
 
     #############################################################################################################
     def select_prev_item(self, filtered_items: list[ItemSprite] | None = None) -> None:
-        if not filtered_items:
-            filtered_items = self.items
-
-        if len(filtered_items) > 0:
-            if self.selected_item_idx < len(filtered_items):
-                selected_item = filtered_items[self.selected_item_idx]
-            else:
-                selected_item = filtered_items[0]
-            new_idx = filtered_items.index(selected_item) - 1
-            self.selected_item_idx = len(filtered_items) - 1 if new_idx < 0 else new_idx
+        inventory.select_prev_item(self, filtered_items)
 
     #############################################################################################################
 
@@ -301,64 +279,23 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
 
     def load_items(self) -> None:
-        for item_name in self.model.items:
-            item = self.scene.create_item(item_name, 0, 0, show=False)
-            self.pick_up(item)
+        inventory.load_items(self)
 
     #############################################################################################################
 
     @property
     def money_cap(self) -> int:
-        """Ceiling the purse regenerates up to.
-
-        `self.model` is this character's own deep copy, so `model.money` is the
-        *live* purse and cannot serve as the baseline. The pristine config can:
-        an unset `money_cap` means "whatever the CSV row starts you with".
-        """
-        cap = self.model.money_cap
-        if cap > 0:
-            return cap
-        return self.game.conf.characters[self.config_key].money
+        return inventory.money_cap(self)
 
     #############################################################################################################
 
     def regenerate_money(self, days: int = 1) -> None:
-        """Refill the purse by a flat share of its ceiling per elapsed day.
-
-        Linear growth with a ceiling has a closed form, which is what keeps this
-        N-safe: coming back from a three-day trip is one call, not a loop over
-        days. (A percentage compounded from the current amount would not be.)
-
-        Emptying a merchant is therefore felt for a few days - at the default 25%
-        a purse drained to zero needs four dawns to come back - which is the
-        gentle nudge towards selling gradually, or to somebody else.
-        """
-        cap = self.money_cap
-        per_day = round(cap * self.model.money_regen_pct)
-        self.model.money = min(cap, self.model.money + days * per_day)
+        inventory.regenerate_money(self, days)
 
     #############################################################################################################
 
     def restock_items(self) -> None:
-        """Dawn re-roll of the stock: back to the list from the config, nothing else.
-
-        Whatever the player sold here is gone rather than resold. Keeping it would
-        silt up `max_carry_weight` with the player's junk across sessions until the
-        merchant permanently stopped buying.
-
-        The money side of the day turn is `regenerate_money`, deliberately *not*
-        the value of those items: the old `sell_all_bought_items` credited the
-        merchant the full value of everything it had ever bought, so the purse only
-        ever grew and the limit could never bite.
-        """
-        self.items = []
-        # `total_items_weight` is a running total maintained by pick_up/drop_item, so
-        # dropping the item list on the floor without zeroing it left every dawn's
-        # stock weighing on top of the previous one - after a few days the merchant
-        # was over `max_carry_weight` while visibly holding two gems, and refused to
-        # buy anything ever again.
-        self.total_items_weight = 0.0
-        self.load_items()
+        inventory.restock_items(self)
 
     #############################################################################################################
 
@@ -789,179 +726,20 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def pick_up(self, item: ItemSprite) -> bool:
-        result: bool = False
-
-        if item.model.type == ItemTypeEnum.money:
-            self.model.money += item.model.value
-            # self.items.append(item)
-            result = True
-        else:
-            found = False
-            for idx, owned_item in enumerate(self.items):
-                if owned_item.name == item.name:
-                    found = True
-                    break
-
-            if self.total_items_weight + item.model.weight <= self.model.max_carry_weight:
-                if found:
-                    self.total_items_weight += item.model.weight
-
-                    # increase amount if already owned
-                    self.items[idx].model.count += 1
-
-                    result = True
-                else:
-                    # check if there are free slots
-                    if len(self.items) < self.max_items:
-                        # add new item if not owned
-                        self.total_items_weight += item.model.weight
-
-                        self.items.append(item)
-
-                        # if it's the first owned item, set it as selected
-                        if self.selected_item_idx < 0:
-                            self.selected_item_idx = 0
-
-                        result = True
-                    else:
-                        print(
-                            f"\n[red]ERROR:[/] {self.name} All '[num]{self.max_items}[/num]'"
-                            " items slots are taken!\n")
-                        self.scene.add_notification(
-                            _("notify.all_slots_taken", n=self.max_items),
-                            scene.NotificationTypeEnum.failure)
-            else:
-                print(
-                    f"\n[red]ERROR:[/] {self.name} Max carry weight "
-                    f"'[num]{self.model.max_carry_weight:4.2f}[/num]' exceeded!\n")
-                self.scene.add_notification(
-                    _("notify.max_weight_exceeded", w=f"{self.model.max_carry_weight:4.2f}"),
-                    scene.NotificationTypeEnum.failure)
-
-        return result
+        return inventory.pick_up(self, item)
 
     #############################################################################################################
     def get_tradable_items(self) -> list[ItemSprite]:
-        items = self.items
-
-        if self.npc_met:
-            tradeable_items_types = self.npc_met.model.tradeable_items_types
-            if tradeable_items_types:
-                items = [item for item in items if item.model.type in tradeable_items_types]
-
-        return items
+        return inventory.get_tradable_items(self)
 
     #############################################################################################################
     def can_buy(self) -> bool:
-        if (
-            not self.npc_met or not self.npc_met.items or self.npc_met.selected_item_idx < 0
-        ):
-            return False
-
-        selected_item = self.npc_met.items[self.npc_met.selected_item_idx]
-        price = int(round(selected_item.model.value * get_buy_price_multiplier(self.npc_met.sentiment)))
-
-        if self.model.money < price:
-            self.scene.add_notification(
-                _("notify.cant_buy_money", name=entity_name(selected_item.model)),
-                scene.NotificationTypeEnum.failure)
-            return False
-
-        if self.model.max_carry_weight < self.total_items_weight + selected_item.model.weight:
-            self.scene.add_notification(
-                _("notify.cant_buy_weight", name=entity_name(selected_item.model)),
-                scene.NotificationTypeEnum.failure)
-            return False
-
-        found = False
-        for owned_item in self.items:
-            if owned_item.name == selected_item.name:
-                found = True
-                break
-
-        if not found and len(self.items) == self.max_items:
-            self.scene.add_notification(
-                _("notify.cant_buy_slots", name=entity_name(selected_item.model)),
-                scene.NotificationTypeEnum.failure)
-            return False
-
-        return True
+        return inventory.can_buy(self)
 
     #############################################################################################################
     def can_sell(self) -> bool:
-        # selected_item_idx indexes the *filtered* (tradable) list while selling, not
-        # self.items - a type-restricted merchant (e.g. gems only) filters the player's
-        # inventory, so validate against the same list the sell action uses.
-        tradable = self.get_tradable_items()
-        if (
-            not tradable or self.selected_item_idx < 0 or self.selected_item_idx > len(
-                tradable) - 1 or not self.npc_met
-        ):
-            return False
-
-        selected_item = tradable[self.selected_item_idx]
-        price = int(round(selected_item.model.value * get_sell_price_multiplier(self.npc_met.sentiment)))
-
-        if self.npc_met.model.money < price:
-            self.scene.add_notification(
-                _("notify.merchant_cant_buy_money", name=entity_name(selected_item.model)),
-                scene.NotificationTypeEnum.failure)
-            return False
-
-        if self.npc_met.model.max_carry_weight < self.npc_met.total_items_weight + selected_item.model.weight:
-            self.scene.add_notification(
-                _("notify.merchant_cant_buy_weight", name=entity_name(selected_item.model)),
-                scene.NotificationTypeEnum.failure)
-            return False
-
-        found = False
-        for owned_item in self.npc_met.items:
-            if owned_item.name == selected_item.name:
-                found = True
-                break
-
-        if not found and len(self.npc_met.items) == self.npc_met.max_items:
-            self.scene.add_notification(
-                _("notify.merchant_cant_buy_slots", name=entity_name(selected_item.model)),
-                scene.NotificationTypeEnum.failure)
-            return False
-
-        return True
+        return inventory.can_sell(self)
 
     #############################################################################################################
     def drop_item(self, show: bool = True, item: "ItemSprite | None" = None) -> "ItemSprite | None":
-        if item is None:
-            if (
-                not self.items or self.selected_item_idx < 0 or self.selected_item_idx > len(self.items) - 1
-            ):
-                return None
-            item = self.items[self.selected_item_idx]
-        selected_item = item
-        self.total_items_weight -= selected_item.model.weight  # * selected_item.model.count
-
-        if selected_item.model.count > 1:
-            org_item = selected_item
-            org_item.model.count -= 1
-
-            # selected_item = copy.copy(org_item)
-            selected_item = self.scene.create_item(org_item.name, int(self.pos[0]), int(self.pos[1]), show=show)
-            # selected_item.rect = org_item.rect.copy()
-            # selected_item.model = copy.copy(org_item.model)
-            # selected_item.model.count = 1
-        else:
-            # are we dropping currently selected weapon
-            if selected_item.model.type == ItemTypeEnum.weapon and self.selected_weapon and \
-                    self.selected_weapon.name == selected_item.name:
-                self.selected_weapon = None
-
-            self.items.remove(selected_item)
-
-            if show:
-                self.scene.item_sprites.add(selected_item)
-                selected_item.rect.center = self.pos  # type: ignore[assignment]
-
-            if self.selected_item_idx >= len(self.items):
-                self.selected_item_idx -= 1
-        # item = self.items.pop(-1)
-
-        return selected_item
+        return inventory.drop_item(self, show, item)

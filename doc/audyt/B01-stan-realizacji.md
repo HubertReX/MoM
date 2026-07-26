@@ -69,12 +69,18 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   atrybutów dla mypy, w tym nowe `image`/`mask`/`avatar`). `npc.py` 1058 → 967
   linii, `animation.py` 142.
 
-## Następny krok: **krok 14 - `characters/inventory.py`**
+- **krok 14**: `characters/inventory.py` (D6) - `pick_up`, `drop_item`,
+  `can_buy`/`can_sell`, `get_tradable_items`, `select_next/prev_item`,
+  `load_items`, `restock_items`, `regenerate_money`, `money_cap` (na klasie
+  zostaje `@property`). `npc.py` 967 → 745 linii, `inventory.py` 297. Podział
+  pakietu `characters/` wg D6 jest kompletny.
 
-Wg planu (D6): `pick_up`, `drop_item`, `can_buy`/`can_sell`,
-`get_tradable_items`, `select_next/prev_item`, `load_items`, `restock_items`,
-`regenerate_money` - tak samo funkcje na `npc` + delegaty. Potem kroki 15-16
-(game.py/CSV, finalizacja) wg tabeli w dokumencie HTML.
+## Następny krok: **krok 15 - `config_model/csv_tools.py`**
+
+Wg planu (D5): narzędzia CSV z `game.py` do `config_model/csv_tools.py` jako
+funkcje na `conf`; CLI `--task` bez zmian. Potem krok 16 (finalizacja: AGENTS.md,
+memory, odhaczenie B01 w audycie, pełny desktop + pełny web, weryfikacja
+wizualna autora).
 
 ## Bramki po każdym kroku (przypomnienie)
 
