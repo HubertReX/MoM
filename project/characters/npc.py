@@ -18,15 +18,9 @@ if TYPE_CHECKING:
 
 import pygame
 import settings
-from maze_generator.maze_utils import a_star_cached, nearest_walkable
 from pygame.math import Vector2 as vec
 from settings import (
     IDLE_EMOTE_DURATION,
-    MAX_NO_ATTEMPTS_TO_FIND_RANDOM_POS,
-    NPC_MAX_REST_TIME,
-    NPC_MIN_REST_TIME,
-    NPC_RANDOM_WALK_DISTANCE,
-    SHOULD_NPC_REST_PROBABILITY,
     SPRITE_SHEET_DEFINITIONS,
     ANIMATION_SPEED,
     AVATAR_SCALE,
@@ -37,16 +31,12 @@ from settings import (
     get_buy_price_multiplier,
     get_sell_price_multiplier,
     MAX_HOTBAR_ITEMS,
-    MONSTER_WAKE_DISTANCE,
     PUSHED_TIME,
-    RECALCULATE_PATH_DISTANCE,
     STEP_COST_WALL,
     SPRITE_SHEET_DEFINITION_4x7,
     STUNNED_COLOR,
     STUNNED_TIME,
     TILE_SIZE,
-    WANDER_PAUSE,
-    WAYPOINT_ARRIVE_RADIUS_SQ,
     WEAPON_DIRECTION_OFFSET,
     WEAPON_DIRECTION_OFFSET_FROM,
     Point,
@@ -69,6 +59,7 @@ import npc_state
 from npc_runtime import NpcRuntime
 from npc_schedule import Destination, Slot, current_slot, destinations_of, resolve_at, slot_jitter
 import scene
+from characters import movement
 from scene import debug_overlay
 import splash_screen
 from objects import ChestSprite, EmoteSprite, HealthBar, ItemSprite, NotificationTypeEnum, Shadow
@@ -565,54 +556,22 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def get_direction_360(self) -> str:
-        if self.npc_met and self.is_talking:
-            direction = self.npc_met.pos - self.pos
-            angle = vec(0, -1).angle_to(direction)
-        else:
-            angle = vec(0, -1).angle_to(self.vel)
-        angle = (angle + 360) % 360
-
-        dir: str
-        match self.sprite_sheet_type:
-            case "2x1":
-                dir = self.get_direction_RL(angle)
-            case "2x2":
-                dir = self.get_direction_RDL(angle)
-            case "3x3":
-                dir = self.get_direction_RDLU(angle)
-            case "4x7":
-                dir = self.get_direction_RDLU(angle)
-            case _:
-                dir = "down"
-
-        return dir
+        return movement.get_direction_360(self)
 
     #############################################################################################################
 
     def get_direction_RL(self, angle: float) -> str:
-        return "right" if angle < 180.0 else "left"
+        return movement.get_direction_RL(self, angle)
 
     #############################################################################################################
 
     def get_direction_RDL(self, angle: float) -> str:
-        if 0.0 <= angle < 135.0:
-            return "right"
-        elif 135.0 <= angle < 225.0:
-            return "down"
-        else:
-            return "left"
+        return movement.get_direction_RDL(self, angle)
 
     #############################################################################################################
 
     def get_direction_RDLU(self, angle: float) -> str:
-        if 45.0 <= angle < 135.0:
-            return "right"
-        elif 135.0 <= angle < 225.0:
-            return "down"
-        elif 225.0 <= angle < 315.0:
-            return "left"
-        else:
-            return "up"
+        return movement.get_direction_RDLU(self, angle)
 
     #############################################################################################################
     # MARK: schedule
@@ -730,80 +689,16 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def _wander_step(self) -> None:
-        """Drift to another spot near the anchor, after a pause.
-
-        The pause is the whole point - without it the character re-rolls a
-        destination the instant it arrives and skates around without ever looking
-        like it stopped anywhere.
-        """
-        if self._wander_anchor is None or self.game.time_elapsed < self._wander_next_time:
-            return
-        radius = self.scene.routines.defaults.wander_radius
-        self.target = self.get_random_safe_pos(self._wander_anchor, range=radius, check_allowed_zones=False)
-        self.find_path()
-        self._wander_next_time = self.game.time_elapsed + WANDER_PAUSE
+        movement.wander_step(self)
 
     #############################################################################################################
     # MARK: movement
     def movement(self) -> None:
-        if self.is_stunned or self.is_talking:
-            return
-
-        # After the `is_talking` guard on purpose: a slot boundary crossed mid
-        # dialog is applied when the panel closes, not during it. Otherwise the
-        # merchant walks off in the middle of a transaction and TradePanel is left
-        # holding a reference to somebody who is no longer there.
-        self.update_schedule()
-
-        if self.model.race == RaceEnum.monster:
-            self.movement_monster()
-        # elif self.model.attitude == AttitudeEnum.afraid:
-        elif self.model.race == RaceEnum.animal:
-            self.movement_animal()
-
-        self.follow_waypoints()
+        movement.movement(self)
 
     #############################################################################################################
     def movement_animal(self) -> None:
-        # distance_from_player = (self.pos - self.scene.player.pos).magnitude_squared()
-        distance_from_target = (self.pos - self.target).magnitude_squared()
-
-        if self.waypoints_cnt == 0 or distance_from_target < 4**2:
-            should_rest: bool = random.randint(0, 100) < SHOULD_NPC_REST_PROBABILITY
-            if self.end_rest_time < 0.0 and should_rest:
-                self.target = vec(0, 0)
-                self.waypoints = ()
-                self.waypoints_cnt = 0
-                self.speed = 0
-
-                delta = NPC_MAX_REST_TIME - NPC_MIN_REST_TIME
-                self.end_rest_time = self.game.time_elapsed + NPC_MIN_REST_TIME + random.random() * delta
-                # print(f"({self.game.time_elapsed:4.1f}) [yellow]{self.name}[/] "
-                #       f"will rest for {(self.end_rest_time - self.game.time_elapsed):4.1f} sec ")
-            else:
-                if self.game.time_elapsed > self.end_rest_time:
-                    # print(f"({self.game.time_elapsed:4.1f}) [yellow]{self.name}[/] will no longer rest")
-                    self.end_rest_time = -1.0
-                    self.speed = self.speed_walk
-                    # current_way_point_vec.distance_squared_to(npc_pos) <= 2.0
-
-                    target_vec = self.get_random_safe_pos(self.pos, range=NPC_RANDOM_WALK_DISTANCE)
-
-                    # verify A* reachability before committing (cache makes 2nd call in find_path free)
-                    npc_tile = (self.tileset_coord.y, self.tileset_coord.x)
-                    target_tile = self.get_tileset_coord(target_vec)
-                    reachable = a_star_cached(start=npc_tile, goal=(target_tile.y, target_tile.x), grid=self.scene.path_finding_grid)
-                    if not reachable:
-                        self.target = vec(0, 0)
-                        self.end_rest_time = self.game.time_elapsed + 1.0
-                        return
-
-                    self.target = target_vec
-                    self.find_path()
-                    self.check_waypoints_in_exit()
-                    if self.waypoints_cnt == 0:
-                        self.target = vec(0, 0)
-                        self.end_rest_time = self.game.time_elapsed + 1.0
+        movement.movement_animal(self)
 
     #############################################################################################################
 
@@ -815,314 +710,46 @@ class NPC(pygame.sprite.Sprite):
         check_allowed_zones: bool = True,
         allow_start_pos: bool = True,
     ) -> vec:
-
-        repeat = True
-        repeat_cnt: int = 0
-        new_rect = pygame.FRect(0.0, 0.0, TILE_SIZE, TILE_SIZE)  # self.rect.copy()
-
-        while repeat:
-            repeat_cnt += 1
-            target_vec = start_pos + self.get_random_pos(range, range)
-            new_rect.center = target_vec  # type: ignore[assignment]
-
-            if repeat_cnt > MAX_NO_ATTEMPTS_TO_FIND_RANDOM_POS:
-                print(
-                    f"[red]ERROR![/] in [magenta]get_random_safe_pos[/] can't find safe pos for [blue]{self.name}[/]"
-                    f" from {start_pos}!")
-                return target_vec
-
-            # check if new position is within rect around start position
-            if not allow_start_pos:
-                start_rect = pygame.FRect(0, 0, TILE_SIZE, TILE_SIZE)
-                start_rect.center = start_pos  # type: ignore[assignment]
-                if start_rect.collidepoint(target_vec):
-                    print("[yellow]Warning[/] same position not allowed")
-                    continue
-
-            # check if new pos is not on exit
-            if check_exits:
-                if self.check_pos_is_exit(target_vec):
-                    continue
-
-            # check if new pos is inside one of allowed zones
-            if check_allowed_zones:
-                if len(self.model.allowed_zones) > 0:
-                    matched_any_zone: bool = False
-                    for zone_name in self.model.allowed_zones:
-                        allowed_zones = self.scene.zones[zone_name]
-                        for zone in allowed_zones:
-                            if zone.contains(new_rect):
-                                matched_any_zone = True
-                                # print(f"[magenta]Zone: {zone_name}[/] matched for [blue]{self.name}[/]!")
-                                break
-                        if matched_any_zone:
-                            break
-                    if not matched_any_zone:
-                        # zone_names = ", ".join(self.model.allowed_zones)
-                        # print(f"[red]ERROR![/] [blue]{self.name}[/] outside of zones ({zone_names})!")
-                        continue
-
-            # check if new position is in map bounds
-            target_grid = self.get_tileset_coord(target_vec, offset_y=0)
-            # target_grid.x -= 1
-            # target_grid.y -= 1
-            grid = self.scene.path_finding_grid
-            if target_grid.y < 0 or target_grid.y >= len(grid) or \
-                    target_grid.x < 0 or target_grid.x >= len(grid[0]):
-                continue
-
-            # check if new position is not on a wall
-            value = grid[target_grid.y][target_grid.x]
-            if value < 0:
-                repeat = False
-
-        return target_vec
+        return movement.get_random_safe_pos(
+            self, start_pos, range, check_exits, check_allowed_zones, allow_start_pos)
 
     #############################################################################################################
     def check_waypoints_in_exit(self) -> None:
-        # check if waypoints are inside one of the exits
-        new_waypoints: list[Point] = []
-        for waypoint in self.waypoints:
-            if self.check_pos_is_exit(waypoint.as_vector):
-                break
-            new_waypoints.append(waypoint)
-
-        # accept only waypoints that are before the on in exit
-        self.waypoints = tuple(new_waypoints)
-        self.waypoints_cnt = len(new_waypoints)
-        if self.current_waypoint_no > self.waypoints_cnt - 1:
-            self.current_waypoint_no = 0
+        movement.check_waypoints_in_exit(self)
 
     #############################################################################################################
 
     def check_pos_is_exit(self, target_vec: vec) -> bool:
-        for exit in self.scene.exit_sprites:
-            if exit.rect.collidepoint(target_vec):
-                return True
-
-        return False
+        return movement.check_pos_is_exit(self, target_vec)
 
     #############################################################################################################
 
     def movement_monster(self) -> None:
-        distance_from_player = (self.pos - self.scene.player.pos).magnitude_squared()
-        # activate monsters in maze when player is near
-        # no designated waypoints, distance from player in range, is enemy
-        if self.waypoints_cnt == 0 and distance_from_player < MONSTER_WAKE_DISTANCE**2:
-            if self.game.time_elapsed < self.next_pathfind_time:
-                return
-            self.target = self.scene.player.pos.copy()
-            self.speed = self.speed_run
-            self.emote.set_temporary_emote("red_exclamation_anim", 4.0)
-            self.find_path()
-            if self.waypoints_cnt == 0:
-                self.target = vec(0, 0)
-                self.next_pathfind_time = self.game.time_elapsed + 0.5
-            # if character has a set target (and needs to follow it) or there are no waypoints to follow any more
-        elif self.target != vec(0, 0):  # or self.waypoints_cnt == 0:
-            # if (no more waypoints or the player has moved) and (character is a monster chasing player)
-            # not self.target == self.scene.player.pos)
-            distance_player_moved = (self.target - self.scene.player.pos).magnitude_squared()
-
-            # if (self.waypoints_cnt == 0 or not self.target == self.scene.player.pos) and \
-            #     self.model.attitude == AttitudeEnum.enemy.value:
-            if (distance_player_moved > RECALCULATE_PATH_DISTANCE ** 2) \
-                    and self.model.attitude == AttitudeEnum.enemy:
-                if self.game.time_elapsed < self.next_pathfind_time:
-                    return
-                self.target = self.scene.player.pos.copy()
-                self.find_path()
-                if self.waypoints_cnt == 0:
-                    self.target = vec(0, 0)
-                    self.next_pathfind_time = self.game.time_elapsed + 0.5
+        movement.movement_monster(self)
 
     #############################################################################################################
     def follow_waypoints(self) -> None:
-        if self.waypoints_cnt <= 0:
-            return
-
-        npc_pos = self.pos
-        current_way_point_vec = self.waypoints[self.current_waypoint_no].as_vector
-        current_way_point_vec.y += 4
-        # The arrival window has to be at least as wide as one frame's travel.
-        # Steering here is bang-bang - `force` is applied at full strength towards
-        # the waypoint no matter how close it is - so a character that cannot land
-        # *inside* the window overshoots, gets full force back, overshoots again,
-        # and shivers between two positions forever instead of arriving. The fixed
-        # ~1.4px window was narrower than a single step at run speed (1.5 * 40 *
-        # dt), which is why it looked intermittent: it depended on the frame rate,
-        # on the terrain's step cost, and on whether that character happened to
-        # roll walk or run speed at spawn.
-        #
-        # `pos - prev_pos` is exactly last frame's displacement (physics() samples
-        # prev_pos before moving), so the window measures itself and stays tight
-        # for slow characters.
-        step = (self.pos - self.prev_pos).length()
-        arrive_radius_sq = max(WAYPOINT_ARRIVE_RADIUS_SQ, step * step)
-        if current_way_point_vec.distance_squared_to(npc_pos) <= arrive_radius_sq:
-            self.current_waypoint_no += 1
-            # if following target and reached goal do not start over again
-            if self.current_waypoint_no >= self.waypoints_cnt:
-                if self.target != vec(0, 0):
-                    return self.clear_waypoints()
-                else:
-                    self.current_waypoint_no = 0
-                current_way_point_vec = self.waypoints[self.current_waypoint_no].as_vector
-                current_way_point_vec.y += 4
-        direction = current_way_point_vec - npc_pos
-        if direction.length_squared() > 0:
-            direction = direction.normalize() * self.force
-            self.acc.x = direction.x
-            self.acc.y = direction.y
-        else:
-            self.acc.x = 0
-            self.acc.y = 0
+        movement.follow_waypoints(self)
 
     #############################################################################################################
     def clear_waypoints(self) -> None:
-        self.target = vec(0, 0)
-        self.waypoints = ()
-        self.waypoints_cnt = 0
-        self.current_waypoint_no = 0
-        self.acc = vec(0, 0)
-        # self.vel = vec(0, 0)
-        if self.model.attitude == AttitudeEnum.enemy:
-            self.speed = self.speed_walk
-
-        return
+        movement.clear_waypoints(self)
 
     #############################################################################################################
     def find_path(self) -> None:
-        start = (self.tileset_coord.y, self.tileset_coord.x)
-        target = self.get_tileset_coord(self.target)
-        goal = (target.y, target.x)
-        # A destination is a marker, not a promise that the tile under it is floor.
-        # Every named place an author puts on the map lands on something solid -
-        # the tavern, a market stall, a doorway - and A* will not enter a blocked
-        # tile, so the search fails outright and the branch below freezes the
-        # character where it stands. Aim at the closest tile it *can* reach
-        # instead; "walk up to the door" is what was meant anyway.
-        if walkable := nearest_walkable(self.scene.path_finding_grid, goal):
-            goal = walkable
-        # fps = f"FPS:\t{self.game.fps: 6.1f}\t3s:\t{self.game.avg_fps_3s: 6.1f}
-        # \t10s:\t{self.game.avg_fps_10s: 6.1f}\ttime:\t{self.game.time_elapsed:4.1f}"
-        if path := a_star_cached(start=start, goal=goal, grid=self.scene.path_finding_grid):
-            self.generate_waypoints_from_path(path, start)
-        else:
-            print(f"[red]ERROR![/] Path not found for npc '{self.name}'!")
-            # self.scene.add_notification(
-            #     f"Path not found for npc '[char]{self.name}[/char]'", NotificationTypeEnum.debug)
-            self.waypoints = ()
-            self.waypoints_cnt = 0
-            self.acc = vec(0, 0)
-            self.vel = vec(0, 0)
-            self.target = vec(0, 0)
-
-        self.current_waypoint_no = 0
+        movement.find_path(self)
 
     def generate_waypoints_from_path(self, path: list[tuple[int, int]], start: tuple[int, int]) -> None:
-        waypoints = []
-        path_list = list(path)
-        # if first waypoint is the same map grid, than skip it
-        # hack to prevent NPC jitter (coming back to center of current grid, than to next,
-        # but then path is recalculated and goes back to current grid center)
-        start_index = 1 if len(path_list) >= 2 and path_list[0] == start else 0
-        # when following Player, stop 1 step before
-        # for waypoint in path_list[start_index:-1]:
-        for waypoint in path_list[start_index:]:
-            y, x = waypoint
-            p = Point(x * TILE_SIZE + TILE_SIZE // 2, y * TILE_SIZE + TILE_SIZE // 2)
-            waypoints.append(p)
-        self.waypoints_cnt = len(waypoints)
-        self.waypoints = tuple(waypoints)
+        movement.generate_waypoints_from_path(self, path, start)
 
     #############################################################################################################
     def jump(self) -> None:
-        self.is_jumping = True
-        self.up_acc = self.up_force
-        # self.up_vel = 50
-        self.jumping_offset = 1
+        movement.jump(self)
 
     #############################################################################################################
     # MARK: physics
     def physics(self, dt: float) -> None:
-        if self.is_stunned or self.is_attacking:
-            self.adjust_rect()
-            return
-
-        self.prev_pos = self.pos.copy()
-
-        # `acc` is the steering force *for this frame*, written by whoever drives
-        # this character just before physics runs: input in `Player.movement`,
-        # `follow_waypoints` for everyone else. Friction is a force too, but it
-        # must be applied to a copy, never folded back into the member.
-        #
-        # It used to be `self.acc.x += self.vel.x * self.friction`, and because
-        # `acc` survives the frame, that fed friction back into itself. As long as
-        # a controller kept overwriting `acc` every frame it was harmless - which
-        # is why walking looked fine. The moment nobody wrote `acc` any more (the
-        # character arrived, `clear_waypoints` zeroed it, `follow_waypoints` then
-        # returned early on `waypoints_cnt <= 0`) the two lines became a closed
-        # loop: acc' = acc + f*v, v' = v + acc'*dt. That is a harmonic oscillator
-        # with |eigenvalue| == 1.0 exactly - undamped, so it never decays. Period
-        # 13.9 frames (0.23 s at 60 FPS), amplitude ~2.4 px: the character
-        # shivering between two positions on the spot, forever.
-        #
-        # The player was immune only by accident: its input code assigns
-        # `self.acc.x = 0` on the frames no key is held, which breaks the loop.
-        acc_x = self.acc.x + self.vel.x * self.friction
-        self.vel.x += acc_x * dt
-
-        acc_y = self.acc.y + self.vel.y * self.friction
-        self.vel.y += acc_y * dt
-
-        if 0 <= self.tileset_coord.y < len(self.scene.path_finding_grid) and \
-                0 <= self.tileset_coord.x < len(self.scene.path_finding_grid[0]):
-            step_cost = abs(self.scene.path_finding_grid[self.tileset_coord.y][self.tileset_coord.x]) or 1
-        else:
-            step_cost = 1
-        speed = (self.speed * (100 / step_cost))
-
-        if self.vel.magnitude() >= speed:
-            if speed > 0:
-                self.vel = self.vel.normalize() * speed
-
-        if speed == 0:
-            self.acc = vec(0, 0)
-            self.vel = vec(0, 0)
-
-        if self.is_flying:
-            oscillation = 1 if self.scene.game.time_elapsed % 0.25 < 0.125 else 0
-            self.jumping_offset = TILE_SIZE + oscillation
-        else:
-            if not self.is_jumping:
-                self.jumping_offset = 0
-
-        if self.is_jumping:
-            self.up_acc += self.up_vel * self.up_friction
-            self.up_vel += self.up_acc * dt
-            # + (self.up_vel / 2) * dt
-            self.jumping_offset = int(self.up_vel * dt)
-            if self.jumping_offset <= 0:
-                self.is_jumping = False
-                self.up_acc = 0.0
-                self.up_vel = 0.0
-                self.jumping_offset = 0
-
-                # TODO not a good place to do it
-                self.scene.group.change_layer(self, self.scene.sprites_layer)
-
-        self.pos.x += self.vel.x * dt + (self.vel.x / 2) * dt
-        self.pos.y += self.vel.y * dt + (self.vel.y / 2) * dt
-
-        # The steering force is spent. A controller that stops writing `acc` means
-        # "I am not pushing any more", which has to leave the character coasting to
-        # a stop under friction - not still leaning on last frame's force. Every
-        # controller writes `acc` in `movement()`, immediately before this runs, so
-        # nothing is lost by clearing it here.
-        self.acc.update(0, 0)
-
-        self.adjust_rect()
+        movement.physics(self, dt)
 
     #############################################################################################################
     def change_state(self) -> None:
@@ -1133,48 +760,16 @@ class NPC(pygame.sprite.Sprite):
 
     #############################################################################################################
     def set_entry_point(self, entry_point: str, default: vec) -> bool:
-        if entry_point in self.scene.entry_points:
-            result: bool = True
-            # set first start position for the Player
-            ep = self.scene.entry_points[entry_point]
-            self.pos = vec(ep.x, ep.y)
-            self.adjust_rect()
-        else:
-            result = False
-            print(f"\n[red]ERROR![/] [char]{self.model.name_EN}[/] no entry point found!\n")
-            self.pos = default
-
-        return result
+        return movement.set_entry_point(self, entry_point, default)
 
     #############################################################################################################
     def check_scene_exit(self) -> None:
-        # Routine NPCs move between maps through the schedule's transit system, not by
-        # stepping onto an exit collider. This guard is not an optimisation: the
-        # presence reconciler materialises an arriving NPC *on* the doorway, so
-        # without it the character would die() on the very next frame. Everyone else
-        # keeps the legacy "walk into an exit and leave" behaviour (unused today).
-        if self.runtime.routine_key:
-            return
-
-        for exit in self.scene.exit_sprites:
-            if self.feet.colliderect(exit.rect):
-                self.current_map = exit.to_map
-                # self.set_entry_point(exit.entry_point, vec(0, 0))
-                # self.scene.NPCs.remove(self)
-                # self.scene.group.remove(self)
-                # self.shadow.kill()
-                # self.health_bar.kill()
-                # self.emote.kill()
-                self.die(drop_items=False)
-                # TODO NPC goes to another map
+        movement.check_scene_exit(self)
 
     #############################################################################################################
 
     def get_random_pos(self, x_tiles: float = 1.0, y_tiles: float = 1.0) -> vec:
-        x = -x_tiles + random.random() * 2.0 * x_tiles
-        y = -y_tiles + random.random() * 2.0 * y_tiles
-
-        return vec(x * TILE_SIZE, y * TILE_SIZE)
+        return movement.get_random_pos(self, x_tiles, y_tiles)
 
     #############################################################################################################
     def die(self, drop_items: bool = True) -> None:
@@ -1235,29 +830,7 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
 
     def slide(self, colliders: list[Any]) -> None:
-        move_vec = self.pos - self.prev_pos
-        # can't move by full vector,
-        # first try move ony in one axis (reset the movement along the other axis to zero)
-
-        # slide along y axis
-        self.pos.x -= move_vec.x
-        self.adjust_rect()
-        if self.feet.collidelist(colliders) == -1:
-            # looks ok, so set prev pos
-            self.prev_pos = self.pos.copy()
-            return
-
-        # slide along x axis
-        self.pos.x += move_vec.x
-        self.pos.y -= move_vec.y
-        self.adjust_rect()
-        if self.feet.collidelist(colliders) == -1:
-            # looks ok, so set prev pos
-            self.prev_pos = self.pos.copy()
-            return
-
-        # slide is not possible, block movement
-        self.move_back()
+        movement.slide(self, colliders)
 
     #############################################################################################################
     # MARK: process_custom_event
@@ -1434,16 +1007,7 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
 
     def move_back(self) -> None:
-        """
-        If called after an update, the sprite can move back
-
-        """
-        # self.debug([f"{self.rect.topleft=}", f"{self.old_rect.topleft=}"])
-        self.pos = self.prev_pos.copy()
-        if self.model.name_EN == "Player":  # and self.scene.camera.target == self.prev_pos:
-            self.scene.camera.target = self.pos
-
-        self.adjust_rect()
+        movement.move_back(self)
 
     #############################################################################################################
     def adjust_rect(self) -> None:

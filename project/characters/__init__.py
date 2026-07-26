@@ -21,5 +21,10 @@ def __getattr__(name: str) -> Any:
     try:
         return getattr(_npc, name)
     except AttributeError:
-        from characters import player as _player
+        pass
+    from characters import player as _player
+    try:
         return getattr(_player, name)
+    except AttributeError:
+        from characters import movement as _movement
+        return getattr(_movement, name)

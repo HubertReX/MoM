@@ -49,10 +49,18 @@ HTML (decyzje D1-D6, kontrakty K1-K9, plan 16 kroków, ryzyka R1-R7).
   `HealthBarUI`, `DialogPanel`, `TradePanel`) - `characters.INPUTS` nadal
   działa, bo `__getattr__` dogląda też `player`. Pełny web 25/25.
 
-## Następny krok: **krok 11 - `characters/movement.py`**
+- **krok 11**: `characters/movement.py` (D6) - ruch, A*, waypointy, fizyka,
+  kierunki animacji i `slide`/`move_back` jako funkcje przyjmujące `npc` jawnie;
+  na `NPC` zostały cienkie delegaty o niezmienionych nazwach (K3 - `find_path`,
+  `get_random_safe_pos` itd. podmieniają testy i woła `agent_ctrl`). Wywołania
+  wewnątrz modułu idą przez `npc.<metoda>()`, więc monkeypatch na instancji nadal
+  działa. `__getattr__` pakietu ma teraz trzeci fallback na `movement` (K9).
+  `npc.py` 1662 → 1224 linii, `movement.py` 560 linii.
 
-Wg planu (D6): wyniesienie ruchu/A* z `NPC` do modułu funkcji przyjmujących
-`npc` jawnie. Potem kroki 12-16 (combat, animation, inventory, game.py/CSV,
+## Następny krok: **krok 12 - `characters/combat.py`**
+
+Wg planu (D6): `encounter`, `hit`, `die`, stun/cooldown - tak samo funkcje na
+`npc` + delegaty. Potem kroki 13-16 (animation, inventory, game.py/CSV,
 finalizacja) wg tabeli w dokumencie HTML.
 
 ## Bramki po każdym kroku (przypomnienie)
