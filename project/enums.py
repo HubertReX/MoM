@@ -53,6 +53,18 @@ class NotificationTypeEnum(StrEnum):
 #################################################################################################################
 
 
+class SaveCompatEnum(StrEnum):
+    """Whether a save file can be loaded by this build - see save_load/models.py."""
+
+    ok          = auto()
+    too_old     = auto()
+    from_future = auto()
+    unreadable  = auto()
+
+
+#################################################################################################################
+
+
 class LanguageEnum(StrEnum):
     PL = "PL"
     EN = "EN"

@@ -11,13 +11,14 @@ tests and asserts nothing.
 
 Functions:
 - corrupt_save(slot_idx) — overwrite a save file with invalid JSON
-- corrupt_save_version(slot_idx) — overwrite with valid JSON but wrong version
+- corrupt_save_version(slot_idx) — overwrite with valid JSON from a *newer* game version
+- old_save_version(slot_idx) — overwrite with valid JSON from an unsupported *older* version
 - create_dummy_save(slot_idx) — create a minimal valid save for testing
 - delete_save(slot_idx) — remove a specific save file
 - clear_all_saves() — remove all save files
 - get_save_path(slot_idx) — get the full path to a save slot file
 - corrupt_save_text() — invalid JSON string for corrupt slots (desktop + web)
-- minimal_save_dict(slot_idx, version=1) — dict of a minimal valid save
+- minimal_save_dict(slot_idx, version=CURRENT_VERSION) — dict of a minimal valid save
 """
 
 from __future__ import annotations
@@ -30,13 +31,24 @@ from pathlib import Path
 SAVE_FILE_EXT = ".mom"
 MAX_SAVE_SLOTS = 10
 
+# Must equal settings.VERSION - a fixture written under any other version is refused
+# on load, which would silently turn "minimal save" scenarios into "rejected save"
+# ones. Not imported from settings because this script runs standalone (no pygame);
+# tests/test_save_load_models.py asserts the two stay in sync.
+CURRENT_VERSION = "0.3"
+# Older than MIN_SUPPORTED_SAVE_CODE: no migration chain reaches it, so it must be
+# refused as "too old" (the 0.1/0.2 sentiment-key era).
+OLD_VERSION = "0.1"
+# Deliberately absurd, and read as MAJOR=9999: a save "from the future".
+FUTURE_VERSION = "9999"
+
 
 def corrupt_save_text() -> str:
     """Invalid-JSON payload used for corrupt save slots (desktop file or web localStorage)."""
     return "this is not valid json {{{"
 
 
-def minimal_save_dict(slot_idx: int, version: int = 1) -> dict:
+def minimal_save_dict(slot_idx: int, version: str = CURRENT_VERSION) -> dict:
     """Minimal valid save dict (deskop .mom content or web localStorage value)."""
     return {
         "slot_id": str(slot_idx),
@@ -102,12 +114,22 @@ def corrupt_save(slot_idx: int) -> Path:
 
 
 def corrupt_save_version(slot_idx: int) -> Path:
-    """Write valid JSON but with an unknown SAVE_VERSION to test migration handling."""
+    """Write valid JSON from a *newer* game version - must be refused as "from the future"."""
     path = get_save_path(slot_idx)
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = minimal_save_dict(slot_idx, version=9999)
+    data = minimal_save_dict(slot_idx, version=FUTURE_VERSION)
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    print(f"[corrupt] wrote bad-version JSON -> {path}")
+    print(f"[corrupt] wrote future-version JSON -> {path}")
+    return path
+
+
+def old_save_version(slot_idx: int) -> Path:
+    """Write valid JSON from an unsupported *older* version - must be refused as "too old"."""
+    path = get_save_path(slot_idx)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = minimal_save_dict(slot_idx, version=OLD_VERSION)
+    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    print(f"[corrupt] wrote old-version JSON -> {path}")
     return path
 
 
@@ -148,6 +170,9 @@ if __name__ == "__main__":
     elif cmd == "corrupt_version":
         idx = int(sys.argv[2]) if len(sys.argv) > 2 else 0
         corrupt_save_version(idx)
+    elif cmd == "old_version":
+        idx = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+        old_save_version(idx)
     elif cmd == "create":
         idx = int(sys.argv[2]) if len(sys.argv) > 2 else 0
         create_minimal_save(idx)
@@ -157,9 +182,10 @@ if __name__ == "__main__":
     elif cmd == "clear":
         clear_all_saves()
     else:
-        print(f"Usage: {sys.argv[0]} <corrupt|corrupt_version|create|delete|clear> [slot_idx]")
+        print(f"Usage: {sys.argv[0]} <corrupt|corrupt_version|old_version|create|delete|clear> [slot_idx]")
         print("  corrupt <N>       — write invalid JSON to save slot N")
-        print("  corrupt_version   — write valid JSON with version=9999")
+        print(f"  corrupt_version   — write valid JSON with version={FUTURE_VERSION} (from the future)")
+        print(f"  old_version <N>   — write valid JSON with version={OLD_VERSION} (too old)")
         print("  create <N>        — write minimal valid save to slot N")
         print("  delete <N>        — delete save slot N")
         print("  clear             — delete all save files")

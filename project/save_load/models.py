@@ -9,15 +9,109 @@ All enums serialized as strings.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from typing import Any, cast
 
-from enums import AttitudeEnum, ItemTypeEnum
+from enums import AttitudeEnum, ItemTypeEnum, SaveCompatEnum
 from npc_runtime import NpcRuntime
 from settings import MAX_HOTBAR_ITEMS, VERSION
 
 
-SAVE_VERSION: float = VERSION
+# ---------------------------------------------------------------------------
+# Save versioning policy
+# ---------------------------------------------------------------------------
+#
+# ONE version number. The version of a save IS the version of the game
+# (``settings.VERSION``, "MAJOR.MINOR"). There is no separate schema number: the
+# player knows the game version and would never see a schema one.
+#
+# Comparisons never touch the string or a float - they go through
+# ``version_code()``: "0.3" -> 3, "1.3" -> 103 (MAJOR * 100 + MINOR, MINOR in 0..99).
+# There is deliberately NO patch level in the save contract: if a fix would change
+# the format, it bumps MINOR. Old files store ``version`` as a float (0.3); the code
+# reads it through ``str()``, so 0.3 -> "0.3" -> 3 and pre-existing saves keep working.
+#
+# Two constants steer everything:
+#
+#   CURRENT_SAVE_CODE       - the version the game writes.
+#   MIN_SUPPORTED_SAVE_CODE - the OLDEST save code that can still be brought forward.
+#
+# Before 1.0 (now) MIN_SUPPORTED_SAVE_CODE equals CURRENT_SAVE_CODE and is bumped
+# together with VERSION on every release: older saves are refused with a visible
+# message, and the game carries no migrations at all (the format is still moving and
+# nobody's progress is at stake yet). From 1.0 on it freezes at 100 and never moves
+# again; from that point every format change ships with a migration.
+#
+# A migration is keyed by the version in which THE FORMAT CHANGED, not by every
+# release - see ``_register_migration``. A release that does not touch the format
+# needs no entry: the chain is simply empty, the save passes and is re-stamped. That
+# is what makes one shared version number affordable.
+#
+# When a migration is needed (from 1.0 on):
+#   NO  - adding a field with a default that ``from_dict`` fills in for old saves.
+#         This is the normal case (NPCState.config_key, SaveGame.world_seed, ...).
+#   YES - renaming a field, removing one, changing the meaning of a value under the
+#         same name (like the 0.2 sentiment keys), or a type change ``int()``/``str()``
+#         will not swallow.
+#
+# Load rules (implemented once, in ``save_compatibility``):
+#
+#   == CURRENT                      -> load
+#   >= MIN_SUPPORTED and < CURRENT  -> run the migration chain, re-stamp, load
+#   >  CURRENT                      -> refuse: save from a newer version of the game
+#   <  MIN_SUPPORTED                -> refuse: save from an older, unsupported version
+#   unparsable                      -> refuse
+#
+# A save that cannot be read is never deleted by the game. Its slot stays on the
+# list, greyed out, showing its version and the reason; the player can delete or
+# overwrite it. Refusing a load never touches the game state.
+
+
+def version_code(value: str | float | int | None) -> int:
+    """``"0.3"`` -> 3, ``"1.3"`` -> 103, ``0.3`` (legacy float) -> 3, garbage -> -1.
+
+    ``MAJOR * 100 + MINOR``. A third component (patch) is ignored - it is not part of
+    the save contract. Never raises: this runs while drawing every slot row, and an
+    exception on an unreadable version would take the panel down instead of greying
+    out one row.
+    """
+    if value is None:
+        return -1
+    parts = str(value).strip().split(".")
+    try:
+        major = int(parts[0])
+        minor = int(parts[1]) if len(parts) > 1 else 0
+    except ValueError:
+        return -1
+    if major < 0 or not (0 <= minor <= 99):
+        # MINOR is capped at 99 because codes would otherwise collide: "0.100" and
+        # "1.0" both map to 100. Bump MAJOR before MINOR would reach 100.
+        return -1
+    return major * 100 + minor
+
+
+CURRENT_SAVE_CODE: int = version_code(VERSION)
+
+# Alpha: only the current version loads. Bump together with VERSION on every release,
+# then freeze at 100 (= "1.0") when 1.0 ships - see the policy note above.
+MIN_SUPPORTED_SAVE_CODE: int = CURRENT_SAVE_CODE
+
+
+def save_compatibility(version: str | float | int | None) -> SaveCompatEnum:
+    """Can a save written under ``version`` be loaded by this build?
+
+    The single place where that question is answered - used both by
+    ``SaveManager.load`` (the decision) and by the save/load panel (drawing the row).
+    """
+    code = version_code(version)
+    if code < 0:
+        return SaveCompatEnum.unreadable
+    if code > CURRENT_SAVE_CODE:
+        return SaveCompatEnum.from_future
+    if code < MIN_SUPPORTED_SAVE_CODE:
+        return SaveCompatEnum.too_old
+    return SaveCompatEnum.ok
 
 
 # ---------------------------------------------------------------------------
@@ -96,21 +190,30 @@ def sanitize_slot_name(name: str) -> str:
 class SaveMetadata:
     """Header stored with every save."""
 
-    version: float = SAVE_VERSION
+    version: str = VERSION
     timestamp: float = field(default_factory=time.time)
     playtime: float = 0.0
     slot_name: str = ""
+    # Set by ``migrate_save`` to the version the file was written under, when it
+    # actually had to be brought forward; empty in a freshly written save. Purely
+    # informational (diagnostics, UI) - it never gates loading. Itself an example of
+    # "a field with a default needs no migration".
+    migrated_from: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return _to_dict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> SaveMetadata:
+        # ``str()`` and not ``float()``: files written before 0.4 store a float, and
+        # 0.3 has to read back as "0.3" so ``version_code`` sees the same code the
+        # game currently writes.
         return cls(
-            version=float(data.get("version", SAVE_VERSION)),
+            version=str(data.get("version", VERSION)),
             timestamp=float(data.get("timestamp", 0.0)),
             playtime=float(data.get("playtime", 0.0)),
             slot_name=str(data.get("slot_name", "")),
+            migrated_from=str(data.get("migrated_from", "")),
         )
 
 
@@ -483,6 +586,13 @@ class SaveSlot:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> SaveSlot:
         save_data_raw = data.get("save_data")
+        if save_data_raw:
+            # Migrate the RAW dict, before anything deserializes it. ``SaveGame.from_dict``
+            # is tolerant (``data.get(key, default)``), so a renamed key would silently
+            # land on its default and there would be nothing left for a migration to fix.
+            # This is also the single point both backends *and* ``list_slots()`` go
+            # through - hence ``migrate_save`` must stay cheap and silent.
+            save_data_raw = migrate_save(save_data_raw)
         return cls(
             slot_id=str(data.get("slot_id", "")),
             is_occupied=bool(data.get("is_occupied", False)),
@@ -520,41 +630,58 @@ class SaveSlotInfo:
 # ---------------------------------------------------------------------------
 
 
-_MIGRATIONS: list[tuple[float, Any]] = []
+MigrationFn = Callable[[dict[str, Any]], dict[str, Any]]
+
+# Deliberately EMPTY before 1.0: older saves are refused rather than migrated (see the
+# policy note at the top of this module). The mechanism is exercised by the unit tests,
+# which register their own migrations - a placeholder migration living here would be
+# exactly the dead code this module used to carry.
+_MIGRATIONS: list[tuple[int, MigrationFn]] = []
 
 
-def _register_migration(version: float) -> Any:
-    """Decorator to register a migration function for a version bump."""
+def _register_migration(version: str) -> Callable[[MigrationFn], MigrationFn]:
+    """Register a migration keyed by the version in which THE FORMAT CHANGED.
 
-    def wrapper(func: Any) -> Any:
-        _MIGRATIONS.append((version, func))
+    ``@_register_migration("1.4")`` means "run this on any save written before 1.4, to
+    turn it into the 1.4 layout". A release that does not change the format needs no
+    entry at all: the chain comes out empty, the save passes and is simply re-stamped.
+    That is what makes one shared game/save version number affordable.
+    """
+    code = version_code(version)
+
+    def wrapper(func: MigrationFn) -> MigrationFn:
+        _MIGRATIONS.append((code, func))
         return func
 
     return wrapper
 
 
 def migrate_save(data: dict[str, Any]) -> dict[str, Any]:
-    """Migrate save data from older versions to the current one.
+    """Bring a raw save dict forward to the current version, if that is possible.
 
-    Call before ``SaveGame.from_dict()`` if loading from an external source
-    whose version may be outdated.
+    Never raises and never logs: it runs for all 10 slots every time the save/load
+    panel opens (through ``SaveSlot.from_dict``).
+
+    A save that cannot be brought forward is returned **untouched**, with its original
+    ``metadata.version`` - the stamp is the success signal, and the single decision
+    point stays ``save_compatibility`` in ``SaveManager.load``. There is no second
+    "did it work" flag to keep in sync.
     """
-    version = float(data.get("metadata", {}).get("version", 0.0))
-    if version >= SAVE_VERSION:
+    meta = data.get("metadata")
+    raw_version = meta.get("version", VERSION) if isinstance(meta, dict) else VERSION
+    if save_compatibility(raw_version) is not SaveCompatEnum.ok:
         return data
 
-    for target_version, func in sorted(_MIGRATIONS):
-        if target_version > version and target_version <= SAVE_VERSION:
+    code = version_code(raw_version)
+    for target_code, func in sorted(_MIGRATIONS, key=lambda pair: pair[0]):
+        # ``key=`` is not cosmetic: sorting bare tuples compares the functions
+        # whenever two migrations share a code, and functions are not orderable.
+        if code < target_code <= CURRENT_SAVE_CODE:
             data = func(data)
-            data.setdefault("metadata", {})["version"] = target_version
 
-    return data
+    if code != CURRENT_SAVE_CODE:
+        migrated_meta = cast("dict[str, Any]", data.setdefault("metadata", {}))
+        migrated_meta["migrated_from"] = str(raw_version)
+        migrated_meta["version"] = VERSION
 
-
-def migrate_v0_to_v1(data: dict[str, Any]) -> dict[str, Any]:
-    """Placeholder: migrate from v0 → v1 schema.
-
-    No previous version exists yet; this is a no-op until a real schema
-    change is introduced.
-    """
     return data

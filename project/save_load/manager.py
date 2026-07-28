@@ -5,13 +5,12 @@ import copy
 import time
 from typing import TYPE_CHECKING, Any, cast
 
-from enums import ItemTypeEnum
+from enums import ItemTypeEnum, SaveCompatEnum
 from npc_runtime import NpcRuntime
 from objects import ItemSprite
 from quest.entities import QuestState
 from save_load.backends import FileSaveBackend, LocalStorageSaveBackend, SaveBackend
 from save_load.models import (
-    SAVE_VERSION,
     ChestState,
     GameClockState,
     GroundItemState,
@@ -25,8 +24,16 @@ from save_load.models import (
     SaveSlot,
     SaveSlotInfo,
     sanitize_slot_name,
+    save_compatibility,
 )
-from settings import IS_WEB, MAX_HOTBAR_ITEMS_LIMIT, MAX_SAVE_SLOTS, QUICK_SAVE_SLOT, USE_WEB_SIMULATOR
+from settings import (
+    IS_WEB,
+    MAX_HOTBAR_ITEMS_LIMIT,
+    MAX_SAVE_SLOTS,
+    QUICK_SAVE_SLOT,
+    USE_WEB_SIMULATOR,
+    VERSION,
+)
 
 if TYPE_CHECKING:
     from game import Game
@@ -46,6 +53,9 @@ class SaveManager:
     def __init__(self, game: Game) -> None:
         self.game = game
         self.backend: SaveBackend = self._create_backend()
+        # Why the last ``load()`` returned False, so the caller has something to show
+        # the player instead of failing silently. ``None`` = the slot was empty.
+        self.last_load_error: SaveCompatEnum | None = None
 
     def _create_backend(self) -> SaveBackend:
         if IS_WEB and not USE_WEB_SIMULATOR:
@@ -79,6 +89,7 @@ class SaveManager:
         return self.backend.write_slot(slot)
 
     def load(self, slot_idx: int) -> bool:
+        self.last_load_error = None
         if slot_idx < 0 or slot_idx >= MAX_SAVE_SLOTS:
             print(f"[save] invalid slot index {slot_idx}")
             return False
@@ -89,8 +100,14 @@ class SaveManager:
             return False
 
         save = slot.save_data
-        if save.metadata.version != SAVE_VERSION:
-            print(f"[save] version mismatch: save={save.metadata.version}, current={SAVE_VERSION}")
+        # A save that could be brought forward was already migrated and re-stamped in
+        # ``SaveSlot.from_dict``, so it reads as ``ok`` here; one that could not keeps
+        # its original version and is refused. This is the only version check there is.
+        compat = save_compatibility(save.metadata.version)
+        if compat is not SaveCompatEnum.ok:
+            self.last_load_error = compat
+            print(f"[save] slot {slot_idx} rejected ({compat}): "
+                  f"save={save.metadata.version}, current={VERSION}")
             return False
 
         self._apply_save_game(save)

@@ -32,9 +32,15 @@ help = partial(inspect, help=True, methods=True)
 pretty.install()
 
 
+# Game version, "MAJOR.MINOR", and at the same time the version of the save format -
+# there is deliberately only one number, because the player knows the game version
+# (it is on the About screen) and would never see a separate schema number.
+# A string, not a float: 0.1 and 0.10 are the same float but different versions, and
+# float comparison has no business deciding whether a save can be loaded. Comparisons
+# go through ``save_load.models.version_code`` ("0.3" -> 3, "1.3" -> 103).
 # 0.2: sentiment keys renamed to author-facing names (kind/weak/...) - older
 # saves are incompatible and rejected on load with a terminal message.
-VERSION = 0.3
+VERSION: str = "0.3"
 GAME_NAME = "Misadventures of Malachi"
 LANG = "PL"
 UI_STRINGS: dict[str, dict[str, str]] = {}
