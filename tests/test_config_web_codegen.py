@@ -14,6 +14,7 @@ Two independent guards live here:
   Pydantic model it is generated from.
 """
 
+import difflib
 import os
 import sys
 from pathlib import Path
@@ -22,15 +23,19 @@ from typing import Any
 TESTS_DIR = Path(__file__).resolve().parent
 ROOT = TESTS_DIR.parent
 PROJECT_DIR = ROOT / "project"
+SCRIPTS_DIR = ROOT / "scripts"
 
 sys.path.insert(0, str(PROJECT_DIR))
+sys.path.insert(0, str(SCRIPTS_DIR))
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 os.environ["SDL_AUDIODRIVER"] = "dummy"
 
 from config_model import config as config_web  # noqa: E402
 from config_model import config_pydantic  # noqa: E402
+import gen_web_config  # noqa: E402
 
 CONFIG_JSON = PROJECT_DIR / "config_model" / "config.json"
+CONFIG_PY = PROJECT_DIR / "config_model" / "config.py"
 
 # section name in config.json -> pydantic model class (source of the field list)
 SECTIONS: dict[str, type] = {
@@ -77,9 +82,36 @@ def test_config_parity() -> None:
     assert not diffs, "config.py (web) drifted from config_pydantic.py (desktop):\n" + "\n".join(diffs)
 
 
+def test_web_config_is_fresh() -> None:
+    generated = gen_web_config.generate_source()
+    on_disk = CONFIG_PY.read_text(encoding="utf-8")
+    if generated != on_disk:
+        diff = "\n".join(
+            difflib.unified_diff(
+                on_disk.splitlines(), generated.splitlines(),
+                fromfile="config.py (on disk)", tofile="config.py (generated now)",
+                lineterm="",
+            )
+        )
+        raise AssertionError(
+            "config.py (web) is stale - it does not match what the generator "
+            "produces right now. uruchom: just gen-web-config\n" + diff
+        )
+
+
+def test_web_config_has_no_desktop_model_references() -> None:
+    on_disk = CONFIG_PY.read_text(encoding="utf-8")
+    assert "pydantic" not in on_disk.lower(), (
+        "config.py (web) references the desktop validation library - this is the "
+        "one thing that breaks the web build immediately (pygbag/WASM can't import it)"
+    )
+
+
 if __name__ == "__main__":
     tests = [
         ("config parity (desktop vs web)", test_config_parity),
+        ("web config is fresh", test_web_config_is_fresh),
+        ("web config has no desktop-model references", test_web_config_has_no_desktop_model_references),
     ]
     failures = 0
     for name, func in tests:

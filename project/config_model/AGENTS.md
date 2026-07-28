@@ -52,10 +52,23 @@ wybierane przez `IS_WEB`:
 | Plik | Tryb | Rola |
 |---|---|---|
 | `config_pydantic.py` | **desktop** | Walidacja Pydantic + `model_validator` (spójność: czy `items` istnieją, czy szablony skrzyń/potworów pasują do definicji) |
-| `config.py` | **web** | Ręczne `from_dict` na dataclassach (bez Pydantic) |
+| `config.py` | **web** | `@dataclass(slots=True)` + `from_dict` (bez Pydantic) — **artefakt generowany**, nie edytuj ręcznie |
 
-> ⚠️ **Zmiana struktury configu = aktualizacja OBU plików** (`config_pydantic.py` i `config.py`),
-> inaczej web i desktop się rozjadą.
+> ✅ **Zmiana struktury configu: edytuj `config_pydantic.py`, potem `just gen-web-config`.**
+> `config.py` (web) jest teraz generowany ze skryptu `scripts/gen_web_config.py`, który
+> czyta `model_fields` modeli Pydantic i emituje cały plik. Ręczna edycja `config.py`
+> zniknie przy następnym uruchomieniu generatora — i wcześniej zostanie wykryta przez
+> test świeżości `tests/test_config_web_codegen.py` (`just test-unit config_web_codegen`).
+>
+> Ręczne lustro tych dwóch plików rozjechało się dwukrotnie i cicho (audyt G01, znalezisko
+> D-2) — `config.py` czytał złe klucze `.get()` dla `Chest.total_items_count` i
+> `MazeLevelProperties.small_chest_count`, bez błędu ani ostrzeżenia. Stąd generowanie
+> zamiast przepisywania, plus drugi test w tym samym pliku: parytet, który ładuje
+> prawdziwy `config.json` obydwoma modelami i porównuje pole po polu.
+>
+> Dwie rzeczy generator NIE robi automatycznie — tabela `OVERRIDES` w
+> `scripts/gen_web_config.py` (pole `disposition` z walidatorem, sekcja `quests` jako
+> plain dict zamiast modelu Pydantic, decyzja D4).
 
 ## Schema
 

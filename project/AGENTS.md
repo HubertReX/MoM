@@ -200,7 +200,7 @@ weryfikuje to po AST i zwraca błąd, gdy któryś `test_*` nie jest nigdzie zar
 
 | Obszar                  | Desktop                         | Web                     | Lokalizacja                                                            |
 | ----------------------- | ------------------------------- | ----------------------- | ---------------------------------------------------------------------- |
-| Config                  | `config_pydantic.py` (Pydantic) | `config.py` (dataclass) | `if IS_WEB:` w `characters/npc.py:33`, `objects.py:19`, `ui/panels/hud.py` |
+| Config                  | `config_pydantic.py` (Pydantic) | `config.py` (dataclass, **generowany** z `config_pydantic.py` przez `just gen-web-config` — zob. `config_model/AGENTS.md`) | `if IS_WEB:` w `characters/npc.py:33`, `objects.py:19`, `ui/panels/hud.py` |
 | Shadery                 | dostępne (gdy `USE_SHADERS`)    | wyłączone (wydajność)   | `USE_SHADERS=False` `settings.py:141`                                  |
 | Filtr dzień-noc (alpha) | tak                             | **nie**                 | `scene/scene.py:642` `if USE_ALPHA_FILTER and not IS_WEB:`             |
 | Logowanie               | `print`                         | `platform.console.log`  | `game.py`                                                              |

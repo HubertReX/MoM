@@ -191,6 +191,17 @@ gen-dialog-docs:
     #!powershell
     .venv\Scripts\python.exe scripts\gen_dialog_doc_assets.py
 
+# Regenerate `config_model/config.py` (web) from the Pydantic model in `config_pydantic.py`
+[unix]
+gen-web-config:
+    .venv/bin/python scripts/gen_web_config.py
+
+# Regenerate `config_model/config.py` (web) from the Pydantic model in `config_pydantic.py`
+[windows]
+gen-web-config:
+    #!powershell
+    .venv\Scripts\python.exe scripts\gen_web_config.py
+
 # Regenerate character faceset copies in `doc/_attachements/ (<KEY>.png)` from the sprite column of `characters.csv`
 [unix]
 gen-faces:
