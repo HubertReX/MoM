@@ -1,7 +1,8 @@
 [
-  "dataview",
   "obsidian-excalidraw-plugin",
-  "settings-search",
   "templater-obsidian",
-  "obsidian-text-format"
+  "dataview",
+  "settings-search",
+  "obsidian-text-format",
+  "storyline"
 ]

@@ -179,3 +179,5 @@ _temp/**
 
 # Design-system progress: syntetyczne rendery „po" (regenerowane przez scripts/gen_design_system_progress.py)
 doc/_attachements/_progress_assets/_after/
+/doc/.obsidian/plugins/storyline
+/doc/StoryLine/The Crow Stairway to Heaven
