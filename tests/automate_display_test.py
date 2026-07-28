@@ -973,7 +973,7 @@ class DesktopRunner(RunnerBase):
 
     def setup_saves(self, saves: List[dict[str, Any]]) -> None:
         from save_fixtures import (
-            corrupt_save, corrupt_save_version, create_minimal_save,
+            corrupt_save, corrupt_save_version, create_minimal_save, old_save_version,
         )
         for spec in saves:
             slot = int(spec["slot"])
@@ -982,6 +982,8 @@ class DesktopRunner(RunnerBase):
                 corrupt_save(slot)
             elif kind == "corrupt_version":
                 corrupt_save_version(slot)
+            elif kind == "old_version":
+                old_save_version(slot)
             else:
                 create_minimal_save(slot)
 
@@ -1339,7 +1341,9 @@ class WebRunner(RunnerBase):
     def _inject_setup_saves(self) -> None:
         if not self._pending_setup_saves or self.page is None:
             return
-        from save_fixtures import minimal_save_dict, corrupt_save_text
+        from save_fixtures import (
+            FUTURE_VERSION, OLD_VERSION, corrupt_save_text, minimal_save_dict,
+        )
         for spec in self._pending_setup_saves:
             slot = int(spec["slot"])
             kind = spec.get("type", "minimal")
@@ -1347,7 +1351,9 @@ class WebRunner(RunnerBase):
             if kind == "corrupt":
                 payload = corrupt_save_text()
             elif kind == "corrupt_version":
-                payload = json.dumps(minimal_save_dict(slot, version=9999))
+                payload = json.dumps(minimal_save_dict(slot, version=FUTURE_VERSION))
+            elif kind == "old_version":
+                payload = json.dumps(minimal_save_dict(slot, version=OLD_VERSION))
             else:
                 payload = json.dumps(minimal_save_dict(slot))
             self.page.evaluate(

@@ -495,8 +495,10 @@ class AgentController:
             for i, s in enumerate(slots):
                 if s is not None and s.is_occupied:
                     last_idx = i
-            if last_idx >= 0:
-                game.save_manager.load(last_idx)
+            if last_idx >= 0 and not game.save_manager.load(last_idx):
+                # Scenarios need the reason in the log; the game itself shows it on screen.
+                self.log(f"[agent_ctrl] load_last refused slot {last_idx}: "
+                         f"{game.save_manager.last_load_error}")
 
         if self._enter_maze_pending:
             self._enter_maze_pending = False

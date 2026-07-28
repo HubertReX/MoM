@@ -55,6 +55,11 @@ close_hint = "{Esc} Close"
 you_died = "You Died!"
 game_over = "GAME OVER"
 restart = "Restart"
+version_short = "v{v}"
+load_failed = "Could not load the save"
+too_old = "Save from an older game version"
+from_future = "Save from a newer game version"
+unreadable = "Unreadable save version"
 
 # === Item types ===
 

@@ -6,8 +6,8 @@ import time
 from typing import TYPE_CHECKING, Callable
 
 import pygame
-from enums import NotificationTypeEnum
-from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo
+from enums import NotificationTypeEnum, SaveCompatEnum
+from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo, save_compatibility
 import settings
 from settings import (
     FONT_SIZE_LARGE,
@@ -38,6 +38,8 @@ _ROW_H = 30              # slot row height
 _ROW_STEP = 34           # row pitch (height + spacing)
 _QUICK_GAP = 16          # extra space under the quick save row, holding its divider
 _ROW_INSET = 12          # left/right text inset inside a slot row
+_DEATH_PANEL_H = 560     # death panel height: slot list (380) + room for the error line
+_DEATH_ERROR_SIZE = 20   # font size of the refused-load message on the death panel
 _CAP_ROW_H = 32          # native keycap height (design-system: caps render at 32px)
 _BOX_NINE_PATCH = "nine_patch_12b.png"  # darker sub-panel for confirm / rename dialogs
 _FLASH_SECONDS = 3.0     # how long a refusal message stays in the footer
@@ -71,6 +73,20 @@ def _format_playtime(secs: float) -> str:
     return _("save.playtime_format", h=h, m=m)
 
 
+# Why a save cannot be loaded, in the player's language. Missing entry (``ok``, or no
+# reason recorded at all) falls back to the generic failure.
+_COMPAT_REASON_KEY: dict[SaveCompatEnum, str] = {
+    SaveCompatEnum.too_old: "save.too_old",
+    SaveCompatEnum.from_future: "save.from_future",
+    SaveCompatEnum.unreadable: "save.unreadable",
+}
+
+
+def load_error_text(reason: SaveCompatEnum | None) -> str:
+    """Message for a refused load - the concrete reason whenever we have one."""
+    return _(_COMPAT_REASON_KEY.get(reason, "save.load_failed")) if reason else _("save.load_failed")
+
+
 class _SlotButton:
     def __init__(self, idx: int, info: SaveSlotInfo | None, rect: pygame.Rect) -> None:
         self.idx = idx
@@ -89,10 +105,18 @@ class _SlotButton:
         return name if not meta else f"{name}   {meta}"
 
     @property
+    def compat(self) -> SaveCompatEnum | None:
+        """Whether this slot's save can be loaded; ``None`` for an empty slot."""
+        m = self.info.metadata if self.occupied and self.info is not None else None
+        return save_compatibility(m.version) if m is not None else None
+
+    @property
     def parts(self) -> tuple[str, str]:
-        """Row text split into (name, meta). ``meta`` (timestamp + playtime) is drawn
-        right-aligned so a long name can never push the playtime off the panel edge -
-        the clipping bug from the single concatenated label."""
+        """Row text split into (name, meta). ``meta`` (version + timestamp + playtime,
+        or version + why it cannot be loaded) is drawn right-aligned so a long name can
+        never push it off the panel edge - the clipping bug from the single
+        concatenated label. Two columns only: a third element would have to be pushed
+        through the layout self-checks (A03) for no gain."""
         m = self.info.metadata if self.occupied and self.info is not None else None
         # The quick save slot ignores whatever name is stored in it: it is always
         # labelled from the current locale, so the row follows a live language switch
@@ -105,7 +129,14 @@ class _SlotButton:
             name = m.slot_name or _("save.slot_default_name", n=self.idx + 1)
         if m is None:
             return name, ""
-        return name, f"{_format_timestamp(m.timestamp)}  {_format_playtime(m.playtime)}"
+        compat = save_compatibility(m.version)
+        if compat is SaveCompatEnum.unreadable:
+            # No version worth printing - it is the version itself that is garbage.
+            return name, _("save.unreadable")
+        version = _("save.version_short", v=m.version)
+        if compat is not SaveCompatEnum.ok:
+            return name, f"{version}  {_(_COMPAT_REASON_KEY[compat])}"
+        return name, f"{version}  {_format_timestamp(m.timestamp)}  {_format_playtime(m.playtime)}"
 
 
 def _draw_slot_row(surface: pygame.Surface, slot: "_SlotButton", selected: bool) -> None:
@@ -117,7 +148,11 @@ def _draw_slot_row(surface: pygame.Surface, slot: "_SlotButton", selected: bool)
         pygame.draw.rect(surface, theme.GOLD, slot.rect, width=2)
     font = theme.menu_font(_SLOT_FONT)
     name, meta = slot.parts
-    name_col = theme.WHITE if slot.occupied else theme.GREY
+    # A save that cannot be loaded reads like an empty slot: greyed out, with the
+    # reason where the date normally is. It is never deleted on the player's behalf -
+    # they can still remove it (D) or overwrite it.
+    loadable = slot.occupied and slot.compat is SaveCompatEnum.ok
+    name_col = theme.WHITE if loadable else theme.GREY
     cy = slot.rect.centery
     name_surf = font.render(name, False, name_col)
     surface.blit(name_surf, name_surf.get_rect(midleft=(slot.rect.left + _ROW_INSET, cy)))
@@ -436,14 +471,19 @@ class SaveLoadPanel(Widget):
     #############################################################################################################
     # MARK: rename / delete slot actions
 
-    def _notify_locked(self) -> None:
-        """Tell the player why the quick save slot refused an edit.
+    def _flash(self, text: str) -> None:
+        """Show a refusal in the panel's own footer.
 
-        Shown in the panel's own footer rather than as a scene notification: this
-        panel lives in a menu state, and the scene's toasts are not drawn there.
+        Not a scene notification: this panel lives in a menu state and the scene's
+        toasts are not drawn there, so a toast would be as invisible as the ``print``
+        it replaced.
         """
-        self._flash_text = _("save.quick_slot_locked")
+        self._flash_text = text
         self._flash_left = _FLASH_SECONDS
+
+    def _notify_locked(self) -> None:
+        """Tell the player why the quick save slot refused an edit."""
+        self._flash(_("save.quick_slot_locked"))
 
     def _begin_rename(self, slot: _SlotButton) -> None:
         """Open the inline TextInput to rename an occupied slot (no-op for empty slots)."""
@@ -742,6 +782,10 @@ class LoadPanel(SaveLoadPanel):
             self.scene.add_notification(_("save.game_loaded"), NotificationTypeEnum.info)
             if self.on_load is not None:
                 self.on_load(slot_idx)
+        else:
+            # Without this the refusal only reached the terminal (on web: the JS
+            # console) and nothing at all happened on screen.
+            self._flash(load_error_text(self.game.save_manager.last_load_error))
         self._confirm_action = None
 
     def _include_slot(self, idx: int, info: SaveSlotInfo | None) -> bool:
@@ -757,7 +801,7 @@ class DeathScreen(Widget):
         self.scene = scene
         self.game = scene.game
 
-        bw, bh = 600, 520
+        bw, bh = 600, _DEATH_PANEL_H
         self.bg = theme.nine_patch("nine_patch_12b.png", bw, bh)
         self.rect = self.bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
         self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
@@ -777,6 +821,9 @@ class DeathScreen(Widget):
         self._restart_btn = Button(_("save.restart"), self._on_restart, size=28)
         self._restart_btn.rect.center = (self.rect.centerx, self.rect.bottom - 40)
         self._focus: str = "slots"
+        # There is no scene left to hold a notification once the player is dead, so a
+        # refused load has to be reported by the death panel itself.
+        self._error: str = ""
 
     def _close_state(self) -> None:
         if self.game.states and self.game.states[-1].__class__.__name__ == "DeadState":
@@ -795,8 +842,19 @@ class DeathScreen(Widget):
     def _on_load_slot(self, slot_idx: int) -> None:
         if not hasattr(self.game, "save_manager"):
             return
-        self._close_state()
-        self.game.save_manager.load(slot_idx)
+        # Load FIRST. Closing first (as this did) tore down the death panel and the
+        # DeadState before knowing whether there was anything to come back to: a
+        # refused load left the player in a dead world with no UI at all.
+        if not self.game.save_manager.load(slot_idx):
+            self._error = load_error_text(self.game.save_manager.last_load_error)
+            return
+        self._error = ""
+        if self.scene is not None:
+            self.scene.ui.close(type(self))
+        # load() pushed a fresh Scene - drop whatever is left under it (a DeadState,
+        # the dead scene), same as DeadState._on_load_slot does.
+        if self.game.states:
+            self.game.states[:] = [self.game.states[-1]]
 
     def _toggle_focus(self) -> None:
         self._focus = "restart" if self._focus == "slots" else "slots"
@@ -831,8 +889,18 @@ class DeathScreen(Widget):
         surface.blit(self._title_surf, tr)
 
         self._selector.draw(surface)
+        _draw_death_error(surface, self.rect, self._error)
         self._restart_btn.selected = self._focus == "restart"
         self._restart_btn.draw(surface)
+
+
+def _draw_death_error(surface: pygame.Surface, panel_rect: pygame.Rect, msg: str) -> None:
+    """The 'could not load' line on a death panel, between the slot list and Restart."""
+    if not msg:
+        return
+    font = theme.menu_font(_DEATH_ERROR_SIZE)
+    surf = font.render(msg, False, (200, 80, 80))
+    surface.blit(surf, surf.get_rect(center=(panel_rect.centerx, panel_rect.bottom - 74)))
 
 
 from state import State as _State
@@ -843,7 +911,7 @@ class DeadState(_State):
         super().__init__(game)
         self.name = "DeadState"
         self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
-        bg_w, bg_h = 600, 520
+        bg_w, bg_h = 600, _DEATH_PANEL_H
         self._bg = theme.nine_patch("nine_patch_12b.png", bg_w, bg_h)
         self._bg_rect = self._bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
 
@@ -862,6 +930,9 @@ class DeadState(_State):
         self._restart_btn = Button(_("save.restart"), self._on_restart, size=28)
         self._restart_btn.rect.center = (self._bg_rect.centerx, self._bg_rect.bottom - 40)
         self._focus: str = "slots"
+        # The player is dead: there is no scene to carry a notification, so a refused
+        # load is reported on this panel.
+        self._error: str = ""
 
     def _on_restart(self) -> None:
         import scene as scene_mod
@@ -872,7 +943,13 @@ class DeadState(_State):
         splash_screen.SplashScreen(self.game, _("save.game_over")).enter_state()
 
     def _on_load_slot(self, slot_idx: int) -> None:
-        self.game.save_manager.load(slot_idx)
+        if not self.game.save_manager.load(slot_idx):
+            # Nothing was pushed, so states[-1] is still this DeadState - collapsing
+            # the stack here left the game with no scene underneath at all: a hard
+            # soft-lock. Stay on the death screen and say why.
+            self._error = load_error_text(self.game.save_manager.last_load_error)
+            return
+        self._error = ""
         # SaveManager.load pushed a new Scene; discard this DeadState.
         if self.game.states:
             self.game.states[:] = [self.game.states[-1]]
@@ -907,5 +984,6 @@ class DeadState(_State):
         screen.blit(self._title_surf, tr)
 
         self._selector.draw(screen)
+        _draw_death_error(screen, self._bg_rect, self._error)
         self._restart_btn.selected = self._focus == "restart"
         self._restart_btn.draw(screen)

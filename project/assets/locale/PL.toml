@@ -55,6 +55,11 @@ close_hint = "{Esc} Zamknij"
 you_died = "Zginąłeś!"
 game_over = "KONIEC GRY"
 restart = "Restart"
+version_short = "v{v}"
+load_failed = "Nie udało się wczytać zapisu"
+too_old = "Zapis ze starszej wersji gry"
+from_future = "Zapis z nowszej wersji gry"
+unreadable = "Nieczytelna wersja zapisu"
 
 # === Typy przedmiotów ===
 

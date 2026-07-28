@@ -1023,6 +1023,13 @@ class Game:
             elif self.save_manager.load(QUICK_SAVE_SLOT):
                 # load() replaced the top state with a fresh Scene - notify on that one
                 self._notify(self.states[-1], _("notify.quick_loaded"), NotificationTypeEnum.info)
+            else:
+                # Without this branch a refused quick load was completely silent:
+                # F9 did nothing at all and the reason went only to the terminal.
+                from ui.panels.save_load import load_error_text
+
+                self._notify(state, load_error_text(self.save_manager.last_load_error),
+                             NotificationTypeEnum.error)
             INPUTS["quick_load"] = False
 
         # F7: open the TextInput demo screen (dev tool for exercising the widget's

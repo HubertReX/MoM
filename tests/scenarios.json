@@ -155,6 +155,73 @@
         ]
     },
     {
+        "name": "Future Save Rejected",
+        "slug": "future_save_rejected",
+        "platform": ["desktop", "web"],
+        "cleanup_saves": [0, 1],
+        "setup_saves": [ { "slot": 1, "type": "corrupt_version" } ],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "open_load_panel", "commands": ["down", "down", "accept"], "wait": 1.0 },
+            { "slug": "incompatible_slot_listed", "commands": ["screenshot"] },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "load_refused", "commands": ["screenshot"] },
+            { "slug": "dump_state", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            { "type": "process_alive" },
+            { "type": "ui_state", "expect": { "top_state": "LoadMenuScreen" } },
+            { "type": "no_layout_violations" },
+            { "type": "screenshot_review", "target": "incompatible_slot_listed", "expect": "A 'Load Game' panel listing one save slot. The row is greyed out and, instead of a date and playtime, shows a save version and a message that the save comes from a newer version of the game." },
+            { "type": "screenshot_review", "target": "load_refused", "expect": "The load panel is still open and the game did NOT enter gameplay; a message about an incompatible / newer save version is visible, and there is no crash or traceback." }
+        ]
+    },
+    {
+        "name": "Old Save Rejected",
+        "slug": "old_save_rejected",
+        "platform": ["desktop", "web"],
+        "cleanup_saves": [0, 1],
+        "setup_saves": [ { "slot": 1, "type": "old_version" } ],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "open_main_menu", "commands": ["menu"], "wait": 1.0 },
+            { "slug": "open_load_panel", "commands": ["down", "down", "accept"], "wait": 1.0 },
+            { "slug": "old_slot_listed", "commands": ["screenshot"] },
+            { "slug": "activate_load", "commands": ["accept"], "wait": 2.0 },
+            { "slug": "load_refused", "commands": ["screenshot"] },
+            { "slug": "dump_state", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            { "type": "process_alive" },
+            { "type": "ui_state", "expect": { "top_state": "LoadMenuScreen" } },
+            { "type": "no_layout_violations" },
+            { "type": "screenshot_review", "target": "old_slot_listed", "expect": "A 'Load Game' panel listing one save slot. The row is greyed out and, instead of a date and playtime, shows a save version and a message that the save comes from an older version of the game." },
+            { "type": "screenshot_review", "target": "load_refused", "expect": "The load panel is still open and the game did NOT enter gameplay; a message about a save from an older game version is visible, and there is no crash or traceback." }
+        ]
+    },
+    {
+        "name": "Death Load Rejected",
+        "slug": "death_load_rejected",
+        "platform": ["desktop", "web"],
+        "cleanup_saves": [0, 1],
+        "setup_saves": [ { "slot": 1, "type": "corrupt_version" } ],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "trigger_death_screen", "commands": ["debug_death_screen"], "wait": 1.0 },
+            { "slug": "death_screen_visible", "commands": ["screenshot"] },
+            { "slug": "select_slot_confirm_load", "commands": ["accept", "accept"], "wait": 2.0 },
+            { "slug": "load_refused_on_death_screen", "commands": ["screenshot"] },
+            { "slug": "dump_state", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            { "type": "process_alive" },
+            { "type": "ui_state", "expect": { "top_state": "DeadState" } },
+            { "type": "no_layout_violations" },
+            { "type": "screenshot_review", "target": "load_refused_on_death_screen", "expected_state": "GAME_OVER", "expect": "The death screen is still fully visible (title, save slot list and a Restart button) with a message that the save cannot be loaded. The screen must NOT be blank or missing its panel - that would be the soft-lock this guards against." }
+        ]
+    },
+    {
         "name": "Web Save in localStorage",
         "slug": "web_save_localstorage",
         "platform": ["web"],
