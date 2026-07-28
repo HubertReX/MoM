@@ -184,6 +184,12 @@
                     "description": "place object characteristic for this character",
                     "title": "Hobby",
                     "type": "string"
+                },
+                "routine": {
+                    "default": "",
+                    "description": "key of the daily routine from routines.toml",
+                    "title": "Routine",
+                    "type": "string"
                 }
             },
             "required": [

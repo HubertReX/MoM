@@ -22,6 +22,7 @@ Co jest potrzebne:
 
 - [ ] skała ma za mały collider i reaguje na trafienie jedynie u samej podstaw. W Tiled collision box został dodany, ale nie jest respektowany.
 - [ ] czasami po wyjściu z tawerny gracz pojawia się w lesie blisko lewego krańca mapy zamiast w miejscu obiektu VillageHouseDoor  (pozycja od góry mapy jest ok). Zdarza się to rzadziej niż raz na 3 próby.
+- [ ] toast'y chowają się pod etykietą nazwy mapy (lokalizacji) - niech pokazują się ponad etykietą mapy
 - [ ] dodać do rutyn szczególne zachowanie w wybrane dni (niedziela tylko hobby), handel tylko poniedziałek, środa i piątek
 - [ ] usunąć autozapis przy wchodzeniu i wychodzeniu ze zwykłych pomieszczeń
 - [ ] `wander_radius` jest większy niż wynika z wpisu w `routines.toml`
