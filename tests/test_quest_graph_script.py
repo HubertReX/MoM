@@ -134,8 +134,7 @@ def test_markup_flattens_to_bold_runs() -> None:
 
 def test_markup_runs_coalesce() -> None:
     """One DOM node per run, so runs that read the same must not be split."""
-    assert_eq(markup_runs("zwykła proza bez tagów"),
-              [{"text": "zwykła proza bez tagów", "bold": False}], "one run")
+    assert_eq(markup_runs("zwykła proza bez tagów"), [{"text": "zwykła proza bez tagów", "bold": False}], "one run")
     # [/] and [/char] mean the same thing, so they must produce the same runs
     assert_eq(markup_runs("[char]X[/]y"), markup_runs("[char]X[/char]y"), "closers agree")
 
@@ -153,9 +152,7 @@ def test_node_labels_are_plain() -> None:
     nodes = {n["id"]: n for n in graph_to_dict(defs, messages, {})["nodes"]}
 
     assert_eq(nodes[Q00]["name"], "Malachi się budzi", "label is stripped")
-    assert_eq(
-        [r["bold"] for r in nodes[Q00]["name_runs"]], [True, False], "the tooltip keeps the styling"
-    )
+    assert_eq([r["bold"] for r in nodes[Q00]["name_runs"]], [True, False], "the tooltip keeps the styling")
 
 
 def test_threads_and_roots_are_marked() -> None:
@@ -172,11 +169,11 @@ def test_threads_and_roots_are_marked() -> None:
 def test_rewards_are_labelled_for_the_tooltip() -> None:
     nodes = {n["id"]: n for n in graph_to_dict(_defs(), {}, {})["nodes"]}
 
-    assert_eq(nodes[Q00]["rewards"], ["+50 zł"], "money")
+    assert_eq(nodes[Q00]["rewards"], ["+50 złota"], "money")
     # the umbrella pays three ways; all three show (the SSiS `break` bug, again)
     assert_eq(
         nodes[Q03_S00]["rewards"],
-        ["+100 zł", "+20 max HP", "MERMAIDS_TEAR"],
+        ["+100 złota", "+20 max HP", "MERMAIDS_TEAR"],
         "every reward is listed, not just the first",
     )
 
