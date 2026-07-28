@@ -20,14 +20,13 @@ Co jest potrzebne:
 
 ### Inne:
 
+- [ ] skała ma za mały collider i reaguje na trafienie jedynie u samej podstaw. W Tiled collision box został dodany, ale nie jest respektowany.
 - [ ] czasami po wyjściu z tawerny gracz pojawia się w lesie blisko lewego krańca mapy zamiast w miejscu obiektu VillageHouseDoor  (pozycja od góry mapy jest ok). Zdarza się to rzadziej niż raz na 3 próby.
 - [ ] dodać do rutyn szczególne zachowanie w wybrane dni (niedziela tylko hobby), handel tylko poniedziałek, środa i piątek
-- [ ] dodać nazwę lokalizacji na górze ekranu (przy lochach dodać poziom zagnieżdżenia)
 - [ ] usunąć autozapis przy wchodzeniu i wychodzeniu ze zwykłych pomieszczeń
 - [ ] `wander_radius` jest większy niż wynika z wpisu w `routines.toml`
 - [ ] `scrollbar.png` nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
 - [ ] przydało by się włączyć fog-of-war (FoW) w labiryncie w trybie web, ale to się wiąże z shaderami
-- [ ] mypy 24 błędy
 - [ ] w polach input, jak się wciśnie i przytrzyma przycisk to działa on tylko raz - kolejne litery powinny pojawiać się z małym opóźnieniem, a strzałki powinny przesuwać kursor, aż do zwolnienia klawisza
 - [ ] co się stanie jak zwiększę max_inventory?
 - [ ] po zmianie rozdzielczości ekran wraca na monitor na którym był uruchomiony
@@ -37,6 +36,8 @@ Co jest potrzebne:
 - [ ] sprawdzić zachowanie strategii afraid
 - [ ] ryby i żaby jak są w wodzie to nie powinny rzucać cienia
 - [ ] brakowało elementu w EN.toml, ale nic nie rzucało błędem - sprawdzić czy jest jakiś test podczas importu
+- [x] mypy 24 błędy
+- [x] dodać nazwę lokalizacji na górze ekranu (przy lochach dodać poziom zagnieżdżenia)
 - [x] gra nie zapisuje lub źle odczytuje stań skrzyni (otwarta/zamknięta) oraz stan obiektów, które da się zniszczyć (krzaki, kamienie) - po wczytaniu gry, stan tych obiektów jest jak przy wczytaniu nowej mapy
 - [x] gra źle odtwarza stan labiryntu => gra zapisuje jedną liczbą `seed`, która odtwarza cały stan (korytarze, potwory, przedmioty, skrzynie)
 - [x] przed wejściem do lochów, gra robi cichy `quick save` na slot 0 => gra pokazuje tost przy `auto save`
