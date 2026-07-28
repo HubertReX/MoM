@@ -583,6 +583,34 @@ które nie wyprodukowały bloku JSON.
   scenariuszami agentowymi w `tests/scenarios.json` ("Save and Load Basic",
   "Corrupt Save Handling", "Maze Save Blocked", ...).
   Poniższe punkty opisują to, co **poza** tym systemem trzyma stan w RAM.
+- **Wersjonowanie zapisów — JEDEN numer.** Wersja zapisu to wersja gry
+  (`settings.VERSION`, string `"MAJOR.MINOR"`); nie ma osobnego numeru schematu, bo
+  gracz zna wersję gry, a numeru schematu nigdy by nie zobaczył. Porównania idą przez
+  `version_code()` (`"0.3"` → 3, `"1.3"` → 103; `MAJOR*100+MINOR`, MINOR w 0-99, brak
+  poziomu patch w kontrakcie zapisu). Stare pliki trzymają `version` jako `float` —
+  czytane przez `str()`, więc `0.3` → `"0.3"` → ten sam kod.
+  - `save_compatibility()` (`save_load/models.py`) to **jedyne** miejsce decydujące,
+    czy zapis się wczyta: `ok` / `too_old` / `from_future` / `unreadable`.
+  - Migracja jest kluczowana wersją, w której **zmienił się format**
+    (`@_register_migration("1.4")`), nie każdym wydaniem — wydanie bez zmiany formatu
+    nie potrzebuje żadnego wpisu. Dzięki temu wspólny numer jest do utrzymania.
+    Punkt wpięcia: `SaveSlot.from_dict`, na surowym dictcie, przed `SaveGame.from_dict`
+    (`from_dict` jest tolerancyjny, więc po deserializacji nie ma już czego migrować).
+    `migrate_save` nigdy nie rzuca i nie loguje — biegnie dla 10 slotów przy każdym
+    otwarciu panelu. Nietknięta wersja = odmowa; stempel = sukces.
+  - **Przed 1.0** `MIN_SUPPORTED_SAVE_CODE == CURRENT_SAVE_CODE` i `_MIGRATIONS` jest
+    puste: starsze zapisy są odrzucane z komunikatem. **Od 1.0** stała zamarza na `100`
+    i każda zmiana formatu jedzie z migracją.
+  - Migracji **nie trzeba** przy dodaniu pola z wartością domyślną (przypadek domyślny:
+    `NPCState.config_key`, `SaveGame.world_seed`, `SaveMetadata.migrated_from`).
+    **Trzeba** przy zmianie nazwy, usunięciu pola, zmianie znaczenia lub typu.
+  - Zapisu nie do odczytania gra nigdy nie kasuje: slot zostaje na liście, wyszarzony,
+    z wersją i powodem zamiast daty; gracz może go usunąć (`D`) albo nadpisać. Odmowa
+    wczytania nie rusza stanu gry (nie zwija stosu na ekranie śmierci).
+- **Lista kontrolna przy podbiciu `VERSION`:** (1) czy zmienił się format zapisu — jeśli
+  tak i jesteśmy po 1.0, dopisz migrację kluczowaną nową wersją; (2) przed 1.0 podbij
+  `MIN_SUPPORTED_SAVE_CODE` razem z `VERSION`; (3) zaktualizuj `CURRENT_VERSION`
+  w `scripts/save_fixtures.py` (pilnuje tego test `fixture version in sync`).
 - **Persystencja między mapami w obrębie sesji = w RAM**: `Scene` cache'uje stan w
   `loaded_maps` (`scene/scene.py:102`) i `loaded_NPCs` (`scene/scene.py:202`). Wyjście z mapy →
   `store_map()` (`scene/map_state.py:75`) robi snapshot; powrót → `restore_map()`
