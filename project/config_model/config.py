@@ -49,7 +49,7 @@ class MazeLevelProperties():
             monsters_list        = data.get("monsters_list",        []),
             boss_monster         = data.get("boss_monster",         ""),
             monsters_count       = data.get("monsters_count",       1),
-            small_chest_count    = data.get("chest_count",          1),
+            small_chest_count    = data.get("small_chest_count",    1),
             small_chest_template = data.get("small_chest_template", ""),
             big_chest_template   = data.get("big_chest_template",   ""),
             maze_cols            = data.get("maze_cols",            5),
@@ -171,7 +171,7 @@ class Chest():
             is_small  =          data.get("is_small", True),
             is_closed =          data.get("is_closed", True),
             items     =          data.get("items", []),
-            total_items_count =  data.get("random_items_count", 0),
+            total_items_count =  data.get("total_items_count", 0),
             random_items      =  data.get("random_items", []),
         )
 
