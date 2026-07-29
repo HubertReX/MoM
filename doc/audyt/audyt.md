@@ -44,6 +44,8 @@ design progresji); `G-1` (znalezisko: kara śmierci) to nie `G01` (zadanie: code
 - [Faza 1 - Opus](prompt-faza-1.md) - zadania A01-A04, C01, F01-F03; wznawialny
   (agent pomija odhaczone zadania)
 - [Faza 2 - Fable](prompt-faza-2.md) - B01 z bramką akceptacji architektury po etapie 0
+- [Faza 3](prompt-faza-3.md) - mechaniki: E01/E02, D01, H02, U01, D02 (dwie bramki
+  „zapytaj autora": sonda web w D01 i akceptacja dokumentu w D02)
 
 ## Zadania
 
@@ -78,15 +80,20 @@ Dopisane po realizacji Fazy 1 (znaleziska z sesji 2026-07-25, oba zastane - nie 
 
 ### Faza 3 - brakujące mechaniki
 
-- [ ] D01 - AudioManager: muzyka per mapa, SFX eventy, głośność, web-safe - P1
-- [ ] D02 - design doc mini-progresji statystyk gracza: szybkość, max_health, damage, bazowy sentyment (rosnący i malejący przez decyzje); progresja przez przedmioty już istnieje - P2
-- [ ] E01 - noc/FoW fallback bez shaderów (desktop+web) - P1
-- [ ] E02 - FPS_CAP=60 + profil wydajności web - P2
-- [ ] H02 - śmierć gracza: codzienny autosave (rano lub o północy) + po śmierci od razu ekran wczytania gry (decyzja autora 2026-07-25; obecny twardy reset zostaje jako tło, bo gracz i tak wczytuje) - P2
+Kolejność wykonania: E01 → E02 (mierzy pipeline po E01) → D01 → H02 → U01 → D02.
+Decyzje autora z 2026-07-28 są wpisane w pliki zadań (assety audio z `~/Projects/RPG`,
+mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły wojny).
+
+- [x] [E01 - filtr nocy: jedna ścieżka kodu desktop+web (cache, koniec gałęzi `IS_WEB`)](E01-filtr-nocy-desktop-i-web.md) - P1
+- [x] [E02 - FPS_CAP=60 + profiler sekcji klatki i profil web z liczbami](E02-fps-cap-i-profil-web.md) - P2
+- [x] [D01 - AudioManager: muzyka per mapa, SFX eventów, głośność, web-safe](D01-audio-manager.md) - P1
+- [x] [H02 - dzienny autosave o 6:00 do slotu 0 (ekran wczytania po śmierci już jest - B02)](H02-autosave-dzienny.md) - P2
 - [x] [U01 - bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven)](U01-scrollbar-asset-driven.md) - P2
+- [x] [D02 - dokument decyzyjny mini-progresji statystyk (szybkość, max_health, damage, bazowy sentyment ±); kończy się dokumentem do akceptacji](D02-design-progresji-statystyk.md) - P2
 
 ### Faza 4 - treść prologu i późniejsze
 
+- [x] [E03 - prawdziwa mgła wojny w labiryncie (dokument decyzyjny + implementacja); po E01](E03-fog-of-war-labirynt.md) - P3
 - [ ] C02 - stopniowe ujednolicenie kluczy Tiled ↔ config - P3
 - [ ] H01 - ambient barks + wskaźnik aktywnego questa na HUD - P3
 
