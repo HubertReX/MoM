@@ -5,6 +5,7 @@ import copy
 import time
 from typing import TYPE_CHECKING, Any, cast
 
+import audio
 from enums import ItemTypeEnum, SaveCompatEnum
 from npc_runtime import NpcRuntime
 from objects import ItemSprite
@@ -86,7 +87,10 @@ class SaveManager:
             is_occupied=True,
             save_data=save_game,
         )
-        return self.backend.write_slot(slot)
+        written = self.backend.write_slot(slot)
+        if written:
+            audio.play_sfx("save_done")
+        return written
 
     def load(self, slot_idx: int) -> bool:
         self.last_load_error = None

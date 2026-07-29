@@ -1,6 +1,7 @@
 import random
 from typing import Any, cast
 from rich import print
+import audio
 import game
 import pygame
 import pyscroll
@@ -250,6 +251,9 @@ class Scene(State):
         self.load_map()
         if USE_PARTICLES:
             self.start_particles()
+        # nowa gra i wczytany zapis budują Scene wprost (bez go_to_map), więc
+        # muzyka startowej mapy musi być podłożona także tutaj
+        map_state.play_map_music(self)
         # self.start_particles()
         # self.set_camera_on_player()
 
@@ -275,6 +279,12 @@ class Scene(State):
         icon = emote_key or NOTIFICATION_TYPE_ICONS[type]
         message = f":{icon}: {text}"
         now = self.game.time_elapsed
+
+        # Jedno miejsce na dźwięk odmowy zamiast wywołania przy każdym "nie da się":
+        # za ciężki plecak, brak kasy, za słaba broń na kamień - wszystko to jest
+        # toast typu failure/warning/error i wszystko brzmi tak samo.
+        if type in (NotificationTypeEnum.failure, NotificationTypeEnum.warning, NotificationTypeEnum.error):
+            audio.play_sfx("toast_fail")
 
         # Queue rather than pile up: several toasts raised in one frame used to
         # share a single window, and the player got ~5 s to read all of them.
@@ -365,6 +375,9 @@ class Scene(State):
         # hard pause (P / focus loss) is still in effect (that path re-arms on unpause)
         if self.weather and not self.game.is_paused:
             self.weather.resume()
+        # wracamy z menu (Esc podkłada muzykę menu) - oddaj muzykę mapie. Ten sam
+        # klucz drugi raz nie restartuje utworu, więc powrót z panelu nic nie zmienia.
+        map_state.play_map_music(self)
 
     #############################################################################################################
 

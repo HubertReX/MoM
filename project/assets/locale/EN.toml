@@ -28,6 +28,9 @@ fullscreen = "Fullscreen: {state}"
 fullscreen_on = "ON"
 fullscreen_off = "OFF"
 language = "Language: {lang}"
+volume_master = "Master volume: < {value}% >"
+volume_music = "Music: < {value}% >"
+volume_sfx = "Effects: < {value}% >"
 back = "Back"
 
 # === Save / Load ===

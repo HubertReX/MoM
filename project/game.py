@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     import ffmpeg
     from config_model.config_pydantic import update_config_schema
 
+import audio
 import pygame
 import settings
 from enums import TaskEnum
@@ -107,6 +108,24 @@ traceback.install(show_locals=True, width=150)
 #################################################################################################################
 
 
+def _browser_user_activated() -> bool:
+    """Czy przeglądarka widziała PRAWDZIWY gest gracza (web-only, D01).
+
+    ``navigator.userActivation.hasBeenActive`` odróżnia kliknięcie/klawisz gracza
+    od syntetycznego ``pygame.event.post`` runnera testowego - a to jest dokładnie
+    ta różnica, której pygame nie widzi, i przez którą testy web dostawałyby
+    ``NotAllowedError`` w konsoli. Gdy API nie ma (stara przeglądarka, brak
+    ``window``), przepuszczamy: cisza u realnego gracza byłaby gorsza niż
+    ostrzeżenie w konsoli.
+    """
+    try:
+        from platform import window  # type: ignore[attr-defined]
+
+        return bool(window.navigator.userActivation.hasBeenActive)
+    except Exception:  # noqa: BLE001
+        return True
+
+
 class Game:
     # MARK: Game
     def __init__(self, task: str) -> None:  # 1_004_511
@@ -156,6 +175,24 @@ class Game:
         settings._DISPLAY_RES_INDEX = _ds.resolution_index
         settings._IS_FULLSCREEN = False if IS_WEB else _ds.fullscreen
         settings.LANG = _ds.language
+        settings._VOLUME_MASTER = _ds.volume_master
+        settings._VOLUME_MUSIC = _ds.volume_music
+        settings._VOLUME_SFX = _ds.volume_sfx
+
+        # Audio (D01): po `pygame.init()`, ale przed pierwszym `load_map` -
+        # `mixer.init()` wołany wcześniej bywa kapryśny. Na web manager startuje
+        # wyciszony do pierwszego gestu gracza (patrz `audio.py` i `get_inputs`).
+        if settings.USE_AUDIO:
+            _web_audio = IS_WEB and not USE_WEB_SIMULATOR
+            audio.init(
+                settings.AUDIO_MANIFEST_FILE,
+                settings.MUSIC_DIR,
+                settings.SFX_DIR,
+                needs_gesture=_web_audio,
+                gesture_check=_browser_user_activated if _web_audio else None,
+                log=self.log,
+            )
+            audio.set_volumes(_ds.volume_master, _ds.volume_music, _ds.volume_sfx)
 
         self.set_display()
 
@@ -221,7 +258,10 @@ class Game:
         self.save_manager: SaveManager = SaveManager(self)
 
         start_state = MainMenuScreen(self, "MainMenu", bg_image)
+        # pierwszy ekran trafia na stos wprost, z pominięciem `enter_state()`,
+        # więc muzykę menu trzeba tu podłożyć ręcznie (na web ruszy z pierwszym gestem)
         self.states.append(start_state)
+        audio.play_music("main_menu")
 
         # external control & screenshots for AI agents (debug, opt-in)
         # MOM_AGENT_CONTROL=1 w env (desktop) lub w localStorage['MoM.env'] (web) -
@@ -681,6 +721,13 @@ class Game:
         # MARK: get_inputs
         events = pygame.event.get()
         for event in events:
+            # Pierwsze realne wejście gracza odblokowuje dźwięk na web: przeglądarka
+            # odrzuca `play()` przed gestem użytkownika (sonda D01), a `--ume_block 0`
+            # zdejmuje pygbagowy ekran startowy, więc tego gestu nie ma skąd wziąć.
+            # Na desktopie manager startuje odblokowany i to jest no-op.
+            if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN, pygame.JOYBUTTONDOWN):
+                audio.unlock()
+
             if event.type == pygame.QUIT:
                 self.is_running = False
                 # pygame.quit()
@@ -1053,6 +1100,9 @@ class Game:
                 self.states[-1].on_suspend()
             else:
                 self.states[-1].on_resume()
+            # cisza na czas pauzy - utwór nie startuje od zera po wznowieniu,
+            # bo wyciszamy głośność, a nie zatrzymujemy strumień
+            audio.set_muted(self.is_paused)
             self._was_paused = self.is_paused
 
         # first draw on separate Surface (game.canvas)

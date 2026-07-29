@@ -5,6 +5,7 @@ import string
 import time
 from typing import TYPE_CHECKING, Callable
 
+import audio
 import pygame
 from enums import NotificationTypeEnum, SaveCompatEnum
 from save_load.models import MAX_SLOT_NAME_LEN, SaveSlotInfo, save_compatibility
@@ -910,6 +911,9 @@ class DeadState(_State):
     def __init__(self, game: Game) -> None:
         super().__init__(game)
         self.name = "DeadState"
+        # ekran śmierci ma własny motyw; restart/wczytanie buduje nową Scene,
+        # a ta oddaje muzykę mapie
+        audio.play_music("death")
         self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
         bg_w, bg_h = 600, _DEATH_PANEL_H
         self._bg = theme.nine_patch("nine_patch_12b.png", bg_w, bg_h)

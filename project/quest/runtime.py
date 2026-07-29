@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+import audio
 from enums import NotificationTypeEnum
 from dialog.result_sink import ResultSink
 from quest.context_adapter import QuestConditionContext
@@ -116,6 +117,11 @@ class QuestRuntime:
         notify = getattr(self.scene, "add_notification", None)
         if notify is None:
             return
+
+        if result.newly_done:
+            # jedna fanfara na sweep, nawet gdy w tej samej chwili domknęło się
+            # kilka questów - dwa nakładające się tusze brzmią jak błąd
+            audio.play_sfx("quest_done")
 
         for key in result.newly_done:
             quest = self.defs[key]

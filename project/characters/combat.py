@@ -13,6 +13,7 @@ import pygame
 from pygame.math import Vector2 as vec
 from rich import print
 
+import audio
 from enums import AttitudeEnum, NPCEventActionEnum
 from objects import NotificationTypeEnum
 from settings import PUSHED_TIME, STUNNED_TIME
@@ -22,6 +23,15 @@ if TYPE_CHECKING:
 
 
 def die(npc: "NPC", drop_items: bool = True) -> None:
+    # `drop_items=False` to wyjście NPC-a z mapy, nie śmierć - nie ozwucza się.
+    # Rozpisane na dwa `play_sfx`, a nie warunek w argumencie: walidator
+    # `check_audio_manifest` czyta literały z nawiasu wywołania, więc napis w
+    # warunku ("Player") wyglądałby dla niego jak klucz eventu.
+    if drop_items:
+        if npc.model.name_EN == "Player":
+            audio.play_sfx("player_die")
+        else:
+            audio.play_sfx("monster_die")
     npc.scene.NPCs = [other for other in npc.scene.NPCs if other != npc]
     npc.shadow.kill()
     npc.health_bar.kill()
@@ -117,6 +127,13 @@ def encounter(npc: "NPC", oponent: "NPC") -> None:
         npc.model.health = max(0, npc.model.health)
         oponent.model.health = max(0, oponent.model.health)
 
+        # w starciu obrywają obaj - liczy się ten, w którego skórze siedzi gracz
+        # (rozpisane na dwie gałęzie z tego samego powodu, co w `die`)
+        if npc.model.name_EN == "Player":
+            audio.play_sfx("player_hit")
+        else:
+            audio.play_sfx("monster_hit")
+
         # print(f"{npc.name}: {npc.model.health} opponent {oponent.name} {oponent.model.health}")
         if npc.model.health == 0:
             npc.die()
@@ -172,6 +189,9 @@ def hit(npc: "NPC", oponent: "NPC") -> None:
         damage = npc.selected_weapon.model.damage
         oponent.model.health -= damage
         oponent.model.health = max(0, oponent.model.health)
+
+        # trafienie bronią - obrywa tylko przeciwnik
+        audio.play_sfx("monster_hit")
 
         # print(f"{npc.name}: {npc.model.health} opponent {oponent.name} {oponent.model.health}")
         # if oponent.model.health == 0:

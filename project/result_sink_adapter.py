@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import audio
 from enums import NotificationTypeEnum
 from dialog.result_sink import ResultSink
 from settings import _, MAX_HOTBAR_ITEMS_LIMIT, entity_name
@@ -38,7 +39,10 @@ class GameResultSink(ResultSink):
         self.npc: "NPC | None" = npc
 
     def add_money(self, amount: int) -> None:
-        self.player.model.money += max(0, amount)
+        amount = max(0, amount)
+        self.player.model.money += amount
+        if amount:
+            audio.play_sfx("coins")
 
     def remove_money(self, amount: int) -> None:
         self.player.model.money = max(0, self.player.model.money - max(0, amount))
@@ -87,6 +91,7 @@ class GameResultSink(ResultSink):
             raise ValueError("shift_sentiment needs a current NPC; use shift_sentiment_of")
         self.npc.sentiment = max(0, min(100, self.npc.sentiment + amount))
         if amount != 0:
+            audio.play_sfx("sentiment_up" if amount > 0 else "sentiment_down")
             self.player.scene.add_notification(
                 _("notify.sentiment", amount=amount),
                 NotificationTypeEnum.success if amount > 0 else NotificationTypeEnum.info,

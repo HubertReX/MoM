@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import audio
 import pygame
 from dialog.conditions import check_condition
 from dialog.context_adapter import NPCConditionContext
@@ -157,6 +158,9 @@ class DialogPanel(Widget):
         # Re-fit to the current viewport (the panel is cached; the resolution may have
         # changed since it was built).
         self._recompute_layout()
+        # rozmówca zagaduje jako pierwszy; kolejne repliki bohatera mają
+        # `dialog_hero` z `activate_selected` - naprzemiennie, bez nakładania
+        audio.play_sfx("dialog_char")
         self.set_dialog(npc, text)
 
     def set_dialog(self, npc: "NPC | None", text: str) -> None:
@@ -385,7 +389,10 @@ class DialogPanel(Widget):
         self.npc.selected_options_dict[opt.key] = True
         shift = self.npc.apply_option_sentiment(opt.sentiment) if is_new_selection else 0
         sentiment_emote = SENTIMENT_NAME_TO_EMOTE.get(opt.sentiment, opt.sentiment)
+        # kwestia bohatera; zmiana sentymentu (jeśli jest) dopowiada, jak wypadła
+        audio.play_sfx("dialog_hero")
         if shift != 0:
+            audio.play_sfx("sentiment_up" if shift > 0 else "sentiment_down")
             msg = _('notify.sentiment', amount=shift)
             self.scene.add_notification(
                 msg,

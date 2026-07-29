@@ -30,6 +30,9 @@ class _FakeModel:
         self.money_regen_pct = money_regen_pct
         self.items = ["gem_small_blue", "gem_small_orange"]
         self.max_carry_weight = 15.0
+        # a merchant, not the hero: `inventory.pick_up` reads this to decide whose
+        # ears the pick-up sound is for (D01)
+        self.name_EN = "Johny"
 
 
 class _FakeConf:

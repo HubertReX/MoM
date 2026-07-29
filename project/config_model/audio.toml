@@ -1,0 +1,59 @@
+# Mapowanie dźwięków - jedyne miejsce, w którym nazwa pliku audio spotyka się z grą.
+#
+# Klucze muzyki to nazwy map (plik .tmx bez rozszerzenia) plus trzy konteksty
+# specjalne: `main_menu`, `maze`, `death`. Brak wpisu dla mapy = cisza, nie błąd
+# (nowa mapa nie może wywalić gry). W labiryncie klucz `maze` ma pierwszeństwo
+# przed nazwą mapy.
+#
+# Klucze SFX to nazwy EVENTÓW, nie plików - kod woła `audio.play_sfx("<klucz>")`
+# i nigdy nie zna nazwy pliku. Jeden plik może obsłużyć kilka eventów.
+#
+# Pliki leżą w `project/assets/audio/music/` i `project/assets/audio/sfx/`
+# (licencje: `project/assets/audio/SOURCES.md`).
+#
+# Plik jest walidowany przez `just validate-world` (`check_audio_manifest`):
+# nieistniejący plik audio, nieznana mapa, event bez wywołania w kodzie oraz
+# `play_sfx("...")` bez wpisu tutaj to twarde błędy.
+
+[music]
+main_menu        = "this-is-epic.ogg"
+death            = "tubular-bell-of-death.ogg"
+# spooky cave, slow, water drops
+maze             = "caves-of-dawn.ogg"
+# Shire
+Village          = "best-adventure-ever.ogg"
+# misterious
+VillageHouse     = "deep-in-the-dell.ogg"
+# magic, harry potter style
+LOST_CORK_TAVERN = "let-the-mystery-unfold.ogg"
+# a bit spooky, more misterious
+JacobsChamber    = "scary-spooky-ambient.ogg"
+
+[music.settings]
+fade_ms = 500     # crossfade przy zmianie mapy
+volume  = 0.6     # mnożnik utworu względem suwaka muzyki
+
+[sfx]
+player_hit     = "male_hurt7.ogg"
+monster_hit    = "punch-2.ogg"
+monster_die    = "body-fall.ogg"
+player_die     = "tubular-bell-of-death.ogg"
+item_pick_up   = "item.ogg"
+item_equip     = "item-equip.ogg"
+item_drop      = "cardboard-box-drop.ogg"
+coins          = "coins27.ogg"
+sentiment_up   = "game-level-complete.ogg"
+sentiment_down = "failfare.ogg"
+# każdy toast ostrzegawczy: za ciężki plecak, brak kasy, za słaba broń
+toast_fail     = "failfare.ogg"
+chest_open     = "game-level-complete.ogg"
+quest_done     = "success-fanfare-trumpets.ogg"
+panel_open     = "backpack.ogg"
+menu_move      = "item-equip.ogg"
+save_done      = "game-bonus.ogg"
+maze_door      = "stairwellwalk.ogg"
+wall_smash     = "punch-2.ogg"
+# pierwsza próbka z voicepacka - kwestia bohatera
+dialog_hero    = "voice-hero.ogg"
+# druga próbka z voicepacka - kwestia rozmówcy
+dialog_char    = "voice-char.ogg"

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+import audio
 import pygame
 from objects import NotificationTypeEnum
 import settings
@@ -177,7 +178,12 @@ class MenuPanel(Widget):
     #############################################################################################################
     def set_index(self, index: int) -> None:
         if self.buttons:
-            self.index = index % len(self.buttons)
+            new_index = index % len(self.buttons)
+            # tylko realna zmiana podświetlenia klika - najechanie myszą na już
+            # wybrany wiersz albo `set_index` po zmianie rozdzielczości nie jest ruchem
+            if new_index != self.index:
+                audio.play_sfx("menu_move")
+            self.index = new_index
             self._sync_selection()
 
     def select_next(self) -> None:
@@ -265,6 +271,14 @@ class MenuScreen(State):
     #############################################################################################################
     def build_panel(self) -> MenuPanel:
         raise NotImplementedError("Subclasses must implement build_panel()")
+
+    def enter_state(self) -> None:
+        # Menu ma swój motyw - także wywołane Escapem w trakcie gry. Powrót do
+        # mapy przywraca jej muzykę przez `Scene.on_resume`. Ustawienia, potwierdzenie
+        # i "O grze" dziedziczą to i grają dalej ten sam utwór (ten sam klucz = brak
+        # restartu), więc wchodzenie w podmenu nie tnie muzyki.
+        super().enter_state()
+        audio.play_music("main_menu")
 
     def on_resize(self) -> None:
         """Re-fit to a new resolution (called from Game.set_display for stacked states).

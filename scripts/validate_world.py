@@ -34,8 +34,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CONFIG_DIR = REPO_ROOT / "project" / "config_model"
-ASSETS = REPO_ROOT / "project" / "assets"
+PROJECT_DIR = REPO_ROOT / "project"
+CONFIG_DIR = PROJECT_DIR / "config_model"
+ASSETS = PROJECT_DIR / "assets"
+AUDIO_DIR = ASSETS / "audio"
+
+# Klucze muzyki, które nie są nazwą mapy. Powtórzone za `project/audio.py`
+# świadomie: ten skrypt jest wolny od pygame'a i importu gry (patrz docstring).
+SPECIAL_MUSIC_KEYS = ("main_menu", "maze", "death")
 
 # Hand-listed rather than globbed: `assets/MazeTileset/` holds the procedural dungeon
 # templates, whose objects are generated at runtime and have no authored keys to check.
@@ -86,6 +92,8 @@ class World:
     routines: dict[str, dict]
     maps: list[GameMap]
     sprites: set[str]
+    #: `config_model/audio.toml` w surowej postaci; ``None`` = brak/nie parsuje się
+    audio: dict | None = None
 
     @property
     def places(self) -> dict[str, set[str]]:
@@ -197,10 +205,16 @@ def load_world() -> World:
     with open(CONFIG_DIR / "routines.toml", "rb") as f:
         routines = tomllib.load(f).get("routine", {})
 
+    try:
+        with open(CONFIG_DIR / "audio.toml", "rb") as f:
+            audio: dict | None = tomllib.load(f)
+    except (OSError, tomllib.TOMLDecodeError):
+        audio = None
+
     maps = [load_map(p) for d in MAP_DIRS for p in sorted(d.glob("*.tmx"))]
     sprites = {p.name for p in SPRITE_DIR.iterdir() if p.is_dir()} if SPRITE_DIR.is_dir() else set()
     return World(config=config, characters_csv=characters_csv, routines=routines,
-                 maps=maps, sprites=sprites)
+                 maps=maps, sprites=sprites, audio=audio)
 
 
 #############################################################################################################
@@ -243,6 +257,33 @@ def _maze_monsters(world: World) -> set[str]:
         boss = cfg.get("boss_monster")
         if boss:
             keys.add(str(boss))
+    return keys
+
+
+def _played_sfx_keys() -> set[str]:
+    """Klucze z każdego `play_sfx("...")` w `project/`.
+
+    Grep po źródłach, nie import gry: ten skrypt musi działać bez pygame'a i bez
+    SDL-a. Zbierane są WSZYSTKIE literały z nawiasu wywołania, bo warunkowy wybór
+    dźwięku (``play_sfx("player_die" if ... else "monster_die")``) jest w tym
+    kodzie normalny i oba klucze są realnie używane. Cena tej prostoty: napis w
+    WARUNKU (``play_sfx("a" if x == "b" else "c")``) też zostanie wzięty za klucz,
+    więc takie wywołania rozpisujemy na dwie gałęzie ``if``/``else``. Dynamiczny
+    klucz (``play_sfx(name)``) byłby nie do sprawdzenia statycznie - i nie ma go
+    w grze.
+    """
+    keys: set[str] = set()
+    call = re.compile(r"play_sfx\(([^)]*)\)")
+    literal = re.compile(r'"([^"]+)"')
+    for path in PROJECT_DIR.rglob("*.py"):
+        if path.name == "audio.py":
+            continue          # docstringi i `__all__` samego modułu, nie wywołania
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for args in call.findall(text):
+            keys.update(literal.findall(args))
     return keys
 
 
@@ -466,6 +507,52 @@ def check_duplicate_object_names(world: World) -> list[Violation]:
     return out
 
 
+def check_audio_manifest(world: World) -> list[Violation]:
+    """Rule 11: `config_model/audio.toml` opisuje pliki i eventy, które istnieją.
+
+    Cztery pomyłki, które inaczej wychodzą dopiero przy graniu (i to jako cisza,
+    czyli najgorszy możliwy objaw): brakujący plik ogg, klucz muzyki, który nie
+    jest ani mapą, ani kontekstem specjalnym, wpis SFX, którego nikt nie woła,
+    oraz `play_sfx("literówka")` bez wpisu w manifeście.
+    """
+    out: list[Violation] = []
+    if world.audio is None:
+        out.append(Violation(ERROR, "audio.toml", "manifest nie istnieje albo się nie parsuje"))
+        return out
+
+    music = world.audio.get("music", {}) or {}
+    settings = music.get("settings", {}) or {}
+    music_files = {k: v for k, v in music.items() if isinstance(v, str)}
+    sfx_files = {k: v for k, v in (world.audio.get("sfx", {}) or {}).items() if isinstance(v, str)}
+
+    if not isinstance(settings, dict):
+        out.append(Violation(ERROR, "audio.toml:[music.settings]", "musi być tabelą"))
+
+    map_names = {m.name for m in world.maps}
+    for key, file_name in music_files.items():
+        if not (AUDIO_DIR / "music" / file_name).is_file():
+            out.append(Violation(ERROR, "audio.toml:[music]",
+                                 f"'{key}' wskazuje na nieistniejący plik 'music/{file_name}'"))
+        if key not in SPECIAL_MUSIC_KEYS and key not in map_names:
+            out.append(Violation(
+                ERROR, "audio.toml:[music]",
+                f"'{key}' to ani mapa, ani jeden z kontekstów {'/'.join(SPECIAL_MUSIC_KEYS)}"))
+
+    for key, file_name in sfx_files.items():
+        if not (AUDIO_DIR / "sfx" / file_name).is_file():
+            out.append(Violation(ERROR, "audio.toml:[sfx]",
+                                 f"'{key}' wskazuje na nieistniejący plik 'sfx/{file_name}'"))
+
+    called = _played_sfx_keys()
+    for key in sorted(set(sfx_files) - called):
+        out.append(Violation(ERROR, "audio.toml:[sfx]",
+                             f"event '{key}' nie jest wołany nigdzie w project/ - martwy wpis"))
+    for key in sorted(called - set(sfx_files)):
+        out.append(Violation(ERROR, "project/*.py",
+                             f"play_sfx(\"{key}\") nie ma wpisu w audio.toml"))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -477,6 +564,7 @@ CHECKS = (
     check_unspawned_characters,
     check_legacy_waypoints,
     check_duplicate_object_names,
+    check_audio_manifest,
 )
 
 

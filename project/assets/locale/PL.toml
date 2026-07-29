@@ -28,6 +28,9 @@ fullscreen = "Pełny ekran: {state}"
 fullscreen_on = "WŁ"
 fullscreen_off = "WYŁ"
 language = "Język: {lang}"
+volume_master = "Głośność ogólna: < {value}% >"
+volume_music = "Muzyka: < {value}% >"
+volume_sfx = "Efekty: < {value}% >"
 back = "Wstecz"
 
 # === Zapis / Wczytaj ===

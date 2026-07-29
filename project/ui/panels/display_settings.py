@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+import audio
 import pygame
 import settings as _settings
 from settings import INPUTS, IS_WEB, MENU_FONT, _
@@ -26,6 +27,15 @@ _GAP = 20
 _TITLE_SIZE = 48
 _BUTTON_SIZE = 28
 _LINE_SIZE = 16
+
+#: Wiersze głośności: tag wiersza -> (atrybut runtime w `settings`, klucz locale).
+#: Kolejność z tabeli jest kolejnością na ekranie.
+_VOLUME_TYPES: tuple[str, ...] = ("volume_master", "volume_music", "volume_sfx")
+_VOLUME_FIELDS: dict[str, tuple[str, str]] = {
+    "volume_master": ("_VOLUME_MASTER", "settings.volume_master"),
+    "volume_music": ("_VOLUME_MUSIC", "settings.volume_music"),
+    "volume_sfx": ("_VOLUME_SFX", "settings.volume_sfx"),
+}
 
 
 # Import settings module for mutable state
@@ -87,6 +97,11 @@ class SettingsPanel(Widget):
         self._buttons.append(Button(_("settings.language", lang=_settings.LANG), None, size=_BUTTON_SIZE))
         self._button_types.append("language")
 
+        # Volume rows - same cycled-by-arrows widget as the resolution row above
+        for volume_type in _VOLUME_TYPES:
+            self._buttons.append(Button(self._volume_label(volume_type), None, size=_BUTTON_SIZE))
+            self._button_types.append(volume_type)
+
         self._buttons.append(Button(_("settings.back"), None, size=_BUTTON_SIZE))
         self._button_types.append("back")
 
@@ -95,6 +110,29 @@ class SettingsPanel(Widget):
         idx = _settings._DISPLAY_RES_INDEX % len(_settings.DISPLAY_RES_OPTIONS)
         xt, yt = _settings.DISPLAY_RES_OPTIONS[idx]
         return _("settings.resolution", w=xt * _settings.TILE_SIZE, h=yt * _settings.TILE_SIZE)
+
+    def _volume_label(self, volume_type: str) -> str:
+        attr, key = _VOLUME_FIELDS[volume_type]
+        return _(key, value=int(round(getattr(_settings, attr) * 100)))
+
+    def _cycle_volume(self, volume_type: str, step: int) -> None:
+        """Move one volume by ``VOLUME_STEP``, clamped to 0-100% (no wrap).
+
+        Wrapping would jump a muted game to full blast on one extra keypress, so
+        unlike the resolution cycler this one stops at both ends. The change is
+        audible immediately (``audio.set_volumes``) and persisted at once, like
+        every other row here.
+        """
+        attr, _key = _VOLUME_FIELDS[volume_type]
+        value = getattr(_settings, attr) + step * _settings.VOLUME_STEP
+        # zaokrąglenie do kroku: dodawanie 0.1 w floatach dryfuje (0.7000000000000001)
+        value = round(max(0.0, min(1.0, value)) / _settings.VOLUME_STEP) * _settings.VOLUME_STEP
+        setattr(_settings, attr, value)
+        audio.set_volumes(_settings._VOLUME_MASTER, _settings._VOLUME_MUSIC, _settings._VOLUME_SFX)
+        # dźwięk próbki: gracz ma usłyszeć, co właśnie ustawił
+        audio.play_sfx("menu_move")
+        self._rebuild_buttons()
+        save_display_settings()
 
     def _cycle_resolution(self, step: int) -> None:
         """Move the resolution selection by *step* (wrapping) and apply it."""
@@ -160,8 +198,12 @@ class SettingsPanel(Widget):
             btn.selected = i == self.index
 
     def set_index(self, index: int) -> None:
+        previous = self.index
         self.index = index
         self._sync_selection()
+        # dopiero po `_sync_selection` - ono normalizuje indeks modulo liczbę wierszy
+        if self.index != previous:
+            audio.play_sfx("menu_move")
 
     def select_next(self) -> None:
         self.set_index(self.index + 1)
@@ -170,14 +212,19 @@ class SettingsPanel(Widget):
         self.set_index(self.index - 1)
 
     def on_left(self) -> None:
-        """Left input: cycle the resolution back when the resolution row is selected."""
-        if self._button_types[self.index] == "resolution":
-            self._cycle_resolution(-1)
+        """Left input: step the selected cycler (resolution / volume) back."""
+        self._step_selected(-1)
 
     def on_right(self) -> None:
-        """Right input: cycle the resolution forward when the resolution row is selected."""
-        if self._button_types[self.index] == "resolution":
-            self._cycle_resolution(1)
+        """Right input: step the selected cycler (resolution / volume) forward."""
+        self._step_selected(1)
+
+    def _step_selected(self, step: int) -> None:
+        button_type = self._button_types[self.index]
+        if button_type == "resolution":
+            self._cycle_resolution(step)
+        elif button_type in _VOLUME_FIELDS:
+            self._cycle_volume(button_type, step)
 
     def render(self) -> pygame.Surface:
         surf = self._bg.copy()
@@ -197,10 +244,11 @@ class SettingsPanel(Widget):
             for i, child in enumerate(self.children):
                 if child.rect.collidepoint(event.pos):
                     self.set_index(i)
-                    # On the resolution row, a click on the left half steps back and
-                    # the right half steps forward (matching the "< WxH >" arrows).
-                    if self._button_types[i] == "resolution":
-                        self._cycle_resolution(-1 if event.pos[0] < child.rect.centerx else 1)
+                    # On a cycled row (resolution, volumes), a click on the left half
+                    # steps back and the right half steps forward (matching the
+                    # "< ... >" arrows in the label).
+                    if self._button_types[i] == "resolution" or self._button_types[i] in _VOLUME_FIELDS:
+                        self._step_selected(-1 if event.pos[0] < child.rect.centerx else 1)
                     else:
                         self.activate()
                     return True
@@ -211,6 +259,8 @@ class SettingsPanel(Widget):
         if bt == "resolution":
             # Keyboard/gamepad accept cycles forward; left/right give both directions.
             self._cycle_resolution(1)
+        elif bt in _VOLUME_FIELDS:
+            self._cycle_volume(bt, 1)
         elif bt == "fullscreen":
             _settings._IS_FULLSCREEN = not _settings._IS_FULLSCREEN
             if self._apply_callback is not None:

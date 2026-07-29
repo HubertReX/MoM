@@ -303,7 +303,28 @@ Labirynt: klucz `maze` ma pierwszeństwo przed nazwą mapy, gdy `scene.is_maze`.
 - odhacz D01 w `doc/audyt/audyt.md`
 - commit: `D01: AudioManager - muzyka per mapa z audio.toml, SFX eventów, głośność w ustawieniach`
 
-## Wynik sondy web (wypełnia agent w kroku 0)
+## Wynik sondy web (krok 0, 2026-07-29)
 
-_(do uzupełnienia: czy `mixer.init()` przechodzi na pygbag, czy ogg gra, czy potrzebny
-gest użytkownika, ewentualny błąd z konsoli JS)_
+Sonda: tymczasowe `mixer.init()` + `music.load/play(-1)` + `mixer.Sound(...).play()`
+w `Game.__init__`/`Game.loop` (kod usunięty po sondzie), pygbag na `127.0.0.1:8001`,
+headless chromium przez Playwrighta, zrzut konsoli JS.
+
+1. `pygame.mixer.init()` **przechodzi** na pygbag: `get_init() == (48000, -16, 2)`.
+   Zostajemy przy **ogg vorbis** - i `mixer.music`, i `mixer.Sound` wczytują ogg bez
+   problemu (`Sound.get_length()` zwraca poprawną długość).
+2. Autoplay jest **zablokowany bez gestu użytkownika**. Konsola:
+   `Cannot play before user interaction, will retry` + nieprzechwycone
+   `NotAllowedError: play() failed because the user didn't interact with the document
+   first`. Pygbagowe „will retry" **nie działa** - po 40 s i po kliknięciu utwór dalej
+   stał na `get_pos() == 0`.
+3. Po geście użytkownika trzeba **ponowić `music.play(-1)` z kodu** - wtedy gra
+   (`get_pos()` rośnie 2993 → 28480 ms). SFX (`mixer.Sound.play()`) po geście też gra.
+4. `mixer.music.get_busy()` na web zwraca **`False` mimo grającego utworu** (na desktopie
+   działa normalnie). Nie wolno na nim opierać logiki „co teraz gra" - manager trzyma
+   własny stan (`_current_key`), a `get_busy()` nie jest używane nigdzie.
+
+Wniosek dla implementacji (bez zmiany `--ume_block`, zgodnie z pułapkami):
+`AudioManager` ma bramkę `_unlocked`. Na web startuje `False` i **nic nie jest wołane
+do miksera** (żadnego `play`) - dzięki temu w konsoli nie ma `NotAllowedError`. Pierwsze
+realne wejście gracza (`KEYDOWN` / `MOUSEBUTTONDOWN` / przycisk pada) woła
+`audio.unlock()`, które odpala odłożony utwór. Na desktopie `_unlocked` startuje `True`.

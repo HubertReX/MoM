@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import audio
 from config_model.config import AttitudeEnum
 from maze_generator.maze_utils import TILE_SIZE, clear_maze_cache
 from objects import NotificationTypeEnum
@@ -120,6 +121,7 @@ def resolve(scene: "Scene") -> None:
                         # destroy object
                         destructible.kill()
                         scene.destructibles.remove(destructible)
+                        audio.play_sfx("wall_smash")
 
     colliders = scene.walls
     # if player.is_flying:

@@ -339,6 +339,21 @@ _IS_FULLSCREEN = False  # mutable runtime toggle
 IS_PAUSED = False
 USE_ALPHA_FILTER = True
 USE_PARTICLES = True
+# dźwięk (D01). Wyłączenie tu = gra bez `mixer.init()`; brak karty/dummy driver
+# i tak kończy się cichym no-opem w `audio.py`, więc to tylko wygodny wyłącznik.
+USE_AUDIO = True
+# domyślne głośności nowego gracza (0.0-1.0); zapisywane w `settings.json`
+# / localStorage razem z rozdzielczością i językiem (save_load/display_settings.py)
+DEFAULT_VOLUME_MASTER = 1.0
+DEFAULT_VOLUME_MUSIC = 0.7
+DEFAULT_VOLUME_SFX = 0.8
+# krok suwaka głośności w ustawieniach
+VOLUME_STEP = 0.1
+# mutowalny stan runtime, jak `_IS_FULLSCREEN` - to jest źródło prawdy dla zapisu
+# ustawień i dla `audio.set_volumes(...)`
+_VOLUME_MASTER = DEFAULT_VOLUME_MASTER
+_VOLUME_MUSIC = DEFAULT_VOLUME_MUSIC
+_VOLUME_SFX = DEFAULT_VOLUME_SFX
 USE_CUSTOM_MOUSE_CURSOR = True
 USE_SOD = False
 USE_SHADERS = False
@@ -731,6 +746,8 @@ CONFIG_DIR = CURRENT_DIR / "config_model"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 SCHEMA_FILE = CONFIG_DIR / "config_schema.json"
 ROUTINES_FILE = CONFIG_DIR / "routines.toml"
+# mapowanie mapa->muzyka i event->SFX (D01); walidowane przez `just validate-world`
+AUDIO_MANIFEST_FILE = CONFIG_DIR / "audio.toml"
 SCREENSHOTS_DIR = CURRENT_DIR if IS_WEB else CURRENT_DIR / ".." / "screenshots"
 # pliki/ katalog dla zewnętrznego sterowania agentów (patrz agent_ctrl.py, USE_AGENT_CONTROL)
 AGENT_INPUT_FILE = CURRENT_DIR / ".." / "agent_input.txt"
@@ -742,6 +759,9 @@ AGENT_STATUS_FILE = CURRENT_DIR / ".." / "agent_status.txt"
 AGENT_UI_STATE_FILE = CURRENT_DIR / ".." / "agent_ui_state.json"
 AGENT_SCREENSHOT_DIR = CURRENT_DIR / ".." / "screenshots" / "agent"
 ASSETS_DIR = CURRENT_DIR / "assets"
+AUDIO_DIR = ASSETS_DIR / "audio"
+MUSIC_DIR = AUDIO_DIR / "music"
+SFX_DIR = AUDIO_DIR / "sfx"
 # font_name = "font"
 font_name = "font_pixel"
 FONTS_PATH = ASSETS_DIR / "fonts"

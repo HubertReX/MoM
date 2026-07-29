@@ -23,6 +23,7 @@ from settings import (
 )
 from enums import ItemTypeEnum, NPCEventActionEnum
 
+import audio
 import game
 import scene
 from characters.npc import NPC
@@ -86,6 +87,7 @@ class Player(NPC):
             if self.chest_in_range and self.chest_in_range.model.is_closed and not self.is_talking:
                 chest = self.chest_in_range
                 chest.open()
+                audio.play_sfx("chest_open")
                 self.scene.add_notification(_("notify.chest_opened"), NotificationTypeEnum.success)
                 for item_name in chest.model.items:
                     # print(f"[light_green] '{item_name}' item from chest")
@@ -152,6 +154,7 @@ class Player(NPC):
                         self.model.money -= price
                         self.npc_met.model.money += price
                         self.pick_up(item_to_buy)
+                        audio.play_sfx("coins")
                         self.scene.add_notification(
                             _("notify.bought", name=entity_name(item_to_buy.model), price=price),
                             NotificationTypeEnum.info)
@@ -166,6 +169,7 @@ class Player(NPC):
                         self.model.money += price
                         self.npc_met.model.money -= price
                         self.npc_met.pick_up(item_to_sell)
+                        audio.play_sfx("coins")
                         self.scene.add_notification(
                             _("notify.sold", name=entity_name(item_to_sell.model), price=price),
                             NotificationTypeEnum.info)
@@ -317,6 +321,7 @@ class Player(NPC):
                     self.selected_item_idx -= 1
         elif item.model.type == ItemTypeEnum.weapon:
             if self.can_switch_weapon and not self.is_attacking and not self.is_stunned:
+                audio.play_sfx("item_equip")
                 self.can_switch_weapon = False
                 self.switch_cooldown = self.game.time_elapsed + (self.switch_duration_cooldown / 1000.0)
                 self.set_event_timer(self, NPCEventActionEnum.switching_weapon, self.switch_duration_cooldown, 1)

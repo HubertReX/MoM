@@ -33,7 +33,8 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
 | `transition.py`            | Efekty przejść (`Transition`, `TransitionCircle`)                                               |                                                  |
 | `second_order_dynamics.py` | Gładkie animacje (Second Order Dynamics) — POC                                                  |                                                  |
 | `enums.py`                 | Typy wyliczeniowe (Race, Attitude, ItemType, …)                                                 |                                                  |
-| `save_load/display_settings.py` | Persystencja ustawień (rozdzielczość, fullscreen, język)                                    | desktop `settings.json`, web `localStorage`      |
+| `save_load/display_settings.py` | Persystencja ustawień (rozdzielczość, fullscreen, język, głośności)                         | desktop `settings.json`, web `localStorage`      |
+| `audio.py`                 | Muzyka per mapa + SFX eventów; manifest `config_model/audio.toml` — patrz sekcja niżej           | zero importów z `scene`/`characters`/`game`      |
 | `main.py`                  | Entry point + CLI (Click na desktopie)                                                          |                                                  |
 
 ## Toolkit UI (`ui/`)
@@ -619,17 +620,59 @@ które nie wyprodukowały bloku JSON.
   `player.reset()` (`characters/npc.py:694`: pełne zdrowie, **przeładowanie startowego ekwipunku
   z configu — zebrane przedmioty przepadają**, wyczyszczenie flag), nowa `Scene("Village",
   "start")` + splash `"GAME OVER"`. To pełny respawn w wiosce, nie wczytanie zapisu.
-- **Persystencja ustawień** (`save_load/display_settings.py`): rozdzielczość, fullscreen
-  i wybrany język (`LANG`) są zapisywane automatycznie przy każdej zmianie i wczytywane
-  przy starcie gry. Desktop: `<data_dir>/mom/settings.json` (taka sama logika ścieżek jak save'y).
-  Web: localStorage klucz `MoM.settings`. Format JSON z `version`, `resolution_index`,
-  `fullscreen`, `language` i `resolution` (fallback px, gdyby lista opcji się zmieniła).
+- **Persystencja ustawień** (`save_load/display_settings.py`): rozdzielczość, fullscreen,
+  wybrany język (`LANG`) i trzy głośności są zapisywane automatycznie przy każdej zmianie
+  i wczytywane przy starcie gry. Desktop: `<data_dir>/mom/settings.json` (taka sama logika
+  ścieżek jak save'y). Web: localStorage klucz `MoM.settings`. Format JSON z `version`,
+  `resolution_index`, `fullscreen`, `language`, `volume_master`/`volume_music`/`volume_sfx`
+  i `resolution` (fallback px, gdyby lista opcji się zmieniła). Nowe pola dochodzą
+  **z wartością domyślną w `_parse_settings`**, bez podbijania `CURRENT_VERSION` -
+  podbicie kasuje cały plik gracza, więc razem z głośnościami wyleciałaby rozdzielczość.
   Fullscreen jest wyłączony na web (`IS_WEB` wymusza `fullscreen=False` — w przeglądarce
   fullscreen obsługuje F11, nie SDL). Język jest od razu stosowany w runtime przez
   `get_msg()` (dynamiczny lookup przez `settings.LANG`), a dialogi z postaciami używają
   wiadomości w wybranym języku z dwujęzycznego `messages` dicta (PL+EN).
   Uwaga: `XDG_DATA_HOME` zmienia położenie pliku na macOS (testowano z XDG_DATA_HOME=~/.local/share).
   Przypadki brzegowe: uszkodzony plik → log + domyślne; index poza zakresem → clamp do max_idx.
+
+## Audio (`audio.py` + `config_model/audio.toml`)
+
+Jedno wejście do dźwięku dla całej gry (D01). Reszta kodu woła **fasadę modułową** -
+`audio.play_sfx("coins")`, `audio.play_music("Village")` - i nigdy nie przekazuje sobie
+referencji do managera ani nie zna nazw plików.
+
+- **Manifest**: `project/config_model/audio.toml` (ręcznie edytowany TOML, jak
+  `routines.toml`). `[music]` mapuje **nazwę mapy** (plik `.tmx` bez rozszerzenia) albo
+  jeden z trzech kontekstów `main_menu` / `maze` / `death` na plik z `assets/audio/music/`.
+  `[sfx]` mapuje **nazwę eventu** na plik z `assets/audio/sfx/`. `[music.settings]` trzyma
+  `fade_ms` (crossfade) i `volume` (mnożnik pliku względem suwaka muzyki).
+  Mapa **bez wpisu = cisza, nie błąd** - nowa mapa nie może wywalić gry.
+- **Walidacja**: `just validate-world` → `check_audio_manifest`. Twardy błąd, gdy: plik
+  z manifestu nie istnieje, klucz muzyki to ani mapa, ani kontekst specjalny, event
+  w manifeście nie jest nigdzie wołany, albo `play_sfx("x")` nie ma wpisu w manifeście.
+  Walidator czyta literały z nawiasu wywołania, więc **napis w warunku** rozpisujemy na
+  dwie gałęzie (`if ...: play_sfx("a") else: play_sfx("b")`), zamiast `play_sfx("a" if
+  x == "Player" else "b")` - inaczej `"Player"` zostanie wzięte za klucz eventu.
+- **Tryb no-op**: brak karty dźwiękowej, `SDL_AUDIODRIVER=dummy`, CI, zepsuty manifest -
+  każdy wyjątek gasi audio (`available = False`) i od tej pory wszystko jest ciche.
+  Nic w `audio.py` nie ma prawa wywalić gry; nieznany klucz SFX to linia w logu, nie wyjątek.
+- **Web: bramka gestu.** Przeglądarka odrzuca odtwarzanie przed pierwszym gestem gracza
+  (`NotAllowedError`), a pygbagowe „will retry" nie działa - sprawdzone sondą w D01.
+  Dlatego na web manager startuje zablokowany i **nie woła miksera w ogóle**; odłożony
+  utwór rusza z `audio.unlock()`, wołanego z `Game.get_inputs` przy pierwszym
+  `KEYDOWN`/`MOUSEBUTTONDOWN`/`JOYBUTTONDOWN`. Samo zdarzenie pygame nie wystarcza:
+  runner testowy wstrzykuje syntetyczne `KEYDOWN` przez `pygame.event.post`, których
+  przeglądarka nie uznaje - drugą bramką jest więc `navigator.userActivation.hasBeenActive`
+  (`game._browser_user_activated`).
+- **`mixer.music.get_busy()` na web kłamie** (zwraca `False` mimo grającego utworu).
+  „Co teraz gra" trzyma `AudioManager._current_key`, nigdy pygame.
+- **Głośności**: master / muzyka / SFX, po 0.0-1.0, krok 10%, trzy wiersze w
+  `SettingsPanel` cyklowane strzałkami (jak rozdzielczość). Efektywna głośność to
+  `master * kanał` (muzyka dodatkowo × `[music.settings].volume`). Zapisywane w
+  `display_settings.py` - to ustawienie gracza, **nie** stan świata, więc nie ma go w save'ach.
+- **Budżet rozmiaru**: całe `project/assets/audio/` ≤ **10 MB** (dziś 5,9 MB), muzyka
+  ≤ 1,5 MB na utwór. Pygbag pakuje `assets/` w całości - `web.zip` urósł z 1,3 MB do
+  7,1 MB. Konwersja i licencje: `project/assets/audio/SOURCES.md`.
 
 ## Konwencje
 

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from rich import print
 
+import audio
 import scene
 from enums import ItemTypeEnum
 from objects import ItemSprite
@@ -164,6 +165,10 @@ def pick_up(npc: "NPC", item: ItemSprite) -> bool:
                 _("notify.max_weight_exceeded", w=f"{npc.model.max_carry_weight:4.2f}"),
                 scene.NotificationTypeEnum.failure)
 
+    # tylko bohater - kupiec chowający sprzedany przedmiot nie brzęczy graczowi w ucho
+    if result and npc.model.name_EN == "Player":
+        audio.play_sfx("coins" if item.model.type == ItemTypeEnum.money else "item_pick_up")
+
     return result
 
 
@@ -293,5 +298,10 @@ def drop_item(npc: "NPC", show: bool = True, item: "ItemSprite | None" = None) -
         if npc.selected_item_idx >= len(npc.items):
             npc.selected_item_idx -= 1
     # item = npc.items.pop(-1)
+
+    # `show=False` to transfer w handlu albo łup wypadający z trupa, nie rzut
+    # gracza o ziemię - te ścieżki mają własne dźwięki
+    if show and npc.model.name_EN == "Player":
+        audio.play_sfx("item_drop")
 
     return selected_item

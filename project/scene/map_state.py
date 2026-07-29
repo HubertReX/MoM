@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 from maze_generator.maze_utils import clear_maze_cache
 
+import audio
 import settings
 from settings import _, QUICK_SAVE_SLOT
 from objects import NotificationTypeEnum
@@ -142,6 +143,11 @@ def go_to_map(scene: "Scene") -> None:
     if settings.USE_PARTICLES:
         scene.start_particles()
 
+    play_map_music(scene)
+    if scene.is_maze:
+        # zejście do lochu ma być słyszalne osobno od podmiany muzyki
+        audio.play_sfx("maze_door")
+
     # Quest event: arriving somewhere can satisfy a quest. Nothing uses
     # location conditions yet (`at_location()` is still hypothetical - see
     # Q01_S07 in the plan), but the hook is where it will need to be, and
@@ -157,6 +163,16 @@ def go_to_map(scene: "Scene") -> None:
         scene.add_notification(_("notify.autosaved_quick"), NotificationTypeEnum.info)
 
     scene.transition.exiting = False
+
+
+def play_map_music(scene: "Scene") -> None:
+    """Podłóż muzykę pasującą do mapy, na której właśnie stoimy.
+
+    Labirynt gra swój klucz `maze` niezależnie od nazwy wygenerowanej mapy - to
+    ta sama jaskinia, choćby poziom nazywał się inaczej. Mapa bez wpisu w
+    `audio.toml` to cisza, nie błąd (patrz nagłówek manifestu).
+    """
+    audio.play_music("maze" if scene.is_maze else scene.current_map)
 
 
 def reload_map(scene: "Scene") -> None:
@@ -175,6 +191,7 @@ def reload_map(scene: "Scene") -> None:
     scene.load_map()
     if settings.USE_PARTICLES:
         scene.start_particles()
+    play_map_music(scene)
 
 
 def reset_sprite_groups(scene: "Scene") -> None:

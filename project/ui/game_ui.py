@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, cast
 
+import audio
 import pygame
 
 from settings import (
@@ -57,6 +58,10 @@ _BLOCKING = (DialogPanel, TradePanel, QuestPanel, HelpPanel)
 # states, and F5/F9 are silent one-key actions that open nothing.)
 _MODAL = (DialogPanel, TradePanel, QuestPanel, HelpPanel)
 
+# panele, których otwarcie NIE gra `panel_open`: rozmowa ma własny dźwięk
+# (`dialog_char`), a nakładanie na siebie dwóch efektów tylko brudzi
+_NO_OPEN_SFX = (DialogPanel,)
+
 
 class GameUI:
     def __init__(self, scene: "Scene") -> None:
@@ -80,10 +85,15 @@ class GameUI:
 
     def open(self, panel_type: type, **kwargs: Any) -> "Widget":
         panel = self._panel(panel_type)
+        was_open = panel in self._open
         panel.open(**kwargs)  # type: ignore[attr-defined]
         panel.visible = True
-        if panel not in self._open:
+        if not was_open:
             self._open.append(panel)
+            # jedno miejsce zamiast wywołania w każdym panelu z osobna - to samo
+            # rozumowanie, co przy zdarzeniu questowym w `close()`
+            if panel_type not in _NO_OPEN_SFX:
+                audio.play_sfx("panel_open")
         return panel
 
     def close(self, panel_type: type) -> None:
@@ -271,6 +281,7 @@ class GameUI:
                             player.model.money -= price
                             player.npc_met.model.money += price
                             player.pick_up(item_to_buy)
+                            audio.play_sfx("coins")
                             self.scene.add_notification(
                                 _("notify.bought", name=entity_name(item_to_buy.model), price=price),
                                 NotificationTypeEnum.info)
@@ -290,6 +301,7 @@ class GameUI:
                             player.model.money += price
                             player.npc_met.model.money -= price
                             player.npc_met.pick_up(item_to_sell)
+                            audio.play_sfx("coins")
                             self.scene.add_notification(
                                 _("notify.sold", name=entity_name(item_to_sell.model), price=price),
                                 NotificationTypeEnum.info)

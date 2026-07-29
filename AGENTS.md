@@ -92,7 +92,9 @@ routines.toml, sprite'y), a nic ich ze sobą nie wiąże. `scripts/validate_worl
 sprawdza je krzyżowo: spawn pointy vs `config.characters`, `home/work/social/hobby` vs
 warstwa `places`, rutyny vs `routines.toml`, kroki rutyn vs `places`/`waypoints`, sprite'y
 vs katalogi assetów, przedmioty (ekwipunki, skrzynie, nagrody questów, warunki
-`has_item()`) vs `config.items`, `dialog_key` vs `config.dialogs`.
+`has_item()`) vs `config.items`, `dialog_key` vs `config.dialogs`, a także `audio.toml`
+(pliki ogg, klucze map, eventy SFX w obie strony - patrz `project/AGENTS.md`, sekcja
+„Audio").
 
 Walidator **tylko diagnozuje** - nigdy nie edytuje źródeł. Nie importuje pygame ani modułów
 gry (surowe JSON/CSV/TOML/XML), więc chodzi na czystym interpreterze i w CI, w ~0,05 s.

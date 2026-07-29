@@ -1,10 +1,14 @@
-"""Display settings persistence — resolution index + fullscreen toggle.
+"""Display settings persistence — resolution index, fullscreen toggle, volumes.
 
 Desktop: ``<data_dir>/mom/settings.json`` (JSON file, same base dir as saves).
 Web: localStorage key ``MoM.settings`` (same JSON format).
 
 Fullscreen is silently forced off on web — pygame.FULLSCREEN is not
 meaningful inside the pygbag canvas (browser handles fullscreen natively).
+
+Volumes live here and NOT in ``save_load/models.py``: they are a player
+preference, not world state, so they must not ride along in a save slot (and
+must not touch the save version gate — see B02).
 """
 
 from __future__ import annotations
@@ -28,6 +32,12 @@ class DisplaySettings:
     fullscreen: bool
     language: str = "PL"
     resolution: tuple[int, int] | None = None
+    # D01: głośności 0.0-1.0. Domyślne wartości muszą pozwolić wczytać plik
+    # sprzed audio - stąd defaulty tutaj i `.get(...)` w `_parse_settings`,
+    # zamiast podbicia `CURRENT_VERSION` (które skasowałoby też rozdzielczość).
+    volume_master: float = _settings.DEFAULT_VOLUME_MASTER
+    volume_music: float = _settings.DEFAULT_VOLUME_MUSIC
+    volume_sfx: float = _settings.DEFAULT_VOLUME_SFX
     version: int = CURRENT_VERSION
 
 
@@ -73,15 +83,7 @@ class FileDisplaySettingsStorage(DisplaySettingsStorage):
 
     def save(self, settings: DisplaySettings) -> bool:
         try:
-            data: dict[str, Any] = {
-                "version": settings.version,
-                "resolution_index": settings.resolution_index,
-                "fullscreen": settings.fullscreen,
-                "language": settings.language,
-            }
-            if settings.resolution is not None:
-                data["resolution"] = [settings.resolution[0], settings.resolution[1]]
-            self._path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            self._path.write_text(json.dumps(_to_dict(settings), indent=2), encoding="utf-8")
             return True
         except OSError as e:
             print(f"[display_settings] write error {self._path}: {e}")
@@ -109,15 +111,7 @@ class LocalStorageDisplaySettingsStorage(DisplaySettingsStorage):
 
     def save(self, settings: DisplaySettings) -> bool:
         try:
-            data: dict[str, Any] = {
-                "version": settings.version,
-                "resolution_index": settings.resolution_index,
-                "fullscreen": settings.fullscreen,
-                "language": settings.language,
-            }
-            if settings.resolution is not None:
-                data["resolution"] = [settings.resolution[0], settings.resolution[1]]
-            self._ls.setItem(LOCALSTORAGE_KEY, json.dumps(data))
+            self._ls.setItem(LOCALSTORAGE_KEY, json.dumps(_to_dict(settings)))
             return True
         except Exception as e:
             print(f"[display_settings] localStorage write error: {e}")
@@ -127,6 +121,30 @@ class LocalStorageDisplaySettingsStorage(DisplaySettingsStorage):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _to_dict(settings: DisplaySettings) -> dict[str, Any]:
+    """One serialised shape for both backends - a field added on one side only
+    is exactly the bug this helper exists to prevent."""
+    data: dict[str, Any] = {
+        "version": settings.version,
+        "resolution_index": settings.resolution_index,
+        "fullscreen": settings.fullscreen,
+        "language": settings.language,
+        "volume_master": settings.volume_master,
+        "volume_music": settings.volume_music,
+        "volume_sfx": settings.volume_sfx,
+    }
+    if settings.resolution is not None:
+        data["resolution"] = [settings.resolution[0], settings.resolution[1]]
+    return data
+
+
+def _clamp_volume(raw: Any, default: float) -> float:
+    try:
+        return max(0.0, min(1.0, float(raw)))
+    except (TypeError, ValueError):
+        return default
 
 
 def _clamp_index(index: int) -> int:
@@ -152,6 +170,9 @@ def _parse_settings(raw: dict[str, Any]) -> DisplaySettings:
         fullscreen=bool(raw.get("fullscreen", False)),
         language=str(raw.get("language", "PL")),
         resolution=_parse_resolution(raw.get("resolution")),
+        volume_master=_clamp_volume(raw.get("volume_master"), _settings.DEFAULT_VOLUME_MASTER),
+        volume_music=_clamp_volume(raw.get("volume_music"), _settings.DEFAULT_VOLUME_MUSIC),
+        volume_sfx=_clamp_volume(raw.get("volume_sfx"), _settings.DEFAULT_VOLUME_SFX),
     )
 
 
@@ -179,9 +200,9 @@ def load_display_settings(storage: DisplaySettingsStorage | None = None) -> Disp
 def save_display_settings(storage: DisplaySettingsStorage | None = None) -> None:
     """Persist the current runtime display settings.
 
-    Uses the values from ``settings._DISPLAY_RES_INDEX`` and
-    ``settings._IS_FULLSCREEN``.  If *storage* is ``None`` a
-    platform-appropriate backend is created.
+    Uses the values from ``settings._DISPLAY_RES_INDEX``,
+    ``settings._IS_FULLSCREEN`` and ``settings._VOLUME_*``.  If *storage* is
+    ``None`` a platform-appropriate backend is created.
     """
     if storage is None:
         storage = create_display_settings_storage()
@@ -189,6 +210,9 @@ def save_display_settings(storage: DisplaySettingsStorage | None = None) -> None
         resolution_index=_settings._DISPLAY_RES_INDEX,
         fullscreen=_settings._IS_FULLSCREEN,
         language=_settings.LANG,
+        volume_master=_settings._VOLUME_MASTER,
+        volume_music=_settings._VOLUME_MUSIC,
+        volume_sfx=_settings._VOLUME_SFX,
     )
     idx = _settings._DISPLAY_RES_INDEX
     if 0 <= idx < len(_settings.DISPLAY_RES_OPTIONS):
