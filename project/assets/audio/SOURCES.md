@@ -19,7 +19,9 @@ jako mp3 (łącznie 60 MB). Do MoM trafiają skonwertowane do ogg vorbis - patrz
 | `let-the-mystery-unfold.ogg` | `let-the-mystery-unfold-122118.mp3` | <https://pixabay.com/music/fantasy-dreamy-childrens-let-the-mystery-unfold-122118/> |
 | `scary-spooky-ambient.ogg` | `scary-spooky-creepy-horror-ambient-dark-piano-cinematic-115052.mp3` | <https://pixabay.com/music/electronic-scary-spooky-creepy-horror-ambient-dark-piano-cinematic-115052/> |
 | `caves-of-dawn.ogg` | `caves-of-dawn-10376.mp3` | <https://pixabay.com/music/ambient-caves-of-dawn-10376/> |
-| `tubular-bell-of-death.ogg` | `tubular-bell-of-death-89485.mp3` | Pixabay ID 89485 |
+| `tubular-bell-of-death.ogg` | `tubular-bell-of-death-89485.mp3` | <https://pixabay.com/de/sound-effects/musical-tubular-bell-of-death-89485/> |
+| `to-the-death.ogg` | `to-the-death-159171.mp3` | <https://pixabay.com/music/video-games-to-the-death-159171/> |
+| `stranger-things.ogg` | `synthwave-stranger-things-124008.mp3` | <https://pixabay.com/music/synthwave-stranger-things-124008/> |
 
 ## Efekty (`sfx/`)
 
@@ -43,7 +45,11 @@ jako mp3 (łącznie 60 MB). Do MoM trafiają skonwertowane do ogg vorbis - patrz
 | `voice-char.ogg` | `voicepack-64401.mp3` | druga próbka paczki (`trim 1.85 1.68`) |
 
 Pełna lista plików w paczce źródłowej (także tych, których MoM nie używa) jest w
-`~/Projects/RPG/sounds/sfx/sfx.txt` i `~/Projects/RPG/sounds/music/sources.txt`.
+`~/Projects/RPG/sounds/sfx/sfx.txt` i `~/Projects/RPG/sounds/music/sources.txt` oraz na portalu **Pixabay**:
+
+- [SSiS music](https://pixabay.com/accounts/collections/17714023/)
+- [SSiS effects](https://pixabay.com/accounts/collections/17714217/)
+
 
 ## Konwersja
 
