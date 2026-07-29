@@ -294,6 +294,25 @@ def set_display(index: int, scale: int = 1) -> None:
 
 FILTER_SCALE = 8
 CIRCLE_RADIUS = 192 // FILTER_SCALE
+# Sposób nałożenia filtra pory dnia na gotową klatkę (E01). Mechanika jest ta sama
+# na desktopie i na web - różni się tylko koszt i wierność obrazu. Zmierzone na
+# WASM (pygbag, 1280x720, sam koszt kompozycji pełnoekranowej):
+#
+#   "overlay"      - alpha-blend w pełnej rozdzielczości. Wygląd referencyjny:
+#                    ciemność z aureolami światła wokół postaci. ~8 ms/klatkę na
+#                    web (przy budżecie 16,7 ms), ~0,5 ms na desktopie.
+#   "overlay_half" - ten sam efekt złożony w połowie rozdzielczości i przeskalowany
+#                    z powrotem: identyczny kolor i te same aureole, ale świat na
+#                    czas nocy ma 2x grubszy piksel (UI rysowane później zostaje
+#                    ostre). ~3 ms/klatkę na web.
+#   "multiply"     - jeden `fill(BLEND_RGB_MULT)` na całym ekranie: najtańszy
+#                    (~3,4 ms na web), ale NIE MA aureoli - scena ciemnieje
+#                    równomiernie, także wokół gracza.
+#
+# Kosztem na web rządzi wyłącznie liczba pikseli mieszanych per-pixel-alpha:
+# skalowanie samej powierzchni filtra to 0,4 ms, światła 0,3 ms - dlatego
+# `FILTER_SCALE` niczego tu nie ratuje.
+NIGHT_FILTER_MODE: str = "overlay"
 # default camera zoom
 ZOOM_LEVEL = 3.8
 # camera zoom for intro cutscene (zooms out)

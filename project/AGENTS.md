@@ -203,7 +203,7 @@ weryfikuje to po AST i zwraca błąd, gdy któryś `test_*` nie jest nigdzie zar
 | ----------------------- | ------------------------------- | ----------------------- | ---------------------------------------------------------------------- |
 | Config                  | `config_pydantic.py` (Pydantic) | `config.py` (dataclass, **generowany** z `config_pydantic.py` przez `just gen-web-config` — zob. `config_model/AGENTS.md`) | `if IS_WEB:` w `characters/npc.py:33`, `objects.py:19`, `ui/panels/hud.py` |
 | Shadery                 | dostępne (gdy `USE_SHADERS`)    | wyłączone (wydajność)   | `USE_SHADERS=False` `settings.py:141`                                  |
-| Filtr dzień-noc (alpha) | tak                             | **nie**                 | `scene/scene.py:642` `if USE_ALPHA_FILTER and not IS_WEB:`             |
+| Filtr dzień-noc (alpha) | tak                             | tak (E01 — ta sama ścieżka kodu) | `scene/night_filter.py`; koszt regulowany `settings.NIGHT_FILTER_MODE` |
 | Logowanie               | `print`                         | `platform.console.log`  | `game.py`                                                              |
 | Asyncio                 | stdlib                          | `pygbag.aio`            | `main.py`                                                              |
 | Wyjście z gry           | zamyka okno                     | zostaje w przeglądarce  | `state.py`                                                             |
@@ -634,6 +634,52 @@ które nie wyprodukowały bloku JSON.
   wiadomości w wybranym języku z dwujęzycznego `messages` dicta (PL+EN).
   Uwaga: `XDG_DATA_HOME` zmienia położenie pliku na macOS (testowano z XDG_DATA_HOME=~/.local/share).
   Przypadki brzegowe: uszkodzony plik → log + domyślne; index poza zakresem → clamp do max_idx.
+
+## Filtr dnia i nocy (`scene/night_filter.py`)
+
+Cykl dobowy jest **jedną ścieżką kodu na desktopie i na web** (E01) - w tym module nie
+ma i nie może być gałęzi `IS_WEB`. `Scene.draw` woła `apply_time_of_day_filter` bez
+żadnego warunku platformowego; wnętrza (`not outdoor and not is_maze`) filtra nie mają,
+a labirynt ma noc zawsze.
+
+Trzy rzeczy trzymają koszt w ryzach:
+
+- **Wczesne wyjście** przy `day_night_ratio(scene) == 0.0` (pełny dzień, 9:00-17:00 poza
+  labiryntem). `DAY_FILTER` ma alfę 0, więc cała reszta była no-opem za 0,49 ms - desktop
+  `draw` w dzień spadł z 1,27 do 0,76 ms.
+- **Cache skalowanych kół świateł** (`_scaled_circle`, klucz = skala kwantowana do 0,05).
+  Wcześniej `transform.scale_by` leciało na KAŻDEGO NPC w KAŻDEJ klatce.
+- **Bufory alokowane raz** (`build_filter_surfaces`, wołane z `Scene.__init__` **i**
+  `Scene.on_resize` - jedno miejsce, bo buforów jest kilka i rozjazd przy zmianie
+  rozdzielczości kończy się wyjątkiem w `transform.scale`).
+
+`day_night_ratio()` jest jedynym źródłem rozkładu godzin - czyta je i filtr rastrowy,
+i `get_lights()` dla shaderów (kontrakt K3).
+
+### `settings.NIGHT_FILTER_MODE` - pokrętło jakość/FPS
+
+Na WASM koszt filtra to **wyłącznie liczba pikseli mieszanych per-pixel-alfą**: skalowanie
+powierzchni filtra to 0,4 ms, wszystkie światła 0,3 ms, a `screen.blit` pełnoekranowej
+powierzchni z alfą 5,8 ms. Dlatego `FILTER_SCALE` niczego tu nie ratuje i istnieją trzy
+tryby kompozycji (zmierzone na pygbag, 1280x720, sam koszt złożenia klatki):
+
+| tryb | koszt na web | wygląd |
+| --- | --- | --- |
+| `"overlay"` (domyślny) | 5,8 ms | referencyjny - ciemność z aureolami wokół postaci |
+| `"overlay_half"` | 1,8 ms | ten sam efekt, świat na czas nocy ma 2x grubszy piksel (UI zostaje ostre) |
+| `"multiply"` | 3,5 ms | jeden mnożący `fill`, **bez aureoli** - scena ciemnieje równomiernie |
+
+Na desktopie różnice są nieistotne (cała klatka `draw` to ~1,25 ms w nocy), więc to
+pokrętło pod słabszy sprzęt i przeglądarkę. Tryb czytany jest **żywo** z modułu
+`settings` (K6), nie importem wartości.
+
+**Pułapka dual-target:** pygame w buildzie web jest starsze niż pygame-ce na desktopie -
+`screen.blit(surface)` bez `dest` wywala tam grę (`TypeError: function missing required
+argument 'dest'`) przy pierwszej klatce nocy. Zawsze podawaj pozycję.
+
+Scenariusz agentowy: **Night Filter On Village** (`start_hour: 20`, dojście
+`walk_to_point` pod kapliczkę na północ od wioski, gdzie las jest realnie czarny -
+w centrum wioski dwa światła z waypointów `intro` rozświetlają prawie cały kadr).
 
 ## Audio (`audio.py` + `config_model/audio.toml`)
 

@@ -9,12 +9,18 @@ uruchomienia mierzą ten sam świat.
 Użycie (z katalogu repo):
 
     SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 scripts/bench_scene.py
+    ... scripts/bench_scene.py --hour 22   # scena nocna (E01: koszt filtra nocy)
+
+``--hour`` wymusza godzinę świata PO zbudowaniu sceny, więc różnica
+``draw`` między ``--hour 12`` a ``--hour 22`` to czysty koszt filtra dnia/nocy
+(w dzień poza 9:00-17:00 filtr i tak rysuje światła).
 
 Baseline z audytu 2026-07-25 (mac-mini, Village, 32 NPC): update 0,41 ms,
 draw 1,31 ms. Bramka B01: regresja którejkolwiek mediany > 20% = STOP kroku.
 """
 from __future__ import annotations
 
+import argparse
 import os
 import statistics
 import sys
@@ -39,6 +45,11 @@ DT = 1.0 / 60.0
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--hour", type=int, default=None,
+                        help="wymuś godzinę świata (0-23) przed pomiarem, np. 22 = noc")
+    args = parser.parse_args()
+
     from game import Game
     from scene import Scene
 
@@ -46,7 +57,13 @@ def main() -> None:
     scene = Scene(game, "Village", "start")
     scene.enter_state()
 
-    print(f"[bench] Village, NPCs: {len(scene.NPCs)}, world_seed: {scene.world_seed}")
+    if args.hour is not None:
+        scene.hour = max(0, min(23, args.hour))
+        scene.minute = 0
+        scene.minute_f = 0.0
+
+    print(f"[bench] Village, NPCs: {len(scene.NPCs)}, world_seed: {scene.world_seed}, "
+          f"hour: {scene.hour}:00")
 
     for _ in range(WARMUP_FRAMES):
         game.time_elapsed += DT

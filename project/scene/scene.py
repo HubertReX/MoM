@@ -29,12 +29,10 @@ from settings import (
     BG_COLOR,
     CIRCLE_RADIUS,
     DAY_FILTER,
-    FILTER_SCALE,
     FULL_WHITE_COLOR,
     GEMS_SHEET_DEFINITION,
     GEMS_SHEET_FILE,
     INVENTORY_ITEM_SCALE,
-    IS_WEB,
     ITEMS_DIR,
     ITEMS_SHEET_DEFINITION,
     ITEMS_SHEET_FILE,
@@ -223,8 +221,13 @@ class Scene(State):
         self.world_seed: int = new_world_seed()
         # are we outdoors? shell there be night and day cycle?
         self.outdoor: bool = False
-        self.filter_surf = pygame.Surface((settings.WIDTH // FILTER_SCALE, settings.HEIGHT // FILTER_SCALE),
-                                          pygame.SRCALPHA)  # .convert(self.game.canvas)
+        # bufory filtra dnia/nocy (mały roboczy + pełnoekranowy docelowy) -
+        # budowane w jednym miejscu, bo `on_resize` musi odtworzyć oba (E01)
+        self.filter_surf: pygame.Surface
+        self.filter_surf_full: pygame.Surface
+        self.frame_surf_half: pygame.Surface
+        self.filter_surf_half: pygame.Surface
+        night_filter.build_filter_surfaces(self)
 
         self.b_and_w_circle = pygame.Surface((2 * CIRCLE_RADIUS, 2 * CIRCLE_RADIUS),
                                              pygame.SRCALPHA)  # .convert(self.game.canvas)
@@ -504,10 +507,7 @@ class Scene(State):
         viewport, not a stale smaller one.
         """
         self.map_view.set_size(self.game.canvas.get_size())
-        self.filter_surf = pygame.Surface(
-            (settings.WIDTH // FILTER_SCALE, settings.HEIGHT // FILTER_SCALE),
-            pygame.SRCALPHA,
-        )
+        night_filter.build_filter_surfaces(self)
 
     def go_to_map(self) -> None:
         # delegat do systemu map_state (B01 krok 7)
@@ -651,8 +651,10 @@ class Scene(State):
 
         self.transition.draw(screen)
 
-        # alpha filter demo
-        if USE_ALPHA_FILTER and not IS_WEB:
+        # filtr pory dnia - JEDNA ścieżka kodu desktop+web (E01); wcześniej stało
+        # tu `and not IS_WEB`, przez co na web świat był o 3:00 tak samo jasny
+        # jak w południe
+        if USE_ALPHA_FILTER:
             night_filter.apply_time_of_day_filter(self, screen)
             # night_filter.apply_alpha_filter(self, screen)
 

@@ -806,5 +806,41 @@
             { "type": "screenshot_review", "target": "quick_slot_still_there", "expect": "The quick save slot is still listed and occupied (with its timestamp); no confirmation dialog appeared and nothing was overwritten or deleted." },
             { "type": "process_alive" }
         ]
+    },
+    {
+        "name": "Night Filter On Village",
+        "slug": "night_filter_village",
+        "platform": ["desktop", "web"],
+        "start_hour": 20,
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "walk_to_shrine", "commands": ["walk_to_point:568,200"], "wait": 8.0 },
+            { "slug": "shrine_at_night", "commands": ["screenshot"] },
+            { "slug": "dump_state_at_night", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            {
+                "type": "screenshot_review",
+                "target": "shrine_at_night",
+                "expected_state": "GAMEPLAY",
+                "expect": "The player stands on the path at the shrine north of the village at night: the forest around is almost black, and only a round patch of ground around the player and the shrine stays lit.",
+                "ui_quality_checks": [
+                    "most of the frame - the forest/terrain away from the player - is very dark, nearly black, clearly not a daytime image",
+                    "around the player there is a distinctly lit circular area, so the darkness is not uniform",
+                    "the UI stays readable: the HUD panel with hearts/money/clock and the hotbar and button hints keep their normal brightness and contrast"
+                ]
+            },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "Village",
+                    "is_maze": false,
+                    "day": 1,
+                    "hour_min": 20
+                }
+            },
+            { "type": "process_alive" }
+        ]
     }
 ]

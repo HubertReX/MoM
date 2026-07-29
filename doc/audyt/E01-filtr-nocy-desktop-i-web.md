@@ -138,10 +138,43 @@ UI (HUD, ramki) pozostaje czytelne".
 - odhacz E01 w `doc/audyt/audyt.md`
 - commit: `E01: filtr nocy na desktop i web - cache świateł i bufora, jedna ścieżka kodu`
 
-## Pomiary (wypełnia agent)
+## Pomiary (wypełnione 2026-07-29)
+
+Desktop: `scripts/bench_scene.py --hour <h>`, mac-mini, Village, 32 NPC, 1024x768,
+mediana z 500 klatek.
 
 | Pomiar | Przed | Po |
 | --- | --- | --- |
-| desktop `draw` dzień (ms) | | |
-| desktop `draw` noc (ms) | | |
-| web FPS noc | | |
+| desktop `draw` dzień (ms) | 1,269 | **0,777** |
+| desktop `draw` noc (ms) | 1,294 | **1,255** |
+| desktop sam filtr, dzień (ms) | 0,488 | **0,001** (wczesne wyjście) |
+| desktop sam filtr, noc (ms) | 0,561 | 0,516 |
+
+Web (pygbag `--no_opt`, headless Chromium przez runner, 1280x720). Filtr był na web
+wyłączony, więc „przed" nie istnieje - poniżej koszt samego złożenia klatki per tryb:
+
+| Operacja na WASM | Koszt |
+| --- | --- |
+| `transform.scale` filtra do bufora | 0,4 ms |
+| wypełnienie + wszystkie światła | 0,3 ms |
+| `screen.blit` pełnoekranowej alfy (`overlay`) | **5,8 ms** |
+| złożenie w połowie rozdzielczości (`overlay_half`) | **1,8 ms** |
+| `screen.fill(BLEND_RGB_MULT)` (`multiply`) | **3,5 ms** |
+| `draw` w dzień (filtr = wczesne wyjście) | 5,4 ms, stabilne 60 FPS |
+| `draw` w nocy, tryb `overlay` | 12-17 ms |
+
+Kontrola: nieblendowany `blit` tej samej powierzchni to 0,1 ms, a `BLEND_PREMULTIPLIED`
+8,3 ms - wąskim gardłem jest wyłącznie mieszanie per-pixel-alfą, nie przepustowość
+pamięci. `convert_alpha()` na buforach nie dał zysku.
+
+**Odstępstwo od kroku 3.2 (uzgodnione z autorem 2026-07-29):** degradacja przez
+`FILTER_SCALE = 16` i ograniczenie świateł dotyczyłaby operacji kosztujących łącznie
+0,7 ms, więc nie mogła pomóc. Zamiast tego są trzy tryby kompozycji pod flagą
+`settings.NIGHT_FILTER_MODE` (`overlay` / `overlay_half` / `multiply`) - autor testuje
+je empirycznie na realnym sprzęcie. Domyślny `overlay` = dotychczasowy wygląd
+desktopowy, potwierdzony porównaniem zrzutów pixel po pikselu (0 różniących się pikseli
+dla godzin 7, 12, 18, 22).
+
+FPS end-to-end na web mierzony w runnerze (headless Chromium bez GPU) waha się
+10-30 dla każdego trybu i **nie różnicuje trybów** - dlatego wiążący jest koszt
+złożenia klatki z tabeli wyżej, a ranking na realnym sprzęcie należy do autora.
