@@ -390,6 +390,13 @@ USE_AGENT_CONTROL = _ENV.get("MOM_AGENT_CONTROL", "0") == "1"
 # klatek nigdy nie są równe co do milisekundy.
 TEST_DETERMINISTIC = _ENV.get("MOM_TEST_DETERMINISTIC", "0") == "1"
 TEST_WORLD_SEED: "int | None" = 12345 if TEST_DETERMINISTIC else None
+
+# Profiler sekcji klatki (update/draw/flip), E02. Wyłączony = zero kosztu, `Game.run`
+# nie woła ani jednego `perf_counter`. Włączony loguje raz na sekundę (`self.log`,
+# na web = konsola JS) średnią i p95 per sekcja + FPS. Ten sam kanał co inne flagi
+# testowe (`_ENV` - patrz `_test_env` wyżej): desktop `MOM_PROFILE=1 just run`,
+# web klucz `MoM.env`.
+MOM_PROFILE = _ENV.get("MOM_PROFILE", "0") == "1"
 IS_DEBUG_MODE = False
 SHOW_DEBUG_INFO = False
 SHOW_HELP_INFO = False
@@ -411,8 +418,9 @@ INVENTORY_ITEM_WIDTH = 22 * INVENTORY_ITEM_SCALE
 # avatar (faceset) size in tiles
 AVATAR_SCALE: int = 18
 
-# game render fps cap
-FPS_CAP = 0  # 130
+# game render fps cap. 0 = brak limitu (tylko do profilowania/benchmarków - na
+# desktopie miele CPU na maksa i daje niestabilne dt, patrz E02/D-6)
+FPS_CAP = 60
 # gameplay recording fps (doesn't need to be the same as FPS_CAP)
 RECORDING_FPS = 30
 

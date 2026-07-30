@@ -85,7 +85,7 @@ Decyzje autora z 2026-07-28 są wpisane w pliki zadań (assety audio z `~/Projec
 mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły wojny).
 
 - [x] [E01 - filtr nocy: jedna ścieżka kodu desktop+web (cache, koniec gałęzi `IS_WEB`)](E01-filtr-nocy-desktop-i-web.md) - P1 ✅ 2026-07-29 (cache kół świateł + bufory alokowane raz + wczesne wyjście w dzień; desktop `draw` w dzień 1,27 → 0,78 ms; trzy tryby kompozycji pod `settings.NIGHT_FILTER_MODE` zamiast nieskutecznego `FILTER_SCALE=16` - decyzja autora)
-- [x] [E02 - FPS_CAP=60 + profiler sekcji klatki i profil web z liczbami](E02-fps-cap-i-profil-web.md) - P2
+- [x] [E02 - FPS_CAP=60 + profiler sekcji klatki i profil web z liczbami](E02-fps-cap-i-profil-web.md) - P2 ✅ 2026-07-30 (`FPS_CAP=60`, profiler `MOM_PROFILE` w `Game.run` - update/draw/flip, agregacja 1s, zero kosztu wyłączony; profil web w [E02-profil-web-wyniki.md](E02-profil-web-wyniki.md): budżet 16,7 ms z dużym zapasem, `test-smoke` 96 → 105 s)
 - [x] [D01 - AudioManager: muzyka per mapa, SFX eventów, głośność, web-safe](D01-audio-manager.md) - P1 ✅ 2026-07-29 (manifest `config_model/audio.toml` + `project/audio.py`, 20 eventów SFX, 3 suwaki głośności, bramka gestu na web z `navigator.userActivation`; assety 5,9 MB, `web.zip` 1,3 → 7,1 MB)
 - [x] [H02 - dzienny autosave o 6:00 do slotu 0 (ekran wczytania po śmierci już jest - B02)](H02-autosave-dzienny.md) - P2
 - [x] [U01 - bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven)](U01-scrollbar-asset-driven.md) - P2

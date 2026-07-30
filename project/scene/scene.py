@@ -664,7 +664,10 @@ class Scene(State):
 
         if debug_overlay.SHOW_DEBUG_INFO:
             debug_overlay.show_debug(self)
-            self.debug([f"FPS: {self.game.fps: 7.1f} M: {self.current_map}",])
+            # profiler sekcji klatki (E02, MOM_PROFILE=1) dopisany do TEJ SAMEJ linii -
+            # overlay debug ma zostać jednolinijkowy, patrz project/AGENTS.md
+            profile_suffix = f" | {self.game.profile_last_line}" if self.game.profile_last_line else ""
+            self.debug([f"FPS: {self.game.fps: 7.1f} M: {self.current_map}{profile_suffix}",])
 
         if self.display_ui_flag:
             self.ui.draw(self.game.time_elapsed)

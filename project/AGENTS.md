@@ -15,6 +15,38 @@ Logika gry. Zanim cokolwiek zmienisz, przeczytaj sekcję **desktop ↔ web** —
   (`ui/panels/main_menu.py`), `SplashScreen` (`splash_screen.py`). Przejścia ekranowe
   (fade/koło): `transition.py`.
 
+### `FPS_CAP` i profiler sekcji klatki (`MOM_PROFILE`, E02)
+
+`settings.FPS_CAP = 60` (`clock.tick(FPS_CAP)` w `Game.run`) - `0` istnieje dalej jako
+tryb bez limitu, tylko do profilowania/benchmarków (mielenie CPU na maksa i niestabilne
+`dt` na desktopie, patrz D-6). Web i tak jest throttlowany do vsync przez przeglądarkę
+niezależnie od `FPS_CAP` - nie próbuj tego "naprawiać" po stronie kodu.
+
+Profiler sekcji klatki mierzy `update`/`draw`/`flip` w `Game.run` przez `perf_counter`,
+agreguje co 1 s (średnia + p95 per sekcja, bez `statistics` na gorącej klatce - tylko
+listy próbek czyszczone raz na sekundę) i loguje przez `self.log` (desktop `print`, web
+`platform.console.log` - widoczne w konsoli JS z `#debug`):
+
+```bash
+MOM_PROFILE=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy just run
+```
+
+Na web: ten sam kanał `MoM.env` co inne flagi testowe (A07) - `{"MOM_PROFILE": "1"}`.
+Wyłączony (domyślnie) = **zero kosztu**, `Game.run` nie woła ani jednego `perf_counter`.
+
+**Pułapka:** desktopowy `self.log` to `rich.print` (`from rich import print`), które
+czyta `[coś]` jako znacznik stylu i po cichu go POŁYKA - stąd log profilera zaczyna się
+od `profile: ...` (bez nawiasów), nie `[profile] ...`. To samo dotyczy istniejącego
+`[test] deterministic mode: ...` w `Game.__init__` - na desktopie prefiks `[test]` nigdy
+się nie wyświetla, tylko reszta linii (zweryfikowane empirycznie przy pisaniu profilera).
+
+Gdy włączony, ostatnia zaagregowana linia dopisywana jest też do overlaya debug
+(` / Z, `debug_overlay.SHOW_DEBUG_INFO`) - do TEJ SAMEJ linii `FPS: ... M: ...`
+(`Scene.draw`), overlay ma zostać jednolinijkowy.
+
+Wyniki jednorazowego profilu web (przeglądarka, maszyna, tabela per scenariusz):
+[`doc/audyt/E02-profil-web-wyniki.md`](../doc/audyt/E02-profil-web-wyniki.md).
+
 ## Mapa plików rdzenia
 
 | Plik                       | Rola                                                                                            | Uwaga                                            |

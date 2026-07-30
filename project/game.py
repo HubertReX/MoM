@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import random
 from datetime import datetime
+from time import perf_counter
 from typing import TYPE_CHECKING, Any, Callable, cast
 
 if TYPE_CHECKING:
@@ -53,6 +54,7 @@ from settings import (  # LOGO_IMG,; ColorValue,
     JOY_MOVE_MULTIPLIER,
     MAIN_FONT,
     MENU_FONT,
+    MOM_PROFILE,
     MOUSE_CURSOR_IMG,
     PANEL_BG_COLOR,
     PROGRAM_ICON,
@@ -168,6 +170,16 @@ class Game:
         self.clock: pygame.time.Clock = pygame.time.Clock()
         # time elapsed in seconds (milliseconds as fraction) without pause time
         self.time_elapsed: float = 0.0
+
+        # profiler sekcji klatki (E02), opt-in przez MOM_PROFILE - patrz _profile_tick
+        self.profile_enabled: bool = MOM_PROFILE
+        if self.profile_enabled:
+            self._prof_samples: dict[str, list[float]] = {"update": [], "draw": [], "flip": []}
+            self._prof_window_start: float = perf_counter()
+        # ostatnia zaagregowana linia profilera (pusta dopóki flaga wyłączona albo
+        # pierwsze okno 1s jeszcze nie minęło) - jedna dodatkowa linia na overlayu
+        # debug, patrz scene.py:draw i `_profile_tick`
+        self.profile_last_line: str = ""
 
         # Load persisted display settings before creating the window
         self.display_settings_storage = create_display_settings_storage()
@@ -1106,9 +1118,11 @@ class Game:
             self._was_paused = self.is_paused
 
         # first draw on separate Surface (game.canvas)
+        _prof_t0 = perf_counter() if self.profile_enabled else 0.0
         if not self.is_paused:
             self.time_elapsed += dt
             self.states[-1].update(dt, events)
+        _prof_t1 = perf_counter() if self.profile_enabled else 0.0
         # self.canvas.fill(BLACK_COLOR)
         if USE_SHADERS:
             self.HUD.fill(TRANSPARENT_COLOR)
@@ -1129,7 +1143,15 @@ class Game:
         # else:
         #     self.screen.blit(self.HUD, (0, 0))
 
+        _prof_t2 = perf_counter() if self.profile_enabled else 0.0
         pygame.display.flip()
+
+        if self.profile_enabled:
+            _prof_t3 = perf_counter()
+            self._prof_samples["update"].append(_prof_t1 - _prof_t0)
+            self._prof_samples["draw"].append(_prof_t2 - _prof_t1)
+            self._prof_samples["flip"].append(_prof_t3 - _prof_t2)
+            self._profile_tick(_prof_t3)
 
         # manual screenshot (F6) — capture what the user sees on screen
         if _screenshot_pending:
@@ -1151,6 +1173,38 @@ class Game:
             self.agent_ctrl.capture(ss_source)
 
         await asyncio.sleep(0)  # type: ignore
+
+    #############################################################################################################
+    def _profile_tick(self, now: float) -> None:
+        """Agregacja profilera sekcji klatki (E02) - raz na sekundę, `self.log` (na
+        web = konsola JS przez `#debug`). Woływana tylko gdy `self.profile_enabled`,
+        więc dopisywanie próbek do list w `run()` jest jedynym kosztem gdy flaga jest
+        włączona; gdy jest wyłączona, `run()` nie woła w ogóle `perf_counter`.
+        """
+        if now - self._prof_window_start < 1.0:
+            return
+
+        parts = [f"fps={self.fps:5.1f}"]
+        overlay_parts = []
+        for name, samples in self._prof_samples.items():
+            if samples:
+                samples.sort()
+                avg_ms = sum(samples) / len(samples) * 1000
+                p95_idx = min(len(samples) - 1, int(len(samples) * 0.95))
+                p95_ms = samples[p95_idx] * 1000
+            else:
+                avg_ms = p95_ms = 0.0
+            parts.append(f"{name}: avg={avg_ms:5.2f}ms p95={p95_ms:5.2f}ms")
+            overlay_parts.append(f"{name}={avg_ms:4.1f}ms")
+            samples.clear()
+
+        # UWAGA: bez nawiasów kwadratowych w prefiksie - na desktopie self.log jest
+        # `rich.print`, które czyta "[coś]" jako znacznik stylu i po cichu go połyka
+        # (np. istniejący log "[test] ..." nigdy realnie nie pokazuje "[test]" na
+        # desktopie - sprawdzone empirycznie przy pisaniu tego profilera).
+        self.log(f"profile: {' '.join(parts)}")
+        self.profile_last_line = " ".join(overlay_parts)
+        self._prof_window_start = now
 
     def get_local_storage(self) -> None:
         if not IS_WEB or USE_WEB_SIMULATOR:
