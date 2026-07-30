@@ -43,6 +43,9 @@ jako mp3 (łącznie 60 MB). Do MoM trafiają skonwertowane do ogg vorbis - patrz
 | `stairwellwalk.ogg` | `stairwellwalk-107715.mp3` | przycięte do 2 s |
 | `voice-hero.ogg` | `voicepack-64401.mp3` | pierwsza próbka paczki (`trim 0.11 1.50`) |
 | `voice-char.ogg` | `voicepack-64401.mp3` | druga próbka paczki (`trim 1.85 1.68`) |
+| `dreamy-rain-ambience.ogg` | `universfield-dreamy-rain-ambience-454686.mp3` | |
+| `error-notification-08.ogg` | `universfield-error-notification-08-206492.mp3` | |
+
 
 Pełna lista plików w paczce źródłowej (także tych, których MoM nie używa) jest w
 `~/Projects/RPG/sounds/sfx/sfx.txt` i `~/Projects/RPG/sounds/music/sources.txt` oraz na portalu **Pixabay**:

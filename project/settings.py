@@ -312,7 +312,8 @@ CIRCLE_RADIUS = 192 // FILTER_SCALE
 # Kosztem na web rządzi wyłącznie liczba pikseli mieszanych per-pixel-alpha:
 # skalowanie samej powierzchni filtra to 0,4 ms, światła 0,3 ms - dlatego
 # `FILTER_SCALE` niczego tu nie ratuje.
-NIGHT_FILTER_MODE: str = "overlay"
+# NIGHT_FILTER_MODE: str = "overlay"
+NIGHT_FILTER_MODE: str = "overlay_half"
 # default camera zoom
 ZOOM_LEVEL = 3.8
 # camera zoom for intro cutscene (zooms out)
@@ -363,9 +364,9 @@ USE_PARTICLES = True
 USE_AUDIO = True
 # domyślne głośności nowego gracza (0.0-1.0); zapisywane w `settings.json`
 # / localStorage razem z rozdzielczością i językiem (save_load/display_settings.py)
-DEFAULT_VOLUME_MASTER = 1.0
-DEFAULT_VOLUME_MUSIC = 0.7
-DEFAULT_VOLUME_SFX = 0.8
+DEFAULT_VOLUME_MASTER = 6.0
+DEFAULT_VOLUME_MUSIC = 0.5
+DEFAULT_VOLUME_SFX = 0.7
 # krok suwaka głośności w ustawieniach
 VOLUME_STEP = 0.1
 # mutowalny stan runtime, jak `_IS_FULLSCREEN` - to jest źródło prawdy dla zapisu
