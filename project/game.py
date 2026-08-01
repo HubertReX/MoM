@@ -131,12 +131,19 @@ def _browser_user_activated() -> bool:
 class Game:
     # MARK: Game
     def __init__(self, task: str) -> None:  # 1_004_511
+        import builtins
         import platform
 
         if IS_WEB and not USE_WEB_SIMULATOR:
             self.log = platform.console.log  # type: ignore[attr-defined]
         else:
-            self.log = print
+            # UWAGA: `builtins.print`, NIE `print` - w tym module `print` to `rich.print`
+            # (import na górze pliku), które czyta "[coś]" jako znacznik stylu i po cichu
+            # go połyka, gdy "coś" nie jest znaną nazwą stylu. Przez to prefiksy w rodzaju
+            # "[test] ..." czy "[agent_ctrl] ..." (a także nawiasy w treści tracebacka
+            # z `_show_fatal_error`) znikały na desktopie, choć na web były widoczne.
+            # `self.log` ma logować tak samo na obu platformach - stąd surowy print.
+            self.log = builtins.print
         self.conf = load_config(CONFIG_FILE)
 
         if task == TaskEnum.update:
@@ -1198,10 +1205,10 @@ class Game:
             overlay_parts.append(f"{name}={avg_ms:4.1f}ms")
             samples.clear()
 
-        # UWAGA: bez nawiasów kwadratowych w prefiksie - na desktopie self.log jest
-        # `rich.print`, które czyta "[coś]" jako znacznik stylu i po cichu go połyka
-        # (np. istniejący log "[test] ..." nigdy realnie nie pokazuje "[test]" na
-        # desktopie - sprawdzone empirycznie przy pisaniu tego profilera).
+        # Prefiks bez nawiasów kwadratowych - format ustalony i opisany w
+        # `doc/audyt/E02-profil-web-wyniki.md` (skrypty zbierające filtrują po "profile: ").
+        # Nawiasy są tu już bezpieczne (self.log to `builtins.print`, patrz `__init__`),
+        # ale nie ma powodu zmieniać utrwalonego formatu.
         self.log(f"profile: {' '.join(parts)}")
         self.profile_last_line = " ".join(overlay_parts)
         self._prof_window_start = now

@@ -1132,7 +1132,7 @@ class WebRunner(RunnerBase):
         self.page.on(
             "console",
             lambda msg: print(f"[browser] {msg.text}")
-            if ("[test]" in msg.text or "[world]" in msg.text or "[agent" in msg.text)
+            if ("[test]" in msg.text or "[agent" in msg.text)
             else None,
         )
         # Basic load; zmienne testowe i reload robi _prepare_scenario_page().

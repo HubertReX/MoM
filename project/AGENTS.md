@@ -34,11 +34,15 @@ MOM_PROFILE=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy just run
 Na web: ten sam kanał `MoM.env` co inne flagi testowe (A07) - `{"MOM_PROFILE": "1"}`.
 Wyłączony (domyślnie) = **zero kosztu**, `Game.run` nie woła ani jednego `perf_counter`.
 
-**Pułapka:** desktopowy `self.log` to `rich.print` (`from rich import print`), które
-czyta `[coś]` jako znacznik stylu i po cichu go POŁYKA - stąd log profilera zaczyna się
-od `profile: ...` (bez nawiasów), nie `[profile] ...`. To samo dotyczy istniejącego
-`[test] deterministic mode: ...` w `Game.__init__` - na desktopie prefiks `[test]` nigdy
-się nie wyświetla, tylko reszta linii (zweryfikowane empirycznie przy pisaniu profilera).
+**Pułapka (naprawiona, nie cofaj):** `Game.__init__` wiąże `self.log` z `builtins.print`,
+a NIE ze zwykłym `print`. W `game.py` `print` to `rich.print` (`from rich import print`),
+które czyta `[coś]` jako znacznik stylu i po cichu go POŁYKA, gdy `coś` nie jest znaną
+nazwą stylu. Póki `self.log` był richem, prefiksy `[test] ...` (`Game.__init__`) oraz
+wszystkie ~40 linii `[agent_ctrl] ...` / `[agent] ...` (`agent_ctrl.py` dostaje
+`log=self.log`) znikały na desktopie, choć na web (`platform.console.log`, bez markupu)
+były widoczne - a nawiasy w treści tracebacka z `_show_fatal_error` były okrajane.
+Jeśli kiedyś zmienisz to z powrotem na `self.log = print`, log desktopowy znów po cichu
+zgubi prefiksy.
 
 Gdy włączony, ostatnia zaagregowana linia dopisywana jest też do overlaya debug
 (` / Z, `debug_overlay.SHOW_DEBUG_INFO`) - do TEJ SAMEJ linii `FPS: ... M: ...`
