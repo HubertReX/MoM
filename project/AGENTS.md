@@ -79,6 +79,14 @@ Uwaga przy czytaniu logu: `clock.tick()` zwraca pełne milisekundy, więc `dt` 1
 kwantyzacja, nie jitter; `avg` sekcji może przekroczyć `p95`, gdy jeden stall podniesie
 średnią; a stall z ostatniej klatki okna trafia do `dt max` dopiero w oknie następnym.
 
+### `MOM_DEBUG_TALK` - logi ścieżki rozmowy
+
+`MOM_DEBUG_TALK=1 just run` włącza gadatliwe logi ścieżki rozmowy (KEYDOWN `talk`, stan
+napotkanego NPC, otwarcie `DialogPanel`) w `Game.get_inputs` i `Player.control`.
+Domyślnie wyłączone. Wcześniej te `print`-y leciały **bezwarunkowo** przy każdym
+naciśnięciu klawisza rozmowy i zaśmiecały log gracza oraz log testów - jeśli dodajesz
+podobną diagnostykę, od razu wystaw na nią flagę zamiast zostawiać gołego `print`.
+
 Wyniki jednorazowego profilu web (przeglądarka, maszyna, tabela per scenariusz):
 [`doc/audyt/E02-profil-web-wyniki.md`](../doc/audyt/E02-profil-web-wyniki.md).
 

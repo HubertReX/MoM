@@ -397,6 +397,13 @@ TEST_WORLD_SEED: "int | None" = 12345 if TEST_DETERMINISTIC else None
 # testowe (`_ENV` - patrz `_test_env` wyżej): desktop `MOM_PROFILE=1 just run`,
 # web klucz `MoM.env`.
 MOM_PROFILE = _ENV.get("MOM_PROFILE", "0") == "1"
+
+# Gadatliwe logi ścieżki rozmowy (KEYDOWN `talk`, stan napotkanego NPC, otwarcie
+# DialogPanel). Zostały po debugowaniu dialogów i drukowały się BEZWARUNKOWO, przy
+# każdym naciśnięciu klawisza rozmowy - zaśmiecały log gracza i log testów. Ten sam
+# kanał co pozostałe flagi (`_ENV`): `MOM_DEBUG_TALK=1 just run`.
+MOM_DEBUG_TALK = _ENV.get("MOM_DEBUG_TALK", "0") == "1"
+
 IS_DEBUG_MODE = False
 SHOW_DEBUG_INFO = False
 SHOW_HELP_INFO = False

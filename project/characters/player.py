@@ -13,6 +13,7 @@ from settings import (
     INVENTORY_ITEM_SCALE,
     INPUTS,
     JOY_MOVE_MULTIPLIER,
+    MOM_DEBUG_TALK,
     TILE_SIZE,
     _,
     entity_name,
@@ -101,13 +102,20 @@ class Player(NPC):
                     self.scene.group.add(item, layer=self.scene.sprites_layer - 1)
             INPUTS["open"] = False
         elif INPUTS["talk"]:
-            print(f"[DEBUG talk] npc_met={getattr(self.npc_met, 'name', None)}, has_dialog={getattr(self.npc_met, 'has_dialog', None) if self.npc_met else None}, is_talking={self.is_talking}, dialog={getattr(self.npc_met, 'dialog', None) is not None if self.npc_met else None}")
+            if MOM_DEBUG_TALK:
+                self.game.log(
+                    f"[DEBUG talk] npc_met={getattr(self.npc_met, 'name', None)}, "
+                    f"has_dialog={getattr(self.npc_met, 'has_dialog', None) if self.npc_met else None}, "
+                    f"is_talking={self.is_talking}, "
+                    f"dialog={getattr(self.npc_met, 'dialog', None) is not None if self.npc_met else None}")
             if self.npc_met and (self.npc_met.has_dialog or self.npc_met.model.is_merchant) and not self.is_talking:
                 # dialog or trading?
                 if self.npc_met.has_dialog and self.npc_met.dialog is not None:
                     text = get_msg(self.game.conf.messages, self.npc_met.dialog.text)
                     self.scene.ui.open(DialogPanel, npc=self.npc_met, text=text)
-                    print(f"[DEBUG talk] opened DialogPanel for {self.npc_met.name} at node {self.npc_met.dialog.key}")
+                    if MOM_DEBUG_TALK:
+                        self.game.log(f"[DEBUG talk] opened DialogPanel for {self.npc_met.name} "
+                                      f"at node {self.npc_met.dialog.key}")
                 else:
                     # since trader might accept only selected types of items
                     # selected item index needs to be initiated again
