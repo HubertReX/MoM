@@ -6,7 +6,9 @@ Domyka krok 1.2 i kryterium akceptacji 1 z [E02](E02-fps-cap-i-profil-web.md)
 zanim zmienisz").
 
 **Decyzja: zostajemy przy `clock.tick`.** Zmierzony jitter okazał się artefaktem
-środowiska pomiarowego, nie własnością gry ani pygame.
+środowiska pomiarowego, nie własnością gry ani pygame. Potwierdzone pomiarem na
+prawdziwej maszynie 2026-08-01 (`dt` = 16,00-18,00 ms, avg ~16,9 ms, fps ~59) - patrz
+sekcja [Weryfikacja na prawdziwej maszynie](#weryfikacja-na-prawdziwej-maszynie-2026-08-01).
 
 ## Co się stało
 
@@ -57,22 +59,53 @@ usterkę kosztem stałego mielenia CPU (grzanie, bateria) u każdego gracza.
 - Alternatywa niewrażliwa na problem: `scripts/bench_scene.py` (omija `Game.run` i jego
   zegar w całości).
 
-## Weryfikacja na prawdziwej maszynie
+## Weryfikacja na prawdziwej maszynie (2026-08-01)
 
-Do uzupełnienia poza sandboxem, w zwykłym oknie terminala (nie przez agenta):
+Zmierzone poza sandboxem, w zwykłym oknie terminala: `MOM_PROFILE=1 just run`,
+mac-mini M4, okno 1920x1024, Village, chodzenie i rozmowy z NPC. 22 okna agregacji,
+z czego 18 to ustabilizowana rozgrywka.
 
-```bash
-MOM_PROFILE=1 just run
-```
+| Metryka | Wynik (18 stabilnych okien) |
+| --- | --- |
+| `fps` | 58,8 - 60,2 |
+| `dt` min | **16,00 ms w każdym oknie** |
+| `dt` avg | 16,78 - 16,98 ms |
+| `dt` max | 17 - 18 ms |
+| `update` avg | 0,79 - 2,29 ms |
+| `draw` avg | 3,02 - 4,03 ms |
+| `flip` avg | 1,25 - 1,45 ms |
 
-Chodzenie po Village przez kilkanaście sekund, potem wklejenie kilku linii `profile:`.
+**Werdykt: `dt` jest wzorowo stabilne, `clock.tick` zostaje.** Rozrzut 16-18 ms to w
+praktyce granica rozdzielczości pomiaru, a nie jitter: `pygame.time.Clock.tick()` zwraca
+**pełne milisekundy**, więc przy budżecie 16,67 ms jedyne osiągalne wartości to 16 albo
+17 (rzadziej 18). Realny jitter wyglądałby jak `min=8 max=40`, a nie jak kwantyzacja do
+1 ms. `tick_busy_loop` nie miałby tu czego poprawić - kupiłby zero stabilności za cenę
+stałego mielenia CPU.
 
-- Oczekiwane przy `FPS_CAP = 60`: `dt` w okolicy `min≈16 avg≈16,7 max≈17-18 ms`,
-  `fps≈60`.
-- Gdyby `dt` realnie się rozjeżdżało (np. `min=8 max=40`) przy sekcjach mieszczących
-  się w budżecie - dopiero wtedy wraca temat `tick_busy_loop` albo limitera hybrydowego
-  (sleep do ~1 ms przed deadlinem, potem krótki busy-wait).
+Budżet klatki: `update` + `draw` + `flip` to razem ~6,4 ms z 16,7 ms, czyli **~38%
+wykorzystania** przy 1920x1024. Zapas jest duży, `draw` dominuje.
 
-| Data | Maszyna | fps | dt min | dt avg | dt max | Uwagi |
-| --- | --- | --- | --- | --- | --- | --- |
-| _do uzupełnienia_ | | | | | | |
+### Piki: obciążenia startowe, nie jitter
+
+Cztery okna odstają i wszystkie są wyjaśnione zdarzeniami, nie taktowaniem:
+
+| Okno | Objaw | Przyczyna |
+| --- | --- | --- |
+| pierwsze | `fps=28,9`, `dt max=526 ms` | start gry, ładowanie zasobów |
+| trzecie | `update p95=714 ms`, `dt max=730 ms` | jednorazowe ładowanie (mapa/dialogi) |
+| przedostatnie | `update avg=16,98 ms` przy `p95=2,86 ms` | ogon stalla, patrz niżej |
+| ostatnie | `dt max=624 ms`, `update p95=0,01 ms` | wyjście z gry (zapis) już z menu |
+
+Odróżnienie pika od jitteru jest proste: przy piku `dt min` **nadal wynosi dokładnie
+16,00 ms**, czyli reszta klatek w oknie jest równa. Jitter psułby też `min`.
+
+### Dwa artefakty raportowania, o których warto wiedzieć
+
+1. **`avg` bywa większe od `p95`** (np. `update: avg=17,90ms p95=0,01ms`). To nie błąd
+   arytmetyki: jeden ekstremalny odstający pomiar (~1 s) podnosi średnią, nie ruszając
+   95. percentyla. Przy stallu `p95` jest bezużyteczne - dopiero `max` per sekcja
+   pokazałby, co się stało.
+2. **Stall trafia do `dt` w NASTĘPNYM oknie.** `dt` jest mierzone przez `clock.tick` na
+   POCZĄTKU klatki, więc zamulenie w ostatniej klatce okna N zobaczysz jako `dt max`
+   dopiero w oknie N+1. Stąd para: okno z `update avg=16,98 ms` ma jeszcze czyste
+   `dt max=18 ms`, a `dt max=624 ms` pojawia się linijkę później.

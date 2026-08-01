@@ -57,8 +57,13 @@ twarde 16,00 ms - co wygląda jak błąd w `clock.tick`, ale nim NIE jest: w tym
 sandbox koalescuje krótkie sleepy. Rozpoznanie po linii profilera: gdy `update`+`draw`
 +`flip` sumują się do ~2 ms, a `dt` pokazuje ~100 ms, czas ginie w sleepie limitera, nie
 w grze. `clock.tick` (a nie `tick_busy_loop`) jest tu świadomym domyślnym wyborem -
-`tick_busy_loop` kręci pętlę na CPU i grzeje procesor/baterię. Zakres `dt` walidujemy w
-prawdziwym oknie terminala; wyniki: [`doc/audyt/E02-dt-jitter-desktop.md`](../doc/audyt/E02-dt-jitter-desktop.md).
+`tick_busy_loop` kręci pętlę na CPU i grzeje procesor/baterię. Zwalidowane na prawdziwej
+maszynie (2026-08-01, mac-mini M4, 1920x1024): `dt` = 16,00-18,00 ms, avg ~16,9 ms,
+fps ~59, budżet klatki wykorzystany w ~38%. Pełne liczby i interpretacja pików:
+[`doc/audyt/E02-dt-jitter-desktop.md`](../doc/audyt/E02-dt-jitter-desktop.md).
+Uwaga przy czytaniu logu: `clock.tick()` zwraca pełne milisekundy, więc `dt` 16/17/18 to
+kwantyzacja, nie jitter; `avg` sekcji może przekroczyć `p95`, gdy jeden stall podniesie
+średnią; a stall z ostatniej klatki okna trafia do `dt max` dopiero w oknie następnym.
 
 Wyniki jednorazowego profilu web (przeglądarka, maszyna, tabela per scenariusz):
 [`doc/audyt/E02-profil-web-wyniki.md`](../doc/audyt/E02-profil-web-wyniki.md).
