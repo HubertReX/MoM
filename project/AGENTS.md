@@ -25,7 +25,9 @@ niezależnie od `FPS_CAP` - nie próbuj tego "naprawiać" po stronie kodu.
 Profiler sekcji klatki mierzy `update`/`draw`/`flip` w `Game.run` przez `perf_counter`,
 agreguje co 1 s (średnia + p95 per sekcja, bez `statistics` na gorącej klatce - tylko
 listy próbek czyszczone raz na sekundę) i loguje przez `self.log` (desktop `print`, web
-`platform.console.log` - widoczne w konsoli JS z `#debug`):
+`platform.console.log` - widoczne w konsoli JS z `#debug`). Osobno raportuje `dt`
+(krok czasowy z `clock.tick`) jako **min/avg/max**, nie avg/p95 - przy `dt` liczy się
+rozrzut, bo to on przekłada się na ruch i cząstki:
 
 ```bash
 MOM_PROFILE=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy just run
@@ -47,6 +49,16 @@ zgubi prefiksy.
 Gdy włączony, ostatnia zaagregowana linia dopisywana jest też do overlaya debug
 (` / Z, `debug_overlay.SHOW_DEBUG_INFO`) - do TEJ SAMEJ linii `FPS: ... M: ...`
 (`Scene.draw`), overlay ma zostać jednolinijkowy.
+
+**Pułapka: nie mierz taktowania klatek w sandboxie narzędzia Bash agenta.** Tam
+`clock.tick(60)` daje ~110 ms na klatkę (~9 FPS) zamiast 16,7 ms, a `tick_busy_loop(60)`
+twarde 16,00 ms - co wygląda jak błąd w `clock.tick`, ale nim NIE jest: w tym samym
+środowisku samo `time.sleep(1/60)` (goły Python, zero pygame i SDL) trwa ~118 ms, czyli
+sandbox koalescuje krótkie sleepy. Rozpoznanie po linii profilera: gdy `update`+`draw`
++`flip` sumują się do ~2 ms, a `dt` pokazuje ~100 ms, czas ginie w sleepie limitera, nie
+w grze. `clock.tick` (a nie `tick_busy_loop`) jest tu świadomym domyślnym wyborem -
+`tick_busy_loop` kręci pętlę na CPU i grzeje procesor/baterię. Zakres `dt` walidujemy w
+prawdziwym oknie terminala; wyniki: [`doc/audyt/E02-dt-jitter-desktop.md`](../doc/audyt/E02-dt-jitter-desktop.md).
 
 Wyniki jednorazowego profilu web (przeglądarka, maszyna, tabela per scenariusz):
 [`doc/audyt/E02-profil-web-wyniki.md`](../doc/audyt/E02-profil-web-wyniki.md).

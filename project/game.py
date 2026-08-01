@@ -182,6 +182,10 @@ class Game:
         self.profile_enabled: bool = MOM_PROFILE
         if self.profile_enabled:
             self._prof_samples: dict[str, list[float]] = {"update": [], "draw": [], "flip": []}
+            # `dt` raportowane osobno (min/avg/max, nie avg/p95): interesuje nas ROZRZUT
+            # kroku czasowego, bo to on decyduje o stabilności ruchu i cząstek, a nie
+            # średnia. Patrz `_profile_tick` i kryterium akceptacji 1 w E02.
+            self._prof_dt: list[float] = []
             self._prof_window_start: float = perf_counter()
         # ostatnia zaagregowana linia profilera (pusta dopóki flaga wyłączona albo
         # pierwsze okno 1s jeszcze nie minęło) - jedna dodatkowa linia na overlayu
@@ -1053,6 +1057,8 @@ class Game:
         dt = self.clock.tick(FPS_CAP) / 1000
         # slow down
         # dt *= 0.25
+        if self.profile_enabled:
+            self._prof_dt.append(dt)
         self.fps = self.clock.get_fps()
         # print(f"FPS: {self.fps:4.2f}")
         # self.fps_data_3s.append(self.fps)
@@ -1204,6 +1210,20 @@ class Game:
             parts.append(f"{name}: avg={avg_ms:5.2f}ms p95={p95_ms:5.2f}ms")
             overlay_parts.append(f"{name}={avg_ms:4.1f}ms")
             samples.clear()
+
+        # `dt` (krok czasowy z `clock.tick(FPS_CAP)`) - min/avg/max zamiast avg/p95.
+        # Przy FPS_CAP=60 zdrowy zakres to ~16-17 ms z wąskim rozrzutem; szeroki rozrzut
+        # (np. 8-40 ms) oznacza jitter kroku czasowego, który widać w ruchu i cząstkach.
+        # UWAGA: nie diagnozuj tego z przebiegu w sandboxie narzędzia Bash - tam nawet
+        # samo `time.sleep(1/60)` trwa ~118 ms zamiast 16,7, więc liczby są bezwartościowe.
+        # Mierz w prawdziwym oknie terminala.
+        if self._prof_dt:
+            dt_min_ms = min(self._prof_dt) * 1000
+            dt_max_ms = max(self._prof_dt) * 1000
+            dt_avg_ms = sum(self._prof_dt) / len(self._prof_dt) * 1000
+            parts.append(f"dt: min={dt_min_ms:5.2f}ms avg={dt_avg_ms:5.2f}ms max={dt_max_ms:5.2f}ms")
+            overlay_parts.append(f"dt={dt_min_ms:4.1f}-{dt_max_ms:4.1f}ms")
+            self._prof_dt.clear()
 
         # Prefiks bez nawiasów kwadratowych - format ustalony i opisany w
         # `doc/audyt/E02-profil-web-wyniki.md` (skrypty zbierające filtrują po "profile: ").
