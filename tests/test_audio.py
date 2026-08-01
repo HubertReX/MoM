@@ -66,13 +66,18 @@ class _FakeMusic:
         self.loaded: list[str] = []
         self.plays = 0
         self.fadeouts = 0
+        self.fade_ins: list[int] = []
         self.volume = 1.0
 
     def load(self, path: str) -> None:
         self.loaded.append(path)
 
-    def play(self, loops: int = 0) -> None:
+    # `fade_ms` MUSI tu być: to nim manager robi nieblokujące wejście utworu.
+    # Bez tego parametru stub rzucał TypeError, manager łapał go jako "padł mikser"
+    # i po cichu wyłączał muzykę - a testy myliły to z normalnym przebiegiem.
+    def play(self, loops: int = 0, start: float = 0.0, fade_ms: int = 0) -> None:
         self.plays += 1
+        self.fade_ins.append(fade_ms)
 
     def fadeout(self, ms: int) -> None:
         self.fadeouts += 1
@@ -241,13 +246,22 @@ def test_the_same_key_twice_does_not_reload_the_track() -> None:
     assert_eq(mixer.music.plays, 1, "re-entering the same map must not restart the track")
 
 
-def test_a_different_key_crossfades_to_the_new_track() -> None:
+def test_a_different_key_fades_the_new_track_in() -> None:
+    """Zmiana mapy podmienia utwór, wprowadzając nowy fade-inem.
+
+    Świadomie NIE wołamy tu `music.fadeout()` na starym utworze: `music.load()`
+    w trakcie trwającego fade'u blokuje pętlę gry do końca tego fade'u (~723 ms
+    przy `fade_ms = 500`), co dawało zauważalne zamrożenie przy każdym przejściu
+    mapy. Fade-in przez `play(fade_ms=...)` nie blokuje.
+    """
     manager, mixer, _log = _build()
     with _WithMixer(mixer):
         manager.play_music("Village")
         manager.play_music("VillageHouse")
     assert_eq(len(mixer.music.loaded), 2, "a map change must load the new track")
-    assert_true(mixer.music.fadeouts >= 1, "a map change must fade the old track out")
+    assert_eq(mixer.music.fadeouts, 0, "a map change must NOT block on a fadeout")
+    assert_true(all(ms > 0 for ms in mixer.music.fade_ins),
+                "every track must be faded in, not cut in abruptly")
     assert_eq(manager.current_music_key, "VillageHouse", "the manager tracks what plays")
 
 
@@ -474,7 +488,7 @@ def main() -> None:
         test_a_dead_mixer_makes_every_call_a_no_op,
         test_a_mixer_that_dies_mid_game_silences_the_rest_of_the_session,
         test_the_same_key_twice_does_not_reload_the_track,
-        test_a_different_key_crossfades_to_the_new_track,
+        test_a_different_key_fades_the_new_track_in,
         test_a_map_without_an_entry_is_silence_not_an_error,
         test_music_volume_multiplies_master_channel_and_file,
         test_muting_does_not_restart_the_track,

@@ -176,10 +176,19 @@ class AudioManager:
             return
         path = self._music_dir / self._music[key]
         try:
-            pygame.mixer.music.fadeout(self._fade_ms)
+            # NIE wołaj tu `music.fadeout()`. Samo `fadeout` nie blokuje, ale
+            # `music.load()` wywołane w trakcie trwającego fade'u CZEKA, aż fade się
+            # skończy - zmierzone 723 ms przy `fade_ms = 500`. Ponieważ cała ta
+            # ścieżka biegnie synchronicznie w `go_to_map`, gra zamarzała na ~0,7 s
+            # przy każdym przejściu mapy.
+            # Pełna diagnoza: doc/audyt/D01-stall-muzyki-przy-zmianie-mapy.md
+            # `load` przy normalnie grającej muzyce kosztuje ~0,8 ms, a `fade_ms`
+            # w `play()` daje płynne wejście nowego utworu bez blokowania: 1,5 ms
+            # zamiast 723 ms. Kompromis: stary utwór jest ucinany zamiast wyciszany
+            # (jeden strumień `mixer.music` i tak nie umie prawdziwego crossfade'u).
             pygame.mixer.music.load(str(path))
             pygame.mixer.music.set_volume(self._music_volume())
-            pygame.mixer.music.play(-1)
+            pygame.mixer.music.play(-1, fade_ms=self._fade_ms)
         except Exception as e:  # noqa: BLE001 - brak pliku, zły format, padły mikser
             self._log(f"[audio] nie udało się zagrać '{key}' ({path.name}): {e!r}")
             self._current_key = None
