@@ -1205,9 +1205,13 @@ class Game:
                 avg_ms = sum(samples) / len(samples) * 1000
                 p95_idx = min(len(samples) - 1, int(len(samples) * 0.95))
                 p95_ms = samples[p95_idx] * 1000
+                # `max` jest tu kluczowe, a nie ozdobne: pojedynczy stall (ładowanie
+                # mapy, zapis) podnosi `avg` nie ruszając `p95`, więc bez `max` widać
+                # tylko nieczytelne "avg=26.79ms p95=0.91ms" i trzeba zgadywać.
+                max_ms = samples[-1] * 1000
             else:
-                avg_ms = p95_ms = 0.0
-            parts.append(f"{name}: avg={avg_ms:5.2f}ms p95={p95_ms:5.2f}ms")
+                avg_ms = p95_ms = max_ms = 0.0
+            parts.append(f"{name}: avg={avg_ms:5.2f}ms p95={p95_ms:5.2f}ms max={max_ms:6.2f}ms")
             overlay_parts.append(f"{name}={avg_ms:4.1f}ms")
             samples.clear()
 

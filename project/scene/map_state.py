@@ -8,13 +8,14 @@ zapis gry przechowuje per mapa - kolejność i zawartość są częścią format
 """
 from __future__ import annotations
 
+from time import perf_counter
 from typing import TYPE_CHECKING, Any
 
 from maze_generator.maze_utils import clear_maze_cache
 
 import audio
 import settings
-from settings import _, QUICK_SAVE_SLOT
+from settings import _, MOM_PROFILE, QUICK_SAVE_SLOT
 from objects import NotificationTypeEnum
 
 from scene import map_loader, world_clock
@@ -97,14 +98,44 @@ def restore_map(scene: "Scene") -> None:
     # scene.group.center(scene.player.pos)
 
 
+class _MapChangeProfile:
+    """Rozbicie kosztu `go_to_map` na podkroki - budowane tylko pod `MOM_PROFILE`.
+
+    Zmiana mapy to jedna bardzo droga klatka, więc w zwykłym oknie profilera ginie
+    jako pojedynczy odstający pomiar w `update` (podnosi `avg`, nie rusza `p95`).
+    Ta linia mówi wprost, który podkrok zjadł czas. Kilka `perf_counter` raz na
+    przejście, więc koszt jest bez znaczenia - ale i tak siedzi za flagą.
+    """
+
+    def __init__(self) -> None:
+        self._t0 = perf_counter()
+        self._last = self._t0
+        self._parts: list[str] = []
+
+    def mark(self, label: str) -> None:
+        now = perf_counter()
+        self._parts.append(f"{label}={(now - self._last) * 1000:.1f}ms")
+        self._last = now
+
+    def line(self, target: str, cached: bool) -> str:
+        total = (perf_counter() - self._t0) * 1000
+        kind = "cached" if cached else "first_load"
+        return (f"profile: map_change -> {target} ({kind}) total={total:6.1f}ms "
+                + " ".join(self._parts))
+
+
 def go_to_map(scene: "Scene") -> None:
     if not scene.new_scene:
         return
+
+    prof = _MapChangeProfile() if MOM_PROFILE else None
 
     # cancel the leaving map's armed spawn timers so they don't keep firing for
     # emitters that are about to be swapped out (each map keeps its own director)
     if scene.weather:
         scene.weather.stop_all()
+    if prof:
+        prof.mark("weather_stop")
 
     scene.return_map = scene.current_map
     scene.return_entry_point = scene.new_scene.return_entry_point
@@ -121,17 +152,24 @@ def go_to_map(scene: "Scene") -> None:
     # gets its seed back from `restore_map` (it is in `properties`).
     scene.maze_seed = None
 
-    if scene.current_map not in scene.loaded_maps:
+    cached = scene.current_map in scene.loaded_maps
+    if not cached:
         reset_sprite_groups(scene)
         scene.player.shadow = scene.player.create_shadow()
         scene.player.emote = scene.player.create_emote()
         scene.player.health_bar = scene.player.create_health_bar()
+        if prof:
+            prof.mark("reset+player")
         scene.load_map()
+        if prof:
+            prof.mark("load_map")
     else:
         reset_sprite_groups(scene)
 
         restore_map(scene)
         map_loader.set_entry_point(scene)
+        if prof:
+            prof.mark("restore_map")
 
         scene.player.shadow = scene.player.create_shadow()
         scene.player.emote = scene.player.create_emote()
@@ -139,20 +177,28 @@ def go_to_map(scene: "Scene") -> None:
 
         scene.game.unregister_custom_events()
         map_loader.populate_sprite_groups(scene)
+        if prof:
+            prof.mark("populate_groups")
 
     if settings.USE_PARTICLES:
         scene.start_particles()
+    if prof:
+        prof.mark("particles")
 
     play_map_music(scene)
     if scene.is_maze:
         # zejście do lochu ma być słyszalne osobno od podmiany muzyki
         audio.play_sfx("maze_door")
+    if prof:
+        prof.mark("audio")
 
     # Quest event: arriving somewhere can satisfy a quest. Nothing uses
     # location conditions yet (`at_location()` is still hypothetical - see
     # Q01_S07 in the plan), but the hook is where it will need to be, and
     # firing it now keeps the sweep quiet when it lands.
     scene.quests.on_event("map_change")
+    if prof:
+        prof.mark("quests")
 
     # Autosave only when entering a maze (entry point into a dungeon). Regular
     # room-to-room transitions are not autosaved. The toast lets the player know
@@ -163,6 +209,10 @@ def go_to_map(scene: "Scene") -> None:
         scene.add_notification(_("notify.autosaved_quick"), NotificationTypeEnum.info)
 
     scene.transition.exiting = False
+
+    if prof:
+        prof.mark("autosave")
+        scene.game.log(prof.line(scene.current_map, cached))
 
 
 def play_map_music(scene: "Scene") -> None:

@@ -23,11 +23,13 @@ tryb bez limitu, tylko do profilowania/benchmarków (mielenie CPU na maksa i nie
 niezależnie od `FPS_CAP` - nie próbuj tego "naprawiać" po stronie kodu.
 
 Profiler sekcji klatki mierzy `update`/`draw`/`flip` w `Game.run` przez `perf_counter`,
-agreguje co 1 s (średnia + p95 per sekcja, bez `statistics` na gorącej klatce - tylko
-listy próbek czyszczone raz na sekundę) i loguje przez `self.log` (desktop `print`, web
-`platform.console.log` - widoczne w konsoli JS z `#debug`). Osobno raportuje `dt`
+agreguje co 1 s (**avg + p95 + max** per sekcja, bez `statistics` na gorącej klatce -
+tylko listy próbek czyszczone raz na sekundę) i loguje przez `self.log` (desktop `print`,
+web `platform.console.log` - widoczne w konsoli JS z `#debug`). Osobno raportuje `dt`
 (krok czasowy z `clock.tick`) jako **min/avg/max**, nie avg/p95 - przy `dt` liczy się
-rozrzut, bo to on przekłada się na ruch i cząstki:
+rozrzut, bo to on przekłada się na ruch i cząstki. `max` per sekcja nie jest ozdobą:
+pojedynczy stall podnosi `avg` nie ruszając `p95`, więc bez niego widać tylko mylące
+`avg=26.79ms p95=0.91ms`:
 
 ```bash
 MOM_PROFILE=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy just run
@@ -45,6 +47,18 @@ wszystkie ~40 linii `[agent_ctrl] ...` / `[agent] ...` (`agent_ctrl.py` dostaje
 były widoczne - a nawiasy w treści tracebacka z `_show_fatal_error` były okrajane.
 Jeśli kiedyś zmienisz to z powrotem na `self.log = print`, log desktopowy znów po cichu
 zgubi prefiksy.
+
+Pod tą samą flagą `map_state.go_to_map` loguje **jedną linię na zmianę mapy** z
+rozbiciem kosztu na podkroki - zmiana mapy to jedna bardzo droga klatka, która w
+zwykłym oknie agregacji ginie jako odstający pomiar w `update`:
+
+```text
+profile: map_change -> Maze_01 (first_load) total=  76.3ms weather_stop=0.0ms reset+player=0.8ms load_map=69.9ms particles=0.0ms audio=2.8ms quests=0.0ms autosave=2.8ms
+```
+
+To ona wykryła zamrożenie ~0,7 s przy każdym przejściu mapy (blokujące `music.load`
+w trakcie fade'u) - patrz
+[`doc/audyt/D01-stall-muzyki-przy-zmianie-mapy.md`](../doc/audyt/D01-stall-muzyki-przy-zmianie-mapy.md).
 
 Gdy włączony, ostatnia zaagregowana linia dopisywana jest też do overlaya debug
 (` / Z, `debug_overlay.SHOW_DEBUG_INFO`) - do TEJ SAMEJ linii `FPS: ... M: ...`
