@@ -20,6 +20,7 @@ Co jest potrzebne:
 
 ### Inne:
 
+- [ ] klawisze `+` i `-` źle powiększają ekrany gry, bo czasami doprowadzają do nierównomiernego skallowania (niektóre pixele sprite'ów są kopiowane 3 x a niektóre 2 x) 
 - [ ] skała ma za mały collider i reaguje na trafienie jedynie u samej podstaw. W Tiled collision box został dodany, ale nie jest respektowany.
 - [ ] czasami po wyjściu z tawerny gracz pojawia się w lesie blisko lewego krańca mapy zamiast w miejscu obiektu VillageHouseDoor  (pozycja od góry mapy jest ok). Zdarza się to rzadziej niż raz na 3 próby.
 - [ ] toast'y chowają się pod etykietą nazwy mapy (lokalizacji) - niech pokazują się ponad etykietą mapy
