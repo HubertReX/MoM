@@ -54,8 +54,10 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   powiększ **całkowitą krotnością** `pygame.transform.scale` (nearest-neighbour). Wtedy każdy
   natywny piksel = blok `k×k`, a kańciaste zaokrąglone końce zachowują proporcje. Tylko
   środkowe, jednolite sekcje wolno rozciągać (długość paska) — narożniki/końcówki są stałe
-  (`k × liczba_natywnych_rzędów`). Wzorzec referencyjny: `ui/widgets/bar.py` (model 8-kolumnowy
-  z `scrollbar.png`, `k = round(cross/8)`, min 2). Ta sama zasada co przy nine-patch panelu.
+  (`k × liczba_natywnych_rzędów`). Wzorzec referencyjny: `ui/widgets/bar.py` (siatka natywna
+  **wczytana ze `scrollbar.png`**, `k = round(cross/8)`, min 2 — sekcja „Suwak i pasek postępu"
+  niżej). Ta sama zasada co przy nine-patch panelu. **Lepiej niż rysować kształt w kodzie:
+  narysuj go w Aseprite i sparsuj** — wtedy wygląd jest w assecie, a nie w stałych.
 
 ## Komponent „klawisz" (hotkey) — zawsze sprite
 
@@ -100,14 +102,43 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
 - **Wszystkie suwaki i paski postępu** rysuje współdzielony moduł **`ui/widgets/bar.py`**
   (styl jak `keycap.py` — funkcje, nie klasa). Nie duplikuj rysowania paska, nie używaj
   `pygame.draw.rect(border_radius=)` (antyaliasuje → gładka krzywa, **zdradza pixel-art**).
-- **Referencja wyglądu:** `assets/NinjaAdventure/HUD/scrollbar.png` (8×16). Budowany
-  **proceduralnie w natywnej siatce 8-kolumnowej, potem integer-scale (nearest)** — patrz
-  reguła „kształty proceduralne = nine-patch" wyżej. Dzięki temu skaluje się do dowolnej
-  długości, działa **pionowo i poziomo**, przyjmuje **dowolny kolor** wypełnienia i wychodzi
-  **gruby/kańciasty** (a nie wątłe 1px detale). `k = round(cross/8)`, min 2 → ramka nigdy nie
-  cieńsza niż ~2× natywna. Każdy kolor assetu to token `theme.py`: `INK` = ramka,
-  `RULE` = pusty track, `GOLD` = wypełnienie, `WARN` = ciemna kolumna bevela (krawędź
-  wiodąca), `TITLE` = jasna (krawędź przeciwna).
+- **Asset jest źródłem wyglądu, nie referencją (U01).** `assets/NinjaAdventure/HUD/scrollbar.png`
+  (8×16) jest **wczytywany i parsowany na starcie** (`bar.load_model()` w `game.py`, tuż po
+  `set_display()`), a każdy piksel narysowanego paska pochodzi z niego. Przemalowanie sprite'a
+  w Aseprite + restart gry = inny wygląd wszystkich suwaków. W kodzie **nie ma** zaszytego
+  modelu kształtu (ani grubości ramki, ani profilu końcówek).
+- **Kolor = rola.** Każdy piksel musi być **dokładnie** tokenem `theme.py`; piksel spoza palety
+  (albo półprzezroczysty) to **twardy błąd ładowania** z podaniem współrzędnych i koloru —
+  sygnał, że asset i paleta się rozjechały. Mapowanie ról:
+
+  | kolor w sprite | token | rola |
+  |---|---|---|
+  | `#111111` | `INK` | ramka |
+  | `#4A4636` | `RULE` | pusty track (rowek) |
+  | `#FFD700` | `GOLD` | ciało wypełnienia |
+  | `#E8920C` | `WARN` | ciemny bevel (krawędź wiodąca) |
+  | `#FFFC67` | `TITLE` | jasny bevel (krawędź przeciwna) |
+  | alfa 0 | — | poza kształtem |
+
+- **Podmiana palety (color-swap), nie rodzina sprite'ów.** Przy rysowaniu role `fill`/`dark`/
+  `light` dostają kolory z argumentów (`fill=`, `bevel=`), role `frame`/`track` zostają
+  tokenami. Dlatego jeden sprite obsługuje pasek sentymentu (czerwony→zielony) — patrz punkt
+  o kolorze zmiennym niżej.
+- **Struktura jest parsowana, nie zakładana.** Skrajne, w pełni przezroczyste rzędy są
+  obcinane (oś główna jest tą rozciąganą), potem rzędy dzielą się na: stałą czapkę wiodącą,
+  **rozciągany rząd korpusu** (ten z najszerszym rowkiem) i stałą czapkę końcową — zasada
+  nine-patch z „kształtów proceduralnych" wyżej, zastosowana wzdłuż jednej osi. Sprite
+  **pokazuje też własne stany** (kciuk u góry), więc wzorce wnętrza czyta się z niego:
+  rząd w pełni wypełniony (`dark, fill, fill, light`) i rząd zaokrąglonego końca wypełnienia
+  (`track, fill, fill, track`). Wszystkie rzędy korpusu muszą mieć ten sam profil ramki/rowka.
+- `k = round(cross / szerokość_sprite'a)`, min 2 → integer scale (nearest), ramka nigdy nie
+  cieńsza niż 2× natywna. Skaluje się do dowolnej długości, działa **pionowo i poziomo**
+  (wariant poziomy to transpozycja: `flip` + `rotate(90)`).
+- **Test kontraktu:** `tests/test_bar_asset.py` — wysłany sprite **odtwarza sam siebie
+  piksel w piksel** (render jego własnego stanu == plik), piksel spoza palety = czytelny
+  `ValueError`, a przemalowanie ramki zmienia narysowany pasek. Jeśli zmieniasz asset i ten
+  test pada na „reprodukcji", to zwykle znak, że sprite przestał pokazywać pełne wypełnienie
+  (bevele nie mają skąd być odczytane) — nie „napraw" testu, domaluj stan w sprite.
 - **API:** `bar.draw_scrollbar(surface, rect, *, frac_visible, frac_pos, vertical=True,
   fill=GOLD, bevel=(WARN,TITLE))` — track + beveled thumb; `bar.draw_progress(surface,
   rect, fraction, *, vertical=False, fill=ACCENT_CYAN, bevel=None)` — track + wypełnienie

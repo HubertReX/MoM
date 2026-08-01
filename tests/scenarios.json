@@ -842,5 +842,83 @@
             },
             { "type": "process_alive" }
         ]
+    },
+    {
+        "name": "Panel Bars Asset Driven",
+        "slug": "panel_bars_asset_driven",
+        "platform": ["desktop", "web"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "open_help", "commands": ["help"], "wait": 1.0 },
+            { "slug": "help_panel", "commands": ["screenshot"] },
+            { "slug": "close_help", "commands": ["quit"], "wait": 0.5 },
+            { "slug": "open_quest_log", "commands": ["quest_log"], "wait": 1.0 },
+            { "slug": "quest_panel", "commands": ["screenshot"] },
+            { "slug": "close_quest_log", "commands": ["quest_log"], "wait": 0.5 },
+            { "slug": "start_dialog", "commands": ["talk_to_char:hammer"], "wait": 1.5 },
+            { "slug": "dialog_bars", "commands": ["screenshot"] },
+            { "slug": "dump_state_dialog", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            {
+                "type": "screenshot_review",
+                "target": "help_panel",
+                "expected_state": "HELP_PANEL",
+                "expect": "The centered help panel is open over the paused game, listing keyboard shortcuts in two columns with a key-cap sprite next to each description.",
+                "expected_elements": [
+                    "a large centered panel with a title and grouped shortcut rows",
+                    "key-cap sprites (small square keys with a letter) next to the descriptions",
+                    "a footer row with the close/scroll hints"
+                ],
+                "ui_quality_checks": [
+                    "no text overflows or touches the panel frame",
+                    "if a scroll bar is drawn at the right edge of a column, it is a solid chunky capsule with a dark outline and a gold thumb - its ends look blocky/stair-stepped, NOT smoothly anti-aliased, and it is not a thin 1px hairline",
+                    "the scroll bar (when present) stays fully inside the panel and does not overlap the text"
+                ]
+            },
+            {
+                "type": "screenshot_review",
+                "target": "quest_panel",
+                "expected_state": "QUEST_PANEL",
+                "expect": "The quest journal panel is open, showing the thread list on the left and the details of the selected quest on the right.",
+                "expected_elements": [
+                    "a large panel with a list of quest threads",
+                    "a details column for the selected quest"
+                ],
+                "ui_quality_checks": [
+                    "no text overflows or touches the panel frame",
+                    "if a horizontal progress bar is drawn (the KROKI/steps progress), it is a solid chunky capsule with a dark outline and a cyan fill - its ends look blocky/stair-stepped, NOT smoothly anti-aliased, and it is not a thin 1px hairline",
+                    "any bar or scroll bar stays fully inside the panel"
+                ]
+            },
+            {
+                "type": "screenshot_review",
+                "target": "dialog_bars",
+                "expected_state": "DIALOG",
+                "expect": "A dialog with the blacksmith Hammer is open. This screenshot is the reference for the shared bar widget (widgets/bar.py, drawn from HUD/scrollbar.png): a vertical scroll bar sits at the right edge of the numbered reply list, and a small horizontal sentiment bar sits above the yellow NPC name plate.",
+                "expected_elements": [
+                    "dialog panel at the bottom with a numbered list of reply options",
+                    "a narrow vertical scroll bar at the right edge of the reply list, with a gold/yellow thumb on a dark olive track",
+                    "a small horizontal sentiment bar above the yellow NPC name plate"
+                ],
+                "ui_quality_checks": [
+                    "the scroll bar and the sentiment bar are solid CHUNKY capsules: a dark outline, a visibly thick (not 1px hairline) body, and blocky stair-stepped rounded ends - NOT smooth anti-aliased curves and NOT thin lines",
+                    "the gold thumb inside the scroll bar has a darker edge on one side and a lighter edge on the other (a beveled, not flat, fill)",
+                    "both bars stay fully inside their panels and do not overlap the option text or the name plate",
+                    "no text overflows or touches any panel frame"
+                ]
+            },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "Village",
+                    "open_panels_contains": ["DialogPanel"],
+                    "dialog.npc": "HAMMER_HOAXHEART"
+                }
+            },
+            { "type": "no_layout_violations" },
+            { "type": "process_alive" }
+        ]
     }
 ]

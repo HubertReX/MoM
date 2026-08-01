@@ -264,6 +264,13 @@ class Game:
         self.custom_events: dict[int, Callable] = {}
         # moved imports here to avoid circular imports
         from ui.panels.main_menu import MainMenuScreen
+        from ui.widgets import bar
+
+        # Suwaki i paski postępu biorą wygląd wprost z `HUD/scrollbar.png` (U01), a każdy
+        # jego piksel musi być tokenem `theme.py`. Ładujemy tu, tuż po `set_display()`,
+        # żeby asset rozjechany z paletą wywalił się na starcie z nazwą piksela - a nie
+        # dopiero na pierwszej klatce, która narysuje suwak.
+        bar.load_model()
 
         # bg_image = load_image(HUD_DIR / "main_menu_bg.png").convert_alpha()
         # bg_image = load_image(HUD_DIR / "big_tree_1600x1024.png").convert_alpha()

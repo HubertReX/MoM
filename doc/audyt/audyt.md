@@ -88,7 +88,7 @@ mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły 
 - [x] [E02 - FPS_CAP=60 + profiler sekcji klatki i profil web z liczbami](E02-fps-cap-i-profil-web.md) - P2 ✅ 2026-07-30 (`FPS_CAP=60`, profiler `MOM_PROFILE` w `Game.run` - update/draw/flip, agregacja 1s, zero kosztu wyłączony; profil web w [E02-profil-web-wyniki.md](E02-profil-web-wyniki.md): budżet 16,7 ms z dużym zapasem, `test-smoke` 96 → 105 s; stabilność `dt` i decyzja `tick` vs `tick_busy_loop` w [E02-dt-jitter-desktop.md](E02-dt-jitter-desktop.md))
 - [x] [D01 - AudioManager: muzyka per mapa, SFX eventów, głośność, web-safe](D01-audio-manager.md) - P1 ✅ 2026-07-29 (manifest `config_model/audio.toml` + `project/audio.py`, 20 eventów SFX, 3 suwaki głośności, bramka gestu na web z `navigator.userActivation`; assety 5,9 MB, `web.zip` 1,3 → 7,1 MB)
 - [x] [H02 - dzienny autosave o 6:00 do slotu 0 (ekran wczytania po śmierci już jest - B02)](H02-autosave-dzienny.md) - P2
-- [x] [U01 - bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven)](U01-scrollbar-asset-driven.md) - P2
+- [x] [U01 - bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven)](U01-scrollbar-asset-driven.md) - P2 ✅ 2026-08-01 (sprite parsowany na starcie przez `bar.load_model()`, kolory = role + color-swap, struktura z pikseli; sprite odtwarza sam siebie 1:1 w `tests/test_bar_asset.py`; nowy scenariusz agentowy „Panel Bars Asset Driven"; decyzja autora: zostawiamy asset jak jest, więc suwaki są węższe o 4 px - ramka 2 px zamiast 4 px)
 - [x] [D02 - dokument decyzyjny mini-progresji statystyk (szybkość, max_health, damage, bazowy sentyment ±); kończy się dokumentem do akceptacji](D02-design-progresji-statystyk.md) - P2
 
 ### Faza 4 - treść prologu i późniejsze

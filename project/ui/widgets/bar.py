@@ -1,43 +1,222 @@
 """Beveled capsule bar — scrollbar thumb and progress fill in one component.
 
-Reference art: ``assets/NinjaAdventure/HUD/scrollbar.png`` (8×16). Every colour in
-that sprite is already a ``theme`` token, so the bar is built **procedurally** — that
-lets it stretch to any length, run vertical OR horizontal, and take an arbitrary fill
-colour (the dialog sentiment bar needs red→green, which a baked gold sprite could
-never do).
+**The art is the source, not a reference.** ``assets/NinjaAdventure/HUD/scrollbar.png``
+(8×16) is loaded once at startup and every pixel of a drawn bar comes from it: repaint
+the sprite in Aseprite, restart the game, and the scrollbars change. Nothing about the
+look (frame thickness, cap profile, bevel columns) is hard-coded here.
 
-**Chunky pixel-art scaling (the nine-patch method).** The bar is modelled in the
-asset's *native* 8-px grid (the exact cap profile below), then **integer-scaled with
-nearest-neighbour** (`pygame.transform.scale`) so every native pixel becomes a clean
-``k×k`` block and the rounded ends keep their blocky proportions. This is the same
-principle as ``nine_patch.py``: draw small, upscale linearly, never anti-alias — no
-fine 1-px features that betray the upscaled pixel-art. ``k`` is derived from the
-requested cross size (``k = round(cross / 8)``, min 2), so a bar is always at least
-2× the native art.
+**Colours are roles, not literals.** Each colour in the sprite must be an exact
+``theme`` token and stands for one role::
 
-Native anatomy (cross = 8 columns, matching the sprite)::
+    INK   → frame        RULE  → track (empty groove)     GOLD  → fill body
+    WARN  → dark bevel   TITLE → light bevel              alpha 0 → outside the shape
 
-      col:  0 1 2 3 4 5 6 7
-    frame:  I I . . . . I I     I = INK frame (2 px), rounded caps at both main ends
-    track:  I I R R R R I I     R = RULE empty groove (interior 4 px)
-     fill:  I I d F F l I I     d = dark bevel edge · F = fill body · l = light edge
+A pixel that is neither fully transparent nor an exact token is a **hard load error**
+(the sprite and the palette have drifted apart — see ``load_model``). At draw time the
+fill/bevel roles are re-coloured (``fill=``/``bevel=``), which is how one sprite covers
+the dialog sentiment bar's red→green sweep. The defaults ``fill=GOLD`` +
+``bevel=(WARN, TITLE)`` reproduce the sprite 1:1.
 
-The fill is a rounded capsule inside the track (rounded both ends), so a scrollbar
-thumb and a progress fill share one model. Default bevel ``(WARN, TITLE)`` on
-``fill=GOLD`` reproduces the sprite 1:1; ``bevel=None`` derives the two edges from
-``fill`` (dark = fill×0.6, light = fill blended toward white) so the colour-changing
-bars stay one component instead of a family of sprites.
+**Structure is parsed, not assumed.** Fully transparent rows at both ends of the sprite
+are trimmed (the main axis is the stretchable one), then rows are split into a fixed
+leading cap, a stretchable body row (the rows with the widest groove) and a fixed
+trailing cap — the nine-patch principle from ``ui/AGENTS.md``, applied along one axis.
+The sprite also *shows* its own fill states, so the interior patterns are read off it:
+a fully filled row (``dark, fill, fill, light``) and the fill's rounded end row
+(``track, fill, fill, track``). Rendering the shipped sprite's own state reproduces it
+pixel for pixel — that is ``tests/test_bar_asset.py``.
+
+**Chunky pixel-art scaling.** The bar is built in the sprite's *native* grid and then
+**integer-scaled with nearest-neighbour**, so every native pixel becomes a clean ``k×k``
+block and the rounded ends keep their blocky proportions. ``k = round(cross / sprite
+width)``, min 2 — a bar is always at least 2× the native art.
 """
 from __future__ import annotations
 
+from typing import NamedTuple
+
 import pygame
+from settings import HUD_DIR, load_image
 
 from .. import theme
 
-_NATIVE_CROSS = 8       # native columns, matching scrollbar.png width
+_ASSET = "scrollbar.png"
 _MIN_SCALE = 2          # never draw below 2× native — that is what "chunky" means
 _MIN_THUMB_NATIVE = 3   # a scrollbar thumb is at least this many native rows long
 _TRANSPARENT = (0, 0, 0, 0)
+
+# Pixel roles. The sprite's palette maps onto these; everything below works in roles.
+FRAME = "frame"
+TRACK = "track"
+FILL = "fill"
+DARK = "dark"
+LIGHT = "light"
+_GROOVE_ROLES = (TRACK, FILL, DARK, LIGHT)   # the interior that holds track/fill
+_FILL_ROLES = (FILL, DARK, LIGHT)            # "this cell is part of the fill"
+
+
+class _Row(NamedTuple):
+    """One native row of the sprite, reduced to its outline.
+
+    ``frame`` / ``groove`` are column indices; every other column is transparent.
+    """
+
+    frame: tuple[int, ...]
+    groove: tuple[int, ...]
+
+
+class _Model(NamedTuple):
+    """The sprite parsed into a stretchable bar (see the module docstring)."""
+
+    cross: int                              # native columns = sprite width
+    head: tuple[_Row, ...]                  # fixed rows before the stretchable body
+    body: _Row                              # the row repeated to reach the wanted length
+    tail: tuple[_Row, ...]                  # fixed rows after it
+    fill_pat: dict[int, tuple[str, ...]]    # groove width → roles of a fully filled row
+    end_pat: dict[int, tuple[str, ...]]     # groove width → roles at the fill's rounded end
+
+
+_model: "_Model | None" = None
+
+
+#######################################################################################################################
+# MARK: Loading the sprite
+
+
+def _token_roles() -> dict[tuple[int, int, int], str]:
+    """The palette contract: which theme token means which role."""
+    return {
+        tuple(theme.INK[:3]): FRAME,      # type: ignore[dict-item]
+        tuple(theme.RULE[:3]): TRACK,     # type: ignore[dict-item]
+        tuple(theme.GOLD[:3]): FILL,      # type: ignore[dict-item]
+        tuple(theme.WARN[:3]): DARK,      # type: ignore[dict-item]
+        tuple(theme.TITLE[:3]): LIGHT,    # type: ignore[dict-item]
+    }
+
+
+def _centred(inner: "tuple[str, ...]", width: int) -> "tuple[str, ...]":
+    """Centre a narrower fill pattern inside a wider groove, padding with track."""
+    pad = (width - len(inner)) // 2
+    return (TRACK,) * pad + inner + (TRACK,) * (width - len(inner) - pad)
+
+
+def _pattern(table: "dict[int, tuple[str, ...]]", width: int) -> "tuple[str, ...]":
+    """Interior roles for a groove ``width``, falling back to the next narrower one."""
+    pat = table.get(width)
+    if pat is not None:
+        return pat
+    narrower = [w for w in table if w < width]
+    if narrower:
+        return _centred(table[max(narrower)], width)
+    return (FILL,) * width
+
+
+def _read_roles(surface: pygame.Surface, path: str) -> "list[list[str | None]]":
+    """Classify every pixel into a role — an unknown colour is a hard error."""
+    roles = _token_roles()
+    width, height = surface.get_size()
+    grid: "list[list[str | None]]" = []
+    for y in range(height):
+        row: "list[str | None]" = []
+        for x in range(width):
+            r, g, b, a = surface.get_at((x, y))
+            if a == 0:
+                row.append(None)
+                continue
+            role = roles.get((r, g, b)) if a == 255 else None
+            if role is None:
+                raise ValueError(
+                    f"{path}: pixel ({x}, {y}) is #{r:02X}{g:02X}{b:02X} alpha {a}, which is not a "
+                    f"theme token. The bar sprite may only use INK (frame), RULE (track), "
+                    f"GOLD (fill), WARN (dark bevel), TITLE (light bevel) — or fully transparent "
+                    f"pixels. Repaint it with the palette, or add the colour to theme.py.",
+                )
+            row.append(role)
+        grid.append(row)
+    return grid
+
+
+def _parse(surface: pygame.Surface, path: str) -> _Model:
+    """Turn the classified pixels into a stretchable model (see the module docstring)."""
+    cross = surface.get_width()
+    grid = _read_roles(surface, path)
+    filled_rows = [y for y, row in enumerate(grid) if any(r is not None for r in row)]
+    if not filled_rows:
+        raise ValueError(f"{path}: the bar sprite is fully transparent — nothing to draw.")
+    top, bottom = filled_rows[0], filled_rows[-1]
+
+    rows: list[_Row] = []
+    patterns: list[tuple[str, ...]] = []
+    for y in range(top, bottom + 1):
+        frame = tuple(x for x in range(cross) if grid[y][x] == FRAME)
+        groove = tuple(x for x in range(cross) if grid[y][x] in _GROOVE_ROLES)
+        rows.append(_Row(frame, groove))
+        patterns.append(tuple(str(grid[y][x]) for x in groove))
+
+    # Interior patterns, read off the states the sprite happens to show: for each groove
+    # width keep the widest fill (a fully filled row) and the narrowest one (the fill's
+    # rounded end). A width the sprite only ever draws filled gets its end pattern
+    # derived by centring the next narrower fill — exactly how a rounded cap looks.
+    fill_pat: dict[int, tuple[str, ...]] = {}
+    end_pat: dict[int, tuple[str, ...]] = {}
+    for row, pat in zip(rows, patterns):
+        n_fill = sum(1 for role in pat if role in _FILL_ROLES)
+        if n_fill == 0:
+            continue
+        width = len(row.groove)
+        widest = fill_pat.get(width)
+        if widest is None or n_fill > sum(1 for role in widest if role in _FILL_ROLES):
+            fill_pat[width] = pat
+        narrowest = end_pat.get(width)
+        if narrowest is None or n_fill < sum(1 for role in narrowest if role in _FILL_ROLES):
+            end_pat[width] = pat
+    for width, pat in list(fill_pat.items()):
+        if end_pat.get(width) == pat:                       # only one state drawn at this width
+            narrower = [w for w in fill_pat if w < width]
+            if narrower:
+                end_pat[width] = _centred(fill_pat[max(narrower)], width)
+
+    widest_groove = max(len(row.groove) for row in rows)
+    if widest_groove == 0:
+        raise ValueError(f"{path}: the bar sprite has no groove — no track/fill pixels to stretch.")
+    if widest_groove not in fill_pat:
+        raise ValueError(
+            f"{path}: no row shows the fill at its full width ({widest_groove} px). The sprite must "
+            f"draw the thumb somewhere, so the bevel columns can be read from it.",
+        )
+    first = next(i for i, row in enumerate(rows) if len(row.groove) == widest_groove)
+    last = len(rows) - 1 - next(i for i, row in enumerate(reversed(rows)) if len(row.groove) == widest_groove)
+    body = rows[first]
+    for i in range(first, last + 1):
+        if rows[i] != body:
+            raise ValueError(
+                f"{path}: row {top + i} has a different outline than the stretchable body row "
+                f"{top + first}. Every row between the two caps is repeated to stretch the bar, so "
+                f"they must share one frame/groove profile.",
+            )
+    return _Model(cross, tuple(rows[:first]), body, tuple(rows[last + 1:]), fill_pat, end_pat)
+
+
+def load_model() -> None:
+    """Load and validate the bar sprite now.
+
+    Called once at startup (``game.py``) so a sprite that drifted from the palette fails
+    loudly with the offending pixel, instead of on the first frame that draws a scrollbar.
+    Needs an initialised display (``convert_alpha``); the result is cached per module.
+    """
+    _get_model()
+
+
+def _get_model() -> _Model:
+    global _model
+    if _model is None:
+        path = HUD_DIR / _ASSET
+        _model = _parse(load_image(path).convert_alpha(), str(path))
+    return _model
+
+
+#######################################################################################################################
+# MARK: Drawing
 
 
 def _shade(color: "tuple[int, ...]", factor: float) -> "tuple[int, int, int]":
@@ -49,86 +228,71 @@ def _shade(color: "tuple[int, ...]", factor: float) -> "tuple[int, int, int]":
     return (int(r + (255 - r) * t), int(g + (255 - g) * t), int(b + (255 - b) * t))
 
 
-def _edges(
+def _palette(
     fill: "tuple[int, int, int]",
     bevel: "tuple[tuple[int, int, int], tuple[int, int, int]] | None",
-) -> "tuple[tuple[int, int, int], tuple[int, int, int]]":
-    return bevel if bevel is not None else (_shade(fill, 0.6), _shade(fill, 1.4))
+) -> "dict[str, tuple[int, int, int]]":
+    """Role → colour for one draw call (this is the colour swap on the loaded sprite)."""
+    dark, light = bevel if bevel is not None else (_shade(fill, 0.6), _shade(fill, 1.4))
+    return {FRAME: theme.INK, TRACK: theme.RULE, FILL: fill, DARK: dark, LIGHT: light}
 
 
-def _cell(
-    ci: int, mi: int, native_main: int,
-    seg_start: int, seg_len: int,
-    fill: "tuple[int, int, int]", dark: "tuple[int, int, int]", light: "tuple[int, int, int]",
-) -> "tuple[int, int, int] | tuple[int, int, int, int] | None":
-    """Colour of native cell (cross ``ci`` 0..7, main ``mi``) — see the anatomy above.
-
-    Returns ``None`` for the transparent area outside the rounded pill outline.
-    """
-    d = min(mi, native_main - 1 - mi)   # distance from the nearest main-axis tip
-    # Rounded frame cap: inset the INK outline near each end (blocky stair-step).
-    frame_inset = 3 if d == 0 else 2 if d == 1 else 1 if d == 2 else 0
-    left, right = frame_inset, _NATIVE_CROSS - 1 - frame_inset
-    if ci < left or ci > right:
-        return None
-    if frame_inset > 0:                 # whole cap row is solid frame
-        return theme.INK
-    if ci in (0, 1, 6, 7):              # frame side columns
-        return theme.INK
-    # interior columns 2..5, themselves rounded one row in from the frame cap
-    interior_cols = (3, 4) if d == 3 else (2, 3, 4, 5)
-    if ci not in interior_cols:
-        return theme.INK
-    # inside the groove: track unless this row is within the fill segment
-    in_fill = seg_len > 0 and seg_start <= mi < seg_start + seg_len
-    if not in_fill:
-        return theme.RULE
-    rounded_end = mi in (seg_start, seg_start + seg_len - 1)
-    fill_cols = (3, 4) if (rounded_end or d == 3) else (2, 3, 4, 5)
-    if ci not in fill_cols:
-        return theme.RULE               # track shows at the fill's rounded corner
-    if ci == 2:
-        return dark
-    if ci == 5:
-        return light
-    return fill
+def _native(
+    model: _Model, native_main: int, seg_start: int, seg_len: int,
+    colour: "dict[str, tuple[int, int, int]]",
+) -> pygame.Surface:
+    """Build the bar in the sprite's native grid: caps verbatim, body row repeated."""
+    surface = pygame.Surface((model.cross, native_main), pygame.SRCALPHA)
+    surface.fill(_TRANSPARENT)
+    body_rows = native_main - len(model.head) - len(model.tail)
+    rows = list(model.head) + [model.body] * body_rows + list(model.tail)
+    groove_index = 0
+    for mi, row in enumerate(rows):
+        for x in row.frame:
+            surface.set_at((x, mi), colour[FRAME])
+        if not row.groove:
+            continue
+        width = len(row.groove)
+        if seg_len > 0 and seg_start <= groove_index < seg_start + seg_len:
+            rounded_end = groove_index in (seg_start, seg_start + seg_len - 1)
+            pat = _pattern(model.end_pat if rounded_end else model.fill_pat, width)
+        else:
+            pat = (TRACK,) * width
+        for x, role in zip(row.groove, pat):
+            surface.set_at((x, mi), colour[role])
+        groove_index += 1
+    return surface
 
 
 def _blit_bar(
     surface: pygame.Surface,
     rect: pygame.Rect,
     vertical: bool,
-    frac_visible: float | None,
+    frac_visible: "float | None",
     frac_pos: float,
     fraction: float,
     fill: "tuple[int, int, int]",
     bevel: "tuple[tuple[int, int, int], tuple[int, int, int]] | None",
 ) -> None:
+    model = _get_model()
     cross = rect.width if vertical else rect.height
     main = rect.height if vertical else rect.width
-    k = max(_MIN_SCALE, round(cross / _NATIVE_CROSS))
-    native_main = max(7, round(main / k))
-    interior = native_main - 6            # rows 3 .. native_main-4 hold track/fill
+    k = max(_MIN_SCALE, round(cross / model.cross))
+    caps = len(model.head) + len(model.tail)
+    native_main = max(caps + 1, round(main / k))
 
+    # groove rows = the ones that can hold track/fill (cap rows may have a narrow groove too)
+    groove_rows = sum(1 for row in model.head + model.tail if row.groove) + (native_main - caps)
     if frac_visible is not None:          # scrollbar thumb
-        thumb = max(_MIN_THUMB_NATIVE, round(interior * max(0.0, min(1.0, frac_visible))))
-        thumb = min(thumb, interior)
-        seg_start = 3 + round((interior - thumb) * max(0.0, min(1.0, frac_pos)))
-        seg_len = thumb
+        thumb = max(_MIN_THUMB_NATIVE, round(groove_rows * max(0.0, min(1.0, frac_visible))))
+        seg_len = min(thumb, groove_rows)
+        seg_start = round((groove_rows - seg_len) * max(0.0, min(1.0, frac_pos)))
     else:                                 # progress fill from the start
-        seg_len = min(interior, round(interior * max(0.0, min(1.0, fraction))))
-        seg_start = 3
+        seg_len = min(groove_rows, round(groove_rows * max(0.0, min(1.0, fraction))))
+        seg_start = 0
 
-    dark, light = _edges(fill, bevel)
-    native = pygame.Surface((_NATIVE_CROSS, native_main), pygame.SRCALPHA)
-    native.fill(_TRANSPARENT)
-    for mi in range(native_main):
-        for ci in range(_NATIVE_CROSS):
-            c = _cell(ci, mi, native_main, seg_start, seg_len, fill, dark, light)
-            if c is not None:
-                native.set_at((ci, mi), c)
-
-    scaled = pygame.transform.scale(native, (_NATIVE_CROSS * k, native_main * k))
+    native = _native(model, native_main, seg_start, seg_len, _palette(fill, bevel))
+    scaled = pygame.transform.scale(native, (model.cross * k, native_main * k))
     if not vertical:
         # transpose vertical→horizontal: fill-start (top) → left, dark edge → top
         scaled = pygame.transform.rotate(pygame.transform.flip(scaled, True, False), 90)
