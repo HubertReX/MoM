@@ -29,7 +29,10 @@ pixel for pixel — that is ``tests/test_bar_asset.py``.
 **Chunky pixel-art scaling.** The bar is built in the sprite's *native* grid and then
 **integer-scaled with nearest-neighbour**, so every native pixel becomes a clean ``k×k``
 block and the rounded ends keep their blocky proportions. ``k = round(cross / sprite
-width)``, min 2 — a bar is always at least 2× the native art.
+width)``, **min 4** — the same pixel block as the HUD health bar (``LifeBarMini*.png``
+at ``INVENTORY_ITEM_SCALE``), which is what makes the two read as one design. Callers
+therefore give a bar a cross size of **32px** (a multiple of the 8px sprite width);
+16px would ask for 2× and be drawn at 4× anyway, i.e. overflow its slot.
 """
 from __future__ import annotations
 
@@ -41,7 +44,7 @@ from settings import HUD_DIR, load_image
 from .. import theme
 
 _ASSET = "scrollbar.png"
-_MIN_SCALE = 2          # never draw below 2× native — that is what "chunky" means
+_MIN_SCALE = 4          # never below 4× native — matches the HUD health bar's pixel block
 _MIN_THUMB_NATIVE = 3   # a scrollbar thumb is at least this many native rows long
 _TRANSPARENT = (0, 0, 0, 0)
 

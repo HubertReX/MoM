@@ -39,7 +39,7 @@ from . import bar
 
 # 16 is a multiple of 8, so bar.py scales the native 8-col art at k=2 (thinner
 # reads as fragile 1px detail — see the design-system "chunky" rule).
-_SCROLLBAR_W = 16
+_SCROLLBAR_W = 32
 _GAP = 8            # empty gutter between the content and the scrollbar column
 _STEP = 30          # one key-press / wheel-notch, ~one quest row (_ROW_H)
 

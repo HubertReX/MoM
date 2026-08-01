@@ -39,7 +39,7 @@ from settings import (
     _,
 )
 
-from .. import keycap, theme
+from .. import keycap, layout, theme
 from ..widget import Widget
 from ..widgets.scroll_view import ScrollView
 
@@ -48,56 +48,36 @@ if TYPE_CHECKING:
 
     from .hud import HUD
 
-# --- geometry (logical 1280x720) --------------------------------------------
+# --- geometry ----------------------------------------------------------------
 # Two columns, not the mock's three: MoM's pixel font is far wider than the mock's
 # web font (the longest description, "Rozmawiaj / otwórz / atakuj", is 378px), so a
-# third column would clip every description. Two ~508px columns clear the widest
-# line, and the row height is tuned so even the debug-on layout fits without scroll.
-PANEL_W, PANEL_H = 1120, 680
+# third column would clip every description.
+#
+# NOTHING here is a fixed box any more. The design size below is a MAXIMUM: the panel
+# is clamped to the viewport (at 1024x720 the old fixed 1120px panel hung ~48px off
+# BOTH screen edges), and the column widths are MEASURED from the real fonts, per
+# language. That is the design-system meta-rule — a width that depends on a font metric
+# must be derived from it, never guessed — and it is why the Polish "Rozmawiaj / otwórz
+# / atakuj" used to silently spill out of its 341px slot into the column gap.
+_DESIGN_W, _DESIGN_H = 1152, 680
+_MIN_MARGIN = 16        # the panel never touches the viewport edge
 _PAD = 28
 # scrollbar on the right edge of the panel — shared beveled capsule component
 # (widgets/bar.py): INK frame + RULE track + gold beveled thumb, CHUNKY (non-AA) ends.
-_SCROLLBAR_W = 16
-_COL_GAP = 48
+_SCROLLBAR_W = 32
+_COL_GAP = 48           # minimum gutter between the two columns
+_DESC_MARGIN = 8        # breathing room after the longest description in a column
 
-# The panel is a fixed 1120x680 box centered on screen. Its absolute geometry
-# depends on the current viewport size (settings.WIDTH/HEIGHT change with the
-# resolution), so it is (re)computed by _recompute_geometry() when the panel opens
-# instead of being baked at import time. Declared here first for module visibility.
-PANEL_X = PANEL_Y = 0
+# Everything below is (re)computed by _recompute_geometry() — on construction, on
+# open() and after a resolution change — because it depends on the viewport size AND
+# on the current language's text metrics. Declared here first for module visibility.
+PANEL_W = PANEL_H = PANEL_X = PANEL_Y = 0
 _SCROLLBAR_X = _INNER_LEFT = _INNER_RIGHT = 0
 _HEADER_Y = _RULE_Y = _CONTENT_TOP = 0
 _FOOTER_Y = _FOOTER_TEXT_Y = _CONTENT_BOTTOM = _CONTENT_H = 0
-_COL_W = 0
+_KEY_COL_W = 0          # key icons slot before a row's description starts
+_COLUMN_COUNT = 2       # 1 when the viewport is too narrow for two columns
 _COL_X: tuple[int, int] = (0, 0)
-
-
-def _recompute_geometry() -> None:
-    """Recenter the panel geometry on the current viewport (settings.WIDTH/HEIGHT)."""
-    global PANEL_X, PANEL_Y, _SCROLLBAR_X, _INNER_LEFT, _INNER_RIGHT
-    global _HEADER_Y, _RULE_Y, _CONTENT_TOP, _FOOTER_Y, _FOOTER_TEXT_Y
-    global _CONTENT_BOTTOM, _CONTENT_H, _COL_W, _COL_X
-    PANEL_X = (settings.WIDTH - PANEL_W) // 2
-    PANEL_Y = (settings.HEIGHT - PANEL_H) // 2
-    _SCROLLBAR_X = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 4
-    _INNER_LEFT = PANEL_X + _PAD
-    _INNER_RIGHT = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 8
-    _HEADER_Y = PANEL_Y + 22
-    _RULE_Y = PANEL_Y + 72
-    _CONTENT_TOP = PANEL_Y + 82
-    # footer strip (shortcuts) mirrors the quest panel: a rule + a hint row at the bottom
-    _FOOTER_Y = PANEL_Y + PANEL_H - _PAD - 44
-    _FOOTER_TEXT_Y = _FOOTER_Y + 8
-    _CONTENT_BOTTOM = _FOOTER_Y - 10
-    _CONTENT_H = _CONTENT_BOTTOM - _CONTENT_TOP
-    _COL_W = (_INNER_RIGHT - _INNER_LEFT - _COL_GAP) // 2
-    _COL_X = (_INNER_LEFT, _INNER_LEFT + _COL_W + _COL_GAP)
-
-
-_recompute_geometry()
-# room reserved for the key icons before a row's description starts. 155 fits the
-# widest row (W A S D — four 32px caps = 137px) with a small margin.
-_KEY_COL_W = 155
 _ROW_H = 36
 # group title (SMALL 14px) + its rows: the shared section-label rhythm — content sits
 # 14px (label height) + theme.SECTION_LABEL_GAP (18) below the label, same as quest.py.
@@ -124,6 +104,7 @@ _ORANGE = theme.WARN
 # The ASCII "-" stays a real keycap (the zoom-out key), so it must not be a separator.
 _TEXT_SEP = ("/",)
 _RANGE_SEP = ("–",)
+_RANGE_DASH_W = 12       # the range dash is drawn as a rect, not a glyph
 
 
 @dataclass(frozen=True)
@@ -203,6 +184,88 @@ _COLUMNS: tuple[tuple[_Group, ...], ...] = (
 )
 
 
+#######################################################################################
+# MARK: measured layout
+
+
+def _keys_width(keys: tuple[str, ...]) -> int:
+    """Width a row's key icons occupy — mirrors ``_draw_keys``' advance, exactly.
+
+    Kept next to it on purpose: the moment the two disagree, the key column is sized
+    from a number that no longer describes what is drawn.
+    """
+    sep_font = theme.get_font(FONT_SIZE_LARGE)
+    width = 0
+    for token in keys:
+        if token in _TEXT_SEP:
+            width += sep_font.size(token)[0] + 2 * _SEP_GAP
+        elif token in _RANGE_SEP:
+            width += _RANGE_DASH_W + 2 * _SEP_GAP
+        else:
+            width += keycap.BASE_PX + _CAP_GAP
+    return width
+
+
+def _measure_columns() -> "tuple[int, tuple[int, int]]":
+    """``(key column width, width each column needs)`` for the CURRENT language.
+
+    Measured over every row, debug rows included, so toggling the debug overlay can
+    never reshuffle the layout.
+    """
+    key_col = max(_keys_width(row.keys)
+                  for column in _COLUMNS for group in column for row in group.rows)
+    needs = tuple(
+        key_col + _DESC_MARGIN + max(theme.measure(_(row.desc), FONT_SIZE_SMALL)[0]
+                                     for group in column for row in group.rows)
+        for column in _COLUMNS
+    )
+    return key_col + _CAP_GAP, (needs[0], needs[1])
+
+
+def _recompute_geometry() -> None:
+    """Fit the panel to the current viewport and language (WIDTH/HEIGHT/LANG)."""
+    global PANEL_W, PANEL_H, PANEL_X, PANEL_Y, _SCROLLBAR_X, _INNER_LEFT, _INNER_RIGHT
+    global _HEADER_Y, _RULE_Y, _CONTENT_TOP, _FOOTER_Y, _FOOTER_TEXT_Y
+    global _CONTENT_BOTTOM, _CONTENT_H, _KEY_COL_W, _COLUMN_COUNT, _COL_X
+    PANEL_W = min(_DESIGN_W, settings.WIDTH - 2 * _MIN_MARGIN)
+    PANEL_H = min(_DESIGN_H, settings.HEIGHT - 2 * _MIN_MARGIN)
+    PANEL_X = (settings.WIDTH - PANEL_W) // 2
+    PANEL_Y = (settings.HEIGHT - PANEL_H) // 2
+    _SCROLLBAR_X = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 4
+    _INNER_LEFT = PANEL_X + _PAD
+    _INNER_RIGHT = PANEL_X + PANEL_W - _PAD - _SCROLLBAR_W - 8
+    _HEADER_Y = PANEL_Y + 22
+    _RULE_Y = PANEL_Y + 72
+    _CONTENT_TOP = PANEL_Y + 82
+    # footer strip (shortcuts) mirrors the quest panel: a rule + a hint row at the bottom
+    _FOOTER_Y = PANEL_Y + PANEL_H - _PAD - 44
+    _FOOTER_TEXT_Y = _FOOTER_Y + 8
+    _CONTENT_BOTTOM = _FOOTER_Y - 10
+    _CONTENT_H = _CONTENT_BOTTOM - _CONTENT_TOP
+
+    inner = _INNER_RIGHT - _INNER_LEFT
+    _KEY_COL_W, needs = _measure_columns()
+    if needs[0] + needs[1] + _COL_GAP <= inner:
+        # Content-sized columns: the left one starts at the inner edge, the right one
+        # ENDS at it, so the slack becomes gutter instead of overflow.
+        _COLUMN_COUNT = 2
+        _COL_X = (_INNER_LEFT, _INNER_RIGHT - needs[1])
+    else:
+        # Too narrow for two columns (e.g. 1024px wide with the Polish strings): stack
+        # them into one scrollable column rather than let the descriptions spill.
+        _COLUMN_COUNT = 1
+        _COL_X = (_INNER_LEFT, _INNER_LEFT)
+    widest = max(needs)
+    if widest > inner:
+        # Not even one column fits — a real layout bug, and the A03 registry is where
+        # it gets reported. This code never clamps or truncates to hide it.
+        layout.report_violation(
+            "HelpPanel(columns)", "h-overflow",
+            f"widest row needs {widest}px, the panel's inner width is {inner}px "
+            f"(viewport {settings.WIDTH}x{settings.HEIGHT})",
+        )
+
+
 class HelpPanel(Widget):
     def __init__(self, scene: "Scene", hud: "HUD") -> None:
         super().__init__()
@@ -219,9 +282,12 @@ class HelpPanel(Widget):
     # --- lifecycle ----------------------------------------------------------
 
     def open(self) -> None:
-        # Recenter on the current viewport in case the resolution changed since
-        # this panel was constructed.
+        # Refit to the current viewport and language: both the resolution and LANG
+        # may have changed since this panel was constructed, and the panel SIZE now
+        # depends on them - so the nine-patch has to be rebuilt too, not just moved
+        # (theme.nine_patch is cached per size, so a repeat open costs nothing).
         _recompute_geometry()
+        self.bg = theme.nine_patch("nine_patch_04.png", PANEL_W, PANEL_H)
         self.rect = self.bg.get_rect(topleft=(PANEL_X, PANEL_Y))
         self._scroll.reset()
 
@@ -283,8 +349,16 @@ class HelpPanel(Widget):
         self, surface: pygame.Surface,
         columns: list[list[tuple[_Group, list[_Row]]]], top_y: int,
     ) -> int:
-        """Draw both columns from ``top_y``; return the taller one's bottom y so
-        the ScrollView measures the overflow from the longer column."""
+        """Draw the columns from ``top_y``; return the bottom y the ScrollView needs.
+
+        In the narrow (one-column) layout the second column is stacked UNDER the first
+        instead of beside it - the extra height is legal, ScrollView scrolls it.
+        """
+        if _COLUMN_COUNT == 1:
+            bottom = top_y
+            for visible in columns:
+                bottom = self._draw_column(surface, _COL_X[0], visible, bottom)
+            return bottom
         bottom = top_y
         for col_idx, visible in enumerate(columns):
             bottom = max(bottom, self._draw_column(surface, _COL_X[col_idx], visible, top_y))
@@ -339,10 +413,9 @@ class HelpPanel(Widget):
                 cx += sep_font.size(token)[0] + 2 * _SEP_GAP
             elif token in _RANGE_SEP:
                 # a range (1–6), not a key: a short horizontal grey dash
-                dash_w = 12
                 dy = y + _ROW_H // 2
-                pygame.draw.rect(surface, _GREY, (cx + _SEP_GAP, dy - 1, dash_w, 2))
-                cx += dash_w + 2 * _SEP_GAP
+                pygame.draw.rect(surface, _GREY, (cx + _SEP_GAP, dy - 1, _RANGE_DASH_W, 2))
+                cx += _RANGE_DASH_W + 2 * _SEP_GAP
             else:
                 cx += self._draw_cap(surface, token, cx, y) + _CAP_GAP
 

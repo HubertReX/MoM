@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 # ↑↓←→ and mouse tokens map to their dedicated sprites; everything else is key_<token>.
 _ARROW_DIR = {"↑": "up", "↓": "down", "←": "left", "→": "right"}
 _MOUSE = {"LMB": "mouse_LMB", "RMB": "mouse_RMB"}
-_BASE_PX = 32          # native sprite size before scaling
+BASE_PX = 32           # native sprite size before scaling (help.py measures with it)
 _MARKUP = re.compile(r"\{([^}]+)\}")
 
 # cache keyed by (token, glyph_color, font id, scale) — fonts live for the whole run
@@ -131,7 +131,7 @@ def render_hint(surface: pygame.Surface, icons: "Icons", glyph_font: pygame.font
     x, y = pos
     if align == "right":
         x -= measure(icons, glyph_font, text_font, text, glyph_color, scale=scale, sep_font=sep_font)
-    cap_px = round(_BASE_PX * scale)
+    cap_px = round(BASE_PX * scale)
     line_h = max(text_font.get_height(), cap_px)
     for kind, val in _parts(text):
         if kind == "key":

@@ -67,7 +67,7 @@ def _trimmed(surface: pygame.Surface) -> pygame.Surface:
     return surface.subsurface((0, rows[0], surface.get_width(), rows[-1] - rows[0] + 1)).copy()
 
 
-def _draw(width: int = 16, height: int = 64, **kwargs: object) -> pygame.Surface:
+def _draw(width: int = 32, height: int = 96, **kwargs: object) -> pygame.Surface:
     """Draw a vertical bar filling a transparent canvas of exactly its own size."""
     canvas = pygame.Surface((width, height), pygame.SRCALPHA)
     bar.draw_scrollbar(canvas, (0, 0, width, height), **kwargs)  # type: ignore[arg-type]
@@ -152,13 +152,13 @@ def test_the_fill_colour_is_swapped_and_the_frame_is_not() -> None:
 
 def test_the_sentiment_bar_works_across_the_whole_range() -> None:
     """Acceptance criterion 3: a dynamic colour + derived bevel over the full 0-100 sweep."""
-    canvas = pygame.Surface((200, 40), pygame.SRCALPHA)
+    canvas = pygame.Surface((200, 56), pygame.SRCALPHA)
     seen: set[int] = set()
     for value in range(0, 101):
         fraction = value / 100
         colour = (int(255 * (1 - fraction)), int(255 * fraction), 60)
         canvas.fill((0, 0, 0, 0))
-        bar.draw_progress(canvas, (0, 8, 180, 16), fraction, fill=colour)
+        bar.draw_progress(canvas, (0, 8, 180, 32), fraction, fill=colour)
         seen.add(sum(1 for px in _pixels(canvas) if px[:3] == colour and px[3]))
     assert_true(len(seen) > 10, f"the fill length must follow the fraction, got {len(seen)} lengths")
 
@@ -166,19 +166,19 @@ def test_the_sentiment_bar_works_across_the_whole_range() -> None:
 def test_a_horizontal_bar_is_the_transposed_vertical_one() -> None:
     """The sprite is drawn vertically; horizontal bars reuse it via flip+rotate."""
     vertical = _draw(frac_visible=0.4, frac_pos=0.5)
-    canvas = pygame.Surface((64, 16), pygame.SRCALPHA)
-    bar.draw_scrollbar(canvas, (0, 0, 64, 16), frac_visible=0.4, frac_pos=0.5, vertical=False)
+    canvas = pygame.Surface((96, 32), pygame.SRCALPHA)
+    bar.draw_scrollbar(canvas, (0, 0, 96, 32), frac_visible=0.4, frac_pos=0.5, vertical=False)
     rotated = pygame.transform.rotate(pygame.transform.flip(vertical, True, False), 90)
     assert_eq(_pixels(canvas), _pixels(rotated), "horizontal must be the transposed vertical bar")
 
 
 def test_public_geometry_is_unchanged() -> None:
-    """Panels pass multiples of 8 as the cross size; the bar must still fill that box."""
-    for cross, expected_k in ((16, 2), (24, 3), (8, 2), (32, 4)):
-        canvas = pygame.Surface((cross, 80), pygame.SRCALPHA)
-        bar.draw_scrollbar(canvas, (0, 0, cross, 80), frac_visible=0.5, frac_pos=0.0)
+    """Panels pass multiples of 8 (min 32 = 4x native) as the cross size; the bar fills it."""
+    for cross, expected_k in ((32, 4), (40, 5), (48, 6), (64, 8)):
+        canvas = pygame.Surface((cross, 120), pygame.SRCALPHA)
+        bar.draw_scrollbar(canvas, (0, 0, cross, 120), frac_visible=0.5, frac_pos=0.0)
         painted = [x for x in range(cross)
-                   for y in range(80) if canvas.get_at((x, y))[3]]
+                   for y in range(120) if canvas.get_at((x, y))[3]]
         assert_true(bool(painted), f"a {cross}px bar must draw something")
         model = bar._get_model()
         k = max(bar._MIN_SCALE, round(cross / model.cross))

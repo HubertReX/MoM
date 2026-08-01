@@ -84,6 +84,11 @@ _LINE_SPACING = 10
 # frame; that job now belongs to the scrollbar.
 _MAX_DESC_LINES = 20
 _MAX_RESULT_LINES = 12
+# KROKI progress bar (widgets/bar.py): 32px = 4x the sprite's native grid, the same
+# pixel block as the HUD health bar. The advance below it is derived from that height,
+# so making the bar taller can never crowd the steps that follow it.
+_PROGRESS_BAR_H = 32
+_PROGRESS_BAR_GAP = 14
 
 # Live geometry — (re)computed by _recompute_geometry() from the current viewport.
 PANEL_X = PANEL_Y = 0
@@ -495,8 +500,8 @@ class QuestPanel(Widget):
             # Shared beveled capsule progress bar (widgets/bar.py): all_subquests
             # completion, filled current/total in the cyan progress accent.
             fraction = current / total if total else 0.0
-            bar.draw_progress(surface, (_RIGHT_X, bar_y, width, 16), fraction, fill=_ACTIVE)
-            y = bar_y + 30
+            bar.draw_progress(surface, (_RIGHT_X, bar_y, width, _PROGRESS_BAR_H), fraction, fill=_ACTIVE)
+            y = bar_y + _PROGRESS_BAR_H + _PROGRESS_BAR_GAP
         else:
             # A `manual` umbrella has no progress bar - completing its steps does not
             # complete it, so a bar would be a lie. Skipping the bar must not also

@@ -19,7 +19,7 @@ from ..widget import Widget
 _WORD_RE = re.compile(r"\S+|\s+")
 _ANIM_FPS = 8.0
 _ICON_SCALE = 1.35        # inline icons are sized ~1.35x font height (then snapped, see below)
-_SCROLLBAR_W = 16         # beveled capsule scrollbar (widgets/bar.py) at the right edge
+_SCROLLBAR_W = 32         # beveled capsule scrollbar (widgets/bar.py) at the right edge
 
 
 def _icon_factor(src_h: int, target_h: int) -> int:

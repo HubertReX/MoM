@@ -529,14 +529,16 @@
                 "type": "screenshot_review",
                 "target": "hub_node",
                 "expected_state": "DIALOG",
-                "expect": "The dialog panel shows Hammer's hub node after the player's first reply, with a numbered list of about six reply options that all fit inside the panel frame (no option overlaps or spills below the border).",
+                "expect": "The dialog panel shows Hammer's hub node after the player's first reply. The option list is a FIXED FOUR-ROW WINDOW onto a longer list, so only up to four numbered options are visible at a time - and an option long enough to wrap onto a second line takes two of those rows, which legitimately leaves three numbers on screen. Judge what is drawn, not how many options the node has.",
                 "expected_elements": [
-                    "numbered list of about six reply options",
-                    "NPC dialog text above the option list"
+                    "numbered list of reply options - between two and four numbers visible, starting at 1",
+                    "NPC dialog text above the option list",
+                    "a vertical scroll bar at the right edge of the option list (the list is longer than the four-row window)"
                 ],
                 "ui_quality_checks": [
                     "no option overlaps or spills below the panel border",
-                    "no text overflows or touches any panel frame"
+                    "no text overflows or touches any panel frame",
+                    "a wrapped option's second line stays inside the panel and does not collide with the next option"
                 ]
             },
             { "type": "screenshot_review", "target": "dialog_closed", "expected_state": "GAMEPLAY", "expect": "Active gameplay is shown; the dialog panel is closed after the player picked the final farewell option." },

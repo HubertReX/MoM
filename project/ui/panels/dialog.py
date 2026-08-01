@@ -54,7 +54,7 @@ _BODY_FONT = 16
 _MAX_OPTIONS = 9
 _CURSOR_WIDTH = 10
 _WEIGHT_COL = 80      # px reserved on the right of each option row for emote + sentiment weight
-_OPT_SCROLLBAR_W = 16  # width of the options scrollbar (widgets/bar.py), at the row's right edge
+_OPT_SCROLLBAR_W = 32  # width of the options scrollbar (widgets/bar.py), at the row's right edge
 _OPT_SCROLLBAR_GAP = 8  # gap between the emote/weight column and the scrollbar
 _SCROLL_RESERVE = _OPT_SCROLLBAR_W + _OPT_SCROLLBAR_GAP  # right-edge space kept clear for the bar
 _EMOTE_SCALE = 2      # integer scale for sentiment emotes (pixel-art: no fractional upscaling)
@@ -66,10 +66,16 @@ _SEPARATOR_GAP = 4
 # Sentiment progress bar: bigger, framed capsule (widgets/bar.py) stacked ABOVE the
 # name text. The name plate is raised/heightened so name + bar fit without overlap.
 _SENT_BAR_W = 112
-_SENT_BAR_H = 16
+_SENT_BAR_H = 32
 _SENT_BAR_GAP = 8           # gap between the bar's bottom and the name text top
-_NAME_PLATE_H = 76          # taller than the 64px nine-patch minimum, to hold bar + name
-_NAME_PLATE_TOP = 60        # px above ``offset[1]`` where the plate's top edge sits
+_PLATE_PAD = 8              # padding above the sentiment bar, inside the plate
+_NAME_TOP = int(1.5 * TILE_SIZE)   # px above ``offset[1]`` where the name TEXT starts
+# The plate is DERIVED from what it has to hold - name text, gap, bar, padding - so
+# growing the bar can never leave it hanging outside the plate (design-system meta-rule:
+# a value that depends on another one is computed from it, never re-guessed by hand).
+_NAME_PLATE_TOP = _NAME_TOP + _SENT_BAR_GAP + _SENT_BAR_H + _PLATE_PAD
+_PLATE_BELOW_ANCHOR = 16    # how far the plate reaches below ``offset[1]`` (unchanged)
+_NAME_PLATE_H = _NAME_PLATE_TOP + _PLATE_BELOW_ANCHOR
 _SEPARATOR_COLOR = theme.DIALOG_SEPARATOR  # greenish panel border colour (nine_patch_01c)
 _OPTION_HIGHLIGHT_COLOR = theme.DIALOG_OPTION_HIGHLIGHT  # dark blue vs turquoise text
 _OPTION_HIGHLIGHT_ALPHA = 200
@@ -170,7 +176,7 @@ class DialogPanel(Widget):
         name = entity_name(npc.model) if npc else _("dialog.unknown_npc")
         self.name_label.set_text(name)
         self.name_label.set_pos(
-            (self.offset[0] + 4 * TILE_SIZE, self.offset[1] - int(1.5 * TILE_SIZE))
+            (self.offset[0] + 4 * TILE_SIZE, self.offset[1] - _NAME_TOP)
         )
         # dynamiczne dopasowanie pola imienia do szerokości tekstu
         name_w = max(self.name_label.rect.width + 2 * TILE_SIZE, 8 * TILE_SIZE)

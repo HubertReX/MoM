@@ -59,6 +59,26 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   niżej). Ta sama zasada co przy nine-patch panelu. **Lepiej niż rysować kształt w kodzie:
   narysuj go w Aseprite i sparsuj** — wtedy wygląd jest w assecie, a nie w stałych.
 
+## Panel musi się zmieścić w viewporcie (i w każdym języku)
+
+- **Rozmiar panelu to MAKSIMUM, nie stała.** Rozdzielczość zmienia rozmiar viewportu
+  (patrz „Skalowanie i geometria"), więc panel o zaszytej szerokości prędzej czy później
+  wystaje poza ekran - `help.py` przy 1120 px zwisał po ~48 px z **obu** krawędzi przy
+  1024×720. Wzorzec: `PANEL_W = min(_DESIGN_W, settings.WIDTH - 2 * _MIN_MARGIN)`
+  (analogicznie wysokość), a **cała reszta geometrii liczona z tego** w
+  `_recompute_geometry()` wołanym w `__init__` i w `open()`. Jeśli rozmiar panelu może się
+  zmienić, w `open()` przebuduj też nine-patch tła - samo przesunięcie `rect` zostawia
+  tło w starym rozmiarze (`theme.nine_patch` jest cache'owany per rozmiar, więc to darmowe).
+- **Szerokości kolumn mierz z fontu, nie zgaduj.** Najdłuższy opis zależy od **języka**:
+  polskie „Rozmawiaj / otwórz / atakuj" ma 378 px i po cichu wychodziło poza swój slot
+  341 px. Licz zapotrzebowanie kolumny z `theme.measure(...)` po realnych stringach
+  (`help.py` `_measure_columns`), a szerokość ikon klawiszy - funkcją bliźniaczą do tej,
+  która je rysuje (`_keys_width` vs `_draw_keys`), żeby nie mogły się rozjechać.
+- **Za wąsko = mniej kolumn, nie ciaśniejsze kolumny.** Gdy dwie kolumny się nie mieszczą,
+  ułóż je jedna pod drugą w jednej kolumnie i pozwól `ScrollView` przewijać - przewijanie
+  to legalny nadmiar, przycinanie tekstu nie jest. Gdy nie mieści się nawet jedna, zgłoś
+  `layout.report_violation(..., "h-overflow", ...)`; **nigdy nie clampuj, żeby ukryć problem**.
+
 ## Komponent „klawisz" (hotkey) — zawsze sprite
 
 - Klawisze rysuj przez współdzielony moduł **`ui/keycap.py`** (nie duplikuj logiki):
@@ -131,9 +151,12 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   **pokazuje też własne stany** (kciuk u góry), więc wzorce wnętrza czyta się z niego:
   rząd w pełni wypełniony (`dark, fill, fill, light`) i rząd zaokrąglonego końca wypełnienia
   (`track, fill, fill, track`). Wszystkie rzędy korpusu muszą mieć ten sam profil ramki/rowka.
-- `k = round(cross / szerokość_sprite'a)`, min 2 → integer scale (nearest), ramka nigdy nie
-  cieńsza niż 2× natywna. Skaluje się do dowolnej długości, działa **pionowo i poziomo**
-  (wariant poziomy to transpozycja: `flip` + `rotate(90)`).
+- **Skala: `k = round(cross / szerokość_sprite'a)`, min 4** → integer scale (nearest).
+  Czwórka nie jest przypadkowa: pasek życia w HUD (`LifeBarMini*.png`) jest skalowany
+  `INVENTORY_ITEM_SCALE = 4`, więc dopiero przy `k=4` blok piksela suwaka jest ten sam co
+  paska życia i oba czyta się jako jeden design (przy `k=2` suwak wyglądał na drobniejszy).
+  Skaluje się do dowolnej długości, działa **pionowo i poziomo** (wariant poziomy to
+  transpozycja: `flip` + `rotate(90)`).
 - **Test kontraktu:** `tests/test_bar_asset.py` — wysłany sprite **odtwarza sam siebie
   piksel w piksel** (render jego własnego stanu == plik), piksel spoza palety = czytelny
   `ValueError`, a przemalowanie ramki zmienia narysowany pasek. Jeśli zmieniasz asset i ten
@@ -149,8 +172,10 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   do bieli). Jeden komponent pokrywa każdy odcień, bez rodziny sprite'ów.
 - **Miejsca użycia:** panel pomocy (`help.py`), suwak przewijalnego `RichText`
   (`rich_text.py` — m.in. kwestia NPC), suwak opcji dialogu i pasek sentymentu
-  (`dialog.py`), postęp `all_subquests` w questach (`quest.py` KROKI). Suwaki paneli
-  rysuj szerokością wielokrotności 8 (obecnie 16 → `k=2`); węższe wychodzą za cienkie.
+  (`dialog.py`), postęp `all_subquests` w questach (`quest.py` KROKI). Suwaki i paski
+  rysuj **wymiarem poprzecznym 32 px** (wielokrotność 8 px sprite'a → `k=4`). 16 px prosi
+  o `k=2`, ale zostanie narysowane w 4× i **wyjdzie poza swój slot** — a wizualnie
+  rozjedzie się z paskiem życia w HUD.
 - `theme.draw_pixel_round_rect` zostaje osobnym prymitywem dla innych kańciastych
   zaokrągleń (nie jest już używany przez `bar.py`, który idzie ścieżką natywna+integer-scale).
 
