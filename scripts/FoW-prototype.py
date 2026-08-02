@@ -182,6 +182,18 @@ def _tile_entry(px: float, py: float, dx: float, dy: float, tx: int, ty: int) ->
     return max(ex, ey)
 
 
+def _is_pocket(solid: list[list[bool]], x: int, y: int) -> bool:
+    """Kafel podłogi zamknięty ścianami z co najmniej trzech stron."""
+    if solid[y][x]:
+        return False
+    h, w = len(solid), len(solid[0])
+    walls = 0
+    for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+        if not (0 <= nx < w and 0 <= ny < h) or solid[ny][nx]:
+            walls += 1
+    return walls >= 3
+
+
 #################################################################################################################
 class FogGrid:
     """Stan odkrycia i widoczności na siatce KAFLI mapy labiryntu.
@@ -198,6 +210,15 @@ class FogGrid:
         # się na licu ściany, więc bez dolewki takie kafle zostają czarne pośrodku
         # odkrytego terenu i czyta się je jako dziurę w renderowaniu.
         self.solid = solid
+        # Wnęka: kafel PODŁOGI zamknięty ścianami z co najmniej trzech stron - typowo
+        # nisza na skrzynię. Stojąc obok, gracz nie ma do jej środka linii wzroku
+        # (zmierzone: żaden z pięciu punktów - środek i cztery rogi - nie ma LOS),
+        # więc raycast i shadowcast gaszą ją tak samo jak ścianę. Jednokaflowa czerń
+        # pośrodku oświetlonego korytarza czyta się jednak jak dziura w renderowaniu
+        # i chowa skrzynię, po którą gracz przyszedł - traktujemy taki kafel jak
+        # POWIERZCHNIĘ ściany, czyli oświetla go sąsiedztwo.
+        self.surface = [[solid[y][x] or _is_pocket(solid, x, y)
+                         for x in range(len(solid[0]))] for y in range(len(solid))]
         self.h = len(blocked)
         self.w = len(blocked[0])
         self.discovered: set[tuple[int, int]] = set()
@@ -412,17 +433,17 @@ class FogGrid:
         #  b) każdy inny solid dotknięty widocznością dostaje tylko poziom PAMIĘCI
         #     - ma nie być czarny, ale też nie udawać, że gracz widzi w głąb ściany.
         for (x, y), a in bright.items():
-            if self.solid[y][x]:
+            if self.surface[y][x]:
                 continue
             for nx in (x - 1, x, x + 1):
                 for ny in (y - 1, y, y + 1):
-                    if 0 <= nx < self.w and 0 <= ny < self.h and self.solid[ny][nx]:
+                    if 0 <= nx < self.w and 0 <= ny < self.h and self.surface[ny][nx]:
                         if written.get((nx, ny), 256) > a:
                             written[(nx, ny)] = a
         for (x, y) in list(written):
             for nx in (x - 1, x, x + 1):
                 for ny in (y - 1, y, y + 1):
-                    if 0 <= nx < self.w and 0 <= ny < self.h and self.solid[ny][nx]:
+                    if 0 <= nx < self.w and 0 <= ny < self.h and self.surface[ny][nx]:
                         if (nx, ny) not in written:
                             written[(nx, ny)] = memory_alpha
         for (x, y), a in written.items():
@@ -860,6 +881,77 @@ class Prototype:
 
     # ---------------------------------------------------------------- zrzuty
 
+    def selftest(self, frames: int = 4000) -> int:
+        """Poluj na artefakt "czarny kwadrat" na WYRENDEROWANEJ klatce.
+
+        Powód istnienia: trzy rundy z rzędu poprawka wyglądała dobrze na moim
+        pojedynczym zrzucie i sypała się u autora po minucie chodzenia. Test
+        chodzi losowo po mapie i co piątą klatkę zlicza kafle ciemne (średnia
+        z czterech próbek) mające co najmniej trzech jasnych sąsiadów.
+
+        To LICZNIK, nie bramka zero-jedynkowa: część takich kafli to poprawnie
+        zgaszone wyloty korytarzy w nieodkryty teren. Sens ma porównanie liczby
+        przed zmianą i po niej - dlatego wynik to liczba RÓŻNYCH kafli, a nie
+        pierwsze trafienie.
+
+        Kafel gracza jest pomijany: jego znacznik ma ciemną obwódkę i sam w sobie
+        wyglądał jak trafienie.
+        """
+        def lum(tx: int, ty: int) -> float | None:
+            total = 0.0
+            for ox, oy in ((4, 4), (12, 4), (4, 12), (12, 12)):
+                sx, sy = self.map_view.translate_point((tx * TILE + ox, ty * TILE + oy))
+                if not (0 <= sx < settings.WIDTH and 0 <= sy < settings.HEIGHT):
+                    return None
+                c = self.screen.get_at((sx, sy))
+                total += c.r + c.g + c.b
+            return total / 4
+
+        def scan() -> list[tuple[int, int]]:
+            view = self.map_view.view_rect
+            ptx, pty = int(self.px // TILE), int(self.py // TILE)
+            hits = []
+            for ty in range(int(view.top // TILE), int(view.bottom // TILE) + 2):
+                for tx in range(int(view.left // TILE), int(view.right // TILE) + 2):
+                    if abs(tx - ptx) <= 1 and abs(ty - pty) <= 1:
+                        continue
+                    v = lum(tx, ty)
+                    if v is None or v > 90:
+                        continue
+                    nb = [lum(tx + a, ty + b) for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1))]
+                    if len([n for n in nb if n is not None and n > 250]) >= 3:
+                        hits.append((tx, ty))
+            return hits
+
+        total = 0
+        for mode in (1, 2, 3):
+            self.mode = mode
+            self.show_light = False
+            self.fog.clear()
+            rnd = random.Random(11)
+            step = (1, 0)
+            found: set[tuple[int, int]] = set()
+            for i in range(frames):
+                if rnd.random() < 0.06:
+                    step = rnd.choice([(1, 0), (-1, 0), (0, 1), (0, -1)])
+                if self.walkable(self.px + step[0] * 3, self.py + step[1] * 3):
+                    self.px += step[0] * 3
+                    self.py += step[1] * 3
+                else:
+                    step = rnd.choice([(1, 0), (-1, 0), (0, 1), (0, -1)])
+                self.recompute_fog()
+                # pierwsze klatki po wyczyszczeniu mgły pomijamy: pamięć jest pusta,
+                # więc prawie każdy kafel graniczy z czernią i pomiar nic nie mówi
+                if i % 5 or i < 300:
+                    continue
+                self.draw()
+                found.update(scan())
+            total += len(found)
+            sample = sorted(found)[:4]
+            print(f"[selftest] {MODES[mode]:22} ciemnych kafli w jasnym otoczeniu: "
+                  f"{len(found):3}  {sample}")
+        return total
+
     def shots(self, out_dir: Path) -> None:
         """Przejdź skryptowo kilka kroków i zapisz porównawcze zrzuty."""
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -892,13 +984,17 @@ def main() -> None:
     ap.add_argument("--level", type=int, default=2, help="poziom labiryntu 1-4 (rozmiar siatki)")
     ap.add_argument("--seed", type=int, default=None, help="seed labiryntu")
     ap.add_argument("--shots", type=str, default=None, help="katalog na zrzuty (tryb bez interakcji)")
+    ap.add_argument("--selftest", action="store_true",
+                    help="poluj na artefakty renderowania (czarne kafle) i zwróć kod != 0 przy trafieniu")
     args = ap.parse_args()
 
-    headless = args.shots is not None
+    headless = args.shots is not None or args.selftest
     if headless:
         os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
     proto = Prototype(args.level, args.seed, headless)
-    if headless:
+    if args.selftest:
+        sys.exit(1 if proto.selftest() else 0)
+    if args.shots:
         proto.shots(Path(args.shots))
     else:
         proto.run()
