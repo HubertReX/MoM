@@ -25,6 +25,7 @@ Sterowanie (opisane też w HUD na górze ekranu):
     G                - pamięć: hard (nearest) / soft (smoothscale)
     B                - skalowanie nakładki na ekran: nearest / smooth
     [ ]              - zasięg wzroku -/+ (w kaflach)
+    O P              - rdzeń bez przyciemnienia -/+ (tryby kafelkowe, w kaflach)
     , .              - alfa pamięci (odkryte, poza wzrokiem) -/+ o 5
     L                - aureola światła z gry (nieprzycinana ścianami) on/off
     M                - podgląd całej mapy (zoom out) - kontrola, ile już odkryto
@@ -63,11 +64,14 @@ import pyscroll.data  # noqa: E402
 import settings  # noqa: E402
 from maze_generator.hunt_and_kill_maze import HuntAndKillMaze  # noqa: E402
 from maze_generator.maze_utils import (  # noqa: E402
+    IMAGE_DIRECTION_TO_CHEST,
     MARGIN,
     SUBTILE_COLS,
     SUBTILE_ROWS,
     analyze_maze,
     build_tileset_map_from_maze,
+    clear_maze_cache,
+    find_dead_ends,
 )
 from pytmx.util_pygame import load_pygame  # noqa: E402
 
@@ -85,11 +89,13 @@ FOG_COLOR = (0, 0, 30)    # ten sam odcień co NIGHT_FILTER
 
 # Rdzeń bez przyciemnienia, wspólny pomysł dla obu rodzin trybów, ale w innym
 # rozmiarze - bo inaczej wypada wizualnie przy takim samym zasięgu:
-#  - kafelkowe (radius/shadowcast): 3 kafle, gradient dopiero POWYŻEJ tej odległości,
+#  - kafelkowe (radius/shadowcast): regulowane pod [O]/[P], gradient dopiero POWYŻEJ
+#    tej odległości. Rdzeń zjada zasięg: przy rdzeniu 3 i zasięgu 4 na gradient
+#    zostaje jeden kafel i gradacji nie widać - stąd domyślne 1,5.
 #  - raycast: połowa dzisiejszej aureoli z gry (CIRCLE_RADIUS to ok. 3,2 kafla),
 #    czyli 1,6 kafla - dzięki temu pierścienie gradientu zaczynają się NA ZEWNĄTRZ
 #    rdzenia i widać ich skok, zamiast być przykryte jednolitą plamą światła.
-CLEAR_TILES_GRID = 3.0
+CLEAR_TILES_GRID = 1.5
 CLEAR_TILES_RAYCAST = (settings.CIRCLE_RADIUS * settings.FILTER_SCALE
                        / settings.ZOOM_LEVEL / settings.TILE_SIZE) / 2.0
 # liczba pierścieni gradientu między rdzeniem a granicą zasięgu (tryb raycast)
@@ -103,18 +109,48 @@ C_LABEL = (176, 180, 190)
 C_VALUE = (124, 226, 172)
 C_NUMBER = (140, 186, 255)
 
+Segment = tuple[str, tuple[int, int, int]]
+
+
+def _key_segments(keys: str, label: str, value: str = "") -> list[Segment]:
+    """``[klawisz] etykieta wartość`` w trzech kolorach.
+
+    Nawiasy klamrowe MUSZĄ być w kolorze tekstu, a nie klawisza: skrót do zmiany
+    zasięgu to nawiasy kwadratowe, więc pomarańczowe `[ [ ] ]` zlewało się w jedną
+    plamę, w której nie dało się odróżnić ramki od klawiszy.
+    """
+    out: list[Segment] = [("  [", C_LABEL), (keys, C_KEY), ("] ", C_LABEL), (label, C_LABEL)]
+    if value:
+        out.append((f" {value}", C_VALUE))
+    return out
+
 # ile promieni w trybie raycast - 180 to co 2 stopnie, wystarcza przy zasięgu ~8 kafli
 RAY_COUNT = 180
 
 
 #################################################################################################################
-def read_maze_configs() -> dict[int, tuple[int, int]]:
-    """{poziom: (kolumny, wiersze)} z tego samego CSV, z którego czyta gra."""
+def read_maze_configs() -> dict[int, tuple[int, int, int]]:
+    """{poziom: (kolumny, wiersze, liczba małych skrzyń)} z CSV, z którego czyta gra."""
     path = REPO_ROOT / "project" / "config_model" / "maze_configs.csv"
-    out: dict[int, tuple[int, int]] = {}
+    out: dict[int, tuple[int, int, int]] = {}
     with path.open(encoding="utf-8") as f:
         for row in csv.DictReader(f, delimiter=";"):
-            out[int(row["key"])] = (int(row["maze_cols"]), int(row["maze_rows"]))
+            out[int(row["key"])] = (int(row["maze_cols"]), int(row["maze_rows"]),
+                                    int(row["small_chest_count"]))
+    return out
+
+
+def load_chest_images() -> dict[str, pygame.Surface]:
+    """Zamknięte skrzynie z tego samego arkusza, którego używa `ChestSprite`.
+
+    Gra tnie arkusz w `Scene.import_sheet`; tutaj wystarczą dwa kadry, więc
+    powtarzam samo cięcie zamiast ciągnąć całą scenę i konfigurację.
+    """
+    sheet = pygame.image.load(str(settings.ITEMS_SHEET_FILE)).convert_alpha()
+    out: dict[str, pygame.Surface] = {}
+    for key in ("small_chest", "big_chest"):
+        x, y = settings.ITEMS_SHEET_DEFINITION[key][0]
+        out[key] = sheet.subsurface(pygame.Rect(x * TILE, y * TILE, TILE, TILE))
     return out
 
 
@@ -142,6 +178,8 @@ class FogGrid:
         # tryb raycast: pozycja obserwatora + dystans trafienia dla każdego promienia
         self.ray_origin: tuple[float, float] = (0.0, 0.0)
         self.ray_dist: list[float] = []
+        # promień (w kaflach) bez żadnego przyciemnienia - tryby kafelkowe, [O]/[P]
+        self.core_tiles: float = CLEAR_TILES_GRID
 
     def clear(self) -> None:
         self.discovered.clear()
@@ -192,21 +230,24 @@ class FogGrid:
     def _grade(self, cx: int, cy: int, radius: int) -> None:
         """Alfa widocznych kafli: rdzeń bez przyciemnienia + gradient do granicy.
 
-        Do ``CLEAR_TILES_GRID`` kafli od gracza obraz jest nietknięty (alfa 0) -
-        tak jak dziś w środku aureoli. Dopiero POWYŻEJ tej odległości zaczyna się
-        gaśnięcie do ``ALPHA_VISIBLE_EDGE``. Bez rdzenia widoczność ma krawędź jak
-        nożem uciętą i wygląda jak reflektor, a nie jak zasięg wzroku.
+        Do ``core_tiles`` kafli od gracza obraz jest nietknięty (alfa 0) - tak jak
+        dziś w środku aureoli. Dopiero POWYŻEJ tej odległości zaczyna się gaśnięcie
+        do ``ALPHA_VISIBLE_EDGE``, skwantowane do ``RING_COUNT`` stopni, żeby tryby
+        kafelkowe miały ten sam czytelny skok pierścieni co raycast (płynny gradient
+        na kaflach i tak rozjeżdża się w szum).
         """
         span = ALPHA_VISIBLE_EDGE - ALPHA_CLEAR
-        ramp = max(0.001, radius - CLEAR_TILES_GRID)
+        core = self.core_tiles
+        ramp = max(0.001, radius - core)
         alpha: dict[tuple[int, int], int] = {}
         for (x, y) in self.visible:
             d = math.hypot(x - cx, y - cy)
-            if d <= CLEAR_TILES_GRID:
+            if d <= core:
                 alpha[(x, y)] = ALPHA_CLEAR
             else:
-                t = min(1.0, (d - CLEAR_TILES_GRID) / ramp)
-                alpha[(x, y)] = ALPHA_CLEAR + int(span * t ** 1.4)
+                t = min(1.0, (d - core) / ramp)
+                step = math.ceil(t * RING_COUNT) / RING_COUNT
+                alpha[(x, y)] = ALPHA_CLEAR + int(span * step ** 1.4)
         self.vis_alpha = alpha
 
     def _cast_light(self, vis: set[tuple[int, int]], cx: int, cy: int, row: int,
@@ -257,13 +298,19 @@ class FogGrid:
         for i in range(RAY_COUNT):
             dx, dy = _COS[i], _SIN[i]
             dist = 0.0
+            hit = False
             while dist < radius_px:
                 dist += step
                 tx, ty = int((px + dx * dist) // TILE), int((py + dy * dist) // TILE)
                 vis.add((tx, ty))
                 if self.is_wall(tx, ty):
+                    hit = True
                     break
-            dists.append(dist)
+            # Promień zatrzymuje się na WEJŚCIU w kafel ściany, więc sam kafel
+            # zostawał poza wielokątem i ściana tuż przy graczu świeciła się
+            # najciemniejszym poziomem mgły. Przedłużenie o jeden kafel oświetla
+            # jej lico tak samo, jak robi to shadowcast (który liczy w kaflach).
+            dists.append(dist + TILE if hit else dist)
         self.visible = vis
         self.vis_alpha = {}
         self.ray_origin = (px, py)
@@ -350,12 +397,18 @@ class Prototype:
 
         self.t_fog = 0.0        # ms - liczenie widoczności
         self.t_compose = 0.0    # ms - złożenie nakładki na klatkę
+        self.chest_images = load_chest_images()
+        self.props: list[tuple[pygame.Surface, tuple[int, int]]] = []
         self.build_level()
 
     # ---------------------------------------------------------------- budowa mapy
 
     def build_level(self) -> None:
-        cols, rows = self.configs.get(self.level, self.configs[max(self.configs)])
+        cols, rows, chest_count = self.configs.get(self.level, self.configs[max(self.configs)])
+        # ten sam warunek co w `map_loader.load_map`: `analyze_maze` cache'uje ścieżki
+        # A* po współrzędnych, więc bez czyszczenia drugi labirynt dostaje trasy
+        # z pierwszego (i wejście/wyjście lądują w bzdurnych miejscach)
+        clear_maze_cache()
         rng = random.Random(self.seed)
         maze = HuntAndKillMaze(cols, rows)
         maze.generate(rng)
@@ -369,6 +422,7 @@ class Prototype:
         self.tmx = tmx
         self.maze = maze
         self.stats = stats
+        self.build_props(maze, stats, rng, chest_count)
 
         self.map_view = pyscroll.BufferedRenderer(
             data=pyscroll.data.TiledMapData(tmx),
@@ -379,13 +433,62 @@ class Prototype:
 
         walls = tmx.get_layer_by_name("walls")
         blocked = [[bool(gid) for gid in row] for row in walls.data]
+        previous = getattr(self, "fog", None)
         self.fog = FogGrid(blocked)
+        if previous is not None:
+            # nastawy przeżywają [R] i zmianę poziomu - inaczej każde porównanie
+            # dwóch labiryntów zaczyna się od ustawiania suwaków od nowa
+            self.fog.core_tiles = previous.core_tiles
+        self._props_scaled: dict[float, list[tuple[pygame.Surface, tuple[int, int]]]] = {}
 
         # start gracza tam, gdzie gra go stawia (kafel wejścia na poziom)
         sx, sy = stats["start"]
         self.px = float((MARGIN + sx * SUBTILE_COLS + SUBTILE_COLS // 2) * TILE)
         self.py = float((MARGIN + sy * SUBTILE_ROWS + SUBTILE_ROWS // 2) * TILE)
         self.recompute_fog(force=True)
+
+    def build_props(self, maze: HuntAndKillMaze, stats: dict[str, Any],
+                    rng: random.Random, chest_count: int) -> None:
+        """Skrzynie jako sprite'y - w grze nie są kaflami, tylko obiektami.
+
+        Drzwi, schody i dekoracje ścian to warstwy kafli i rysuje je pyscroll same
+        z siebie (jest ich rzadko: ok. 15 na mapę 66x48, więc łatwo trafić na
+        korytarz bez żadnej). Skrzyń pyscroll nie narysuje, bo powstają dopiero w
+        `map_loader.load_interactions` - tutaj powtarzam sam algorytm rozstawienia
+        (ślepe zaułki bez startu i mety, losowanie z `maze_rng`), żeby pozycje
+        wypadały tam, gdzie w grze.
+        """
+        props: list[tuple[pygame.Surface, tuple[int, int]]] = []
+        big = self.chest_images["big_chest"]
+        small = self.chest_images["small_chest"]
+
+        for layer in self.tmx.layers:
+            objects = getattr(layer, "objects", None)
+            if objects is None:
+                continue
+            for obj in layer:
+                if obj.name == "BigChest_Maze":
+                    props.append((big, (int(obj.x), int(obj.y))))
+
+        candidates = find_dead_ends(maze)
+        for key in ("start", "end"):
+            if stats[key] in candidates:
+                candidates.remove(stats[key])
+        for cx, cy in rng.sample(candidates, min(chest_count, len(candidates))):
+            off = IMAGE_DIRECTION_TO_CHEST[maze.cell_rows[cy][cx].image_index]
+            props.append((small, ((MARGIN + cx * SUBTILE_COLS + off[0]) * TILE,
+                                  (MARGIN + cy * SUBTILE_ROWS + off[1]) * TILE)))
+        self.props = props
+
+    def draw_props(self, screen: pygame.Surface) -> None:
+        """Sprite'y rysowane PRZED nakładką - mgła ma je gasić tak jak mapę."""
+        zoom = round(self.map_view.zoom, 2)
+        scaled = self._props_scaled.get(zoom)
+        if scaled is None:
+            scaled = [(pygame.transform.scale_by(img, zoom), pos) for img, pos in self.props]
+            self._props_scaled[zoom] = scaled
+        for img, pos in scaled:
+            screen.blit(img, self.map_view.translate_point(pos))
 
     # ---------------------------------------------------------------- logika
 
@@ -532,20 +635,22 @@ class Prototype:
         Trzy kolory zamiast jednej ściany tekstu - przy ośmiu przełącznikach
         czytanie "co jest teraz ustawione" ma być rzutem oka, nie parsowaniem.
         """
-        cols, rows = self.configs.get(self.level, self.configs[max(self.configs)])
+        cols, rows, _chests = self.configs.get(self.level, self.configs[max(self.configs)])
         pct = 100.0 * len(self.fog.discovered) / (self.fog.w * self.fog.h)
-        k, la, v, n = C_KEY, C_LABEL, C_VALUE, C_NUMBER
+        la, v, n = C_LABEL, C_VALUE, C_NUMBER
+        seg = _key_segments  # [nawias szary] [klawisz pomarańczowy] etykieta wartość
         lines: list[list[tuple[str, tuple[int, int, int]]]] = [
-            [("[F]", k), (" mode ", la), (MODES[self.mode], v),
-             ("   [G]", k), (" memory ", la), ("hard" if not self.soft_edges else "soft", v),
-             ("   [B]", k), (" upscale ", la), ("smooth" if self.smooth_upscale else "nearest", v)],
-            [("[ [ ]", k), (" range ", la), (f"{self.vision_tiles} tiles", v),
-             ("   [ , . ]", k), (" alpha ", la), (f"{self.memory_alpha}", v),
-             ("   [L]", k), (" game halo ", la), ("on" if self.show_light else "off", v)],
-            [("[1-4]", k), (" level ", la), (f"{self.level}", v),
+            [*seg("F", "mode", MODES[self.mode]),
+             *seg("G", "memory", "hard" if not self.soft_edges else "soft"),
+             *seg("B", "upscale", "smooth" if self.smooth_upscale else "nearest")],
+            [*seg("[ ]", "range", f"{self.vision_tiles} tiles"),
+             *seg("O P", "core", f"{self.fog.core_tiles:g} tiles"),
+             *seg(", .", "alpha", f"{self.memory_alpha}"),
+             *seg("L", "game halo", "on" if self.show_light else "off")],
+            [*seg("1-4", "level", f"{self.level}"),
              (f" ({cols}x{rows} cells = {self.fog.w}x{self.fog.h} tiles)", la),
-             ("   [R]", k), (" seed ", la), (f"{self.seed}", v),
-             ("   [C]", k), (" clear", la), ("   [M]", k), (" map overview", la)],
+             *seg("R", "seed", f"{self.seed}"),
+             *seg("C", "clear"), *seg("M", "map overview")],
             [("fog ", la), (f"{self.t_fog:.2f} ms", n),
              ("   overlay ", la), (f"{self.t_compose:.2f} ms", n),
              ("   FPS ", la), (f"{self.clock.get_fps():.1f}", n),
@@ -568,6 +673,7 @@ class Prototype:
     def draw(self) -> None:
         self.map_view.center((self.px, self.py))
         self.map_view.draw(self.screen, self.screen.get_rect())
+        self.draw_props(self.screen)
         self.draw_player(self.screen)
         self.compose_fog(self.screen)
         self.draw_hud(self.screen)
@@ -597,6 +703,12 @@ class Prototype:
             self.recompute_fog(force=True)
         elif key == pygame.K_LEFTBRACKET:
             self.vision_tiles = max(2, self.vision_tiles - 1)
+            self.recompute_fog(force=True)
+        elif key == pygame.K_p:
+            self.fog.core_tiles = min(8.0, self.fog.core_tiles + 0.5)
+            self.recompute_fog(force=True)
+        elif key == pygame.K_o:
+            self.fog.core_tiles = max(0.0, self.fog.core_tiles - 0.5)
             self.recompute_fog(force=True)
         elif key == pygame.K_PERIOD:
             self.memory_alpha = max(ALPHA_VISIBLE_EDGE, self.memory_alpha - 5)
