@@ -329,10 +329,9 @@ class FogGrid:
         więc zza rogu wychyla się wąski klin światła, a nie schodkowy zbiór kafli.
         To wariant "ładniejszy i droższy" z opisu zadania.
         """
-        vis: set[tuple[int, int]] = set()
         dists: list[float] = []
-        # najbliższe trafienie każdego kafla ściany - z tego liczy się jego jasność
-        wall_hit: dict[tuple[int, int], float] = {}
+        # najbliższe trafienie każdego kafla - z tego liczy się jego jasność
+        hit_dist: dict[tuple[int, int], float] = {}
         step = TILE * 0.34  # krok próbkowania - 1/3 kafla wystarcza przy 16 px
         for i in range(RAY_COUNT):
             dx, dy = _COS[i], _SIN[i]
@@ -342,7 +341,8 @@ class FogGrid:
             while dist < radius_px:
                 dist += step
                 tx, ty = int((px + dx * dist) // TILE), int((py + dy * dist) // TILE)
-                vis.add((tx, ty))
+                if hit_dist.get((tx, ty), 1e9) > dist:
+                    hit_dist[(tx, ty)] = dist
                 if self.is_wall(tx, ty):
                     hit = True
                     break
@@ -354,21 +354,19 @@ class FogGrid:
                 # Ścianę oświetla teraz MASKA (jak w shadowcaście), a wielokąt
                 # odpowiada już tylko za podłogę.
                 dist = _tile_entry(px, py, dx, dy, tx, ty)
-                if wall_hit.get((tx, ty), 1e9) > dist:
-                    wall_hit[(tx, ty)] = dist
             dists.append(dist)
-        self.visible = vis
+        self.visible = set(hit_dist)
         self.ray_origin = (px, py)
         self.ray_dist = dists
-        self._grade_walls(wall_hit, float(radius_px) / TILE)
+        self._grade_hits(hit_dist, float(radius_px) / TILE)
 
-    def _grade_walls(self, wall_hit: dict[tuple[int, int], float], radius: float) -> None:
-        """Jasność kafli ścian trafionych promieniem - tą samą krzywą co wielokąt."""
+    def _grade_hits(self, hit_dist: dict[tuple[int, int], float], radius: float) -> None:
+        """Jasność kafli trafionych promieniem - tą samą krzywą co pierścienie."""
         span = ALPHA_VISIBLE_EDGE - ALPHA_CLEAR
         core = min(CLEAR_TILES_RAYCAST, radius * 0.8)
         ramp = max(0.001, radius - core)
         alpha: dict[tuple[int, int], int] = {}
-        for tile, dist in wall_hit.items():
+        for tile, dist in hit_dist.items():
             d = dist / TILE
             if d <= core:
                 alpha[tile] = ALPHA_CLEAR
@@ -381,16 +379,16 @@ class FogGrid:
 
     # ---------------------------------------------------------------- maska
 
-    def commit(self, memory_alpha: int, fallback: int) -> None:
+    def commit(self, memory_alpha: int, floor_from_polygon: bool) -> None:
         """Wpisz bieżącą widoczność do maski (i do pamięci odkrycia).
 
         Trzy stany zapisane jako trzy wartości alfy w jednej powierzchni:
         nieodkryte zostaje 255, odkryte spada do ``memory_alpha``, widoczne do
         wartości z ``vis_alpha``. Zapis jest per kafel i tylko przy zmianie
-        widoczności. ``fallback`` to alfa dla widocznego kafla spoza ``vis_alpha``:
-        w trybach kafelkowych ``ALPHA_CLEAR`` (maska rysuje wszystko), w raycascie
-        ``memory_alpha``, bo tam podłogę rozjaśnia wielokąt, a maska odpowiada
-        tylko za ściany.
+        widoczności. ``floor_from_polygon`` (raycast) mówi, że jasność PODŁOGI
+        rysuje wielokąt z dokładnością do piksela, więc maska zapisuje dla niej
+        tylko pamięć - ale jasność z ``vis_alpha`` i tak jest potrzebna, bo to
+        z niej biorą jasność ściany dookoła.
         """
         mask = self.mask
         # 1. skasuj poprzednią widoczność do poziomu pamięci
@@ -399,13 +397,28 @@ class FogGrid:
                 mask.set_at((x, y), (*FOG_COLOR, memory_alpha))
         # 2. wpisz nową
         written: dict[tuple[int, int], int] = {}
+        bright: dict[tuple[int, int], int] = {}
         for (x, y) in self.visible:
             if 0 <= x < self.w and 0 <= y < self.h:
-                written[(x, y)] = self.vis_alpha.get((x, y), fallback)
-        # 3. dolej kafle "solid" stykające się z widocznymi (patrz `self.solid`),
-        # ale TYLKO do poziomu pamięci. Dolewanie ich z jasnością kafla źródłowego
-        # rozświetlało ścianę o kafel za głęboko - wyglądało, jakby gracz widział
-        # w jej wnętrze. Chodzi wyłącznie o to, żeby nie zostawały czarne.
+                a = self.vis_alpha.get((x, y), ALPHA_CLEAR)
+                bright[(x, y)] = a
+                written[(x, y)] = memory_alpha if (floor_from_polygon and not self.solid[y][x]) else a
+        # 3. Kafle "solid" (ściana albo wnętrze bloku ściany) w dwóch krokach, bo
+        # to dwie różne sytuacje:
+        #  a) ściana stykająca się z WIDOCZNĄ PODŁOGĄ to lico ściany - gracz je
+        #     widzi, więc dostaje jasność tej podłogi. Bez tego kafel ściany,
+        #     w który przypadkiem nie trafił żaden promień (bo zasłoniły go
+        #     sąsiednie), zostaje czarnym kwadratem pośrodku oświetlonego korytarza;
+        #  b) każdy inny solid dotknięty widocznością dostaje tylko poziom PAMIĘCI
+        #     - ma nie być czarny, ale też nie udawać, że gracz widzi w głąb ściany.
+        for (x, y), a in bright.items():
+            if self.solid[y][x]:
+                continue
+            for nx in (x - 1, x, x + 1):
+                for ny in (y - 1, y, y + 1):
+                    if 0 <= nx < self.w and 0 <= ny < self.h and self.solid[ny][nx]:
+                        if written.get((nx, ny), 256) > a:
+                            written[(nx, ny)] = a
         for (x, y) in list(written):
             for nx in (x - 1, x, x + 1):
                 for ny in (y - 1, y, y + 1):
@@ -615,8 +628,7 @@ class Prototype:
             self.fog.compute_raycast(self.px, self.py, self.vision_tiles * TILE)
         self._last_tile = (tx, ty)
         if self.mode:
-            self.fog.commit(self.memory_alpha,
-                            fallback=self.memory_alpha if self.mode == 3 else ALPHA_CLEAR)
+            self.fog.commit(self.memory_alpha, floor_from_polygon=self.mode == 3)
         self.t_fog = (time.perf_counter() - t0) * 1000.0
 
     # ---------------------------------------------------------------- rysowanie
