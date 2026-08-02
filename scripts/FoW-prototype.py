@@ -159,25 +159,27 @@ def load_chest_images() -> dict[str, pygame.Surface]:
     return out
 
 
-def _tile_exit(px: float, py: float, dx: float, dy: float, tx: int, ty: int) -> float:
-    """Dystans, na którym promień (px,py)+t*(dx,dy) wychodzi z kafla (tx,ty).
+def _tile_entry(px: float, py: float, dx: float, dy: float, tx: int, ty: int) -> float:
+    """Dystans, na którym promień (px,py)+t*(dx,dy) WCHODZI w kafel (tx,ty).
 
-    Czyli: dokładnie lico ściany i ani piksela dalej.
+    Krok próbkowania promienia jest zgrubny (1/3 kafla), więc surowy dystans
+    trafienia skacze między sąsiednimi promieniami i wielokąt dostaje ząbki.
+    Dokładne przecięcie z krawędzią kafla daje gładki obrys.
     """
-    big = 1e9
+    small = -1e9
     if dx > 1e-9:
-        ex = ((tx + 1) * TILE - px) / dx
-    elif dx < -1e-9:
         ex = (tx * TILE - px) / dx
+    elif dx < -1e-9:
+        ex = ((tx + 1) * TILE - px) / dx
     else:
-        ex = big
+        ex = small
     if dy > 1e-9:
-        ey = ((ty + 1) * TILE - py) / dy
-    elif dy < -1e-9:
         ey = (ty * TILE - py) / dy
+    elif dy < -1e-9:
+        ey = ((ty + 1) * TILE - py) / dy
     else:
-        ey = big
-    return min(ex, ey)
+        ey = small
+    return max(ex, ey)
 
 
 #################################################################################################################
@@ -329,6 +331,8 @@ class FogGrid:
         """
         vis: set[tuple[int, int]] = set()
         dists: list[float] = []
+        # najbliższe trafienie każdego kafla ściany - z tego liczy się jego jasność
+        wall_hit: dict[tuple[int, int], float] = {}
         step = TILE * 0.34  # krok próbkowania - 1/3 kafla wystarcza przy 16 px
         for i in range(RAY_COUNT):
             dx, dy = _COS[i], _SIN[i]
@@ -342,28 +346,51 @@ class FogGrid:
                 if self.is_wall(tx, ty):
                     hit = True
                     break
-            # Promień zatrzymuje się na WEJŚCIU w kafel ściany, więc sam kafel
-            # zostawał poza wielokątem i ściana tuż przy graczu świeciła się
-            # najciemniejszym poziomem mgły. Przedłużamy do miejsca, w którym
-            # promień OPUSZCZA ten kafel - nie o stałe 16 px, bo przy trafieniu
-            # tuż przy dalszej krawędzi wchodziło się w kafel za ścianą i zdradzało
-            # kawałek sąsiedniego korytarza.
-            dists.append(_tile_exit(px, py, dx, dy, tx, ty) if hit else dist)
+            if hit:
+                # Wielokąt kończy się DOKŁADNIE na licu ściany. Wcześniej był
+                # przedłużany na trafiony kafel, żeby ściana się świeciła - ale
+                # sąsiednie promienie trafiają w różne kafle, więc obrys skakał
+                # o cały kafel i zostawiał na ścianie czarne, schodkowane wcięcia.
+                # Ścianę oświetla teraz MASKA (jak w shadowcaście), a wielokąt
+                # odpowiada już tylko za podłogę.
+                dist = _tile_entry(px, py, dx, dy, tx, ty)
+                if wall_hit.get((tx, ty), 1e9) > dist:
+                    wall_hit[(tx, ty)] = dist
+            dists.append(dist)
         self.visible = vis
-        self.vis_alpha = {}
         self.ray_origin = (px, py)
         self.ray_dist = dists
+        self._grade_walls(wall_hit, float(radius_px) / TILE)
+
+    def _grade_walls(self, wall_hit: dict[tuple[int, int], float], radius: float) -> None:
+        """Jasność kafli ścian trafionych promieniem - tą samą krzywą co wielokąt."""
+        span = ALPHA_VISIBLE_EDGE - ALPHA_CLEAR
+        core = min(CLEAR_TILES_RAYCAST, radius * 0.8)
+        ramp = max(0.001, radius - core)
+        alpha: dict[tuple[int, int], int] = {}
+        for tile, dist in wall_hit.items():
+            d = dist / TILE
+            if d <= core:
+                alpha[tile] = ALPHA_CLEAR
+            else:
+                t = min(1.0, (d - core) / ramp)
+                if self.steps:
+                    t = math.ceil(t * self.steps) / self.steps
+                alpha[tile] = ALPHA_CLEAR + int(span * t ** 1.4)
+        self.vis_alpha = alpha
 
     # ---------------------------------------------------------------- maska
 
-    def commit(self, memory_alpha: int, bright: bool) -> None:
+    def commit(self, memory_alpha: int, fallback: int) -> None:
         """Wpisz bieżącą widoczność do maski (i do pamięci odkrycia).
 
         Trzy stany zapisane jako trzy wartości alfy w jednej powierzchni:
         nieodkryte zostaje 255, odkryte spada do ``memory_alpha``, widoczne do
         wartości z ``vis_alpha``. Zapis jest per kafel i tylko przy zmianie
-        widoczności. ``bright=False`` (raycast) wpisuje wyłącznie pamięć - jasność
-        pola widzenia rysuje wtedy wielokąt, z dokładnością do piksela.
+        widoczności. ``fallback`` to alfa dla widocznego kafla spoza ``vis_alpha``:
+        w trybach kafelkowych ``ALPHA_CLEAR`` (maska rysuje wszystko), w raycascie
+        ``memory_alpha``, bo tam podłogę rozjaśnia wielokąt, a maska odpowiada
+        tylko za ściany.
         """
         mask = self.mask
         # 1. skasuj poprzednią widoczność do poziomu pamięci
@@ -374,20 +401,22 @@ class FogGrid:
         written: dict[tuple[int, int], int] = {}
         for (x, y) in self.visible:
             if 0 <= x < self.w and 0 <= y < self.h:
-                written[(x, y)] = self.vis_alpha.get((x, y), ALPHA_CLEAR) if bright else memory_alpha
-        # 3. dolej kafle "solid" stykające się z widocznymi (patrz `self.solid`).
-        # Tylko solid - dolanie zwykłej podłogi zdradzałoby korytarz za ścianą.
-        for (x, y), a in list(written.items()):
+                written[(x, y)] = self.vis_alpha.get((x, y), fallback)
+        # 3. dolej kafle "solid" stykające się z widocznymi (patrz `self.solid`),
+        # ale TYLKO do poziomu pamięci. Dolewanie ich z jasnością kafla źródłowego
+        # rozświetlało ścianę o kafel za głęboko - wyglądało, jakby gracz widział
+        # w jej wnętrze. Chodzi wyłącznie o to, żeby nie zostawały czarne.
+        for (x, y) in list(written):
             for nx in (x - 1, x, x + 1):
                 for ny in (y - 1, y, y + 1):
                     if 0 <= nx < self.w and 0 <= ny < self.h and self.solid[ny][nx]:
-                        if written.get((nx, ny), 256) > a:
-                            written[(nx, ny)] = a
+                        if (nx, ny) not in written:
+                            written[(nx, ny)] = memory_alpha
         for (x, y), a in written.items():
             mask.set_at((x, y), (*FOG_COLOR, a))
         seen = set(written)
         self.discovered |= seen
-        self._last_visible = seen if bright else set()
+        self._last_visible = seen
 
     def refill_memory(self, memory_alpha: int) -> None:
         """Przemaluj pamięć po zmianie suwaka jasności (tylko prototyp)."""
@@ -570,7 +599,7 @@ class Prototype:
     def recompute_fog(self, force: bool = False) -> None:
         """Policz widoczność. Modele kafelkowe - tylko przy zmianie kafla."""
         t0 = time.perf_counter()
-        self.fog.steps = self.steps_grid
+        self.fog.steps = self.steps_ray if self.mode == 3 else self.steps_grid
         tx, ty = int(self.px // TILE), int(self.py // TILE)
         last = getattr(self, "_last_tile", None)
         if self.mode == 0:
@@ -586,7 +615,8 @@ class Prototype:
             self.fog.compute_raycast(self.px, self.py, self.vision_tiles * TILE)
         self._last_tile = (tx, ty)
         if self.mode:
-            self.fog.commit(self.memory_alpha, bright=self.mode != 3)
+            self.fog.commit(self.memory_alpha,
+                            fallback=self.memory_alpha if self.mode == 3 else ALPHA_CLEAR)
         self.t_fog = (time.perf_counter() - t0) * 1000.0
 
     # ---------------------------------------------------------------- rysowanie
