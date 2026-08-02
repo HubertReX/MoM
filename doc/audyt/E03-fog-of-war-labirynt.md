@@ -28,6 +28,26 @@ Trzy stany widoczności kafla labiryntu, a nie dwa:
 Stan odkrycia jest **per poziom labiryntu**, przeżywa wyjście na inny poziom i powrót,
 i przeżywa zapis gry.
 
+## Etap 0a: działający prototyp (zrobiony 2026-08-01)
+
+`scripts/FoW-prototype.py`, uruchamiany przez `just fow-prototype` - buduje prawdziwy
+labirynt tym samym kodem co gra (`HuntAndKillMaze` + `build_tileset_map_from_maze` +
+`pyscroll`, zoom 3,8, tileset Ninja) i pozwala porównać na żywo cztery tryby
+widoczności (`F`): dzisiejsza noc / promień bez LOS / shadowcast na kaflach / raycast
+wielokątem. Zostaje w repo na stałe jako poligon do strojenia wyglądu.
+
+Co już z niego wiadomo:
+
+- mgła mieści się w tej samej powierzchni 1/`FILTER_SCALE` co filtr nocy - maska ma
+  1 piksel na kafel i skaluje się z wycinka widoku, więc **nie ma** drugiego
+  pełnoekranowego `transform.scale`;
+- desktop 1280x720, labirynt 78x60 kafli: sam filtr nocy 0,56 ms, + mgła kafelkowa
+  0,55-0,58 ms, + raycast 0,67-0,76 ms nakładki i 0,16-0,19 ms na 180 promieni;
+- pułapka geometryczna: pierścienie gradientu trzeba ucinać na
+  `min(dystans_do_ściany, k * zasięg)`. Przy `dystans_do_ściany * k` wszystkie
+  pierścienie kurczą się przy ścianie i środek jasności ucieka od niej - wygląda
+  jak źle wycentrowana aureola.
+
 ## Etap 0: dokument decyzyjny (bramka akceptacji)
 
 Zanim powstanie kod: `doc/_attachements/fog-of-war-<data>.html` + skrót md, z tabelami

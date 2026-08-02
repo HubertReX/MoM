@@ -63,6 +63,19 @@ serve-web *args:
     #!powershell
     .venv\Scripts\python.exe -m pygbag --ume_block 0 --template scripts/pygbag/black.tmpl --icon project/assets/icon.png --no_opt {{args}} project
 
+# Fog of War prototype (E03): real maze + tileset, four visibility modes compared live. e.g: `--level 3 --seed 42`, `--shots <dir>` for headless screenshots
+[unix]
+fow-prototype *args:
+    export PYGAME_HIDE_SUPPORT_PROMPT=1
+    .venv/bin/python3 scripts/FoW-prototype.py {{args}}
+
+# Fog of War prototype (E03): real maze + tileset, four visibility modes compared live. e.g: `--level 3 --seed 42`, `--shots <dir>` for headless screenshots
+[windows]
+fow-prototype *args:
+    #!powershell
+    $env:PYGAME_HIDE_SUPPORT_PROMPT="1"
+    .venv\Scripts\python.exe scripts\FoW-prototype.py {{args}}
+
 # Run the plain-Python unit tests (no pytest - each `tests/test_*.py` is its own runner). Optional filter: `just test-unit save_load`
 [unix]
 test-unit pattern="" *flags:
