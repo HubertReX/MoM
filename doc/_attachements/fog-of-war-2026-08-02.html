@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoM - E03: mgła wojny w labiryncie (dokument decyzyjny)</title>
+<style>
+  /* ---------- Design tokens (wspólne z raportem audytu 2026-07-25 i dokumentem B01) ---------- */
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  :root[data-theme="dark"] {
+    --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+    --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+    --accent:#748ffc; --accent-soft:#26304d;
+    --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6; font-size: 16px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: var(--s6) var(--s5) var(--s7); }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.45rem; line-height: 1.25; margin: var(--s7) 0 var(--s3);
+       padding-top: var(--s3); border-top: 2px solid var(--border); }
+  h3 { font-size: 1.1rem; margin: var(--s5) 0 var(--s2); }
+  p { margin: 0 0 var(--s4); max-width: 82ch; }
+  ul, ol { max-width: 82ch; }
+  li { margin-bottom: var(--s2); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.08rem; color: var(--muted); max-width: 82ch; }
+  .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s3); }
+  .theme-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .85rem; }
+  code, pre { font-family: var(--mono); font-size: .86em; }
+  code { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 5px; white-space: nowrap; }
+  pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s4); overflow-x: auto; line-height: 1.5; }
+  pre code { background: none; border: none; padding: 0; white-space: pre; }
+  table { border-collapse: collapse; width: 100%; margin: var(--s4) 0 var(--s5);
+    font-size: .92rem; background: var(--surface); border-radius: var(--radius-sm);
+    overflow: hidden; box-shadow: var(--shadow); }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  tr:last-child td { border-bottom: none; }
+  .tablewrap { overflow-x: auto; }
+  .badge { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: .75rem;
+    font-weight: 600; white-space: nowrap; }
+  .b-ok { background: var(--ok-soft); color: var(--ok); }
+  .b-warn { background: var(--warn-soft); color: var(--warn); }
+  .b-err { background: var(--err-soft); color: var(--err); }
+  .b-info { background: var(--info-soft); color: var(--info); }
+  .b-acc { background: var(--accent-soft); color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: var(--s5); margin: var(--s4) 0; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft);
+    border-radius: var(--radius-sm); padding: var(--s4) var(--s5); margin: var(--s4) 0; max-width: 88ch; }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .callout.err { border-color: var(--err); background: var(--err-soft); }
+  .callout.ok { border-color: var(--ok); background: var(--ok-soft); }
+  .callout p:last-child { margin-bottom: 0; }
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); margin: var(--s3) 0; }
+  details summary { cursor: pointer; padding: var(--s3) var(--s4); font-weight: 600; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  details .inner { padding: var(--s4); }
+  .rec td { background: var(--ok-soft); }
+  .fixed td { background: var(--info-soft); }
+  .toc { columns: 2; gap: var(--s6); font-size: .92rem; }
+  .toc a { display: block; padding: 2px 0; }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px;
+    padding: 0 6px; font-family: var(--mono); font-size: .82em; background: var(--surface); }
+  .swatch { display:inline-block; width:14px; height:14px; border-radius:3px; border:1px solid var(--border);
+    vertical-align:-2px; margin-right:6px; }
+  .num { font-variant-numeric: tabular-nums; text-align: right; }
+  .backlink { display:inline-block; margin-top: var(--s5); color: var(--muted); }
+  @media (max-width: 720px) { .toc { columns: 1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <div>
+    <p class="eyebrow">MoM - Faza 4 audytu - zadanie E03 - etap 0 (do akceptacji autora)</p>
+    <h1>Mgła wojny w labiryncie<br><span style="font-size:1.2rem;font-weight:600;color:var(--muted)">dwa algorytmy widoczności, wybór w ustawieniach, potwory jako źródła światła</span></h1>
+    <p class="lead">Dokument decyzyjny przed kodem: reprezentacja odkrycia, dwa algorytmy
+    z prototypu i ich parametry, renderowanie trzech stanów, światło potworów, format zapisu,
+    budżet klatki i plan wykonania. Sesja Opus, 2026-08-02.
+    Kontekst: <a href="audyt-architektury-2026-07-25.html">raport audytu</a>,
+    zadanie <code>doc/audyt/E03-fog-of-war-labirynt.md</code>,
+    prototyp <code>scripts/FoW-prototype.py</code> (<code>just fow-prototype</code>).</p>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">◐ motyw</button>
+</div>
+
+<div class="callout">
+  <p><strong>Bramka akceptacji.</strong> Etap 1 (kod) NIE rusza bez wyraźnego "akceptuję".
+  Decyzje <strong>D1-D11</strong> mają rekomendację (zielony wiersz) - każdą można odwrócić
+  teraz, taniej niż po napisaniu kodu. Wiersze niebieskie to <em>ustalenia autora z tej sesji</em>:
+  nie są przedmiotem wyboru, są tu wpisane, żeby dokument był kompletny.</p>
+</div>
+
+<h2 id="toc">Spis treści</h2>
+<nav class="toc">
+  <a href="#stan">1. Stan obecny i co dał prototyp</a>
+  <a href="#wymagania">2. Wymagania autora (wiążące)</a>
+  <a href="#decyzje">3. Decyzje D1-D11</a>
+  <a href="#stale">4. Stałe do strojenia</a>
+  <a href="#architektura">5. Architektura i przepływ klatki</a>
+  <a href="#zapis">6. Zapis gry i wersjonowanie</a>
+  <a href="#koszt">7. Koszt, pomiary i budżet web</a>
+  <a href="#plan">8. Plan wykonania (6 kroków)</a>
+  <a href="#testy">9. Testy i bramki</a>
+  <a href="#ryzyka">10. Ryzyka i pułapki</a>
+  <a href="#akceptacja">11. Kryteria akceptacji etapu 1</a>
+</nav>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="stan">1. Stan obecny i co dał prototyp</h2>
+
+<p>Dziś labirynt nie ma mgły wojny, tylko <strong>wieczną noc</strong>:
+<code>scene.is_maze</code> wymusza <code>NIGHT_FILTER</code> i wycięcia świateł wokół każdej
+postaci (<code>project/scene/night_filter.py</code>). Efekt ma zero pamięci - korytarz,
+przez który gracz właśnie przeszedł, ciemnieje dokładnie tak samo jak ten, którego nigdy
+nie widział, a aureole świateł <strong>świecą przez ściany</strong> (koło jest rysowane bez
+żadnego badania geometrii poziomu).</p>
+
+<p>Prototyp (<code>just fow-prototype</code>, w repo od 2026-08-01) buduje prawdziwy labirynt
+tym samym kodem co gra i pozwala porównać na żywo cztery tryby. Autor wybrał z nich dwa -
+<strong>raycast wielokątem</strong> i <strong>shadowcast na kaflach</strong> - wraz z nastawami.
+Tryb "radius (no LOS)" odpada (prześwietla ściany, w korytarzu szerokości jednego kafla widać
+to natychmiast).</p>
+
+<h3>Pomiary z prototypu (desktop, mac-mini M4, poziom 4 = 78x60 kafli, headless)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Operacja</th><th class="num">avg</th><th class="num">med</th><th class="num">max</th><th>Uwagi</th></tr>
+  <tr><td>shadowcast, zasięg 4 kafle</td><td class="num">0,025 ms</td><td class="num">0,025</td><td class="num">0,041</td><td>liczone tylko przy zmianie kafla</td></tr>
+  <tr><td>raycast, zasięg 5 kafli, 180 promieni</td><td class="num">0,324 ms</td><td class="num">0,326</td><td class="num">0,429</td><td>liczone przy ruchu</td></tr>
+  <tr><td>raycast, 90 promieni</td><td class="num">0,169 ms</td><td class="num">0,171</td><td class="num">0,221</td><td>rezerwa dla web / dla NPC</td></tr>
+  <tr><td>raycast, 60 promieni</td><td class="num">0,127 ms</td><td class="num">0,119</td><td class="num">0,694</td><td>proponowane dla potworów</td></tr>
+  <tr><td><code>commit</code> (zapis widoczności do maski)</td><td class="num">0,055-0,079 ms</td><td class="num">-</td><td class="num">0,137</td><td>zależy od liczby kafli</td></tr>
+  <tr><td>rysowanie 4 pierścieni-wielokątów</td><td class="num">0,136 ms</td><td class="num">0,137</td><td class="num">0,175</td><td>per obserwator, per klatka</td></tr>
+  <tr><td>rysowanie 2 pierścieni</td><td class="num">0,082 ms</td><td class="num">0,082</td><td class="num">0,091</td><td>proponowane dla potworów</td></tr>
+</table></div>
+
+<h3>Koszt całej nakładki, ten sam pomiar dla trzech wariantów</h3>
+<div class="tablewrap"><table>
+  <tr><th>Wariant</th><th class="num">compose (avg)</th><th>Różnica wobec dziś</th></tr>
+  <tr><td>sama noc (dzisiejszy kod, aureole)</td><td class="num">0,561 ms</td><td>-</td></tr>
+  <tr><td>+ mgła kafelkowa (shadowcast)</td><td class="num">0,572 ms</td><td><span class="badge b-ok">+0,01 ms</span></td></tr>
+  <tr><td>+ mgła raycast (maska + 5 wielokątów)</td><td class="num">0,699 ms</td><td><span class="badge b-ok">+0,14 ms</span></td></tr>
+</table></div>
+
+<p>To jest sedno: <strong>mgła mieści się w tej samej powierzchni filtra, którą gra i tak
+skaluje co klatkę</strong>. Maska ma jeden piksel na kafel (78x60 px), wycinek widoku
+(~24x14 px) skaluje się do 160x90 px - dodatkowy koszt jest w szumie. Warunek twardy z zadania
+("żadnego drugiego pełnoekranowego <code>transform.scale</code>") jest spełniony konstrukcyjnie.</p>
+
+<details>
+  <summary>Wnioski geometryczne z prototypu, których nie wolno zgubić w kodzie produkcyjnym</summary>
+  <div class="inner">
+    <ul>
+      <li><strong>Pierścienie gradientu tnij na <code>min(dystans_do_ściany, k * zasięg)</code>.</strong>
+      Przy <code>dystans_do_ściany * k</code> wszystkie pierścienie kurczą się przy ścianie
+      i środek jasności ucieka od niej - wygląda jak źle wycentrowana aureola.</li>
+      <li><strong>Czarne kwadraty.</strong> Kafle wnętrza bloku ściany (brak kafla w warstwie
+      <code>walls</code> i brak w <code>floor</code>) nie zostaną trafione żadnym promieniem.
+      Bez dolania jasności z sąsiedztwa zostają na alfie 255 pośrodku odkrytego terenu.
+      Dolewać wolno <strong>tylko</strong> kafle "solid" - dolanie zwykłej podłogi zdradza
+      korytarz za ścianą.</li>
+      <li><strong>Wnęki</strong> (kafel podłogi zamknięty ścianami z 3 stron, typowo nisza
+      na skrzynię) nie mają linii wzroku z żadnego z 5 punktów sąsiedniego kafla - traktujemy
+      je jak powierzchnię ściany, inaczej skrzynia, po którą gracz przyszedł, zostaje czarna.</li>
+      <li><strong>Lico ściany bierze jasność od podłogi</strong>, a wielokąt widzenia kończy
+      się dokładnie na licu. Przedłużanie promienia o stałe 16 px wchodziło w kafel za ścianą
+      i pokazywało fragment sąsiedniego korytarza.</li>
+      <li><code>--selftest</code> prototypu (losowy spacer + zliczanie ciemnych kafli w jasnym
+      otoczeniu) istnieje dlatego, że trzy rundy z rzędu poprawka wyglądała dobrze na
+      pojedynczym zrzucie i sypała się po minucie chodzenia. Ten sam licznik przenosimy do
+      testów etapu 1.</li>
+    </ul>
+  </div>
+</details>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="wymagania">2. Wymagania autora (wiążące, poza dyskusją)</h2>
+
+<div class="tablewrap"><table>
+  <tr><th>#</th><th>Wymaganie</th><th>Konsekwencja dla projektu</th></tr>
+  <tr class="fixed"><td>W1</td><td>Zaimplementować <strong>dwa</strong> algorytmy z prototypu.</td>
+      <td>Jedno wspólne API widoczności, dwie implementacje; wspólny "commit" do maski i wspólne
+      renderowanie. Bez trybu "radius".</td></tr>
+  <tr class="fixed"><td>W2</td><td><strong>raycast polygon</strong>: pamięć hard, upscale nearest,
+      zasięg 5 kafli, steps 4.</td>
+      <td>Domyślne wartości stałych <code>FOG_RAYCAST_*</code>; oba skalowania nearest
+      (najtańsza ścieżka, zero <code>smoothscale</code>).</td></tr>
+  <tr class="fixed"><td>W3</td><td><strong>shadowcast tiles</strong>: pamięć hard, upscale nearest,
+      zasięg 4 kafle, steps 4, rdzeń 2 kafle.</td>
+      <td>Stałe <code>FOG_SHADOWCAST_*</code>. Rdzeń 2 przy zasięgu 4 zostawia na gradient
+      2 kafle podzielone na 4 stopnie.</td></tr>
+  <tr class="fixed"><td>W4</td><td>Aktywny algorytm wybierany w <strong>SettingsMenu</strong>.</td>
+      <td>Nowy wiersz w <code>ui/panels/display_settings.py</code> + trwałość w
+      <code>settings.json</code> / localStorage. Wszystkie pozostałe parametry to stałe
+      w <code>settings.py</code> (fine tuning później).</td></tr>
+  <tr class="fixed"><td>W5</td><td>Wokół <strong>potworów</strong> labirynt też ma być rozświetlony,
+      tym samym algorytmem, który jest aktualnie wybrany.</td>
+      <td>Mgła ma listę obserwatorów (gracz + potwory), nie jednego. Rodzi to decyzje D6-D8
+      (cullowanie, limit, czy światło potwora odkrywa mapę).</td></tr>
+  <tr class="fixed"><td>W6</td><td>Aggro potworów zostaje <strong>bez zmian</strong>: potwór rusza
+      w stronę gracza po samym dystansie, także przez ścianę ("nie widzi, ale słyszy").</td>
+      <td><code>characters/movement.py:movement_monster</code> nietknięte. Mgła jest warstwą
+      prezentacji i AI - żadna z decyzji tu nie wolno jej podpiąć pod LoS.</td></tr>
+</table></div>
+
+<div class="callout ok">
+  <p><strong>Ładny efekt uboczny W6.</strong> <code>MONSTER_WAKE_DISTANCE = 100 px = 6,25 kafla</code>
+  jest <em>większy</em> niż zasięg wzroku gracza (5 kafli w raycaście, 4 w shadowcaście).
+  Potwór więc zawsze zaczyna iść w stronę gracza, zanim gracz go zobaczy - dokładnie ten
+  dreszcz, o który chodzi ("coś mnie usłyszało"). Jeśli po zagraniu okaże się to za ostre,
+  regulatorem jest <code>MONSTER_WAKE_DISTANCE</code>, a nie zasięg mgły.</p>
+</div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="decyzje">3. Decyzje D1-D11</h2>
+
+<p>Każda tabela: opcje, za, przeciw, rekomendacja (zielony wiersz).</p>
+
+<h3 id="d1">D1. Reprezentacja odkrycia (co dokładnie pamiętamy)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Bitset po KAFLACH + maska <code>Surface</code></strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td><code>bytearray</code> o rozmiarze <code>ceil(w*h/8)</code> (78x60 = 585 B) jako
+      prawda o odkryciu + <code>pygame.Surface(w, h, SRCALPHA)</code> jako
+      gotowa-do-rysowania maska alfy. Jedno i drugie w tym samym obiekcie stanu.</td>
+      <td>maska JEST danymi do rysowania (zero konwersji per klatka - to właśnie robi
+      prototyp), granulacja kafla zgadza się z tym, co widać, zapis w 585 B na poziom,
+      odporne na zniszczalne ściany (odkrycie siedzi na kaflu, nie na ścieżce)</td>
+      <td>dwa równoległe pojemniki na tę samą informację - trzeba je zmieniać w jednym miejscu
+      (<code>commit</code>)</td></tr>
+  <tr><td>B. <code>set[(x, y)]</code> odwiedzonych kafli</td>
+      <td>Zbiór krotek, maska budowana z niego.</td>
+      <td>najprostsze w Pythonie</td>
+      <td>przy 4680 kaflach zapis to lista 4680 par w JSON (dziesiątki kB zamiast 780 B),
+      a i tak trzeba trzymać maskę obok</td></tr>
+  <tr><td>C. Bitset po KOMÓRKACH labiryntu (12x9 = 108 bitów)</td>
+      <td>Odkrycie per komórka siatki generatora, kafel dziedziczy po komórce.</td>
+      <td>13 bajtów na poziom, naturalne dla <code>maze_generator</code></td>
+      <td>komórka to 6x6 kafli - zerknięcie zza rogu odkrywa cały segment razem ze ścianami
+      i skrzynią w niszy; mgła przestaje wyglądać jak mgła</td></tr>
+</table></div>
+
+<h3 id="d2">D2. Gdzie żyje stan mgły</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. <code>scene.fog</code> + wpis w <code>MAP_PROPERTIES</code></strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Obiekt <code>FogState</code> budowany w <code>load_map</code>, trzymany na scenie
+      jak <code>path_finding_grid</code>, wpisany do <code>scene/map_state.py:MAP_PROPERTIES</code>,
+      więc <code>store_map</code>/<code>restore_map</code> przenoszą go razem z resztą mapy.</td>
+      <td>dokładnie ten sam mechanizm, który już przenosi <code>destroyed_walls</code> i siatkę
+      A*; przeżywa zejście na inny poziom i powrót; <code>clear_maze_cache()</code> go nie
+      dotyka (czyści tylko cache A* w <code>maze_utils</code>)</td>
+      <td>dochodzi jedna pozycja do listy kontraktowej K1 (trzeba ją też czytać z
+      <code>loaded_maps</code> przy budowie zapisu)</td></tr>
+  <tr><td>B. W obiekcie <code>Maze</code> (<code>maze_generator/maze.py</code>)</td>
+      <td>Tak sugerował szkic w zadaniu.</td>
+      <td>"mgła labiryntu w labiryncie"</td>
+      <td><code>Maze</code> to siatka KOMÓREK, a mgła jest kafelkowa i potrzebuje warstw
+      <code>walls</code>/<code>floor</code> z TMX - dokładanie jej tam miesza dwie
+      rozdzielczości w jednej klasie i utrudnia ewentualne włączenie mgły na innej mapie</td></tr>
+  <tr><td>C. Globalny słownik w module mgły</td>
+      <td><code>_FOG_BY_MAP: dict[str, FogState]</code></td>
+      <td>zero zmian w <code>Scene</code></td>
+      <td>drugie źródło prawdy o mapach obok <code>loaded_maps</code>; zapis i czyszczenie
+      przy nowej grze trzeba by pamiętać osobno (klasyczne miejsce na wyciek stanu między
+      partiami)</td></tr>
+</table></div>
+
+<h3 id="d3">D3. Wybór algorytmu w UI: ile pozycji ma mieć wiersz w ustawieniach</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Trzy pozycje: <code>wyłączona / promienie / kafle</code></strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Wiersz "Mgła wojny: &lt; ... &gt;" cyklowany strzałkami, jak rozdzielczość i głośności.
+      "Wyłączona" = dzisiejszy wygląd (wieczna noc + aureole).</td>
+      <td>porównanie A/B bez restartu i bez prototypu; awaryjne wyjście na słabym sprzęcie
+      web; zerowe ryzyko regresji ("było lepiej" da się natychmiast pokazać)</td>
+      <td>trzy stany do przetestowania zamiast dwóch</td></tr>
+  <tr><td>B. Dwie pozycje (tylko dwa algorytmy)</td>
+      <td>Mgła zawsze włączona.</td>
+      <td>prostsze; mniej kombinacji</td>
+      <td>brak drogi odwrotu w grze; regresja wizualna wymaga edycji kodu</td></tr>
+  <tr><td>C. Osobny przełącznik on/off + wybór algorytmu (dwa wiersze)</td>
+      <td>Jak w prototypie (<kbd class="kbd">F</kbd> osobno od reszty).</td>
+      <td>ortogonalne</td>
+      <td>dwa wiersze w i tak rosnącym panelu, a stan "wyłączona + raycast" nic nie znaczy</td></tr>
+</table></div>
+
+<h3 id="d4">D4. Trwałość wyboru</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. <code>settings.json</code> / localStorage, pole
+      <code>fog_algorithm</code>, BEZ podbicia <code>CURRENT_VERSION</code></strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Dokładnie ten sam wzór co głośności z D01: nowe pole z wartością domyślną
+      w <code>DisplaySettings</code> + <code>raw.get("fog_algorithm", ...)</code>.</td>
+      <td>preferencja gracza, nie stan świata - nie ma prawa siedzieć w slocie zapisu ani
+      dotykać bramki wersji save; wybór przeżywa restart na desktopie i na web</td>
+      <td>-</td></tr>
+  <tr><td>B. Podbicie <code>CURRENT_VERSION</code> w <code>display_settings.py</code></td>
+      <td>Wersja 1 → 2.</td>
+      <td>"czysto"</td>
+      <td><code>_parse_settings</code> przy niezgodnej wersji zwraca CAŁE domyślne ustawienia -
+      graczowi wyzerowałaby się rozdzielczość, język i wszystkie trzy głośności. Pułapka
+      udokumentowana już przy D01.</td></tr>
+</table></div>
+
+<h3 id="d5">D5. Renderowanie trzech stanów</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Maska podmienia <code>fill()</code> w istniejącym filtrze</strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>W <code>apply_time_of_day_filter</code>, gdy <code>scene.is_maze</code> i mgła włączona,
+      zamiast <code>filter_surf.fill(color)</code> leci
+      <code>fog_of_war.compose(scene, filter_surf)</code>: wycinek maski przeskalowany
+      (nearest) i wbity <code>BLEND_RGBA_MIN</code>, a potem opcjonalne wielokąty raycastu.
+      Dalej BEZ ZMIAN dzisiejsza ścieżka <code>overlay</code>/<code>overlay_half</code>.</td>
+      <td>jedno pełnoekranowe skalowanie, tak jak dziś (warunek twardy zadania); tryby
+      kompozycji z E01 działają dalej; +0,01/+0,14 ms zmierzone</td>
+      <td>funkcja filtra dostaje jeszcze jedną gałąź (<code>is_maze and fog</code>)</td></tr>
+  <tr><td>B. Druga warstwa rysowana osobno po filtrze</td>
+      <td>Osobna powierzchnia mgły, drugi blit pełnoekranowy.</td>
+      <td>separacja pojęć</td>
+      <td>drugi pełnoekranowy blit z alfą to na WASM 5,8 ms - dokładnie ten koszt, który
+      usunęło E01. Wprost zakazane w zadaniu.</td></tr>
+  <tr><td>C. Mgła w shaderze</td>
+      <td>Wysłać maskę jako teksturę.</td>
+      <td>najtańsze na desktopie</td>
+      <td><code>USE_SHADERS = False</code>, a decyzja kierunkowa audytu mówi wprost: jedna
+      ścieżka kodu desktop+web bez shaderów</td></tr>
+</table></div>
+
+<div class="callout warn">
+  <p><strong>Wynikające ograniczenie:</strong> tryb <code>NIGHT_FILTER_MODE = "multiply"</code>
+  (jeden <code>fill(BLEND_RGB_MULT)</code>) nie czyta powierzchni filtra, więc <em>nie da się</em>
+  w nim narysować mgły. Propozycja: w labiryncie z włączoną mgłą tryb <code>multiply</code>
+  jest ignorowany i kompozycja idzie ścieżką <code>overlay_half</code> (domyślną). Poza
+  labiryntem <code>multiply</code> działa dalej. To jedna linia w
+  <code>apply_time_of_day_filter</code> i jedno zdanie w AGENTS.md.</p>
+</div>
+
+<h3 id="d6">D6. Które potwory świecą (cullowanie)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Tylko w kadrze + twardy limit N najbliższych</strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Obserwatorem zostaje NPC, którego pozycja mieści się w <code>map_view.view_rect</code>
+      powiększonym o zasięg mgły; z nich bierzemy <code>FOG_NPC_MAX_LIGHTS</code> (domyślnie 3)
+      najbliższych graczowi.</td>
+      <td>koszt niezależny od poziomu labiryntu (poziom 4 = 7 potworów + boss); potwór poza
+      kadrem i tak nie ma czego rozświetlić; limit daje twardy sufit kosztu klatki</td>
+      <td>przy ośmiu potworach stłoczonych w kadrze czwarty i dalszy nie świecą - w praktyce
+      niewidoczne, bo świecą trzy najbliższe</td></tr>
+  <tr><td>B. Wszystkie potwory na mapie</td>
+      <td>Bez cullowania.</td>
+      <td>zero warunków w kodzie</td>
+      <td>8 x raycast = ~2,6 ms na desktopie i wielokrotność tego na web, w większości na
+      kafle, których nikt nie widzi</td></tr>
+  <tr><td>C. Tylko potwory w stanie pościgu (aggro)</td>
+      <td>Świeci ten, który już nas usłyszał.</td>
+      <td>fabularnie: "obudziło się i zapaliło ślepia"</td>
+      <td>potwór stojący w korytarzu przed graczem byłby niewidzialny do momentu aggro -
+      dziś ma aureolę i to jest czytelne ostrzeżenie</td></tr>
+</table></div>
+
+<h3 id="d7">D7. Czy światło potwora odkrywa mapę</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Świeci tylko na kaflach JUŻ ODKRYTYCH przez gracza; nigdy nie
+      dopisuje do pamięci</strong> <span class="badge b-ok">rekomendacja</span></td>
+      <td>Wkład potwora do maski jest przycinany: kafel nieodkryty zostaje na alfie 255.
+      Pamięć odkrycia rośnie wyłącznie od gracza.</td>
+      <td>mgła zostaje mgłą (potwór nie rysuje graczowi mapy); w znanym korytarzu widać
+      nadchodzącą poświatę, czyli dokładnie ten sygnał, który dziś dają aureole - tyle że
+      nie przez ściany; spójne z W6 (słyszysz go, zanim zobaczysz)</td>
+      <td>potwór wędrujący po nieodkrytej części poziomu jest całkiem niewidzialny (co jest
+      poprawne: gracz tam nigdy nie był)</td></tr>
+  <tr><td>B. Świeci wszędzie, także w nieodkrytym terenie</td>
+      <td>Jak dzisiejsza aureola, tylko z LoS.</td>
+      <td>efektowne "coś się świeci w ciemności"</td>
+      <td>wędrujące potwory odkrywają graczowi układ korytarzy - mgła traci sens po kilku
+      minutach stania w miejscu</td></tr>
+  <tr><td>C. Świeci tylko, gdy sam jest w polu widzenia gracza</td>
+      <td>Przycięcie do <code>visible</code>, nie do <code>discovered</code>.</td>
+      <td>najbezpieczniejsze</td>
+      <td>nic nie wnosi: te kafle są już oświetlone przez gracza; efekt "widzę poświatę
+      za rogiem" znika całkowicie</td></tr>
+</table></div>
+
+<h3 id="d8">D8. Parametry światła potworów (te same czy tańsze)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Ten sam algorytm, własne (tańsze) stałe</strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Ten sam kod widoczności, ale <code>FOG_NPC_RAY_COUNT = 60</code>,
+      <code>FOG_NPC_STEPS = 2</code>, <code>FOG_NPC_RANGE_TILES = 3</code>; przeliczanie
+      wyłącznie przy zmianie kafla potwora (także w raycaście).</td>
+      <td>spełnia W5 (ten sam algorytm), a koszt 3 potworów spada z ~1,4 ms do ~0,3 ms;
+      mniejszy zasięg czyta się jako "słabsze światełko potwora", co jest pożądane
+      - gracz ma być najjaśniejszym punktem sceny</td>
+      <td>przy bardzo bliskim potworze widać, że jego wielokąt ma grubsze kąty (60 promieni
+      to co 6 stopni)</td></tr>
+  <tr><td>B. Dokładnie te same parametry co gracz</td>
+      <td>180 promieni, 4 pierścienie, zasięg 5.</td>
+      <td>jedno źródło prawdy o wyglądzie</td>
+      <td>3 potwory = 3 x (0,32 + 0,14) ms na desktopie; na web to ryzykowne bez pomiaru,
+      a wizualnie potwory zaczynają konkurować jasnością z graczem</td></tr>
+  <tr><td>C. Potwory zawsze shadowcastem (nawet gdy gracz ma raycast)</td>
+      <td>Tanie kafle dla NPC.</td>
+      <td>0,025 ms za potwora</td>
+      <td>łamie W5 ("tym samym algorytmem"); dwa style krawędzi w jednym kadrze widać
+      od razu</td></tr>
+</table></div>
+
+<h3 id="d9">D9. Kiedy przeliczać widoczność</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Shadowcast: przy zmianie kafla. Raycast gracza: przy ruchu
+      o &gt;= <code>FOG_RAY_MIN_MOVE_PX</code> (2 px). Potwory: przy zmianie kafla.</strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Wywołanie z <code>Scene.update</code> (system, nie <code>draw</code>), zaraz po
+      ruchu postaci.</td>
+      <td>tak działa prototyp, którego wygląd autor zaakceptował; próg 2 px kasuje przeliczanie
+      przy dryfie subpikselowym i daje twardy sufit ~30 przeliczeń/s przy biegu</td>
+      <td>przy bardzo szybkim ruchu wielokąt jest o klatkę "spóźniony" (niewidoczne przy 60 FPS)</td></tr>
+  <tr><td>B. Wszystko co klatkę</td>
+      <td>Bez warunków.</td>
+      <td>najprostsze</td>
+      <td>0,32 ms x 4 obserwatorów x 60 klatek na darmo, także gdy nikt się nie rusza</td></tr>
+  <tr><td>C. Wszystko tylko przy zmianie kafla (także raycast)</td>
+      <td>Wielokąt przeskakuje co 16 px.</td>
+      <td>najtaniej</td>
+      <td>widoczne "skakanie" pola widzenia przy zoomie 3,8 - to jest cała przewaga raycastu
+      nad shadowcastem, więc jej likwidacja czyni wybór algorytmu bezprzedmiotowym</td></tr>
+</table></div>
+
+<h3 id="d10">D10. Zapis mgły a wersja zapisu</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Nowe pole <code>fog_discovered</code> w <code>MapState</code>
+      z wartością domyślną; <code>VERSION</code> zostaje "0.3"</strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Base64 z bitsetu + <code>fog_w</code>/<code>fog_h</code> do walidacji. Stary zapis:
+      pola nie ma, <code>from_dict</code> wstawia pustą mgłę, poziom wczytuje się normalnie
+      i jest po prostu nieodkryty.</td>
+      <td>polityka B02 mówi to wprost: "dodanie pola z wartością domyślną, którą
+      <code>from_dict</code> wypełnia starym zapisom" = <strong>NIE</strong> wymaga migracji;
+      zero ryzyka dla zapisów autora</td>
+      <td>-</td></tr>
+  <tr><td>B. Podbicie <code>VERSION</code> do "0.4"</td>
+      <td>Jak sugerował szkic w zadaniu.</td>
+      <td>"format się zmienił, więc numer rośnie"</td>
+      <td>przed 1.0 <code>MIN_SUPPORTED_SAVE_CODE == CURRENT_SAVE_CODE</code>, więc podbicie
+      <strong>ODRZUCA wszystkie zapisy 0.3</strong> - efekt dokładnie odwrotny do zapisanego
+      w zadaniu wymagania "stary zapis = mgła pusta, nie odmowa"</td></tr>
+  <tr><td>C. Mgła w osobnym pliku obok zapisu</td>
+      <td>Bo to "dużo danych".</td>
+      <td>zapis zostaje mały</td>
+      <td>780 B na poziom to nie są dużo danych; drugi plik rozjeżdża się ze slotem przy
+      kopiowaniu i na localStorage web</td></tr>
+</table></div>
+
+<h3 id="d11">D11. Wpływ na rozgrywkę (poza wizualnym)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
+  <tr class="rec"><td><strong>A. Prolog: mgła jest wyłącznie wizualna</strong>
+      <span class="badge b-ok">rekomendacja</span></td>
+      <td>Żadnej minimapy, żadnego modyfikatora "gęstsza mgła" w <code>maze_configs.csv</code>,
+      żadnego wpływu na AI ani na questy.</td>
+      <td>zgodne z rekomendacją w zadaniu; mgła i tak zmienia odczucie labiryntu najbardziej
+      ze wszystkiego, co dodaliśmy - warto zobaczyć samą zmianę, bez sprzężeń</td>
+      <td>znalezisko G-5 ("powtarzalność bez haczyka") zostaje otwarte na później</td></tr>
+  <tr><td>B. Od razu modyfikator per poziom w CSV</td>
+      <td>Kolumna <code>fog_range</code> w <code>maze_configs.csv</code>.</td>
+      <td>różnicuje poziomy</td>
+      <td>strojenie balansu, zanim wiadomo, jak gra się z jednym ustawieniem; to domena
+      autora i osobnego zadania</td></tr>
+  <tr><td>C. Minimapa odkrytego terenu</td>
+      <td>Panel z maską w skali.</td>
+      <td>maska jest gotowa, koszt bliski zeru</td>
+      <td>nowy element UI + skrót + design system; osobne zadanie U-, nie E03</td></tr>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="stale">4. Stałe do strojenia (wszystkie w <code>settings.py</code>)</h2>
+
+<p>Wartości wyjściowe = nastawy zaakceptowane przez autora w prototypie (W2, W3). Wszystko poza
+wyborem algorytmu jest stałą kodu - fine tuning po zagraniu, jedną edycją, bez UI.</p>
+
+<div class="tablewrap"><table>
+  <tr><th>Stała</th><th>Wartość</th><th>Znaczenie</th></tr>
+  <tr><td><code>FOG_ALGORITHM</code></td><td><code>"raycast"</code></td>
+      <td>domyślny algorytm; runtime nadpisywany z <code>settings.json</code> i z SettingsMenu.
+      Wartości: <code>"off"</code> / <code>"raycast"</code> / <code>"shadowcast"</code></td></tr>
+  <tr><td><code>FOG_RAYCAST_RANGE_TILES</code></td><td class="num">5</td><td>zasięg wzroku gracza (W2)</td></tr>
+  <tr><td><code>FOG_RAYCAST_CORE_TILES</code></td><td class="num">1,6</td>
+      <td>rdzeń bez przyciemnienia; połowa dzisiejszej aureoli
+      (<code>CIRCLE_RADIUS * FILTER_SCALE / ZOOM_LEVEL / TILE_SIZE / 2</code> = 1,58)</td></tr>
+  <tr><td><code>FOG_RAYCAST_STEPS</code></td><td class="num">4</td><td>liczba pierścieni gradientu (W2)</td></tr>
+  <tr><td><code>FOG_RAY_COUNT</code></td><td class="num">180</td><td>promieni na obserwatora-gracza (co 2 stopnie)</td></tr>
+  <tr><td><code>FOG_RAY_STEP_TILES</code></td><td class="num">0,34</td><td>krok próbkowania promienia (1/3 kafla)</td></tr>
+  <tr><td><code>FOG_RAY_MIN_MOVE_PX</code></td><td class="num">2,0</td><td>próg ruchu, poniżej którego nie przeliczamy raycastu (D9)</td></tr>
+  <tr><td><code>FOG_SHADOWCAST_RANGE_TILES</code></td><td class="num">4</td><td>zasięg wzroku gracza (W3)</td></tr>
+  <tr><td><code>FOG_SHADOWCAST_CORE_TILES</code></td><td class="num">2,0</td><td>rdzeń bez przyciemnienia (W3)</td></tr>
+  <tr><td><code>FOG_SHADOWCAST_STEPS</code></td><td class="num">4</td><td>stopnie kwantyzacji gradientu (W3)</td></tr>
+  <tr><td><code>FOG_ALPHA_UNSEEN</code></td><td class="num">255</td><td>nieodkryte - czerń bez tilesetu</td></tr>
+  <tr><td><code>FOG_ALPHA_REMEMBERED</code></td><td class="num">230</td><td>odkryte poza wzrokiem = dzisiejsza alfa <code>NIGHT_FILTER</code></td></tr>
+  <tr><td><code>FOG_ALPHA_VISIBLE_EDGE</code></td><td class="num">175</td><td>widoczne, na granicy zasięgu</td></tr>
+  <tr><td><code>FOG_ALPHA_CLEAR</code></td><td class="num">0</td><td>rdzeń pola widzenia - obraz nietknięty</td></tr>
+  <tr><td><code>FOG_FALLOFF_EXP</code></td><td class="num">1,4</td><td>wykładnik krzywej gaśnięcia (<code>t ** 1.4</code>)</td></tr>
+  <tr><td><code>FOG_COLOR</code></td><td><span class="swatch" style="background:rgb(0,0,30)"></span><code>(0, 0, 30)</code></td>
+      <td>ten sam odcień co <code>NIGHT_FILTER</code> - mgła i noc muszą być tym samym kolorem</td></tr>
+  <tr><td><code>FOG_MASK_SMOOTH</code></td><td><code>False</code></td><td>skalowanie maski: nearest ("pamięć hard" z W2/W3)</td></tr>
+  <tr><td><code>FOG_UPSCALE_SMOOTH</code></td><td><code>False</code></td><td>skalowanie nakładki na ekran: nearest (W2/W3)</td></tr>
+  <tr><td><code>FOG_NPC_LIGHTS</code></td><td><code>True</code></td><td>czy potwory świecą (W5); wyłącznik awaryjny do pomiarów</td></tr>
+  <tr><td><code>FOG_NPC_MAX_LIGHTS</code></td><td class="num">3</td><td>ilu potworów naraz świeci (D6)</td></tr>
+  <tr><td><code>FOG_NPC_RANGE_TILES</code></td><td class="num">3</td><td>zasięg światła potwora (D8)</td></tr>
+  <tr><td><code>FOG_NPC_RAY_COUNT</code></td><td class="num">60</td><td>promieni na potwora w trybie raycast (D8)</td></tr>
+  <tr><td><code>FOG_NPC_STEPS</code></td><td class="num">2</td><td>pierścieni gradientu potwora (D8)</td></tr>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="architektura">5. Architektura i przepływ klatki</h2>
+
+<h3>Pliki</h3>
+<div class="tablewrap"><table>
+  <tr><th>Plik</th><th>Zmiana</th></tr>
+  <tr><td><code>project/scene/fog_of_war.py</code> <span class="badge b-acc">nowy</span></td>
+      <td>System wg B01 (D1): funkcje przyjmujące <code>scene</code> jawnie + jeden dataclass
+      stanu. Czyste funkcje widoczności (bez pygame) na dole pliku - to one idą do testów.</td></tr>
+  <tr><td><code>project/scene/night_filter.py</code></td>
+      <td>Jedna gałąź: w labiryncie z włączoną mgłą <code>fill(color)</code> zastąpione przez
+      <code>fog_of_war.compose(...)</code>, a pętla aureoli po NPC pominięta (mgła ją zastępuje).</td></tr>
+  <tr><td><code>project/scene/scene.py</code></td>
+      <td>Atrybut <code>fog</code> + wywołanie <code>fog_of_war.update(self)</code> w
+      <code>update</code> (cienki delegat, zero logiki).</td></tr>
+  <tr><td><code>project/scene/map_loader.py</code></td>
+      <td>Budowa <code>FogState</code> po <code>load_walls</code> (potrzebuje warstw
+      <code>walls</code> i <code>floor</code> z TMX).</td></tr>
+  <tr><td><code>project/scene/map_state.py</code></td>
+      <td><code>"fog"</code> dopisane do <code>MAP_PROPERTIES</code>.</td></tr>
+  <tr><td><code>project/save_load/models.py</code></td>
+      <td>Pola <code>fog_discovered</code>, <code>fog_w</code>, <code>fog_h</code> w
+      <code>MapState</code> (+ <code>to_dict</code>/<code>from_dict</code>).</td></tr>
+  <tr><td><code>project/save_load/manager.py</code></td>
+      <td><code>_build_fog(scene)</code> i <code>_build_fog_from_cache(cached)</code> +
+      odtworzenie w <code>_apply_one_map_state</code>.</td></tr>
+  <tr><td><code>project/save_load/display_settings.py</code></td>
+      <td>Pole <code>fog_algorithm</code> (z domyślną, bez podbicia wersji).</td></tr>
+  <tr><td><code>project/ui/panels/display_settings.py</code></td>
+      <td>Wiersz cyklowany "Mgła wojny: &lt; ... &gt;" (typ <code>fog</code>, obsługa w
+      <code>_step_selected</code> i <code>activate</code>).</td></tr>
+  <tr><td><code>project/assets/locale/PL.toml</code>, <code>EN.toml</code></td>
+      <td>Klucze <code>settings.fog</code>, <code>settings.fog_off</code>,
+      <code>settings.fog_raycast</code>, <code>settings.fog_shadowcast</code>.</td></tr>
+  <tr><td><code>tests/test_fog_of_war.py</code> <span class="badge b-acc">nowy</span></td>
+      <td>Testy czystych funkcji (bez okna).</td></tr>
+  <tr><td><code>tests/scenarios.json</code></td>
+      <td>Scenariusz "Fog Of War Maze" + rozszerzenie "Maze Persists Across Save Load".</td></tr>
+</table></div>
+
+<h3>Stan</h3>
+<pre><code>@dataclass
+class FogState:
+    w: int; h: int                       # rozmiar mapy w kaflach
+    solid:   list[list[bool]]            # ściana / brak podłogi / wnęka - "powierzchnia"
+    discovered: bytearray                # bitset w*h - JEDYNA prawda o odkryciu (zapis)
+    mask:    pygame.Surface              # w x h, SRCALPHA - 1 piksel = 1 kafel (rysowanie)
+    visible: set[tuple[int, int]]        # widoczne w tej klatce (suma obserwatorów)
+    rays:    list[RayFan]                # dla raycastu: origin + dystanse, per obserwator</code></pre>
+
+<p><code>blocked</code> nie jest kopiowane: mgła czyta na żywo
+<code>scene.path_finding_grid[y][x] == STEP_COST_WALL</code>. Dzięki temu <strong>zniszczenie
+ściany od razu zmienia geometrię widzenia</strong> (collisions.py już aktualizuje tę siatkę),
+bez żadnej dodatkowej inwalidacji.</p>
+
+<h3>Przepływ klatki</h3>
+<pre><code>Scene.update(dt)
+  └─ ... ruch gracza i NPC ...
+  └─ fog_of_war.update(scene)                    # tylko gdy is_maze i algorytm != off
+       ├─ obserwatorzy = [gracz] + potwory w kadrze (limit N, D6)
+       ├─ dla każdego, jeśli przekroczył próg ruchu / zmienił kafel:
+       │     shadowcast(blocked, cx, cy, R)      # 0,025 ms
+       │     lub cast_rays(blocked, px, py, R)   # 0,32 ms (gracz) / 0,13 ms (potwór)
+       ├─ grade()   - alfa z odległości (rdzeń → krawędź, kwantyzacja steps)
+       └─ commit()  - wpis do maski: pamięć ← poprzednia widoczność,
+                      nowa widoczność ← alfa, lica ścian ← jasność sąsiedniej podłogi;
+                      wkład potwora przycięty do kafli odkrytych (D7);
+                      discovered |= widoczne KAFLE GRACZA
+
+Scene.draw(screen, dt)
+  └─ night_filter.apply_time_of_day_filter(scene, screen)
+       ├─ [labirynt + mgła]  fog_of_war.compose(scene, filter_surf)
+       │     ├─ subsurface maski dla widoku (~24x14 px) → scale (nearest) → 160x90 px
+       │     ├─ blit BLEND_RGBA_MIN na filter_surf (tło = "nieodkryte")
+       │     └─ [raycast] wielokąty pierścieni, malowane OD NAJCIEMNIEJSZEGO
+       ├─ [reszta]           filter_surf.fill(color) + aureole NPC   (dziś, bez zmian)
+       └─ kompozycja overlay / overlay_half                          (E01, bez zmian)</code></pre>
+
+<div class="callout warn">
+  <p><strong>Kolejność malowania wielokątów przy wielu obserwatorach.</strong>
+  <code>pygame.draw.polygon</code> nie miesza, tylko nadpisuje piksele. Przy kilku obserwatorach
+  trzeba rysować <em>poziomami</em>: najpierw pierścień zewnętrzny (najciemniejszy) WSZYSTKICH
+  obserwatorów, potem kolejny, na końcu rdzenie. Inaczej ciemny pierścień potwora wymaże
+  jasny rdzeń gracza. Kosztuje zero - to tylko kolejność pętli - ale napisane
+  "per obserwator" daje migoczące ciemne plamy, gdy potwór podejdzie blisko.</p>
+</div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="zapis">6. Zapis gry i wersjonowanie</h2>
+
+<div class="tablewrap"><table>
+  <tr><th>Pytanie</th><th>Odpowiedź</th></tr>
+  <tr><td>Co dokładnie ląduje w pliku?</td>
+      <td><code>fog_discovered</code>: base64 z bitsetu kafli (bit 1 = odkryty),
+      <code>fog_w</code>, <code>fog_h</code>: rozmiar siatki do walidacji.</td></tr>
+  <tr><td>Ile to waży?</td>
+      <td>Poziom 4 (78x60 = 4680 kafli): 585 B surowo, <strong>780 B w base64</strong>.
+      Cztery poziomy: ~2,6 kB. Zapis jest JSON-em z <code>indent=2</code>, więc to jedna
+      długa linia na mapę - bez znaczenia dla rozmiaru pliku i dla localStorage.</td></tr>
+  <tr><td>Gdzie się wpina?</td>
+      <td><code>MapState</code> - obok <code>maze_seed</code> i <code>destroyed_walls</code>.
+      Poziom nadal jest REGENEROWANY z seeda; mgła to pierwsze dane labiryntu zapisywane
+      naprawdę, więc rozmiar siatki musi się zgadzać przy wczytaniu (inaczej: mgła pusta,
+      log ostrzegawczy, gra się nie wywraca).</td></tr>
+  <tr><td>Mapy, których gracz nie odwiedził po wczytaniu?</td>
+      <td>Idą przez <code>pending_map_states</code> i przez odczyt z <code>loaded_maps</code>
+      (<code>_build_fog_from_cache</code>) - dokładnie ta sama ścieżka, którą już mają
+      <code>destroyed_walls</code> i zabite potwory. To jest miejsce, w którym łatwo zgubić
+      stan: mapa odwiedzona przed zapisem, ale nie po wczytaniu.</td></tr>
+  <tr><td>Wersja zapisu?</td>
+      <td><strong>Bez zmian ("0.3")</strong> - decyzja D10. Zgodnie z polityką B02 pole
+      z wartością domyślną nie wymaga migracji, a podbicie <code>VERSION</code> przed 1.0
+      odrzuciłoby wszystkie istniejące zapisy.</td></tr>
+  <tr><td>Stary zapis (bez mgły)?</td>
+      <td>Wczytuje się normalnie, labirynt jest w całości nieodkryty. Zero komunikatów.</td></tr>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="koszt">7. Koszt, pomiary i budżet web</h2>
+
+<h3>Desktop - zmierzone (mac-mini M4, poziom 4, headless, pygame-ce 2.5.1)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Scenariusz w labiryncie</th><th class="num">przeliczanie</th><th class="num">nakładka</th><th class="num">razem</th></tr>
+  <tr><td>dziś (noc + aureole)</td><td class="num">0,00</td><td class="num">0,561</td><td class="num">0,56 ms</td></tr>
+  <tr><td>shadowcast, sam gracz</td><td class="num">0,08 (przy zmianie kafla)</td><td class="num">0,572</td><td class="num">~0,60 ms</td></tr>
+  <tr><td>raycast, sam gracz</td><td class="num">0,40 (przy ruchu)</td><td class="num">0,699</td><td class="num">~1,10 ms</td></tr>
+  <tr><td>raycast, gracz + 3 potwory (D6/D8)</td><td class="num">0,40 + 3 x 0,13 przy zmianie kafla</td><td class="num">0,699 + 3 x 0,08</td><td class="num">~1,7 ms</td></tr>
+  <tr><td>shadowcast, gracz + 3 potwory</td><td class="num">0,08 + 3 x 0,03</td><td class="num">0,572</td><td class="num">~0,75 ms</td></tr>
+</table></div>
+
+<h3>Web - budżet i szacunek</h3>
+<p>Z <a href="../audyt/E02-profil-web-wyniki.md">E02</a>: w labiryncie na WASM
+<code>update</code> 2,1-2,4 ms + <code>draw</code> 3,3 ms + <code>flip</code> 0,45 ms = ~6 ms
+przy budżecie 16,7 ms. <strong>Zapas to ~10 ms.</strong></p>
+
+<div class="tablewrap"><table>
+  <tr><th>Składnik mgły</th><th>Charakter</th><th>Ryzyko na WASM</th></tr>
+  <tr><td>skalowanie maski + blit</td><td>~24x14 px → 160x90 px, jeden blit <code>BLEND_RGBA_MIN</code></td>
+      <td><span class="badge b-ok">niskie</span> - E01 zmierzyło, że samo skalowanie powierzchni filtra to 0,4 ms; ta jest 8x mniejsza</td></tr>
+  <tr><td>wielokąty pierścieni</td><td>5 x <code>draw.polygon</code> na 160x90 px</td>
+      <td><span class="badge b-ok">niskie</span> - koszt na web rządzi się liczbą pikseli mieszanych, a te są malowane bez alfy</td></tr>
+  <tr><td>przeliczanie widoczności</td><td>czysty Python, pętle po promieniach</td>
+      <td><span class="badge b-warn">średnie</span> - to jedyny składnik, w którym WASM jest istotnie wolniejszy od CPythona; stąd limit potworów i próg ruchu</td></tr>
+  <tr><td>pełnoekranowa kompozycja</td><td>bez zmian wobec dziś</td>
+      <td><span class="badge b-ok">zero</span> - mgła nie dokłada ani jednego pełnoekranowego <code>scale</code></td></tr>
+</table></div>
+
+<p>Szacunek: mgła kosztuje na web <strong>1-2 ms</strong> w trybie raycast i poniżej 0,5 ms
+w trybie kafelkowym. Nawet trzykrotne przestrzelenie tego szacunku mieści się w zapasie.
+Liczba wiążąca to pomiar <code>MOM_PROFILE=1</code> w labiryncie po implementacji - wchodzi
+do commita (kryterium akceptacji 3). Gdyby raycast okazał się za drogi, drogi wyjścia są
+w kolejności: <code>FOG_RAY_COUNT</code> 180 → 90 (-48% kosztu), <code>FOG_NPC_MAX_LIGHTS</code>
+3 → 1, a w ostateczności shadowcast jako domyślny algorytm na web.</p>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="plan">8. Plan wykonania (6 kroków, commit po każdym)</h2>
+
+<div class="tablewrap"><table>
+  <tr><th>#</th><th>Krok</th><th>Bramka</th></tr>
+  <tr><td>1</td><td><code>scene/fog_of_war.py</code>: stan + czyste funkcje widoczności
+      (shadowcast, raycast, grade, commit, bitset ↔ base64). Bez podpięcia do gry.</td>
+      <td><code>tests/test_fog_of_war.py</code>, <code>just mypy</code> = 0</td></tr>
+  <tr><td>2</td><td>Podpięcie: budowa w <code>load_map</code>, <code>update</code> w
+      <code>Scene.update</code>, <code>compose</code> w <code>night_filter</code>. Tylko gracz,
+      algorytm ze stałej <code>FOG_ALGORITHM</code>.</td>
+      <td>ręczne uruchomienie + <code>just test-unit</code>; wygląd = prototyp</td></tr>
+  <tr><td>3</td><td>Wiersz w SettingsMenu + trwałość w <code>settings.json</code>/localStorage
+      + lokalizacja PL/EN.</td>
+      <td>scenariusz "Display Settings Flow" (rozszerzony), <code>test-smoke</code></td></tr>
+  <tr><td>4</td><td>Potwory jako źródła światła: cullowanie, limit, przycięcie do odkrytych
+      kafli, kolejność malowania pierścieni.</td>
+      <td>selftest "czarnych kwadratów" przeniesiony z prototypu; ss-review zrzutu</td></tr>
+  <tr><td>5</td><td>Zapis: <code>MapState</code> + <code>manager</code> (żywa scena i cache) +
+      wczytanie.</td>
+      <td>scenariusz "Maze Persists Across Save Load" rozszerzony o mgłę; stary zapis 0.3
+      wczytuje się z pustą mgłą</td></tr>
+  <tr><td>6</td><td>Scenariusz agentowy "Fog Of War Maze", profil web z liczbami,
+      <code>project/AGENTS.md</code> + <code>project/maze_generator/AGENTS.md</code>,
+      odhaczenie E03 w <code>doc/audyt/audyt.md</code>.</td>
+      <td>komplet bramek: <code>test-unit</code>, <code>mypy</code>, <code>validate-world</code>,
+      <code>test-smoke</code>, weryfikacja wizualna autora</td></tr>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="testy">9. Testy i bramki</h2>
+
+<h3>Jednostkowe (<code>tests/test_fog_of_war.py</code>, bez okna i bez pygame w rdzeniu)</h3>
+<ul>
+  <li>shadowcast nie przecieka: kafel za ścianą w prostym korytarzu nie trafia do
+      <code>visible</code>; kafel przed ścianą trafia.</li>
+  <li>raycast: zbiór trafionych kafli zawiera się w kole o zasięgu R; ściana zatrzymuje
+      promień (kafel bezpośrednio za nią nieoświetlony).</li>
+  <li>gradient: alfa rośnie monotonicznie z odległością, w rdzeniu = 0, na granicy =
+      <code>FOG_ALPHA_VISIBLE_EDGE</code>, kwantyzacja daje dokładnie <code>steps</code>
+      różnych wartości.</li>
+  <li>pamięć: kafel raz odkryty zostaje odkryty po wyjściu z zasięgu (alfa =
+      <code>FOG_ALPHA_REMEMBERED</code>, nie 255).</li>
+  <li>światło potwora nie dopisuje do <code>discovered</code> i nie rozjaśnia kafla
+      nieodkrytego (D7).</li>
+  <li>bitset: <code>from_base64(to_base64(x)) == x</code>; niezgodny rozmiar siatki daje
+      pustą mgłę, nie wyjątek.</li>
+  <li>zniszczona ściana: po zmianie <code>path_finding_grid</code> widoczność przechodzi
+      przez wyrwę bez przebudowy stanu.</li>
+</ul>
+
+<h3>Scenariusz agentowy "Fog Of War Maze" (desktop + web)</h3>
+<pre><code>debug_enter_maze  → walk_to_point (kilka kafli korytarzem) → screenshot
+  ui_quality_checks:
+   - większa część kadru jest czarna (teren nigdy nie widziany), bez widocznego tilesetu
+   - korytarz za graczem jest widoczny, ale wyraźnie ciemniejszy niż otoczenie gracza
+   - wokół gracza jest najjaśniejszy obszar i widać w nim ściany korytarza
+   - HUD i podpowiedzi klawiszy zachowują normalną jasność
+  ui_state: { top_state: "Scene", is_maze: true, fog_algorithm: "raycast", fog_discovered_pct: &gt; 0 }</code></pre>
+<p>Nowe pola w <code>debug_ui_state</code> (<code>fog_algorithm</code>,
+<code>fog_discovered_pct</code>) to asercja stanu z runtime w duchu A02 - bez niej test
+zrzutu opiera się wyłącznie na ocenie modelu.</p>
+
+<h3>Bramki wymagane przez zadanie</h3>
+<ul>
+  <li><code>just test-unit</code> w całości, <code>just mypy</code> = 0,
+      <code>just validate-world</code>, <code>just test-smoke</code>;</li>
+  <li>liczby z <code>MOM_PROFILE=1</code> w labiryncie (desktop + web) w treści commita;</li>
+  <li>weryfikacja wizualna autora na realnym ekranie - zrzuty headless nie są wierne
+      (zapisane w pamięci projektu i potwierdzone w E01).</li>
+</ul>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="ryzyka">10. Ryzyka i pułapki</h2>
+
+<div class="tablewrap"><table>
+  <tr><th>Ryzyko</th><th>Skąd wiadomo</th><th>Reakcja</th></tr>
+  <tr><td><strong>Artefakt "czarnych kwadratów"</strong> wraca po zmianie jednej linii w
+      <code>commit</code></td>
+      <td>trzy rundy w prototypie: poprawka wyglądała dobrze na zrzucie i sypała się po
+      minucie chodzenia</td>
+      <td>selftest z prototypu (losowy spacer, licznik ciemnych kafli w jasnym otoczeniu)
+      przechodzi do testów i jest uruchamiany po każdej zmianie geometrii</td></tr>
+  <tr><td><code>clear_maze_cache()</code> gubi mgłę</td>
+      <td>leci przy każdym ładowaniu mapy i przy zniszczeniu ściany</td>
+      <td>mgła NIE mieszka w <code>maze_utils</code>; czyści on wyłącznie cache ścieżek A*
+      (test: zniszcz ścianę, sprawdź, że <code>discovered</code> się nie zmienił)</td></tr>
+  <tr><td>Mgła znika po zejściu piętro niżej i powrocie</td>
+      <td>klasyczny błąd tej klasy - stan trzymany poza <code>MAP_PROPERTIES</code></td>
+      <td>krok 2 kończy się ręcznym sprawdzeniem: zejdź, wróć, korytarz nadal odkryty</td></tr>
+  <tr><td>Zapis "gubi" mgłę map, na których gracz nie stoi</td>
+      <td>dokładnie ten błąd zdarzył się już przy <code>destroyed_walls</code> i
+      <code>dead_monsters</code></td>
+      <td>obie ścieżki (<code>_build_fog</code> i <code>_build_fog_from_cache</code>) pisane
+      razem w kroku 5 i objęte scenariuszem save/load</td></tr>
+  <tr><td>Tryb <code>multiply</code> + mgła = brak mgły</td>
+      <td><code>fill(BLEND_RGB_MULT)</code> nie czyta powierzchni filtra</td>
+      <td>w labiryncie z mgłą kompozycja wymuszona na <code>overlay_half</code> (D5), zapisane
+      w AGENTS.md</td></tr>
+  <tr><td>Raycast za drogi na web</td>
+      <td>jedyny składnik czysto pythonowy</td>
+      <td>kolejność cięć ustalona z góry: <code>FOG_RAY_COUNT</code> 180→90,
+      <code>FOG_NPC_MAX_LIGHTS</code> 3→1, shadowcast domyślnie na web</td></tr>
+  <tr><td>Mgła zmienia balans (potwory trudniejsze do zauważenia)</td>
+      <td>gracz widzi 4-5 kafli, potwór słyszy z 6,25</td>
+      <td>świadome (W6). Gdyby było za ostre: regulatorem jest
+      <code>MONSTER_WAKE_DISTANCE</code>, nie zasięg mgły</td></tr>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="akceptacja">11. Kryteria akceptacji etapu 1 (z zadania, doprecyzowane)</h2>
+<ol>
+  <li>Trzy stany widoczne w grze; odkryte korytarze zostają widoczne po odejściu gracza.</li>
+  <li>Oba algorytmy działają i przełączają się w SettingsMenu <strong>bez restartu</strong>;
+      wybór przeżywa restart gry na desktopie i na web.</li>
+  <li>Potwory rozświetlają labirynt tym samym algorytmem, na kaflach już odkrytych;
+      ich logika pościgu jest bit w bit ta sama co dziś.</li>
+  <li>Stan mgły przeżywa zapis/wczytanie i przejście między poziomami; zapis 0.3 wczytuje się
+      bez błędu z pustą mgłą.</li>
+  <li>Koszt klatki na web w labiryncie mieści się w budżecie z E02 - liczby w commicie.</li>
+  <li><code>just test-unit</code>, <code>just mypy</code> = 0, <code>just validate-world</code>,
+      <code>just test-smoke</code> zielone.</li>
+  <li>Weryfikacja wizualna autora na realnym ekranie.</li>
+</ol>
+
+<div class="callout ok">
+  <p><strong>Następny ruch:</strong> akceptacja (lub korekty) decyzji D1-D11. Po "akceptuję"
+  zaczynam od kroku 1 (moduł + testy jednostkowe), commit po każdym kroku, bez dotykania
+  <code>movement_monster</code>.</p>
+</div>
+
+<p><a class="backlink" href="audyt-architektury-2026-07-25.html">← Raport audytu 2026-07-25</a></p>
+</div>
+<script>
+function toggleTheme() {
+  const r = document.documentElement;
+  const cur = r.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  r.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+}
+</script>
+</body>
+</html>

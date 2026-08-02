@@ -59,6 +59,13 @@ Co już z niego wiadomo:
 
 ## Etap 0: dokument decyzyjny (bramka akceptacji)
 
+**Zrobiony 2026-08-02, czeka na akceptację autora:**
+[fog-of-war-2026-08-02.html](../_attachements/fog-of-war-2026-08-02.html) (pełny, tabele
+opcji per decyzja D1-D11, pomiary, plan kroków) + skrót
+[E03-dokument-decyzyjny.md](E03-dokument-decyzyjny.md). Wymagania autora z sesji
+(dwa algorytmy z prototypu z zadanymi nastawami, wybór w SettingsMenu, potwory jako
+źródła światła, aggro potworów bez zmian) są w dokumencie jako W1-W6.
+
 Zanim powstanie kod: `doc/_attachements/fog-of-war-<data>.html` + skrót md, z tabelami
 opcji per decyzja (wzór: dokument architektury B01). Musi rozstrzygnąć:
 
