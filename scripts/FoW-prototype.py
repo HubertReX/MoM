@@ -26,6 +26,8 @@ Sterowanie (opisane też w HUD na górze ekranu):
     B                - skalowanie nakładki na ekran: nearest / smooth
     [ ]              - zasięg wzroku -/+ (w kaflach)
     O P              - rdzeń bez przyciemnienia -/+ (tryby kafelkowe, w kaflach)
+    - =              - ziarnistość gradientu -/+ (0 = płynnie); osobno dla trybów
+                       kafelkowych i dla raycastu, bo dobra wartość jest inna
     , .              - alfa pamięci (odkryte, poza wzrokiem) -/+ o 5
     L                - aureola światła z gry (nieprzycinana ścianami) on/off
     M                - podgląd całej mapy (zoom out) - kontrola, ile już odkryto
@@ -100,6 +102,9 @@ CLEAR_TILES_RAYCAST = (settings.CIRCLE_RADIUS * settings.FILTER_SCALE
                        / settings.ZOOM_LEVEL / settings.TILE_SIZE) / 2.0
 # liczba pierścieni gradientu między rdzeniem a granicą zasięgu (tryb raycast)
 RING_COUNT = 5
+# ile pierścieni rysować, gdy ziarnistość ustawiona na "płynnie" (raycast nie umie
+# gradientu inaczej niż wielokątami, więc "płynnie" = tyle, że skoku nie widać)
+SMOOTH_RINGS = 16
 
 MODES = ["off (today's night)", "radius (no LOS)", "shadowcast (tiles)", "raycast (polygon)"]
 
@@ -154,6 +159,27 @@ def load_chest_images() -> dict[str, pygame.Surface]:
     return out
 
 
+def _tile_exit(px: float, py: float, dx: float, dy: float, tx: int, ty: int) -> float:
+    """Dystans, na którym promień (px,py)+t*(dx,dy) wychodzi z kafla (tx,ty).
+
+    Czyli: dokładnie lico ściany i ani piksela dalej.
+    """
+    big = 1e9
+    if dx > 1e-9:
+        ex = ((tx + 1) * TILE - px) / dx
+    elif dx < -1e-9:
+        ex = (tx * TILE - px) / dx
+    else:
+        ex = big
+    if dy > 1e-9:
+        ey = ((ty + 1) * TILE - py) / dy
+    elif dy < -1e-9:
+        ey = (ty * TILE - py) / dy
+    else:
+        ey = big
+    return min(ex, ey)
+
+
 #################################################################################################################
 class FogGrid:
     """Stan odkrycia i widoczności na siatce KAFLI mapy labiryntu.
@@ -163,8 +189,13 @@ class FogGrid:
     jest tym samym obiektem co dane - nie ma osobnej konwersji per klatka.
     """
 
-    def __init__(self, blocked: list[list[bool]]) -> None:
+    def __init__(self, blocked: list[list[bool]], solid: list[list[bool]]) -> None:
         self.blocked = blocked
+        # "solid" to wszystko, co nie jest korytarzem: kafel ściany ALBO kafel bez
+        # podłogi (wnętrze bloku ściany). Promień nigdy tam nie dotrze, bo zatrzymuje
+        # się na licu ściany, więc bez dolewki takie kafle zostają czarne pośrodku
+        # odkrytego terenu i czyta się je jako dziurę w renderowaniu.
+        self.solid = solid
         self.h = len(blocked)
         self.w = len(blocked[0])
         self.discovered: set[tuple[int, int]] = set()
@@ -180,6 +211,8 @@ class FogGrid:
         self.ray_dist: list[float] = []
         # promień (w kaflach) bez żadnego przyciemnienia - tryby kafelkowe, [O]/[P]
         self.core_tiles: float = CLEAR_TILES_GRID
+        # liczba stopni gradientu; 0 = płynnie (bez kwantyzacji) - [-]/[=]
+        self.steps: int = 0
 
     def clear(self) -> None:
         self.discovered.clear()
@@ -232,13 +265,14 @@ class FogGrid:
 
         Do ``core_tiles`` kafli od gracza obraz jest nietknięty (alfa 0) - tak jak
         dziś w środku aureoli. Dopiero POWYŻEJ tej odległości zaczyna się gaśnięcie
-        do ``ALPHA_VISIBLE_EDGE``, skwantowane do ``RING_COUNT`` stopni, żeby tryby
-        kafelkowe miały ten sam czytelny skok pierścieni co raycast (płynny gradient
-        na kaflach i tak rozjeżdża się w szum).
+        do ``ALPHA_VISIBLE_EDGE``. ``steps`` = 0 daje przejście płynne (alfa liczona
+        wprost z odległości), a wartość > 0 kwantuje je na tyle stopni - do szukania
+        złotego środka między "papka" a "widoczne kwadraty".
         """
         span = ALPHA_VISIBLE_EDGE - ALPHA_CLEAR
         core = self.core_tiles
         ramp = max(0.001, radius - core)
+        steps = self.steps
         alpha: dict[tuple[int, int], int] = {}
         for (x, y) in self.visible:
             d = math.hypot(x - cx, y - cy)
@@ -246,8 +280,9 @@ class FogGrid:
                 alpha[(x, y)] = ALPHA_CLEAR
             else:
                 t = min(1.0, (d - core) / ramp)
-                step = math.ceil(t * RING_COUNT) / RING_COUNT
-                alpha[(x, y)] = ALPHA_CLEAR + int(span * step ** 1.4)
+                if steps:
+                    t = math.ceil(t * steps) / steps
+                alpha[(x, y)] = ALPHA_CLEAR + int(span * t ** 1.4)
         self.vis_alpha = alpha
 
     def _cast_light(self, vis: set[tuple[int, int]], cx: int, cy: int, row: int,
@@ -298,6 +333,7 @@ class FogGrid:
         for i in range(RAY_COUNT):
             dx, dy = _COS[i], _SIN[i]
             dist = 0.0
+            tx = ty = 0
             hit = False
             while dist < radius_px:
                 dist += step
@@ -308,9 +344,11 @@ class FogGrid:
                     break
             # Promień zatrzymuje się na WEJŚCIU w kafel ściany, więc sam kafel
             # zostawał poza wielokątem i ściana tuż przy graczu świeciła się
-            # najciemniejszym poziomem mgły. Przedłużenie o jeden kafel oświetla
-            # jej lico tak samo, jak robi to shadowcast (który liczy w kaflach).
-            dists.append(dist + TILE if hit else dist)
+            # najciemniejszym poziomem mgły. Przedłużamy do miejsca, w którym
+            # promień OPUSZCZA ten kafel - nie o stałe 16 px, bo przy trafieniu
+            # tuż przy dalszej krawędzi wchodziło się w kafel za ścianą i zdradzało
+            # kawałek sąsiedniego korytarza.
+            dists.append(_tile_exit(px, py, dx, dy, tx, ty) if hit else dist)
         self.visible = vis
         self.vis_alpha = {}
         self.ray_origin = (px, py)
@@ -333,12 +371,23 @@ class FogGrid:
             if (x, y) not in self.visible:
                 mask.set_at((x, y), (*FOG_COLOR, memory_alpha))
         # 2. wpisz nową
+        written: dict[tuple[int, int], int] = {}
         for (x, y) in self.visible:
             if 0 <= x < self.w and 0 <= y < self.h:
-                a = self.vis_alpha.get((x, y), ALPHA_CLEAR) if bright else memory_alpha
-                mask.set_at((x, y), (*FOG_COLOR, a))
-        self.discovered |= self.visible
-        self._last_visible = set(self.visible) if bright else set()
+                written[(x, y)] = self.vis_alpha.get((x, y), ALPHA_CLEAR) if bright else memory_alpha
+        # 3. dolej kafle "solid" stykające się z widocznymi (patrz `self.solid`).
+        # Tylko solid - dolanie zwykłej podłogi zdradzałoby korytarz za ścianą.
+        for (x, y), a in list(written.items()):
+            for nx in (x - 1, x, x + 1):
+                for ny in (y - 1, y, y + 1):
+                    if 0 <= nx < self.w and 0 <= ny < self.h and self.solid[ny][nx]:
+                        if written.get((nx, ny), 256) > a:
+                            written[(nx, ny)] = a
+        for (x, y), a in written.items():
+            mask.set_at((x, y), (*FOG_COLOR, a))
+        seen = set(written)
+        self.discovered |= seen
+        self._last_visible = seen if bright else set()
 
     def refill_memory(self, memory_alpha: int) -> None:
         """Przemaluj pamięć po zmianie suwaka jasności (tylko prototyp)."""
@@ -384,6 +433,11 @@ class Prototype:
         self.show_light = False
         self.smooth_upscale = False
         self.map_overview = False
+        # Ziarnistość gradientu, osobno dla każdej rodziny trybów, bo dobra wartość
+        # jest inna: na kaflach kwantyzacja robi widoczne kwadraty (stąd "płynnie"),
+        # a wielokąty raycastu z wyraźnym skokiem pierścieni wyglądają dobrze.
+        self.steps_grid = 0
+        self.steps_ray = RING_COUNT
 
         # bufory jak w grze (E01): filtr w 1/FILTER_SCALE + bufor pełnoekranowy
         self.filter_surf = pygame.Surface(
@@ -432,9 +486,12 @@ class Prototype:
         self.map_view.zoom = 1.0 if self.map_overview else settings.ZOOM_LEVEL
 
         walls = tmx.get_layer_by_name("walls")
+        floor = tmx.get_layer_by_name("floor")
         blocked = [[bool(gid) for gid in row] for row in walls.data]
+        solid = [[bool(w) or not f for w, f in zip(wrow, frow)]
+                 for wrow, frow in zip(walls.data, floor.data)]
         previous = getattr(self, "fog", None)
-        self.fog = FogGrid(blocked)
+        self.fog = FogGrid(blocked, solid)
         if previous is not None:
             # nastawy przeżywają [R] i zmianę poziomu - inaczej każde porównanie
             # dwóch labiryntów zaczyna się od ustawiania suwaków od nowa
@@ -513,6 +570,7 @@ class Prototype:
     def recompute_fog(self, force: bool = False) -> None:
         """Policz widoczność. Modele kafelkowe - tylko przy zmianie kafla."""
         t0 = time.perf_counter()
+        self.fog.steps = self.steps_grid
         tx, ty = int(self.px // TILE), int(self.py // TILE)
         last = getattr(self, "_last_tile", None)
         if self.mode == 0:
@@ -609,8 +667,10 @@ class Prototype:
         core_px = min(CLEAR_TILES_RAYCAST * TILE, radius_px * 0.8)
         core_k = core_px / radius_px
         span = ALPHA_VISIBLE_EDGE - ALPHA_CLEAR
-        for i in range(RING_COUNT, 0, -1):
-            k = core_k + (1.0 - core_k) * i / RING_COUNT
+        # 0 = "płynnie": wielokątów musi być tyle, żeby skoku nie było widać
+        rings = self.steps_ray or SMOOTH_RINGS
+        for i in range(rings, 0, -1):
+            k = core_k + (1.0 - core_k) * i / rings
             self._draw_ring(fs, ox, oy, zoom, k * radius_px,
                             ALPHA_CLEAR + int(span * k ** 1.4))
         self._draw_ring(fs, ox, oy, zoom, core_px, ALPHA_CLEAR)
@@ -638,6 +698,7 @@ class Prototype:
         cols, rows, _chests = self.configs.get(self.level, self.configs[max(self.configs)])
         pct = 100.0 * len(self.fog.discovered) / (self.fog.w * self.fog.h)
         la, v, n = C_LABEL, C_VALUE, C_NUMBER
+        steps = self.steps_ray if self.mode == 3 else self.steps_grid
         seg = _key_segments  # [nawias szary] [klawisz pomarańczowy] etykieta wartość
         lines: list[list[tuple[str, tuple[int, int, int]]]] = [
             [*seg("F", "mode", MODES[self.mode]),
@@ -645,6 +706,7 @@ class Prototype:
              *seg("B", "upscale", "smooth" if self.smooth_upscale else "nearest")],
             [*seg("[ ]", "range", f"{self.vision_tiles} tiles"),
              *seg("O P", "core", f"{self.fog.core_tiles:g} tiles"),
+             *seg("- =", "steps", f"{steps}" if steps else "smooth"),
              *seg(", .", "alpha", f"{self.memory_alpha}"),
              *seg("L", "game halo", "on" if self.show_light else "off")],
             [*seg("1-4", "level", f"{self.level}"),
@@ -703,6 +765,14 @@ class Prototype:
             self.recompute_fog(force=True)
         elif key == pygame.K_LEFTBRACKET:
             self.vision_tiles = max(2, self.vision_tiles - 1)
+            self.recompute_fog(force=True)
+        elif key in (pygame.K_EQUALS, pygame.K_MINUS):
+            # ziarnistość dotyczy AKTYWNEJ rodziny trybów - każda ma inną dobrą wartość
+            delta = 1 if key == pygame.K_EQUALS else -1
+            if self.mode == 3:
+                self.steps_ray = max(0, min(16, self.steps_ray + delta))
+            else:
+                self.steps_grid = max(0, min(16, self.steps_grid + delta))
             self.recompute_fog(force=True)
         elif key == pygame.K_p:
             self.fog.core_tiles = min(8.0, self.fog.core_tiles + 0.5)

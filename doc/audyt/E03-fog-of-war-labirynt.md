@@ -46,7 +46,16 @@ Co już z niego wiadomo:
 - pułapka geometryczna: pierścienie gradientu trzeba ucinać na
   `min(dystans_do_ściany, k * zasięg)`. Przy `dystans_do_ściany * k` wszystkie
   pierścienie kurczą się przy ścianie i środek jasności ucieka od niej - wygląda
-  jak źle wycentrowana aureola.
+  jak źle wycentrowana aureola;
+- pułapka „czarnych kwadratów": kafle wnętrza bloku ściany (bez kafla w warstwie
+  `walls` i bez kafla w `floor`) nie zostaną trafione żadnym promieniem, bo ten
+  zatrzymuje się na licu ściany. Bez dolania ich z sąsiedztwa zostają na alfie 255
+  pośrodku odkrytego terenu i czyta się je jako dziurę w renderowaniu. Dolewać
+  wolno **tylko** kafle „solid" - dolanie zwykłej podłogi zdradza korytarz za ścianą;
+- promień oświetlający trafioną ścianę trzeba przedłużyć do miejsca, w którym
+  OPUSZCZA trafiony kafel, a nie o stałe 16 px: przy trafieniu tuż przy dalszej
+  krawędzi stałe przedłużenie wchodzi w kafel za ścianą i pokazuje fragment
+  sąsiedniego korytarza.
 
 ## Etap 0: dokument decyzyjny (bramka akceptacji)
 
