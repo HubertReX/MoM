@@ -93,7 +93,7 @@ mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły 
 
 ### Faza 4 - treść prologu i późniejsze
 
-- [x] [E03 - prawdziwa mgła wojny w labiryncie (dokument decyzyjny + implementacja); po E01](E03-fog-of-war-labirynt.md) - P3
+- [x] [E03 - prawdziwa mgła wojny w labiryncie (dokument decyzyjny + implementacja); po E01](E03-fog-of-war-labirynt.md) - P3 ✅ 2026-08-02 (dokument decyzyjny D1-D11 + `scene/fog_of_war.py`: trzy stany widoczności, dwa algorytmy wybierane w SettingsMenu, potwory jako źródła światła, stan mgły w zapisie bez podbicia wersji; web `draw` +0,3 ms przy budżecie 16,7 ms)
 - [ ] C02 - stopniowe ujednolicenie kluczy Tiled ↔ config - P3
 - [ ] H01 - ambient barks + wskaźnik aktywnego questa na HUD - P3
 

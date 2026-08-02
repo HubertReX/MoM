@@ -532,6 +532,81 @@ def test_maze_level_left_behind_keeps_its_seed() -> None:
     assert_eq(maps["Maze_01"].maze_return_map, "Village", "and where its exit leads")
 
 
+def _fog(discovered: list[tuple[int, int]], w: int = 8, h: int = 4) -> object:
+    """Minimalny `FogState` z odkrytymi kaflami - bez ładowania mapy."""
+    from scene import fog_of_war
+
+    mask = pygame.Surface((w, h), pygame.SRCALPHA)
+    fog = fog_of_war.FogState(
+        w=w, h=h,
+        grid=[[0] * w for _ in range(h)],
+        surface=[[False] * w for _ in range(h)],
+        discovered=bytearray((w * h + 7) // 8),
+        mask=mask,
+    )
+    for x, y in discovered:
+        fog_of_war.bit_set(fog.discovered, y * w + x)
+    fog.discovered_tiles = len(discovered)
+    return fog
+
+
+def test_fog_of_a_maze_level_left_behind_survives_a_save() -> None:
+    """E03: mgła poziomu, z którego gracz zszedł piętro niżej, ma trafić do zapisu.
+
+    To jest ścieżka, na której mgła w ogóle ma szansę być niepusta: w labiryncie
+    nie wolno zapisać ręcznie, a autosave leci przy WEJŚCIU (mgła jest wtedy pusta).
+    Realny zapis mgły powstaje więc z per-mapowego cache'u - dokładnie tam, gdzie
+    `destroyed_walls` i `dead_monsters` miały już po jednym błędzie tej klasy.
+    """
+    scene = _make_scene("Maze_02", [])
+    mgr = SaveManager.__new__(SaveManager)
+    scene.destroyed_walls = []
+    scene.fog = _fog([(1, 1), (2, 1)])
+    scene.loaded_maps = {
+        "Maze_01": {
+            "maze_seed": 777, "maze_stats": {"current_map_level": 1},
+            "destroyed_walls": [], "NPCs": [], "chests": [], "items": [],
+            "fog": _fog([(0, 0), (1, 0), (2, 0)]),
+        }
+    }
+
+    maps = mgr._build_map_states(scene)
+
+    assert_eq(maps["Maze_01"].fog_w, 8, "mgła opuszczonego poziomu ma swój rozmiar siatki")
+    assert_true(len(maps["Maze_01"].fog_discovered) > 0, "i niepuste odkrycie")
+    assert_true(len(maps["Maze_02"].fog_discovered) > 0, "mgła bieżącej mapy też jest zapisana")
+    assert_eq(maps["Village"].fog_discovered if "Village" in maps else "", "",
+              "mapa bez mgły nic nie dopisuje")
+
+
+def test_loading_restores_fog_onto_the_rebuilt_level() -> None:
+    """Poziom jest regenerowany z seeda, ale odkryte korytarze wracają z zapisu."""
+    from scene import fog_of_war
+
+    scene = _make_scene("Maze_01", [])
+    mgr = SaveManager.__new__(SaveManager)
+    scene.fog = _fog([])                       # świeżo zbudowany poziom = mgła pusta
+    source = _fog([(3, 2), (4, 2)])
+    data, w, h = fog_of_war.to_save(source)
+
+    mgr._apply_one_map_state(scene, MapState(name="Maze_01", fog_discovered=data,
+                                             fog_w=w, fog_h=h))
+
+    assert_eq(scene.fog.discovered_tiles, 2, "odkrycie wróciło z zapisu")
+    assert_true(scene.fog.is_discovered(3, 2), "i siedzi na właściwych kaflach")
+
+
+def test_a_save_without_fog_loads_with_an_empty_one() -> None:
+    """Zapis 0.3 sprzed E03 nie ma pola `fog_discovered` - ma się wczytać, nie odmówić."""
+    scene = _make_scene("Maze_01", [])
+    mgr = SaveManager.__new__(SaveManager)
+    scene.fog = _fog([])
+
+    mgr._apply_one_map_state(scene, MapState.from_dict({"name": "Maze_01"}))
+
+    assert_eq(scene.fog.discovered_tiles, 0, "stary zapis = mgła pusta, bez wyjątku")
+
+
 def main() -> None:
     tests = [
         test_other_maps_are_kept_pending_not_dropped,
@@ -551,6 +626,9 @@ def main() -> None:
         test_chests_from_one_template_do_not_collapse,
         test_maze_seed_is_the_one_that_built_the_level,
         test_maze_level_left_behind_keeps_its_seed,
+        test_fog_of_a_maze_level_left_behind_survives_a_save,
+        test_loading_restores_fog_onto_the_rebuilt_level,
+        test_a_save_without_fog_loads_with_an_empty_one,
     ]
     for t in tests:
         t()

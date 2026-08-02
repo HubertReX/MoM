@@ -31,6 +31,10 @@ language = "Language: {lang}"
 volume_master = "Master volume: < {value}% >"
 volume_music = "Music: < {value}% >"
 volume_sfx = "Effects: < {value}% >"
+fog = "Fog of war: < {value} >"
+fog_off = "off"
+fog_raycast = "rays"
+fog_shadowcast = "tiles"
 back = "Back"
 
 # === Save / Load ===

@@ -114,13 +114,18 @@ import pygame
 ACTIONS: dict[str, dict[str, Any]]
 AGENT_STATUS_FILE: "Path | None"
 AGENT_UI_STATE_FILE: "Path | None"
+_settings: "Any | None"
 try:
     # dostępne, gdy moduł działa wewnątrz gry (sys.path zawiera 'project')
     from settings import ACTIONS, AGENT_STATUS_FILE, AGENT_UI_STATE_FILE  # noqa: F811
+    # cały moduł, nie pojedyncze nazwy: ustawienia zmieniane w runtime (np.
+    # `FOG_ALGORITHM` z SettingsMenu) trzeba czytać żywo, a nie jako snapshot
+    import settings as _settings  # noqa: F811
 except ImportError:
     ACTIONS = {}
     AGENT_STATUS_FILE = None
     AGENT_UI_STATE_FILE = None
+    _settings = None
 
 # domyślny czas przytrzymania klawiszy ciągłych (ruch), gdy nie podano ':frames'
 DEFAULT_HOLD_FRAMES = 12
@@ -244,6 +249,10 @@ class AgentController:
             # diagnostyka determinizmu (A07): dwa przebiegi tego samego scenariusza
             # w trybie deterministycznym muszą zgłosić ten sam seed
             "world_seed": getattr(scene, "world_seed", None),
+            # mgła wojny (E03): wybrany algorytm i ile procent poziomu gracz odkrył -
+            # asercja stanu zamiast zgadywania z samego zrzutu ekranu
+            "fog_algorithm": getattr(_settings, "FOG_ALGORITHM", None),
+            "fog_discovered_pct": round(scene.fog.discovered_pct, 1) if getattr(scene, "fog", None) else None,
             "open_panels": [],
             "player": None,
             "dialog": None,

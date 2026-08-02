@@ -59,7 +59,8 @@ Co już z niego wiadomo:
 
 ## Etap 0: dokument decyzyjny (bramka akceptacji)
 
-**Zrobiony 2026-08-02, czeka na akceptację autora:**
+**Zrobiony i zaakceptowany 2026-08-02** (autor zmienił D7: potwory świecą też
+w nieodkrytym terenie, ale ulotnie - pamięć odkrycia rośnie wyłącznie od gracza):
 [fog-of-war-2026-08-02.html](../_attachements/fog-of-war-2026-08-02.html) (pełny, tabele
 opcji per decyzja D1-D11, pomiary, plan kroków) + skrót
 [E03-dokument-decyzyjny.md](E03-dokument-decyzyjny.md). Wymagania autora z sesji

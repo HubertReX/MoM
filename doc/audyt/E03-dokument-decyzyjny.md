@@ -4,8 +4,9 @@ Pełny dokument (tabele opcji per decyzja, pomiary, pseudokod):
 [fog-of-war-2026-08-02.html](../_attachements/fog-of-war-2026-08-02.html)
 (podgląd: `docserve start doc/_attachements/fog-of-war-2026-08-02.html`).
 
-Status: **czeka na akceptację autora**. Bez „akceptuję" nie ruszamy kodu
-(bramka z [E03-fog-of-war-labirynt.md](E03-fog-of-war-labirynt.md)).
+Status: **zaakceptowany i zrealizowany 2026-08-02**. Autor zmienił D7 (potwory świecą
+także w nieodkrytym terenie, ale ulotnie); reszta decyzji weszła bez zmian.
+Kod: `project/scene/fog_of_war.py`, opis mechaniki w `project/AGENTS.md`.
 
 ## Wymagania autora (wiążące, ustalone 2026-08-02)
 
@@ -26,7 +27,7 @@ Status: **czeka na akceptację autora**. Bez „akceptuję" nie ruszamy kodu
 | D4 | Trwałość wyboru | `settings.json` + localStorage, pole `fog_algorithm`, BEZ podbicia `CURRENT_VERSION` |
 | D5 | Renderowanie trzech stanów | maska podmienia `fill()` w istniejącym filtrze - żadnego drugiego pełnoekranowego `scale` |
 | D6 | Które potwory świecą | tylko w kadrze, limit 3 najbliższych graczowi |
-| D7 | Czy światło potwora odkrywa mapę | nie - świeci wyłącznie na kaflach już odkrytych, pamięć rośnie tylko od gracza |
+| D7 | Czy światło potwora odkrywa mapę | **decyzja autora:** świeci ZAWSZE, też w nieodkrytym korytarzu, ale ulotnie - pamięć odkrycia rośnie wyłącznie od gracza |
 | D8 | Parametry światła potworów | ten sam algorytm, tańsze stałe (60 promieni, 2 pierścienie, zasięg 3) |
 | D9 | Kiedy przeliczać | shadowcast i potwory przy zmianie kafla, raycast gracza przy ruchu ≥ 2 px |
 | D10 | Zapis a wersja | nowe pole z domyślną w `MapState`, `VERSION` zostaje „0.3" (podbicie ODRZUCIŁOBY stare zapisy) |
@@ -71,3 +72,7 @@ po implementacji, w treści commita.
 - **Zapis map, na których gracz nie stoi** - ta sama pułapka, która zdarzyła się już przy
   `destroyed_walls` i `dead_monsters`; obie ścieżki (`_build_fog`, `_build_fog_from_cache`)
   pisane razem.
+- **Ślad potwora jako fałszywa pamięć (D7)** - kafel zwalniany z widoczności wraca do
+  `FOG_ALPHA_REMEMBERED` tylko wtedy, gdy jego bit w `discovered` jest ustawiony;
+  w przeciwnym razie do `FOG_ALPHA_UNSEEN`. Jedna wartość dla obu przypadków zostawia
+  na mapie korytarz, którego gracz nigdy nie widział.

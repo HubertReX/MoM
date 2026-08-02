@@ -393,13 +393,44 @@
             { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
             { "slug": "enter_maze", "commands": ["debug_enter_maze"], "wait": 3.0 },
             { "slug": "maze_generated", "commands": ["screenshot"], "wait": 0.5 },
+            { "slug": "walk_the_corridor", "commands": ["down:45"], "wait": 2.0 },
             { "slug": "quick_load", "commands": ["quick_load"], "wait": 3.0 },
-            { "slug": "maze_after_load", "commands": ["screenshot"], "wait": 0.5 }
+            { "slug": "maze_after_load", "commands": ["screenshot"], "wait": 0.5 },
+            { "slug": "fog_after_load", "commands": ["debug_ui_state"], "wait": 0.5 }
         ],
         "assertions": [
             { "type": "file_exists", "path": "<save_dir>/save_0.mom", "min_size": 100 },
             { "type": "screenshot_review", "target": "maze_generated", "expect": "The player is inside a dark dungeon/maze corridor, not an outdoor village map." },
-            { "type": "screenshot_review", "target": "maze_after_load", "expect": "The player is inside a dark dungeon/maze corridor, not an outdoor village map." }
+            { "type": "screenshot_review", "target": "maze_after_load", "expect": "The player is inside a dark dungeon/maze corridor, not an outdoor village map." },
+            { "type": "ui_state", "expect": { "top_state": "Scene", "is_maze": true, "fog_discovered_pct_min": 0.5 } }
+        ]
+    },
+    {
+        "name": "Fog Of War Maze",
+        "slug": "fog_of_war_maze",
+        "platform": ["desktop", "web"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "enter_maze", "commands": ["debug_enter_maze"], "wait": 3.0 },
+            { "slug": "walk_the_corridor", "commands": ["down:45"], "wait": 2.0 },
+            { "slug": "fog_three_states", "commands": ["screenshot"], "wait": 0.5 },
+            { "slug": "dump_fog_state", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            {
+                "type": "screenshot_review",
+                "target": "fog_three_states",
+                "expected_state": "GAMEPLAY",
+                "expect": "The player stands in a dungeon corridor with fog of war: most of the frame is solid black (area never seen), the corridor already walked is visible but dimmed, and the area around the player is brightly lit.",
+                "ui_quality_checks": [
+                    "a large part of the frame is solid black with no dungeon tiles visible at all - that is the unexplored area, not merely a dark image",
+                    "there is a clearly brighter area around the player where the corridor floor and walls are easy to read",
+                    "between the two there is at least one dimmed-but-visible region (the corridor already walked), so the image has three levels of darkness, not two",
+                    "the UI stays readable: the HUD panel with hearts/money/clock and the hotbar and button hints keep their normal brightness and contrast"
+                ]
+            },
+            { "type": "ui_state", "expect": { "top_state": "Scene", "is_maze": true, "fog_algorithm": "raycast", "fog_discovered_pct_min": 0.5 } },
+            { "type": "process_alive" }
         ]
     },
     {

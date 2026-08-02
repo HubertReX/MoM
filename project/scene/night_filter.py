@@ -40,6 +40,8 @@ from settings import (
     vec3,
 )
 
+from scene import fog_of_war
+
 if TYPE_CHECKING:
     from scene.scene import Scene
 
@@ -137,7 +139,10 @@ def apply_time_of_day_filter(scene: "Scene", screen: pygame.Surface) -> None:
     # tryb czytany ŻYWO z modułu (K6) - to pokrętło do empirycznego testowania
     # na różnym sprzęcie, nie stała z importu
     mode = settings.NIGHT_FILTER_MODE
-    if mode == "multiply":
+    # E03: w labiryncie z włączoną mgłą powierzchnia filtra NIE jest jednolita -
+    # niesie maskę trzech stanów widoczności, a aureole zastępuje pole widzenia
+    fog_on = fog_of_war.is_enabled(scene)
+    if mode == "multiply" and not fog_on:
         _composite_multiply(screen, color)
         return
 
@@ -146,20 +151,26 @@ def apply_time_of_day_filter(scene: "Scene", screen: pygame.Surface) -> None:
         # bufory muszą pasować do ekranu, inaczej `transform.scale` rzuci wyjątek
         build_filter_surfaces(scene)
 
-    scene.filter_surf.fill(color)
+    if fog_on:
+        fog_of_war.compose(scene, scene.filter_surf)
+    else:
+        scene.filter_surf.fill(color)
 
-    hour: float = scene.hour + (scene.minute / 60)
-    if (hour > 17 or hour < 9) or scene.is_maze:
-        scale = (scene.camera.zoom / ZOOM_LEVEL)
-        for npc in scene.NPCs + [scene.player]:
-            _blit_light(scene, npc.pos + vec(0, -8), scale)
+        hour: float = scene.hour + (scene.minute / 60)
+        if (hour > 17 or hour < 9) or scene.is_maze:
+            scale = (scene.camera.zoom / ZOOM_LEVEL)
+            for npc in scene.NPCs + [scene.player]:
+                _blit_light(scene, npc.pos + vec(0, -8), scale)
 
-        if "intro" in scene.waypoints:
-            scale = 2 * (scene.camera.zoom / ZOOM_LEVEL)
-            _blit_light(scene, to_vector(scene.waypoints["intro"][0]) + vec(0, 0), scale)
-            _blit_light(scene, to_vector(scene.waypoints["intro"][-1]), scale)
+            if "intro" in scene.waypoints:
+                scale = 2 * (scene.camera.zoom / ZOOM_LEVEL)
+                _blit_light(scene, to_vector(scene.waypoints["intro"][0]) + vec(0, 0), scale)
+                _blit_light(scene, to_vector(scene.waypoints["intro"][-1]), scale)
 
-    if mode == "overlay_half":
+    # `multiply` nie czyta powierzchni filtra (to sam `fill(BLEND_RGB_MULT)`), więc
+    # mgły nie da się w nim narysować - w labiryncie z mgłą kompozycja idzie
+    # najtańszą ścieżką, która maskę honoruje
+    if mode == "overlay_half" or (mode == "multiply" and fog_on):
         _composite_overlay_half(scene, screen)
     else:
         _composite_overlay(scene, screen)

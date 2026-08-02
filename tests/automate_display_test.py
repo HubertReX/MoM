@@ -1132,7 +1132,7 @@ class WebRunner(RunnerBase):
         self.page.on(
             "console",
             lambda msg: print(f"[browser] {msg.text}")
-            if ("[test]" in msg.text or "[agent" in msg.text)
+            if ("[test]" in msg.text or "[agent" in msg.text or msg.text.startswith("profile:"))
             else None,
         )
         # Basic load; zmienne testowe i reload robi _prepare_scenario_page().
@@ -1187,6 +1187,11 @@ class WebRunner(RunnerBase):
         # decyduje o trybie deterministycznym i godzinie startu (pole `start_hour`).
         test_env: dict[str, str] = {"MOM_AGENT_CONTROL": "1"}
         apply_determinism_env(test_env, self.start_hour)
+        # Profiler klatki (E02) przekazany z env runnera: `MOM_PROFILE=1 just test-web ...`
+        # zbiera liczby z WASM tą samą drogą co desktop. E02 musiało do tego napisać
+        # jednorazowy skrypt Playwrighta - stąd te dwie linie.
+        if os.environ.get("MOM_PROFILE"):
+            test_env["MOM_PROFILE"] = os.environ["MOM_PROFILE"]
         self.page.evaluate(
             "([k,v]) => localStorage.setItem(k, v)",
             [WEB_ENV_KEY, json.dumps(test_env)],

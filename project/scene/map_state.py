@@ -65,6 +65,9 @@ MAP_PROPERTIES: list[str] = [
     "outdoor",
     "layers",
     "path_finding_grid",
+    # mgła wojny (E03) trzymana per mapa jak siatka A*: bez tego zejście piętro
+    # niżej i powrót kasowałoby odkryty teren
+    "fog",
     "entry_points",
     "map_view",
     "sprites_layer",

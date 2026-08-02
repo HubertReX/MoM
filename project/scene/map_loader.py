@@ -39,6 +39,8 @@ from rich import print
 import settings
 from settings import _, to_point, tuple_to_vector, vec
 
+from scene import fog_of_war
+
 if TYPE_CHECKING:
     from scene.scene import Scene
 
@@ -89,6 +91,11 @@ def load_map(scene: "Scene") -> None:
     scene.outdoor = tileset_map.properties.get("outdoor", False)
 
     load_walls(scene, cast(TiledTileLayer, tileset_map.get_layer_by_name("walls")))
+
+    # mgła wojny (E03) - po `load_walls`, bo czyta gotową `path_finding_grid`
+    # (żywo, więc zniszczona ściana od razu zmienia geometrię widzenia) oraz
+    # warstwę `floor` (kafle bez podłogi to wnętrza bloków ścian)
+    fog_of_war.build(scene, tileset_map)
 
     load_items(scene, cast(TiledTileLayer, tileset_map.get_layer_by_name("items")))
 

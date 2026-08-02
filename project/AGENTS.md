@@ -94,7 +94,7 @@ Wyniki jednorazowego profilu web (przeglądarka, maszyna, tabela per scenariusz)
 
 | Plik                       | Rola                                                                                            | Uwaga                                            |
 | -------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `scene/`                   | Pakiet sceny (B01): `scene.py` orkiestrator + `map_loader`, `world_clock`, `collisions`, `player_actions`, `routines_director`, `map_state`, `night_filter`, `intro`, `debug_overlay`, `agent_api` | `from scene import Scene` bez zmian |
+| `scene/`                   | Pakiet sceny (B01): `scene.py` orkiestrator + `map_loader`, `world_clock`, `collisions`, `player_actions`, `routines_director`, `map_state`, `night_filter`, `fog_of_war`, `intro`, `debug_overlay`, `agent_api` | `from scene import Scene` bez zmian |
 | `characters/`              | Pakiet postaci (B01): `npc.py` (stan `NPC`) + `player.py`, `movement.py` (A*, waypointy, fizyka), `combat.py`, `animation.py`, `inventory.py` | `from characters import NPC, Player` bez zmian |
 | `ui/`                      | **Własny toolkit UI** (retained-mode, czysty pygame-ce). Patrz niżej.                           | zastąpił `ui.py`+`menus.py`+`rich_text.py`       |
 | `dialog/`                  | **System dialogów** (encje grafu, builder, silnik warunków mini-DSL). Patrz niżej.              | czysta logika, bez pygame; web-safe              |
@@ -108,7 +108,7 @@ Wyniki jednorazowego profilu web (przeglądarka, maszyna, tabela per scenariusz)
 | `transition.py`            | Efekty przejść (`Transition`, `TransitionCircle`)                                               |                                                  |
 | `second_order_dynamics.py` | Gładkie animacje (Second Order Dynamics) — POC                                                  |                                                  |
 | `enums.py`                 | Typy wyliczeniowe (Race, Attitude, ItemType, …)                                                 |                                                  |
-| `save_load/display_settings.py` | Persystencja ustawień (rozdzielczość, fullscreen, język, głośności)                         | desktop `settings.json`, web `localStorage`      |
+| `save_load/display_settings.py` | Persystencja ustawień (rozdzielczość, fullscreen, język, głośności, algorytm mgły)          | desktop `settings.json`, web `localStorage`      |
 | `audio.py`                 | Muzyka per mapa + SFX eventów; manifest `config_model/audio.toml` — patrz sekcja niżej           | zero importów z `scene`/`characters`/`game`      |
 | `main.py`                  | Entry point + CLI (Click na desktopie)                                                          |                                                  |
 
@@ -755,6 +755,78 @@ argument 'dest'`) przy pierwszej klatce nocy. Zawsze podawaj pozycję.
 Scenariusz agentowy: **Night Filter On Village** (`start_hour: 20`, dojście
 `walk_to_point` pod kapliczkę na północ od wioski, gdzie las jest realnie czarny -
 w centrum wioski dwa światła z waypointów `intro` rozświetlają prawie cały kadr).
+
+## Mgła wojny w labiryncie (`scene/fog_of_war.py`, E03)
+
+W labiryncie kafel ma **trzy** stany widoczności, nie dwa. Wszystkie trzy to trzy
+wartości alfy w JEDNEJ masce o rozdzielczości **jeden piksel na kafel**:
+
+| stan | alfa | co widać |
+| --- | --- | --- |
+| nieodkryty | `FOG_ALPHA_UNSEEN` = 255 | czerń, tileset niewidoczny |
+| odkryty, poza wzrokiem | `FOG_ALPHA_REMEMBERED` = 230 | to samo, co cały labirynt przed E03 (alfa `NIGHT_FILTER`) |
+| w zasięgu wzroku | gradient `FOG_ALPHA_CLEAR` (0) → `FOG_ALPHA_VISIBLE_EDGE` (175) | rdzeń nietknięty, gaśnięcie do granicy zasięgu |
+
+**Warunek twardy:** mgła NIE dokłada drugiego pełnoekranowego `transform.scale`. Zamiast
+`filter_surf.fill(color)` leci `fog_of_war.compose()`, czyli wycinek maski dla widoku
+(~24x14 px) przeskalowany do rozmiaru powierzchni filtra (160x90 px). Dalej idzie ta sama
+kompozycja co w E01. Koszt (desktop, poziom 4 = 78x60 kafli): cała nakładka 0,561 ms bez
+mgły → 0,572 ms z mgłą kafelkową → 0,699 ms z raycastem. Na web (pygbag, 1280x720)
+`draw` rośnie o ~0,3 ms (4,75 → 5,05 ms przy budżecie 16,7 ms).
+
+### Dwa algorytmy, wybór w SettingsMenu
+
+`settings.FOG_ALGORITHM` czytane **żywo** (K6), bo to pokrętło gracza: `"off"` (dzisiejsza
+wieczna noc z aureolami przez ściany), `"raycast"` (wielokąt widzenia w pikselach - gładka
+krawędź cienia, zza rogu wychyla się wąski klin), `"shadowcast"` (recursive shadowcasting
+na kaflach - krawędź po kaflach, ~13x tańszy). Wybór trzyma
+`save_load/display_settings.py` (pole `fog_algorithm`, **bez** podbicia `CURRENT_VERSION` -
+niezgodna wersja zwraca całe ustawienia domyślne i skasowałaby rozdzielczość i głośności).
+Cała reszta nastaw to stałe `FOG_*` w `settings.py` - fine tuning bez UI.
+
+### Potwory jako źródła światła
+
+W labiryncie aureole z `night_filter` są zastąpione mgłą, także dla NPC. Świecą
+**tym samym algorytmem** co gracz, ale tańszymi nastawami (`FOG_NPC_*`: zasięg 3 kafle,
+60 promieni, 2 pierścienie) i tylko te w kadrze - maksymalnie `FOG_NPC_MAX_LIGHTS` (3)
+najbliższych graczowi. Dzięki temu koszt klatki nie zależy od poziomu labiryntu
+(poziom 4 to 7 potworów + boss).
+
+**Decyzja D7 (autor, 2026-08-02):** potwór świeci też w korytarzu, w którym gracz nigdy
+nie był - "słyszy echo kroków", a narastająca poświata zbliżającego się potwora jest
+ważniejsza niż czystość zasady. Ale świeci **ulotnie**: bit w `discovered` ustawia
+wyłącznie gracz, więc kafel zwalniany z widoczności wraca do `FOG_ALPHA_REMEMBERED` tylko
+wtedy, gdy gracz go widział, a w przeciwnym razie do `FOG_ALPHA_UNSEEN`. Jedna wartość dla
+obu przypadków zostawiłaby na mapie ślad potwora jako fałszywą "pamięć".
+
+Aggro potworów jest **nietknięte**: `movement_monster` dalej rusza w stronę gracza po samym
+dystansie (`MONSTER_WAKE_DISTANCE` = 100 px = 6,25 kafla), także przez ścianę. Ponieważ to
+więcej niż zasięg wzroku (5 / 4 kafle), potwór zawsze zaczyna iść, zanim gracz go zobaczy -
+to jest zamierzone.
+
+### Pułapki
+
+- **Czarne kwadraty.** Kafle wnętrza bloku ściany i wnęki (podłoga zamknięta z 3 stron -
+  typowo nisza na skrzynię) nie zostaną trafione żadnym promieniem. `_expand_surfaces`
+  dolewa im jasność z sąsiedztwa; **tylko** kaflom "powierzchni" - dolanie zwykłej podłogi
+  zdradza korytarz za ścianą. To wracało w prototypie trzy razy z rzędu, stąd
+  `just fow-prototype --selftest` (licznik ciemnych kafli w jasnym otoczeniu).
+- **Kolejność malowania wielokątów.** `draw.polygon` nie miesza, tylko nadpisuje, więc przy
+  kilku obserwatorach maluje się POZIOMAMI: najpierw najciemniejszy pierścień wszystkich,
+  potem kolejny, na końcu rdzenie. Per obserwator - ciemny pierścień potwora wymazuje
+  jasny rdzeń gracza.
+- **Tryb `multiply`** nie czyta powierzchni filtra (to sam `fill(BLEND_RGB_MULT)`), więc
+  mgły nie da się w nim narysować. W labiryncie z mgłą kompozycja idzie `overlay_half`.
+- **Stan mieszka na `scene.fog`** i jest w `MAP_PROPERTIES` - bez tego zejście piętro
+  niżej i powrót kasowałoby odkryty teren. `clear_maze_cache()` (leci przy każdym
+  ładowaniu mapy i zniszczeniu ściany) czyści tylko cache ścieżek A* i mgły nie dotyka.
+- **Geometria czytana żywo** z `scene.path_finding_grid`, nie z kopii - rozwalona ściana
+  natychmiast przepuszcza wzrok, bez inwalidacji czegokolwiek.
+
+Scenariusze agentowe: **Fog Of War Maze** (trzy stany na jednym zrzucie + asercja
+`fog_algorithm` / `fog_discovered_pct` z `debug_ui_state`) i **Maze Persists Across Save
+Load** (mgła po wczytaniu). Testy jednostkowe: `tests/test_fog_of_war.py`,
+a persystencja per mapa w `tests/test_save_load_multi_map.py`.
 
 ## Audio (`audio.py` + `config_model/audio.toml`)
 

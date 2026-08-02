@@ -399,28 +399,42 @@ skaluje co klatkę</strong>. Maska ma jeden piksel na kafel (78x60 px), wycinek 
 </table></div>
 
 <h3 id="d7">D7. Czy światło potwora odkrywa mapę</h3>
+<div class="callout ok">
+  <p><strong>Decyzja autora (2026-08-02), zmiana wobec pierwotnej rekomendacji:</strong>
+  potwory świecą <strong>zawsze</strong> - także w korytarzach, w których gracz nigdy nie był -
+  ale <strong>nie dopisują ani jednego kafla do pamięci odkrycia</strong>. Uzasadnienie
+  fabularne: gracz nie zna tego korytarza, ale "słyszy echo kroków". Ważniejszy jest efekt
+  psychologiczny narastającego stresu na widok zbliżającej się poświaty niż czystość zasady
+  "widzę tylko to, co odkryłem".</p>
+</div>
 <div class="tablewrap"><table>
   <tr><th>Opcja</th><th>Opis</th><th>Za</th><th>Przeciw</th></tr>
-  <tr class="rec"><td><strong>A. Świeci tylko na kaflach JUŻ ODKRYTYCH przez gracza; nigdy nie
-      dopisuje do pamięci</strong> <span class="badge b-ok">rekomendacja</span></td>
-      <td>Wkład potwora do maski jest przycinany: kafel nieodkryty zostaje na alfie 255.
-      Pamięć odkrycia rośnie wyłącznie od gracza.</td>
-      <td>mgła zostaje mgłą (potwór nie rysuje graczowi mapy); w znanym korytarzu widać
-      nadchodzącą poświatę, czyli dokładnie ten sygnał, który dziś dają aureole - tyle że
-      nie przez ściany; spójne z W6 (słyszysz go, zanim zobaczysz)</td>
-      <td>potwór wędrujący po nieodkrytej części poziomu jest całkiem niewidzialny (co jest
-      poprawne: gracz tam nigdy nie był)</td></tr>
-  <tr><td>B. Świeci wszędzie, także w nieodkrytym terenie</td>
-      <td>Jak dzisiejsza aureola, tylko z LoS.</td>
-      <td>efektowne "coś się świeci w ciemności"</td>
-      <td>wędrujące potwory odkrywają graczowi układ korytarzy - mgła traci sens po kilku
-      minutach stania w miejscu</td></tr>
+  <tr class="rec"><td><strong>B. Świeci wszędzie, także w nieodkrytym terenie; pamięć rośnie
+      tylko od gracza</strong> <span class="badge b-ok">wybór autora</span></td>
+      <td>Wkład potwora do maski nie jest przycinany, ale jest <strong>ulotny</strong>: kafel,
+      przez który potwór przeszedł, wraca do stanu NIEODKRYTY (alfa 255), a nie do pamięci
+      (230). Bit w <code>discovered</code> ustawia wyłącznie gracz.</td>
+      <td>"coś się świeci w ciemności i idzie w moją stronę" - najsilniejszy efekt
+      dramaturgiczny, jaki mgła może dać; spójne z W6 (potwór słyszy nas z 6,25 kafla,
+      my widzimy jego poświatę)</td>
+      <td>uważny gracz wyczyta z ruchu poświaty przebieg nieodkrytego korytarza - świadomie
+      zaakceptowane; nic z tego nie zostaje na mapie po przejściu potwora</td></tr>
+  <tr><td>A. Świeci tylko na kaflach już odkrytych przez gracza</td>
+      <td>Wkład potwora przycinany do <code>discovered</code>.</td>
+      <td>mgła "czysta": potwór nigdy nie pokazuje układu korytarzy</td>
+      <td>potwór wędrujący po nieodkrytej części poziomu jest całkiem niewidzialny -
+      kasuje efekt zbliżającej się poświaty, czyli to, po co mgła w ogóle powstaje</td></tr>
   <tr><td>C. Świeci tylko, gdy sam jest w polu widzenia gracza</td>
       <td>Przycięcie do <code>visible</code>, nie do <code>discovered</code>.</td>
       <td>najbezpieczniejsze</td>
       <td>nic nie wnosi: te kafle są już oświetlone przez gracza; efekt "widzę poświatę
       za rogiem" znika całkowicie</td></tr>
 </table></div>
+<p><strong>Konsekwencja dla kodu (nie do przeoczenia):</strong> przywracanie maski po odejściu
+światła nie może być jedną wartością. Kafel zwalniany z widoczności wraca do
+<code>FOG_ALPHA_REMEMBERED</code>, <strong>jeśli jego bit w <code>discovered</code> jest
+ustawiony</strong>, a w przeciwnym razie do <code>FOG_ALPHA_UNSEEN</code>. Inaczej ślad
+potwora zostawałby na mapie jako fałszywa "pamięć" korytarza, którego gracz nie widział.</p>
 
 <h3 id="d8">D8. Parametry światła potworów (te same czy tańsze)</h3>
 <div class="tablewrap"><table>
@@ -546,10 +560,14 @@ wyborem algorytmu jest stałą kodu - fine tuning po zagraniu, jedną edycją, b
   <tr><td><code>FOG_COLOR</code></td><td><span class="swatch" style="background:rgb(0,0,30)"></span><code>(0, 0, 30)</code></td>
       <td>ten sam odcień co <code>NIGHT_FILTER</code> - mgła i noc muszą być tym samym kolorem</td></tr>
   <tr><td><code>FOG_MASK_SMOOTH</code></td><td><code>False</code></td><td>skalowanie maski: nearest ("pamięć hard" z W2/W3)</td></tr>
-  <tr><td><code>FOG_UPSCALE_SMOOTH</code></td><td><code>False</code></td><td>skalowanie nakładki na ekran: nearest (W2/W3)</td></tr>
+  <tr><td><em>(upscale nakładki)</em></td><td>nearest</td>
+      <td>bez nowej stałej: pełnoekranowe skalowanie filtra robi ścieżka z E01
+      (<code>transform.scale</code>), która JEST nearest - wymaganie W2/W3 spełnione
+      przez istniejący kod</td></tr>
   <tr><td><code>FOG_NPC_LIGHTS</code></td><td><code>True</code></td><td>czy potwory świecą (W5); wyłącznik awaryjny do pomiarów</td></tr>
   <tr><td><code>FOG_NPC_MAX_LIGHTS</code></td><td class="num">3</td><td>ilu potworów naraz świeci (D6)</td></tr>
   <tr><td><code>FOG_NPC_RANGE_TILES</code></td><td class="num">3</td><td>zasięg światła potwora (D8)</td></tr>
+  <tr><td><code>FOG_NPC_CORE_TILES</code></td><td class="num">1,0</td><td>rdzeń światła potwora bez przyciemnienia</td></tr>
   <tr><td><code>FOG_NPC_RAY_COUNT</code></td><td class="num">60</td><td>promieni na potwora w trybie raycast (D8)</td></tr>
   <tr><td><code>FOG_NPC_STEPS</code></td><td class="num">2</td><td>pierścieni gradientu potwora (D8)</td></tr>
 </table></div>
@@ -618,10 +636,10 @@ bez żadnej dodatkowej inwalidacji.</p>
        │     shadowcast(blocked, cx, cy, R)      # 0,025 ms
        │     lub cast_rays(blocked, px, py, R)   # 0,32 ms (gracz) / 0,13 ms (potwór)
        ├─ grade()   - alfa z odległości (rdzeń → krawędź, kwantyzacja steps)
-       └─ commit()  - wpis do maski: pamięć ← poprzednia widoczność,
+       └─ commit()  - wpis do maski: kafel zwalniany ← 230 (jeśli odkryty) albo 255,
                       nowa widoczność ← alfa, lica ścian ← jasność sąsiedniej podłogi;
-                      wkład potwora przycięty do kafli odkrytych (D7);
-                      discovered |= widoczne KAFLE GRACZA
+                      światło potwora działa też w nieodkrytym terenie, ale ulotnie (D7);
+                      discovered |= widoczne KAFLE GRACZA (i tylko one)
 
 Scene.draw(screen, dt)
   └─ night_filter.apply_time_of_day_filter(scene, screen)
@@ -709,6 +727,28 @@ w kolejności: <code>FOG_RAY_COUNT</code> 180 → 90 (-48% kosztu), <code>FOG_NP
 3 → 1, a w ostateczności shadowcast jako domyślny algorytm na web.</p>
 
 <!-- ------------------------------------------------------------------ -->
+<div class="callout ok">
+  <p><strong>Zrealizowane 2026-08-02 (po akceptacji D7 przez autora).</strong> Zmierzone
+  po implementacji, w grze, a nie w prototypie:</p>
+  <ul>
+    <li><strong>web</strong> (pygbag, headless Chromium 1280x720, ten sam scenariusz
+    „Fog Of War Maze", mgła wyłączona vs raycast): <code>draw</code> 4,71-5,00 ms →
+    5,05-5,15 ms, czyli <strong>+0,3 ms</strong>; <code>update</code> 0,15-0,20 ms w obu
+    (przeliczanie widoczności ginie w szumie ruchu i AI). Suma
+    <code>update+draw+flip</code> ~5,7 ms przy budżecie 16,7 ms;</li>
+    <li><strong>desktop</strong> (headless, poziom 1, gracz + 3 potwory w kadrze):
+    <code>fog_of_war.update</code> 0,223 ms (raycast) i 0,023 ms (shadowcast) na klatkę
+    ruchu, cały <code>Scene.draw</code> 1,231 / 0,888 ms wobec 0,815 ms z mgłą wyłączoną;</li>
+    <li>mgła przeżywa zejście na poziom 2 i powrót (143 odkryte kafle przed i po),
+    oraz zapis/wczytanie.</li>
+  </ul>
+  <p>Odstępstwo od planu: <code>FOG_UPSCALE_SMOOTH</code> nie powstało (patrz tabela stałych),
+  a doszła <code>FOG_NPC_CORE_TILES</code>. Zamiast jednorazowego skryptu Playwrighta
+  (jak w E02) runner web przekazuje teraz <code>MOM_PROFILE</code> z env do
+  <code>MoM.env</code> - dwie linie w <code>tests/automate_display_test.py</code>, dzięki
+  czemu profil z WASM zbiera się tak samo jak na desktopie.</p>
+</div>
+
 <h2 id="plan">8. Plan wykonania (6 kroków, commit po każdym)</h2>
 
 <div class="tablewrap"><table>
@@ -751,8 +791,8 @@ w kolejności: <code>FOG_RAY_COUNT</code> 180 → 90 (-48% kosztu), <code>FOG_NP
       różnych wartości.</li>
   <li>pamięć: kafel raz odkryty zostaje odkryty po wyjściu z zasięgu (alfa =
       <code>FOG_ALPHA_REMEMBERED</code>, nie 255).</li>
-  <li>światło potwora nie dopisuje do <code>discovered</code> i nie rozjaśnia kafla
-      nieodkrytego (D7).</li>
+  <li>światło potwora rozjaśnia także kafel nieodkryty, ale nie dopisuje go do
+      <code>discovered</code>; po odejściu potwora kafel wraca do 255, a nie do 230 (D7).</li>
   <li>bitset: <code>from_base64(to_base64(x)) == x</code>; niezgodny rozmiar siatki daje
       pustą mgłę, nie wyjątek.</li>
   <li>zniszczona ściana: po zmianie <code>path_finding_grid</code> widoczność przechodzi
@@ -823,8 +863,9 @@ zrzutu opiera się wyłącznie na ocenie modelu.</p>
   <li>Trzy stany widoczne w grze; odkryte korytarze zostają widoczne po odejściu gracza.</li>
   <li>Oba algorytmy działają i przełączają się w SettingsMenu <strong>bez restartu</strong>;
       wybór przeżywa restart gry na desktopie i na web.</li>
-  <li>Potwory rozświetlają labirynt tym samym algorytmem, na kaflach już odkrytych;
-      ich logika pościgu jest bit w bit ta sama co dziś.</li>
+  <li>Potwory rozświetlają labirynt tym samym algorytmem, także w nieodkrytym terenie, ale
+      nie zostawiają po sobie pamięci odkrycia; ich logika pościgu jest bit w bit ta sama
+      co dziś.</li>
   <li>Stan mgły przeżywa zapis/wczytanie i przejście między poziomami; zapis 0.3 wczytuje się
       bez błędu z pustą mgłą.</li>
   <li>Koszt klatki na web w labiryncie mieści się w budżecie z E02 - liczby w commicie.</li>

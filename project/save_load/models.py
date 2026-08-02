@@ -497,6 +497,19 @@ class MapState:
     maze_return_map: str = ""
     maze_return_entry_point: str = ""
     dead_monsters: list[str] = field(default_factory=list)
+    # E03: fog of war. The maze level itself is still regenerated from the seed -
+    # this is the first maze data that is really remembered, because "which
+    # corridors the player has already walked" cannot be derived from anything.
+    # One bit per map tile, base64-encoded (78x60 tiles = 780 B for the biggest
+    # level). ``fog_w``/``fog_h`` are the grid it was recorded on: a mismatch
+    # means the level was generated differently, and the fog is dropped rather
+    # than smeared over the wrong tiles.
+    # A field with a default, so an older save loads with an empty fog and needs
+    # NO migration and NO version bump (policy in B02 - and before 1.0 a bump
+    # would refuse every existing save instead).
+    fog_discovered: str = ""
+    fog_w: int = 0
+    fog_h: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         d = _to_dict(self)
@@ -517,6 +530,9 @@ class MapState:
             maze_return_map=str(data.get("maze_return_map", "")),
             maze_return_entry_point=str(data.get("maze_return_entry_point", "")),
             dead_monsters=list(data.get("dead_monsters", [])),
+            fog_discovered=str(data.get("fog_discovered", "")),
+            fog_w=int(data.get("fog_w", 0) or 0),
+            fog_h=int(data.get("fog_h", 0) or 0),
         )
 
 

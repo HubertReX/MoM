@@ -31,6 +31,10 @@ language = "Język: {lang}"
 volume_master = "Głośność ogólna: < {value}% >"
 volume_music = "Muzyka: < {value}% >"
 volume_sfx = "Efekty: < {value}% >"
+fog = "Mgła wojny: < {value} >"
+fog_off = "wyłączona"
+fog_raycast = "promienie"
+fog_shadowcast = "kafle"
 back = "Wstecz"
 
 # === Zapis / Wczytaj ===

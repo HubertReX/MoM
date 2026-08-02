@@ -24,6 +24,19 @@ Kontekst nadrzędny: [`../AGENTS.md`](../AGENTS.md).
   wyniki są cache'owane dla wydajności.
 - `analyze_maze.py` — narzędzie do analizy trudności (ślepe uliczki, najdłuższe ścieżki).
 
+## Mgła wojny (E03)
+
+Mgła NIE mieszka w tym pakiecie i nie zna siatki komórek: jest kafelkowa i siedzi
+w `scene/fog_of_war.py` (stan na `scene.fog`, per mapa). Czyta stąd tylko efekt uboczny
+generacji - `path_finding_grid` (co jest ścianą) i warstwę `floor` z TMX (kafle bez podłogi
+to wnętrza bloków ścian). Komórka labiryntu to 6x6 kafli, więc odkrywanie „per komórka"
+pokazywałoby cały segment razem ze ścianami i skrzynią w niszy naraz.
+
+Konsekwencja dla tego pakietu: `clear_maze_cache()` (cache ścieżek A*) może lecieć jak
+dotąd przy każdym ładowaniu mapy i zniszczeniu ściany - stanu mgły nie dotyka. Pełny opis
+mechaniki: [`../AGENTS.md`](../AGENTS.md), sekcja „Mgła wojny w labiryncie".
+Poligon do strojenia wyglądu: `just fow-prototype` (`scripts/FoW-prototype.py`).
+
 ## Powiązanie z configiem
 
 Parametry poziomów labiryntu (potwory, boss, liczba/szablony skrzyń, wymiary `maze_cols`/`rows`)

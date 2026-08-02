@@ -60,8 +60,8 @@ from settings import (
     vec3,
     vector_to_tuple
 )
-from scene import (agent_api, collisions, debug_overlay, intro, map_loader, map_state,
-                   night_filter, player_actions, routines_director, world_clock)
+from scene import (agent_api, collisions, debug_overlay, fog_of_war, intro, map_loader,
+                   map_state, night_filter, player_actions, routines_director, world_clock)
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
@@ -237,6 +237,9 @@ class Scene(State):
         # self.day_filter.fill(DAY_FILTER)
         self.layers: list[str] = []
         self.path_finding_grid: list[list[int]] = []
+        # mgła wojny labiryntu (E03) - budowana w `load_map`, per mapa (`MAP_PROPERTIES`);
+        # `None` poza labiryntem i przy wyłączonej mgle
+        self.fog: "fog_of_war.FogState | None" = None
         self.entry_points: dict[str, vec] = {}
         self.sprites_layer: int = 0
         self.group: PyscrollGroup
@@ -619,6 +622,10 @@ class Scene(State):
 
         # akcje gracza (B01 krok 5): cały blok INPUTS
         player_actions.handle(self)
+
+        # mgła wojny (E03): po kolizjach, bo dopiero wtedy pozycje w tej klatce są
+        # ostateczne. Poza labiryntem i przy wyłączonej mgle kosztuje jedno `if`.
+        fog_of_war.update(self)
 
     # TODO Rename this here and in `update`
     def _confirm_reload_map(self) -> None:

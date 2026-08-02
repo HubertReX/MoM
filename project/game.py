@@ -201,6 +201,8 @@ class Game:
         settings._VOLUME_MASTER = _ds.volume_master
         settings._VOLUME_MUSIC = _ds.volume_music
         settings._VOLUME_SFX = _ds.volume_sfx
+        # E03: algorytm mgły wojny - preferencja gracza jak głośność, nie stan świata
+        settings.FOG_ALGORITHM = _ds.fog_algorithm
 
         # Audio (D01): po `pygame.init()`, ale przed pierwszym `load_map` -
         # `mixer.init()` wołany wcześniej bywa kapryśny. Na web manager startuje

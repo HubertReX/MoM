@@ -36,6 +36,8 @@ from settings import (
     VERSION,
 )
 
+from scene import fog_of_war
+
 if TYPE_CHECKING:
     from game import Game
     from scene import Scene
@@ -249,6 +251,7 @@ class SaveManager:
                 maze_return_map=cached.get("return_map", "") or "",
                 maze_return_entry_point=cached.get("return_entry_point", "") or "",
                 dead_monsters=self._build_dead_monsters_from_cache(cached),
+                **self._build_fog(cached.get("fog")),
             )
 
         maps[current_name] = MapState(
@@ -262,6 +265,7 @@ class SaveManager:
             maze_return_map=getattr(scene, "return_map", "") if scene.is_maze else "",
             maze_return_entry_point=getattr(scene, "return_entry_point", "") if scene.is_maze else "",
             dead_monsters=self._build_dead_monsters(scene),
+            **self._build_fog(getattr(scene, "fog", None)),
         )
 
         # Maps restored from a save but not re-entered yet have no live objects to
@@ -399,6 +403,16 @@ class SaveManager:
         if not scene.is_maze:
             return None
         return scene.maze_seed
+
+    def _build_fog(self, fog: Any) -> dict[str, Any]:
+        """Fog of war of one map, live scene or per-map cache - one implementation.
+
+        Both call sites go through here on purpose: ``destroyed_walls`` and
+        ``dead_monsters`` each shipped a bug where the cached path was forgotten,
+        and every map the player had left silently lost its progress.
+        """
+        data, w, h = fog_of_war.to_save(fog)
+        return {"fog_discovered": data, "fog_w": w, "fog_h": h}
 
     def _build_maze_level(self, scene: Scene) -> int | None:
         if not scene.is_maze or not hasattr(scene, "maze_stats"):
@@ -648,6 +662,10 @@ class SaveManager:
         self._apply_destroyed_walls(scene, ms.destroyed_walls)
         self._apply_npc_states(scene, ms)
         self._apply_maze_mobs(scene, ms)
+        # after `_apply_destroyed_walls`: the fog reads the A* grid live, so the
+        # walls the player already smashed must be gone before it repaints
+        fog_of_war.apply_save(getattr(scene, "fog", None),
+                              ms.fog_discovered, ms.fog_w, ms.fog_h)
 
     def _restore_ground_items(self, scene: Scene, items: list[GroundItemState]) -> None:
         """Make the map's ground items exactly what the save recorded.

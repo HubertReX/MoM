@@ -37,6 +37,14 @@ _VOLUME_FIELDS: dict[str, tuple[str, str]] = {
     "volume_sfx": ("_VOLUME_SFX", "settings.volume_sfx"),
 }
 
+#: E03: nazwa algorytmu mgły -> klucz locale opisujący go w wierszu ustawień.
+#: Kolejność w `settings.FOG_ALGORITHM_OPTIONS` jest kolejnością cyklowania.
+_FOG_LABELS: dict[str, str] = {
+    "off": "settings.fog_off",
+    "raycast": "settings.fog_raycast",
+    "shadowcast": "settings.fog_shadowcast",
+}
+
 
 # Import settings module for mutable state
 
@@ -102,6 +110,10 @@ class SettingsPanel(Widget):
             self._buttons.append(Button(self._volume_label(volume_type), None, size=_BUTTON_SIZE))
             self._button_types.append(volume_type)
 
+        # Fog of war algorithm (E03) - cycled like the rows above
+        self._buttons.append(Button(self._fog_label(), None, size=_BUTTON_SIZE))
+        self._button_types.append("fog")
+
         self._buttons.append(Button(_("settings.back"), None, size=_BUTTON_SIZE))
         self._button_types.append("back")
 
@@ -114,6 +126,29 @@ class SettingsPanel(Widget):
     def _volume_label(self, volume_type: str) -> str:
         attr, key = _VOLUME_FIELDS[volume_type]
         return _(key, value=int(round(getattr(_settings, attr) * 100)))
+
+    def _fog_label(self) -> str:
+        """Label for the fog-of-war cycler at the current algorithm."""
+        key = _FOG_LABELS.get(_settings.FOG_ALGORITHM, _FOG_LABELS["off"])
+        return _("settings.fog", value=_(key))
+
+    def _cycle_fog(self, step: int) -> None:
+        """Switch the fog-of-war algorithm (wrapping) and persist it at once.
+
+        Takes effect on the next frame drawn in a maze - the scene reads
+        ``settings.FOG_ALGORITHM`` live (K6), so there is nothing to rebuild and
+        nothing to restart. Discovery already made is kept: the mask is repainted
+        from the same bitset whatever the algorithm.
+        """
+        options = _settings.FOG_ALGORITHM_OPTIONS
+        try:
+            idx = options.index(_settings.FOG_ALGORITHM)
+        except ValueError:
+            idx = 0
+        _settings.FOG_ALGORITHM = options[(idx + step) % len(options)]
+        audio.play_sfx("menu_move")
+        self._rebuild_buttons()
+        save_display_settings()
 
     def _cycle_volume(self, volume_type: str, step: int) -> None:
         """Move one volume by ``VOLUME_STEP``, clamped to 0-100% (no wrap).
@@ -225,6 +260,8 @@ class SettingsPanel(Widget):
             self._cycle_resolution(step)
         elif button_type in _VOLUME_FIELDS:
             self._cycle_volume(button_type, step)
+        elif button_type == "fog":
+            self._cycle_fog(step)
 
     def render(self) -> pygame.Surface:
         surf = self._bg.copy()
@@ -247,7 +284,8 @@ class SettingsPanel(Widget):
                     # On a cycled row (resolution, volumes), a click on the left half
                     # steps back and the right half steps forward (matching the
                     # "< ... >" arrows in the label).
-                    if self._button_types[i] == "resolution" or self._button_types[i] in _VOLUME_FIELDS:
+                    if (self._button_types[i] in ("resolution", "fog")
+                            or self._button_types[i] in _VOLUME_FIELDS):
                         self._step_selected(-1 if event.pos[0] < child.rect.centerx else 1)
                     else:
                         self.activate()
@@ -261,6 +299,8 @@ class SettingsPanel(Widget):
             self._cycle_resolution(1)
         elif bt in _VOLUME_FIELDS:
             self._cycle_volume(bt, 1)
+        elif bt == "fog":
+            self._cycle_fog(1)
         elif bt == "fullscreen":
             _settings._IS_FULLSCREEN = not _settings._IS_FULLSCREEN
             if self._apply_callback is not None:

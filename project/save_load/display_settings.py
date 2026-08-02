@@ -38,6 +38,11 @@ class DisplaySettings:
     volume_master: float = _settings.DEFAULT_VOLUME_MASTER
     volume_music: float = _settings.DEFAULT_VOLUME_MUSIC
     volume_sfx: float = _settings.DEFAULT_VOLUME_SFX
+    # E03: algorytm mgły wojny w labiryncie ("off" / "raycast" / "shadowcast").
+    # Ten sam wzór co głośności - nowe pole z wartością domyślną, BEZ podbicia
+    # `CURRENT_VERSION`: niezgodna wersja zwraca całe ustawienia domyślne, czyli
+    # skasowałaby graczowi rozdzielczość, język i wszystkie trzy głośności.
+    fog_algorithm: str = _settings.FOG_ALGORITHM
     version: int = CURRENT_VERSION
 
 
@@ -134,6 +139,7 @@ def _to_dict(settings: DisplaySettings) -> dict[str, Any]:
         "volume_master": settings.volume_master,
         "volume_music": settings.volume_music,
         "volume_sfx": settings.volume_sfx,
+        "fog_algorithm": settings.fog_algorithm,
     }
     if settings.resolution is not None:
         data["resolution"] = [settings.resolution[0], settings.resolution[1]]
@@ -145,6 +151,12 @@ def _clamp_volume(raw: Any, default: float) -> float:
         return max(0.0, min(1.0, float(raw)))
     except (TypeError, ValueError):
         return default
+
+
+def _clean_fog(raw: Any) -> str:
+    """Nieznana wartość (ręczna edycja pliku, starszy build) = domyślny algorytm."""
+    value = str(raw)
+    return value if value in _settings.FOG_ALGORITHM_OPTIONS else _settings.FOG_ALGORITHM
 
 
 def _clamp_index(index: int) -> int:
@@ -173,6 +185,7 @@ def _parse_settings(raw: dict[str, Any]) -> DisplaySettings:
         volume_master=_clamp_volume(raw.get("volume_master"), _settings.DEFAULT_VOLUME_MASTER),
         volume_music=_clamp_volume(raw.get("volume_music"), _settings.DEFAULT_VOLUME_MUSIC),
         volume_sfx=_clamp_volume(raw.get("volume_sfx"), _settings.DEFAULT_VOLUME_SFX),
+        fog_algorithm=_clean_fog(raw.get("fog_algorithm")),
     )
 
 
@@ -213,6 +226,7 @@ def save_display_settings(storage: DisplaySettingsStorage | None = None) -> None
         volume_master=_settings._VOLUME_MASTER,
         volume_music=_settings._VOLUME_MUSIC,
         volume_sfx=_settings._VOLUME_SFX,
+        fog_algorithm=_settings.FOG_ALGORITHM,
     )
     idx = _settings._DISPLAY_RES_INDEX
     if 0 <= idx < len(_settings.DISPLAY_RES_OPTIONS):

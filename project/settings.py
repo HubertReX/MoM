@@ -545,6 +545,66 @@ DAY_FILTER: tuple[int, int, int, int] = (152, 152, 0, 0)
 # amount of light sources passed to shader
 MAX_LIGHTS_COUNT: int = 32
 
+# ---------------------------------------------------------------------------
+# Mgła wojny w labiryncie (E03)
+# ---------------------------------------------------------------------------
+# Trzy stany widoczności kafla zapisane jako trzy wartości alfy w JEDNEJ masce
+# (patrz `scene/fog_of_war.py`). Punkt odniesienia: alfa NIGHT_FILTER to 230,
+# czyli cały labirynt sprzed E03 wygląda tak, jak tu wygląda stan "odkryte,
+# poza wzrokiem".
+#
+# Aktywny algorytm wybiera gracz w SettingsMenu, więc TO JEDNO czyta się żywo
+# przez `settings.FOG_ALGORITHM` (kontrakt K6). Cała reszta to stałe do
+# fine tuningu - wartości wyjściowe = nastawy zaakceptowane na prototypie
+# (`just fow-prototype`), decyzje W2/W3 dokumentu E03.
+#   "off"        - dzisiejszy wygląd: wieczna noc + aureole świateł przez ściany
+#   "raycast"    - wielokąt widzenia w pikselach; gładka krawędź cienia
+#   "shadowcast" - recursive shadowcasting na kaflach; krawędź po kaflach, tańszy
+FOG_ALGORITHM: str = "raycast"
+FOG_ALGORITHM_OPTIONS: tuple[str, ...] = ("off", "raycast", "shadowcast")
+
+# zasięg wzroku gracza i rdzeń bez przyciemnienia, w kaflach
+FOG_RAYCAST_RANGE_TILES: int = 5
+# połowa dzisiejszej aureoli (CIRCLE_RADIUS * FILTER_SCALE / ZOOM_LEVEL / TILE_SIZE = 3,16):
+# dzięki temu pierścienie gradientu zaczynają się NA ZEWNĄTRZ rdzenia i widać ich skok,
+# zamiast być przykryte jednolitą plamą światła
+FOG_RAYCAST_CORE_TILES: float = 1.6
+FOG_RAYCAST_STEPS: int = 4
+FOG_SHADOWCAST_RANGE_TILES: int = 4
+FOG_SHADOWCAST_CORE_TILES: float = 2.0
+FOG_SHADOWCAST_STEPS: int = 4
+
+# promieni na obserwatora (180 = co 2 stopnie) i krok ich próbkowania w kaflach
+FOG_RAY_COUNT: int = 180
+FOG_RAY_STEP_TILES: float = 0.34
+# poniżej tylu pikseli ruchu nie przeliczamy raycastu gracza - kasuje przeliczanie
+# przy dryfie subpikselowym (tryby kafelkowe liczą się i tak tylko przy zmianie kafla)
+FOG_RAY_MIN_MOVE_PX: float = 2.0
+# ile pierścieni rysować, gdy `steps` = 0 ("płynnie"): tyle, żeby skoku nie było widać
+FOG_SMOOTH_RINGS: int = 16
+
+# Potwory jako źródła światła (W5). Ten sam algorytm co gracz, ale tańsze nastawy:
+# koszt klatki ma być niezależny od poziomu labiryntu, a gracz ma zostać
+# najjaśniejszym punktem sceny.
+FOG_NPC_LIGHTS: bool = True
+FOG_NPC_MAX_LIGHTS: int = 3
+FOG_NPC_RANGE_TILES: int = 3
+FOG_NPC_CORE_TILES: float = 1.0
+FOG_NPC_STEPS: int = 2
+FOG_NPC_RAY_COUNT: int = 60
+
+# alfy trzech stanów; FOG_ALPHA_REMEMBERED == NIGHT_FILTER[3] nie przez przypadek
+FOG_ALPHA_UNSEEN: int = 255
+FOG_ALPHA_REMEMBERED: int = 230
+FOG_ALPHA_VISIBLE_EDGE: int = 175
+FOG_ALPHA_CLEAR: int = 0
+# wykładnik krzywej gaśnięcia jasności z odległością
+FOG_FALLOFF_EXP: float = 1.4
+# ten sam odcień co NIGHT_FILTER - mgła i noc muszą być tym samym kolorem
+FOG_COLOR: tuple[int, int, int] = (0, 0, 30)
+# skalowanie maski i nakładki: nearest ("pamięć hard" / "upscale nearest" z prototypu)
+FOG_MASK_SMOOTH: bool = False
+
 STYLE_TAGS_DICT: dict[str, str] = {
     "h1": "{align center}{size 42}{cast_shadow True}",
     "h2": "{align left}{size 36}{cast_shadow True}",
