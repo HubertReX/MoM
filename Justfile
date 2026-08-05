@@ -378,3 +378,10 @@ build-itchio:
 [unix]
 start-oc-agent:
     Tasks/bin/moab watch --agent opencode --model "opencode/big-pickle" --interval 5
+
+# Measure how CodeGraph (or any tool adoption) changed CC's work profile, from session transcripts.
+[unix]
+codegraph-impact *ARGS:
+    # Compares two eras split by --cutoff (default: CodeGraph install 2026-07-21). Pair with
+    # --min-size 1.7 to control for the size confound - see doc/codegraph-wplyw-2026-08-05.md.
+    .venv/bin/python scripts/codegraph_impact.py {{ARGS}}
