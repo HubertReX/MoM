@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.1" name="CharacterTileset" tilewidth="23" tileheight="16" tilecount="33" columns="0" tilerendersize="grid" fillmode="preserve-aspect-fit">
+<tileset version="1.10" tiledversion="1.12.1" name="CharacterTileset" tilewidth="23" tileheight="16" tilecount="34" columns="0" tilerendersize="grid" fillmode="preserve-aspect-fit">
  <grid orientation="orthogonal" width="16" height="16"/>
- <tile id="0" x="0" y="0" width="16" height="16" type="GreenNinja">
+ <tile id="0" x="0" y="0" width="16" height="16" type="Player">
   <properties>
-   <property name="model_name" value="GreenNinja"/>
+   <property name="model_name" value="Player"/>
   </properties>
   <image source="../../characters/GreenNinja/SpriteSheet.png" width="80" height="112"/>
  </tile>
@@ -49,15 +49,15 @@
   </properties>
   <image source="../../characters/Cat/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="9" x="0" y="0" width="16" height="16" type="Dog1">
+ <tile id="9" x="0" y="0" width="16" height="16" type="DOG_ORANGE">
   <properties>
-   <property name="model_name" value="Dog1"/>
+   <property name="model_name" value="DOG_ORANGE"/>
   </properties>
   <image source="../../characters/Dog1/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="10" x="0" y="0" width="16" height="16" type="Dog2">
+ <tile id="10" x="0" y="0" width="16" height="16" type="DOG_PURPLE">
   <properties>
-   <property name="model_name" value="Dog"/>
+   <property name="model_name" value="DOG_PURPLE"/>
   </properties>
   <image source="../../characters/Dog2/SpriteSheet.png" width="32" height="16"/>
  </tile>
@@ -121,27 +121,27 @@
   </properties>
   <image source="../../characters/Boar/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="6" x="0" y="0" width="16" height="16" type="Snake">
+ <tile id="6" x="0" y="0" width="16" height="16" type="SNAKE_01">
   <properties>
-   <property name="model_name" value="Snake"/>
+   <property name="model_name" value="SNAKE_01"/>
   </properties>
   <image source="../../characters/Snake/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="21" x="0" y="0" width="16" height="16" type="Spirit">
+ <tile id="21" x="0" y="0" width="16" height="16" type="SPIRIT_01">
   <properties>
-   <property name="model_name" value="Spirit"/>
+   <property name="model_name" value="SPIRIT_01"/>
   </properties>
   <image source="../../characters/Spirit/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="22" x="0" y="0" width="16" height="16" type="Slime">
+ <tile id="22" x="0" y="0" width="16" height="16" type="SLIME_01">
   <properties>
-   <property name="model_name" value="Slime"/>
+   <property name="model_name" value="SLIME_01"/>
   </properties>
   <image source="../../characters/Slime/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="23" x="0" y="0" width="16" height="16" type="SpiderRed">
+ <tile id="23" x="0" y="0" width="16" height="16" type="SPIDER_01">
   <properties>
-   <property name="model_name" value="SpiderRed"/>
+   <property name="model_name" value="SPIDER_01"/>
   </properties>
   <image source="../../characters/SpiderRed/SpriteSheet.png" width="64" height="64"/>
  </tile>
@@ -198,5 +198,11 @@
    <property name="model_name" value="POTIONEER_PUZZLEMINT"/>
   </properties>
   <image source="../../characters/EggGirl/SpriteSheet.png" width="64" height="112"/>
+ </tile>
+ <tile id="33" x="0" y="0" width="16" height="16" type="ROBIN">
+  <properties>
+   <property name="model_name" value="ROBIN"/>
+  </properties>
+  <image source="../../characters/Villager4/SpriteSheet.png" width="64" height="112"/>
  </tile>
 </tileset>

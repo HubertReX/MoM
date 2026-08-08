@@ -22,8 +22,6 @@ death            = "tubular-bell-of-death.ogg"
 maze             = "caves-of-dawn.ogg"
 # Shire
 Village          = "best-adventure-ever.ogg"
-# misterious
-VillageHouse     = "deep-in-the-dell.ogg"
 # magic, harry potter style
 LOST_CORK_TAVERN = "let-the-mystery-unfold.ogg"
 # a bit spooky, more misterious

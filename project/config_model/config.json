@@ -482,8 +482,8 @@
         }
     },
     "chests": {
-        "SmallChest_Maze_01": {
-            "name": "SmallChest_Maze_01",
+        "MAZE_01_SMALL_CHEST": {
+            "name": "MAZE_01_SMALL_CHEST",
             "total_items_count": 1,
             "random_items": [
                 "gem_small_green",
@@ -491,8 +491,8 @@
                 "shrimp"
             ]
         },
-        "BigChest_Maze_01": {
-            "name": "BigChest_Maze_01",
+        "MAZE_01_BIG_CHEST": {
+            "name": "MAZE_01_BIG_CHEST",
             "is_small": false,
             "items": [
                 "gem_big_green"
@@ -504,8 +504,8 @@
                 "fish"
             ]
         },
-        "SmallChest_Maze_02": {
-            "name": "SmallChest_Maze_02",
+        "MAZE_02_SMALL_CHEST": {
+            "name": "MAZE_02_SMALL_CHEST",
             "total_items_count": 1,
             "random_items": [
                 "gem_small_purple",
@@ -513,8 +513,8 @@
                 "shrimp"
             ]
         },
-        "BigChest_Maze_02": {
-            "name": "BigChest_Maze_02",
+        "MAZE_02_BIG_CHEST": {
+            "name": "MAZE_02_BIG_CHEST",
             "is_small": false,
             "items": [
                 "gem_big_purple"
@@ -526,8 +526,8 @@
                 "fish"
             ]
         },
-        "SmallChest_Maze_03": {
-            "name": "SmallChest_Maze_03",
+        "MAZE_03_SMALL_CHEST": {
+            "name": "MAZE_03_SMALL_CHEST",
             "total_items_count": 1,
             "random_items": [
                 "gem_small_blue",
@@ -535,8 +535,8 @@
                 "shrimp"
             ]
         },
-        "BigChest_Maze_03": {
-            "name": "BigChest_Maze_03",
+        "MAZE_03_BIG_CHEST": {
+            "name": "MAZE_03_BIG_CHEST",
             "is_small": false,
             "items": [
                 "gem_big_blue"
@@ -548,8 +548,8 @@
                 "fish"
             ]
         },
-        "SmallChest_Maze_04": {
-            "name": "SmallChest_Maze_04",
+        "MAZE_04_SMALL_CHEST": {
+            "name": "MAZE_04_SMALL_CHEST",
             "total_items_count": 1,
             "random_items": [
                 "gem_small_orange",
@@ -557,8 +557,8 @@
                 "shrimp"
             ]
         },
-        "BigChest_Maze_04": {
-            "name": "BigChest_Maze_04",
+        "MAZE_04_BIG_CHEST": {
+            "name": "MAZE_04_BIG_CHEST",
             "is_small": false,
             "items": [
                 "gem_big_orange"
@@ -570,14 +570,14 @@
                 "fish"
             ]
         },
-        "SmallChest_VillageHouse": {
-            "name": "SmallChest_VillageHouse",
+        "LOST_CORK_TAVERN_SMALL_CHEST": {
+            "name": "LOST_CORK_TAVERN_SMALL_CHEST",
             "items": [
                 "golden_coin"
             ]
         },
-        "BigChest_Village": {
-            "name": "BigChest_Village",
+        "BLUNDERHAVEN_BIG_CHEST": {
+            "name": "BLUNDERHAVEN_BIG_CHEST",
             "is_small": false,
             "items": [
                 "sai",
@@ -883,8 +883,8 @@
             "boss_monster": "CAVE_LION",
             "monsters_count": 4,
             "small_chest_count": 2,
-            "small_chest_template": "SmallChest_Maze_01",
-            "big_chest_template": "BigChest_Maze_01",
+            "small_chest_template": "MAZE_01_SMALL_CHEST",
+            "big_chest_template": "MAZE_01_BIG_CHEST",
             "maze_cols": 9,
             "maze_rows": 6
         },
@@ -896,8 +896,8 @@
             "boss_monster": "CAVE_LION2",
             "monsters_count": 5,
             "small_chest_count": 3,
-            "small_chest_template": "SmallChest_Maze_02",
-            "big_chest_template": "BigChest_Maze_02",
+            "small_chest_template": "MAZE_02_SMALL_CHEST",
+            "big_chest_template": "MAZE_02_BIG_CHEST",
             "maze_cols": 10,
             "maze_rows": 7
         },
@@ -910,8 +910,8 @@
             "boss_monster": "LION_YELLOW",
             "monsters_count": 6,
             "small_chest_count": 4,
-            "small_chest_template": "SmallChest_Maze_03",
-            "big_chest_template": "BigChest_Maze_03",
+            "small_chest_template": "MAZE_03_SMALL_CHEST",
+            "big_chest_template": "MAZE_03_BIG_CHEST",
             "maze_cols": 11,
             "maze_rows": 8
         },
@@ -925,8 +925,8 @@
             "boss_monster": "FLAM",
             "monsters_count": 7,
             "small_chest_count": 5,
-            "small_chest_template": "SmallChest_Maze_04",
-            "big_chest_template": "BigChest_Maze_04",
+            "small_chest_template": "MAZE_04_SMALL_CHEST",
+            "big_chest_template": "MAZE_04_BIG_CHEST",
             "maze_cols": 12,
             "maze_rows": 9
         }

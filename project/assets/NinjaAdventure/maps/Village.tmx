@@ -9,8 +9,8 @@
  <tileset firstgid="1049" source="tilesets/Field.tsx"/>
  <tileset firstgid="1124" source="tilesets/Nature.tsx"/>
  <tileset firstgid="1628" source="tilesets/House.tsx"/>
- <tileset firstgid="2387" source="Element.tsx"/>
- <tileset firstgid="2627" source="FloorDetail.tsx"/>
+ <tileset firstgid="2387" source="tilesets/Element.tsx"/>
+ <tileset firstgid="2627" source="tilesets/FloorDetail.tsx"/>
  <tileset firstgid="2707" source="../items/items.tsx"/>
  <tileset firstgid="2817" source="tilesets/CharacterTileset.tsx"/>
  <layer id="1" name="ground" width="70" height="70">
@@ -485,7 +485,7 @@
     <property name="to_map" value="Maze_01"/>
    </properties>
   </object>
-  <object id="39" name="BigChest_Village" gid="2749" x="880" y="736" width="16" height="16">
+  <object id="39" name="BLUNDERHAVEN_BIG_CHEST" gid="2749" x="880" y="736" width="16" height="16">
    <properties>
     <property name="obj_type" value="chest"/>
    </properties>
@@ -539,11 +539,7 @@
   <object id="125" name="shrine" x="568" y="152"/>
  </objectgroup>
  <objectgroup id="9" name="spawn_points">
-  <object id="76" name="Snake_01" gid="2823" x="961.372" y="863.896" width="16" height="16">
-   <properties>
-    <property name="model_name" value="SNAKE_01"/>
-   </properties>
-  </object>
+  <object id="76" name="Snake_01" gid="2823" x="961.372" y="863.896" width="16" height="16"/>
   <object id="77" name="FishRed05" gid="2824" x="1080" y="756.8" width="16" height="16"/>
   <object id="78" name="FishRed04" gid="2824" x="1064" y="852.8" width="16" height="16"/>
   <object id="79" name="FishRed03" gid="2824" x="1080" y="964.8" width="16" height="16"/>
@@ -561,16 +557,8 @@
   <object id="91" name="ChickenBrown" gid="2829" x="876.8" y="827.2" width="16" height="16"/>
   <object id="92" name="ChickenBlack" gid="2828" x="814.4" y="840" width="16" height="16"/>
   <object id="94" name="ChickenCute" gid="2830" x="862.4" y="852.8" width="16" height="16"/>
-  <object id="98" name="Dog_orange" type="Dog_orange" gid="2826" x="670.4" y="777.6" width="16" height="16">
-   <properties>
-    <property name="model_name" value="DOG_ORANGE"/>
-   </properties>
-  </object>
-  <object id="99" name="Dog_purple" type="Dog_purple" gid="2827" x="688" y="811.2" width="16" height="16">
-   <properties>
-    <property name="model_name" value="DOG_PURPLE"/>
-   </properties>
-  </object>
+  <object id="98" name="Dog_orange" type="Dog_orange" gid="2826" x="670.4" y="777.6" width="16" height="16"/>
+  <object id="99" name="Dog_purple" type="Dog_purple" gid="2827" x="688" y="811.2" width="16" height="16"/>
   <object id="101" name="Racoon" gid="2836" x="728" y="592" width="16" height="16"/>
   <object id="102" name="Boar" gid="2837" x="760" y="432" width="16" height="16"/>
   <object id="95" name="Marry" gid="2822" x="792" y="800" width="16" height="16"/>
@@ -582,11 +570,7 @@
   <object id="110" name="CLAPBACK_SWORD" gid="2848" x="896" y="736" width="16" height="16"/>
   <object id="112" name="POTIONEER_PUZZLEMINT" gid="2849" x="960" y="736" width="16" height="16"/>
   <object id="113" name="HAMMER_HOAXHEART" gid="2819" x="960" y="688" width="16" height="16"/>
-  <object id="114" name="Robin" gid="2821" x="640" y="832" width="16" height="16">
-   <properties>
-    <property name="model_name" value="ROBIN"/>
-   </properties>
-  </object>
+  <object id="114" name="Robin" gid="2850" x="640" y="832" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="12" name="zones" visible="0">
   <object id="65" name="water" x="1056" y="720">

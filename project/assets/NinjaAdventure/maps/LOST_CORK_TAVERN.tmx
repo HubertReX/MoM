@@ -6,7 +6,7 @@
  <tileset firstgid="1" source="tilesets/InteriorFloor.tsx"/>
  <tileset firstgid="375" source="tilesets/WallSimple.tsx"/>
  <tileset firstgid="485" source="tilesets/Interior.tsx"/>
- <tileset firstgid="805" source="Element.tsx"/>
+ <tileset firstgid="805" source="tilesets/Element.tsx"/>
  <tileset firstgid="1045" source="tilesets/House.tsx"/>
  <tileset firstgid="1804" source="../items/items.tsx"/>
  <tileset firstgid="1914" source="tilesets/CharacterTileset.tsx"/>
@@ -209,7 +209,7 @@
     <property name="to_map" value="Village"/>
    </properties>
   </object>
-  <object id="6" name="SmallChest_VillageHouse" x="112" y="180" width="16" height="16">
+  <object id="6" name="LOST_CORK_TAVERN_SMALL_CHEST" x="112" y="180" width="16" height="16">
    <properties>
     <property name="obj_type" value="chest"/>
    </properties>

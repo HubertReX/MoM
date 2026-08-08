@@ -8,7 +8,7 @@
   <property name="particles" value="n/a"/>
  </properties>
  <tileset firstgid="1" source="../NinjaAdventure/maps/tilesets/Maze.tsx"/>
- <tileset firstgid="133" source="../NinjaAdventure/maps/Element.tsx"/>
+ <tileset firstgid="133" source="../NinjaAdventure/maps/tilesets/Element.tsx"/>
  <tileset firstgid="373" source="../NinjaAdventure/items/items.tsx"/>
  <layer id="3" name="background" width="38" height="30" visible="0">
   <data encoding="csv">

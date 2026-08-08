@@ -4,8 +4,8 @@ Priorytet: **P3** (Faza 4). Rozmiar: M → **L** (po uwagach autora z rev. 2). Z
 korzysta z walidatora z [C01](C01-validate-world.md) i z bramki zgodności zapisu z
 [B02](B02-polityka-wersji-save.md).
 
-Status: **rev. 3 - D1-D19 zamknięte decyzjami autora**. Otwarty jest tylko drobiazg w D13
-(zestaw kolumn `maps.csv`). Kod może ruszać etapem 1.
+Status: **rev. 3 - D1-D19 zamknięte decyzjami autora. Etap 1 zrobiony** (2026-08-08).
+Otwarty jest tylko drobiazg w D13 (zestaw kolumn `maps.csv`). Następny w kolejce: etap 2.
 
 ## Wymagania autora (wiążące, ustalone 2026-08-08)
 
@@ -214,28 +214,71 @@ Wzór jest w repo - `tests/test_config_web_codegen.py` pilnuje w ten sposób, ż
 nie rozjechał się z generatorem. Ściąga w `AGENTS.md` zostaje jako opis dla człowieka i agenta,
 ale **bramką jest CI**.
 
-## Etap 1: sprzątanie po tawernie + higiena plików (D7, D8, D14, D15)
+## Etap 1: sprzątanie po tawernie + higiena plików (D7, D8, D14, D15) - ZROBIONE
 
-Niezależne od reszty - idzie pierwsze i osobnym commitem.
+Niezależne od reszty - poszło pierwsze i osobnym commitem.
 
-- `maps/VillageHouse.tmx` → `maps/_wip/` (W3); ładowarka map i `validate_world.MAP_DIRS`
-  ignorują `_wip/`, pakowanie web go nie bierze
-- `audio.toml` - usunąć martwy wpis `VillageHouse`
-- `chests.csv` + `config.json` + nazwy obiektów w `interactions` - klucze skrzyń wg D8/W6
-  (2 wioskowe + 8 labiryntowych, bo `maze_configs.csv` też się do nich odwołuje)
-- `CharacterTileset.tsx` - naprawa 6 wartości `model_name` (O8) i zgranie z nimi atrybutu
-  `type`; **nowy kafel 33 dla `ROBIN`** ze sprite'em `Villager4` (O9, D14=A)
-- `Village.tmx` - usunięcie wszystkich 4 własności `model_name` z obiektów; obiekt `Robin`
-  przepięty na nowy `gid`
-- `Element.tsx`, `FloorDetail.tsx` → `tilesets/`; **7 odwołań w 6 plikach `.tmx`**, w tym
-  `MazeTileset_Ninja.tmx` i `MazeTileset_clean.tmx` (ścieżka `../NinjaAdventure/maps/…`);
-  wewnątrz przenoszonych plików ścieżka do PNG skraca się o `tilesets/`
-- martwy duplikat `tilesets/TilesetFloorDetail.tsx` (ten sam PNG, zero odwołań, brak
-  własności `elements`) - do usunięcia
+- `maps/VillageHouse.tmx` → `maps/_wip/` (W3). Walidator i ładowarka nie wymagały ani
+  jednej linijki zmiany: `MAP_DIRS` używa `glob("*.tmx")` (bez rekursji), a ładowarka
+  szuka mapy po płaskiej nazwie `MAPS_DIR / f"{current_map}.tmx"`. Pakowanie web wyłącza
+  nowy wpis w `pygbag.ini` (`ignoreDirs`)
+- `audio.toml` - martwy wpis `VillageHouse` usunięty
+- `chests.csv` + `maze_configs.csv` + `config.json` + nazwy obiektów w `interactions` -
+  klucze skrzyń wg D8/W6 (2 wioskowe + 8 labiryntowych)
+- `CharacterTileset.tsx` - naprawa **7** wartości `model_name` (O8) i zgranie z nimi
+  atrybutu `type`; **nowy kafel 33 dla `ROBIN`** ze sprite'em `Villager4` (O9, D14=A)
+- `Village.tmx` - wszystkie 4 własności `model_name` usunięte; obiekt `Robin` przepięty
+  na `gid=2850`
+- `Element.tsx`, `FloorDetail.tsx` → `tilesets/`; **8 odwołań w 6 plikach `.tmx`**;
+  wewnątrz przenoszonych plików ścieżka do PNG skróciła się o `tilesets/`
+- martwy duplikat `tilesets/TilesetFloorDetail.tsx` usunięty (ten sam PNG, zero odwołań,
+  brak własności `elements` - potwierdzone przed kasatą)
 
-Kryterium: `just validate-world` bez nowych błędów, muzyka w tawernie gra jak dotąd,
-**labirynt się generuje** (`MazeTileset_Ninja.tmx` to żywy szablon - zły link tam jest
-niewidoczny dla walidatora). **Weryfikacja u autora** - sterownik `dummy` nie odtwarza dźwięku.
+### Czym wykonanie różni się od planu
+
+- **Kafli do naprawy było 7, nie 6.** Ósmym… właściwie pierwszym: kafel 0 miał
+  `model_name="GreenNinja"` (nazwa sprite'a), a klucz postaci to `Player`. Dziś nie boli,
+  bo gracza spawnuje kod (`scene/scene.py:194`), ale reguła 4 z etapu 4 zapaliłaby się na
+  nim. Naprawione razem z szóstką z O8 - decyzja autora.
+- **Odwołań do przenoszonych tilesetów było 8, nie 7** - ósme siedzi w samym
+  `VillageHouse.tmx`, którego plan nie liczył.
+- **`_wip/VillageHouse.tmx` zjechał o katalog niżej, więc straciło ważność *wszystkie
+  siedem* jego ścieżek względnych**, nie tylko `Element.tsx`. Poprawione na `../tilesets/…`
+  i `../../items/items.tsx`, żeby plik dalej otwierał się w Tiled - W3 chce go jako zaczątek
+  domu, a nie jako złom.
+- **Skrzynia w `_wip` zostaje `SmallChest_VillageHouse`.** To osobny dom, nie tawerna;
+  klucz dostanie, kiedy autor nazwie mapę.
+- **`BigChest_Village` → `BLUNDERHAVEN_BIG_CHEST` od razu** (decyzja autora), zamiast
+  przez pośrednie `VILLAGE_BIG_CHEST`. Klucz skrzyni to zwykły string - nie wymaga, żeby
+  mapa już się tak nazywała, a oszczędza drugi rename w etapie 5.
+- **`import_entities.py` nie umie zmienić nazwy klucza** - aktualizuje tylko wiersze, które
+  już są w `config.json`, a nieznane pomija ostrzeżeniem. Klucze skrzyń trzeba było
+  podmienić w `config.json` wprost, a dopiero potem puścić import. Warte zapamiętania dla
+  `rename_entity.py` z etapu 5.
+- **`tests/test_audio.py` był przypięty do martwego wpisu** `VillageHouse` (test zmiany
+  utworu przy zmianie mapy). Przepięty na żywą parę `Village` → `LOST_CORK_TAVERN`.
+- `config_model/autogenerated_config.json` trzyma stare klucze skrzyń. Zostawiony:
+  to martwy artefakt po usuniętym w B01 `main.py store`, nikt go nie czyta.
+- `VillageHouseDoor` (punkt wejścia na `Village`) i nazwy obiektów-szablonów
+  `BigChest_Maze`/`SmallChest_Maze` w `MazeTileset_Ninja.tmx` **zostają** - te drugie są
+  zaszyte w kodzie (`map_loader.py:293`, `maze_utils.py:827`), więc nie są zwykłą daną.
+
+### Wynik
+
+- `just validate-world` - 0 błędów, te same 5 znanych ostrzeżeń; **6 map zamiast 7**
+  (`VillageHouse` wypadł z zakresu, zgodnie z W3)
+- `just test-unit` - 499/499 w 36 plikach
+- `just test-smoke` - 6/6 scenariuszy, w tym **Auto Save on Maze Entry**: labirynt
+  generuje się po przeprowadzce tilesetów
+- headless `load_pygame` na wszystkich 6 mapach + obu szablonach labiryntu przechodzi;
+  `Robin` rozwiązuje się na `ROBIN`, a `Rob` na `ROB` z samego kafla, bez własności na
+  obiekcie (O9 zamknięte)
+
+**Do weryfikacji u autora** (sterownik `dummy` nie odtwarza dźwięku, a walidator nie widzi
+`assets/MazeTileset/`): muzyka w tawernie i w wiosce gra jak dotąd, labirynt wygląda
+poprawnie po przeprowadzce `Element.tsx`/`FloorDetail.tsx`, `Robin` stoi w wiosce jako
+Robin. Uwaga: klucze skrzyń się zmieniły, więc **stare zapisy zgubią stan tych skrzyń**
+(O1) - to przedsmak D9, gdzie zapisy zostaną odrzucone jawnie.
 
 ## Etap 2: rejestr map i właściwości labiryntu (D13, D16)
 

@@ -257,12 +257,12 @@ def test_a_different_key_fades_the_new_track_in() -> None:
     manager, mixer, _log = _build()
     with _WithMixer(mixer):
         manager.play_music("Village")
-        manager.play_music("VillageHouse")
+        manager.play_music("LOST_CORK_TAVERN")
     assert_eq(len(mixer.music.loaded), 2, "a map change must load the new track")
     assert_eq(mixer.music.fadeouts, 0, "a map change must NOT block on a fadeout")
     assert_true(all(ms > 0 for ms in mixer.music.fade_ins),
                 "every track must be faded in, not cut in abruptly")
-    assert_eq(manager.current_music_key, "VillageHouse", "the manager tracks what plays")
+    assert_eq(manager.current_music_key, "LOST_CORK_TAVERN", "the manager tracks what plays")
 
 
 def test_a_map_without_an_entry_is_silence_not_an_error() -> None:
