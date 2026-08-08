@@ -136,7 +136,7 @@
 <div class="wrap">
 
 <div class="topbar">
-  <p class="eyebrow" style="margin:0">Audyt architektury · 2026-07-25 · aktualizacja 2026-07-28 (plan Fazy 3) · główny architekt: Claude (Opus)</p>
+  <p class="eyebrow" style="margin:0">Audyt architektury · 2026-07-25 · aktualizacja 2026-08-08 (Faza 3 na finiszu, E03 dowiezione) · główny architekt: Claude (Opus)</p>
   <button id="themeToggle" title="Przełącz motyw">🌗 Motyw</button>
 </div>
 
@@ -146,18 +146,20 @@ pod kątem długofalowego rozwoju (dużo więcej map, postaci, dialogów i quest
 Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/audyt/</code>.</p>
 
 <div class="grid cols-4" style="margin:var(--s5) 0">
-  <div class="card metric"><div class="num">28,4K</div><div class="label">LOC własnego kodu (project/, 2026-07-28)</div></div>
-  <div class="card metric"><div class="num">442 <span class="badge ok">100% pass</span></div><div class="label">testów jednostkowych (33 pliki)</div></div>
-  <div class="card metric"><div class="num">12 / 19</div><div class="label">zadań zrobionych / w backlogu</div></div>
-  <div class="card metric"><div class="num">~1,7 ms</div><div class="label">klatka desktop (32 NPC, headless)</div></div>
+  <div class="card metric"><div class="num">30,5K</div><div class="label">LOC własnego kodu (project/, 2026-08-08)</div></div>
+  <div class="card metric"><div class="num">499 <span class="badge ok">100% pass</span></div><div class="label">testów jednostkowych (36 plików)</div></div>
+  <div class="card metric"><div class="num">20 / 24</div><div class="label">zadań zrobionych / w backlogu</div></div>
+  <div class="card metric"><div class="num">~1,2 ms</div><div class="label">klatka desktop w dzień (32 NPC, po E01)</div></div>
 </div>
 
 <div class="callout ok">
-  <p style="margin-bottom:var(--s2)"><strong>Stan na 2026-07-28: Fazy 1 i 2 zamknięte, Faza 3 rozpisana.</strong></p>
+  <p style="margin-bottom:var(--s2)"><strong>Stan na 2026-08-08: Fazy 1 i 2 zamknięte, z Fazy 3 zostały dwa zadania, E03 z Fazy 4 dowiezione przed czasem.</strong></p>
   <ul style="margin:0">
-    <li><strong>Faza 1</strong> (A01-A07, C01, F01-F03): ss-review na gemini z checklistami i werdyktem JSON, <code>debug_ui_state</code> + asercje stanu, layout self-checks, tryb deterministyczny, <code>just validate-world</code>, mypy = 0.</li>
-    <li><strong>Faza 2</strong> (B01, A08, G01, B02): <code>scene.py</code> i <code>characters.py</code> rozbite na pakiety <code>project/scene/</code> i <code>project/characters/</code> (16 kroków), web-runner z jednym serwerem pygbag (25 → 11,5 min) + <code>just test-smoke</code> (96 s), codegen configu web, polityka wersji zapisu z jedną bramką <code>save_compatibility</code>.</li>
-    <li><strong>Faza 3</strong>: sześć plików zadań w <code>doc/audyt/</code> + <code>prompt-faza-3.md</code>; mgła wojny wydzielona z E01 do osobnego E03 (Faza 4).</li>
+    <li><strong>Faza 1</strong> (A01-A07, C01, F01-F03) <span class="badge ok">zamknięta 2026-07-25</span>: ss-review na gemini z checklistami i werdyktem JSON, <code>debug_ui_state</code> + asercje stanu, layout self-checks, tryb deterministyczny, <code>just validate-world</code>, mypy = 0.</li>
+    <li><strong>Faza 2</strong> (B01, A08, G01, B02) <span class="badge ok">zamknięta 2026-07-28</span>: <code>scene.py</code> i <code>characters.py</code> rozbite na pakiety <code>project/scene/</code> i <code>project/characters/</code> (16 kroków), web-runner z jednym serwerem pygbag (25 → 11,5 min) + <code>just test-smoke</code> (96 s), codegen configu web, polityka wersji zapisu z jedną bramką <code>save_compatibility</code>.</li>
+    <li><strong>Faza 3</strong> <span class="badge warn">4 z 6</span>: zrobione E01 (filtr nocy desktop+web, 2026-07-29), D01 (audio, 2026-07-29), E02 (FPS_CAP=60 + profiler, 2026-07-30), U01 (<code>bar.py</code> asset-driven, 2026-08-01). <strong>Zostają H02</strong> (dzienny autosave o 6:00) <strong>i D02</strong> (dokument progresji statystyk) - oba mają gotowe pliki zadań, kodu jeszcze nie ma.</li>
+    <li><strong>Faza 4</strong>: E03 (mgła wojny w labiryncie) <span class="badge ok">zrobione 2026-08-02</span> - dokument decyzyjny D1-D11, prototyp <code>FoW-prototype.py</code>, potem <code>scene/fog_of_war.py</code> (644 linie). Zostają C02 i H01 (wciąż do rozpisania) oraz treść Aktu 1.</li>
+    <li><strong>Znaleziska przy okazji</strong> (poza backlogiem, naprawione): <code>pygame.mixer.music.load()</code> blokował ~0,7 s przy każdej zmianie mapy (sterownik dummy tego nie odtwarzał, więc headless CI był ślepy); <code>rich.print</code> łykał prefiksy <code>[tag]</code> w <code>self.log</code>; paski UI ujednolicone do skali 4x razem z panelem pomocy.</li>
   </ul>
 </div>
 
@@ -247,6 +249,21 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
     <li><strong>H02 jest już w połowie zrobione:</strong> ekran śmierci z listą zapisów i widoczną odmową wczytania powstał przy B02;
       zostaje sam dzienny autosave.</li>
   </ul>
+
+  <h3>Decyzje z realizacji Faz 3 i 4 (2026-07-29 … 2026-08-02)</h3>
+  <ul>
+    <li><strong>Filtr nocy - trzy tryby zamiast jednego pokrętła:</strong> planowana degradacja przez grubszy <code>FILTER_SCALE=16</code>
+      okazała się nieskuteczna wizualnie. Autor wybrał trzy tryby kompozycji pod <code>settings.NIGHT_FILTER_MODE</code>.</li>
+    <li><strong><code>clock.tick</code> zostaje:</strong> podejrzenie jittera <code>dt</code> sprawdzone na realnej maszynie -
+      <code>tick_busy_loop</code> odrzucone. Uwaga metodyczna: pomiary <code>clock.tick()</code> z sandboxa Bash są bezwartościowe
+      (sandbox koalescuje sleepy - <code>time.sleep(1/60)</code> potrafi trwać 118 ms).</li>
+    <li><strong>Mgła wojny nie podbija wersji zapisu:</strong> stan odkrycia dopisany do zapisu w sposób zgodny wstecz,
+      więc bramka <code>save_compatibility</code> z B02 nie musiała odrzucać starych zapisów.</li>
+    <li><strong>Prototyp przed dokumentem</strong> dla mechanik wizualnych: standalone próbka w <code>scripts/</code> z własnym
+      <code>--selftest</code>, dopiero potem dokument decyzyjny i kod produkcyjny. Wzorzec do powtórzenia.</li>
+    <li><strong>Suwaki węższe o 4 px:</strong> przy U01 asset i render się rozjechały; decyzja - asset zostaje jak jest,
+      ramka 2 px zamiast 4 px. Kod ma słuchać assetu, nie odwrotnie.</li>
+  </ul>
 </div>
 <a class="backlink" href="#toc">↑ Spis treści</a>
 
@@ -273,16 +290,17 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
       <td>Modele + backendy (dysk/localStorage), stan wielu map, pending_map_states, pin rutynowych NPC do mapy domowej. Dobre testy. Wersjonowanie save = odrzucenie starego (brak migracji - patrz D-8).</td></tr>
     <tr><td><code>maze_generator/</code></td><td>~60K</td><td><span class="badge info">ok</span></td>
       <td>Hunt-and-Kill + rendering jak zwykła mapa Tiled (dobra unifikacja). A* z cache. <code>maze_utils.py</code> 34K do przejrzenia przy refactorze.</td></tr>
-    <tr><td><code>scene.py</code></td><td>2635 linii</td><td><span class="badge err">god-object</span></td>
-      <td>~30 odpowiedzialności: ładowanie map, kolizje, zegar świata, pogoda, rutyny cross-map, intro-cutscene, filtr nocy, debug, API agenta. <code>Scene.update</code> = ~400 linii.</td></tr>
-    <tr><td><code>characters.py</code></td><td>1962 linie</td><td><span class="badge err">god-object</span></td>
-      <td>NPC (animacje, A*, FSM, dialog, sentyment, handel, sen) + Player (input, walka, inventory) w jednym pliku; Player dziedziczy po NPC.</td></tr>
+    <tr><td><code>scene/</code> <span class="badge ok">B01</span></td><td>13 modułów</td><td><span class="badge ok">rozbity</span></td>
+      <td>Było: <code>scene.py</code> 2635 linii, ~30 odpowiedzialności. Jest: pakiet z <code>map_loader</code>, <code>map_state</code>, <code>collisions</code>, <code>world_clock</code>, <code>routines_director</code>, <code>intro</code>, <code>night_filter</code>, <code>fog_of_war</code> (E03), <code>player_actions</code>, <code>debug_overlay</code>, <code>agent_api</code>; systemy to funkcje na <code>scene</code>, klasa jest cienkim delegatem.</td></tr>
+    <tr><td><code>characters/</code> <span class="badge ok">B01</span></td><td>7 modułów</td><td><span class="badge ok">rozbity</span></td>
+      <td>Było: <code>characters.py</code> 1962 linie. Jest: <code>npc.py</code>, <code>player.py</code> + <code>movement</code>, <code>combat</code>, <code>inventory</code>, <code>animation</code>. Player nadal dziedziczy po NPC (świadomie - wspólny ruch i animacje).</td></tr>
     <tr><td><code>game.py</code></td><td>1234 linie</td><td><span class="badge warn">do uporządkowania</span></td>
       <td>Pętla + input + rendering + CSV import/eksport + screenshoty + recording + localStorage. Część to narzędzia deweloperskie, nie runtime gry.</td></tr>
     <tr><td><code>settings.py</code></td><td>1157 linii</td><td><span class="badge warn">do uporządkowania</span></td>
       <td>Stałe + definicje sprite-sheetów + <em>mutowalne globalne</em> (WIDTH/HEIGHT/LANG) z pułapką importu by-value (udokumentowaną, ale łatwą do złamania przez słabsze modele).</td></tr>
-    <tr><td><code>config_model/</code></td><td>~100K</td><td><span class="badge warn">ryzyko</span></td>
-      <td>Podwójny model pydantic/dataclass utrzymywany ręcznie - potwierdzone źródło web-only crashy. Decyzja: codegen (rozdz. 4, D-2).</td></tr>
+    <tr><td><code>config_model/</code></td><td>~100K</td><td><span class="badge ok">naprawione</span></td>
+      <td>Wersja web (<code>config.py</code>) generowana z <code>config_pydantic.py</code> przez <code>just gen-web-config</code>, a dwa testy pilnują świeżości i parzystości obu modeli (G01) - koniec ręcznego lustra i web-only crashy. Dołączył manifest audio <code>audio.toml</code> (D01).<br>
+      <span class="badge warn">drobiazg do sprzątnięcia</span> <code>CONF_ENTITIES_TO_STORE</code> (<code>settings.py:940</code>) wygląda na listę kolumn CSV, ale po usunięciu <code>main.py store</code> w B01 <strong>czytane są już tylko jego klucze</strong> (które sekcje biorą udział w round-tripie CSV ↔ <code>config.json</code>). Kolumny w wartościach nie robią nic: eksport wylicza je z danych i pól modelu, import bierze nagłówek z pliku CSV. Martwa lista udająca obowiązującą - blisko C02.</td></tr>
   </tbody>
 </table>
 </div>
@@ -291,7 +309,7 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
 <div class="grid cols-2">
   <div class="card"><h3>Pipeline treści</h3><p style="margin:0">Obsidian (PL = źródło prawdy) → importery z walidacją → config.json → grafy vis-network do diagnozy. Autor pisze w markdown, gra dostaje zwalidowany graf. To przewaga konkurencyjna tego projektu.</p></div>
   <div class="card"><h3>Kultura dokumentacji decyzji</h3><p style="margin:0">AGENTS.md z uzasadnieniami, historią bugów i pułapkami; decyzje (D1, D5, D6, D12) opisane przy kodzie. Utrzymać przy refactorze - to jest to, co czyni słabsze modele skutecznymi.</p></div>
-  <div class="card"><h3>Testy bez frameworka</h3><p style="margin:0">407 testów czystej logiki bez SDL, runner pilnujący rejestracji testów po AST. Szybkie, deterministyczne, odporne.</p></div>
+  <div class="card"><h3>Testy bez frameworka</h3><p style="margin:0">499 testów czystej logiki bez SDL (36 plików, 100% pass), runner pilnujący rejestracji testów po AST. Szybkie, deterministyczne, odporne - przeszły cały refactor B01 bez rozjazdu.</p></div>
   <div class="card"><h3>agent_ctrl</h3><p style="margin:0">Kanał komend do prawdziwej gry (desktop plik / web localStorage + Playwright), deterministyczne otwieranie dialogów (talk_to_char), asercje plikowe. Dobra baza pod rozbudowę o asercje stanu.</p></div>
 </div>
 <a class="backlink" href="#toc">↑ Spis treści</a>
@@ -314,9 +332,9 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
     <tr><td>D-5</td><td>Dokumentacja architektury rozjechana z kodem: ui/AGENTS.md i design-system-ui.md opisują „render 1280×720 + SCALE" (już nieprawda, SCALE=1.0), project/AGENTS.md ma sekcję „Brak save/load" obok opisu save/load, root AGENTS.md „11,9K LOC" (jest 26,2K), „285 testów" (jest 407), „brak fabuły" (fabuła jest)</td><td><span class="badge warn">średnia</span></td>
       <td>Agenci AI wykonują nieaktualne zasady - to jedna z przyczyn „elementarnych błędów" słabszych modeli</td><td>F02 <span class="badge ok">zrobione</span></td></tr>
     <tr><td>D-6</td><td><code>FPS_CAP = 0</code> - pętla bez limitu klatek</td><td><span class="badge warn">średnia</span></td>
-      <td>Palenie CPU/baterii na desktopie, niestabilne dt, głośne wiatraki; na web throttling przeglądarki maskuje problem</td><td>E02 <span class="badge info">plan gotowy</span></td></tr>
+      <td>Palenie CPU/baterii na desktopie, niestabilne dt, głośne wiatraki; na web throttling przeglądarki maskuje problem</td><td>E02 <span class="badge ok">zrobione</span></td></tr>
     <tr><td>D-7</td><td>Filtr nocy: <code>transform.scale_by</code> per NPC per klatka + pełnoekranowy <code>transform.scale</code> co klatkę, bez cache</td><td><span class="badge info">niska</span></td>
-      <td>Desktop ma zapas (0,6 ms), ale to wzorzec, który na web kosztuje wielokrotnie więcej; do naprawy przy zadaniu noc/FoW</td><td>E01 + E03 <span class="badge info">plan gotowy</span></td></tr>
+      <td>Desktop ma zapas (0,6 ms), ale to wzorzec, który na web kosztuje wielokrotnie więcej; do naprawy przy zadaniu noc/FoW</td><td>E01 + E03 <span class="badge ok">zrobione</span></td></tr>
     <tr><td>D-8</td><td>Save: <code>version mismatch</code> = odmowa wczytania, brak migracji</td><td><span class="badge info">niska</span></td>
       <td>Po wydaniu prologu każda zmiana formatu save unieważnia zapisy graczy; przed publikacją potrzebny choć minimalny mechanizm migracji lub polityka</td><td>B02 <span class="badge ok">zrobione</span></td></tr>
     <tr><td>D-9</td><td>Śmierć gracza = pełny reset ekwipunku do stanu z configu + respawn w wiosce (zebrane przedmioty przepadają)</td><td><span class="badge warn">średnia</span></td>
@@ -328,7 +346,9 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
     <tr><td>D-12</td><td><code>just mypy</code> zgłasza 23 błędy w 7 plikach - stały szum: kolejne sesje agentów przekopują się przez nie i kończą stwierdzeniem „to już było wcześniej"</td><td><span class="badge warn">średnia</span></td>
       <td>Zamulony sygnał: nowe, realne błędy typów giną w starym szumie; bramka mypy w refactorze B01 wymaga czystej bazy</td><td>F03 <span class="badge ok">zrobione</span></td></tr>
     <tr><td>D-13</td><td><code>bar.py</code> rysuje suwaki proceduralnie, a <code>scrollbar.png</code> jest tylko „referencją wyglądu" w komentarzu - edycja assetu w Aseprite nic nie zmienia w grze (wynik nieporozumienia z wcześniejszej sesji)</td><td><span class="badge info">niska</span></td>
-      <td>Autor traci kontrolę nad wyglądem komponentu, którą miał mieć przez asset; rozjazd asset ↔ render pogłębia się z każdą zmianą</td><td>U01 <span class="badge info">plan gotowy</span></td></tr>
+      <td>Autor traci kontrolę nad wyglądem komponentu, którą miał mieć przez asset; rozjazd asset ↔ render pogłębia się z każdą zmianą</td><td>U01 <span class="badge ok">zrobione</span></td></tr>
+    <tr><td>D-14</td><td><span class="badge info">nowe 2026-07-30</span> <code>pygame.mixer.music.load()</code> blokuje wątek na czas trwającego fade-outu - ~0,7 s zamrożenia przy każdej zmianie mapy (znalezione profilerem z E02, po wdrożeniu audio z D01)</td><td><span class="badge warn">średnia</span></td>
+      <td>Klasa błędu niewidoczna dla testów: sterownik <code>dummy</code> nie odtwarza blokowania, więc headless CI był ślepy. Każdy nowy system oparty o mixer wymaga pomiaru na realnym sterowniku</td><td><span class="badge ok">naprawione</span> (<code>D01-stall-muzyki-przy-zmianie-mapy.md</code>)</td></tr>
   </tbody>
 </table>
 </div>
@@ -405,8 +425,11 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
 <h2 id="tests">6. Testy automatyczne i ss-review (wyzwanie 4.1)</h2>
 
 <div class="prose">
-  <p>Stan: 407 testów jednostkowych (wzorowe), scenariusze agentowe desktop + web (Playwright),
+  <p>Stan w dniu audytu: 407 testów jednostkowych (wzorowe), scenariusze agentowe desktop + web (Playwright),
   ale wizyjna weryfikacja (ss-review) niestabilna. Diagnoza potwierdzona empirycznie w tej sesji.</p>
+  <p><strong>Stan na 2026-08-08:</strong> 499 testów w 36 plikach, wszystkie zielone. Plan A01-A04 wykonany w całości,
+  doszły A05-A07 (znaleziska z realizacji) i A08 (web-runner: jeden serwer pygbag na przebieg, pełny web 25 → 11,5 min,
+  <code>just test-smoke</code> ~105 s po dodaniu profilera).</p>
 </div>
 
 <details>
@@ -431,7 +454,7 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
 </div>
 </details>
 
-<h3>Plan naprawy (zadania A01-A04)</h3>
+<h3>Plan naprawy (zadania A01-A04) <span class="badge ok">wykonany 2026-07-25</span></h3>
 <div class="grid cols-2">
   <div class="card"><h3>A01 - stabilny vision</h3>
     <p style="margin:0">Gemini primary (mimo out albo jako drugi), checklisty per-scenariusz w
@@ -473,8 +496,15 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
     <li>Komponenty „asset-driven" naprawdę z assetu: <code>bar.py</code> deklaruje
       <code>scrollbar.png</code> jako referencję, ale rysuje suwak proceduralnie - edycja pliku
       w Aseprite nic nie zmienia (D-13, zadanie U01: wczytywać model z pikseli assetu,
-      kolory dynamiczne przez podmianę palety tokenów).</li>
+      kolory dynamiczne przez podmianę palety tokenów).
+      <span class="badge ok">zrobione 2026-08-01</span> - <code>bar.load_model()</code> parsuje sprite na starcie,
+      kolory są rolami podmienianymi z tokenów, a <code>tests/test_bar_asset.py</code> pilnuje, że sprite odtwarza sam siebie 1:1.
+      Decyzja autora: asset zostaje jak jest, więc suwaki są węższe o 4 px (ramka 2 px zamiast 4 px).</li>
   </ul>
+  <p><strong>Domknięte po audycie:</strong> layout self-checks (A03) i asercje stanu (A02) działają, dokumentacja
+  zaktualizowana (F02), a paski UI ujednolicono do skali 4x razem z panelem pomocy mieszczącym się w ekranie.
+  <strong>Wciąż prozą, nie kodem:</strong> lint tokenów (skan <code>ui/</code> po literałach RGB poza <code>theme.py</code>)
+  i rozciągnięcie wzorca <code>_content_y</code> na wszystkie panele.</p>
 </div>
 
 <details>
@@ -495,6 +525,21 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
   <p>Benchmark headless (mac-mini, Village, 32 NPC): <strong>update 0,41 ms + draw 1,31 ms ≈ 1,7 ms/klatkę</strong>
   - desktop ma ogromny zapas. Problem web to narzut interpretera WASM (typowo 5-20x),
   czyli budżet klatki na web jest realnie bliski wyczerpania przy 60 FPS.</p>
+</div>
+
+<div class="callout ok">
+  <p style="margin-bottom:var(--s2)"><strong>Wyniki po E01/E02/E03 (2026-07-29 … 2026-08-02) - koniec zgadywania, są liczby:</strong></p>
+  <ul style="margin:0">
+    <li><strong>E01:</strong> cache kół świateł + bufory alokowane raz + wczesne wyjście w dzień. Desktop <code>draw</code> w dzień <strong>1,27 → 0,78 ms</strong>.
+      Gałąź <code>and not IS_WEB</code> zniknęła - noc działa na obu platformach jedną ścieżką kodu. Zamiast nieskutecznego <code>FILTER_SCALE=16</code>
+      autor wybrał trzy tryby kompozycji pod <code>settings.NIGHT_FILTER_MODE</code>.</li>
+    <li><strong>E02:</strong> <code>FPS_CAP = 60</code> + profiler <code>MOM_PROFILE</code> (update/draw/flip, agregacja 1 s, zero kosztu wyłączony).
+      Profil web: <strong>budżet 16,7 ms z dużym zapasem</strong> (wyniki w <code>E02-profil-web-wyniki.md</code>).
+      Osobno zbadana stabilność <code>dt</code> - <code>clock.tick</code> zostaje, <code>tick_busy_loop</code> odrzucone (<code>E02-dt-jitter-desktop.md</code>).</li>
+    <li><strong>E03:</strong> mgła wojny kosztuje na web <strong>+0,3 ms w <code>draw</code></strong> przy tym samym budżecie 16,7 ms.</li>
+    <li><strong>Pułapka pomiarowa</strong> (do zapamiętania): profil desktopowy potrafi kłamać 20x - pełnoekranowy blit z alfą to 5,8 ms na web
+      wobec 0,1 ms bez alfy. Mierz na web, zanim uznasz coś za tanie.</li>
+  </ul>
 </div>
 
 <details>
@@ -519,10 +564,14 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
   realokacji co klatkę + wczesne wyjście przy <code>ratio == 0</code>. Blit z BLEND_RGBA_MIN jak dziś.
   Gdy web nie mieści się w budżecie - degradacja jakości (grubszy FILTER_SCALE), nigdy wyłączenie
   mechaniki na jednej platformie.</p>
-  <p><strong>E03 (Faza 4):</strong> prawdziwa mgła wojny w labiryncie - trzy stany kafla
-  (nieodkryty / odkryty poza wzrokiem / oświetlony) z pamięcią odkrycia w zapisie. Dziś labirynt ma
-  wyłącznie wieczną noc, bez pamięci. To osobne zadanie z własnym dokumentem decyzyjnym,
-  bo dotyka formatu zapisu (dziś poziom jest regenerowany z <code>maze_seed</code>, nie zapisywany).</p>
+  <p><strong>E03 (Faza 4) <span class="badge ok">zrobione 2026-08-02</span>:</strong> prawdziwa mgła wojny w labiryncie - trzy stany kafla
+  (nieodkryty / odkryty poza wzrokiem / oświetlony) z pamięcią odkrycia w zapisie. Droga: dokument decyzyjny D1-D11 do akceptacji,
+  potem standalone prototyp <code>FoW-prototype.py</code> (<code>just fow-prototype</code>, z <code>--selftest</code> zamiast oglądania zrzutów),
+  na końcu <code>project/scene/fog_of_war.py</code>. Dwa algorytmy do wyboru w SettingsMenu, potwory jako źródła światła,
+  stan mgły w zapisie <em>bez</em> podbicia wersji formatu.</p>
+  <p><strong>Metoda, która się sprawdziła:</strong> przy mechanikach wizualnych najpierw standalone prototyp w <code>scripts/</code>,
+  dopiero potem dokument i kod produkcyjny. Prototyp wyłapał czarne kwadraty w ścianach i nieszczelny raycast,
+  zanim cokolwiek trafiło do silnika.</p>
   <p>Shadery WebGL (zengl ES) zostają jako eksperyment badawczy o niskim priorytecie -
   jeśli kiedyś zadziałają, fallback pozostaje dla słabszych maszyn.</p>
   <h4>Miejsca do obserwacji przy skalowaniu treści</h4>
@@ -554,16 +603,17 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
     <tr><td>G-1</td><td>Śmierć = utrata całego zebranego ekwipunku + respawn w wiosce (D-9)</td>
       <td>Kara roguelike'owa w grze fabularnej; gracz-dziecko traci godzinę postępu i wyłącza grę</td>
       <td><strong>Decyzja autora (2026-07-25):</strong> nie zmiękczać kary wprost (gra byłaby za łatwa; realne ryzyko śmierci jest w labiryncie, a przed nim jest autosave). Zamiast tego: codzienny autosave + po śmierci od razu ekran wczytania gry.<br>
-      <strong>Stan:</strong> ekran śmierci z listą zapisów i widoczną odmową wczytania <span class="badge ok">dowieziony przy B02</span>; zostaje dzienny autosave - <strong>6:00 czasu gry, slot 0</strong> (decyzja 2026-07-28, zadanie H02)</td></tr>
+      <strong>Stan na 2026-08-08:</strong> ekran śmierci z listą zapisów i widoczną odmową wczytania <span class="badge ok">dowieziony przy B02</span>; dzienny autosave <span class="badge warn">nadal do zrobienia</span> - dziś autosave leci wyłącznie przy wejściu do labiryntu (<code>scene/map_state.py</code>), brakuje wyzwalacza <strong>6:00 czasu gry → slot 0</strong> (zadanie H02, plik gotowy)</td></tr>
     <tr><td>G-2</td><td>Brak progresji statystyk postaci (progresja przez przedmioty już istnieje; questy dają nagrody max_health/damage, ale nie ma systemu, który je spina)</td>
       <td>Walka w labiryntach nie buduje postaci - „zręczniościowy przerywnik" nie zasila rdzenia RPG</td>
-      <td><strong>Kierunek autora:</strong> mini-progresja statystyk: szybkość, max_health, damage oraz bazowy sentyment („jak bardzo jest lubiany na starcie" - rosnący, ale też malejący przez niektóre decyzje). Design doc (D02) projektuje źródła zmian i separację Tiled/config/kod; liczby w CSV</td></tr>
+      <td><strong>Kierunek autora:</strong> mini-progresja statystyk: szybkość, max_health, damage oraz bazowy sentyment („jak bardzo jest lubiany na starcie" - rosnący, ale też malejący przez niektóre decyzje). Design doc (D02) projektuje źródła zmian i separację Tiled/config/kod; liczby w CSV.<br>
+      <strong>Stan na 2026-08-08:</strong> <span class="badge warn">nie zaczęte</span> - plik zadania gotowy, dokumentu do akceptacji jeszcze nie ma</td></tr>
     <tr><td>G-3</td><td>Sentyment NPC wpływa na ceny i opcje dialogowe, ale świat na niego nie reaguje szerzej</td>
       <td>System jest głębszy niż jego widoczne skutki - gracz może go nie zauważyć</td>
       <td>Tanie wzmocnienia: emote'y przy powitaniu wg progu sentymentu, 1-2 questy odblokowywane wysokim sentymentem, plotki między NPC (cross-NPC visited już działa!)</td></tr>
     <tr><td>G-4</td><td>Noc zmienia tylko wizualia (+ sen NPC z rutyn)</td>
       <td>Cykl dobowy to koszt bez nagrody gameplayowej</td>
-      <td>Po E01: 1-2 questy/eventy tylko-nocne, zamknięte sklepy nocą już są (rutyny) - dodać komunikat „wróć rano" zamiast ciszy</td></tr>
+      <td>E01 zrobione, więc noc działa też na web - <span class="badge info">odblokowane</span>: 1-2 questy/eventy tylko-nocne, zamknięte sklepy nocą już są (rutyny) - dodać komunikat „wróć rano" zamiast ciszy. Do treści Aktu 1</td></tr>
     <tr><td>G-5</td><td>4 poziomy labiryntu na tym samym tilesecie, nagrody = skrzynie z configu</td>
       <td>Powtarzalność bez haczyka; „coraz trudniejsze labirynty" szybko spowszednieją</td>
       <td>Modyfikatory poziomów (mgła gęstsza, inne potwory - już w maze_configs.csv), unikatowy przedmiot fabularny na dnie, wpis do dziennika po bossie</td></tr>
@@ -574,8 +624,10 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
 <h3>Gdzie gracz może się nudzić</h3>
 <div class="prose">
   <ul>
-    <li><strong>Cisza.</strong> Brak muzyki i SFX to dziś największy pojedynczy brak odczuwalny
-      w pierwszej minucie gry - żaden feedback uderzenia, podniesienia, otwarcia panelu. (D01)</li>
+    <li><strong>Cisza.</strong> <span class="badge ok">rozwiązane 2026-07-29 (D01)</span> Manifest <code>config_model/audio.toml</code>
+      + <code>project/audio.py</code>: muzyka per mapa, 20 eventów SFX, trzy suwaki głośności, bramka gestu na web
+      przez <code>navigator.userActivation</code>. Koszt: assety 5,9 MB, <code>web.zip</code> 1,3 → 7,1 MB - <strong>rozmiar paczki web
+      jest teraz realnym ograniczeniem</strong> przy dokładaniu map i muzyki.</li>
     <li><strong>Chodzenie.</strong> Przy większym świecie dystanse bez szybkiej podróży zaczną boleć;
       zaplanować mechanikę w fabule (np. „absurdalny środek transportu" w tonie gry) zanim
       powstanie 10 map. Na razie wystarczy świadomość przy projektowaniu map.</li>
@@ -627,18 +679,20 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
     <ul style="margin:0"><li>B01: 16 kroków, pakiety <code>project/scene/</code> i <code>project/characters/</code>; <code>scene.py</code> 2635 → 669 linii</li>
     <li>A08 web-runner: jeden pygbag na przebieg (25 → 11,5 min) + <code>just test-smoke</code> 96 s</li>
     <li>G01 codegen configu web</li><li>B02 polityka wersji zapisu + widoczna odmowa wczytania</li></ul></div>
-  <div class="card"><h3>Faza 3 - Brakujące mechaniki <span class="badge warn">rozpisana, do wykonania</span></h3>
-    <p>Cel: gra brzmi i nagradza; noc działa wszędzie. Kolejność: E01 → E02 → D01 → H02 → U01 → D02.</p>
-    <ul style="margin:0"><li>E01 filtr nocy desktop+web (cache, koniec gałęzi <code>IS_WEB</code>)</li>
-    <li>E02 FPS_CAP=60 + profiler i profil web</li>
-    <li>D01 audio (manifest <code>audio.toml</code>, assety z RPG, sonda web przed budową)</li>
-    <li>H02 dzienny autosave o 6:00 do slotu 0</li><li>U01 <code>bar.py</code> asset-driven</li>
-    <li>D02 dokument progresji statystyk - <strong>kończy się dokumentem do akceptacji</strong></li></ul></div>
-  <div class="card"><h3>Faza 4 - Treść prologu (Akt 1)</h3>
+  <div class="card"><h3>Faza 3 - Brakujące mechaniki <span class="badge warn">4 z 6</span></h3>
+    <p>Cel: gra brzmi i nagradza; noc działa wszędzie. Kolejność była: E01 → E02 → D01 → H02 → U01 → D02.</p>
+    <ul style="margin:0"><li><span class="badge ok">✓</span> E01 filtr nocy desktop+web - 2026-07-29</li>
+    <li><span class="badge ok">✓</span> D01 audio (<code>audio.toml</code>, 20 SFX, web-safe) - 2026-07-29</li>
+    <li><span class="badge ok">✓</span> E02 FPS_CAP=60 + profiler i profil web - 2026-07-30</li>
+    <li><span class="badge ok">✓</span> U01 <code>bar.py</code> asset-driven - 2026-08-01</li>
+    <li><span class="badge warn">→</span> <strong>H02 dzienny autosave o 6:00 do slotu 0</strong> - zostało</li>
+    <li><span class="badge warn">→</span> <strong>D02 dokument progresji statystyk</strong> - zostało, <em>kończy się dokumentem do akceptacji</em></li></ul></div>
+  <div class="card"><h3>Faza 4 - Treść prologu (Akt 1) <span class="badge info">zaczęta</span></h3>
     <p>Cel: grywalny prolog od intro do cliffhangera; Ty piszesz, agenci importują i testują.</p>
-    <ul style="margin:0"><li>E03 mgła wojny w labiryncie (dokument + implementacja, po E01)</li>
+    <ul style="margin:0"><li><span class="badge ok">✓</span> E03 mgła wojny w labiryncie (dokument + prototyp + implementacja) - 2026-08-02</li>
     <li>mapy Aktu 1 (Tiled), dialogi i questy w Obsidian</li>
-    <li>G-3/G-4/G-5 wzmocnienia mechanik w treści</li><li>ambient barks, wskaźnik questa na HUD</li>
+    <li>G-3/G-4/G-5 wzmocnienia mechanik w treści</li><li>H01: ambient barks, wskaźnik questa na HUD (do rozpisania)</li>
+    <li>C02 ujednolicenie kluczy Tiled ↔ config (do rozpisania)</li>
     <li>polerowanie + publikacja itch.io/GH Pages</li></ul></div>
 </div>
 
@@ -655,8 +709,10 @@ jako osobny moduł z czystym API - i tak ma powstać).</p></div>
   <p>Każde zadanie ma szczegółowy plik w <code>doc/audyt/</code> (spis: <code>doc/audyt/audyt.md</code>),
   napisany tak, by poradziły sobie modele słabsze niż Fable/Opus: kontekst, pliki do zmiany,
   kryteria akceptacji, komendy weryfikacji, pułapki. Kolumna <strong>Stan</strong> pokazuje
-  postęp na 2026-07-28: <span class="badge ok">zrobione</span> = kod scommitowany i kryteria
-  spełnione, <span class="badge info">plan gotowy</span> = plik zadania napisany, czeka na wykonanie.</p>
+  postęp na <strong>2026-08-08</strong>: <span class="badge ok">zrobione</span> = kod scommitowany i kryteria
+  spełnione, <span class="badge info">plan gotowy</span> = plik zadania napisany, czeka na wykonanie,
+  <span class="badge warn">do rozpisania</span> = jest tylko wpis w backlogu.</p>
+  <p><strong>Bilans: 20 z 24 zadań zrobionych.</strong> Zostają dwa z Fazy 3 (H02, D02) i dwa nierozpisane (C02, H01).</p>
 </div>
 
 <div class="tablewrap">
@@ -676,14 +732,14 @@ jako osobny moduł z czystym API - i tak ma powstać).</p></div>
     <tr><td>A08</td><td>Web-runner: jeden serwer pygbag na przebieg (zamiast restartu per scenariusz) + <code>just test-smoke</code></td><td class="prio-p1">P1</td><td>2</td><td><span class="badge ok">zrobione</span></td><td>Znalezione w trakcie B01: pełny web 25 → 11,5 min; smoke 96 s</td><td>M</td></tr>
     <tr><td>G01</td><td>Codegen: config.py (web) generowany z config_pydantic.py</td><td class="prio-p1">P1</td><td>2</td><td><span class="badge ok">zrobione</span></td><td>D-2: koniec ręcznego lustra i web-only crashy</td><td>M</td></tr>
     <tr><td>B02</td><td>Polityka wersji save + minimalna migracja</td><td class="prio-p2">P2</td><td>2</td><td><span class="badge ok">zrobione</span></td><td>D-8: jeden numer wersji gry = zapisu, <code>save_compatibility</code> jako jedyna bramka, widoczna odmowa wczytania</td><td>S</td></tr>
-    <tr><td>E01</td><td>Filtr nocy: jedna ścieżka kodu desktop+web (cache świateł i bufora)</td><td class="prio-p1">P1</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>Dziś <code>and not IS_WEB</code> w scene.py - na web nocy nie ma wcale; D-7: scale_by per NPC per klatka</td><td>M</td></tr>
-    <tr><td>E02</td><td>FPS_CAP=60 + profiler sekcji klatki i profil web z liczbami</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>D-6: <code>tick(0)</code> = niestabilne dt i palenie CPU; zero realnych liczb z weba</td><td>S</td></tr>
-    <tr><td>D01</td><td>AudioManager: muzyka per mapa (<code>audio.toml</code>), SFX eventów, głośność, web-safe</td><td class="prio-p1">P1</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>Największy odczuwalny brak; assety z ~/Projects/RPG, budżet 10 MB, sonda web przed budową</td><td>L</td></tr>
-    <tr><td>H02</td><td>Dzienny autosave o 6:00 do slotu 0 (ekran wczytania po śmierci już jest)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>G-1/D-9: trudność zostaje, ratuje świeży punkt powrotu; druga połowa dowieziona przy B02</td><td>S</td></tr>
-    <tr><td>U01</td><td>bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven, nie hardcode)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>D-13: edycja assetu w Aseprite ma być widoczna w grze; kolory dynamiczne przez podmianę palety</td><td>S</td></tr>
-    <tr><td>D02</td><td>Dokument decyzyjny mini-progresji statystyk: szybkość, max_health, damage, bazowy sentyment (±)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>G-2: kierunek autora; zadanie kończy się dokumentem do akceptacji, parametry w CSV (Twoja domena)</td><td>M</td></tr>
-    <tr><td>E03</td><td>Prawdziwa mgła wojny w labiryncie (trzy stany widoczności + stan w zapisie)</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge info">plan gotowy</span></td><td>Wydzielone z E01 decyzją autora; wymaga cache z E01 i zmiany formatu zapisu wg B02</td><td>L</td></tr>
-    <tr><td>C02</td><td>Stopniowe ujednolicenie kluczy (Tiled ↔ config)</td><td class="prio-p3">P3</td><td>2-3</td><td><span class="badge warn">do rozpisania</span></td><td>Po C01; seria małych, bezpiecznych rename'ów</td><td>M</td></tr>
+    <tr><td>E01</td><td>Filtr nocy: jedna ścieżka kodu desktop+web (cache świateł i bufora)</td><td class="prio-p1">P1</td><td>3</td><td><span class="badge ok">zrobione</span></td><td>Gałąź <code>and not IS_WEB</code> usunięta; draw w dzień 1,27 → 0,78 ms; trzy tryby <code>NIGHT_FILTER_MODE</code> zamiast <code>FILTER_SCALE=16</code></td><td>M</td></tr>
+    <tr><td>E02</td><td>FPS_CAP=60 + profiler sekcji klatki i profil web z liczbami</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge ok">zrobione</span></td><td>D-6 zamknięte; profiler <code>MOM_PROFILE</code> zero-cost gdy off; web mieści się w 16,7 ms; <code>clock.tick</code> potwierdzony na realnej maszynie</td><td>S</td></tr>
+    <tr><td>D01</td><td>AudioManager: muzyka per mapa (<code>audio.toml</code>), SFX eventów, głośność, web-safe</td><td class="prio-p1">P1</td><td>3</td><td><span class="badge ok">zrobione</span></td><td>20 eventów SFX, 3 suwaki, bramka gestu na web; <code>web.zip</code> 1,3 → 7,1 MB; wyszedł przy tym stall mixera (D-14)</td><td>L</td></tr>
+    <tr><td>H02</td><td>Dzienny autosave o 6:00 do slotu 0 (ekran wczytania po śmierci już jest)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>G-1/D-9: trudność zostaje, ratuje świeży punkt powrotu; druga połowa dowieziona przy B02. <strong>Jedno z dwóch zadań, które zostały w Fazie 3</strong></td><td>S</td></tr>
+    <tr><td>U01</td><td>bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven, nie hardcode)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge ok">zrobione</span></td><td>D-13 zamknięte: <code>bar.load_model()</code> parsuje sprite, test odtwarza go 1:1; suwaki węższe o 4 px (decyzja autora - asset zostaje)</td><td>S</td></tr>
+    <tr><td>D02</td><td>Dokument decyzyjny mini-progresji statystyk: szybkość, max_health, damage, bazowy sentyment (±)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>G-2: kierunek autora; zadanie kończy się dokumentem do akceptacji, parametry w CSV (Twoja domena). <strong>Drugie z dwóch, które zostały</strong></td><td>M</td></tr>
+    <tr><td>E03</td><td>Prawdziwa mgła wojny w labiryncie (trzy stany widoczności + stan w zapisie)</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge ok">zrobione</span></td><td>Dokument D1-D11 → prototyp <code>FoW-prototype.py</code> → <code>scene/fog_of_war.py</code>; dwa algorytmy w SettingsMenu, potwory świecą, web +0,3 ms</td><td>L</td></tr>
+    <tr><td>C02</td><td>Stopniowe ujednolicenie kluczy (Tiled ↔ config)</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge warn">do rozpisania</span></td><td>Po C01; seria małych, bezpiecznych rename'ów</td><td>M</td></tr>
     <tr><td>H01</td><td>Ambient barks + wskaźnik aktywnego questa na HUD</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge warn">do rozpisania</span></td><td>G-3/G-4: tanie ożywienie świata pod treść Aktu 1</td><td>M</td></tr>
   </tbody>
 </table>
@@ -696,23 +752,29 @@ jako osobny moduł z czystym API - i tak ma powstać).</p></div>
 <h2 id="tools">12. Narzędzia i workflow</h2>
 
 <div class="prose">
-  <h3>Konsolidacja recept just (bez rewolucji)</h3>
+  <h3>Konsolidacja recept just (bez rewolucji) <span class="badge warn">niezrealizowane</span></h3>
   <p>Pipeline treści działa, ale wymaga pamiętania kolejności. Propozycja: jedna recepta-parasol
   <code>just sync-content</code> = import-dialogs → import-quests → validate-world → dialog-graph →
   quest-graph → quest-cheatsheet, z czytelnym raportem co się zmieniło. Istniejące recepty zostają
   (do pracy punktowej), parasol staje się domyślnym „po edycji w Obsidian odpal jedno".</p>
+  <p><strong>Stan na 2026-08-08:</strong> powstał parasol <em>kontrolny</em> <code>just check</code>
+  (= sourcery + mypy + validate-locale + validate-world), ale parasola <em>treściowego</em>
+  <code>sync-content</code> nadal nie ma. Doszły za to <code>gen-web-config</code> (G01),
+  <code>test-smoke</code> (A08) i <code>fow-prototype</code> (E03).</p>
 
-  <h3>Wrapper CLI w Twoim stylu (wzorzec „sm"/„lca")</h3>
+  <h3>Wrapper CLI w Twoim stylu (wzorzec „sm"/„lca") <span class="badge warn">niezrealizowane</span></h3>
   <p>Skrypt <code>mom</code> (scripts/, rich): bez argumentów = dashboard (liczba testów, wynik
   validate-world, stan configu vs CSV, rozmiar paczki web, TODO z backlogu); podkomendy:
-  <code>mom run / web / test / sync / validate / bench</code>. Jedno wejście zamiast kartki ze ściągą.</p>
+  <code>mom run / web / test / sync / validate / bench</code>. Jedno wejście zamiast kartki ze ściągą.
+  Po dołożeniu audio i profilera doszły dwie nowe metryki warte dashboardu: <strong>rozmiar <code>web.zip</code></strong>
+  (7,1 MB, budżet się kurczy) i <strong>ostatni profil klatki z weba</strong>.</p>
 
   <h3>Drobiazgi</h3>
   <ul>
-    <li>CodeGraph: wykluczyć <code>utils/</code> (i <code>screenshots/</code>) z indeksu (F01).</li>
-    <li><code>rich</code>-owy raport walidatora C01 (tabelka rozjazdów z kolorami) - pasuje do Twoich preferencji terminalowych.</li>
+    <li>CodeGraph: wykluczyć <code>utils/</code> (i <code>screenshots/</code>) z indeksu (F01). <span class="badge ok">zrobione</span> - wpływ zmierzony po instalacji, notatka w <code>doc/codegraph-wplyw-2026-08-05.md</code>.</li>
+    <li><code>rich</code>-owy raport walidatora C01 (tabelka rozjazdów z kolorami) - pasuje do Twoich preferencji terminalowych. <span class="badge ok">zrobione</span></li>
     <li>GitHub Issues/Projects zamiast MOAB: backlog z doc/audyt/ da się zmigrować skryptem
-      (gh CLI) gdy podejmiesz decyzję - zadania md piszę tak, by treść dała się wkleić w issue 1:1.</li>
+      (gh CLI) gdy podejmiesz decyzję - zadania md piszę tak, by treść dała się wkleić w issue 1:1. <span class="badge info">decyzja nadal otwarta</span></li>
   </ul>
 </div>
 <a class="backlink" href="#toc">↑ Spis treści</a>
@@ -720,7 +782,10 @@ jako osobny moduł z czystym API - i tak ma powstać).</p></div>
 <p style="margin-top:var(--s7); color:var(--muted); font-size:.85rem">
 Audyt wygenerowany 2026-07-25 w sesji Claude Code (Opus). Źródła: pełne repo MoM,
 benchmark headless, testy empiryczne ss-reviewera, historia sesji i memory projektu.
-Backlog szczegółowy: <code>doc/audyt/audyt.md</code>.</p>
+Backlog szczegółowy: <code>doc/audyt/audyt.md</code>.<br>
+Postępy zaktualizowane <strong>2026-08-08</strong> na podstawie <code>doc/audyt/audyt.md</code>, historii git
+(do <code>c103fdd</code>) i weryfikacji w kodzie: 499 testów zielonych, 30,5K LOC w <code>project/</code>,
+H02 i D02 potwierdzone jako <em>niezrealizowane</em> (w audyt.md mają <code>[x]</code> = plik zadania gotowy, bez znacznika ✅).</p>
 
 </div>
 
