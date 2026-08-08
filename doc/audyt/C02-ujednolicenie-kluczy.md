@@ -4,8 +4,9 @@ Priorytet: **P3** (Faza 4). Rozmiar: M → **L** (po uwagach autora z rev. 2). Z
 korzysta z walidatora z [C01](C01-validate-world.md) i z bramki zgodności zapisu z
 [B02](B02-polityka-wersji-save.md).
 
-Status: **rev. 3 - D1-D19 zamknięte decyzjami autora. Etap 1 zrobiony** (2026-08-08).
-Otwarty jest tylko drobiazg w D13 (zestaw kolumn `maps.csv`). Następny w kolejce: etap 2.
+Status: **rev. 4 - D1-D19 zamknięte. Etapy 1 i 2 zrobione** (2026-08-08). D13 rozstrzygnięte
+inaczej niż w rev. 3: rejestr map jest wyliczany, `maps.csv` nie powstaje. Następny: etap 3
+(warstwa nazw wyświetlanych) - musi wyprzedzić rename map z etapu 5.
 
 ## Wymagania autora (wiążące, ustalone 2026-08-08)
 
@@ -122,7 +123,7 @@ Pełne tabele opcji z uzasadnieniem są w dokumencie HTML. Skrót:
 | D10 | Sposób wykonania | skrypt `just rename-entity <stara> <nowa>`; musi umieć też mapy |
 | D11 | Zakres podejścia | osobne commity per etap |
 | D12 | Nazwy wyświetlane (W2) | **przyjęte: A** - sekcja `[map]` w `locale/PL.toml` i `EN.toml` |
-| **D13** | **Właściwości labiryntu (W8)** | **do akceptacji** - nowy `maps.csv`, kasata trzech własności |
+| **D13** | **Właściwości labiryntu (W8)** | rejestr map **wyliczany** (bez `maps.csv`), kasata trzech własności |
 | **D14** | **`model_name` tylko w tilesecie (W9)** | naprawa 6 kafli + **nowy kafel dla `ROBIN`** (wariant A) |
 | **D15** | **Tilesety do `tilesets/` (W10)** | przyjęte - 7 odwołań w 6 plikach `.tmx` |
 | **D16** | **Dokumenty lokacji (W11)** | przyjęte - para `.md` dla `JACOBS_CHAMBER` **i dla labiryntu** |
@@ -139,14 +140,40 @@ Pełne tabele opcji z uzasadnieniem są w dokumencie HTML. Skrót:
   ma osobne pole `entry_point` („gdzie stoję teraz"). Jedna nazwa na dwa pojęcia to dokładnie
   ta klasa pomyłki, którą C02 likwiduje. Pole `PlayerState.entry_point` w zapisie **zostaje** -
   tam chodzi o scenę, nie o drzwi.
-- `is_maze` - usunąć z `.tmx`, wyliczać z nowego rejestru `project/config_model/maps.csv`
-  (`key;kind`, gdzie `kind` to `static` albo `maze`): `is_maze = maps[to_map].kind == "maze"`.
-  Ten sam plik daje walidatorowi listę legalnych kluczy map, której dziś nie ma (mapa
-  „istnieje", bo istnieje plik `.tmx` - a labirynt pliku nie ma), i domyka regułę z D12.
+- `is_maze` - usunąć z `.tmx` i **wyliczać**, nie trzymać w danych (patrz niżej).
 - `to_map`, `return_entry_point`, `obj_type` - bez zmian, opisują to konkretne przejście.
 
-**Do rozstrzygnięcia:** czy `maps.csv` ma być goły (`key;kind`), a nazwy wyświetlane mają
-jechać wyłącznie przez locale (rekomendacja), czy ma też trzymać nazwy plików `.md` z `doc/`.
+#### Rejestr map: wyliczany, bez `maps.csv` (zmiana wobec rev. 3)
+
+Rev. 3 proponowała nowy plik `project/config_model/maps.csv` (`key;kind`). Autor
+zakwestionował potrzebę osobnego pliku - słusznie. Rejestr jest **wyliczalny z tego, co
+już jest**, a `kind` przechowywałby wartość pochodną:
+
+```
+zbiór map = {stemy maps/*.tmx} ∪ {MAZE_01 … MAZE_0N dla N wierszy maze_configs.csv}
+is_maze   = klucz należy do tego drugiego zbioru
+```
+
+Głębokość labiryntu **już dziś** jest ograniczona liczbą wierszy `maze_configs.csv`:
+`load_tileset_map` liczy `max_level = len(maze_configs)` (`map_loader.py:472`), a generator
+stawia schody w dół tylko `if current_map_level < max_level` (`maze_utils.py:835`). Kod
+zresztą od dawna parsuje ten klucz konwencją - `map_loader.py:471` robi
+`int(current_map.split("_")[1])`, żeby wyciągnąć poziom.
+
+Dlaczego żaden istniejący plik nie mógł tego przejąć wprost: `maze_configs.csv` jest
+kluczowany **numerem poziomu**, nie kluczem mapy, i nie zna map statycznych; `audio.toml`
+jest kluczowany nazwą mapy, ale jego własny nagłówek mówi „brak wpisu = cisza, nie błąd",
+więc nieobecność jest legalna i nie może znaczyć „nie ma takiej mapy"; sekcja `[map]`
+w locale (D12) jest per język i służy napisom, a `kind` napisem nie jest.
+
+Realizacja: `project/scene/map_registry.py` - `maze_map_keys`, `is_maze_map`, `maze_level`,
+`static_map_keys`, `all_map_keys`, `unknown_map_keys`. Zero nowych plików danych, zero
+zmian w `config_pydantic.py`, zero regeneracji web-configu. Ostatnia funkcja jest gotową
+podstawą reguły 5 z etapu 4.
+
+Ubocznie: to samo załatwia jedyny powód, dla którego `maps.csv` miał powstać po stronie
+walidatora - listę legalnych kluczy map, której dziś nie ma (mapa „istnieje", bo istnieje
+plik `.tmx`, a labirynt pliku nie ma).
 
 ### D16 - konwencja dokumentów lokacji już istnieje
 
@@ -280,20 +307,54 @@ poprawnie po przeprowadzce `Element.tsx`/`FloorDetail.tsx`, `Robin` stoi w wiosc
 Robin. Uwaga: klucze skrzyń się zmieniły, więc **stare zapisy zgubią stan tych skrzyń**
 (O1) - to przedsmak D9, gdzie zapisy zostaną odrzucone jawnie.
 
-## Etap 2: rejestr map i właściwości labiryntu (D13, D16)
+## Etap 2: rejestr map i właściwości labiryntu (D13, D16) - ZROBIONE
 
 Czysto techniczny, bez ani jednego rename'u - odwracalny osobnym commitem.
 
-- nowy `project/config_model/maps.csv` (`key;kind`) + model w `config_pydantic.py` i
-  regeneracja web przez `just gen-web-config`
-- `objects.py` (`Collider`), `scene/map_loader.py`, `scene/map_state.py` - `is_maze` liczone
-  z rejestru, `maze_cols`/`maze_rows` wypadają z sygnatury
-- `.tmx` - kasata trzech własności, `entry_point` → `destination_entry_point` na obiektach
-  wyjść (także w obiektach syntetyzowanych w `maze_generator/maze_utils.py:817,825,839`)
-- para plików `.md` (PL + EN) dla map bez dokumentu (D16) - **do edycji autora w Obsidian**
+- **nowy `project/scene/map_registry.py`** zamiast `maps.csv` (patrz D13 wyżej): rejestr
+  wyliczany ze stemów `.tmx` i liczby wierszy `maze_configs.csv`
+- `objects.py` (`Collider`) - `is_maze`, `maze_cols`, `maze_rows` wypadły z sygnatury;
+  drzwi wiedzą już tylko, dokąd prowadzą
+- `scene/map_state.py` - `scene.is_maze` liczone z rejestru po kluczu mapy docelowej
+- `.tmx` - kasata 16 własności w 6 plikach, `entry_point` → `destination_entry_point`
+  na 10 obiektach wyjść (także w obiektach syntetyzowanych w `maze_utils.py:817,825,839`)
+- `agent_ctrl.py` (2×) i `scripts/b01_fixture.py` - wybór wyjścia labiryntowego pyta
+  rejestr o mapę docelową zamiast czytać `exit.is_maze`
+- pary plików `.md` (PL + EN) dla `JACOBS_CHAMBER` i labiryntu (D16) - **nazwy są roboczą
+  propozycją, do edycji autora w Obsidian**
 
-Kryterium: `just test-unit` zielony (`test_maze_reproducible.py` musi przejść bez zmian),
-wejście do labiryntu i powrót działają - **weryfikacja u autora**.
+### Czym wykonanie różni się od planu
+
+- **`maps.csv` nie powstał** - patrz D13. To była uwaga autora i jest trafna: plik niósłby
+  jeden wyliczalny bool i byłby trzecim rejestrem map obok locale (D12) i dokumentów
+  w Obsidianie (D16).
+- **Własności do kasaty było 16, nie 12** - plan liczył trzy własności na obiekt wyjścia,
+  a `is_maze` stoi na **każdym** wyjściu (także tych prowadzących do map statycznych),
+  nie tylko na obiekcie `Maze`.
+- **Dwie mapy w `assets/map/`** (`small.tmx`, `grasslands.tmx`) też mają własność
+  `entry_point`, ale **zostały nietknięte**: to prototypy w starszym schemacie (warstwa
+  `exits` zamiast `interactions`, brak `obj_type`), których gra nie ładuje - `MAPS_DIR`
+  wskazuje na `NinjaAdventure/maps`. Reguły z etapu 4 dotyczą warstwy `interactions`,
+  więc nie ma tam miny.
+- **`MAZE_MAP_PREFIX` to na razie `"Maze"`**, nie `"MAZE"` - etap 5 zmieni tę jedną stałą
+  razem z resztą nazw map (D5).
+- **`scene.maze_cols`/`maze_rows` zostają na scenie** i w `MAP_PROPERTIES` - ustawia je
+  `load_tileset_map` z `maze_configs.csv` per poziom. Wypadła tylko martwa kopia z obiektu
+  mapy, dokładnie jak mówi O7.
+
+### Wynik
+
+- `just test-unit` - 499/499, `test_maze_reproducible.py` bez zmian
+- `just validate-world` - 0 błędów, te same 5 ostrzeżeń; `mypy` - czysty (107 plików);
+  `validate_locale` - OK
+- `just test-smoke` - 6/6, w tym **Auto Save on Maze Entry**
+- headless pełny obieg **wioska → `Maze_01` → `Maze_02` → `Maze_01` → wioska**: `is_maze`,
+  `entry_point` i wymiary siatki poprawne na każdym kroku. Przy okazji widać O7 na żywo -
+  poziom 1 dostaje `9x6` z `maze_configs.csv`, a nie `10x7`, które kłamała mapa
+
+**Do weryfikacji u autora:** wejście do labiryntu, zejście na poziom 2 i powrót do wioski
+w prawdziwej grze (headless i smoke to potwierdzają, ale sterownik `dummy` nie jest wierny -
+patrz notatka o zrzutach headless).
 
 ## Etap 3: warstwa nazw wyświetlanych (D12, W2, O6) - PRZED renamem map
 

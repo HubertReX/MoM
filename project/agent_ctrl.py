@@ -108,6 +108,8 @@ from typing import Any, Callable
 
 import pygame
 
+from scene import map_registry
+
 # Ten moduł ma też tryb CLI (`python project/agent_ctrl.py ...`) uruchamiany SPOZA gry,
 # gdzie `settings` nie jest na sys.path - stąd fallback. Anotacje są wypisane wprost,
 # żeby gałąź except nie zawężała typów do `None`.
@@ -512,8 +514,10 @@ class AgentController:
         if self._enter_maze_pending:
             self._enter_maze_pending = False
             state = game.states[-1] if game.states else None
+            # labirynt jest cechą mapy docelowej, nie drzwi (C02/W8)
             maze_exit = next(
-                (e for e in getattr(state, "exits", None) or [] if getattr(e, "is_maze", False)),
+                (e for e in getattr(state, "exits", None) or []
+                 if map_registry.is_maze_map(game.conf, e.to_map)),
                 None,
             )
             if state is not None and maze_exit is not None:
@@ -529,7 +533,8 @@ class AgentController:
             if state is not None and hasattr(state, "exits") and state.exits:
                 # prefer non-maze exits for fast, deterministic loads
                 exit = next(
-                    (e for e in state.exits if not getattr(e, "is_maze", False)),
+                    (e for e in state.exits
+                     if not map_registry.is_maze_map(game.conf, e.to_map)),
                     state.exits[0],
                 )
                 state.new_scene = exit

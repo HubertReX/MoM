@@ -18,7 +18,7 @@ import settings
 from settings import _, MOM_PROFILE, QUICK_SAVE_SLOT
 from objects import NotificationTypeEnum
 
-from scene import map_loader, world_clock
+from scene import map_loader, map_registry, world_clock
 
 if TYPE_CHECKING:
     from scene.scene import Scene
@@ -144,11 +144,13 @@ def go_to_map(scene: "Scene") -> None:
     scene.return_entry_point = scene.new_scene.return_entry_point
 
     scene.current_map = scene.new_scene.to_map
-    # print(f"{scene.entry_point=} {scene.new_scene.entry_point}")
-    scene.entry_point = scene.new_scene.entry_point
-    scene.is_maze = scene.new_scene.is_maze
-    scene.maze_cols = scene.new_scene.maze_cols
-    scene.maze_rows = scene.new_scene.maze_rows
+    # drzwi mówią, gdzie gracz ma stanąć na mapie docelowej; od tej chwili to
+    # jest "gdzie stoję teraz", czyli `scene.entry_point` (C02/D13)
+    scene.entry_point = scene.new_scene.destination_entry_point
+    # cecha mapy docelowej, nie drzwi (W8). `maze_cols`/`maze_rows` ustawia
+    # `load_tileset_map` z `maze_configs.csv` per poziom - i tak nadpisywało to,
+    # co przepisywaliśmy tu z obiektu (O7).
+    scene.is_maze = map_registry.is_maze_map(scene.game.conf, scene.current_map)
     # The seed belongs to the level we are leaving. Clearing it lets
     # `_resolve_maze_seed` decide for the level we are entering: reproduce the
     # one waiting in `pending_map_states`, or roll a fresh one. A cached level

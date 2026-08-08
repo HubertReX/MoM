@@ -285,18 +285,14 @@
  <objectgroup id="6" name="interactions">
   <object id="3" name="Return" x="512" y="112" width="16" height="16">
    <properties>
-    <property name="entry_point" value="Stairs"/>
-    <property name="is_maze" type="bool" value="false"/>
+    <property name="destination_entry_point" value="Stairs"/>
     <property name="obj_type" value="exit"/>
     <property name="to_map" value="Return"/>
    </properties>
   </object>
   <object id="4" name="Stairs" x="528" y="112" width="16" height="16">
    <properties>
-    <property name="entry_point" value="Entry"/>
-    <property name="is_maze" type="bool" value="true"/>
-    <property name="maze_cols" type="int" value="10"/>
-    <property name="maze_rows" type="int" value="7"/>
+    <property name="destination_entry_point" value="Entry"/>
     <property name="obj_type" value="exit"/>
     <property name="return_entry_point" value="0"/>
     <property name="to_map" value="Maze_02"/>

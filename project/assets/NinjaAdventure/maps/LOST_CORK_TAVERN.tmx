@@ -203,8 +203,7 @@
  <objectgroup id="6" name="interactions">
   <object id="3" name="Village" x="160" y="316" width="16" height="13">
    <properties>
-    <property name="entry_point" value="VillageHouseDoor"/>
-    <property name="is_maze" type="bool" value="false"/>
+    <property name="destination_entry_point" value="VillageHouseDoor"/>
     <property name="obj_type" value="exit"/>
     <property name="to_map" value="Village"/>
    </properties>

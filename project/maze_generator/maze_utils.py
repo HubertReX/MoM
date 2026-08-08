@@ -814,7 +814,7 @@ def build_tileset_map_from_maze(
         return_obj.x = (MARGIN + start[0] * SUBTILE_COLS + RETURN_X_OFFSET) * TILE_SIZE
         return_obj.y = (MARGIN + start[1] * SUBTILE_ROWS + RETURN_Y_OFFSET) * TILE_SIZE
         return_obj.to_map = to_map  # "Village"
-        return_obj.entry_point = entry_point  # "Stairs"
+        return_obj.destination_entry_point = entry_point  # "Stairs"
     else:
         # same location as the location of the stairs up sprite
         return_obj.x = (MARGIN + start[0] * SUBTILE_COLS +  # noqa: W504
@@ -822,7 +822,7 @@ def build_tileset_map_from_maze(
         return_obj.y = (MARGIN + start[1] * SUBTILE_ROWS +  # noqa: W504
                         IMAGE_DIRECTION_TO_OFFSET[start_cell.image_index][1]) * TILE_SIZE
         return_obj.to_map = f"{current_map_name}_{(current_map_level - 1):02d}"
-        return_obj.entry_point = "Re-Entry"  # "Stairs"
+        return_obj.destination_entry_point = "Re-Entry"  # "Stairs"
 
     big_chest_obj = clean_tileset_map.get_object_by_name("BigChest_Maze")
     big_chest_obj.x = (MARGIN + end[0] * SUBTILE_COLS +  # noqa: W504
@@ -836,7 +836,7 @@ def build_tileset_map_from_maze(
         stairs_obj.x = (MARGIN + end[0] * SUBTILE_COLS + IMAGE_DIRECTION_TO_OFFSET[end_cell.image_index][0]) * TILE_SIZE
         stairs_obj.y = (MARGIN + end[1] * SUBTILE_ROWS + IMAGE_DIRECTION_TO_OFFSET[end_cell.image_index][1]) * TILE_SIZE
         stairs_obj.to_map = f"{current_map_name}_{(current_map_level + 1):02d}"
-        stairs_obj.entry_point = "Entry"
+        stairs_obj.destination_entry_point = "Entry"
     else:
         # not accessible
         stairs_obj.x = 0

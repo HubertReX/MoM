@@ -282,10 +282,7 @@ def load_interactions(scene: "Scene", exits_layer: TiledTileLayer) -> None:
                     (obj.width, obj.height),
                     obj.name,
                     obj.to_map,
-                    obj.entry_point,
-                    obj.is_maze,
-                    getattr(obj, "maze_cols", 0),
-                    getattr(obj, "maze_rows", 0),
+                    obj.destination_entry_point,
                     getattr(obj, "return_entry_point", ""),
                 )
                 scene.exits.append(exit)

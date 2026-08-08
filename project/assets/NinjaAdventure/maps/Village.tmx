@@ -460,26 +460,21 @@
  <objectgroup id="7" name="interactions">
   <object id="15" name="LOST_CORK_TAVERN" x="672" y="720" width="16" height="16">
    <properties>
-    <property name="entry_point" value="Door"/>
-    <property name="is_maze" type="bool" value="false"/>
+    <property name="destination_entry_point" value="Door"/>
     <property name="obj_type" value="exit"/>
     <property name="to_map" value="LOST_CORK_TAVERN"/>
    </properties>
   </object>
   <object id="27" name="JacobsChamber" x="368" y="864" width="16" height="16">
    <properties>
-    <property name="entry_point" value="Door"/>
-    <property name="is_maze" type="bool" value="false"/>
+    <property name="destination_entry_point" value="Door"/>
     <property name="obj_type" value="exit"/>
     <property name="to_map" value="JacobsChamber"/>
    </properties>
   </object>
   <object id="19" name="Maze" x="917" y="677" width="8" height="8">
    <properties>
-    <property name="entry_point" value="Entry"/>
-    <property name="is_maze" type="bool" value="true"/>
-    <property name="maze_cols" type="int" value="10"/>
-    <property name="maze_rows" type="int" value="7"/>
+    <property name="destination_entry_point" value="Entry"/>
     <property name="obj_type" value="exit"/>
     <property name="return_entry_point" value="NextToMaze"/>
     <property name="to_map" value="Maze_01"/>

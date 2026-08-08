@@ -26,6 +26,14 @@ else:
 
 
 class Collider(pygame.sprite.Sprite):
+    """Drzwi: prostokąt na mapie, który wie tylko, dokąd prowadzi.
+
+    C02/D13: `is_maze`, `maze_cols` i `maze_rows` tu nie wracają. Czy za drzwiami
+    jest labirynt, wie mapa docelowa (`scene.map_registry.is_maze_map`), a jego
+    wymiary siedzą w `maze_configs.csv` per poziom - obiekt na mapie zna wejście,
+    nie zawartość.
+    """
+
     def __init__(
         self,
         groups: pygame.sprite.Group,
@@ -33,10 +41,7 @@ class Collider(pygame.sprite.Sprite):
         size: tuple[int, int],
         name: str,
         to_map: str,
-        entry_point: str,
-        is_maze: bool,
-        maze_cols: int,
-        maze_rows: int,
+        destination_entry_point: str,
         return_entry_point: str = ""
     ) -> None:
 
@@ -45,10 +50,9 @@ class Collider(pygame.sprite.Sprite):
         self.rect: pygame.FRect = self.image.get_frect(topleft = pos)
         self.name = name
         self.to_map = to_map
-        self.entry_point = entry_point
-        self.is_maze = is_maze
-        self.maze_cols = maze_cols
-        self.maze_rows = maze_rows
+        #: punkt wejścia NA MAPIE DOCELOWEJ - nie mylić ze `Scene.entry_point`,
+        #: który mówi, gdzie gracz stoi teraz (C02/D13)
+        self.destination_entry_point = destination_entry_point
         self.return_entry_point = return_entry_point
 
 #################################################################################################################

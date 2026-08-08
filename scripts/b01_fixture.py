@@ -62,7 +62,9 @@ def create() -> None:
     from save_fixtures import get_save_path
 
     game, scene = _boot_scene()
-    maze_exit = next(e for e in scene.exits if getattr(e, "is_maze", False))
+    from scene import map_registry
+    maze_exit = next(e for e in scene.exits
+                     if map_registry.is_maze_map(game.conf, e.to_map))
     scene.new_scene = maze_exit
     scene.go_to_map()  # wejście do labiryntu = autosave slotu 0 (ścieżka z gry)
 
