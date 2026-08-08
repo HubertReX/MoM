@@ -141,7 +141,7 @@
 <div class="wrap">
 
 <div class="topbar">
-  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 2 z decyzjami autora · status: <strong>D12 do rozstrzygnięcia</strong></p>
+  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 3 po uwagach autora (W6-W13) · status: <strong>D1-D19 rozstrzygnięte - gotowe do wykonania</strong></p>
   <button id="themeToggle" title="Przełącz motyw">🌗 Motyw</button>
 </div>
 
@@ -153,9 +153,9 @@ Ten dokument proponuje jedną regułę na przestrzeń, pokazuje dokładny zakres
 
 <div class="grid cols-4" style="margin:var(--s5) 0">
   <div class="card metric"><div class="num">12</div><div class="label">przestrzeni nazw w obiegu</div></div>
-  <div class="card metric"><div class="num">27</div><div class="label">obiektów Tiled do przemianowania (rekomendacja)</div></div>
-  <div class="card metric"><div class="num">0 <span class="badge ok">z dialogiem</span></div><div class="label">renamowanych postaci ze stanem w zapisie</div></div>
-  <div class="card metric"><div class="num">4,78 MB</div><div class="label">martwego audio w paczce web (znalezione po drodze)</div></div>
+  <div class="card metric"><div class="num">27</div><div class="label">obiektów Tiled do przemianowania</div></div>
+  <div class="card metric"><div class="num">6 <span class="badge err">kafli</span></div><div class="label">zepsutych wartości <code>model_name</code> w tilesecie (rev. 3)</div></div>
+  <div class="card metric"><div class="num">3</div><div class="label">martwe własności labiryntu w <code>.tmx</code> (rev. 3)</div></div>
 </div>
 
 <div class="callout ok">
@@ -175,6 +175,31 @@ Ten dokument proponuje jedną regułę na przestrzeń, pokazuje dokładny zakres
   </ul>
 </div>
 
+<div class="callout ok">
+  <p style="margin-bottom:var(--s2)"><strong>Uwagi autora do rev. 2 (wiążące, 2026-08-08 wieczorem).</strong>
+  Osiem uwag z przeglądu dokumentu. Sześć zmienia zakres, dwie prostują błąd w dokumencie.</p>
+  <ul style="margin:0">
+    <li><strong>W6 - w kluczach skrzyń lokalizacja idzie na przód</strong>, nie na koniec:
+      <code>SmallChest_VillageHouse</code> → <code>LOST_CORK_TAVERN_SMALL_CHEST</code> (<a href="#d8">D8</a>).</li>
+    <li><strong>W7 - <code>Village</code> to <code>BLUNDERHAVEN</code></strong> i ta zmiana idzie w ramach C02,
+      a nie później (<a href="#d5">D5</a>).</li>
+    <li><strong>W8 - właściwości labiryntu wychodzą z <code>.tmx</code></strong> do pliku CSV,
+      <code>entry_point</code> → <code>destination_entry_point</code>, a <code>is_maze</code> najlepiej niech
+      zniknie zupełnie (<a href="#d13">D13</a>).</li>
+    <li><strong>W9 - <code>model_name</code> mieszka w tilesecie</strong>, nie na obiektach mapy; cztery
+      wyjątki w <code>Village.tmx</code> do usunięcia (<a href="#d14">D14</a>).</li>
+    <li><strong>W10 - <code>Element.tsx</code> i <code>FloorDetail.tsx</code> do <code>tilesets/</code></strong>,
+      razem z odwołaniami w mapach (<a href="#d15">D15</a>).</li>
+    <li><strong>W11 - mapy bez dokumentu lokacji dostają parę plików <code>.md</code> (PL + EN)</strong>
+      w <code>doc/</code>, do edycji i tłumaczenia w Obsidian; stamtąd nazwy trafiają do sekcji
+      <code>[map]</code> w locale (<a href="#d16">D16</a>).</li>
+    <li><strong>W12 - <code>AGENTS.md</code> to za mało</strong>, żeby skrypt rename'ujący nie zgnił.
+      Potrzebny bezpieczny test na CI (<a href="#d17">D17</a>).</li>
+    <li><strong>W13 - model węża to <code>SNAKE</code>, nie <code>SNAKE_01</code></strong>; tabela zmian
+      odwracała też numerację zwierząt - poprawione (<a href="#d18">D18</a>).</li>
+  </ul>
+</div>
+
 <div class="callout err">
   <p style="margin-bottom:var(--s2)"><strong><span class="badge err">W2 nazywa istniejącą usterkę.</span></strong>
   Dziś HUD wyświetla <strong>surową nazwę mapy</strong> - <code>hud.py:233-237</code> bierze
@@ -190,11 +215,11 @@ Ten dokument proponuje jedną regułę na przestrzeń, pokazuje dokładny zakres
     <li><strong>Jedna reguła nadrzędna:</strong> nazwa obiektu w Tiled = klucz z <code>config.json</code>,
       a przy wielu kopiach tego samego modelu dochodzi sufiks <code>_01</code>. Koniec zgadywania,
       czy pisać <code>Johny</code>, <code>JOHNY</code>, czy <code>johny</code>.</li>
-    <li><strong>Mapy też są kluczami</strong> (W1): <code>Village</code> → <code>VILLAGE</code>,
+    <li><strong>Mapy też są kluczami</strong> (W1, W7): <code>Village</code> → <code>BLUNDERHAVEN</code>,
       <code>JacobsChamber</code> → <code>JACOBS_CHAMBER</code>, <code>LOST_CORK_TAVERN</code> zostaje bez zmian.</li>
     <li><strong>Do tego warstwa nazw wyświetlanych</strong> (W2) - dziś nie istnieje, a bez niej gracz
       czyta klucze z HUD-u.</li>
-    <li><strong>Odwołania do miejsc zawsze z prefiksem mapy</strong> (<code>VILLAGE:well</code>),
+    <li><strong>Odwołania do miejsc zawsze z prefiksem mapy</strong> (<code>BLUNDERHAVEN:well</code>),
       bo dziś <code>bar</code> istnieje na dwóch mapach naraz.</li>
     <li><strong>Rename dotyka wyłącznie zwierząt i statystów</strong> - wszystkie 6 postaci z dialogami
       zostaje nietkniętych, więc nie tracisz ani jednej rozmowy z zapisu.</li>
@@ -206,7 +231,7 @@ Ten dokument proponuje jedną regułę na przestrzeń, pokazuje dokładny zakres
   <li><a href="#toc">Spis treści</a></li>
   <li><a href="#odkrycia">Co odkryłem, zanim cokolwiek zaproponowałem</a></li>
   <li><a href="#mapa">Mapa dwunastu przestrzeni nazw</a></li>
-  <li><a href="#decyzje">Decyzje do zatwierdzenia (D1-D11)</a></li>
+  <li><a href="#decyzje">Decyzje do zatwierdzenia (D1-D19)</a></li>
   <li><a href="#rename">Dokładna tabela zmian nazw</a></li>
   <li><a href="#sciaga">Ściąga projektanta: gdzie używam jakiego klucza</a></li>
   <li><a href="#plan">Plan wykonania i bramki bezpieczeństwa</a></li>
@@ -282,6 +307,19 @@ if npc.name in ms.dead_monsters:               # manager.py:755</code></pre>
   Sprawdziłem wszystkie 34 obiekty: <strong>31 bierze <code>model_name</code> z kafla tilesetu, 3 z własności
   na obiekcie, ani jeden z własnej nazwy.</strong> Nazwa obiektu jest dziś czystą etykietą instancji -
   można ją zmieniać swobodnie, o ile zadba się o zapis (O1) i o warstwę <code>waypoints</code>.</p>
+</div>
+
+<div class="callout err" style="margin-top:var(--s4)">
+  <p style="margin-bottom:var(--s2)"><strong><span class="badge err">O6</span> Kod rozpoznaje gracza po
+  <em>nazwie wyświetlanej</em>, nie po kluczu.</strong></p>
+  <p style="margin:0"><code>combat.py:31</code>, <code>:41</code>, <code>:66</code> i
+  <code>objects.py:207</code> sprawdzają <code>npc.model.name_EN == "Player"</code>, żeby odróżnić gracza od
+  NPC-a. <code>name_EN</code> to kolumna z <em>nazwą do czytania</em> - dokładnie ta warstwa, którą W2 każe
+  tłumaczyć. W dniu, w którym gracz w <code>characters.csv</code> dostanie polskie „Gracz" albo ktoś zmieni
+  ten napis, walka i śmierć gracza przestaną działać - po cichu. Klucz encji (<code>Player</code>, docelowo
+  <code>PLAYER</code>) jest do tego właściwą daną. To ten sam błąd co O5 (klucz na HUD-zie), tylko odbity
+  w lustrze: tam klucz udawał napis, tu napis udaje klucz. Poprawka jest czterolinijkowa i wchodzi
+  do C02 jako część etapu 3.</p>
 </div>
 
 <h3>Co z tego wynika dla kształtu zadania</h3>
@@ -412,7 +450,7 @@ czerwone = zapis gry. Czerwona strzałka to sprzężenie z odkrycia O1 - jedyne,
 <a class="backlink" href="#toc">↑ Spis treści</a>
 
 <!-- ============================================================ -->
-<h2 id="decyzje">4. Decyzje do zatwierdzenia (D1-D11)</h2>
+<h2 id="decyzje">4. Decyzje do zatwierdzenia (D1-D19)</h2>
 <p class="prose">Wiersz podświetlony na niebiesko to moja rekomendacja. Jeśli się zgadzasz -
 wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
 
@@ -501,12 +539,18 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
   </table></div>
 </div>
 
-<div class="dec">
+<div class="dec" id="d5">
   <h3><span class="qid">D5</span> Nazwy map (N7)</h3>
   <p>Dziś: <code>Village</code>, <code>JacobsChamber</code>, <code>VillageHouse</code> i <code>LOST_CORK_TAVERN</code>.
   Nazwa mapy wycieka do <code>audio.toml</code>, do prefiksów miejsc, do warstwy <code>interactions</code>,
   do własności <code>entry_point</code> i <strong>do pliku zapisu</strong> (<code>PlayerState.map_name</code>).</p>
   <div class="callout ok" style="margin-top:0">
+    <p style="margin-bottom:var(--s2)"><strong>W7: <code>Village</code> to tak naprawdę <code>BLUNDERHAVEN</code>.</strong>
+    Nazwa jest już zaprojektowana i opisana - <code>doc/EN/Locations/Blunderhaven.md</code> (alias
+    <code>BLUNDERHAVEN</code>) i <code>doc/PL/Lokalizacje/Gafowo Kolonia.md</code>. Mapa nosi roboczą nazwę
+    z czasów, gdy lokacja nie miała jeszcze własnej. Rename idzie w ramach tego zadania, więc do kodu
+    i danych wchodzi <em>docelowy</em> klucz, a nie pośredni <code>VILLAGE</code>, którego i tak trzeba by
+    potem zmienić drugi raz.</p>
     <p style="margin:0"><strong>Rozstrzygnięte przez W1: <code>SCREAMING_SNAKE</code>.</strong>
     Mapa jest encją jak każda inna i nosi klucz, a nie nazwę do czytania. Odpada moja pierwotna
     rekomendacja (<code>LostCorkTavern</code>) - opierała się na błędnym założeniu, że nazwa mapy jest
@@ -517,8 +561,8 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
     <thead><tr><th>Mapa</th><th>Klucz docelowy</th><th>Koszt</th></tr></thead>
     <tbody>
       <tr><td><code>LOST_CORK_TAVERN</code></td><td class="new"><code>LOST_CORK_TAVERN</code></td><td><span class="badge ok">bez zmian</span> - już jest kluczem</td></tr>
-      <tr><td><code>Village</code></td><td class="new"><code>VILLAGE</code></td>
-        <td><span class="badge warn">dotyka kodu</span> - <code>"Village"</code> jest zapisane na sztywno w 4 miejscach produkcyjnych (<code>save_load.py</code> ×2, <code>main_menu.py</code>, <code>maze_utils.py</code>) plus skrypty i testy</td></tr>
+      <tr><td><code>Village</code></td><td class="new"><code>BLUNDERHAVEN</code></td>
+        <td><span class="badge warn">dotyka kodu</span> - <code>"Village"</code> jest zapisane na sztywno w 3 miejscach produkcyjnych (<code>save_load.py</code> ×2, <code>main_menu.py</code>) plus <code>save_fixtures.py</code>, <code>b01_fixture.py</code>, <code>bench_scene.py</code>, <code>FoW-prototype.py</code> i <code>test_pathfinding_goal.py</code></td></tr>
       <tr><td><code>JacobsChamber</code></td><td class="new"><code>JACOBS_CHAMBER</code></td><td>same dane (mapa, audio, <code>interactions</code>)</td></tr>
       <tr><td><code>VillageHouse</code></td><td class="new">-</td><td>wychodzi poza <code>maps/</code> (W3); klucz dostanie, gdy wróci jako osobny dom</td></tr>
     </tbody>
@@ -602,23 +646,44 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
   nic go nie waliduje i nic go nie pakuje do <code>web.zip</code>.</p>
 </div>
 
-<div class="dec">
+<div class="dec" id="d8">
   <h3><span class="qid">D8</span> Klucze skrzyń (N12)</h3>
   <p><code>SmallChest_VillageHouse</code> zaszywa nazwę mapy w kluczu encji - dlatego rename tawerny
   zostawił tu ślad. W labiryncie działa już inny wzorzec: klucz w configu to <em>szablon</em>,
   a instancja dostaje nazwę <code>&lt;szablon&gt;#&lt;n&gt;</code>.</p>
+  <div class="callout ok" style="margin-top:0">
+    <p style="margin:0"><strong>W6 rozstrzyga: lokalizacja idzie na przód, nie na koniec.</strong>
+    <code>SmallChest_VillageHouse</code> → <code>LOST_CORK_TAVERN_SMALL_CHEST</code>. Moja pierwotna
+    rekomendacja („klucz opisuje zawartość, nie miejsce") jest odrzucona - i słusznie, bo <em>nie była
+    prawdziwa</em>: <code>chests.csv</code> ma już dziś 8 kluczy z lokalizacją w środku
+    (<code>SmallChest_Maze_01</code> … <code>BigChest_Maze_04</code>). Skrzynia jest encją przypisaną
+    do miejsca, tak jak miejsce z D3.</p>
+  </div>
   <div class="tablewrap"><table>
     <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
     <tbody>
-      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
-        <td>Klucz w configu opisuje <em>zawartość</em>, nie miejsce: <code>SMALL_CHEST_TAVERN</code>.
-        Nazwa obiektu na mapie zostaje osobno jako instancja</td>
-        <td>Rozdziela szablon od instancji tak jak w labiryncie; przemianowanie mapy przestaje dotykać skrzyń</td>
-        <td>2 skrzynie do przemianowania + wiersze w <code>chests.csv</code></td></tr>
-      <tr><td><strong>B</strong></td><td>Zostawić, tylko poprawić nieaktualną nazwę mapy w kluczu</td>
-        <td>Minimalna zmiana, naprawia dzisiejszy ślad</td><td>Ta sama pułapka wróci przy następnym rename'ie mapy</td></tr>
+      <tr class="pick"><td><strong>A</strong> <span class="badge ok">wybrane (W6)</span></td>
+        <td>Prefiks = klucz mapy, potem rodzaj skrzyni:<br>
+        <code>LOST_CORK_TAVERN_SMALL_CHEST</code>, <code>BLUNDERHAVEN_BIG_CHEST</code>,
+        <code>MAZE_01_SMALL_CHEST</code></td>
+        <td>Klucze sortują się mapami; jedna spójna reguła dla skrzyń wioski i labiryntu; pasuje do
+        prefiksowania miejsc z D3</td>
+        <td>10 kluczy do przemianowania (2 + 8 labiryntowych) + kolumny w <code>maze_configs.csv</code></td></tr>
+      <tr><td><strong>B</strong></td>
+        <td>Prefiks oddzielony dwukropkiem, jak miejsca z D3: <code>LOST_CORK_TAVERN:SMALL_CHEST</code></td>
+        <td>Granica „mapa | encja" jednoznaczna dla oka i dla parsera</td>
+        <td>Dwukropek w kluczu <code>config.json</code> i w nazwie obiektu Tiled; klucz zapisu robi się
+        <code>LOST_CORK_TAVERN:SMALL_CHEST#0</code> - dwa separatory w jednym identyfikatorze</td></tr>
+      <tr><td><strong>C</strong> <span class="badge err">odrzucone</span></td>
+        <td>Klucz opisuje zawartość, nie miejsce (<code>SMALL_CHEST_TAVERN</code>)</td>
+        <td>Przemianowanie mapy nie dotyka skrzyń</td>
+        <td>Odrzucone przez W6; kłóci się z 8 istniejącymi kluczami labiryntu</td></tr>
     </tbody>
   </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Dlaczego A, a nie B:</strong> podkreślnik wystarcza, bo klucz
+  skrzyni to <em>identyfikator</em>, a nie <em>odwołanie</em> - nikt go nie rozbiera na części. Walidator
+  i tak sprawdza go najdłuższym pasującym prefiksem z listy map. Dwukropek z D3 jest tam potrzebny, bo
+  <code>bar</code> istnieje na dwóch mapach naraz i trzeba powiedzieć <em>na której</em>.</p>
 </div>
 
 <div class="dec">
@@ -646,7 +711,7 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
   (np. daleki postęp fabularny do testów), powiedz - wtedy B ma sens i zaprojektuję go inaczej.</p>
 </div>
 
-<div class="dec">
+<div class="dec" id="d10">
   <h3><span class="qid">D10</span> Jak wykonywać rename'y</h3>
   <div class="tablewrap"><table>
     <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
@@ -677,6 +742,286 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
     </tbody>
   </table></div>
 </div>
+<h3 style="margin-top:var(--s5)">Decyzje dołożone w rev. 3 (uwagi autora W6-W13)</h3>
+
+<div class="dec" id="d13">
+  <h3><span class="qid">D13</span> Właściwości labiryntu poza <code>.tmx</code> (W8)</h3>
+  <p>Dziś obiekt <code>Maze</code> w warstwie <code>interactions</code> mapy <code>Village</code> niesie siedem
+  własności: <code>obj_type</code>, <code>to_map</code>, <code>entry_point</code>, <code>return_entry_point</code>,
+  <code>is_maze</code>, <code>maze_cols</code>, <code>maze_rows</code>. Po wejściu w kod trzy ostatnie okazały się
+  <strong>nie robić nic</strong> - a dwie z nich wręcz kłamią.</p>
+  <div class="callout err">
+    <p style="margin-bottom:var(--s2)"><strong><span class="badge err">Znalezisko O7</span>
+    <code>maze_cols</code> i <code>maze_rows</code> na obiekcie są martwe od dawna.</strong>
+    <code>go_to_map</code> przepisuje je z wyjścia na scenę (<code>map_state.py:150-151</code>), po czym
+    <code>load_tileset_map</code> <em>natychmiast je nadpisuje</em> wartościami z
+    <code>maze_configs.csv</code> (<code>map_loader.py:474-475</code>) - i dopiero te wchodzą do
+    <code>HuntAndKillMaze(...)</code>. Ścieżka „mapa z cache" też ich nie używa
+    (<code>restore_map</code> bierze zapisane). Dowód gołym okiem: mapa mówi <code>10×7</code>,
+    a <code>maze_configs.csv</code> dla poziomu 1 mówi <code>9×6</code> - i wygrywa CSV.</p>
+    <p style="margin:0">Wniosek: <strong>nie trzeba ich nigdzie przenosić - trzeba je skasować.</strong>
+    Docelowy plik CSV już istnieje i już rządzi.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Własność</th><th>Co z nią robimy</th><th>Dlaczego</th></tr></thead>
+    <tbody>
+      <tr><td><code>maze_cols</code>, <code>maze_rows</code></td>
+        <td class="new">usunąć z <code>.tmx</code> i z sygnatury <code>Collider</code></td>
+        <td>Martwe (O7). Rozmiar poziomu jest w <code>maze_configs.csv</code>, per poziom - i tam jego miejsce,
+        bo poziom 3 ma inny rozmiar niż poziom 1, a obiekt na mapie zna tylko wejście</td></tr>
+      <tr><td><code>entry_point</code></td>
+        <td class="new"><code>destination_entry_point</code></td>
+        <td>Wskazuje punkt <em>na mapie docelowej</em>, a scena ma osobne pole <code>entry_point</code> („gdzie
+        stoję teraz"). Jedna nazwa na dwa różne pojęcia to dokładnie ta klasa pomyłki, którą C02 likwiduje</td></tr>
+      <tr><td><code>is_maze</code></td>
+        <td class="new">usunąć z <code>.tmx</code>, wyliczać z rejestru map</td>
+        <td>To nie jest cecha <em>drzwi</em>, tylko cecha <em>mapy docelowej</em>. Duplikat na każdym wyjściu
+        prowadzącym do labiryntu = kolejne miejsce do pomylenia</td></tr>
+      <tr><td><code>to_map</code>, <code>return_entry_point</code>, <code>obj_type</code></td>
+        <td>bez zmian</td>
+        <td>Opisują to konkretne przejście, więc siedzą tam, gdzie trzeba</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Skąd wtedy <code>is_maze</code>?</strong> Z nowego, minimalnego
+  rejestru map - <code>project/config_model/maps.csv</code>:</p>
+  <pre><code>key;kind;doc_EN;doc_PL
+BLUNDERHAVEN;static;Blunderhaven;Gafowo Kolonia
+LOST_CORK_TAVERN;static;the Lost Cork Tavern;Tawerna Brakująca klepka
+JACOBS_CHAMBER;static;;
+MAZE;maze;Caverns of Confusion;Jaskinie zagmatwania</code></pre>
+  <p><code>is_maze</code> wyjścia = <code>maps[to_map].kind == "maze"</code> (poziomy <code>MAZE_01</code>,
+  <code>MAZE_02</code>… zdejmują sufiks - kod i tak już parsuje <code>split("_")[1]</code>, żeby dostać numer
+  poziomu). Ten sam plik daje walidatorowi <strong>listę legalnych kluczy map</strong>, której dziś nie ma
+  (mapa „istnieje", bo istnieje plik <code>.tmx</code> - a labirynt nie ma pliku), i domyka regułę z D12:
+  każdy klucz z <code>maps.csv</code> musi mieć nazwę wyświetlaną w PL i EN.</p>
+  <div class="callout warn">
+    <p style="margin:0"><strong>Do rozstrzygnięcia:</strong> czy kolumny <code>doc_EN</code>/<code>doc_PL</code>
+    (nazwy plików w <code>doc/</code>) mają być w <code>maps.csv</code>, czy nazwy wyświetlane mają jechać
+    wyłącznie przez locale (D12=A), a <code>maps.csv</code> ma zostać goły (<code>key;kind</code>).
+    Rekomendacja: <strong>goły</strong> - jedna prawda o napisach UI, a powiązanie z dokumentem trzyma
+    alias w samym <code>.md</code>, tak jak dziś.</p>
+  </div>
+</div>
+
+<div class="dec" id="d14">
+  <h3><span class="qid">D14</span> <code>model_name</code> tylko na kaflu tilesetu (W9)</h3>
+  <p>Uwaga trafiona: cztery obiekty w <code>Village.tmx</code> (<code>Snake_01</code>, <code>Dog_orange</code>,
+  <code>Dog_purple</code>, <code>Robin</code>) mają własny <code>model_name</code>, a pozostałe 30 bierze go
+  z <code>CharacterTileset.tsx</code>. Tylko że to nie jest niekonsekwencja stylu - to <strong>obejście
+  trzech zepsutych kafli i jednego konfliktu</strong>.</p>
+  <div class="callout err">
+    <p style="margin-bottom:var(--s2)"><strong><span class="badge err">Znalezisko O8</span>
+    Tileset ma dziś sześć wartości <code>model_name</code>, które nie są kluczem żadnej postaci.</strong></p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Kafel</th><th><code>model_name</code> dziś</th><th>Klucz w <code>characters.csv</code></th><th>Skutek</th></tr></thead>
+      <tbody>
+        <tr><td>9</td><td class="old"><code>Dog1</code></td><td class="new"><code>DOG_ORANGE</code></td><td>obejście na obiekcie</td></tr>
+        <tr><td>10</td><td class="old"><code>Dog</code></td><td class="new"><code>DOG_PURPLE</code></td><td>obejście na obiekcie</td></tr>
+        <tr><td>6</td><td class="old"><code>Snake</code></td><td class="new"><code>SNAKE</code> (D18)</td><td>obejście na obiekcie</td></tr>
+        <tr><td>21</td><td class="old"><code>Spirit</code></td><td class="new"><code>SPIRIT</code> (D18)</td><td>uśpione - kafel nieużywany</td></tr>
+        <tr><td>22</td><td class="old"><code>Slime</code></td><td class="new"><code>SLIME</code> (D18)</td><td>uśpione - kafel nieużywany</td></tr>
+        <tr><td>23</td><td class="old"><code>SpiderRed</code></td><td class="new"><code>SPIDER</code> (D18)</td><td>uśpione - kafel nieużywany</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin:var(--s2) 0 0">Trzy pierwsze są dziś zamaskowane własnością na obiekcie. Trzy ostatnie
+    czekają: pierwszy spawn potwora postawiony z tego kafla w Tiled wybuchnie <code>KeyError</code>.
+    Usunięcie własności z obiektów <em>bez</em> naprawy kafli psuje grę natychmiast.</p>
+  </div>
+  <div class="callout err">
+    <p style="margin:0"><strong><span class="badge err">Znalezisko O9</span> <code>Robin</code> to inny
+    przypadek: <code>ROB</code> i <code>ROBIN</code> stoją na tym samym kaflu</strong> (<code>gid=2821</code>,
+    kafel 4, sprite <code>Villager4</code>). Własność na obiekcie jest tu <em>jedynym</em> sposobem odróżnienia
+    ich - po jej usunięciu Robin zaspawnowałby się jako Rob. Kafel nie może nieść dwóch kluczy naraz.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge ok">wybrane</span></td>
+        <td>Naprawić 6 kafli w tilesecie, usunąć 3 własności z obiektów, a dla <code>ROBIN</code>
+        <strong>dołożyć kafel 33</strong> z tym samym sprite'em <code>Villager4</code> i
+        <code>model_name=ROBIN</code>; obiekt <code>Robin</code> przepiąć na nowy <code>gid</code></td>
+        <td>Reguła „<code>model_name</code> tylko w tilesecie" zostaje bez wyjątków, więc walidator może jej
+        pilnować twardo. Dwie postacie o wspólnym wyglądzie to normalna sytuacja i będzie się powtarzać</td>
+        <td>Ręczna edycja tilesetu w Tiled + przepięcie jednego <code>gid</code></td></tr>
+      <tr><td><strong>B</strong></td>
+        <td>Naprawić 6 kafli, usunąć 3 własności, a <code>model_name=ROBIN</code> na obiekcie
+        <strong>zostawić jako udokumentowany wyjątek</strong></td>
+        <td>Zero pracy w Tiled; wariant 1 z <code>_resolve_model_name</code> istnieje właśnie po to</td>
+        <td>Reguła walidatora może być tylko ostrzeżeniem („własność na obiekcie - upewnij się, że to
+        świadomy wyjątek"), więc następna literówka przejdzie</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Nowa reguła walidatora (ERROR) niezależnie od wyboru:</strong>
+  każda wartość <code>model_name</code> w <em>tilesecie</em> musi być kluczem istniejącej postaci. Dziś
+  walidator sprawdza tylko wartość <em>rozwiązaną dla obiektu na mapie</em>, więc sześć zepsutych kafli
+  przeszło mu pod nosem. Przy okazji te same kafle mają rozjechany atrybut <code>type</code>
+  (<code>type="Dog1"</code>, <code>type="Snake"</code>) - ustawiamy go równo z <code>model_name</code>.</p>
+</div>
+
+<div class="dec" id="d15">
+  <h3><span class="qid">D15</span> <code>Element.tsx</code> i <code>FloorDetail.tsx</code> do <code>tilesets/</code> (W10)</h3>
+  <p>Zgoda bez zastrzeżeń - to jedyne dwa tilesety leżące w <code>maps/</code> zamiast w
+  <code>maps/tilesets/</code>. Trzy rzeczy do zrobienia razem, inaczej mapa przestaje się ładować:</p>
+  <ol>
+    <li><strong>7 odwołań w 6 plikach <code>.tmx</code></strong>, nie 4 - poza czterema mapami
+      NinjaAdventure robią to także <code>MazeTileset_Ninja.tmx</code> (<code>Element</code> +
+      <code>FloorDetail</code>) i <code>MazeTileset_clean.tmx</code>, przez ścieżkę
+      <code>../NinjaAdventure/maps/…</code>. <span class="badge err">Uwaga</span>
+      <code>MazeTileset_Ninja.tmx</code> to żywy szablon labiryntu - zły link tam = labirynt się nie generuje,
+      a <code>just validate-world</code> tego nie zobaczy.</li>
+    <li><strong>ścieżka do obrazka wewnątrz przenoszonych plików</strong>:
+      <code>tilesets/images/TilesetElement.png</code> → <code>images/TilesetElement.png</code>
+      (jest względna do pliku <code>.tsx</code>).</li>
+    <li><strong>kolizja nazw</strong>: w <code>tilesets/</code> leży już <code>TilesetFloorDetail.tsx</code> -
+      ten sam PNG, ten sam <code>tilecount</code>, ale <em>bez</em> własności <code>elements</code>
+      (<code>sticks</code>, <code>skull</code>, <code>bone</code>) i <strong>bez ani jednego odwołania</strong>
+      z jakiejkolwiek mapy. To martwy duplikat - do usunięcia razem z przeprowadzką, żeby w jednym katalogu
+      nie stanęły dwa pliki na ten sam obrazek.</li>
+  </ol>
+  <p style="margin:var(--s3) 0 0">Sprawdzenie po zmianie: <code>just validate-world</code> nie wystarczy -
+  trzeba wejść do labiryntu (<code>just test-unit</code> ma <code>test_maze_reproducible.py</code>,
+  ale ono generuje siatkę, nie ładuje szablonu <code>.tmx</code>). <strong>Weryfikacja u autora.</strong></p>
+</div>
+
+<div class="dec" id="d16">
+  <h3><span class="qid">D16</span> Dokumenty lokacji dla map bez nazwy (W11)</h3>
+  <p>Konwencja, o którą prosisz, <strong>już istnieje i jest kompletna</strong> - siedem lokacji ma parę
+  plików PL/EN z aliasem-kluczem w nagłówku:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Klucz (alias)</th><th><code>doc/EN/Locations/</code></th><th><code>doc/PL/Lokalizacje/</code></th><th>Mapa <code>.tmx</code></th></tr></thead>
+    <tbody>
+      <tr><td><code>BLUNDERHAVEN</code></td><td>Blunderhaven.md</td><td>Gafowo Kolonia.md</td><td class="new"><code>Village</code> → rename (W7)</td></tr>
+      <tr><td><code>LOST_CORK_TAVERN</code></td><td>the Lost Cork Tavern.md</td><td>Tawerna Brakująca klepka.md</td><td>jest, zgodna</td></tr>
+      <tr><td><code>CAVERNS_OF_CONFUSION</code></td><td>Caverns of Confusion.md</td><td>Jaskinie zagmatwania.md</td><td><span class="badge warn">czy to labirynt?</span></td></tr>
+      <tr><td><code>KINGDOM_OF_KNAVESHIRE</code>, <code>QUIRKSHIRE</code>, <code>SWAMP_OF_INCONVENIENCE</code>, <code>TANGLED_FOREST_OF_ANNOYANCE</code></td>
+        <td colspan="2">komplet PL + EN</td><td>brak mapy - lokacje Aktu 1</td></tr>
+      <tr><td class="old"><code>JACOBS_CHAMBER</code></td><td class="old"><span class="badge err">brak</span></td><td class="old"><span class="badge err">brak</span></td><td>jest</td></tr>
+      <tr><td class="old"><code>MAZE</code></td><td class="old"><span class="badge err">brak</span></td><td class="old"><span class="badge err">brak</span></td><td>generowana</td></tr>
+    </tbody>
+  </table></div>
+  <p>Zadanie: dorobić dwie pary plików z szablonu <code>doc/_templates/loc_template.md</code> /
+  <code>loc_template_EN.md</code> (mają gotowe pola <code>aliases</code>, <code>EN</code>/<code>PL</code>,
+  <code>inspirations</code>, <code>characters</code>), z aliasem-kluczem i pustym <code>==TODO==</code>
+  w treści. Ty je nazywasz i tłumaczysz w Obsidian, a nazwy z tytułów plików trafiają do sekcji
+  <code>[map]</code> w <code>PL.toml</code> / <code>EN.toml</code> (D12=A).</p>
+  <div class="callout ok">
+    <p style="margin:0"><strong>Rozstrzygnięte:</strong> <code>CAVERNS_OF_CONFUSION</code>
+    („Jaskinie zagmatwania") to <em>osobna lokacja Aktu 1</em> - mapy jaskini jeszcze nie ma. Labirynt
+    dostaje więc własną parę plików <code>.md</code>, a klucze poziomów zostają <code>MAZE_01</code>,
+    <code>MAZE_02</code>… Do dorobienia są dwie pary: <code>JACOBS_CHAMBER</code> i labirynt.</p>
+  </div>
+</div>
+
+<div class="dec" id="d17">
+  <h3><span class="qid">D17</span> Czym zabezpieczyć skrypt rename'ujący przed zgnilizną (W12)</h3>
+  <p>Obawa słuszna i dobrze postawiona: <code>rename_entity.py</code> zna listę źródeł, w których siedzą
+  nazwy encji. Za pół roku dojdzie <code>quests.csv</code> albo nowy katalog map, nikt nie dopisze go do
+  skryptu i pierwszy rename po cichu zostawi jedno źródło nietknięte. <code>AGENTS.md</code> tego nie
+  zatrzyma - to prośba, nie bramka.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Warstwa</th><th>Co pilnuje</th><th>Kiedy krzyczy</th></tr></thead>
+    <tbody>
+      <tr><td><code>just validate-world</code> na CI <span class="badge ok">już jest</span></td>
+        <td>Że <em>świat po rename'ie</em> jest spójny - odwołania wskazują na istniejące encje, nazwy
+        trzymają konwencję (nowe reguły z etapu 3)</td>
+        <td>Gdy rename urwał odwołanie w źródle, które skrypt <em>zna</em></td></tr>
+      <tr class="pick"><td><strong>NOWE:</strong> <code>tests/test_rename_entity.py</code>
+        <span class="badge rec">rekomendacja</span></td>
+        <td>Że skrypt <em>zna wszystkie źródła</em>. Skrypt publikuje manifest globów
+        (<code>config_model/*.csv</code>, <code>*.toml</code>, <code>config.json</code>, <code>maps/**/*.tmx</code>,
+        <code>locale/*.toml</code>). Test przechodzi po repozytorium i <strong>failuje, gdy znajdzie plik
+        danych, którego żaden glob nie obejmuje</strong></td>
+        <td>W dniu, w którym ktoś doda <code>quests.csv</code> - zanim zdąży zrobić pierwszy rename</td></tr>
+      <tr><td>ta sama para w drugą stronę</td>
+        <td>Że rename działa: na kopii świata w <code>tmp_path</code> skrypt zmienia znaną encję,
+        a test sprawdza, że w kopii nie została ani jedna stara nazwa (<code>grep</code> po całym drzewie)</td>
+        <td>Gdy ktoś zepsuje samą podmianę</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Dlaczego to jest bezpieczne (nie psujące):</strong> test operuje
+  na <em>kopii</em> katalogu w katalogu tymczasowym, nigdy na plikach repozytorium, i nie uruchamia gry -
+  czyta te same surowe CSV/TOML/XML co <code>validate_world.py</code>, bez pygame i bez ekranu.
+  Wzór jest już w repo: <code>tests/test_config_web_codegen.py</code> pilnuje w ten sposób, że
+  <code>config.py</code> nie rozjechał się z generatorem. Ta sama sztuczka, inny generator.</p>
+  <p style="margin:var(--s3) 0 0">Ściąga w <code>AGENTS.md</code> zostaje - ale jako <em>opis</em> dla
+  człowieka i agenta, nie jako mechanizm. Bramką jest CI.</p>
+</div>
+
+<div class="dec" id="d18">
+  <h3><span class="qid">D18</span> Sufiks <code>_01</code> w kluczach modeli potworów (W13)</h3>
+  <p>Masz rację i to poprawka <em>w moim dokumencie</em>, nie w grze: wpisałem <code>SNAKE_01</code>
+  jako model, bo tak jest dziś w <code>characters.csv</code> - ale to jest właśnie ten błąd, który C02
+  ma usuwać. Sufiks numeryczny należy do <strong>instancji na mapie</strong> (D2: „tylko gdy model ma
+  więcej niż jedną kopię"), a nie do modelu.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Klucz dziś</th><th>Klucz docelowy</th><th>Gdzie się zmienia</th></tr></thead>
+    <tbody>
+      <tr><td class="old"><code>SNAKE_01</code></td><td class="new"><code>SNAKE</code></td>
+        <td><code>characters.csv</code>, <code>config.json</code>, kafel 6, <code>maze_configs.csv</code>
+        (poziom 4), obiekt na mapie</td></tr>
+      <tr><td class="old"><code>SPIRIT_01</code></td><td class="new"><code>SPIRIT</code></td>
+        <td><code>characters.csv</code>, <code>config.json</code>, kafel 21, <code>maze_configs.csv</code> (poziomy 1-4)</td></tr>
+      <tr><td class="old"><code>SLIME_01</code></td><td class="new"><code>SLIME</code></td>
+        <td>j.w., kafel 22, poziomy 2-4</td></tr>
+      <tr><td class="old"><code>SPIDER_01</code></td><td class="new"><code>SPIDER</code></td>
+        <td>j.w., kafel 23, poziomy 3-4</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout ok">
+    <p style="margin-bottom:var(--s2)"><strong>Rozstrzygnięte: numer siedzi tam, gdzie kopii jest wiele.</strong>
+    Na mapie <code>BLUNDERHAVEN</code> wąż jest jeden, więc instancja to <code>SNAKE</code> bez sufiksu (D2).
+    W labiryncie potworów tego samego rodzaju są dziesiątki, więc numer jest obowiązkowy.</p>
+    <p style="margin:0">Dobra wiadomość: <strong>labirynt już to robi i robi to zgodnie z docelową konwencją.</strong>
+    <code>map_loader.py:609</code> nadaje nazwy wzorem <code>&lt;MAPA&gt;_&lt;MODEL&gt;_&lt;NNN&gt;</code> -
+    prefiks mapy na przodzie, dokładnie jak w kluczach skrzyń z W6. Sufiks <code>_01</code> w kluczu modelu
+    produkuje dziś <em>podwójny numer</em>: <code>Maze_01_SNAKE_01_004</code>. Po D18 wychodzi z tego czytelne
+    <code>MAZE_01_SNAKE_004</code>, bez zmiany ani jednej linijki w kodzie nazywającym.</p>
+  </div>
+</div>
+
+<div class="dec" id="d19">
+  <h3><span class="qid">D19</span> <code>CAVE_LION2</code> - numer zamiast opisu</h3>
+  <p><code>CAVE_LION</code> i <code>CAVE_LION2</code> to dwa <em>różne modele</em> (osobne sprite'y
+  <code>CaveLion</code> i <code>CaveLion2</code>), a nie dwie kopie jednego - więc numer w kluczu myli
+  tak samo jak <code>SNAKE_01</code> z D18. „Nazwa opisowa" znaczy: <strong>klucz mówi, czym ten model
+  różni się od tamtego</strong>, zamiast mówić „drugi z brzegu".</p>
+  <p>W tej grze taka konwencja już istnieje i jest konsekwentnie kolorowa:
+  <code>DOG_ORANGE</code>/<code>DOG_PURPLE</code>, <code>CHICKEN_BLACK</code>/<code>CHICKEN_BROWN</code>/<code>CHICKEN_WHITE</code>,
+  <code>FISH_RED</code>, <code>LION_YELLOW</code>. Oba lwy jaskiniowe różnią się właśnie kolorem: pierwszy
+  jest piaskowy z tęczową grzywą, drugi ciemnoszary z niebiesko-pomarańczową.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Klucze</th><th>Uwaga</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge ok">wybrane</span></td>
+        <td class="new"><code>CAVE_LION_SAND</code> + <code>CAVE_LION_GREY</code></td>
+        <td>Symetrycznie, jak <code>DOG_ORANGE</code>/<code>DOG_PURPLE</code>. Oba klucze mówią, co widać na ekranie</td></tr>
+      <tr><td><strong>B</strong></td>
+        <td><code>CAVE_LION</code> bez zmian + <code>CAVE_LION_GREY</code></td>
+        <td>Jeden rename zamiast dwóch, ale zostaje asymetria „bezprzymiotnikowy vs kolorowy"</td></tr>
+      <tr><td><strong>C</strong></td>
+        <td>zostawić <code>CAVE_LION2</code></td>
+        <td>Zero pracy; klucz dalej kłamie, że to druga kopia tego samego</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout ok">
+    <p style="margin-bottom:var(--s2)"><strong>Nazwy wyświetlane też rozdzielone - i to już zrobione.</strong>
+    Oba lwy miały identyczne <code>name_EN</code> („CaveLion") i <code>name_PL</code> („Lew jaskiniowy"),
+    więc gracz nie odróżniłby ich w dzienniku walki nawet po rozdzieleniu kluczy.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Klucz</th><th><code>name_EN</code></th><th><code>name_PL</code></th></tr></thead>
+      <tbody>
+        <tr><td><code>CAVE_LION</code> → <code>CAVE_LION_SAND</code></td>
+          <td class="new">Sand Cave Lion</td><td class="new">Piaskowy lew jaskiniowy</td></tr>
+        <tr><td><code>CAVE_LION2</code> → <code>CAVE_LION_GREY</code></td>
+          <td class="new">Grey Cave Lion</td><td class="new">Szary lew jaskiniowy</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin:var(--s2) 0 0">Napisy weszły od razu do <code>characters.csv</code> i przez
+    <code>just import-entities</code> do <code>config.json</code> (<code>validate-world</code>:
+    0 błędów, 5 znanych ostrzeżeń) - są niezależne od rename'u kluczy, który czeka na etap 5.
+    Same klucze zmieniają się razem z resztą, jednym przebiegiem <code>rename-entity</code>.</p>
+  </div>
+</div>
 <a class="backlink" href="#toc">↑ Spis treści</a>
 
 <!-- ============================================================ -->
@@ -690,30 +1035,37 @@ nic poza nią nie zostanie ruszone.</p>
 <div class="tablewrap"><table>
   <thead><tr><th>Mapa</th><th>Było</th><th>Będzie</th><th>Model (N1)</th></tr></thead>
   <tbody>
-    <tr><td>Village</td><td class="old"><code>Snake_01</code></td><td class="new"><code>SNAKE_01</code></td><td><code>SNAKE_01</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>FishRed05</code></td><td class="new"><code>FISH_RED_01</code></td><td><code>FISH_RED</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>FishRed04</code></td><td class="new"><code>FISH_RED_02</code></td><td><code>FISH_RED</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>FishRed03</code></td><td class="new"><code>FISH_RED_03</code></td><td><code>FISH_RED</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>FishRed02</code></td><td class="new"><code>FISH_RED_04</code></td><td><code>FISH_RED</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>FishRed01</code></td><td class="new"><code>FISH_RED_05</code></td><td><code>FISH_RED</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Frog03</code></td><td class="new"><code>FROG_01</code></td><td><code>FROG</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Frog02</code></td><td class="new"><code>FROG_02</code></td><td><code>FROG</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Frog01</code></td><td class="new"><code>FROG_03</code></td><td><code>FROG</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Cat01</code></td><td class="new"><code>CAT_01</code></td><td><code>CAT</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Cat02</code></td><td class="new"><code>CAT_02</code></td><td><code>CAT</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Horse</code></td><td class="new"><code>HORSE</code></td><td><code>HORSE</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Cow</code></td><td class="new"><code>COW</code></td><td><code>COW</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Pig</code></td><td class="new"><code>PIG</code></td><td><code>PIG</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>ChickenWhite</code></td><td class="new"><code>CHICKEN_WHITE</code></td><td><code>CHICKEN_WHITE</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>ChickenBrown</code></td><td class="new"><code>CHICKEN_BROWN</code></td><td><code>CHICKEN_BROWN</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>ChickenBlack</code></td><td class="new"><code>CHICKEN_BLACK</code></td><td><code>CHICKEN_BLACK</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>ChickenCute</code></td><td class="new"><code>CHICKEN_CUTE</code></td><td><code>CHICKEN_CUTE</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Dog_orange</code></td><td class="new"><code>DOG_ORANGE</code></td><td><code>DOG_ORANGE</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Dog_purple</code></td><td class="new"><code>DOG_PURPLE</code></td><td><code>DOG_PURPLE</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Racoon</code></td><td class="new"><code>RACOON</code></td><td><code>RACOON</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Boar</code></td><td class="new"><code>BOAR</code></td><td><code>BOAR</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Snake_01</code></td><td class="new"><code>SNAKE</code></td><td><code>SNAKE</code> <span class="badge warn">D18</span></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>FishRed01</code></td><td class="new"><code>FISH_RED_01</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>FishRed02</code></td><td class="new"><code>FISH_RED_02</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>FishRed03</code></td><td class="new"><code>FISH_RED_03</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>FishRed04</code></td><td class="new"><code>FISH_RED_04</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>FishRed05</code></td><td class="new"><code>FISH_RED_05</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Frog01</code></td><td class="new"><code>FROG_01</code></td><td><code>FROG</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Frog02</code></td><td class="new"><code>FROG_02</code></td><td><code>FROG</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Frog03</code></td><td class="new"><code>FROG_03</code></td><td><code>FROG</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Cat01</code></td><td class="new"><code>CAT_01</code></td><td><code>CAT</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Cat02</code></td><td class="new"><code>CAT_02</code></td><td><code>CAT</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Horse</code></td><td class="new"><code>HORSE</code></td><td><code>HORSE</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Cow</code></td><td class="new"><code>COW</code></td><td><code>COW</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Pig</code></td><td class="new"><code>PIG</code></td><td><code>PIG</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>ChickenWhite</code></td><td class="new"><code>CHICKEN_WHITE</code></td><td><code>CHICKEN_WHITE</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>ChickenBrown</code></td><td class="new"><code>CHICKEN_BROWN</code></td><td><code>CHICKEN_BROWN</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>ChickenBlack</code></td><td class="new"><code>CHICKEN_BLACK</code></td><td><code>CHICKEN_BLACK</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>ChickenCute</code></td><td class="new"><code>CHICKEN_CUTE</code></td><td><code>CHICKEN_CUTE</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Dog_orange</code></td><td class="new"><code>DOG_ORANGE</code></td><td><code>DOG_ORANGE</code> <span class="badge warn">kafel 9 do naprawy</span></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Dog_purple</code></td><td class="new"><code>DOG_PURPLE</code></td><td><code>DOG_PURPLE</code> <span class="badge warn">kafel 10 do naprawy</span></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Racoon</code></td><td class="new"><code>RACOON</code></td><td><code>RACOON</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Boar</code></td><td class="new"><code>BOAR</code></td><td><code>BOAR</code></td></tr>
   </tbody>
 </table></div>
+<div class="callout warn">
+  <p style="margin:0"><strong>Poprawka rev. 3.</strong> W rev. 2 ta tabela odwracała numerację
+  (<code>FishRed05</code> → <code>FISH_RED_01</code>, <code>Frog03</code> → <code>FROG_01</code>) - to była
+  pomyłka sortowania, nie zamysł. Numer instancji idzie teraz 1:1 ze starym numerem, więc porównanie
+  „przed/po" da się zrobić wzrokiem. Poprawiony też model węża: <code>SNAKE</code>, nie <code>SNAKE_01</code>
+  (patrz <a href="#d18">D18</a>).</p>
+</div>
 </details>
 
 <details open>
@@ -721,11 +1073,13 @@ nic poza nią nie zostanie ruszone.</p>
 <div class="tablewrap"><table>
   <thead><tr><th>Mapa</th><th>Było</th><th>Będzie</th><th>Uwaga</th></tr></thead>
   <tbody>
-    <tr><td>Village</td><td class="old"><code>Marry</code></td><td class="new"><code>MARRY</code></td><td>ma krzywą <code>waypoints</code> o tej samej nazwie - zmienia się razem</td></tr>
-    <tr><td>Village</td><td class="old"><code>Rob</code></td><td class="new"><code>ROB</code></td><td>krzywa <code>Rob</code> + <code>routines.toml</code> <code>route:Rob</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Robin</code></td><td class="new"><code>ROBIN</code></td><td>krzywa <code>Robin</code> + <code>routines.toml</code> <code>route:Robin</code></td></tr>
-    <tr><td>Village</td><td class="old"><code>Bart</code></td><td class="new"><code>BART</code></td><td>krzywa wyłączona (<code>Bart_BCKP</code>) - patrz D4</td></tr>
-    <tr><td>Village</td><td class="old"><code>Johny</code></td><td class="new"><code>JOHNY</code></td><td>krzywa wyłączona (<code>Johny_BCKP</code>) - patrz D4</td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Marry</code></td><td class="new"><code>MARRY</code></td><td>ma krzywą <code>waypoints</code> o tej samej nazwie - zmienia się razem</td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Rob</code></td><td class="new"><code>ROB</code></td><td>krzywa <code>Rob</code> + <code>routines.toml</code> <code>route:Rob</code></td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Robin</code></td><td class="new"><code>ROBIN</code></td>
+      <td>krzywa <code>Robin</code> + <code>route:Robin</code>; <span class="badge err">wyjątek</span> dzieli kafel
+      z <code>ROB</code> - własność <code>model_name</code> na obiekcie zostaje albo dostaje własny kafel (<a href="#d14">D14</a>)</td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Bart</code></td><td class="new"><code>BART</code></td><td>krzywa wyłączona (<code>Bart_BCKP</code>) - patrz D4</td></tr>
+    <tr><td>BLUNDERHAVEN</td><td class="old"><code>Johny</code></td><td class="new"><code>JOHNY</code></td><td>krzywa wyłączona (<code>Johny_BCKP</code>) - patrz D4</td></tr>
   </tbody>
 </table></div>
 </details>
@@ -741,22 +1095,29 @@ nic poza nią nie zostanie ruszone.</p>
 <div class="tablewrap"><table>
   <thead><tr><th>Co</th><th>Było</th><th>Będzie</th><th>Z decyzji</th></tr></thead>
   <tbody>
-    <tr><td>Mapa (plik + wszystkie odwołania)</td><td class="old"><code>Village.tmx</code></td><td class="new"><code>VILLAGE.tmx</code></td><td>D5 / W1</td></tr>
+    <tr><td>Mapa (plik + wszystkie odwołania)</td><td class="old"><code>Village.tmx</code></td><td class="new"><code>BLUNDERHAVEN.tmx</code></td><td>D5 / W1 / W7</td></tr>
     <tr><td>Mapa (plik + wszystkie odwołania)</td><td class="old"><code>JacobsChamber.tmx</code></td><td class="new"><code>JACOBS_CHAMBER.tmx</code></td><td>D5 / W1</td></tr>
     <tr><td>Mapa</td><td class="old"><code>LOST_CORK_TAVERN.tmx</code></td><td class="new">bez zmian</td><td>już jest kluczem</td></tr>
     <tr><td>Mapa (plik)</td><td class="old"><code>maps/VillageHouse.tmx</code></td><td class="new"><code>maps/_wip/VillageHouse.tmx</code></td><td>D7 / W3</td></tr>
-    <tr><td>Mapa startowa w kodzie</td><td class="old"><code>"Village"</code> w 4 miejscach</td><td class="new"><code>settings.START_MAP</code></td><td>D5 (przy okazji)</td></tr>
+    <tr><td>Mapa startowa w kodzie</td><td class="old"><code>"Village"</code> w 8 miejscach</td><td class="new"><code>settings.START_MAP</code></td><td>D5 (przy okazji)</td></tr>
     <tr><td>Klucz muzyki</td><td class="old"><code>VillageHouse = "deep-in-the-dell.ogg"</code></td><td class="new">wpis usunięty</td><td>D7</td></tr>
-    <tr><td>Klucze muzyki</td><td class="old"><code>Village</code>, <code>JacobsChamber</code></td><td class="new"><code>VILLAGE</code>, <code>JACOBS_CHAMBER</code></td><td>D5</td></tr>
-    <tr><td>Klucz skrzyni</td><td class="old"><code>SmallChest_VillageHouse</code></td><td class="new"><code>SMALL_CHEST_TAVERN</code></td><td>D8</td></tr>
-    <tr><td>Klucz skrzyni</td><td class="old"><code>BigChest_Village</code></td><td class="new"><code>BIG_CHEST_VILLAGE</code></td><td>D8</td></tr>
+    <tr><td>Klucze muzyki</td><td class="old"><code>Village</code>, <code>JacobsChamber</code></td><td class="new"><code>BLUNDERHAVEN</code>, <code>JACOBS_CHAMBER</code></td><td>D5</td></tr>
+    <tr><td>Klucz skrzyni</td><td class="old"><code>SmallChest_VillageHouse</code></td><td class="new"><code>LOST_CORK_TAVERN_SMALL_CHEST</code></td><td>D8 / W6</td></tr>
+    <tr><td>Klucz skrzyni</td><td class="old"><code>BigChest_Village</code></td><td class="new"><code>BLUNDERHAVEN_BIG_CHEST</code></td><td>D8 / W6</td></tr>
+    <tr><td>8 kluczy skrzyń labiryntu</td><td class="old"><code>SmallChest_Maze_01</code>, <code>BigChest_Maze_01</code>, …</td><td class="new"><code>MAZE_01_SMALL_CHEST</code>, <code>MAZE_01_BIG_CHEST</code>, …</td><td>D8 / W6</td></tr>
     <tr><td>Punkt wejścia</td><td class="old"><code>VillageHouseDoor</code></td><td class="new"><code>LOST_CORK_TAVERN_DOOR</code></td><td>D5, D6</td></tr>
     <tr><td>Punkt wejścia</td><td class="old"><code>JacobsChamberDoor</code></td><td class="new"><code>JACOBS_CHAMBER_DOOR</code></td><td>D5, D6</td></tr>
     <tr><td>Krzywe wyłączone</td><td class="old"><code>Bart_BCKP</code>, <code>Johny_BCKP</code></td><td class="new"><code>BART</code>, <code>JOHNY</code> + <code>enabled=false</code></td><td>D4</td></tr>
-    <tr><td>10 komórek miejsc w CSV</td><td class="old"><code>well</code>, <code>house_bart</code>, …</td><td class="new"><code>VILLAGE:well</code>, <code>VILLAGE:house_bart</code>, …</td><td>D3</td></tr>
+    <tr><td>10 komórek miejsc w CSV</td><td class="old"><code>well</code>, <code>house_bart</code>, …</td><td class="new"><code>BLUNDERHAVEN:well</code>, <code>BLUNDERHAVEN:house_bart</code>, …</td><td>D3</td></tr>
     <tr><td>6 komórek z prefiksem</td><td class="old"><code>LOST_CORK_TAVERN:bar</code></td><td class="new">bez zmian</td><td>już poprawne</td></tr>
-    <tr><td>2 cele w <code>routines.toml</code></td><td class="old"><code>location:well</code></td><td class="new"><code>location:VILLAGE:well</code></td><td>D3</td></tr>
+    <tr><td>2 cele w <code>routines.toml</code></td><td class="old"><code>location:well</code></td><td class="new"><code>location:BLUNDERHAVEN:well</code></td><td>D3</td></tr>
+    <tr><td>Własność wyjścia</td><td class="old"><code>entry_point</code></td><td class="new"><code>destination_entry_point</code></td><td>D13 / W8</td></tr>
+    <tr><td>Własności wyjścia labiryntu</td><td class="old"><code>is_maze</code>, <code>maze_cols</code>, <code>maze_rows</code></td><td class="new">usunięte z <code>.tmx</code> (rejestr map + <code>maze_configs.csv</code>)</td><td>D13 / W8</td></tr>
+    <tr><td>4 własności <code>model_name</code> na obiektach</td><td class="old"><code>Snake_01</code>, <code>Dog_orange</code>, <code>Dog_purple</code>, <code>Robin</code></td><td class="new">wartości przeniesione do <code>CharacterTileset.tsx</code></td><td>D14 / W9</td></tr>
+    <tr><td>Tilesety poza katalogiem</td><td class="old"><code>maps/Element.tsx</code>, <code>maps/FloorDetail.tsx</code></td><td class="new"><code>maps/tilesets/…</code> (7 odwołań w 6 plikach <code>.tmx</code>)</td><td>D15 / W10</td></tr>
+    <tr><td>Klucze modeli potworów</td><td class="old"><code>SNAKE_01</code>, <code>SPIRIT_01</code>, <code>SLIME_01</code>, <code>SPIDER_01</code></td><td class="new"><code>SNAKE</code>, <code>SPIRIT</code>, <code>SLIME</code>, <code>SPIDER</code></td><td>D18 / W13</td></tr>
     <tr><td><strong>NOWE:</strong> nazwy wyświetlane</td><td class="old">brak - HUD pokazuje klucz</td><td class="new">sekcja <code>[map]</code> w <code>PL.toml</code> i <code>EN.toml</code></td><td>D12 / W2</td></tr>
+    <tr><td><strong>NOWE:</strong> dokumenty lokacji</td><td class="old">brak dla <code>JacobsChamber</code> i labiryntu</td><td class="new">para plików <code>.md</code> PL/EN w <code>doc/</code></td><td>D16 / W11</td></tr>
   </tbody>
 </table></div>
 
@@ -804,7 +1165,7 @@ Po zatwierdzeniu trafi do <code>project/AGENTS.md</code> i do dokumentacji świa
   <thead><tr><th>#</th><th>Gdzie</th><th>Co wpisuję</th><th>Przykład</th></tr></thead>
   <tbody>
     <tr><td>1</td><td>Tiled: warstwa <code>places</code></td><td>nazwa obiektu, małymi z podkreśleniami</td><td><code>house_smith</code></td></tr>
-    <tr><td>2</td><td><code>characters.csv</code> albo <code>routines.toml</code></td><td>odwołanie zawsze z prefiksem klucza mapy</td><td><code>VILLAGE:house_smith</code></td></tr>
+    <tr><td>2</td><td><code>characters.csv</code> albo <code>routines.toml</code></td><td>odwołanie zawsze z prefiksem klucza mapy</td><td><code>BLUNDERHAVEN:house_smith</code></td></tr>
   </tbody>
 </table></div>
 <p class="prose" style="margin-top:var(--s3)">Miejsce nie musi być unikalne w całej grze - dwie tawerny mogą
@@ -814,15 +1175,19 @@ mieć swój <code>bar</code>. Prefiks mapy to rozstrzyga, dlatego jest obowiązk
 <div class="tablewrap"><table>
   <thead><tr><th>#</th><th>Gdzie</th><th>Co wpisuję</th><th>Przykład</th></tr></thead>
   <tbody>
-    <tr><td>1</td><td>plik <code>maps/&lt;KLUCZ&gt;.tmx</code></td><td>klucz mapy wielkimi - nazwa pliku JEST kluczem</td><td><code>LOST_CORK_TAVERN.tmx</code></td></tr>
-    <tr><td>2</td><td>mapa źródłowa, warstwa <code>interactions</code></td><td>obiekt o nazwie klucza mapy docelowej + własność <code>entry_point</code></td><td><code>LOST_CORK_TAVERN</code>, <code>entry_point=LOST_CORK_TAVERN_DOOR</code></td></tr>
-    <tr><td>3</td><td>mapa docelowa, warstwa <code>entry_points</code></td><td>obiekt o nazwie z kroku 2 + zawsze <code>start</code></td><td><code>LOST_CORK_TAVERN_DOOR</code>, <code>start</code></td></tr>
-    <tr><td>4</td><td><code>audio.toml</code>, sekcja <code>[music]</code></td><td>klucz = klucz mapy (brak wpisu = cisza, po D7 walidator ostrzeże)</td><td><code>LOST_CORK_TAVERN = "…ogg"</code></td></tr>
-    <tr><td>5</td><td><code>locale/PL.toml</code> i <code>EN.toml</code>, sekcja <code>[map]</code></td><td><strong>nazwa dla gracza</strong> - bez niej HUD pokaże klucz (D12)</td><td><code>LOST_CORK_TAVERN = "Tawerna Brakująca Klepka"</code></td></tr>
+    <tr><td>1</td><td>Obsidian: <code>doc/EN/Locations/*.md</code> + <code>doc/PL/Lokalizacje/*.md</code></td><td>para plików z szablonu, frontmatter <code>aliases</code> = klucz mapy</td><td><code>BLUNDERHAVEN</code> w „Blunderhaven.md" i „Gafowo Kolonia.md"</td></tr>
+    <tr><td>2</td><td>plik <code>maps/&lt;KLUCZ&gt;.tmx</code></td><td>klucz mapy wielkimi - nazwa pliku JEST kluczem</td><td><code>LOST_CORK_TAVERN.tmx</code></td></tr>
+    <tr><td>3</td><td><code>config_model/maps.csv</code></td><td>wiersz <code>key;kind</code> - <code>static</code> albo <code>maze</code> (D13)</td><td><code>LOST_CORK_TAVERN;static</code></td></tr>
+    <tr><td>4</td><td>mapa źródłowa, warstwa <code>interactions</code></td><td>obiekt o nazwie klucza mapy docelowej + własność <code>destination_entry_point</code></td><td><code>LOST_CORK_TAVERN</code>, <code>destination_entry_point=LOST_CORK_TAVERN_DOOR</code></td></tr>
+    <tr><td>5</td><td>mapa docelowa, warstwa <code>entry_points</code></td><td>obiekt o nazwie z kroku 2 + zawsze <code>start</code></td><td><code>LOST_CORK_TAVERN_DOOR</code>, <code>start</code></td></tr>
+    <tr><td>6</td><td><code>audio.toml</code>, sekcja <code>[music]</code></td><td>klucz = klucz mapy (brak wpisu = cisza, po D7 walidator ostrzeże)</td><td><code>LOST_CORK_TAVERN = "…ogg"</code></td></tr>
+    <tr><td>7</td><td><code>locale/PL.toml</code> i <code>EN.toml</code>, sekcja <code>[map]</code></td><td><strong>nazwa dla gracza</strong> - bez niej HUD pokaże klucz (D12)</td><td><code>LOST_CORK_TAVERN = "Tawerna Brakująca Klepka"</code></td></tr>
   </tbody>
 </table></div>
-<p class="prose" style="margin-top:var(--s3)">Krok 5 to nowość z W2 i najłatwiejszy do zapomnienia -
-dlatego dostaje regułę walidatora na poziomie ERROR, a nie ostrzeżenie.</p>
+<p class="prose" style="margin-top:var(--s3)">Krok 7 to nowość z W2 i najłatwiejszy do zapomnienia -
+dlatego dostaje regułę walidatora na poziomie ERROR, a nie ostrzeżenie. Krok 1 jest pierwszy nie przez
+formalność: nazwa lokacji powstaje w Obsidian, a mapa dostaje jej alias jako klucz - odwrotna kolejność
+to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do dziś (W7).</p>
 
 <h3>Czego NIE muszę pamiętać (robi to walidator)</h3>
 <ul class="prose">
@@ -837,6 +1202,9 @@ dlatego dostaje regułę walidatora na poziomie ERROR, a nie ostrzeżenie.</p>
   <li>Czy mapa ma muzykę i czy da się do niej dojść - <span class="badge info">nowa reguła z C02 (D7)</span></li>
   <li>Czy plik muzyki ma wpis w manifeście - <span class="badge info">nowa reguła z C02 (O4)</span></li>
   <li><strong>Czy mapa ma nazwę wyświetlaną w PL i EN</strong> - <span class="badge info">nowa reguła z C02 (D12)</span></li>
+  <li>Czy <code>model_name</code> w tilesecie jest kluczem istniejącej postaci - <span class="badge info">nowa reguła z C02 (D14)</span></li>
+  <li>Czy mapa jest w rejestrze <code>maps.csv</code> - <span class="badge info">nowa reguła z C02 (D13)</span></li>
+  <li>Czy <code>rename_entity.py</code> zna wszystkie pliki z nazwami encji - <span class="badge info">nowy test na CI (D17)</span></li>
 </ul>
 <a class="backlink" href="#toc">↑ Spis treści</a>
 
@@ -844,44 +1212,65 @@ dlatego dostaje regułę walidatora na poziomie ERROR, a nie ostrzeżenie.</p>
 <h2 id="plan">7. Plan wykonania i bramki bezpieczeństwa</h2>
 
 <div class="grid cols-2">
-  <div class="card"><h4>Etap 1 - sprzątanie po rename'ie tawerny</h4>
+  <div class="card"><h4>Etap 1 - sprzątanie po rename'ie tawerny + higiena plików</h4>
     <p style="margin:0 0 var(--s2)"><span class="badge warn">niezależne od reszty</span></p>
     <ul style="margin:0">
       <li><code>VillageHouse.tmx</code> → <code>maps/_wip/</code> (W3); ładowarka i walidator ignorują <code>_wip/</code></li>
       <li>usunąć martwy klucz <code>VillageHouse</code> z <code>audio.toml</code></li>
-      <li>klucze skrzyń wg D8</li>
+      <li>klucze skrzyń wg D8/W6 (2 wioskowe + 8 labiryntowych)</li>
+      <li><code>Element.tsx</code>, <code>FloorDetail.tsx</code> → <code>tilesets/</code> + 7 odwołań; martwy
+        <code>TilesetFloorDetail.tsx</code> do kosza (D15)</li>
+      <li>naprawa 6 kafli <code>model_name</code> w <code>CharacterTileset.tsx</code> i usunięcie 3 własności
+        z obiektów; kafel dla <code>ROBIN</code> (D14)</li>
     </ul></div>
-  <div class="card"><h4>Etap 2 - warstwa nazw wyświetlanych <span class="badge err">nowy</span></h4>
+  <div class="card"><h4>Etap 2 - rejestr map i właściwości labiryntu <span class="badge err">nowy</span></h4>
+    <p style="margin:0 0 var(--s2)"><span class="badge info">czysto techniczny, bez rename'ów</span></p>
+    <ul style="margin:0">
+      <li><code>maps.csv</code> - rejestr map z kolumną <code>kind</code> (D13)</li>
+      <li><code>is_maze</code>, <code>maze_cols</code>, <code>maze_rows</code> znikają z <code>.tmx</code>
+        i z <code>Collider</code></li>
+      <li><code>entry_point</code> → <code>destination_entry_point</code> na obiektach wyjść</li>
+      <li>para plików <code>.md</code> dla map bez dokumentu (D16) - <strong>do Twojej edycji w Obsidian</strong></li>
+    </ul></div>
+  <div class="card"><h4>Etap 3 - warstwa nazw wyświetlanych</h4>
     <p style="margin:0 0 var(--s2)"><span class="badge err">musi być PRZED renamem map</span></p>
     <ul style="margin:0">
-      <li>sekcja <code>[map]</code> w <code>PL.toml</code> / <code>EN.toml</code> (D12)</li>
+      <li>sekcja <code>[map]</code> w <code>PL.toml</code> / <code>EN.toml</code> (D12), zasilona z <code>doc/</code></li>
       <li><code>hud.py</code> czyta nazwę z locale zamiast pokazywać <code>current_map</code></li>
       <li><code>_format_map_name</code> (hack na <code>Maze_01</code>) znika - labirynt dostaje normalny wpis</li>
       <li><strong>weryfikacja u Ciebie:</strong> HUD pokazuje „Tawerna Brakująca Klepka", przełączenie języka działa w locie</li>
     </ul></div>
-  <div class="card"><h4>Etap 3 - walidator przed rename'em</h4>
+  <div class="card"><h4>Etap 4 - walidator przed rename'em</h4>
     <p style="margin:0 0 var(--s2)"><span class="badge info">siatka bezpieczeństwa</span></p>
     <ul style="margin:0">
       <li>konwencja nazwy instancji (D1)</li>
       <li><code>interactions</code>/<code>entry_points</code> (D6)</li>
       <li>„mapa bez muzyki / nieosiągalna / plik bez wpisu" (D7, O4)</li>
       <li>„odwołanie do miejsca bez prefiksu" (D3)</li>
-      <li>„mapa bez nazwy wyświetlanej" (D12)</li>
+      <li>„mapa bez nazwy wyświetlanej" (D12), „mapa spoza <code>maps.csv</code>" (D13)</li>
+      <li>„<code>model_name</code> w tilesecie musi być kluczem postaci" (D14)</li>
       <li>walidator <em>świeci na czerwono</em> - to zamierzone</li>
     </ul></div>
-  <div class="card"><h4>Etap 4 - rename'y</h4>
+  <div class="card"><h4>Etap 5 - rename'y</h4>
     <p style="margin:0 0 var(--s2)"><span class="badge warn">tu giną stare zapisy</span></p>
     <ul style="margin:0">
-      <li><code>just rename-entity</code> - musi umieć też mapy (D10)</li>
-      <li>27 obiektów + krzywe + CSV + TOML</li>
-      <li>2 mapy: <code>VILLAGE</code>, <code>JACOBS_CHAMBER</code> + <code>settings.START_MAP</code></li>
+      <li><code>just rename-entity</code> - musi umieć też mapy (D10) + <code>test_rename_entity.py</code> (D17)</li>
+      <li>27 obiektów + krzywe + CSV + TOML + 4 klucze modeli (D18)</li>
+      <li>2 mapy: <code>BLUNDERHAVEN</code>, <code>JACOBS_CHAMBER</code> + <code>settings.START_MAP</code></li>
       <li>podbicie wersji zapisu (D9/W4)</li>
       <li>walidator wraca na zero</li>
     </ul></div>
 </div>
 
+<div class="callout warn">
+  <p style="margin:0"><strong>Dlaczego etap 2 wskoczył przed nazwy wyświetlane.</strong>
+  <code>maps.csv</code> jest listą, po której chodzi reguła „każda mapa ma nazwę w PL i EN" - bez niego
+  walidator nie wie nawet, ile map istnieje (labirynt nie ma pliku <code>.tmx</code>). Etap 2 nie zmienia
+  ani jednej nazwy, więc jest odwracalny osobnym commitem.</p>
+</div>
+
 <div class="callout err">
-  <p style="margin:0"><strong>Etap 2 musi wyprzedzić etap 4.</strong> Gdyby rename map poszedł pierwszy,
+  <p style="margin:0"><strong>Etap 3 musi wyprzedzić etap 5.</strong> Gdyby rename map poszedł pierwszy,
   gracz zobaczyłby na HUD-zie <code>JACOBS_CHAMBER</code> - czyli zmiana pogorszyłaby stan widoczny w grze,
   zanim go poprawi. W tej kolejności HUD ani na moment nie pokazuje klucza.</p>
 </div>

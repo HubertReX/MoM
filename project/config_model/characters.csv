@@ -3,8 +3,8 @@ BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;frie
 BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;house_bart;market_stall_2;LOST_CORK_TAVERN:tables;well;;;;;;townsfolk
 BOAR;Boar;Dzik;Boar;animal;afraid;;;;;false;;;;;20;;;;;;;;;;;;;;;
 CAT;Cat;Kotek;Cat;animal;friendly;;;;;false;;;;;15;;;;;;;;;;;;;;;
-CAVE_LION;CaveLion;Lew jaskiniowy;CaveLion;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
-CAVE_LION2;CaveLion;Lew jaskiniowy;CaveLion2;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+CAVE_LION;Sand Cave Lion;Piaskowy lew jaskiniowy;CaveLion;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+CAVE_LION2;Grey Cave Lion;Szary lew jaskiniowy;CaveLion2;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
 CHICKEN_BLACK;Chicken;Kurczak;ChickenBlack;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
 CHICKEN_BROWN;Chicken;Kurczak;ChickenBrown;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
 CHICKEN_CUTE;Chicken;Kurczak;ChickenCute;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;

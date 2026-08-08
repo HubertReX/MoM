@@ -317,8 +317,8 @@
             "health": 60,
             "max_health": 60,
             "damage": 20,
-            "name_EN": "CaveLion",
-            "name_PL": "Lew jaskiniowy",
+            "name_EN": "Sand Cave Lion",
+            "name_PL": "Piaskowy lew jaskiniowy",
             "has_dialog": false
         },
         "CAVE_LION2": {
@@ -328,8 +328,8 @@
             "health": 60,
             "max_health": 60,
             "damage": 20,
-            "name_EN": "CaveLion",
-            "name_PL": "Lew jaskiniowy",
+            "name_EN": "Grey Cave Lion",
+            "name_PL": "Szary lew jaskiniowy",
             "has_dialog": false
         },
         "LION_YELLOW": {
