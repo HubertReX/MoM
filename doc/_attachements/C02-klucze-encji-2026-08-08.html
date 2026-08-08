@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoM - C02: ujednolicenie kluczy encji (dokument decyzyjny)</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  :root[data-theme="dark"] {
+    --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+    --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+    --accent:#748ffc; --accent-soft:#26304d;
+    --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--sans);
+    line-height:1.6; font-size:16px; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width: 1080px; margin:0 auto; padding: var(--s6) var(--s5) var(--s7); }
+  .prose { max-width: 78ch; }
+
+  h1 { font-size:2rem; line-height:1.2; margin:0 0 var(--s3); letter-spacing:-.02em; }
+  h2 { font-size:1.45rem; line-height:1.25; margin:var(--s7) 0 var(--s3); letter-spacing:-.01em;
+       padding-top:var(--s3); border-top:2px solid var(--border); }
+  h3 { font-size:1.1rem; margin:var(--s5) 0 var(--s2); }
+  h4 { font-size:1rem; margin:var(--s4) 0 var(--s2); }
+  p { margin:0 0 var(--s4); }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .eyebrow { text-transform:uppercase; letter-spacing:.08em; font-size:.75rem;
+    font-weight:600; color:var(--muted); margin:0 0 var(--s2); }
+  .lead { font-size:1.08rem; color:var(--muted); }
+  .backlink { font-size:.85rem; display:inline-block; margin-top:var(--s4); }
+  .topbar { display:flex; justify-content:space-between; align-items:center; gap:var(--s3); margin-bottom:var(--s5); }
+  button { font:inherit; font-weight:600; cursor:pointer; border-radius:999px;
+    padding:6px 16px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+  button:hover { background:var(--surface-2); }
+
+  .grid { display:grid; gap:var(--s4); }
+  .cols-2 { grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+  .cols-3 { grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+  .cols-4 { grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); }
+
+  .card { background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:var(--s4) var(--s5); box-shadow:var(--shadow); }
+  .card h3:first-child, .card h4:first-child { margin-top:0; }
+  .metric .num { font-size:1.7rem; font-weight:700; letter-spacing:-.02em; }
+  .metric .label { color:var(--muted); font-size:.82rem; }
+
+  .badge { display:inline-flex; align-items:center; gap:4px; font-size:.74rem;
+    font-weight:600; padding:2px 10px; border-radius:999px; line-height:1.6; white-space:nowrap; }
+  .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .badge.err{background:var(--err-soft);color:var(--err)}
+  .badge.info{background:var(--info-soft);color:var(--info)}
+  .badge.rec{background:var(--accent-soft);color:var(--accent)}
+
+  .tablewrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  th, td { text-align:left; padding:var(--s2) var(--s3); border-bottom:1px solid var(--border); vertical-align:top; }
+  thead th { position:sticky; top:0; background:var(--surface); z-index:1;
+    font-size:.74rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  tbody tr:hover { background:var(--surface-2); }
+  tr.pick { background:var(--accent-soft); }
+  tr.pick:hover { background:var(--accent-soft); }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+
+  code { font-family:var(--mono); font-size:.87em; background:var(--surface-2);
+    padding:1px 5px; border-radius:5px; }
+  pre { background:var(--surface-2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:var(--s4); overflow-x:auto; }
+  pre code { background:none; padding:0; }
+  .old { color:var(--err); }
+  .new { color:var(--ok); font-weight:600; }
+
+  .callout { border-left:3px solid var(--accent); background:var(--accent-soft);
+    padding:var(--s3) var(--s4); border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin:var(--s4) 0; }
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .callout.err{border-color:var(--err);background:var(--err-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .callout p:last-child, .callout ul:last-child { margin-bottom:0; }
+
+  details { border:1px solid var(--border); border-radius:var(--radius-sm);
+    padding:var(--s3) var(--s4); margin-bottom:var(--s3); background:var(--surface); }
+  details[open] { box-shadow:var(--shadow); }
+  summary { cursor:pointer; font-weight:600; list-style:none; }
+  summary::-webkit-details-marker { display:none; }
+  summary::before { content:"▸"; display:inline-block; margin-right:var(--s2);
+    transition:transform .15s; color:var(--muted); }
+  details[open] summary::before { transform:rotate(90deg); }
+  details > :nth-child(2) { margin-top:var(--s3); }
+
+  .toc { columns:2; column-gap:var(--s6); }
+  .toc li { margin-bottom:6px; break-inside:avoid; }
+  @media (max-width:640px){ .toc { columns:1; } }
+
+  .dec { border:1px solid var(--border); border-radius:var(--radius); background:var(--surface);
+    box-shadow:var(--shadow); padding:var(--s4) var(--s5); margin-bottom:var(--s5); }
+  .dec > h3 { margin-top:0; display:flex; align-items:baseline; gap:var(--s2); flex-wrap:wrap; }
+  .dec .qid { font-family:var(--mono); color:var(--accent); font-weight:700; }
+
+  svg.flow { width:100%; height:auto; display:block; }
+  svg.flow text { font-family:var(--mono); font-size:11.5px; fill:var(--text); }
+  svg.flow .lbl { font-size:10px; fill:var(--muted); font-family:var(--sans); }
+  svg.flow .ttl { font-size:11px; fill:var(--muted); font-family:var(--sans); font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em; }
+  svg.flow rect { fill:var(--surface-2); stroke:var(--border); rx:6; }
+  svg.flow rect.tiled { stroke:var(--ok); }
+  svg.flow rect.tab   { stroke:var(--info); }
+  svg.flow rect.gen   { stroke:var(--warn); }
+  svg.flow rect.save  { stroke:var(--err); }
+  svg.flow path, svg.flow line { stroke:var(--muted); stroke-width:1.3; fill:none; marker-end:url(#a2); }
+  svg.flow path.hot { stroke:var(--err); stroke-width:2; marker-end:url(#a2hot); }
+  svg.flow path.dashed { stroke-dasharray:4 3; }
+
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · status: <strong>do zatwierdzenia</strong></p>
+  <button id="themeToggle" title="Przełącz motyw">🌗 Motyw</button>
+</div>
+
+<h1>C02 - ujednolicenie kluczy encji Tiled ↔ config</h1>
+<p class="lead prose">Nazwy encji żyją dziś w <strong>dwunastu przestrzeniach</strong>, a Ty musisz
+pamiętać, której użyć gdzie - przy mapie w Tiled, przy wierszu w CSV, przy notatce w Obsidian.
+Ten dokument proponuje jedną regułę na przestrzeń, pokazuje dokładny zakres zmian i kończy się
+<a href="#sciaga">ściągą projektanta</a>. Nic nie zostanie zmienione, dopóki tego nie zatwierdzisz.</p>
+
+<div class="grid cols-4" style="margin:var(--s5) 0">
+  <div class="card metric"><div class="num">12</div><div class="label">przestrzeni nazw w obiegu</div></div>
+  <div class="card metric"><div class="num">27</div><div class="label">obiektów Tiled do przemianowania (rekomendacja)</div></div>
+  <div class="card metric"><div class="num">0 <span class="badge ok">z dialogiem</span></div><div class="label">renamowanych postaci ze stanem w zapisie</div></div>
+  <div class="card metric"><div class="num">4,78 MB</div><div class="label">martwego audio w paczce web (znalezione po drodze)</div></div>
+</div>
+
+<div class="callout">
+  <p style="margin-bottom:var(--s2)"><strong>TL;DR - co proponuję.</strong></p>
+  <ul style="margin:0">
+    <li><strong>Jedna reguła nadrzędna:</strong> nazwa obiektu w Tiled = klucz z <code>config.json</code>,
+      a przy wielu kopiach tego samego modelu na mapie dochodzi sufiks <code>_01</code>, <code>_02</code>.
+      Koniec zgadywania, czy pisać <code>Johny</code>, <code>JOHNY</code>, czy <code>johny</code>.</li>
+    <li><strong>Odwołania do miejsc zawsze z prefiksem mapy</strong> (<code>Village:well</code>),
+      bo dziś <code>bar</code> istnieje na dwóch mapach naraz i wygrywa ta, którą walidator znajdzie pierwszą.</li>
+    <li><strong>Rename dotyka wyłącznie zwierząt i statystów</strong> - wszystkie 6 postaci z dialogami
+      zostaje nietkniętych, więc nie tracisz ani jednej rozmowy z zapisu.</li>
+    <li><strong>Najpierw sprzątamy niedokończony rename</strong> <code>VillageHouse</code> → <code>LOST_CORK_TAVERN</code>,
+      bo martwa mapa uwiarygodnia martwe klucze i zasłania je walidatorowi.</li>
+  </ul>
+</div>
+
+<h2 id="toc">1. Spis treści</h2>
+<ol class="toc">
+  <li><a href="#toc">Spis treści</a></li>
+  <li><a href="#odkrycia">Co odkryłem, zanim cokolwiek zaproponowałem</a></li>
+  <li><a href="#mapa">Mapa dwunastu przestrzeni nazw</a></li>
+  <li><a href="#decyzje">Decyzje do zatwierdzenia (D1-D11)</a></li>
+  <li><a href="#rename">Dokładna tabela zmian nazw</a></li>
+  <li><a href="#sciaga">Ściąga projektanta: gdzie używam jakiego klucza</a></li>
+  <li><a href="#plan">Plan wykonania i bramki bezpieczeństwa</a></li>
+  <li><a href="#poza">Czego świadomie NIE robimy</a></li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="odkrycia">2. Co odkryłem, zanim cokolwiek zaproponowałem</h2>
+
+<p class="prose">C02 wyglądało w backlogu na „serię małych, bezpiecznych rename'ów". Po wejściu w kod
+okazało się, że jedna z tych zmian jest niebezpieczna, jedna jest już w połowie zrobiona i po cichu
+psuje grę, a jedna obawa - ta najczęściej powtarzana - jest bezpodstawna.</p>
+
+<div class="grid cols-2">
+  <div class="card">
+    <h3><span class="badge err">O1</span> Zmiana nazwy obiektu kasuje jego stan z zapisu</h3>
+    <p style="margin-bottom:var(--s2)">Zapis identyfikuje NPC-e i skrzynie po <strong>nazwie obiektu Tiled</strong>,
+    nie po kluczu configu:</p>
+    <pre style="margin-bottom:var(--s2)"><code>maps[origin].npc_states[npc.name] = ...   # manager.py:337
+chest_map = {c.name: c for c in scene.chests}  # manager.py:696
+if npc.name in ms.dead_monsters:               # manager.py:755</code></pre>
+    <p style="margin:0">Po zmianie nazwy zapisany stan nie dopasuje się do niczego i <strong>przepadnie bez
+    słowa</strong>: sentyment, postęp rozmowy, ekwipunek, flaga „zabity". Bramka <code>save_compatibility</code>
+    z B02 tego nie złapie, bo <em>format</em> zapisu się nie zmienia - tylko treść przestaje pasować.</p>
+  </div>
+  <div class="card">
+    <h3><span class="badge warn">O2</span> Rename tawerny stoi w połowie</h3>
+    <p style="margin-bottom:var(--s2)"><code>VillageHouse</code> → <code>LOST_CORK_TAVERN</code> zostało zrobione
+    w mapach, ale nie w reszcie świata. Zostały cztery ślady:</p>
+    <ul style="margin:0 0 var(--s2)">
+      <li><code>VillageHouse.tmx</code> (12×10 kafli, wobec 28×23 w tawernie) leży dalej w repo, choć żadne drzwi tam nie prowadzą</li>
+      <li><code>audio.toml</code> ma <code>VillageHouse = "deep-in-the-dell.ogg"</code> - wpis dla mapy, do której nie da się wejść</li>
+      <li>skrzynia w tawernie nazywa się <code>SmallChest_VillageHouse</code></li>
+      <li>drzwi w wiosce to <code>VillageHouseDoor</code></li>
+    </ul>
+    <p style="margin:0"><strong>Muzyka w tawernie gra poprawnie</strong> - <code>LOST_CORK_TAVERN</code> ma własny
+    wpis. Szkoda jest inna: martwy <code>.tmx</code> uwiarygodnia martwy klucz, więc walidator przepuszcza
+    <code>deep-in-the-dell.ogg</code> (0,95 MB), które i tak jedzie w paczce web do nikogo.</p>
+  </div>
+</div>
+
+<div class="callout warn" style="margin-top:var(--s4)">
+  <p style="margin-bottom:var(--s2)"><strong><span class="badge warn">O4</span> Znalezione przy okazji:
+  prawie połowa katalogu audio to martwy balast w paczce web.</strong></p>
+  <p style="margin-bottom:var(--s2)">Sprawdzając klucz <code>VillageHouse</code> policzyłem cały manifest.
+  <code>assets/audio/</code> waży <strong>9,97 MB</strong> przy budżecie „≤ 10 MB", który sam ustaliłeś przy D01 -
+  czyli stoimy na granicy. A z tego:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Plik</th><th class="num">Rozmiar</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><code>to-the-death.ogg</code></td><td class="num">1,55 MB</td><td><span class="badge err">bez wpisu w audio.toml</span></td></tr>
+      <tr><td><code>stranger-things.ogg</code></td><td class="num">1,15 MB</td><td><span class="badge err">bez wpisu w audio.toml</span></td></tr>
+      <tr><td><code>dreamy-rain-ambience.ogg</code></td><td class="num">1,12 MB</td><td><span class="badge err">bez wpisu w audio.toml</span></td></tr>
+      <tr><td><code>deep-in-the-dell.ogg</code></td><td class="num">0,95 MB</td><td><span class="badge warn">wpis tylko dla martwej mapy</span></td></tr>
+      <tr><td><code>failfare.ogg</code></td><td class="num">0,01 MB</td><td><span class="badge warn">wpis zakomentowany</span></td></tr>
+      <tr style="font-weight:600"><td>Razem do odzyskania</td><td class="num">4,78 MB</td><td>48% katalogu audio</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Dlaczego walidator tego nie widzi:</strong> <code>check_audio_manifest</code>
+  sprawdza SFX-y <em>w obie strony</em> (martwy wpis ORAZ wywołanie bez wpisu), ale muzykę tylko w jedną -
+  że klucz wskazuje na istniejący plik. Nigdy odwrotnie. To ta sama asymetria, przez którą przetrwał klucz
+  <code>VillageHouse</code>.</p>
+  <p style="margin:var(--s3) 0 0"><strong>To nie jest robota dla C02</strong> - trzy nieużywane utwory to Twoja
+  decyzja projektowa (może czekają na mapy Aktu 1?), nie kwestia spójności kluczy. Ale regułę walidatora
+  „plik muzyki bez wpisu = WARN" dołożę przy D7, bo to jedna linijka w tym samym miejscu.</p>
+</div>
+
+<div class="callout ok" style="margin-top:var(--s4)">
+  <p style="margin-bottom:var(--s2)"><strong><span class="badge ok">O3</span> Dobra wiadomość: rename nie zerwie rozpoznawania modelu.</strong></p>
+  <p style="margin:0">Bałem się, że któryś spawn opiera się na fallbacku „skoro obiekt nazywa się
+  <code>HORSE</code>, to model to <code>HORSE</code>" - wtedy zmiana nazwy odczepiłaby postać od configu.
+  Sprawdziłem wszystkie 34 obiekty: <strong>31 bierze <code>model_name</code> z kafla tilesetu, 3 z własności
+  na obiekcie, ani jeden z własnej nazwy.</strong> Nazwa obiektu jest dziś czystą etykietą instancji -
+  można ją zmieniać swobodnie, o ile zadba się o zapis (O1) i o warstwę <code>waypoints</code>.</p>
+</div>
+
+<h3>Co z tego wynika dla kształtu zadania</h3>
+<p class="prose">C02 przestaje być kosmetyką, a staje się trzema różnymi robotami, które warto rozdzielić:
+<strong>(a)</strong> dokończenie rename'u tawerny - to naprawa błędu, nie porządki;
+<strong>(b)</strong> ujednolicenie nazw instancji - tanie, bo dotyka tylko zwierząt;
+<strong>(c)</strong> ujednoznacznienie odwołań do miejsc - to jedyna część, która zmienia coś w Twoim
+sposobie pisania danych.</p>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="mapa">3. Mapa dwunastu przestrzeni nazw</h2>
+
+<p class="prose">Diagram pokazuje, kto na kogo wskazuje. <span style="color:var(--ok)">■</span> zielone
+= piszesz w Tiled, <span style="color:var(--info)">■</span> niebieskie = piszesz w CSV/TOML/Obsidian,
+<span style="color:var(--warn)">■</span> pomarańczowe = generowane, <span style="color:var(--err)">■</span>
+czerwone = zapis gry. Czerwona strzałka to sprzężenie z odkrycia O1 - jedyne, które boli przy rename'ie.</p>
+
+<svg class="flow" viewBox="0 0 1000 560" role="img" aria-label="Diagram powiązań przestrzeni nazw encji">
+  <defs>
+    <marker id="a2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6" fill="none" stroke="context-stroke" stroke-width="1.2"/></marker>
+    <marker id="a2hot" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6" fill="none" stroke="context-stroke" stroke-width="1.6"/></marker>
+  </defs>
+
+  <text class="ttl" x="10" y="18">Tiled (.tmx)</text>
+  <rect class="tiled" x="10"  y="30"  width="230" height="46"/>
+  <text x="20" y="50">N2 spawn_points.name</text><text class="lbl" x="20" y="66">instancja: „Johny", „FishRed01"</text>
+  <rect class="tiled" x="10"  y="88"  width="230" height="46"/>
+  <text x="20" y="108">N3 model_name (kafel)</text><text class="lbl" x="20" y="124">wskazuje klucz configu</text>
+  <rect class="tiled" x="10"  y="146" width="230" height="46"/>
+  <text x="20" y="166">N4 places.name</text><text class="lbl" x="20" y="182">„bar", „house_johny"</text>
+  <rect class="tiled" x="10"  y="204" width="230" height="46"/>
+  <text x="20" y="224">N6 waypoints.name</text><text class="lbl" x="20" y="240">= nazwa instancji z N2</text>
+  <rect class="tiled" x="10"  y="262" width="230" height="46"/>
+  <text x="20" y="282">N8 interactions.name</text><text class="lbl" x="20" y="298">= nazwa mapy albo skrzyni</text>
+  <rect class="tiled" x="10"  y="320" width="230" height="46"/>
+  <text x="20" y="340">N9 entry_points.name</text><text class="lbl" x="20" y="356">„VillageHouseDoor", „start"</text>
+  <rect class="tiled" x="10"  y="378" width="230" height="46"/>
+  <text x="20" y="398">N7 nazwa mapy = plik .tmx</text><text class="lbl" x="20" y="414">Village, LOST_CORK_TAVERN</text>
+
+  <text class="ttl" x="390" y="18">Dane pisane ręcznie</text>
+  <rect class="tab" x="390" y="30"  width="240" height="46"/>
+  <text x="400" y="50">N1 klucz postaci</text><text class="lbl" x="400" y="66">config.json + characters.csv</text>
+  <rect class="tab" x="390" y="146" width="240" height="46"/>
+  <text x="400" y="166">N5 home/work/social/hobby</text><text class="lbl" x="400" y="182">„well" albo „Mapa:miejsce"</text>
+  <rect class="tab" x="390" y="204" width="240" height="46"/>
+  <text x="400" y="224">N10 routines.toml</text><text class="lbl" x="400" y="240">location: / route: / type:</text>
+  <rect class="tab" x="390" y="378" width="240" height="46"/>
+  <text x="400" y="398">N11 audio.toml [music]</text><text class="lbl" x="400" y="414">klucz = nazwa mapy</text>
+  <rect class="tab" x="390" y="436" width="240" height="46"/>
+  <text x="400" y="456">N12 klucz skrzyni</text><text class="lbl" x="400" y="472">chests.csv: SmallChest_…</text>
+  <rect class="tab" x="390" y="494" width="240" height="46"/>
+  <text x="400" y="514">N13 sprite (folder)</text><text class="lbl" x="400" y="530">„Hunter", „Villager1"</text>
+
+  <text class="ttl" x="760" y="18">Runtime i zapis</text>
+  <rect class="gen" x="760" y="30" width="225" height="46"/>
+  <text x="770" y="50">NPC.config_key</text><text class="lbl" x="770" y="66">= N1, używa dialog/quest</text>
+  <rect class="save" x="760" y="146" width="225" height="60"/>
+  <text x="770" y="166">NPCState.name</text><text x="770" y="182">ChestState.name</text>
+  <text class="lbl" x="770" y="198">klucz stanu w pliku zapisu</text>
+  <rect class="gen" x="760" y="262" width="225" height="46"/>
+  <text x="770" y="282">rutyny NPC</text><text class="lbl" x="770" y="298">cel dnia z N5 + N10</text>
+
+  <!-- edges -->
+  <path d="M240,105 C310,105 330,60 390,55"/>
+  <path class="hot" d="M240,50 C420,44 600,120 758,160"/>
+  <text class="lbl" x="470" y="106" fill="var(--err)">O1: rename kasuje stan z zapisu</text>
+  <path d="M630,55 C700,55 710,48 758,50"/>
+  <path d="M240,168 C310,168 330,168 388,168"/>
+  <path d="M630,172 C690,180 700,240 758,272"/>
+  <path d="M630,228 C690,236 700,262 758,280"/>
+  <path class="dashed" d="M240,225 C300,225 330,222 388,224"/>
+  <path d="M240,398 C300,398 330,398 388,398"/>
+  <path class="dashed" d="M240,290 C300,300 330,440 388,452"/>
+  <path class="dashed" d="M630,470 C700,470 710,200 758,180"/>
+  <path class="dashed" d="M630,520 C700,520 700,80 758,60"/>
+</svg>
+
+<h3>Tabela: kto pisze, kto czyta, co pilnuje</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>Przestrzeń</th><th>Konwencja dziś</th><th>Walidacja dziś</th><th>Propozycja</th></tr></thead>
+  <tbody>
+    <tr><td>N1</td><td>Klucz postaci w <code>config.json</code>/<code>characters.csv</code></td>
+      <td><code>SCREAMING_SNAKE</code> - spójne (34 z 35; wyjątek <code>Player</code>)</td>
+      <td><span class="badge ok">importer + C01</span></td><td><span class="badge ok">bez zmian</span> - to jest kotwica całego systemu</td></tr>
+    <tr><td>N2</td><td>Nazwa obiektu w <code>spawn_points</code> (instancja)</td>
+      <td><span class="badge err">dwie konwencje</span> <code>BARMAN_ABSINTHRAYNER</code> obok <code>Johny</code>, <code>FishRed01</code>, <code>Dog_orange</code></td>
+      <td><span class="badge err">brak</span></td><td><strong>D1</strong>: = klucz N1, sufiks <code>_01</code> przy wielu kopiach</td></tr>
+    <tr><td>N3</td><td><code>model_name</code> na kaflu tilesetu</td>
+      <td>wskazuje N1 - poprawne wszędzie</td>
+      <td><span class="badge ok">C01 reguła 1</span></td><td><span class="badge ok">bez zmian</span></td></tr>
+    <tr><td>N4</td><td>Nazwa obiektu w <code>places</code></td>
+      <td><code>snake_case</code> - spójne (<code>bar</code>, <code>house_johny</code>, <code>market_stall_1</code>)</td>
+      <td><span class="badge ok">C01 reguła 2</span></td><td><span class="badge ok">bez zmian</span>, ale patrz D3 (unikalność)</td></tr>
+    <tr><td>N5</td><td>Kolumny <code>home</code>/<code>work</code>/<code>social</code>/<code>hobby</code></td>
+      <td><span class="badge warn">dwa kształty</span> 10 gołych (<code>well</code>) i 6 z prefiksem (<code>LOST_CORK_TAVERN:bar</code>)</td>
+      <td><span class="badge ok">C01 reguła 2</span></td><td><strong>D3</strong>: zawsze <code>Mapa:miejsce</code></td></tr>
+    <tr><td>N6</td><td>Nazwa krzywej w <code>waypoints</code></td>
+      <td>= nazwa instancji z N2; wyłączone przez sufiks <code>_BCKP</code></td>
+      <td><span class="badge warn">C01 reguła 9 (WARN)</span></td><td><strong>D4</strong>: idzie za N2; wyłączanie własnością, nie nazwą</td></tr>
+    <tr><td>N7</td><td>Nazwa mapy (= nazwa pliku <code>.tmx</code>)</td>
+      <td><span class="badge warn">dwie konwencje</span> <code>Village</code>, <code>JacobsChamber</code> obok <code>LOST_CORK_TAVERN</code></td>
+      <td><span class="badge warn">pośrednio</span> (audio, prefiksy)</td><td><strong>D5</strong>: <code>CamelCase</code></td></tr>
+    <tr><td>N8</td><td>Nazwa obiektu w <code>interactions</code></td>
+      <td>= nazwa mapy docelowej albo klucz skrzyni</td>
+      <td><span class="badge err">brak</span></td><td><strong>D6</strong>: dodać regułę C01</td></tr>
+    <tr><td>N9</td><td>Nazwa obiektu w <code>entry_points</code></td>
+      <td><code>&lt;Mapa&gt;Door</code> + <code>start</code>; jeden nieaktualny (<code>VillageHouseDoor</code>)</td>
+      <td><span class="badge err">brak</span></td><td><strong>D6</strong>: dodać regułę C01</td></tr>
+    <tr><td>N10</td><td>Klucze i cele w <code>routines.toml</code></td>
+      <td>nazwy rutyn <code>snake_case</code>, cele jak N5</td>
+      <td><span class="badge ok">C01 reguły 3-4</span></td><td>idzie za D3</td></tr>
+    <tr><td>N11</td><td>Klucze <code>[music]</code> w <code>audio.toml</code></td>
+      <td>= nazwa mapy N7 + 3 konteksty specjalne</td>
+      <td><span class="badge warn">C01 reguła 11</span> - ale martwy <code>.tmx</code> ją oszukuje</td><td><strong>D7</strong>: dołożyć „mapa bez muzyki = WARN"</td></tr>
+    <tr><td>N12</td><td>Klucz skrzyni</td>
+      <td><code>&lt;Rozmiar&gt;Chest_&lt;Mapa&gt;</code> - wbudowana nazwa mapy</td>
+      <td><span class="badge ok">C01 reguła 6</span> (zawartość)</td><td><strong>D8</strong>: rozdzielić szablon od instancji</td></tr>
+    <tr><td>N13</td><td>Nazwa folderu sprite'a</td>
+      <td><code>CamelCase</code> z paczki NinjaAdventure</td>
+      <td><span class="badge ok">C01 reguła 5</span></td><td><span class="badge ok">bez zmian</span> - cudzy asset, nie nasza przestrzeń</td></tr>
+  </tbody>
+</table>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="decyzje">4. Decyzje do zatwierdzenia (D1-D11)</h2>
+<p class="prose">Wiersz podświetlony na niebiesko to moja rekomendacja. Jeśli się zgadzasz -
+wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
+
+<div class="dec">
+  <h3><span class="qid">D1</span> Konwencja nazwy instancji w <code>spawn_points</code> (N2)</h3>
+  <p>Serce całego zadania. Dziś fabularne postacie mają <code>BARMAN_ABSINTHRAYNER</code>,
+  a zwierzęta <code>FishRed01</code> - i nie da się zapamiętać, która grupa rządzi się którą regułą.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Wygląda tak</th><th class="num">Zmian</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td><code>BARMAN_ABSINTHRAYNER</code><br><code>FISH_RED_01</code></td><td class="num">27</td>
+        <td>Nazwa instancji = klucz configu, który i tak znasz z dialogów i questów. Jedna rzecz do zapamiętania zamiast dwóch. <strong>Żadna postać z dialogiem nie jest ruszana</strong></td>
+        <td>Nie widać na pierwszy rzut oka, czy patrzysz na instancję, czy na model</td></tr>
+      <tr><td><strong>B</strong></td>
+        <td><code>barman_absinthrayner</code><br><code>fish_red_01</code></td><td class="num">34</td>
+        <td>Wielkość liter od razu mówi „to instancja, nie model" (pomysł z audytu)</td>
+        <td>Rusza wszystkie 6 postaci z dialogami, czyli <strong>traci ich stan z zapisu</strong>. W CSV i tak piszesz wielkimi - trzecia konwencja do pamiętania</td></tr>
+      <tr><td><strong>C</strong></td><td>zostaje jak jest</td><td class="num">0</td>
+        <td>Zero ryzyka dzisiaj</td>
+        <td>Przy 10 mapach nie da się już tego posprzątać; każda nowa postać to rzut monetą</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Dlaczego A, a nie B:</strong> opcja B wygląda czyściej na papierze,
+  ale renamuje dokładnie te 6 postaci, których stan w zapisie jest cokolwiek wart (sentyment, przebieg rozmowy).
+  Opcja A rusza 20 zwierząt i statystów, z których <strong>żaden nie ma dialogu ani grafu rozmowy</strong> -
+  ich stan w zapisie to pozycja i flaga „zabity".</p>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D2</span> Kiedy dokładać sufiks numeryczny</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Sufiks tylko gdy model ma &gt;1 kopię na mapie: jeden koń to <code>HORSE</code>, pięć ryb to <code>FISH_RED_01…05</code></td>
+        <td>Krótko tam, gdzie można; numer pojawia się dokładnie wtedy, gdy jest potrzebny</td>
+        <td>Dodanie drugiej kopii wymaga przemianowania pierwszej (i to psuje jej zapis)</td></tr>
+      <tr><td><strong>B</strong></td><td>Sufiks zawsze, nawet dla jedynaka: <code>HORSE_01</code></td>
+        <td>Dokładanie kopii nigdy niczego nie przemianowuje</td>
+        <td>Gadatliwe; 34 obiekty zamiast 27 do zmiany teraz</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Uwaga do A:</strong> zarzut jest realny, ale dotyczy zwierzęcia,
+  którego stan w zapisie i tak nic nie znaczy. Gdyby kiedyś doszło do dokładania drugiej kopii <em>postaci z dialogiem</em>,
+  to i tak byłaby osobna decyzja projektowa.</p>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D3</span> Odwołania do miejsc: gołe czy z prefiksem mapy (N5, N10)</h3>
+  <p>Dziś jest 10 gołych (<code>well</code>, <code>house_bart</code>) i 6 z prefiksem
+  (<code>LOST_CORK_TAVERN:tables</code>). Gołe nazwy szuka się <em>po wszystkich mapach</em> -
+  a <code>bar</code>, <code>tables</code> i <code>badroom</code> istnieją dziś na dwóch mapach naraz.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Zawsze <code>Mapa:miejsce</code>, także w obrębie jednej mapy</td>
+        <td>Jednoznaczne i sprawdzalne. Czytając wiersz CSV od razu wiesz, dokąd idzie postać. Znika klasa błędu „dwa <code>bar</code>y"</td>
+        <td>Dłuższe komórki; 10 komórek do uzupełnienia teraz</td></tr>
+      <tr><td><strong>B</strong></td><td>Prefiks tylko gdy cel jest na innej mapie (stan dzisiejszy)</td>
+        <td>Krócej się pisze; działa</td>
+        <td>Cicha pułapka: dodanie <code>well</code> na drugiej mapie przestawia cel istniejącej postaci bez jednego ostrzeżenia</td></tr>
+      <tr><td><strong>C</strong></td><td>Zawsze gołe + wymóg globalnej unikalności nazw miejsc</td>
+        <td>Najkrócej</td>
+        <td>Wymusza nazwy typu <code>tavern_bar</code>, <code>inn_bar</code> - czyli prefiks i tak wraca, tylko gorszy</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D4</span> Warstwa <code>waypoints</code> i wyłączone krzywe (N6)</h3>
+  <p>Krzywe nazywają się jak instancja, do której należą. Dwie są dziś wyłączone przez przemianowanie:
+  <code>Bart_BCKP</code>, <code>Johny_BCKP</code> - działa, ale wygląda jak literówka i walidator
+  raportuje te postacie jako „nie będzie się ruszać".</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Nazwa krzywej idzie za D1. Wyłączenie przez własność <code>enabled=false</code> na obiekcie, nie przez zmianę nazwy</td>
+        <td>Intencja jest zapisana wprost; walidator może odróżnić „wyłączone celowo" od „literówka"</td>
+        <td>Trzeba dodać obsługę własności (drobne, w walidatorze i w czytaniu mapy)</td></tr>
+      <tr><td><strong>B</strong></td><td>Zostawić sufiks <code>_BCKP</code> jako umowę</td>
+        <td>Zero pracy</td><td>Umowa żyjąca wyłącznie w Twojej głowie - dokładnie to, co C02 ma zlikwidować</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D5</span> Nazwy map (N7)</h3>
+  <p>Dziś: <code>Village</code>, <code>JacobsChamber</code>, <code>VillageHouse</code> i <code>LOST_CORK_TAVERN</code>.
+  Nazwa mapy wycieka do <code>audio.toml</code>, do prefiksów miejsc, do warstwy <code>interactions</code>,
+  do własności <code>entry_point</code> i <strong>do pliku zapisu</strong> (<code>PlayerState.map_name</code>).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td><code>CamelCase</code> nazwa własna lokacji: <code>LostCorkTavern</code></td>
+        <td>Zgodne z 3 z 4 istniejących map. Mapa to miejsce w świecie, nie klucz encji - inny byt, inna konwencja, łatwiej odróżnić w prefiksie <code>LostCorkTavern:bar</code></td>
+        <td>Jedna mapa do przemianowania i wszystkie odwołania do niej; unieważnia zapis stojący w tawernie</td></tr>
+      <tr><td><strong>B</strong></td><td><code>SCREAMING_SNAKE</code> jak klucze encji</td>
+        <td>Jedna konwencja w całej grze</td>
+        <td>Trzy mapy do przemianowania zamiast jednej; miesza dwa różne rodzaje bytów</td></tr>
+      <tr><td><strong>C</strong></td><td>Zostawić mieszankę</td><td>Zero pracy</td>
+        <td>Przy Akcie 1 dojdzie kilkanaście map i pytanie wróci przy każdej</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>To decyzja bardziej Twoja niż moja</strong> - <code>LOST_CORK_TAVERN</code>
+  wielkimi literami może być świadomą stylizacją na szyld. Jeśli tak, wybierz C i po prostu dopiszemy to jako regułę
+  („mapy fabularne krzyczą, zwykłe nie"), żeby przestało być przypadkiem.</p>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D6</span> Warstwy <code>interactions</code> i <code>entry_points</code> (N8, N9)</h3>
+  <p>Nikt ich dziś nie sprawdza, a literówka = drzwi donikąd.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Nazwa w <code>interactions</code> = istniejąca mapa albo istniejący klucz skrzyni. Własność
+        <code>entry_point</code> musi wskazywać obiekt z warstwy <code>entry_points</code> mapy docelowej. Oba jako <strong>ERROR</strong> w C01</td>
+        <td>Łapie drzwi donikąd zanim wejdziesz do gry; to najczęstsza literówka przy dokładaniu mapy</td>
+        <td>Trzeba dopisać regułę czytającą własności obiektów (dziś walidator czyta same nazwy)</td></tr>
+      <tr><td><strong>B</strong></td><td>Zostawić bez walidacji</td><td>Zero pracy</td>
+        <td>Przy 10 mapach to będzie najczęstszy błąd świata gry</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D7</span> Martwy <code>VillageHouse.tmx</code> i klucz muzyki (O2)</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Usunąć <code>VillageHouse.tmx</code>, usunąć jego klucz z <code>audio.toml</code>, dopisać do C01 trzy reguły:
+        „mapa bez wpisu muzyki = WARN", „mapa nieosiągalna z żadnej warstwy <code>interactions</code> = WARN"
+        oraz „plik muzyki bez wpisu w manifeście = WARN" (O4)</td>
+        <td>Zamyka klasę błędu „martwy plik uwiarygodnia martwy klucz" i domyka asymetrię walidacji muzyki vs SFX</td>
+        <td>Kasujemy plik - odzyskiwalny z gita, ale warto potwierdzić, że nie masz do niego planów</td></tr>
+      <tr><td><strong>B</strong></td><td>Zostawić plik jako szkic przyszłej mapy, przenieść go poza <code>maps/</code></td>
+        <td>Nie tracisz szkicu, a walidator przestaje go widzieć</td><td>Trzeba wskazać, dokąd go przenieść</td></tr>
+      <tr><td><strong>C</strong></td><td>Zostawić wszystko</td><td>Zero pracy</td><td>Martwa mapa dalej zasłania martwe klucze walidatorowi; 0,95 MB dalej jedzie w paczce web</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Pytanie do Ciebie:</strong> czy <code>VillageHouse</code> to
+  porzucona wersja tawerny, czy zaczątek osobnego domu w wiosce? Od tego zależy A vs B.</p>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D8</span> Klucze skrzyń (N12)</h3>
+  <p><code>SmallChest_VillageHouse</code> zaszywa nazwę mapy w kluczu encji - dlatego rename tawerny
+  zostawił tu ślad. W labiryncie działa już inny wzorzec: klucz w configu to <em>szablon</em>,
+  a instancja dostaje nazwę <code>&lt;szablon&gt;#&lt;n&gt;</code>.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Klucz w configu opisuje <em>zawartość</em>, nie miejsce: <code>SMALL_CHEST_TAVERN</code>.
+        Nazwa obiektu na mapie zostaje osobno jako instancja</td>
+        <td>Rozdziela szablon od instancji tak jak w labiryncie; przemianowanie mapy przestaje dotykać skrzyń</td>
+        <td>2 skrzynie do przemianowania + wiersze w <code>chests.csv</code></td></tr>
+      <tr><td><strong>B</strong></td><td>Zostawić, tylko poprawić nieaktualną nazwę mapy w kluczu</td>
+        <td>Minimalna zmiana, naprawia dzisiejszy ślad</td><td>Ta sama pułapka wróci przy następnym rename'ie mapy</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D9</span> Co zrobić z istniejącymi zapisami (O1)</h3>
+  <p>Najpoważniejsza decyzja. Po rename'ie stary zapis wczyta się „poprawnie", ale przemianowane
+  obiekty dostaną stan domyślny zamiast zapisanego.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Podbić wersję zapisu, żeby stare zapisy zostały <strong>jawnie odrzucone</strong> przez bramkę
+        <code>save_compatibility</code> z B02</td>
+        <td>Widoczna odmowa zamiast cichej utraty stanu. Prolog niewydany, zapisy są tylko Twoje</td>
+        <td>Twoje bieżące zapisy przestają się wczytywać (nowa gra trwa chwilę)</td></tr>
+      <tr><td><strong>B</strong></td>
+        <td>Dopisać do migracji z B02 słownik <code>stara nazwa → nowa</code> i przepisać klucze przy wczytaniu</td>
+        <td>Zapisy przeżywają</td>
+        <td>Kod migracji, który trzeba utrzymywać i testować, dla stanu 20 zwierząt. Migracja martwa po jednym uruchomieniu</td></tr>
+      <tr><td><strong>C</strong></td><td>Nie ruszać nazw obiektów - ujednolicić tylko to, czego nie ma w zapisie</td>
+        <td>Zapisy nietknięte</td><td>Zostawia D1 nierozwiązane, czyli rezygnuje z połowy sensu C02</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin:var(--s3) 0 0"><strong>Dlaczego nie B:</strong> migracja to trwały koszt utrzymania
+  za jednorazowy zysk - i to zysk wart tyle, co pozycje kur. Jeśli jednak masz zapis, na którym Ci zależy
+  (np. daleki postęp fabularny do testów), powiedz - wtedy B ma sens i zaprojektuję go inaczej.</p>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D10</span> Jak wykonywać rename'y</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Skrypt <code>scripts/rename_entity.py</code> + recepta <code>just rename-entity &lt;stara&gt; &lt;nowa&gt;</code>,
+        który zmienia <em>wszystkie</em> źródła naraz (.tmx, .csv, .toml, config.json) i sam odpala <code>validate-world</code></td>
+        <td>Rename staje się jedną operacją zamiast siedmiu; przyda się długo po C02, przy każdej zmianie nazwy w Akcie 1</td>
+        <td>Pół dnia pracy na sam skrypt</td></tr>
+      <tr><td><strong>B</strong></td><td>Ręcznie w Tiled + szukaj-zamień, walidator na końcu</td>
+        <td>Szybciej dla tych 27</td><td>Przy następnym rename'ie zaczynamy od zera; łatwo pominąć źródło</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="dec">
+  <h3><span class="qid">D11</span> Zakres jednego podejścia</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Opcja</th><th>Reguła</th><th>Za</th><th>Przeciw</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A</strong> <span class="badge rec">rekomendacja</span></td>
+        <td>Trzy osobne commity: <strong>(1)</strong> naprawa tawerny (D7, D8), <strong>(2)</strong> nowe reguły walidatora (D6, D7),
+        <strong>(3)</strong> właściwe rename'y (D1, D2, D3, D4)</td>
+        <td>Każdy krok osobno odwracalny; walidator wchodzi <em>przed</em> rename'ami, więc od razu pilnuje wyniku</td>
+        <td>Trzy przebiegi testów zamiast jednego</td></tr>
+      <tr><td><strong>B</strong></td><td>Wszystko jednym wejściem</td><td>Krócej</td>
+        <td>Jeśli coś pójdzie źle, nie wiadomo która zmiana zawiniła</td></tr>
+    </tbody>
+  </table></div>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="rename">5. Dokładna tabela zmian nazw</h2>
+<p class="prose">Przy założeniu <strong>D1=A, D2=A, D3=A, D5=A, D8=A</strong>. To jest pełna lista -
+nic poza nią nie zostanie ruszone.</p>
+
+<h3>Obiekty <code>spawn_points</code> - 27 zmian</h3>
+<details open>
+<summary>Zwierzęta i potwory (20) - zero stanu w zapisie</summary>
+<div class="tablewrap"><table>
+  <thead><tr><th>Mapa</th><th>Było</th><th>Będzie</th><th>Model (N1)</th></tr></thead>
+  <tbody>
+    <tr><td>Village</td><td class="old"><code>Snake_01</code></td><td class="new"><code>SNAKE_01</code></td><td><code>SNAKE_01</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>FishRed05</code></td><td class="new"><code>FISH_RED_01</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>FishRed04</code></td><td class="new"><code>FISH_RED_02</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>FishRed03</code></td><td class="new"><code>FISH_RED_03</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>FishRed02</code></td><td class="new"><code>FISH_RED_04</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>FishRed01</code></td><td class="new"><code>FISH_RED_05</code></td><td><code>FISH_RED</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Frog03</code></td><td class="new"><code>FROG_01</code></td><td><code>FROG</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Frog02</code></td><td class="new"><code>FROG_02</code></td><td><code>FROG</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Frog01</code></td><td class="new"><code>FROG_03</code></td><td><code>FROG</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Cat01</code></td><td class="new"><code>CAT_01</code></td><td><code>CAT</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Cat02</code></td><td class="new"><code>CAT_02</code></td><td><code>CAT</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Horse</code></td><td class="new"><code>HORSE</code></td><td><code>HORSE</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Cow</code></td><td class="new"><code>COW</code></td><td><code>COW</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Pig</code></td><td class="new"><code>PIG</code></td><td><code>PIG</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>ChickenWhite</code></td><td class="new"><code>CHICKEN_WHITE</code></td><td><code>CHICKEN_WHITE</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>ChickenBrown</code></td><td class="new"><code>CHICKEN_BROWN</code></td><td><code>CHICKEN_BROWN</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>ChickenBlack</code></td><td class="new"><code>CHICKEN_BLACK</code></td><td><code>CHICKEN_BLACK</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>ChickenCute</code></td><td class="new"><code>CHICKEN_CUTE</code></td><td><code>CHICKEN_CUTE</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Dog_orange</code></td><td class="new"><code>DOG_ORANGE</code></td><td><code>DOG_ORANGE</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Dog_purple</code></td><td class="new"><code>DOG_PURPLE</code></td><td><code>DOG_PURPLE</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Racoon</code></td><td class="new"><code>RACOON</code></td><td><code>RACOON</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Boar</code></td><td class="new"><code>BOAR</code></td><td><code>BOAR</code></td></tr>
+  </tbody>
+</table></div>
+</details>
+
+<details open>
+<summary>Statyści humanoidalni (5) - bez dialogu, ale <code>BART</code> i <code>JOHNY</code> mają rutynę</summary>
+<div class="tablewrap"><table>
+  <thead><tr><th>Mapa</th><th>Było</th><th>Będzie</th><th>Uwaga</th></tr></thead>
+  <tbody>
+    <tr><td>Village</td><td class="old"><code>Marry</code></td><td class="new"><code>MARRY</code></td><td>ma krzywą <code>waypoints</code> o tej samej nazwie - zmienia się razem</td></tr>
+    <tr><td>Village</td><td class="old"><code>Rob</code></td><td class="new"><code>ROB</code></td><td>krzywa <code>Rob</code> + <code>routines.toml</code> <code>route:Rob</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Robin</code></td><td class="new"><code>ROBIN</code></td><td>krzywa <code>Robin</code> + <code>routines.toml</code> <code>route:Robin</code></td></tr>
+    <tr><td>Village</td><td class="old"><code>Bart</code></td><td class="new"><code>BART</code></td><td>krzywa wyłączona (<code>Bart_BCKP</code>) - patrz D4</td></tr>
+    <tr><td>Village</td><td class="old"><code>Johny</code></td><td class="new"><code>JOHNY</code></td><td>krzywa wyłączona (<code>Johny_BCKP</code>) - patrz D4</td></tr>
+  </tbody>
+</table></div>
+</details>
+
+<div class="callout ok">
+  <p style="margin:0"><strong>Nietykane (6):</strong> <code>BARMAN_ABSINTHRAYNER</code>,
+  <code>MADAME_SARCASMIA</code>, <code>MISS_INFORMATION</code>, <code>CLAPBACK_SWORD</code>,
+  <code>POTIONEER_PUZZLEMINT</code>, <code>HAMMER_HOAXHEART</code>. To wszystkie postacie z dialogami -
+  ich nazwy już są zgodne z docelową konwencją, więc ich stan w zapisie przeżyje bez migracji.</p>
+</div>
+
+<h3>Pozostałe zmiany</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th>Co</th><th>Było</th><th>Będzie</th><th>Z decyzji</th></tr></thead>
+  <tbody>
+    <tr><td>Mapa (plik + wszystkie odwołania)</td><td class="old"><code>LOST_CORK_TAVERN</code></td><td class="new"><code>LostCorkTavern</code></td><td>D5</td></tr>
+    <tr><td>Mapa (plik)</td><td class="old"><code>VillageHouse.tmx</code></td><td class="new">usunięta lub przeniesiona</td><td>D7</td></tr>
+    <tr><td>Klucz muzyki</td><td class="old"><code>VillageHouse = "deep-in-the-dell.ogg"</code></td><td class="new">wpis usunięty</td><td>D7</td></tr>
+    <tr><td>Klucz muzyki</td><td class="old"><code>LOST_CORK_TAVERN</code></td><td class="new"><code>LostCorkTavern</code></td><td>D5</td></tr>
+    <tr><td>Klucz skrzyni</td><td class="old"><code>SmallChest_VillageHouse</code></td><td class="new"><code>SMALL_CHEST_TAVERN</code></td><td>D8</td></tr>
+    <tr><td>Klucz skrzyni</td><td class="old"><code>BigChest_Village</code></td><td class="new"><code>BIG_CHEST_VILLAGE</code></td><td>D8</td></tr>
+    <tr><td>Punkt wejścia</td><td class="old"><code>VillageHouseDoor</code></td><td class="new"><code>LostCorkTavernDoor</code></td><td>D5</td></tr>
+    <tr><td>Krzywe wyłączone</td><td class="old"><code>Bart_BCKP</code>, <code>Johny_BCKP</code></td><td class="new"><code>BART</code>, <code>JOHNY</code> + <code>enabled=false</code></td><td>D4</td></tr>
+    <tr><td>10 komórek miejsc w CSV</td><td class="old"><code>well</code>, <code>house_bart</code>, …</td><td class="new"><code>Village:well</code>, <code>Village:house_bart</code>, …</td><td>D3</td></tr>
+    <tr><td>2 cele w <code>routines.toml</code></td><td class="old"><code>location:well</code></td><td class="new"><code>location:Village:well</code></td><td>D3</td></tr>
+  </tbody>
+</table></div>
+
+<p><button onclick="copyRenames()">Kopiuj tabelę zmian jako Markdown</button></p>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="sciaga">6. Ściąga projektanta: gdzie używam jakiego klucza</h2>
+<p class="prose">To jest właściwy produkt tego zadania - reszta jest po to, żeby ta ściąga była prawdziwa.
+Po zatwierdzeniu trafi do <code>project/AGENTS.md</code> i do dokumentacji świata.</p>
+
+<div class="callout">
+  <p style="margin:0"><strong>Reguła w jednym zdaniu:</strong> <em>klucz encji</em> krzyczy wielkimi
+  (<code>BARMAN_ABSINTHRAYNER</code>), <em>miejsce w świecie</em> jest małymi z podkreśleniami
+  (<code>house_bart</code>), a <em>mapa</em> to nazwa własna CamelCase (<code>LostCorkTavern</code>).
+  Wszystko inne albo jest jednym z tych trzech, albo je składa.</p>
+</div>
+
+<h3>Dodaję nową postać fabularną</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Gdzie</th><th>Co wpisuję</th><th>Przykład</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Obsidian: <code>doc/PL/Postacie/*.md</code></td><td>frontmatter <code>aliases</code> - klucz encji</td><td><code>BARMAN_ABSINTHRAYNER</code></td></tr>
+    <tr><td>2</td><td><code>characters.csv</code></td><td>kolumna <code>key</code> - ten sam klucz; <code>sprite</code> = nazwa folderu z paczki</td><td><code>BARMAN_ABSINTHRAYNER</code>; <code>Hunter</code></td></tr>
+    <tr><td>3</td><td>Tiled: tileset <code>CharacterTileset.tsx</code></td><td>własność <code>model_name</code> na kaflu - ten sam klucz</td><td><code>BARMAN_ABSINTHRAYNER</code></td></tr>
+    <tr><td>4</td><td>Tiled: warstwa <code>spawn_points</code></td><td>nazwa obiektu = klucz (sufiks <code>_01</code> dopiero przy drugiej kopii)</td><td><code>BARMAN_ABSINTHRAYNER</code></td></tr>
+    <tr><td>5</td><td><code>characters.csv</code>, kolumny miejsc</td><td><code>Mapa:miejsce</code> - zawsze z prefiksem</td><td><code>LostCorkTavern:bar</code></td></tr>
+    <tr><td>6</td><td><code>characters.csv</code>, kolumna <code>routine</code></td><td>nazwa rutyny z <code>routines.toml</code></td><td><code>barman</code></td></tr>
+    <tr><td>7</td><td>Dialogi i questy</td><td>ten sam klucz w <code>visited(...)</code>, <code>dialog_key</code></td><td><code>visited("BARMAN_ABSINTHRAYNER", "012")</code></td></tr>
+  </tbody>
+</table></div>
+
+<h3>Dodaję nowe miejsce (cel rutyny)</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Gdzie</th><th>Co wpisuję</th><th>Przykład</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Tiled: warstwa <code>places</code></td><td>nazwa obiektu, małymi z podkreśleniami</td><td><code>house_smith</code></td></tr>
+    <tr><td>2</td><td><code>characters.csv</code> albo <code>routines.toml</code></td><td>odwołanie zawsze z prefiksem mapy</td><td><code>Village:house_smith</code></td></tr>
+  </tbody>
+</table></div>
+<p class="prose" style="margin-top:var(--s3)">Miejsce nie musi być unikalne w całej grze - dwie tawerny mogą
+mieć swój <code>bar</code>. Prefiks mapy to rozstrzyga, dlatego jest obowiązkowy.</p>
+
+<h3>Dodaję nową mapę</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Gdzie</th><th>Co wpisuję</th><th>Przykład</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>plik <code>maps/&lt;Nazwa&gt;.tmx</code></td><td>CamelCase nazwa własna - to jest nazwa mapy w grze</td><td><code>LostCorkTavern.tmx</code></td></tr>
+    <tr><td>2</td><td>mapa źródłowa, warstwa <code>interactions</code></td><td>obiekt o nazwie mapy docelowej + własność <code>entry_point</code></td><td><code>LostCorkTavern</code>, <code>entry_point=LostCorkTavernDoor</code></td></tr>
+    <tr><td>3</td><td>mapa docelowa, warstwa <code>entry_points</code></td><td>obiekt o nazwie z kroku 2 + zawsze <code>start</code></td><td><code>LostCorkTavernDoor</code>, <code>start</code></td></tr>
+    <tr><td>4</td><td><code>audio.toml</code>, sekcja <code>[music]</code></td><td>klucz = nazwa mapy (brak wpisu = cisza, po zmianie D7 walidator ostrzeże)</td><td><code>LostCorkTavern = "…ogg"</code></td></tr>
+  </tbody>
+</table></div>
+
+<h3>Czego NIE muszę pamiętać (robi to walidator)</h3>
+<ul class="prose">
+  <li>Czy <code>model_name</code> wskazuje istniejącą postać - <span class="badge ok">C01 reguła 1</span></li>
+  <li>Czy <code>home</code>/<code>work</code> wskazują istniejące miejsce - <span class="badge ok">C01 reguła 2</span></li>
+  <li>Czy rutyna z CSV istnieje w <code>routines.toml</code> - <span class="badge ok">C01 reguła 3</span></li>
+  <li>Czy sprite ma swój folder - <span class="badge ok">C01 reguła 5</span></li>
+  <li>Czy przedmiot z questa/dialogu istnieje - <span class="badge ok">C01 reguła 6</span></li>
+  <li>Czy nazwa instancji trzyma konwencję - <span class="badge info">nowa reguła z C02</span></li>
+  <li>Czy drzwi prowadzą do istniejącego punktu wejścia - <span class="badge info">nowa reguła z C02 (D6)</span></li>
+  <li>Czy mapa ma muzykę i czy da się do niej dojść - <span class="badge info">nowa reguła z C02 (D7)</span></li>
+</ul>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="plan">7. Plan wykonania i bramki bezpieczeństwa</h2>
+
+<div class="grid cols-3">
+  <div class="card"><h4>Etap 1 - dokończenie rename'u tawerny</h4>
+    <p style="margin:0 0 var(--s2)"><span class="badge warn">sprzątanie po sobie</span></p>
+    <ul style="margin:0">
+      <li>usunąć/przenieść <code>VillageHouse.tmx</code> (D7)</li>
+      <li>usunąć martwy klucz <code>VillageHouse</code> z <code>audio.toml</code></li>
+      <li>klucze skrzyń wg D8</li>
+      <li><strong>decyzja Twoja:</strong> co z 4,78 MB nieużywanego audio (O4)</li>
+    </ul></div>
+  <div class="card"><h4>Etap 2 - walidator przed rename'em</h4>
+    <p style="margin:0 0 var(--s2)"><span class="badge info">siatka bezpieczeństwa</span></p>
+    <ul style="margin:0">
+      <li>reguła konwencji nazwy instancji (D1)</li>
+      <li>reguła <code>interactions</code>/<code>entry_points</code> (D6)</li>
+      <li>reguła „mapa bez muzyki / nieosiągalna" (D7)</li>
+      <li>reguła „odwołanie do miejsca bez prefiksu" (D3)</li>
+      <li>na tym etapie walidator <em>świeci na czerwono</em> - to zamierzone</li>
+    </ul></div>
+  <div class="card"><h4>Etap 3 - rename'y</h4>
+    <p style="margin:0 0 var(--s2)"><span class="badge warn">tu giną stare zapisy</span></p>
+    <ul style="margin:0">
+      <li><code>just rename-entity</code> (D10)</li>
+      <li>27 obiektów + krzywe + CSV + TOML</li>
+      <li>podbicie wersji zapisu (D9)</li>
+      <li>walidator wraca na zero</li>
+    </ul></div>
+</div>
+
+<h3>Bramki - co musi przejść, zanim uznam etap za skończony</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th>Bramka</th><th>Komenda</th><th>Kryterium</th></tr></thead>
+  <tbody>
+    <tr><td>Spójność świata</td><td><code>just validate-world</code></td><td>0 błędów; ostrzeżenia tylko te znane (dziś 5)</td></tr>
+    <tr><td>Testy jednostkowe</td><td><code>just test-unit</code></td><td>komplet zielony (dziś 499 w 36 plikach)</td></tr>
+    <tr><td>Rutyny naprawdę działają</td><td>scenariusz agentowy z przewinięciem doby</td><td><code>BART</code> i <code>JOHNY</code> docierają do <code>market_stall_*</code>, barman do <code>bar</code></td></tr>
+    <tr><td>Zapis/wczytanie</td><td>scenariusz autosave + wczytanie</td><td>nowy zapis wczytuje się w komplecie; stary jest <strong>widocznie odrzucony</strong>, nie po cichu okrojony</td></tr>
+    <tr><td>Muzyka</td><td>przejście Village → tawerna</td><td>utwór dalej się zmienia po przemianowaniu mapy na <code>LostCorkTavern</code> (weryfikacja u autora - zrzut tego nie pokaże)</td></tr>
+    <tr><td>Web</td><td><code>just test-smoke</code></td><td>przechodzi - złota zasada dual-target</td></tr>
+  </tbody>
+</table></div>
+
+<div class="callout warn">
+  <p style="margin:0"><strong>Kolejność etapów nie jest przypadkowa.</strong> Walidator wchodzi
+  <em>przed</em> rename'ami, żeby to on - a nie granie - powiedział, czy 27 zmian trafiło we wszystkie
+  źródła. Odwrotna kolejność oznacza sprawdzanie po omacku.</p>
+</div>
+<a class="backlink" href="#toc">↑ Spis treści</a>
+
+<!-- ============================================================ -->
+<h2 id="poza">8. Czego świadomie NIE robimy</h2>
+<ul class="prose">
+  <li><strong>Nie ruszamy nazw folderów sprite'ów</strong> (N13) - to cudza paczka NinjaAdventure,
+    nasza konwencja się do niej nie stosuje.</li>
+  <li><strong>Nie ruszamy kluczy questów i dialogów</strong> - mają własny, sprawdzony schemat
+    (<code>Q01_S00_…</code>) i własny walidator w imporcie.</li>
+  <li><strong>Nie ujednolicamy nazw wewnątrz labiryntu</strong> - obiekty są generowane w runtime,
+    nie mają autorskich kluczy do pilnowania.</li>
+  <li><strong>Nie migrujemy do GitHub Issues</strong> przy okazji - to osobna, otwarta decyzja z audytu.</li>
+  <li><strong>Nie dotykamy <code>CONF_ENTITIES_TO_STORE</code></strong> - po analizie z 2026-08-08 to martwe
+    dane (czytane są tylko klucze), więc to sprzątanie, nie spójność encji. Osobny drobiazg.</li>
+</ul>
+
+<p class="prose" style="margin-top:var(--s6); color:var(--muted); font-size:.9rem">
+Dokument przygotowany 2026-08-08 na podstawie: <code>scripts/validate_world.py</code> (mapa powiązań),
+analizy wszystkich 7 plików <code>.tmx</code>, <code>characters.csv</code>, <code>routines.toml</code>,
+<code>audio.toml</code>, <code>config.json</code> oraz ścieżki zapisu w <code>project/save_load/manager.py</code>.
+Liczby (27/34 rename'y, 31/3/0 źródeł <code>model_name</code>, 20 postaci bez dialogu) policzone skryptem
+na żywych danych, nie oszacowane.</p>
+
+</div>
+
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none"></div>
+
+<script>
+  (function(){
+    const root = document.documentElement;
+    const btn = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('mom-audit-theme');
+    if (saved) root.dataset.theme = saved;
+    function label(){
+      const dark = root.dataset.theme === 'dark' ||
+        (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+      btn.textContent = dark ? '☀️ Jasny' : '🌙 Ciemny';
+    }
+    btn.addEventListener('click', () => {
+      const dark = root.dataset.theme === 'dark' ||
+        (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+      root.dataset.theme = dark ? 'light' : 'dark';
+      localStorage.setItem('mom-audit-theme', root.dataset.theme);
+      label();
+    });
+    label();
+  })();
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = 1; t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.opacity = 0;
+      t.style.transform = 'translateX(-50%) translateY(20px)'; }, 1800);
+  }
+  function copyToClipboard(text, msg) {
+    msg = msg || 'Skopiowano do schowka';
+    navigator.clipboard.writeText(text).then(() => showToast(msg))
+      .catch(() => {
+        const ta = document.createElement('textarea'); ta.value = text;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        ta.remove(); showToast(msg);
+      });
+  }
+  function copyRenames() {
+    const out = [];
+    document.querySelectorAll('#rename ~ details table, #rename ~ .tablewrap table').forEach(tbl => {
+      const head = [...tbl.querySelectorAll('thead th')].map(t => t.textContent.trim());
+      out.push('| ' + head.join(' | ') + ' |');
+      out.push('| ' + head.map(() => '---').join(' | ') + ' |');
+      tbl.querySelectorAll('tbody tr').forEach(tr => {
+        out.push('| ' + [...tr.cells].map(td => td.textContent.trim()).join(' | ') + ' |');
+      });
+      out.push('');
+    });
+    copyToClipboard(out.join('\n'), 'Tabela zmian skopiowana');
+  }
+</script>
+</body>
+</html>
