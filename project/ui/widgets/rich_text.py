@@ -34,6 +34,31 @@ def _icon_factor(src_h: int, target_h: int) -> int:
     return max(1, round(target_h / src_h))
 
 
+def render_tight(
+    text: str,
+    max_width: int,
+    icons: "dict[str, list[pygame.Surface]]",
+    **kwargs: object,
+) -> pygame.Surface:
+    """Surface przycięta do **realnej** szerokości tekstu, zawiniętego do ``max_width``.
+
+    Do panelu, którego rozmiar ma wynikać z treści (`widgets/panel.Panel`): dostajesz
+    powierzchnię tak szeroką, jak najdłuższa linia, więc pudełko nie jest szerokie na
+    cały limit zawijania.
+
+    Dwa przebiegi, nie przycinanie gotowego surface'a. Przycinanie działa tylko dla
+    tekstu do lewej: przy ``[center]`` każda linia jest wyśrodkowana w **rect'cie**,
+    więc `subsurface((0, 0, content_width, h))` ucinał końcówkę („Tawerna Brakująca
+    klepka" traciła „klepka"). Drugi przebieg układa tekst od razu w docelowej
+    szerokości, więc centrowanie wychodzi na tym, co widać.
+    """
+    probe = RichText(text, (0, 0, max_width, 1 << 16), icons, **kwargs)  # type: ignore[arg-type]
+    width = max(1, min(probe.content_width, max_width))
+    if width == max_width:
+        return probe.render_static()
+    return RichText(text, (0, 0, width, 1 << 16), icons, **kwargs).render_static()  # type: ignore[arg-type]
+
+
 class RichText(Widget):
     def __init__(
         self,

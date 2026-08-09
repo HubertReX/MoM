@@ -59,6 +59,40 @@ ekranów i tabelą decyzji: [`doc/_attachements/design-system-2026-07-18.html`](
   niżej). Ta sama zasada co przy nine-patch panelu. **Lepiej niż rysować kształt w kodzie:
   narysuj go w Aseprite i sparsuj** — wtedy wygląd jest w assecie, a nie w stałych.
 
+## Pudełko z treścią: `widgets/panel.Panel` (obowiązkowy)
+
+**Nie licz rozmiaru ramki ręcznie i nie wpisuj go z palca.** Do każdego pudełka
+nine-patch, którego zawartość może zmienić rozmiar - napis zależny od języka, tekst
+zawijany, lista rosnąca od zdarzeń - używaj `ui/widgets/panel.Panel`. Podajesz gotową
+powierzchnię z treścią, on liczy `box = content + 2 * pad`, centruje treść i sam
+sprawdza, czy się zmieściła (A03).
+
+```python
+self._location_panel = Panel("nine_patch_04.png", pad=(40, 32), name="HUD(location)")
+...
+max_w, _ = self._location_panel.max_content_size((budżet_szerokości, budżet_wysokości))
+surf = render_tight(f"[center]{tekst}[/center]", max_w, icons, base_size=FONT_SIZE_LARGE)
+self._location_panel.draw(surface, surf, anchor="midtop", offset=(0, HUD_EDGE))
+```
+
+- **Zawijaj do `panel.max_content_size(...)`, nie do magicznej stałej.** To jedyny
+  sposób, żeby tekst łamał się dokładnie tam, gdzie pudełko przestałoby się mieścić.
+  Argument to budżet **pudełka**, gdy ekran nie jest jedynym ograniczeniem: nazwa
+  lokacji jest wyśrodkowana, a w tym samym pasie stoi panel statystyk, więc jej
+  budżet to `WIDTH - 2 * (szerokość statystyk + 2 * HUD_EDGE)`.
+- **`render_tight` zamiast przycinania gotowego surface'u.** `subsurface((0, 0,
+  content_width, h))` działa tylko dla tekstu do lewej - przy `[center]` ucina
+  końcówkę (tak zniknęło „klepka" z „Tawerna Brakująca klepka"). `render_tight`
+  składa tekst dwa razy: raz żeby zmierzyć, raz w docelowej szerokości.
+- **`pad` nigdy nie schodzi poniżej ramki.** Ramka nine-patcha to `border * scale`
+  pikseli obrazka z każdej strony; `Panel` podnosi za mały `pad` sam, bo pod ramką
+  nie ma miejsca na tekst. Domyślny odstęp to ramka + 8 px.
+- **`min_size` to podłoga, nie sufit** - wyrównuje wygląd drobiazgów, ale większa
+  treść zawsze przebija minimum.
+- Historia: nazwa lokacji miała `_location_panel_h = 76` (jedna linia), więc PL
+  „Tawerna Brakująca klepka" wchodziła literami na ramkę. Wysokości nie da się dziś
+  zapomnieć zwiększyć, bo nigdzie się jej nie wpisuje. Testy: `tests/test_panel_autosize.py`.
+
 ## Panel musi się zmieścić w viewporcie (i w każdym języku)
 
 - **Rozmiar panelu to MAKSIMUM, nie stała.** Rozdzielczość zmienia rozmiar viewportu

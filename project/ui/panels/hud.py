@@ -39,8 +39,9 @@ from settings import (
     _,
 )
 
-from .. import theme
+from .. import layout, theme
 from ..widget import Widget
+from ..widgets.panel import Panel
 
 if TYPE_CHECKING:
     from characters import NPC, Player
@@ -77,7 +78,7 @@ _NOTIFICATION_GAP = 8
 # text inset inside a toast box. pad_y has to clear the nine-patch frame art
 # (~12px), or the last line of a tall toast sits under the bottom border.
 _NOTIFICATION_PAD_X = 20
-_NOTIFICATION_PAD_Y = 16
+_NOTIFICATION_PAD_Y = 20
 
 
 def hotbar_topleft(slots: int) -> tuple[int, int]:
@@ -116,14 +117,20 @@ class HUD(Widget):
         self.stats_bg = theme.nine_patch("nine_patch_04.png", 300, 190)
         self.available_action_bg = theme.nine_patch("panel_brown.png", 216, 36, border=3)
 
-        # location panel: centred at the top, same vertical band as the stats panel
+        # location panel: centred at the top, same vertical band as the stats panel.
+        # Rozmiar pudełka liczy `Panel` z rozmiaru napisu - nazwa lokacji zależy od
+        # języka i potrafi się zawinąć do dwóch linii („Tawerna Brakująca klepka"),
+        # więc żadna z tych liczb nie ma prawa być stałą.
+        self._location_panel = Panel("nine_patch_04.png", pad=(40, 32), name="HUD(location)")
         self._location_display: str = ""
+        self._location_key: tuple[str, int] | None = None
         self._location_rt_surf: pygame.Surface | None = None
-        self._location_panel_w: int = 0
-        self._location_panel_h: int = 0
-        self._location_bg: pygame.Surface | None = None
         self._update_location_cache()
 
+        # toast: ta sama zasada, inny wygląd ramki i ciaśniejszy odstęp
+        self._notification_panel = Panel("nine_patch_04c.png", border=3,
+                                         pad=(_NOTIFICATION_PAD_X, _NOTIFICATION_PAD_Y),
+                                         name="HUD(toast)")
         # cache: notification message string -> pre-rendered rich-text surface
         self._notification_cache: dict[str, pygame.Surface] = {}
 
@@ -241,39 +248,39 @@ class HUD(Widget):
         display = _(f"map.{map_name}")
         if display == f"map.{map_name}":       # brak wpisu - `_()` zwraca sam klucz
             display = map_name
-        if display == self._location_display and self._location_rt_surf is not None:
+        # klucz cache'u to (napis, szerokość ekranu): zmiana rozdzielczości zmienia
+        # limit zawijania, więc stary surface przestaje pasować do nowego pudełka
+        key = (display, settings.WIDTH)
+        if key == self._location_key and self._location_rt_surf is not None:
             return
+        self._location_key = key
         self._location_display = display
-        from ..widgets.rich_text import RichText
-        rt = RichText(
-            f"[center][shadow]{self._location_display}[/shadow][/center]",
-            (0, 0, 400, 100),
+        from ..widgets.rich_text import render_tight
+        # Zawijanie na tyle, ile pudełko może mieć - nie na magicznej stałej. Pudełko
+        # jest wyśrodkowane, a w tym samym pasie stoi panel statystyk (prawy górny róg),
+        # więc budżet to szerokość ekranu minus DWA razy miejsce zajęte przez statystyki.
+        # Nazwa, która się w to nie mieści, wchodzi w drugą linię, a `Panel` urośnie
+        # wzwyż - to jest cała różnica wobec zaszytej wysokości 76 px.
+        side = self.stats_bg.get_width() + 2 * HUD_EDGE
+        max_w, _max_h = self._location_panel.max_content_size(
+            (settings.WIDTH - 2 * side, settings.HEIGHT - 2 * HUD_EDGE))
+        self._location_rt_surf = render_tight(
+            f"[center][shadow]{display}[/shadow][/center]",
+            max_w,
             self.icons,
             base_size=FONT_SIZE_LARGE,
             base_color=theme.TITLE,
             show_scrollbar=False,
-        )
-        surf = rt.render_static()
-        self._location_rt_surf = surf
-        tw = surf.get_width()
-        self._location_panel_w = tw + 80
-        self._location_panel_h = 76
-        self._location_bg = theme.nine_patch(
-            "nine_patch_04.png", self._location_panel_w, self._location_panel_h,
+            name="HUD(location)",
         )
 
     def show_location_panel(self, surface: pygame.Surface) -> None:
         """Draw the current map name centred at the top of the screen."""
         self._update_location_cache()
-        if self._location_rt_surf is None or self._location_bg is None:
+        if self._location_rt_surf is None:
             return
-        panel_x = (settings.WIDTH - self._location_panel_w) // 2
-        panel_y = HUD_EDGE
-        surface.blit(self._location_bg, (panel_x, panel_y))
-        text_x = settings.WIDTH // 2
-        text_y = panel_y + self._location_panel_h // 2
-        surface.blit(self._location_rt_surf,
-                     self._location_rt_surf.get_rect(center=(text_x, text_y)))
+        self._location_panel.draw(surface, self._location_rt_surf,
+                                  anchor="midtop", offset=(0, HUD_EDGE))
 
     #############################################################################################################
     # MARK: hotbar
@@ -376,6 +383,17 @@ class HUD(Widget):
         surface.blit(icon, (icon_x, bg_y + 2))
         # label right-aligned into the gap left of the keycap
         self.draw_text(surface, label, (icon_x - 8, bg_y + 9), align="right")
+        # Ten box ma stałą szerokość (216 px), bo klawisz musi stać w jednej kolumnie
+        # z klawiszami sąsiednich wierszy. Dziś najdłuższy napis to PL „rozmawiaj"
+        # (144 px), ale nowa akcja albo nowy język zmieści się tu tylko przypadkiem -
+        # niech się o tym dowiemy z rejestru, a nie ze zrzutu ekranu (A03).
+        needed = self.font.size(label)[0] + 8 + icon.get_width()
+        if needed > self.available_action_bg.get_width():
+            layout.report_violation(
+                f"HUD(action:{action})", "h-overflow",
+                f"'{label}' + klawisz to {needed}px przy pudełku "
+                f"{self.available_action_bg.get_width()}px",
+            )
 
     def show_available_actions(self, surface: pygame.Surface) -> None:
         # the "H — help" hint hides while the help panel itself is open
@@ -414,7 +432,7 @@ class HUD(Widget):
         """Render (and cache) a notification's rich text once, cropped tight to its content."""
         surf = self._notification_cache.get(notification.message)
         if surf is None:
-            from ..widgets.rich_text import RichText
+            from ..widgets.rich_text import render_tight
             # Wrap so the widest toast box still clears the stats panel: toasts now
             # rest at the top-left and the stats panel owns the top-right, sharing the
             # top band. Cap = stats_left - our own left inset - box padding - a gap.
@@ -423,17 +441,15 @@ class HUD(Widget):
             # quest toasts carry reward labels ("[num]+50[/num] :golden_coin:"), and
             # the coin is an item sprite rather than an emote - items go in first so
             # the emote sheet keeps the one name they share (`heart`)
-            rt = RichText(notification.message, (0, 0, max_text_w, 400),
-                          {**self.scene.items_sheet, **self.icons},
-                          base_size=14, show_scrollbar=False,
-                          # bump the inline icon a whole step (16px source -> crisp
-                          # 32px, factor 2): the default ~1.35x snapped a toast emote
-                          # back to native size and it read as unreadably tiny
-                          icon_scale=2.0,
-                          extra_emojis=frozenset(ITEMS_SHEET_DEFINITION))
-            full = rt.render_static()
-            w = max(1, min(rt.content_width, full.get_width()))
-            surf = full.subsurface((0, 0, w, full.get_height())).copy()
+            surf = render_tight(notification.message, max(1, max_text_w),
+                                {**self.scene.items_sheet, **self.icons},
+                                base_size=14, show_scrollbar=False,
+                                # bump the inline icon a whole step (16px source -> crisp
+                                # 32px, factor 2): the default ~1.35x snapped a toast emote
+                                # back to native size and it read as unreadably tiny
+                                icon_scale=2.0,
+                                extra_emojis=frozenset(ITEMS_SHEET_DEFINITION),
+                                name="HUD(toast)")
             self._notification_cache[notification.message] = surf
         return surf
 
@@ -456,18 +472,12 @@ class HUD(Widget):
         factor = AnimationTransition.in_out_expo(min(1.0, time_elapsed / 1.0))
         y = int(y_bottom + (y_stop - y_bottom) * factor)
 
-        text_surf = self._notification_surface(notification)
-        tw, th = text_surf.get_size()
-
         # The leading emote (type icon, or the chosen option's sentiment for sentiment
         # toasts) is part of the RichText message inline — no separate overlay copy.
-        pad_x, pad_y = _NOTIFICATION_PAD_X, _NOTIFICATION_PAD_Y
-        bg = theme.nine_patch("nine_patch_04c.png", tw + 2 * pad_x, th + 2 * pad_y, border=3)
-        surface.blit(bg, (HUD_EDGE, y))
-        text_x = HUD_EDGE + (bg.get_width() - tw) // 2
-        text_y = y + (bg.get_height() - th) // 2
-        surface.blit(text_surf, (text_x, text_y))
-        return bg.get_height()
+        # Box size comes from the text via `Panel`, so a four-line quest toast simply
+        # gets a taller box instead of running out under its own frame.
+        text_surf = self._notification_surface(notification)
+        return self._notification_panel.draw(surface, text_surf, pos=(HUD_EDGE, y)).height
 
     #############################################################################################################
     # MARK: compose
@@ -492,12 +502,15 @@ class HUD(Widget):
         # toast can run to four lines (a wrapped [h3] headline plus success prose),
         # and a fixed 50px step let the tall one overlap the toast below it. Only
         # the *visible* ones count — a queued toast reserves no space.
-        offset = 0
-        for notification in self.scene.visible_notifications():
-            offset += self.show_notification(surface, notification, offset) + _NOTIFICATION_GAP
         # A full-screen panel (the journal) covers the stats box; drawing it on top
         # would put the hero's HP over the quest title. Notifications stay: they are
         # transient news and the player should not miss one for having the log open.
         if stats:
             self.show_stats_panel(surface, self.scene.player)
             self.show_location_panel(surface)
+        # Toasts LAST, so they land on top of the location name. Both live in the same
+        # top band - toasts at the left edge, the location box centred - and a wide
+        # toast reaches the centre, where the location panel used to bury it.
+        offset = 0
+        for notification in self.scene.visible_notifications():
+            offset += self.show_notification(surface, notification, offset) + _NOTIFICATION_GAP
