@@ -28,6 +28,13 @@ Rodzaje kluczy (``--kind``):
 ``chest``        klucz skrzyni z `chests.csv` (``MAZE_01_BIG_CHEST``)
 ``entry_point``  nazwa obiektu w warstwie `entry_points` (``LOST_CORK_TAVERN_DOOR``)
 ``place``        nazwa obiektu w warstwie `places`, zawsze małymi (``house_bart``)
+``item``         klucz przedmiotu z `items.csv` (``life_pot``, ``PHOENIX_FEATHER``)
+
+**Zasięg nazwy.** `character`, `map`, `chest` i `item` są kluczami globalnymi - jeden
+w całej grze. `instance`, `entry_point` i `place` są unikalne **tylko w obrębie jednej
+mapy**: ładowarka trzyma je w słownikach per scena, więc dwie tawerny mogą mieć swój
+`bar` i swoje `Door`. Stąd obowiązkowy prefiks mapy w odwołaniach do miejsc (D3)
+i stąd `--list` dopisuje przy nich mapę, która je definiuje.
 
 Czego skrypt świadomie NIE rusza:
 
@@ -37,11 +44,12 @@ Czego skrypt świadomie NIE rusza:
 - **kodu** - mapa startowa jest w `settings.START_MAP`, a klucz gracza
   w `settings.PLAYER_CONFIG_KEY`, właśnie po to, żeby rename danych nie wymagał
   edycji Pythona. Nowa stała w kodzie = nowy wiersz w tej liście, nie nowy glob.
-- **dokumentów w Obsidianie** - `doc/PL/`, `doc/EN/`. Klucz encji jest tam
-  aliasem we frontmatterze i to autor decyduje o nazwie pliku; `just import-*`
-  wciągnie zmianę z powrotem.
-- **kluczy przedmiotów** - siedzą także w warunkach dialogów i questów, czyli
-  w treści, a nie w polu danych. Poza zakresem C02.
+- **dokumentów w Obsidianie** - `doc/PL/`, `doc/EN/`. Klucz encji jest tam aliasem
+  we frontmatterze, bywa też nazwą pliku, a treść jest autora - skrypt zamiast
+  edytować **wypisuje na koniec listę plików z `doc/`, w których stara nazwa jeszcze
+  stoi**. Bez ich poprawienia pierwszy `just import-*` po rename'ie cofnie zmianę
+  w `config.json` (dotyczy zwłaszcza `item`: klucze przedmiotów siedzą w warunkach
+  `has_item("…")` w dialogach i questach).
 
 Manifest źródeł (``SOURCES`` niżej) jest publiczny: pilnuje go
 `tests/test_rename_entity.py`, który failuje w dniu, w którym ktoś doda plik
@@ -67,10 +75,20 @@ CONFIG_DIR = PROJECT_DIR / "config_model"
 ASSETS = PROJECT_DIR / "assets"
 GAME_MAPS_DIR = ASSETS / "NinjaAdventure" / "maps"
 
-CHARACTER, MAP, INSTANCE, CHEST, ENTRY_POINT, PLACE = (
-    "character", "map", "instance", "chest", "entry_point", "place",
+CHARACTER, MAP, INSTANCE, CHEST, ENTRY_POINT, PLACE, ITEM = (
+    "character", "map", "instance", "chest", "entry_point", "place", "item",
 )
-KINDS = (CHARACTER, MAP, INSTANCE, CHEST, ENTRY_POINT, PLACE)
+KINDS = (CHARACTER, MAP, INSTANCE, CHEST, ENTRY_POINT, PLACE, ITEM)
+
+#: Rodzaje kluczy unikalne **tylko w obrębie jednej mapy**, nie w całej grze: ładowarka
+#: trzyma je w słownikach per scena (`scene.entry_points`, `scene.places`), więc dwie
+#: tawerny mogą mieć swój `bar`. Dlatego odwołanie do miejsca musi nosić prefiks mapy
+#: (D3) i dlatego `--list` pokazuje przy nich, z której mapy pochodzą.
+MAP_SCOPED_KINDS = (INSTANCE, ENTRY_POINT, PLACE)
+
+#: Etykieta pochodzenia dla szablonu labiryntu. Poziomy `MAZE_01`…`MAZE_0N` powstają
+#: w locie z jednego pliku, więc wypisywanie ich po kolei byłoby powtórzeniem.
+MAZE_ORIGIN = "MAZE_*"
 
 #: Kolumny `characters.csv` (i pola `config.json`), których wartość ma kształt
 #: ``MAPA:miejsce`` - dwa klucze różnych rodzajów w jednej komórce (D3).
@@ -307,9 +325,17 @@ class Source:
     what: str                                        # opis dla człowieka i dla `--list`
     edit: Callable[[str, str, str, str], Edit]       # (tekst, rodzaj, stara, nowa)
     scan: Callable[[str], dict[str, set[str]]]       # tekst -> rodzaj -> istniejące klucze
+    #: Tylko klucze **zdefiniowane** w tym pliku, w odróżnieniu od tych, do których
+    #: plik się jedynie odwołuje. `BLUNDERHAVEN.tmx` odwołuje się do punktu `Entry`,
+    #: ale definiuje go szablon labiryntu - i to on jest odpowiedzią na pytanie
+    #: „z jakiej mapy pochodzi ten klucz". Brak = wszystko z `scan` to definicje.
+    defines: Callable[[str], dict[str, set[str]]] | None = None
 
     def paths(self) -> list[Path]:
         return sorted(REPO_ROOT.glob(self.glob))
+
+    def definitions(self, text: str) -> dict[str, set[str]]:
+        return self.defines(text) if self.defines else self.scan(text)
 
 
 def _edit_tmx(text: str, kind: str, old: str, new: str) -> Edit:
@@ -339,6 +365,20 @@ def _scan_tmx(text: str) -> dict[str, set[str]]:
     }
 
 
+def _defines_tmx(text: str) -> dict[str, set[str]]:
+    """Klucze, które ta mapa *definiuje* - obiekty w swoich warstwach.
+
+    `to_map`, `destination_entry_point` i spółka to odwołania do cudzych kluczy;
+    gdyby liczyły się jako pochodzenie, `--list` twierdziłby, że punkt `Entry`
+    „pochodzi" z wioski tylko dlatego, że prowadzą do niego jej drzwi.
+    """
+    return {
+        INSTANCE: xml_object_names(text, "spawn_points"),
+        ENTRY_POINT: xml_object_names(text, "entry_points"),
+        PLACE: xml_object_names(text, "places"),
+    }
+
+
 def _edit_tsx(text: str, kind: str, old: str, new: str) -> Edit:
     if kind != CHARACTER:
         return text, 0
@@ -351,10 +391,27 @@ def _scan_tsx(text: str) -> dict[str, set[str]]:
     return {CHARACTER: xml_property_values(text, "model_name") | tsx_tile_types(text)}
 
 
+def _scan_maze_template(text: str) -> dict[str, set[str]]:
+    """Szablon labiryntu ma REALNE punkty wejścia i ATRAPY reszty.
+
+    `build_tileset_map_from_maze` nadpisuje w locie `to_map`, `destination_entry_point`
+    i `return_entry_point` na obiektach `Return`/`Stairs` - w pliku stoją tam wartości
+    zastępcze (`to_map="Return"`, `return_entry_point="0"`), które nigdy nie trafiają
+    do gry. Wciąganie ich do listy kluczy podpowiadało encje, których nie ma: „Return"
+    jako mapa, „0" i „Stairs" jako punkty wejścia.
+
+    Warstwa `entry_points` jest przeciwieństwem: `Entry` i `Re-Entry` to jedyne prawdziwe
+    punkty wejścia poziomu labiryntu i to na nie celują drzwi z map statycznych.
+    """
+    return {ENTRY_POINT: xml_object_names(text, "entry_points")}
+
+
 def _edit_characters_csv(text: str, kind: str, old: str, new: str) -> Edit:
     hits = 0
     if kind == CHARACTER:
         text, hits = csv_column(text, "key", old, new)
+    elif kind == ITEM:
+        text, hits = csv_column(text, "items", old, new, listed=True)
     elif kind in (MAP, PLACE):
         for column in PLACE_COLUMNS:
             text, count = csv_column(text, column, old, new, place=kind)
@@ -363,7 +420,10 @@ def _edit_characters_csv(text: str, kind: str, old: str, new: str) -> Edit:
 
 
 def _scan_characters_csv(text: str) -> dict[str, set[str]]:
-    out: dict[str, set[str]] = {CHARACTER: csv_column_values(text, "key").get("", set())}
+    out: dict[str, set[str]] = {
+        CHARACTER: csv_column_values(text, "key").get("", set()),
+        ITEM: csv_column_values(text, "items", listed=True).get("", set()),
+    }
     for column in PLACE_COLUMNS:
         for kind, values in csv_column_values(text, column, place=MAP).items():
             out.setdefault(kind, set()).update(values)
@@ -371,15 +431,45 @@ def _scan_characters_csv(text: str) -> dict[str, set[str]]:
 
 
 def _edit_chests_csv(text: str, kind: str, old: str, new: str) -> Edit:
-    if kind != CHEST:
-        return text, 0
-    text, hits = csv_column(text, "key", old, new)
-    text, more = csv_column(text, "name", old, new)
-    return text, hits + more
+    hits = 0
+    if kind == CHEST:
+        text, hits = csv_column(text, "key", old, new)
+        text, more = csv_column(text, "name", old, new)
+        hits += more
+    elif kind == ITEM:
+        for column in ("items", "random_items"):
+            text, count = csv_column(text, column, old, new, listed=True)
+            hits += count
+    return text, hits
 
 
 def _scan_chests_csv(text: str) -> dict[str, set[str]]:
-    return {CHEST: csv_column_values(text, "key").get("", set())}
+    items = (csv_column_values(text, "items", listed=True).get("", set())
+             | csv_column_values(text, "random_items", listed=True).get("", set()))
+    return {CHEST: csv_column_values(text, "key").get("", set()), ITEM: items}
+
+
+def _edit_items_csv(text: str, kind: str, old: str, new: str) -> Edit:
+    return csv_column(text, "key", old, new) if kind == ITEM else (text, 0)
+
+
+def _scan_items_csv(text: str) -> dict[str, set[str]]:
+    return {ITEM: csv_column_values(text, "key").get("", set())}
+
+
+def _edit_items_tsx(text: str, kind: str, old: str, new: str) -> Edit:
+    """Kafle w `items/items.tsx` niosą klucz przedmiotu we własności `item_name`.
+
+    To one stawiają przedmioty na mapie: `load_items` czyta `item_name` z kafla
+    i woła `conf.items[name]`, więc kafel z nieistniejącym kluczem wywala grę
+    `KeyError`-em przy wczytaniu mapy - dokładnie ta sama mina, co zepsute
+    `model_name` w `CharacterTileset.tsx` (O8).
+    """
+    return xml_property(text, "item_name", old, new) if kind == ITEM else (text, 0)
+
+
+def _scan_items_tsx(text: str) -> dict[str, set[str]]:
+    return {ITEM: xml_property_values(text, "item_name")}
 
 
 def _edit_maze_csv(text: str, kind: str, old: str, new: str) -> Edit:
@@ -418,6 +508,56 @@ def _edit_locale_toml(text: str, kind: str, old: str, new: str) -> Edit:
 
 def _scan_locale_toml(text: str) -> dict[str, set[str]]:
     return {MAP: toml_section_keys(text, "map")}
+
+
+#: ``has_item("klucz")`` w warunkach dialogów i questów - wzorzec powtórzony
+#: za `validate_world._condition_items`, żeby jedno i drugie widziało to samo.
+_HAS_ITEM_RE = re.compile(r'(has_item\(\s*")([^"]+)("\s*\))')
+
+#: Pola treści, których **wartością** jest klucz przedmiotu. Węzeł dialogu potrafi
+#: dać graczowi przedmioty (`"items": [...]` w efekcie ResultSink), a nagroda questa
+#: nazywa jeden (`"item": "..."`). Bez tej listy rename przedmiotu przechodził przez
+#: warunki `has_item(...)`, a mijał to, co ten warunek sprawdza.
+_ITEM_LIST_FIELDS = ("items", "random_items")
+_ITEM_VALUE_FIELDS = ("item",)
+
+
+def _rename_item_in_content(node: object, old: str, new: str,
+                            field_name: str = "") -> tuple[object, int]:
+    """Podmiana klucza przedmiotu w treści dialogów i questów.
+
+    Dwa kształty, bo klucz występuje tam na dwa sposoby: jako fragment mini-DSL
+    wewnątrz stringa (``has_item("KLUCZ")``) oraz jako wartość pola z listy powyżej.
+    Zwykły string spoza tych pól zostaje nietknięty - to proza dla gracza.
+    """
+    hits = 0
+    if isinstance(node, str):
+        if field_name in _ITEM_LIST_FIELDS + _ITEM_VALUE_FIELDS and node == old:
+            return new, 1
+
+        def swap(match: re.Match[str]) -> str:
+            nonlocal hits
+            if match.group(2) != old:
+                return match.group(0)
+            hits += 1
+            return f"{match.group(1)}{new}{match.group(3)}"
+        return _HAS_ITEM_RE.sub(swap, node), hits
+    if isinstance(node, dict):
+        out_dict: dict[str, object] = {}
+        for key, value in node.items():
+            out_dict[key], count = _rename_item_in_content(value, old, new, key)
+            hits += count
+        return out_dict, hits
+    if isinstance(node, list):
+        out_list: list[object] = []
+        for value in node:
+            # lista dziedziczy nazwę pola, w którym stoi - inaczej element `"items"`
+            # byłby nieodróżnialny od dowolnego innego stringa
+            updated, count = _rename_item_in_content(value, old, new, field_name)
+            out_list.append(updated)
+            hits += count
+        return out_list, hits
+    return node, 0
 
 
 def _edit_config_json(text: str, kind: str, old: str, new: str) -> Edit:
@@ -462,6 +602,21 @@ def _edit_config_json(text: str, kind: str, old: str, new: str) -> Edit:
                 if updated != value:
                     character[column] = updated
                     hits += 1
+    elif kind == ITEM:
+        rename_section("items")
+        for owner in list((data.get("characters") or {}).values()) \
+                + list((data.get("chests") or {}).values()):
+            for column in ("items", "random_items"):
+                values = owner.get(column)
+                if isinstance(values, list) and old in values:
+                    owner[column] = [new if v == old else v for v in values]
+                    hits += 1
+        # Treść (dialogi i questy) trzyma klucz przedmiotu w warunkach `has_item(...)`,
+        # w nagrodach questów i w efektach węzłów dialogu - patrz `_rename_item_in_content`.
+        for section in ("dialogs", "quests"):
+            if section in data:
+                data[section], count = _rename_item_in_content(data[section], old, new)
+                hits += count
 
     if not hits:
         return text, 0
@@ -474,7 +629,8 @@ def _scan_config_json(text: str) -> dict[str, set[str]]:
     data = json.loads(text)
     characters = set(data.get("characters") or {})
     chests = set(data.get("chests") or {})
-    out: dict[str, set[str]] = {CHARACTER: characters, CHEST: chests}
+    out: dict[str, set[str]] = {CHARACTER: characters, CHEST: chests,
+                                ITEM: set(data.get("items") or {})}
     for character in (data.get("characters") or {}).values():
         for column in PLACE_COLUMNS:
             value = character.get(column)
@@ -490,10 +646,10 @@ def _scan_config_json(text: str) -> dict[str, set[str]]:
 SOURCES: tuple[Source, ...] = (
     Source("project/assets/NinjaAdventure/maps/**/*.tmx",
            "mapy gry: nazwy obiektów w warstwach + to_map/model_name/*entry_point",
-           _edit_tmx, _scan_tmx),
+           _edit_tmx, _scan_tmx, defines=_defines_tmx),
     Source("project/assets/MazeTileset/*.tmx",
-           "szablony labiryntu: te same własności, mapy powstają z nich w locie",
-           _edit_tmx, _scan_tmx),
+           "szablony labiryntu: punkty wejścia poziomu; reszta własności to atrapy",
+           _edit_tmx, _scan_maze_template, defines=_scan_maze_template),
     Source("project/assets/NinjaAdventure/maps/tilesets/*.tsx",
            "tilesety map: `model_name` i `type` na kaflu",
            _edit_tsx, _scan_tsx),
@@ -501,11 +657,17 @@ SOURCES: tuple[Source, ...] = (
            "tilesety labiryntu: `model_name` i `type` na kaflu",
            _edit_tsx, _scan_tsx),
     Source("project/config_model/characters.csv",
-           "postacie: kolumna `key` + kolumny miejsc (`MAPA:miejsce`)",
+           "postacie: kolumna `key`, ekwipunek w `items`, miejsca (`MAPA:miejsce`)",
            _edit_characters_csv, _scan_characters_csv),
     Source("project/config_model/chests.csv",
-           "skrzynie: kolumny `key` i `name`",
+           "skrzynie: kolumny `key` i `name`; zawartość w `items`/`random_items`",
            _edit_chests_csv, _scan_chests_csv),
+    Source("project/config_model/items.csv",
+           "przedmioty: kolumna `key`",
+           _edit_items_csv, _scan_items_csv),
+    Source("project/assets/NinjaAdventure/items/items.tsx",
+           "tileset przedmiotów: `item_name` na kaflu stawia przedmiot na mapie",
+           _edit_items_tsx, _scan_items_tsx),
     Source("project/config_model/maze_configs.csv",
            "poziomy labiryntu: obsada potworów i szablony skrzyń",
            _edit_maze_csv, _scan_maze_csv),
@@ -516,7 +678,8 @@ SOURCES: tuple[Source, ...] = (
            "rutyny: cele kroków `route:` i `location:`",
            _edit_routines_toml, toml_at_values),
     Source("project/config_model/config.json",
-           "config gry: klucze `characters`/`chests`, obsada labiryntu, miejsca",
+           "config gry: klucze `characters`/`chests`/`items`, obsada labiryntu, miejsca, "
+           "warunki `has_item(...)` i nagrody w dialogach oraz questach",
            _edit_config_json, _scan_config_json),
     Source("project/assets/locale/*.toml",
            "napisy: klucze sekcji [map] to nazwy map (D12)",
@@ -526,16 +689,13 @@ SOURCES: tuple[Source, ...] = (
 #: Pliki danych, których rename świadomie nie dotyka. Powód jest częścią kontraktu:
 #: test z D17 czyta tę listę, więc „nie wiem, co to" nie przejdzie przez CI.
 UNTOUCHED_SOURCES: dict[str, str] = {
-    "project/config_model/items.csv":
-        "klucze przedmiotów - żyją też w warunkach dialogów i questów, poza zakresem C02",
     "project/config_model/config_schema.json":
         "schemat wygenerowany z `config_pydantic.py` - nazwy pól, nie klucze encji",
     "project/config_model/autogenerated_config.json":
         "martwy artefakt po usuniętym w B01 `main.py store` - nikt go nie czyta",
     "project/assets/NinjaAdventure/items/Items.tmx":
-        "tileset przedmiotów - klucze przedmiotów, patrz items.csv",
-    "project/assets/NinjaAdventure/items/items.tsx":
-        "tileset przedmiotów - klucze przedmiotów, patrz items.csv",
+        "mapa-katalog kafli przedmiotów - odwołuje się do nich przez `gid`, "
+        "nie po nazwie; klucze siedzą w `items.tsx`",
     "project/assets/map/grasslands.tmx":
         "prototyp w starszym schemacie (warstwa `exits`), gra go nie ładuje",
     "project/assets/map/map.tmx":
@@ -578,16 +738,45 @@ class Change:
     note: str = ""
 
 
-def existing_keys() -> dict[str, set[str]]:
-    """Co dziś istnieje, per rodzaj - podstawa autodetekcji i flagi ``--list``."""
-    out: dict[str, set[str]] = {kind: set() for kind in KINDS}
+def origin_of(path: Path) -> str:
+    """Z której mapy pochodzi klucz znaleziony w tym pliku (pusto = klucz globalny).
+
+    Punkty wejścia, miejsca i nazwy instancji są unikalne **tylko w obrębie mapy** -
+    ładowarka trzyma je w słownikach per scena. Bez tej etykiety `--list` pokazywał
+    `Door` dwa razy jako jeden wpis i nie było widać, że to dwa różne progi.
+    """
+    if path.suffix != ".tmx":
+        return ""
+    if path.parent.name == "MazeTileset":
+        return MAZE_ORIGIN
+    return f"{path.stem} (_wip)" if path.parent.name == "_wip" else path.stem
+
+
+def existing_keys_with_origin() -> dict[str, dict[str, set[str]]]:
+    """``rodzaj -> klucz -> {mapy, z których pochodzi}`` (pusty zbiór = klucz globalny)."""
+    out: dict[str, dict[str, set[str]]] = {kind: {} for kind in KINDS}
     for source in SOURCES:
         for path in source.paths():
-            for kind, values in source.scan(path.read_text(encoding="utf-8")).items():
-                out.setdefault(kind, set()).update(v for v in values if v)
+            origin = origin_of(path)
+            text = path.read_text(encoding="utf-8")
+            defined = source.definitions(text)
+            for kind, values in source.scan(text).items():
+                bucket = out.setdefault(kind, {})
+                for value in values:
+                    if not value:
+                        continue
+                    origins = bucket.setdefault(value, set())
+                    if origin and value in defined.get(kind, ()):
+                        origins.add(origin)
     # mapa istnieje także wtedy, gdy nikt do niej nie prowadzi - plikiem `.tmx`
-    out[MAP] |= {path.stem for path in GAME_MAPS_DIR.glob("*.tmx")}
+    for path in GAME_MAPS_DIR.glob("*.tmx"):
+        out[MAP].setdefault(path.stem, set())
     return out
+
+
+def existing_keys() -> dict[str, set[str]]:
+    """Co dziś istnieje, per rodzaj - podstawa autodetekcji i flagi ``--list``."""
+    return {kind: set(keys) for kind, keys in existing_keys_with_origin().items()}
 
 
 def detect_kind(old: str) -> str:
@@ -626,6 +815,23 @@ def rename(old: str, new: str, kind: str, dry_run: bool = False) -> list[Change]
     return changes
 
 
+def obsidian_mentions(old: str) -> list[str]:
+    """Pliki w `doc/`, które nadal wymieniają starą nazwę - do poprawy w Obsidianie.
+
+    Vault jest źródłem treści, a nie danych: `just import-*` wciąga z niego dialogi,
+    questy i postacie z powrotem do `config.json`. Gdyby skrypt zmienił tam nazwę sam,
+    zmieniłby autorowi tekst pod ręką (klucz bywa też nazwą pliku i aliasem we
+    frontmatterze). Zamiast tego mówimy, gdzie zajrzeć - inaczej pierwszy `import`
+    po rename'ie po cichu przywróciłby stary klucz.
+    """
+    pattern = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(old)}(?![A-Za-z0-9_])")
+    doc = REPO_ROOT / "doc"
+    if not doc.is_dir():
+        return []
+    return sorted(str(path.relative_to(REPO_ROOT)) for path in doc.rglob("*.md")
+                  if pattern.search(path.read_text(encoding="utf-8", errors="ignore")))
+
+
 def _move(source: Path, target: Path) -> None:
     """`git mv`, żeby historia pliku przeżyła rename; poza repo zwykły `rename`."""
     try:
@@ -640,12 +846,17 @@ def _move(source: Path, target: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def _print_list() -> None:
-    known = existing_keys()
+    known = existing_keys_with_origin()
     for kind in KINDS:
-        keys = sorted(known[kind])
-        print(f"\n{kind} ({len(keys)}):")
-        for key in keys:
-            print(f"  {key}")
+        entries = known[kind]
+        scoped = kind in MAP_SCOPED_KINDS
+        header = " - unikalne w obrębie mapy" if scoped else ""
+        print(f"\n{kind} ({len(entries)}){header}:")
+        width = max((len(key) for key in entries), default=0)
+        for key in sorted(entries):
+            origins = ", ".join(sorted(entries[key]))
+            suffix = f"  ({origins})" if scoped and origins else ""
+            print(f"  {key.ljust(width) if suffix else key}{suffix}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -693,6 +904,14 @@ def main(argv: list[str] | None = None) -> int:
     if kind in (INSTANCE, CHEST):
         print("  UWAGA: stan tej encji w istniejących zapisach jest kluczowany starą "
               "nazwą (O1) - zapisy sprzed rename'u dostaną wartości domyślne")
+
+    mentions = obsidian_mentions(args.old)
+    if mentions:
+        print(f"\n  '{args.old}' występuje jeszcze w {len(mentions)} plikach w `doc/` "
+              f"(vault Obsidiana - skrypt go nie rusza):")
+        for path in mentions:
+            print(f"    {path}")
+        print("  popraw je w Obsidianie, inaczej `just import-*` przywróci starą nazwę")
 
     if args.dry_run or args.no_validate:
         return 0

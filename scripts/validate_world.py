@@ -23,6 +23,7 @@ bare interpreter, in CI, and inside a `just` recipe without a display.
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import json
 import re
@@ -65,6 +66,10 @@ MAZE_MAP_PREFIX = "MAZE"
 # szablonu, więc jego warstwa `entry_points` jest jedynym źródłem prawdy o tym, dokąd
 # wolno celować z `destination_entry_point` prowadzącego do labiryntu.
 MAZE_TEMPLATE = ASSETS / "MazeTileset" / "MazeTileset_Ninja.tmx"
+
+# Tileset przedmiotów: własność `item_name` na kaflu jest jedynym mostem między
+# kluczem przedmiotu a warstwą `items` mapy.
+ITEMS_TILESET = ASSETS / "NinjaAdventure" / "items" / "items.tsx"
 
 # Tiled object layers this validator understands
 SPAWN_LAYER = "spawn_points"
@@ -128,6 +133,14 @@ class World:
     tilesets: dict[str, dict[int, str]] = field(default_factory=dict)
     #: nazwy obiektów z warstwy `entry_points` szablonu labiryntu (MAZE_TEMPLATE)
     maze_entry_points: set[str] = field(default_factory=set)
+    #: `config_model/items.csv` - ręcznie edytowane źródło sekcji `items` w configu
+    items_csv: list[dict[str, str]] = field(default_factory=list)
+    #: `config_model/chests.csv` - to samo dla sekcji `chests`
+    chests_csv: list[dict[str, str]] = field(default_factory=list)
+    #: klucze przedmiotów zadeklarowane na kaflach `items/items.tsx` (własność `item_name`)
+    item_tiles: set[str] = field(default_factory=set)
+    #: nazwy sprite'ów z arkuszy przedmiotów w `settings.py` (ITEMS_ + GEMS_SHEET_DEFINITION)
+    item_sprites: set[str] = field(default_factory=set)
 
     @property
     def places(self) -> dict[str, set[str]]:
@@ -264,9 +277,60 @@ def load_world() -> World:
     if MAZE_TEMPLATE.is_file():
         maze_entry_points = load_map(MAZE_TEMPLATE).names(ENTRY_LAYER)
 
+    items_csv = _read_csv(CONFIG_DIR / "items.csv")
+    chests_csv = _read_csv(CONFIG_DIR / "chests.csv")
+
     return World(config=config, characters_csv=characters_csv, routines=routines,
                  maps=maps, sprites=sprites, audio=audio,
-                 tilesets=tilesets, maze_entry_points=maze_entry_points)
+                 tilesets=tilesets, maze_entry_points=maze_entry_points,
+                 items_csv=items_csv, chests_csv=chests_csv,
+                 item_tiles=_item_tile_names(ITEMS_TILESET),
+                 item_sprites=_settings_sheet_keys("ITEMS_SHEET_DEFINITION",
+                                                   "GEMS_SHEET_DEFINITION"))
+
+
+def _read_csv(path: Path) -> list[dict[str, str]]:
+    if not path.is_file():
+        return []
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f, delimiter=";"))
+
+
+def _item_tile_names(tsx_path: Path) -> set[str]:
+    """Klucze przedmiotów z własności ``item_name`` kafli tilesetu przedmiotów.
+
+    To one stawiają przedmiot na mapie: `load_items` czyta `item_name` z kafla warstwy
+    `items` i woła `conf.items[name]`, więc kafel z nieznanym kluczem wywala grę
+    `KeyError`-em przy wczytaniu mapy - ta sama mina, co zepsute `model_name` z O8.
+    """
+    try:
+        root = ET.parse(tsx_path).getroot()
+    except (OSError, ET.ParseError):
+        return set()
+    return {prop.get("value", "") for prop in root.iter("property")
+            if prop.get("name") == "item_name" and prop.get("value")}
+
+
+def _settings_sheet_keys(*names: str) -> set[str]:
+    """Klucze słowników-arkuszy sprite'ów wyciągnięte z `settings.py` przez `ast`.
+
+    Bez importu: `settings` ciągnie pygame'a, a ten skrypt ma działać na gołym
+    interpreterze (patrz docstring modułu). `_played_sfx_keys` czyta kod tak samo.
+    """
+    try:
+        tree = ast.parse((PROJECT_DIR / "settings.py").read_text(encoding="utf-8"))
+    except (OSError, SyntaxError):
+        return set()
+    wanted, out = set(names), set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Dict):
+            continue
+        targets = {t.id for t in node.targets if isinstance(t, ast.Name)}
+        if not targets & wanted:
+            continue
+        out |= {key.value for key in node.value.keys
+                if isinstance(key, ast.Constant) and isinstance(key.value, str)}
+    return out
 
 
 #############################################################################################################
@@ -942,6 +1006,64 @@ def check_map_coverage(world: World) -> list[Violation]:
     return out
 
 
+def check_item_keys(world: World) -> list[Violation]:
+    """Rule 19: klucz przedmiotu znaczy to samo we wszystkich sześciu źródłach.
+
+    Reguła 6 sprawdzała tylko *odwołania* do `config.items` - a `config.items` jest
+    generowane z `items.csv` przez `just import-entities`, więc sam rozjazd tych dwóch
+    plików był niewidoczny. Do tego dochodzą dwa źródła, których nikt dotąd nie czytał:
+
+    - ``items/items.tsx`` - własność `item_name` na kaflu. To ona stawia przedmiot na
+      mapie: `load_items` woła `conf.items[name]`, więc kafel z nieznanym kluczem
+      wywala grę `KeyError`-em przy wczytaniu mapy. Ta sama mina co O8, tylko
+      w przestrzeni przedmiotów zamiast postaci.
+    - ``ITEMS_SHEET_DEFINITION`` / ``GEMS_SHEET_DEFINITION`` w `settings.py` - bez
+      wpisu tam `create_item` nie ma czym narysować przedmiotu i też leci `KeyError`.
+
+    ``chests.csv`` dochodzi z tego samego powodu, co `items.csv`: reguła 6 patrzy na
+    `config.chests`, czyli na wynik importu, a nie na to, co autor napisał ręcznie.
+    """
+    known = set(world.config.get("items") or {})
+    csv_keys = {row["key"].strip() for row in world.items_csv if (row.get("key") or "").strip()}
+    out: list[Violation] = []
+
+    for key in sorted(csv_keys - known):
+        out.append(Violation(
+            ERROR, "items.csv",
+            f"'{key}' nie ma w config.items - uruchom `just import-entities`",
+        ))
+    for key in sorted(known - csv_keys):
+        out.append(Violation(
+            ERROR, "config.json:items",
+            f"'{key}' nie ma wiersza w items.csv - został po rename'ie albo po kasacie",
+        ))
+
+    for key in sorted(world.item_tiles - known):
+        out.append(Violation(
+            ERROR, "items/items.tsx",
+            f"kafel ma item_name='{key}', którego nie ma w config.items - "
+            f"mapa z tym kaflem wywali grę na KeyError",
+        ))
+
+    if world.item_sprites:
+        for key in sorted(known - world.item_sprites):
+            out.append(Violation(
+                ERROR, "config.json:items",
+                f"'{key}' nie ma sprite'a w ITEMS_SHEET_DEFINITION ani "
+                f"GEMS_SHEET_DEFINITION (settings.py) - nie da się go narysować",
+            ))
+
+    for row in world.chests_csv:
+        for column in ("items", "random_items"):
+            for item in _csv_list(row.get(column, "")):
+                if item not in known:
+                    out.append(Violation(
+                        ERROR, f"chests.csv:{row.get('key', '?')}",
+                        f"{column} zawiera '{item}', którego nie ma w config.items",
+                    ))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -961,6 +1083,7 @@ CHECKS = (
     check_tileset_model_names,
     check_map_references,
     check_map_coverage,
+    check_item_keys,
 )
 
 

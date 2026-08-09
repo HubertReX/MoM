@@ -937,10 +937,16 @@ just rename-entity --list                      # co dziś istnieje, per rodzaj
 just rename-entity --sources                   # manifest plików, które skrypt zna
 ```
 
-Rodzaje: `character`, `map`, `instance`, `chest`, `entry_point`, `place`. Skrypt jest
+Rodzaje: `character`, `map`, `instance`, `chest`, `entry_point`, `place`, `item`. Skrypt jest
 **dosłowny** - wie, w którym polu którego pliku żyje dany rodzaj klucza, więc rename modelu
 `HORSE` nie rusza kolumny `name_EN` o tej samej treści. Mapę przemianowuje razem z plikiem
 `.tmx` (`git mv`). Na koniec sam odpala `validate_world`.
+
+**Zasięg nazwy.** `character`, `map`, `chest` i `item` są kluczami **globalnymi** - jeden
+w całej grze. `instance`, `entry_point` i `place` są unikalne **tylko w obrębie jednej mapy**
+(ładowarka trzyma je w słownikach per scena), więc dwie tawerny mogą mieć swój `bar` i swoje
+`Door`. Stąd obowiązkowy prefiks mapy w odwołaniach do miejsc (D3), a `--list` dopisuje przy
+nich mapę, **która je definiuje** - nie tę, która się do nich odwołuje.
 
 Czego rename **nie** rusza i nie powinien:
 
@@ -950,14 +956,17 @@ Czego rename **nie** rusza i nie powinien:
 - **kodu** - mapa startowa mieszka w `settings.START_MAP`, klucz gracza w
   `settings.PLAYER_CONFIG_KEY`. Nowa nazwa encji w Pythonie = nowa stała w `settings.py`,
   nie nowy glob w skrypcie.
-- **dokumentów w Obsidianie** - klucz jest tam aliasem we frontmatterze, `just import-*`
-  wciąga zmianę z powrotem.
+- **dokumentów w Obsidianie** - klucz jest tam aliasem we frontmatterze i bywa nazwą pliku,
+  a treść należy do autora. Zamiast edytować, skrypt **wypisuje na koniec listę plików
+  z `doc/`, w których stara nazwa jeszcze stoi**. Bez ich poprawienia pierwszy
+  `just import-*` cofnie zmianę w `config.json` - dotyczy zwłaszcza `item`, bo klucze
+  przedmiotów siedzą w warunkach `has_item("…")` dialogów i questów.
 
 `tests/test_rename_entity.py` failuje w dniu, w którym ktoś doda plik danych nieobjęty
 manifestem `SOURCES` - a nie przy pierwszym rename'ie po nim (D17). Nowy plik trzeba albo
 objąć globem, albo wpisać do `UNTOUCHED_SOURCES` z powodem.
 
-### Czego pilnuje `just validate-world` w sprawie kluczy (reguły 13-18)
+### Czego pilnuje `just validate-world` w sprawie kluczy (reguły 13-19)
 
 - **13** - nazwa obiektu w `spawn_points` to klucz modelu, opcjonalnie z `_NN`
   (`FISH_RED_01`). Numer należy się instancji dopiero wtedy, gdy kopii na mapie jest
@@ -975,6 +984,13 @@ objąć globem, albo wpisać do `UNTOUCHED_SOURCES` z powodem.
   poziom labiryntu pliku nie ma.
 - **18** (WARN) - mapa bez muzyki, mapa nieosiągalna z żadnej warstwy `interactions`,
   plik w `assets/audio/music/` bez wpisu w `audio.toml`.
+- **19** - klucz przedmiotu znaczy to samo we wszystkich źródłach: `items.csv` ↔
+  `config.json:items` (rozjazd = zapomniane `just import-entities`), `item_name` na kaflu
+  `items/items.tsx` musi być kluczem z configu (`load_items` woła `conf.items[name]`, więc
+  literówka wywala grę przy wczytaniu mapy), każdy przedmiot musi mieć sprite'a
+  w `ITEMS_SHEET_DEFINITION` albo `GEMS_SHEET_DEFINITION`, a `chests.csv` (źródło, nie
+  wynik importu) nie może wymieniać nieistniejącego przedmiotu. Reguła 6 sprawdza tylko
+  *odwołania* do `config.items`, więc rozjazd samego configu z CSV był dotąd niewidoczny.
 
 ## Konwencje
 

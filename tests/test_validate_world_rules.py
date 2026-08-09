@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for the C02 etap 4 validator rules (13-18).
+"""Unit tests for the C02 validator rules (13-19).
 
 Run from the project root:
     .venv/bin/python tests/test_validate_world_rules.py
@@ -33,6 +33,7 @@ from validate_world import (                                     # noqa: E402
     check_interaction_targets,
     check_map_coverage,
     check_map_references,
+    check_item_keys,
     check_place_prefixes,
     check_spawn_naming,
     check_tileset_model_names,
@@ -73,6 +74,10 @@ def _world(**overrides: object) -> World:
         "audio": WORLD.audio,
         "tilesets": {},
         "maze_entry_points": WORLD.maze_entry_points,
+        "items_csv": WORLD.items_csv,
+        "chests_csv": WORLD.chests_csv,
+        "item_tiles": WORLD.item_tiles,
+        "item_sprites": WORLD.item_sprites,
     }
     fields.update(overrides)
     return World(**fields)                                       # type: ignore[arg-type]
@@ -307,6 +312,67 @@ def test_an_unreachable_map_is_reported() -> None:
 
 
 ###############################################################################################################
+# MARK: rule 19 - klucze przedmiotów (C02, uwaga autora 2026-08-09)
+def _items_world(**overrides: object) -> World:
+    """Świat z minimalnym, spójnym zestawem przedmiotów - do psucia po jednym miejscu."""
+    config = dict(WORLD.config)
+    config["items"] = {"life_pot": {}, "fish": {}}
+    fields: dict[str, object] = {
+        "config": config,
+        "items_csv": [{"key": "life_pot"}, {"key": "fish"}],
+        "chests_csv": [],
+        "item_tiles": {"life_pot", "fish"},
+        "item_sprites": {"life_pot", "fish"},
+    }
+    fields.update(overrides)
+    return _world(**fields)
+
+
+def test_a_consistent_item_set_reports_nothing() -> None:
+    assert_eq(check_item_keys(_items_world()), [], "spójne przedmioty nie zgłaszają nic")
+
+
+def test_an_item_in_the_csv_but_not_in_the_config_is_an_error() -> None:
+    """Objaw zapomnianego `just import-entities` - CSV jest źródłem, config wynikiem."""
+    messages = _errors(check_item_keys(_items_world(
+        items_csv=[{"key": "life_pot"}, {"key": "fish"}, {"key": "elixir"}])))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("elixir" in messages[0] and "import-entities" in messages[0], messages[0])
+
+
+def test_an_item_in_the_config_but_not_in_the_csv_is_an_error() -> None:
+    """Zostaje po rename'ie zrobionym tylko w jednym pliku."""
+    messages = _errors(check_item_keys(_items_world(items_csv=[{"key": "life_pot"}])))
+    assert_true(any("fish" in m for m in messages), f"{messages}")
+
+
+def test_a_tile_naming_an_item_that_does_not_exist_is_an_error() -> None:
+    """`load_items` woła `conf.items[name]` - taki kafel wywala grę przy wczytaniu mapy."""
+    messages = _errors(check_item_keys(_items_world(item_tiles={"life_pot", "sushi"})))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("sushi" in messages[0] and "KeyError" in messages[0], messages[0])
+
+
+def test_an_item_with_no_sprite_is_an_error() -> None:
+    """Bez wpisu w arkuszu `create_item` nie ma czym narysować przedmiotu."""
+    messages = _errors(check_item_keys(_items_world(item_sprites={"life_pot"})))
+    assert_true(any("fish" in m and "SHEET_DEFINITION" in m for m in messages), f"{messages}")
+
+
+def test_a_chest_csv_row_with_an_unknown_item_is_an_error() -> None:
+    """Reguła 6 patrzyła na `config.chests`, czyli na wynik importu, nie na źródło."""
+    messages = _errors(check_item_keys(_items_world(
+        chests_csv=[{"key": "BOX", "items": "life_pot,gold_bar", "random_items": ""}])))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("gold_bar" in messages[0], messages[0])
+
+
+def test_the_real_world_item_keys_are_consistent() -> None:
+    """Bramka regresji: sześć źródeł kluczy przedmiotów mówi dziś to samo."""
+    assert_eq(_errors(check_item_keys(WORLD)), [], "klucze przedmiotów są spójne")
+
+
+###############################################################################################################
 def main() -> None:
     tests = [
         test_an_instance_named_after_its_model_passes,
@@ -333,6 +399,13 @@ def main() -> None:
         test_a_map_with_no_music_is_reported,
         test_maze_levels_inherit_the_special_music_key,
         test_an_unreachable_map_is_reported,
+        test_a_consistent_item_set_reports_nothing,
+        test_an_item_in_the_csv_but_not_in_the_config_is_an_error,
+        test_an_item_in_the_config_but_not_in_the_csv_is_an_error,
+        test_a_tile_naming_an_item_that_does_not_exist_is_an_error,
+        test_an_item_with_no_sprite_is_an_error,
+        test_a_chest_csv_row_with_an_unknown_item_is_an_error,
+        test_the_real_world_item_keys_are_consistent,
     ]
     for t in tests:
         t()
