@@ -9,9 +9,6 @@ characters:
 ---
 # Info
 
-==TODO== - mapa `JACOBS_CHAMBER.tmx` istnieje w grze, ale nie miała dotąd dokumentu
-lokacji (C02/D16). Nazwa pliku jest **roboczą propozycją** - to Ty nadajesz nazwę
-wyświetlaną, tak jak przy [[Porażkowo]] czy [[Tawerna Brakująca klepka]].
+Ta nazwa jest hołdem dla Jakuba, który pomagał mi testować grę.
 
-Nazwa z tego pliku trafi w etapie 3 do sekcji `[map]` w `project/assets/locale/PL.toml`
-i to ją zobaczy gracz na HUD-zie zamiast surowego klucza `JACOBS_CHAMBER`.
+Ta komnata znajduje się w wiosce [[Gafowo Kolonia]].

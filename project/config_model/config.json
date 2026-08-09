@@ -396,7 +396,7 @@
             "name_PL": "Barman Absyntnent",
             "has_dialog": true,
             "friendly": 0.6,
-            "home": "LOST_CORK_TAVERN:badroom",
+            "home": "LOST_CORK_TAVERN:bedroom",
             "work": "LOST_CORK_TAVERN:bar",
             "social": "BLUNDERHAVEN:well",
             "hobby": "BLUNDERHAVEN:shrine",
