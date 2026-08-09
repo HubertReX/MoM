@@ -295,7 +295,7 @@
     <property name="destination_entry_point" value="Entry"/>
     <property name="obj_type" value="exit"/>
     <property name="return_entry_point" value="0"/>
-    <property name="to_map" value="Maze_02"/>
+    <property name="to_map" value="MAZE_02"/>
    </properties>
   </object>
  </objectgroup>

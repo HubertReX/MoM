@@ -719,7 +719,7 @@ def build_tileset_map_from_maze(
         clean_tileset_map (pytmx.TiledMap): The tileset map with maze template. Will be overwritten with the final map.
         maze (Maze): The input maze grid to convert.
         current_map (str): the name of current maze (contains maze level)
-        to_map (str): The exit to map (name of map file, eg. `Village.tmx)`.
+        to_map (str): The exit to map (name of map file, eg. `BLUNDERHAVEN.tmx)`.
         entry_point (str): The starting point in the exit map (name of object on exits layer).
 
     Description:
@@ -792,7 +792,7 @@ def build_tileset_map_from_maze(
     # print(f"{start=}")
     # print(f"{end=}")
 
-    # position (point) where the player will show up after entering the map from Village or lower maze level
+    # position (point) where the player will show up after entering the map from the hub map or a lower maze level
     entry_obj = clean_tileset_map.get_object_by_name("Entry")
     if current_map_level == 1:
         # in front (below) of the door
@@ -807,13 +807,13 @@ def build_tileset_map_from_maze(
         entry_obj.y = (MARGIN + start[1] * SUBTILE_ROWS +  # noqa: W504
                        IMAGE_DIRECTION_TO_POS_OFFSET[start_cell.image_index][1]) * TILE_SIZE
 
-    # return to previous map (Village or maze level - 1) collider
+    # return to previous map (the hub map or maze level - 1) collider
     return_obj = clean_tileset_map.get_object_by_name("Return")
     if current_map_level == 1:
         # same location as the location of doors sprite on the north wall
         return_obj.x = (MARGIN + start[0] * SUBTILE_COLS + RETURN_X_OFFSET) * TILE_SIZE
         return_obj.y = (MARGIN + start[1] * SUBTILE_ROWS + RETURN_Y_OFFSET) * TILE_SIZE
-        return_obj.to_map = to_map  # "Village"
+        return_obj.to_map = to_map  # e.g. "BLUNDERHAVEN"
         return_obj.destination_entry_point = entry_point  # "Stairs"
     else:
         # same location as the location of the stairs up sprite

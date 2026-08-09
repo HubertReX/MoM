@@ -338,6 +338,20 @@ validate-world *ARGS:
     #!powershell
     .venv\Scripts\python.exe scripts\validate_world.py {{ARGS}}
 
+# Rename an entity key in every source at once (maps, CSVs, config, locale, Tiled). e.g: `just rename-entity Village BLUNDERHAVEN`
+[unix]
+rename-entity *ARGS:
+    # The kind of key is detected from where the name stands today; `--kind` overrides it.
+    # `--list` shows what exists, `--dry-run` shows what would change, `--sources` prints
+    # the manifest of files the script knows (guarded by tests/test_rename_entity.py).
+    .venv/bin/python scripts/rename_entity.py {{ARGS}}
+
+# Rename an entity key in every source at once (maps, CSVs, config, locale, Tiled). e.g: `just rename-entity Village BLUNDERHAVEN`
+[windows]
+rename-entity *ARGS:
+    #!powershell
+    .venv\Scripts\python.exe scripts\rename_entity.py {{ARGS}}
+
 # Run all static analysis and code checks (Sourcery + mypy + locale + world)
 check: sourcery mypy validate-locale validate-world
 

@@ -7,7 +7,7 @@ waypoints and zeroing the velocity, i.e. the character freezes where it stands.
 
 That is a fine answer for "walk into this wall" and the wrong one for every named
 place an author puts on a map. Markers land *on* the thing they mark: the tavern,
-a market stall, a doorway. Measured on Village.tmx, five of the eleven places
+a market stall, a doorway. Measured on BLUNDERHAVEN.tmx, five of the eleven places
 added for the daily routines sat on wall tiles - the tavern and all four homes -
 which is exactly why nobody ever walked home at night.
 
@@ -104,7 +104,7 @@ def test_every_place_on_the_village_map_is_now_reachable() -> None:
     from settings import STEP_COST_WALL, TILE_SIZE
 
     tmx = load_pygame(os.path.join(os.path.dirname(__file__), "..", "project",
-                                   "assets", "NinjaAdventure", "maps", "Village.tmx"))
+                                   "assets", "NinjaAdventure", "maps", "BLUNDERHAVEN.tmx"))
     walls = tmx.get_layer_by_name("walls")
     grid = [[FLOOR] * walls.width for _ in range(walls.height)]
     for x, y, _sprite in walls.tiles():
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         ("snapped goal is actually reachable", test_the_snapped_goal_is_actually_reachable),
         ("hopeless goal returns None", test_a_hopeless_goal_still_returns_none),
         ("out of bounds does not raise", test_out_of_bounds_goal_does_not_raise),
-        ("every place on Village.tmx reachable", test_every_place_on_the_village_map_is_now_reachable),
+        ("every place on BLUNDERHAVEN.tmx reachable", test_every_place_on_the_village_map_is_now_reachable),
     ]
     failures = 0
     for name, func in tests:

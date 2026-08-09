@@ -121,39 +121,39 @@
   </properties>
   <image source="../../characters/Boar/SpriteSheet.png" width="32" height="16"/>
  </tile>
- <tile id="6" x="0" y="0" width="16" height="16" type="SNAKE_01">
+ <tile id="6" x="0" y="0" width="16" height="16" type="SNAKE">
   <properties>
-   <property name="model_name" value="SNAKE_01"/>
+   <property name="model_name" value="SNAKE"/>
   </properties>
   <image source="../../characters/Snake/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="21" x="0" y="0" width="16" height="16" type="SPIRIT_01">
+ <tile id="21" x="0" y="0" width="16" height="16" type="SPIRIT">
   <properties>
-   <property name="model_name" value="SPIRIT_01"/>
+   <property name="model_name" value="SPIRIT"/>
   </properties>
   <image source="../../characters/Spirit/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="22" x="0" y="0" width="16" height="16" type="SLIME_01">
+ <tile id="22" x="0" y="0" width="16" height="16" type="SLIME">
   <properties>
-   <property name="model_name" value="SLIME_01"/>
+   <property name="model_name" value="SLIME"/>
   </properties>
   <image source="../../characters/Slime/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="23" x="0" y="0" width="16" height="16" type="SPIDER_01">
+ <tile id="23" x="0" y="0" width="16" height="16" type="SPIDER">
   <properties>
-   <property name="model_name" value="SPIDER_01"/>
+   <property name="model_name" value="SPIDER"/>
   </properties>
   <image source="../../characters/SpiderRed/SpriteSheet.png" width="64" height="64"/>
  </tile>
- <tile id="24" x="0" y="0" width="16" height="16" type="CAVE_LION">
+ <tile id="24" x="0" y="0" width="16" height="16" type="CAVE_LION_SAND">
   <properties>
-   <property name="model_name" value="CAVE_LION"/>
+   <property name="model_name" value="CAVE_LION_SAND"/>
   </properties>
   <image source="../../characters/CaveLion/SpriteSheet.png" width="64" height="112"/>
  </tile>
- <tile id="25" x="0" y="0" width="16" height="16" type="CAVE_LION2">
+ <tile id="25" x="0" y="0" width="16" height="16" type="CAVE_LION_GREY">
   <properties>
-   <property name="model_name" value="CAVE_LION2"/>
+   <property name="model_name" value="CAVE_LION_GREY"/>
   </properties>
   <image source="../../characters/CaveLion2/SpriteSheet.png" width="64" height="112"/>
  </tile>

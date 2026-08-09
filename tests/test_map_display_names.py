@@ -66,7 +66,7 @@ def test_the_registry_covers_maze_levels_without_a_tmx_file() -> None:
     levels = len(WORLD.config.get("maze_configs") or {})
     assert_true(levels > 0, "maze_configs is not empty")
     for level in range(1, levels + 1):
-        assert_true(f"Maze_{level:02d}" in keys, f"Maze_{level:02d} is a map key")
+        assert_true(f"MAZE_{level:02d}" in keys, f"MAZE_{level:02d} is a map key")
     assert_true("LOST_CORK_TAVERN" in keys, "static maps are in the registry too")
 
 
@@ -78,7 +78,7 @@ def test_a_map_without_a_display_name_is_an_error() -> None:
     tak samo, jak pojawi się prawdziwa mapa dodana przez autora.
     """
     levels = len(WORLD.config.get("maze_configs") or {})
-    extra = f"Maze_{levels + 1:02d}"
+    extra = f"MAZE_{levels + 1:02d}"
     violations = check_map_display_names(_WorldWithMazeLevels(WORLD, levels + 1))
     errors = [v for v in violations if v.severity == ERROR]
     assert_eq(len(errors), len(LOCALE_LANGS), "one error per language")
@@ -90,8 +90,8 @@ def test_a_locale_entry_for_no_map_is_a_warning() -> None:
     """Wpis po przemianowanej mapie zostaje w locale i nikt go nie zauważa."""
     world = _WorldWithMazeLevels(WORLD, 0)
     warns = [v for v in check_map_display_names(world) if v.severity == WARN]
-    assert_true(len(warns) >= 2, f"stale Maze_* entries are reported: {len(warns)}")
-    assert_true(all("Maze_" in v.message for v in warns), "and they name the stale keys")
+    assert_true(len(warns) >= 2, f"stale MAZE_* entries are reported: {len(warns)}")
+    assert_true(all("MAZE_" in v.message for v in warns), "and they name the stale keys")
 
 
 ###############################################################################################################

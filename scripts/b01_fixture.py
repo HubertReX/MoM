@@ -3,7 +3,7 @@
 
 Dwa podpolecenia:
 
-    create   zbuduj grę headless, wejdź pierwszym wyjściem labiryntowym z Village
+    create   zbuduj grę headless, wejdź pierwszym wyjściem labiryntowym z mapy startowej
              (autosave slotu 0 - ta sama ścieżka co w grze) i odłóż plik do
              `.test-data/b01-fixture/save_0.mom`. Uruchamiane RAZ, na kodzie
              SPRZED refactoru (B01 krok 0).
@@ -16,7 +16,7 @@ Użycie (z katalogu repo):
     SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 scripts/b01_fixture.py create
     SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy .venv/bin/python3 scripts/b01_fixture.py check
 
-Fixture zawiera scenę labiryntu (odtwarzaną z samego seeda!) + stan Village
+Fixture zawiera scenę labiryntu (odtwarzaną z samego seeda!) + stan mapy startowej
 w pending_map_states - to najbogatszy pojedynczy save, jaki gra umie zrobić,
 więc łamie się najgłośniej, gdy refactor ruszy kontrakt save/load.
 """
@@ -44,11 +44,12 @@ DT = 1.0 / 60.0
 
 
 def _boot_scene():
+    import settings
     from game import Game
     from scene import Scene
 
     game = Game("run")
-    scene = Scene(game, "Village", "start")
+    scene = Scene(game, settings.START_MAP, settings.START_ENTRY_POINT)
     scene.enter_state()
     # kilka klatek, żeby świat się ustabilizował (grupy, kamera, rutyny)
     for _ in range(30):
@@ -91,12 +92,13 @@ def check() -> None:
     if not game.save_manager.load(0):
         sys.exit("[fixture] BŁĄD: SaveManager.load(0) zwrócił False")
 
-    from scene import Scene
+    import settings
+    from scene import Scene, map_registry
     top = game.states[-1]
     ok = (isinstance(top, Scene)
           and top.is_maze
-          and top.current_map.startswith("Maze")
-          and "Village" in (set(top.loaded_maps) | set(top.pending_map_states))
+          and map_registry.is_maze_map(game.conf, top.current_map)
+          and settings.START_MAP in (set(top.loaded_maps) | set(top.pending_map_states))
           and top.player.model.health > 0)
     if not ok:
         sys.exit(f"[fixture] BŁĄD: stan po load niezgodny (top={type(top).__name__}, "

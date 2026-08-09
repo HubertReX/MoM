@@ -59,7 +59,7 @@ LOCALE_DIR = ASSETS / "locale"
 LOCALE_LANGS = ("PL", "EN")
 # Powtórzone za `project/scene/map_registry.MAZE_MAP_PREFIX` świadomie: ten skrypt
 # nie importuje gry (patrz docstring), a `map_registry` ciągnie `settings`, czyli pygame'a.
-MAZE_MAP_PREFIX = "Maze"
+MAZE_MAP_PREFIX = "MAZE"
 
 # Szablon labiryntu. Poziom labiryntu nie ma pliku `.tmx` - powstaje w locie z tego
 # szablonu, więc jego warstwa `entry_points` jest jedynym źródłem prawdy o tym, dokąd
@@ -328,7 +328,7 @@ def _game_map_keys(world: World) -> list[str]:
 def _is_maze_key(world: World, map_key: str) -> bool:
     """Czy klucz jest poziomem labiryntu - liczone z rejestru, nie z prefiksu.
 
-    ``Maze_09`` przy czterech wierszach `maze_configs.csv` jest mapą, której nie ma,
+    ``MAZE_09`` przy czterech wierszach `maze_configs.csv` jest mapą, której nie ma,
     a nie labiryntem (to samo rozróżnienie, co `map_registry.is_maze_map`).
     """
     levels = len(world.config.get("maze_configs") or {})
@@ -720,7 +720,7 @@ def check_map_display_names(world: World) -> list[Violation]:
 def check_spawn_naming(world: World) -> list[Violation]:
     """Rule 13: nazwa obiektu w `spawn_points` = klucz modelu [+ `_NN`] (C02, D1/D2).
 
-    Dziś obok siebie stoją `BARMAN_ABSINTHRAYNER`, `Johny`, `FishRed01` i `Dog_orange`,
+    Przed C02 stały obok siebie `BARMAN_ABSINTHRAYNER`, `Johny`, `FishRed01` i `Dog_orange`,
     więc autor przy każdej nowej postaci zgaduje, która forma jest ta właściwa. Po D1
     nazwa instancji to klucz modelu, a numer dochodzi dopiero wtedy, gdy kopii na mapie
     jest więcej niż jedna (D2) - stąd drugi, łagodniejszy poziom tej reguły.

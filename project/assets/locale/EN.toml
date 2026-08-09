@@ -190,18 +190,18 @@ datetime = "D:{day} H:{hour}:{min:02d}"
 # === Map names (C02, D12/W2) ===
 # Key = map key (`.tmx` file stem or maze level).  The player never sees the key -
 # the HUD shows these strings only.  Names come from the location documents in
-# `doc/EN/Locations/` (file name = display name, alias = key).  Stage 5 of C02
-# renames the keys (`Village` -> `BLUNDERHAVEN`, `JacobsChamber` ->
-# `JACOBS_CHAMBER`, `Maze_NN` -> `MAZE_NN`) together with these entries.
+# `doc/EN/Locations/` (file name = display name, alias = key).  Renaming a map key
+# goes through `just rename-entity <old> <new>`: these entries are one of the
+# sources the script rewrites together with the `.tmx` file.
 
 [map]
-Village = "Blunderhaven"
+BLUNDERHAVEN = "Blunderhaven"
 LOST_CORK_TAVERN = "the Lost Cork Tavern"
-JacobsChamber = "Jacob's Chamber"
-Maze_01 = "the Maze - level 1"
-Maze_02 = "the Maze - level 2"
-Maze_03 = "the Maze - level 3"
-Maze_04 = "the Maze - level 4"
+JACOBS_CHAMBER = "Jacob's Chamber"
+MAZE_01 = "the Maze - level 1"
+MAZE_02 = "the Maze - level 2"
+MAZE_03 = "the Maze - level 3"
+MAZE_04 = "the Maze - level 4"
 
 # === Game state ===
 

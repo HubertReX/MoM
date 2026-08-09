@@ -37,7 +37,7 @@
                 "type": "ui_state",
                 "expect": {
                     "top_state": "Scene",
-                    "map": "Village",
+                    "map": "BLUNDERHAVEN",
                     "is_maze": false,
                     "open_panels_contains": [],
                     "player.hp_min": 1,
@@ -577,7 +577,7 @@
                 "type": "ui_state",
                 "expect": {
                     "top_state": "Scene",
-                    "map": "Village",
+                    "map": "BLUNDERHAVEN",
                     "open_panels_contains": ["DialogPanel"],
                     "dialog.npc": "HAMMER_HOAXHEART",
                     "player.hp_min": 1
@@ -776,7 +776,7 @@
                 "type": "ui_state",
                 "expect": {
                     "top_state": "Scene",
-                    "map": "Village",
+                    "map": "BLUNDERHAVEN",
                     "is_maze": false,
                     "open_panels_contains": ["DialogPanel"],
                     "dialog.npc": "BARMAN_ABSINTHRAYNER",
@@ -841,7 +841,7 @@
         ]
     },
     {
-        "name": "Night Filter On Village",
+        "name": "Night Filter On Blunderhaven",
         "slug": "night_filter_village",
         "platform": ["desktop", "web"],
         "start_hour": 20,
@@ -867,7 +867,7 @@
                 "type": "ui_state",
                 "expect": {
                     "top_state": "Scene",
-                    "map": "Village",
+                    "map": "BLUNDERHAVEN",
                     "is_maze": false,
                     "day": 1,
                     "hour_min": 20
@@ -945,7 +945,7 @@
                 "type": "ui_state",
                 "expect": {
                     "top_state": "Scene",
-                    "map": "Village",
+                    "map": "BLUNDERHAVEN",
                     "open_panels_contains": ["DialogPanel"],
                     "dialog.npc": "HAMMER_HOAXHEART"
                 }

@@ -40,7 +40,11 @@ pretty.install()
 # go through ``save_load.models.version_code`` ("0.3" -> 3, "1.3" -> 103).
 # 0.2: sentiment keys renamed to author-facing names (kind/weak/...) - older
 # saves are incompatible and rejected on load with a terminal message.
-VERSION: str = "0.3"
+# 0.4: entity keys unified (C02) - NPC and chest state is keyed by the Tiled object
+# name, and 27 of those names changed, so a 0.3 save would load "successfully" while
+# every renamed NPC, chest and monster quietly reset to its default (finding O1).
+# Refused visibly instead, which is the whole point of D9.
+VERSION: str = "0.4"
 GAME_NAME = "Misadventures of Malachi"
 LANG = "PL"
 UI_STRINGS: dict[str, dict[str, str]] = {}
@@ -242,6 +246,17 @@ def normalise_sentiment(sentiment: str) -> str:
 # po cichu wyłączyłoby walkę, śmierć i dźwięki bohatera. Porównujemy po kluczu,
 # a napis niech sobie żyje w locale.
 PLAYER_CONFIG_KEY = "Player"
+
+# Mapa, na której zaczyna się nowa gra (C02, D5). Klucz mapy siedzi w danych -
+# w nazwie pliku `.tmx`, w `to_map` sąsiedniej mapy, w `audio.toml`, w sekcji `[map]`
+# obu plików locale i w prefiksach miejsc - a `rename-entity` umie je wszystkie
+# przemianować jednym przebiegiem. Kodu przemianować nie umie i nie powinien, więc
+# jedyne miejsce, w którym nazwa mapy pada w Pythonie, jest tutaj: przy rename'ie
+# zmienia się jedna linijka zamiast ośmiu rozsypanych po panelach, fixture'ach
+# i benchmarkach.
+START_MAP = "BLUNDERHAVEN"
+#: Punkt wejścia, w którym staje gracz na `START_MAP` przy nowej grze.
+START_ENTRY_POINT = "start"
 
 TILE_SIZE = 16
 X_TILES = 80  # 100

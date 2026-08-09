@@ -9,7 +9,7 @@ characters:
 ---
 # Info
 
-==TODO== - the `JacobsChamber.tmx` map exists in the game but had no location
+==TODO== - the `JACOBS_CHAMBER.tmx` map exists in the game but had no location
 document until now (C02/D16). The file name is a **working proposal** - the
 displayed name is yours to set.
 

@@ -535,7 +535,7 @@ class Prototype:
 
         tmx = load_pygame(str(settings.MAZE_DIR / "MazeTileset_Ninja.tmx"))
         build_tileset_map_from_maze(tmx, maze, stats, f"Maze_{self.level:02}",
-                                    to_map="Village", entry_point="MazeEntry", rng=rng)
+                                    to_map=settings.START_MAP, entry_point="MazeEntry", rng=rng)
         self.tmx = tmx
         self.maze = maze
         self.stats = stats

@@ -306,7 +306,7 @@ def arrival_pos(scene: "Scene", source_map: str) -> "vec | None":
     The doorway collider is a wall, so an NPC dropped on it is stuck - A* cannot
     step off a blocked tile, so it never leaves the threshold. The walkable
     landing is the `entry_points` object beside that door: the very spot the
-    player lands on when walking through it (here `VillageHouseDoor`). Pick the
+    player lands on when walking through it (here `LOST_CORK_TAVERN_DOOR`). Pick the
     entry point nearest the exit that leads back to `source_map` - door and its
     entry point are the same threshold - and snap it onto free ground for safety.
     Falls back to snapping the doorway itself if the map has no entry points.

@@ -120,7 +120,7 @@ activity = "wander"
 
 [[routine.farmer.slot]]
 from     = "11:00"
-at       = "location:well"      # wspólna studnia, nie "swoja" - stad location:
+at       = "location:BLUNDERHAVEN:well"      # wspólna studnia, nie "swoja" - stad location:
 activity = "idle"
 
 [[routine.farmer.slot]]
@@ -145,12 +145,12 @@ activity = "sleep"
 
 [[routine.guard.slot]]
 from     = "06:00"
-at       = "route:Robin"
+at       = "route:ROBIN"
 activity = "patrol"
 
 [[routine.guard.slot]]
 from     = "18:00"
-at       = "route:Rob"
+at       = "route:ROB"
 activity = "patrol"
 
 [[routine.guard.slot]]

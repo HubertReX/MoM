@@ -837,7 +837,7 @@ class DeathScreen(Widget):
         import splash_screen
 
         self._close_state()
-        scene_mod.Scene(self.game, "Village", "start").enter_state()
+        scene_mod.Scene(self.game, settings.START_MAP, settings.START_ENTRY_POINT).enter_state()
         splash_screen.SplashScreen(self.game, _("save.game_over")).enter_state()
 
     def _on_load_slot(self, slot_idx: int) -> None:
@@ -943,7 +943,7 @@ class DeadState(_State):
         import splash_screen
 
         self.exit_state()
-        scene_mod.Scene(self.game, "Village", "start").enter_state()
+        scene_mod.Scene(self.game, settings.START_MAP, settings.START_ENTRY_POINT).enter_state()
         splash_screen.SplashScreen(self.game, _("save.game_over")).enter_state()
 
     def _on_load_slot(self, slot_idx: int) -> None:

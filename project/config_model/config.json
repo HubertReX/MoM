@@ -40,10 +40,10 @@
             "name_EN": "Johny",
             "name_PL": "Jaś",
             "has_dialog": false,
-            "home": "house_johny",
-            "work": "market_stall_1",
+            "home": "BLUNDERHAVEN:house_johny",
+            "work": "BLUNDERHAVEN:market_stall_1",
             "social": "LOST_CORK_TAVERN:tables",
-            "hobby": "pier",
+            "hobby": "BLUNDERHAVEN:pier",
             "routine": "townsfolk"
         },
         "FRED": {
@@ -74,10 +74,10 @@
             "name_EN": "Bart",
             "name_PL": "Bartuś",
             "has_dialog": false,
-            "home": "house_bart",
-            "work": "market_stall_2",
+            "home": "BLUNDERHAVEN:house_bart",
+            "work": "BLUNDERHAVEN:market_stall_2",
             "social": "LOST_CORK_TAVERN:tables",
-            "hobby": "well",
+            "hobby": "BLUNDERHAVEN:well",
             "routine": "townsfolk"
         },
         "ROB": {
@@ -266,7 +266,7 @@
             "name_PL": "Dzik",
             "has_dialog": false
         },
-        "SNAKE_01": {
+        "SNAKE": {
             "sprite": "Snake",
             "race": "monster",
             "attitude": "enemy",
@@ -281,7 +281,7 @@
             "name_PL": "Wąż",
             "has_dialog": false
         },
-        "SPIRIT_01": {
+        "SPIRIT": {
             "sprite": "Spirit",
             "race": "monster",
             "attitude": "enemy",
@@ -289,7 +289,7 @@
             "name_PL": "Duszek",
             "has_dialog": false
         },
-        "SLIME_01": {
+        "SLIME": {
             "sprite": "Slime",
             "race": "monster",
             "attitude": "enemy",
@@ -299,7 +299,7 @@
             "name_PL": "Śluzak",
             "has_dialog": false
         },
-        "SPIDER_01": {
+        "SPIDER": {
             "sprite": "SpiderRed",
             "race": "monster",
             "attitude": "enemy",
@@ -310,7 +310,7 @@
             "name_PL": "Pająk",
             "has_dialog": false
         },
-        "CAVE_LION": {
+        "CAVE_LION_SAND": {
             "sprite": "CaveLion",
             "race": "monster",
             "attitude": "enemy",
@@ -321,7 +321,7 @@
             "name_PL": "Piaskowy lew jaskiniowy",
             "has_dialog": false
         },
-        "CAVE_LION2": {
+        "CAVE_LION_GREY": {
             "sprite": "CaveLion2",
             "race": "monster",
             "attitude": "enemy",
@@ -372,10 +372,10 @@
             "name_PL": "Kowal Kłamca",
             "has_dialog": true,
             "friendly": 0.3,
-            "home": "house_smith",
-            "work": "smithy",
+            "home": "BLUNDERHAVEN:house_smith",
+            "work": "BLUNDERHAVEN:smithy",
             "social": "LOST_CORK_TAVERN:tables",
-            "hobby": "shrine",
+            "hobby": "BLUNDERHAVEN:shrine",
             "routine": "townsfolk"
         },
         "BARMAN_ABSINTHRAYNER": {
@@ -398,8 +398,8 @@
             "friendly": 0.6,
             "home": "LOST_CORK_TAVERN:badroom",
             "work": "LOST_CORK_TAVERN:bar",
-            "social": "well",
-            "hobby": "shrine",
+            "social": "BLUNDERHAVEN:well",
+            "hobby": "BLUNDERHAVEN:shrine",
             "routine": "barman"
         },
         "CLAPBACK_SWORD": {
@@ -878,9 +878,9 @@
     "maze_configs": {
         "1": {
             "monsters_list": [
-                "SPIRIT_01"
+                "SPIRIT"
             ],
-            "boss_monster": "CAVE_LION",
+            "boss_monster": "CAVE_LION_SAND",
             "monsters_count": 4,
             "small_chest_count": 2,
             "small_chest_template": "MAZE_01_SMALL_CHEST",
@@ -890,10 +890,10 @@
         },
         "2": {
             "monsters_list": [
-                "SPIRIT_01",
-                "SLIME_01"
+                "SPIRIT",
+                "SLIME"
             ],
-            "boss_monster": "CAVE_LION2",
+            "boss_monster": "CAVE_LION_GREY",
             "monsters_count": 5,
             "small_chest_count": 3,
             "small_chest_template": "MAZE_02_SMALL_CHEST",
@@ -903,9 +903,9 @@
         },
         "3": {
             "monsters_list": [
-                "SPIRIT_01",
-                "SLIME_01",
-                "SPIDER_01"
+                "SPIRIT",
+                "SLIME",
+                "SPIDER"
             ],
             "boss_monster": "LION_YELLOW",
             "monsters_count": 6,
@@ -917,10 +917,10 @@
         },
         "4": {
             "monsters_list": [
-                "SPIRIT_01",
-                "SLIME_01",
-                "SPIDER_01",
-                "SNAKE_01"
+                "SPIRIT",
+                "SLIME",
+                "SPIDER",
+                "SNAKE"
             ],
             "boss_monster": "FLAM",
             "monsters_count": 7,

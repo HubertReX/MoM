@@ -81,7 +81,7 @@ Vision (ss-review) jest niedeterministyczne, a większość faktów, które test
 sprawdzić, gra po prostu ZNA. `debug_ui_state` zrzuca je do JSON-a, a runner porównuje
 je asercją `ui_state` (patrz `tests/automate_display_test.py`). Zawartość zrzutu:
 
-    {"top_state": "Scene", "map": "Village", "entry_point": "start", "is_maze": false,
+    {"top_state": "Scene", "map": "BLUNDERHAVEN", "entry_point": "start", "is_maze": false,
      "day": 1, "hour": 9, "minute": 45,
      "open_panels": ["DialogPanel"],
      "player": {"hp": 80, "max_hp": 80, "money": 20, "pos": [512, 384],

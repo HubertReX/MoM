@@ -316,7 +316,7 @@ class Game:
             self.log(f"[agent_ctrl] external control ENABLED ({'web' if IS_WEB else 'desktop'})")
 
         # import scene
-        # start_state = scene.Scene(self, "Village", "start")
+        # start_state = scene.Scene(self, settings.START_MAP, settings.START_ENTRY_POINT)
         # start_state.enter_state()
 
         if USE_SOD:

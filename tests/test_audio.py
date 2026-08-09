@@ -173,7 +173,7 @@ def test_manifest_parses_into_music_and_sfx() -> None:
     # `[music.settings]` is a sub-table of `[music]`; it must not be mistaken for a map
     assert_true(not manager.has_music("settings"), "[music.settings] must not become a music key")
     assert_true(manager.has_music("main_menu"), "main_menu is in the manifest")
-    assert_true(manager.has_music("Village"), "Village is in the manifest")
+    assert_true(manager.has_music("BLUNDERHAVEN"), "BLUNDERHAVEN is in the manifest")
     assert_eq(manager._music_file_volume, 0.6, "[music.settings].volume must be read")
     assert_eq(manager._fade_ms, 500, "[music.settings].fade_ms must be read")
 
@@ -193,7 +193,7 @@ def test_a_missing_manifest_disables_audio_without_raising() -> None:
     assert_true(any("manifest" in line for line in log.lines), "the reason must be logged once")
     # and every call is a no-op
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.play_sfx("coins")
         manager.stop_music()
         manager.set_volumes(1.0, 1.0, 1.0)
@@ -209,7 +209,7 @@ def test_a_dead_mixer_makes_every_call_a_no_op() -> None:
     assert_true(not manager.available, "mixer.init() raising => available is False")
     assert_true(any("mikser" in line for line in log.lines), "the reason must be logged once")
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.play_sfx("coins")
         manager.stop_music(200)
         manager.set_volumes(0.5, 0.5, 0.5)
@@ -239,9 +239,9 @@ def test_a_mixer_that_dies_mid_game_silences_the_rest_of_the_session() -> None:
 def test_the_same_key_twice_does_not_reload_the_track() -> None:
     manager, mixer, _log = _build()
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         first_loads = list(mixer.music.loaded)
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
     assert_eq(mixer.music.loaded, first_loads, "re-entering the same map must not reload")
     assert_eq(mixer.music.plays, 1, "re-entering the same map must not restart the track")
 
@@ -256,7 +256,7 @@ def test_a_different_key_fades_the_new_track_in() -> None:
     """
     manager, mixer, _log = _build()
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.play_music("LOST_CORK_TAVERN")
     assert_eq(len(mixer.music.loaded), 2, "a map change must load the new track")
     assert_eq(mixer.music.fadeouts, 0, "a map change must NOT block on a fadeout")
@@ -268,7 +268,7 @@ def test_a_different_key_fades_the_new_track_in() -> None:
 def test_a_map_without_an_entry_is_silence_not_an_error() -> None:
     manager, mixer, _log = _build()
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.play_music("NoSuchMap")
     assert_eq(manager.current_music_key, None, "an unmapped map means silence")
     assert_eq(len(mixer.music.loaded), 1, "no second track may be loaded")
@@ -278,7 +278,7 @@ def test_music_volume_multiplies_master_channel_and_file() -> None:
     manager, mixer, _log = _build()
     with _WithMixer(mixer):
         manager.set_volumes(0.5, 0.5, 1.0)
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
     # 0.5 (master) * 0.5 (music) * 0.6 ([music.settings].volume)
     assert_eq(round(mixer.music.volume, 4), 0.15, "effective music volume")
 
@@ -286,7 +286,7 @@ def test_music_volume_multiplies_master_channel_and_file() -> None:
 def test_muting_does_not_restart_the_track() -> None:
     manager, mixer, _log = _build()
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.set_muted(True)
         muted_volume = mixer.music.volume
         manager.set_muted(False)
@@ -351,18 +351,18 @@ def test_before_the_first_gesture_nothing_reaches_the_mixer() -> None:
     assert_true(manager.available, "the mixer is up - it is only the browser that is not ready")
     assert_true(not manager.unlocked, "web starts locked")
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.play_sfx("coins")
     assert_eq(mixer.music.plays, 0, "a play() before the gesture is what raises NotAllowedError")
     assert_eq(mixer.music.loaded, [], "not even a load()")
     assert_eq(len(mixer.sounds), 0, "SFX are dropped, not queued")
-    assert_eq(manager.current_music_key, "Village", "but the pending track is remembered")
+    assert_eq(manager.current_music_key, "BLUNDERHAVEN", "but the pending track is remembered")
 
 
 def test_the_first_gesture_starts_the_pending_track() -> None:
     manager, mixer, _log = _build(needs_gesture=True)
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.unlock()
     assert_true(manager.unlocked, "unlock() opens the gate")
     assert_eq(mixer.music.plays, 1, "the remembered track starts on the first gesture")
@@ -372,7 +372,7 @@ def test_the_first_gesture_starts_the_pending_track() -> None:
 def test_unlocking_twice_does_not_restart_the_track() -> None:
     manager, mixer, _log = _build(needs_gesture=True)
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.unlock()
         manager.unlock()
     assert_eq(mixer.music.plays, 1, "every later keypress must not restart the music")
@@ -391,7 +391,7 @@ def test_a_synthetic_event_does_not_unlock_when_the_browser_says_no() -> None:
     activated = [False]
     manager, mixer, _log = _build(needs_gesture=True, gesture_check=lambda: activated[0])
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
         manager.unlock()
         assert_true(not manager.unlocked, "no browser activation => stay locked")
         assert_eq(mixer.music.plays, 0, "and nothing may reach the mixer")
@@ -406,7 +406,7 @@ def test_desktop_starts_unlocked() -> None:
     manager, mixer, _log = _build()
     assert_true(manager.unlocked, "desktop has no autoplay policy to satisfy")
     with _WithMixer(mixer):
-        manager.play_music("Village")
+        manager.play_music("BLUNDERHAVEN")
     assert_eq(mixer.music.plays, 1, "and plays straight away")
 
 
@@ -418,7 +418,7 @@ def test_the_facade_is_a_no_op_before_init() -> None:
     audio_mod.shutdown()
     assert_true(not audio_mod.available(), "no manager => not available")
     # none of these may raise
-    audio_mod.play_music("Village")
+    audio_mod.play_music("BLUNDERHAVEN")
     audio_mod.play_sfx("coins")
     audio_mod.stop_music()
     audio_mod.set_volumes(1.0, 1.0, 1.0)
@@ -435,7 +435,7 @@ def test_init_publishes_the_manager_to_the_facade() -> None:
         manager = audio_mod.init(MANIFEST, MUSIC_DIR, SFX_DIR, log=_Silence())
         assert_eq(audio_mod.manager(), manager, "init() must publish the manager")
         assert_true(audio_mod.available(), "and report it as available")
-        audio_mod.play_music("Village")
+        audio_mod.play_music("BLUNDERHAVEN")
         assert_eq(mixer.music.plays, 1, "the facade must reach the manager")
     finally:
         pygame.mixer = real_mixer  # type: ignore[assignment]

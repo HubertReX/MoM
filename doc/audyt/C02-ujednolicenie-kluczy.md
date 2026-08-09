@@ -4,10 +4,10 @@ Priorytet: **P3** (Faza 4). Rozmiar: M → **L** (po uwagach autora z rev. 2). Z
 korzysta z walidatora z [C01](C01-validate-world.md) i z bramki zgodności zapisu z
 [B02](B02-polityka-wersji-save.md).
 
-Status: **rev. 4 - D1-D19 zamknięte. Etapy 1-4 zrobione** (2026-08-09). D13 rozstrzygnięte
-inaczej niż w rev. 3: rejestr map jest wyliczany, `maps.csv` nie powstaje. Następny: etap 5
-(rename'y). **Uwaga: `just validate-world` jest teraz czerwony (39 błędów) - to zamierzone
-przez etap 4 i znika w etapie 5, ale do tego czasu blokuje CI oraz recepty `just import-*`.**
+Status: **rev. 5 - D1-D19 zamknięte, etapy 1-5 zrobione ✅ 2026-08-09**. D13 rozstrzygnięte
+inaczej niż w rev. 3: rejestr map jest wyliczany, `maps.csv` nie powstaje. `just validate-world`
+znów świeci na zielono (0 błędów), więc CI i recepty `just import-*` są odblokowane. Zapis gry
+podbity do wersji **0.4** - zapisy z 0.3 są jawnie odrzucane (D9/W4).
 
 ## Wymagania autora (wiążące, ustalone 2026-08-08)
 
@@ -485,47 +485,111 @@ błędem po zapisaniu plików (walidator niczego nie psuje - `import_entities.py
 błędów w pliku, ale to trzeci rejestr stanu przejściowego dla jednego commita - taniej jest
 zrobić etap 5.
 
-## Etap 5: rename'y (D1, D2, D3, D4, D5, D9, D10, D17, D18)
+## Etap 5: rename'y (D1, D2, D3, D4, D5, D9, D10, D17, D18) - ZROBIONE ✅ 2026-08-09
 
 Najpierw narzędzie (D10): `scripts/rename_entity.py` + recepta `just rename-entity`,
-zmieniające **wszystkie** źródła w jednym przebiegu (`.tmx`, `.csv`, `.toml`, `config.json`,
-`locale/*.toml`) i kończące się wywołaniem `validate_world`. Razem z nim `tests/test_rename_entity.py`
-(D17) - inaczej narzędzie zgnije dokładnie tak, jak przewiduje W12.
+zmieniające **wszystkie** źródła w jednym przebiegu (`.tmx`, `.tsx`, `.csv`, `.toml`,
+`config.json`, `locale/*.toml`) i kończące się wywołaniem `validate_world`. Razem z nim
+`tests/test_rename_entity.py` (D17, 15 testów) - inaczej narzędzie zgnije dokładnie tak,
+jak przewiduje W12.
 
-Zakres (pełna tabela w dokumencie HTML):
+Wykonany zakres:
 
-- 27 obiektów `spawn_points` (20 zwierząt/potworów + 5 statystów humanoidalnych; 6 postaci
-  z dialogami zostaje nietkniętych). **Numer instancji idzie 1:1 ze starym numerem**
+- **27 obiektów `spawn_points`** (22 zwierzęta/potwory + 5 statystów humanoidalnych; 6 postaci
+  z dialogami nietkniętych). **Numer instancji poszedł 1:1 ze starym numerem**
   (`FishRed01` → `FISH_RED_01`) - rev. 2 odwracała kolejność, to była pomyłka (W13)
-- 4 klucze modeli tracą sufiks `_01` (D18): `SNAKE`, `SPIRIT`, `SLIME`, `SPIDER` - w
-  `characters.csv`, `config.json`, kaflach tilesetu i `maze_configs.csv`. Nazwy instancji
-  w labiryncie poprawiają się same (`MAZE_01_SNAKE_004` zamiast `Maze_01_SNAKE_01_004`)
-- krzywe `waypoints`: `Rob`, `Robin`, `Marry`, `Cat01` idą za nazwami instancji;
-  `Bart_BCKP`/`Johny_BCKP` wracają do właściwych nazw + `enabled=false`
+- **6 kluczy modeli**: 4 tracą sufiks `_01` (D18) - `SNAKE`, `SPIRIT`, `SLIME`, `SPIDER` -
+  a dwa lwy dostają nazwy opisowe (D19): `CAVE_LION_SAND`, `CAVE_LION_GREY`. Nazwy instancji
+  w labiryncie poprawiły się same: headless daje dziś `MAZE_01_SPIRIT_001`, nie `Maze_01_SPIRIT_01_001`
+- **krzywe `waypoints`**: `Rob`, `Robin`, `Marry`, `Cat01` poszły za nazwami instancji;
+  `Bart_BCKP`/`Johny_BCKP` wróciły do właściwych nazw + `enabled=false`
 - `routines.toml`: `route:Rob` → `route:ROB`, `route:Robin` → `route:ROBIN`
-- 10 komórek miejsc w `characters.csv` + 2 cele `location:` dostają prefiks klucza mapy
-  (`BLUNDERHAVEN:well`); 6 komórek z prefiksem `LOST_CORK_TAVERN:` jest już poprawnych
-- mapy: `Village` → `BLUNDERHAVEN`, `JacobsChamber` → `JACOBS_CHAMBER` wraz ze wszystkimi
-  odwołaniami (nazwa pliku, `maps.csv`, audio, prefiksy miejsc, `interactions`,
-  `destination_entry_point`, punkty wejścia)
-- **`"Village"` jest zapisane na sztywno w kodzie i skryptach** - `save_load.py` (2×),
-  `main_menu.py`, `save_fixtures.py`, `b01_fixture.py`, `bench_scene.py`, `FoW-prototype.py`,
-  `test_pathfinding_goal.py`. Przy okazji wyciągnąć to do stałej `settings.START_MAP`
-- podbicie wersji zapisu (D9/W4), żeby stare zapisy zostały jawnie odrzucone
+- **11 komórek miejsc** w `characters.csv` (i te same pola w `config.json`) + 1 cel
+  `location:` dostały prefiks klucza mapy (`BLUNDERHAVEN:well`); 6 komórek z prefiksem
+  `LOST_CORK_TAVERN:` było już poprawnych
+- **6 kluczy map**: `Village` → `BLUNDERHAVEN`, `JacobsChamber` → `JACOBS_CHAMBER`,
+  `Maze_01`…`Maze_04` → `MAZE_01`…`MAZE_04` wraz ze wszystkimi odwołaniami (nazwa pliku,
+  audio, locale, prefiksy miejsc, `interactions`, `to_map`, `destination_entry_point`)
+- **2 punkty wejścia**: `VillageHouseDoor` → `LOST_CORK_TAVERN_DOOR`,
+  `JacobsChamberDoor` → `JACOBS_CHAMBER_DOOR`
+- `"Village"` zniknęło z kodu: nowe stałe `settings.START_MAP` i `settings.START_ENTRY_POINT`
+- podbicie wersji zapisu **0.3 → 0.4** (D9/W4) - `save_compatibility("0.3")` zwraca dziś
+  `too_old`, więc stary zapis jest widocznie odrzucony, a nie po cichu okrojony
+
+### Czym wykonanie różni się od planu
+
+- **Rename to nie to samo co dodanie prefiksu.** Prefiksy miejsc (D3) poszły osobną,
+  jednorazową migracją, a nie przez `rename-entity`: `well` → `BLUNDERHAVEN:well` zmienia
+  *kształt odwołania*, a nie nazwę encji. Puszczone przez narzędzie przemianowałoby przy
+  okazji obiekt `well` w warstwie `places` na `BLUNDERHAVEN:well`, czyli zepsułoby to,
+  co miało naprawić.
+- **Skrypt musi znać rodzaj klucza, nie tylko nazwę - i to jest jego cała wartość.** Plan
+  mówił „zmienia wszystkie źródła w jednym przebiegu", co brzmi jak podmiana tekstu.
+  Podmiana tekstu skasowałaby dane: `Horse`, `Marry`, `Rob`, `Robin`, `Bart` i `Johny` to
+  **jednocześnie** nazwy instancji, napisy `name_EN` i (dla zwierząt) nazwy folderów
+  sprite'ów. `rename_entity.py` wie więc, w *którym polu* którego pliku żyje dany rodzaj
+  klucza - `SOURCES` to lista uchwytów pól, nie globów do `sed`-owania. Rodzajów jest sześć:
+  `character`, `map`, `instance`, `chest`, `entry_point`, `place`, a rodzaj jest domyślnie
+  **wykrywany** z tego, gdzie nazwa dziś stoi, więc CLI zostaje dwuargumentowe jak w D10.
+- **Wyjście `Maze` przemianowane na `MAZE_01`** - to jedyne ostrzeżenie, jakie etap 4
+  zostawił po sobie w regule 14 („nazwa obiektu ma być kluczem mapy docelowej").
+- **Punkty wejścia `Door` i `NextToMaze` zostają.** Tabela zmian ich nie wymienia, a nazwa
+  `Door` powtarza się na dwóch mapach legalnie - punkt wejścia jest adresowany parą
+  (mapa docelowa, nazwa), nie samą nazwą. Do przemyślenia przy okazji kolejnej mapy.
+- **`enabled=false` wymagało pięciu linijek w ładowarce.** D4 mówi „krzywa wyłączona
+  własnością", ale `map_loader` czytał warstwę `waypoints` bez wyjątków. Bez tej zmiany
+  rename `Bart_BCKP` → `BART` **przywróciłby** Bartowi starą trasę: krzywa nazywa się teraz
+  tak samo jak instancja, więc byłaby do niej podpięta automatycznie.
+- **Zostały resztki po etapie 1**: obiekty `Dog_orange`/`Dog_purple` miały jeszcze atrybut
+  `type` ze starą nazwą (własność `model_name` zniknęła w etapie 1, atrybut nie). Martwy,
+  ale po rename'ie wyglądałby na sprzeczność z nazwą obiektu - skasowany.
+- **`b01_fixture.py` miał `"Village"` w kodzie, nie w komentarzu**, i do tego
+  `current_map.startswith("Maze")`. Oba przepięte na rejestr map i `settings.START_MAP`.
+- **`save_fixtures.py` dostał własną stałą `START_MAP`**, nie import z `settings` - ten
+  skrypt świadomie działa bez pygame'a (tak samo jak `CURRENT_VERSION`). Rozjazd pilnuje
+  nowa asercja w `tests/test_save_load_models.py`.
+- **`tests/scenarios.json`**: 5 asercji `"map": "Village"` i nazwa scenariusza
+  „Night Filter On Village" → „Night Filter On Blunderhaven".
+- **Ostrzeżeń jest 9, nie 5.** Cztery nowe to nieużywane utwory z O4, które W5 każe
+  zostawić na mapy Aktu 1 - reguła 18 ma je pokazywać i pokazuje.
+
+### Wynik
+
+- `just validate-world` - **0 błędów, 9 ostrzeżeń** (przed etapem: 39 / 10). CI i recepty
+  `just import-*` odblokowane
+- `just test-unit` - **546/546 w 39 plikach** (15 nowych w `test_rename_entity.py`);
+  `mypy` - czysty (107 plików); `validate_locale` - OK (227 kluczy)
+- `just test-smoke` - 6/6 scenariuszy, ss-review PASS
+- headless przez prawdziwą `Scene`: pełny obieg **BLUNDERHAVEN → LOST_CORK_TAVERN →
+  BLUNDERHAVEN → JACOBS_CHAMBER → BLUNDERHAVEN → MAZE_01 → MAZE_02 → MAZE_01 →
+  BLUNDERHAVEN**; HUD po drodze pokazuje „Gafowo Kolonia", „Tawerna Brakująca klepka",
+  „Komnata Jakuba", „Labirynt - poziom 1"; potwory nazywają się `MAZE_01_SPIRIT_001`
+- headless rozwiązanie wszystkich kroków rutyn: `BART` → `market_stall_2`,
+  `JOHNY` → `market_stall_1`, obaj na lunch do `LOST_CORK_TAVERN:tables`,
+  barman → `LOST_CORK_TAVERN:bar`. Rutyny przeżyły rename
+- `scene.waypoints` na `BLUNDERHAVEN` to dziś `CAT_01`, `MARRY`, `ROB`, `ROBIN`, `intro` -
+  krzywe `BART` i `JOHNY` leżą na mapie wyłączone, zgodnie z D4
+
+**Do weryfikacji u autora:** nazwy lokacji na HUD-zie po przejściu przez wszystkie drzwi,
+muzyka w wiosce i w tawernie po przemianowaniu kluczy `[music]`, oraz **jawna odmowa
+wczytania starego zapisu** (slot z 0.3 ma być wyszarzony z powodem, nie wczytany).
 
 ## Kryteria akceptacji
 
-- `just validate-world` - 0 błędów, ostrzeżenia tylko znane (dziś 5)
-- `just test-unit` - komplet zielony (dziś 507 testów w 37 plikach) + nowy `test_rename_entity.py`
-- scenariusz agentowy z przewinięciem doby: `BART` i `JOHNY` docierają do `market_stall_*`,
-  barman do `bar` (rutyny przeżyły rename)
-- nowy zapis wczytuje się w komplecie; **stary jest widocznie odrzucony**, nie po cichu okrojony
-- `just test-smoke` przechodzi (złota zasada dual-target)
-- **HUD nigdy nie pokazuje klucza** - nazwa przyjazna w PL i EN, zmiana języka działa w locie
-  (**weryfikacja u autora**)
+- ✅ `just validate-world` - 0 błędów, ostrzeżenia tylko znane (5 zastanych + 4 utwory z W5)
+- ✅ `just test-unit` - komplet zielony (546 testów w 39 plikach) + nowy `test_rename_entity.py`
+- ✅ przewinięcie doby: `BART` i `JOHNY` docierają do `market_stall_*`, barman do
+  `LOST_CORK_TAVERN:bar` (rutyny przeżyły rename) - sprawdzone headless na prawdziwej `Scene`
+- ✅ nowy zapis wczytuje się w komplecie; **stary jest widocznie odrzucony**
+  (`save_compatibility("0.3") == too_old`), nie po cichu okrojony
+- ✅ `just test-smoke` przechodzi (złota zasada dual-target)
+- ✅ **HUD nigdy nie pokazuje klucza** - nazwa przyjazna w PL i EN, zmiana języka działa
+  w locie (**weryfikacja u autora**)
 - muzyka w tawernie gra po przemianowaniu map - **weryfikacja u autora**
-- labirynt generuje się po przeprowadzce tilesetów i po kasacie własności - **weryfikacja u autora**
-- ściąga „gdzie używam jakiego klucza" trafia do `project/AGENTS.md`
+- ✅ labirynt generuje się po przeprowadzce tilesetów i po kasacie własności (headless
+  MAZE_01 → MAZE_02 → MAZE_01) - **weryfikacja u autora**
+- ✅ ściąga „gdzie używam jakiego klucza" trafiła do `project/AGENTS.md` (sekcja „Klucz encji
+  vs nazwa wyświetlana" → „Ściąga: gdzie używam jakiego klucza" + „Zmiana nazwy encji")
 
 ## Pułapki
 
@@ -553,6 +617,9 @@ Zakres (pełna tabela w dokumencie HTML):
 
 ## Po zakończeniu
 
-- ściąga do `project/AGENTS.md` (sekcja o kluczach encji) i do dokumentacji świata
-- rozdział 5 raportu audytu (mapa przepływu encji) - aktualizacja konwencji
-- odhaczenie C02 w [audyt.md](audyt.md)
+- ✅ ściąga w `project/AGENTS.md` - „Ściąga: gdzie używam jakiego klucza" (nowa postać,
+  nowa mapa, nowe miejsce) plus „Zmiana nazwy encji: `just rename-entity`"
+- ✅ odhaczenie C02 w [audyt.md](audyt.md)
+- rozdział 5 raportu audytu (mapa przepływu encji) - aktualizacja konwencji **zostaje
+  do zrobienia**: raport `audyt-architektury-2026-07-25.html` opisuje stan sprzed C02
+  i jest dokumentem z datą, więc jego przepisanie jest osobną decyzją autora

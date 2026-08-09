@@ -247,7 +247,7 @@ def current_slot(routine: Routine, minutes_of_day: int, jitter: int = 0) -> Slot
 
 
 def split_map(value: str, origin_map: str) -> tuple[str, str]:
-    """``"VillageHouse:bar"`` -> ``("VillageHouse", "bar")``; ``"bar"`` -> ``(origin_map, "bar")``.
+    """``"LOST_CORK_TAVERN:bar"`` -> ``("LOST_CORK_TAVERN", "bar")``; ``"bar"`` -> ``(origin_map, "bar")``.
 
     The grammar of a destination is ``[<map>:]<name>``. A bare name means "on this
     character's own map", which is what keeps every routine written before

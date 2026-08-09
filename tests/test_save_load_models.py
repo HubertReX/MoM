@@ -38,6 +38,7 @@ from save_load.models import (
 )
 import save_load.models as models_mod
 from enums import SaveCompatEnum
+import settings
 from settings import VERSION
 
 
@@ -544,6 +545,9 @@ def test_fixture_version_matches_settings() -> None:
     import save_fixtures
 
     assert_eq(VERSION, save_fixtures.CURRENT_VERSION, "fixture version")
+    # Ta sama klasa rozjazdu, tylko o mapę startową (C02, D5): fixture stawiający
+    # gracza na nieistniejącej mapie wczytałby się i wywalił ładowarkę.
+    assert_eq(settings.START_MAP, save_fixtures.START_MAP, "fixture start map")
     assert_eq(SaveCompatEnum.ok,
               save_compatibility(save_fixtures.minimal_save_dict(1)["save_data"]["metadata"]["version"]),
               "minimal fixture must be loadable")

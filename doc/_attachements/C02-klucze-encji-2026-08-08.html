@@ -141,7 +141,7 @@
 <div class="wrap">
 
 <div class="topbar">
-  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 4 po uwagach autora (W6-W13) · status: <strong>D1-D19 rozstrzygnięte · etapy 1-4 ✅ 2026-08-09 · w toku: etap 5 (rename'y)</strong></p>
+  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 5 po uwagach autora (W6-W13) · status: <strong>D1-D19 rozstrzygnięte · etapy 1-5 ✅ 2026-08-09 · C02 zamknięte</strong></p>
   <button id="themeToggle" title="Przełącz motyw">🌗 Motyw</button>
 </div>
 
@@ -1184,14 +1184,13 @@ mieć swój <code>bar</code>. Prefiks mapy to rozstrzyga, dlatego jest obowiązk
   <tbody>
     <tr><td>1</td><td>Obsidian: <code>doc/EN/Locations/*.md</code> + <code>doc/PL/Lokalizacje/*.md</code></td><td>para plików z szablonu, frontmatter <code>aliases</code> = klucz mapy</td><td><code>BLUNDERHAVEN</code> w „Blunderhaven.md" i „Gafowo Kolonia.md"</td></tr>
     <tr><td>2</td><td>plik <code>maps/&lt;KLUCZ&gt;.tmx</code></td><td>klucz mapy wielkimi - nazwa pliku JEST kluczem</td><td><code>LOST_CORK_TAVERN.tmx</code></td></tr>
-    <tr><td>3</td><td><code>config_model/maps.csv</code></td><td>wiersz <code>key;kind</code> - <code>static</code> albo <code>maze</code> (D13)</td><td><code>LOST_CORK_TAVERN;static</code></td></tr>
-    <tr><td>4</td><td>mapa źródłowa, warstwa <code>interactions</code></td><td>obiekt o nazwie klucza mapy docelowej + własność <code>destination_entry_point</code></td><td><code>LOST_CORK_TAVERN</code>, <code>destination_entry_point=LOST_CORK_TAVERN_DOOR</code></td></tr>
-    <tr><td>5</td><td>mapa docelowa, warstwa <code>entry_points</code></td><td>obiekt o nazwie z kroku 2 + zawsze <code>start</code></td><td><code>LOST_CORK_TAVERN_DOOR</code>, <code>start</code></td></tr>
-    <tr><td>6</td><td><code>audio.toml</code>, sekcja <code>[music]</code></td><td>klucz = klucz mapy (brak wpisu = cisza, po D7 walidator ostrzeże)</td><td><code>LOST_CORK_TAVERN = "…ogg"</code></td></tr>
-    <tr><td>7</td><td><code>locale/PL.toml</code> i <code>EN.toml</code>, sekcja <code>[map]</code></td><td><strong>nazwa dla gracza</strong> - bez niej HUD pokaże klucz (D12)</td><td><code>LOST_CORK_TAVERN = "Tawerna Brakująca klepka"</code></td></tr>
+    <tr><td>3</td><td>mapa źródłowa, warstwa <code>interactions</code></td><td>obiekt o nazwie klucza mapy docelowej + własność <code>destination_entry_point</code></td><td><code>LOST_CORK_TAVERN</code>, <code>destination_entry_point=LOST_CORK_TAVERN_DOOR</code></td></tr>
+    <tr><td>4</td><td>mapa docelowa, warstwa <code>entry_points</code></td><td>obiekt o nazwie z kroku 2 + zawsze <code>start</code></td><td><code>LOST_CORK_TAVERN_DOOR</code>, <code>start</code></td></tr>
+    <tr><td>5</td><td><code>audio.toml</code>, sekcja <code>[music]</code></td><td>klucz = klucz mapy (brak wpisu = cisza, po D7 walidator ostrzeże)</td><td><code>LOST_CORK_TAVERN = "…ogg"</code></td></tr>
+    <tr><td>6</td><td><code>locale/PL.toml</code> i <code>EN.toml</code>, sekcja <code>[map]</code></td><td><strong>nazwa dla gracza</strong> - bez niej HUD pokaże klucz (D12)</td><td><code>LOST_CORK_TAVERN = "Tawerna Brakująca klepka"</code></td></tr>
   </tbody>
 </table></div>
-<p class="prose" style="margin-top:var(--s3)">Krok 7 to nowość z W2 i najłatwiejszy do zapomnienia -
+<p class="prose" style="margin-top:var(--s3)">Krok 6 to nowość z W2 i najłatwiejszy do zapomnienia -
 dlatego dostaje regułę walidatora na poziomie ERROR, a nie ostrzeżenie. Krok 1 jest pierwszy nie przez
 formalność: nazwa lokacji powstaje w Obsidian, a mapa dostaje jej alias jako klucz - odwrotna kolejność
 to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do dziś (W7).</p>
@@ -1211,7 +1210,7 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
   <li><strong>Czy mapa ma nazwę wyświetlaną w PL i EN</strong> - <span class="badge ok">✅ reguła 12, 2026-08-09 (D12)</span></li>
   <li>Czy <code>model_name</code> w tilesecie jest kluczem istniejącej postaci - <span class="badge ok">✅ reguła 16, 2026-08-09 (D14)</span></li>
   <li>Czy mapa jest w rejestrze <code>scene/map_registry.py</code> - <span class="badge ok">✅ reguła 17, 2026-08-09 (D13)</span></li>
-  <li>Czy <code>rename_entity.py</code> zna wszystkie pliki z nazwami encji - <span class="badge info">nowy test na CI (D17)</span></li>
+  <li>Czy <code>rename_entity.py</code> zna wszystkie pliki z nazwami encji - <span class="badge ok">✅ <code>tests/test_rename_entity.py</code>, 2026-08-09 (D17)</span></li>
 </ul>
 <a class="backlink" href="#toc">↑ Spis treści</a>
 
@@ -1272,13 +1271,23 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
       <li><code>tests/test_validate_world_rules.py</code> (24 testy) - przechodzi mimo czerwonego świata</li>
     </ul></div>
   <div class="card"><h4>Etap 5 - rename'y</h4>
-    <p style="margin:0 0 var(--s2)"><span class="badge warn">tu giną stare zapisy</span></p>
+    <p style="margin:0 0 var(--s2)"><span class="badge ok">✅ zrobione 2026-08-09</span> <span class="badge warn">tu zginęły stare zapisy</span></p>
     <ul style="margin:0">
-      <li><code>just rename-entity</code> - musi umieć też mapy (D10) + <code>test_rename_entity.py</code> (D17)</li>
-      <li>27 obiektów + krzywe + CSV + TOML + 4 klucze modeli (D18)</li>
-      <li>2 mapy: <code>BLUNDERHAVEN</code>, <code>JACOBS_CHAMBER</code> + <code>settings.START_MAP</code></li>
-      <li>podbicie wersji zapisu (D9/W4)</li>
-      <li>walidator wraca na zero</li>
+      <li><code>scripts/rename_entity.py</code> + <code>just rename-entity</code> (D10) - zna
+        <strong>sześć rodzajów kluczy</strong> i pole, w którym każdy z nich żyje, więc rename modelu
+        <code>HORSE</code> nie rusza napisu <code>name_EN</code> „Horse" ani folderu sprite'a;
+        <code>tests/test_rename_entity.py</code> (15 testów, D17)</li>
+      <li>27 obiektów <code>spawn_points</code> + krzywe <code>waypoints</code> + <code>route:</code>
+        w rutynach; 6 kluczy modeli (4× D18 + 2 lwy z D19)</li>
+      <li>6 map: <code>BLUNDERHAVEN</code>, <code>JACOBS_CHAMBER</code>, <code>MAZE_01</code>…<code>MAZE_04</code>;
+        <code>settings.START_MAP</code> + <code>START_ENTRY_POINT</code> zamiast 8 miejsc w kodzie</li>
+      <li>11 komórek miejsc + 1 cel rutyny dostały prefiks mapy (D3) - <em>osobną migracją</em>,
+        bo dodanie prefiksu to nie rename</li>
+      <li>2 punkty wejścia; wyjście <code>Maze</code> → <code>MAZE_01</code> (jedyny WARN po etapie 4)</li>
+      <li>wersja zapisu <strong>0.3 → 0.4</strong> (D9/W4) - <code>save_compatibility("0.3")</code>
+        = <code>too_old</code></li>
+      <li>walidator wrócił na zero: <strong>0 błędów, 9 ostrzeżeń</strong> (5 zastanych + 4 utwory z W5);
+        <code>test-unit</code> 546/546 w 39 plikach, <code>test-smoke</code> 6/6</li>
     </ul></div>
 </div>
 

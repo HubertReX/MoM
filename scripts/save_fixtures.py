@@ -35,12 +35,15 @@ MAX_SAVE_SLOTS = 10
 # on load, which would silently turn "minimal save" scenarios into "rejected save"
 # ones. Not imported from settings because this script runs standalone (no pygame);
 # tests/test_save_load_models.py asserts the two stay in sync.
-CURRENT_VERSION = "0.3"
+CURRENT_VERSION = "0.4"
 # Older than MIN_SUPPORTED_SAVE_CODE: no migration chain reaches it, so it must be
 # refused as "too old" (the 0.1/0.2 sentiment-key era).
 OLD_VERSION = "0.1"
 # Deliberately absurd, and read as MAJOR=9999: a save "from the future".
 FUTURE_VERSION = "9999"
+# Must equal settings.START_MAP - same reason and same standalone-script constraint as
+# CURRENT_VERSION above; tests/test_save_load_models.py asserts the two stay in sync.
+START_MAP = "BLUNDERHAVEN"
 
 
 def corrupt_save_text() -> str:
@@ -66,7 +69,7 @@ def minimal_save_dict(slot_idx: int, version: str = CURRENT_VERSION) -> dict:
                 "max_health": 100,
                 "pos_x": 0.0,
                 "pos_y": 0.0,
-                "current_map": "Village",
+                "current_map": START_MAP,
                 "entry_point": "start",
                 "money": 0,
                 "items": [],

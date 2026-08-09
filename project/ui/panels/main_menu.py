@@ -495,7 +495,7 @@ class MainMenuScreen(MenuScreen):
         if self._has_saved_games():
             options.append(("menu.load", self._open_load_panel))
         options.extend([
-            ("menu.new_game", lambda: scene.Scene(self.game, "Village", "start").enter_state()),
+            ("menu.new_game", lambda: scene.Scene(self.game, settings.START_MAP, settings.START_ENTRY_POINT).enter_state()),
             ("menu.settings", lambda: SettingsMenu(self.game, _("menu.settings"), self.bg_image).enter_state()),
             ("menu.about", lambda: AboutMenuScreen(self.game, "AboutMenu", self.bg_image).enter_state()),
         ])

@@ -21,11 +21,11 @@ death            = "tubular-bell-of-death.ogg"
 # spooky cave, slow, water drops
 maze             = "caves-of-dawn.ogg"
 # Shire
-Village          = "best-adventure-ever.ogg"
+BLUNDERHAVEN     = "best-adventure-ever.ogg"
 # magic, harry potter style
 LOST_CORK_TAVERN = "let-the-mystery-unfold.ogg"
 # a bit spooky, more misterious
-JacobsChamber    = "scary-spooky-ambient.ogg"
+JACOBS_CHAMBER   = "scary-spooky-ambient.ogg"
 
 [music.settings]
 fade_ms = 500     # crossfade przy zmianie mapy

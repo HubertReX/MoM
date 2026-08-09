@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 #: Prefiks klucza mapy poziomu labiryntu. Etap 5 zmienia go na ``MAZE`` razem
 #: z resztą nazw map (D5); do tego czasu w `.tmx` stoi ``Maze_01``.
-MAZE_MAP_PREFIX = "Maze"
+MAZE_MAP_PREFIX = "MAZE"
 
 #: ``<PREFIKS>_<NN>`` - dokładnie ten kształt buduje generator
 #: (``maze_utils.build_tileset_map_from_maze``) dla sąsiednich poziomów.

@@ -3,7 +3,7 @@
 
 Konstruuje Game + Scene wprost (bez pętli gry i menu - patrz memory
 "headless-scene-stepping") i mierzy medianę czasu `Scene.update` oraz
-`Scene.draw` na mapie Village. Tryb deterministyczny wymuszony, więc dwa
+`Scene.draw` na mapie startowej (`settings.START_MAP`). Tryb deterministyczny wymuszony, więc dwa
 uruchomienia mierzą ten sam świat.
 
 Użycie (z katalogu repo):
@@ -15,7 +15,7 @@ Użycie (z katalogu repo):
 ``draw`` między ``--hour 12`` a ``--hour 22`` to czysty koszt filtra dnia/nocy
 (w dzień poza 9:00-17:00 filtr i tak rysuje światła).
 
-Baseline z audytu 2026-07-25 (mac-mini, Village, 32 NPC): update 0,41 ms,
+Baseline z audytu 2026-07-25 (mac-mini, BLUNDERHAVEN, 32 NPC): update 0,41 ms,
 draw 1,31 ms. Bramka B01: regresja którejkolwiek mediany > 20% = STOP kroku.
 """
 from __future__ import annotations
@@ -50,11 +50,12 @@ def main() -> None:
                         help="wymuś godzinę świata (0-23) przed pomiarem, np. 22 = noc")
     args = parser.parse_args()
 
+    import settings
     from game import Game
     from scene import Scene
 
     game = Game("run")
-    scene = Scene(game, "Village", "start")
+    scene = Scene(game, settings.START_MAP, settings.START_ENTRY_POINT)
     scene.enter_state()
 
     if args.hour is not None:
@@ -62,7 +63,7 @@ def main() -> None:
         scene.minute = 0
         scene.minute_f = 0.0
 
-    print(f"[bench] Village, NPCs: {len(scene.NPCs)}, world_seed: {scene.world_seed}, "
+    print(f"[bench] {settings.START_MAP}, NPCs: {len(scene.NPCs)}, world_seed: {scene.world_seed}, "
           f"hour: {scene.hour}:00")
 
     for _ in range(WARMUP_FRAMES):

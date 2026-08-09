@@ -676,7 +676,7 @@ class SaveManager:
         rather than append.
 
         Appending is what shipped before: every save+load added another copy of
-        every TMX item (4 -> 8 -> 12 on Village, compounding per cycle), and a
+        every TMX item (4 -> 8 -> 12 on BLUNDERHAVEN, compounding per cycle), and a
         picked-up item reappeared on the ground while staying in the player's
         bag — free duplication of quest items like MERMAIDS_TEAR.
         """

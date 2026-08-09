@@ -9,7 +9,7 @@ characters:
 ---
 # Info
 
-==TODO== - mapa `JacobsChamber.tmx` istnieje w grze, ale nie miała dotąd dokumentu
+==TODO== - mapa `JACOBS_CHAMBER.tmx` istnieje w grze, ale nie miała dotąd dokumentu
 lokacji (C02/D16). Nazwa pliku jest **roboczą propozycją** - to Ty nadajesz nazwę
 wyświetlaną, tak jak przy [[Porażkowo]] czy [[Tawerna Brakująca klepka]].
 

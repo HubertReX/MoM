@@ -108,11 +108,11 @@
 </data>
  </layer>
  <objectgroup id="6" name="interactions">
-  <object id="3" name="Village" x="48" y="123" width="16" height="13">
+  <object id="3" name="BLUNDERHAVEN" x="48" y="123" width="16" height="13">
    <properties>
-    <property name="destination_entry_point" value="JacobsChamberDoor"/>
+    <property name="destination_entry_point" value="JACOBS_CHAMBER_DOOR"/>
     <property name="obj_type" value="exit"/>
-    <property name="to_map" value="Village"/>
+    <property name="to_map" value="BLUNDERHAVEN"/>
    </properties>
   </object>
  </objectgroup>

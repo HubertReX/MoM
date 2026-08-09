@@ -53,7 +53,7 @@ Assertions (per scenario, opcjonalne):
                          ``open_panels_contains`` (lista nazw klas paneli, każda musi być
                          otwarta), ``<ścieżka>_min``/``<ścieżka>_max`` (porównanie liczbowe,
                          np. ``"player.hp_min": 1``) oraz dowolny inny klucz = równość
-                         (``"map": "Village"``, ``"dialog.npc": "BARMAN_ABSINTHRAYNER"``).
+                         (``"map": "BLUNDERHAVEN"``, ``"dialog.npc": "BARMAN_ABSINTHRAYNER"``).
     no_layout_violations FAIL, gdy UI zgłosiło naruszenie layoutu (tekst poza panelem,
                          overflow bez scrolla - patrz ``project/ui/layout.py``). Czyta
                          ``layout_violations`` z tego samego zrzutu, więc scenariusz

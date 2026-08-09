@@ -108,6 +108,13 @@ def load_map(scene: "Scene") -> None:
     # layer of invisible objects consisting of points that layout a list waypoints to follow by NPCs
     if "waypoints" in scene.layers:
         for obj in cast(TiledObjectGroup, tileset_map.get_layer_by_name("waypoints")):
+            # `enabled=false` wyłącza krzywą bez kasowania jej z mapy (C02, D4).
+            # Krzywa nazywa się tak samo jak instancja, którą prowadzi, więc kiedy
+            # postać przechodzi na rutynę z `routines.toml`, jej stara trasa musi
+            # dać się odłożyć na bok - inaczej albo znika z Tiled na zawsze, albo
+            # (jak `Bart_BCKP` przed rename'em) żyje pod nazwą, której nikt nie czyta.
+            if getattr(obj, "enabled", True) is False:
+                continue
             scene.waypoints[obj.name] = tuple(to_point(point) for point in obj.points)
 
     scene.places = {}
@@ -600,7 +607,7 @@ def add_NPC_at_grid_pos(scene: "Scene", id: int, x: int, y: int, model_name: str
 
     # Unique across the whole scene, not just this level: `loaded_NPCs` is one
     # dict shared by every map, so without the map prefix the third bat on
-    # Maze_01 and the third bat on Maze_02 were both "Bat_003" - the second
+    # MAZE_01 and the third bat on MAZE_02 were both "Bat_003" - the second
     # level's spawn was silently dropped, and a save could not tell the two
     # apart either.
     name = f"{scene.current_map}_{model_name}_{id:03}"

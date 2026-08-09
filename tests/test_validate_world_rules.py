@@ -91,7 +91,7 @@ def test_an_instance_named_after_its_model_passes() -> None:
 
 
 def test_an_instance_named_anything_else_is_an_error() -> None:
-    """Dokładnie ten stan, w którym stoi dziś `Village.tmx` (`FishRed01`, `Dog_orange`)."""
+    """Dokładnie ten stan, w którym `Village.tmx` stało PRZED etapem 5 (`FishRed01`, `Dog_orange`)."""
     game_map = _map("Village")
     game_map.spawns = {"FishRed01": "FISH_RED", "Dog_orange": "DOG_ORANGE"}
     messages = _errors(check_spawn_naming(_world(maps=[game_map])))
@@ -156,13 +156,13 @@ def test_a_door_into_the_maze_uses_the_template_entry_points() -> None:
     assert_true("Entry" in WORLD.maze_entry_points,
                 f"szablon labiryntu wczytany: {sorted(WORLD.maze_entry_points)}")
     village = _map("Village", interactions=[
-        ("Maze_01", {"obj_type": "exit", "to_map": "Maze_01",
+        ("MAZE_01", {"obj_type": "exit", "to_map": "MAZE_01",
                      "destination_entry_point": "Entry"}),
     ])
     assert_eq(check_interaction_targets(_world(maps=[village])), [], "wejście do lochu przechodzi")
 
     village = _map("Village", interactions=[
-        ("Maze_01", {"obj_type": "exit", "to_map": "Maze_01",
+        ("MAZE_01", {"obj_type": "exit", "to_map": "MAZE_01",
                      "destination_entry_point": "Wejscie"}),
     ])
     assert_eq(len(_errors(check_interaction_targets(_world(maps=[village])))), 1,
@@ -185,7 +185,7 @@ def test_an_unknown_obj_type_is_an_error() -> None:
 
 def test_a_door_named_differently_than_its_destination_is_a_warning() -> None:
     village = _map("Village",
-                   interactions=[("Maze", {"obj_type": "exit", "to_map": "Maze_01",
+                   interactions=[("Maze", {"obj_type": "exit", "to_map": "MAZE_01",
                                            "destination_entry_point": "Entry"})])
     violations = check_interaction_targets(_world(maps=[village]))
     assert_eq(_errors(violations), [], "gra działa - klucz siedzi w to_map")
@@ -222,7 +222,7 @@ def test_a_routine_location_without_a_map_prefix_is_an_error() -> None:
 # MARK: rule 16 - model_name na kaflu tilesetu (D14, O8)
 def test_a_tile_naming_a_character_that_does_not_exist_is_an_error() -> None:
     """Kafel bez spawnu przechodził regule 1 pod nosem i czekał uśpiony na `KeyError`."""
-    world = _world(tilesets={"CharacterTileset.tsx": {6: "Snake", 21: "SPIRIT_01"}})
+    world = _world(tilesets={"CharacterTileset.tsx": {6: "Snake", 21: "SPIRIT"}})
     messages = _errors(check_tileset_model_names(world))
     assert_eq(len(messages), 1, "tylko zepsuty kafel")
     assert_true("Snake" in messages[0] and "6" in messages[0], messages[0])
@@ -252,7 +252,7 @@ def test_a_reference_to_a_map_outside_the_registry_is_an_error() -> None:
 
 def test_a_reference_to_a_maze_level_that_the_registry_knows_passes() -> None:
     village = _map("Village", interactions=[
-        ("Maze_01", {"obj_type": "exit", "to_map": "Maze_01",
+        ("MAZE_01", {"obj_type": "exit", "to_map": "MAZE_01",
                      "destination_entry_point": "Entry"}),
     ])
     assert_eq(check_map_references(_world(maps=[village])), [], "labirynt jest mapą bez pliku")
@@ -281,15 +281,15 @@ def test_a_music_file_with_no_manifest_entry_is_reported() -> None:
 def test_a_map_with_no_music_is_reported() -> None:
     world = _world(audio={"music": {"main_menu": "this-is-epic.ogg"}})
     messages = [v.message for v in check_map_coverage(world) if v.source == "audio.toml:[music]"]
-    assert_true(any("Village" in m for m in messages), f"{messages}")
-    assert_true(any("Maze_01" in m for m in messages),
+    assert_true(any("BLUNDERHAVEN" in m for m in messages), f"{messages}")
+    assert_true(any("MAZE_01" in m for m in messages),
                 f"bez klucza `maze` poziomy labiryntu też są nieme: {messages}")
 
 
 def test_maze_levels_inherit_the_special_music_key() -> None:
     world = _world(audio={"music": {"maze": "caves-of-dawn.ogg"}})
     messages = [v.message for v in check_map_coverage(world) if v.source == "audio.toml:[music]"]
-    assert_true(not any("Maze_" in m for m in messages),
+    assert_true(not any("MAZE_" in m for m in messages),
                 f"`maze` ma pierwszeństwo przed nazwą mapy: {messages}")
 
 
@@ -301,8 +301,8 @@ def test_an_unreachable_map_is_reported() -> None:
     ])
     messages = [v.message for v in check_map_coverage(_world(maps=[village]))
                 if v.source == "maps"]
-    assert_true(any("JacobsChamber" in m for m in messages), f"{messages}")
-    assert_true(not any("Maze_02" in m for m in messages),
+    assert_true(any("JACOBS_CHAMBER" in m for m in messages), f"{messages}")
+    assert_true(not any("MAZE_02" in m for m in messages),
                 f"poziomy 2+ labiryntu chodzą po schodach z generatora: {messages}")
 
 

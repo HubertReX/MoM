@@ -1,10 +1,10 @@
 key;name_EN;name_PL;sprite;race;attitude;health;max_health;items;money;has_dialog;is_merchant;tradeable_items_types;max_carry_weight;allowed_zones;speed_walk;damage;speed_run;friendly;money_cap;money_regen_pct;home;work;social;hobby;kind;weak;angry;smart;funny;routine
-BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;LOST_CORK_TAVERN:badroom;LOST_CORK_TAVERN:bar;well;shrine;1;-1;-2;-1;2;barman
-BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;house_bart;market_stall_2;LOST_CORK_TAVERN:tables;well;;;;;;townsfolk
+BARMAN_ABSINTHRAYNER;Barman Absinthrayner;Barman Absyntnent;Hunter;humanoid;friendly;;;;100;true;;;;;;;;0.6;;;LOST_CORK_TAVERN:badroom;LOST_CORK_TAVERN:bar;BLUNDERHAVEN:well;BLUNDERHAVEN:shrine;1;-1;-2;-1;2;barman
+BART;Bart;Bartuś;Villager3;humanoid;friendly;;;life_pot,life_pot,life_pot,shashlik,fish,shrimp,shrimp;200;false;true;;30.0;;;;;;;;BLUNDERHAVEN:house_bart;BLUNDERHAVEN:market_stall_2;LOST_CORK_TAVERN:tables;BLUNDERHAVEN:well;;;;;;townsfolk
 BOAR;Boar;Dzik;Boar;animal;afraid;;;;;false;;;;;20;;;;;;;;;;;;;;;
 CAT;Cat;Kotek;Cat;animal;friendly;;;;;false;;;;;15;;;;;;;;;;;;;;;
-CAVE_LION;Sand Cave Lion;Piaskowy lew jaskiniowy;CaveLion;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
-CAVE_LION2;Grey Cave Lion;Szary lew jaskiniowy;CaveLion2;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+CAVE_LION_SAND;Sand Cave Lion;Piaskowy lew jaskiniowy;CaveLion;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+CAVE_LION_GREY;Grey Cave Lion;Szary lew jaskiniowy;CaveLion2;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
 CHICKEN_BLACK;Chicken;Kurczak;ChickenBlack;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
 CHICKEN_BROWN;Chicken;Kurczak;ChickenBrown;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
 CHICKEN_CUTE;Chicken;Kurczak;ChickenCute;animal;friendly;;;;;false;;;;plains;15;;;;;;;;;;;;;;;
@@ -17,9 +17,9 @@ FISH_RED;red fish;Czerwona rybka;FishRed;animal;friendly;;;;;false;;;;water;10;;
 FLAM;Flame;Płomień;Flam;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
 FRED;Fred;Franek;Villager2;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;
 FROG;Frog;Żabcia;Frog;animal;afraid;;;;;false;;;;shore;10;;;;;;;;;;;;;;;
-HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;;30;true;;;;;;;;0.3;;;house_smith;smithy;LOST_CORK_TAVERN:tables;shrine;-1;1;2;-1;-2;townsfolk
+HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;;30;true;;;;;;;;0.3;;;BLUNDERHAVEN:house_smith;BLUNDERHAVEN:smithy;LOST_CORK_TAVERN:tables;BLUNDERHAVEN:shrine;-1;1;2;-1;-2;townsfolk
 HORSE;Horse;Konik;Horse;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;;
-JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;;;;;;;house_johny;market_stall_1;LOST_CORK_TAVERN:tables;pier;;;;;;townsfolk
+JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;;;;;;;BLUNDERHAVEN:house_johny;BLUNDERHAVEN:market_stall_1;LOST_CORK_TAVERN:tables;BLUNDERHAVEN:pier;;;;;;townsfolk
 LION_YELLOW;LionYellow;Żółty lew;LionYellow;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
 MADAME_SARCASMIA;Madame Sarcasmia;Madame Sarkażmijka;SorcererBlack;humanoid;friendly;;;POTION_CURSE_NO_MORE;100;true;;;;;;;;0.5;;;;;;;1;-2;-1;1;2;
 MARRY;Marry;Marysia;Woman;humanoid;friendly;120;120;;25;false;;;;;;;;;;;;;;;;;;;;
@@ -30,7 +30,7 @@ Player;Player;Player;GreenNinja;humanoid;friendly;80;80;lance,stick,gem_small_gr
 RACOON;Racoon;Szop;Racoon;animal;afraid;;;;;false;;;;;10;;;;;;;;;;;;;;;
 ROB;Rob;Kuba;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;
 ROBIN;Robin;Robin;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;
-SLIME_01;Slime;Śluzak;Slime;monster;enemy;40;40;;;false;;;;;;;;;;;;;;;;;;;;
-SNAKE_01;Snake;Wąż;Snake;monster;enemy;50;50;life_pot;;false;;;;;;20;75;;;;;;;;;;;;;
-SPIDER_01;Spider;Pająk;SpiderRed;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
-SPIRIT_01;Spirit;Duszek;Spirit;monster;enemy;;;;;false;;;;;;;;;;;;;;;;;;;;
+SLIME;Slime;Śluzak;Slime;monster;enemy;40;40;;;false;;;;;;;;;;;;;;;;;;;;
+SNAKE;Snake;Wąż;Snake;monster;enemy;50;50;life_pot;;false;;;;;;20;75;;;;;;;;;;;;;
+SPIDER;Spider;Pająk;SpiderRed;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;
+SPIRIT;Spirit;Duszek;Spirit;monster;enemy;;;;;false;;;;;;;;;;;;;;;;;;;;

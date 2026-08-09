@@ -465,19 +465,19 @@
     <property name="to_map" value="LOST_CORK_TAVERN"/>
    </properties>
   </object>
-  <object id="27" name="JacobsChamber" x="368" y="864" width="16" height="16">
+  <object id="27" name="JACOBS_CHAMBER" x="368" y="864" width="16" height="16">
    <properties>
     <property name="destination_entry_point" value="Door"/>
     <property name="obj_type" value="exit"/>
-    <property name="to_map" value="JacobsChamber"/>
+    <property name="to_map" value="JACOBS_CHAMBER"/>
    </properties>
   </object>
-  <object id="19" name="Maze" x="917" y="677" width="8" height="8">
+  <object id="19" name="MAZE_01" x="917" y="677" width="8" height="8">
    <properties>
     <property name="destination_entry_point" value="Entry"/>
     <property name="obj_type" value="exit"/>
     <property name="return_entry_point" value="NextToMaze"/>
-    <property name="to_map" value="Maze_01"/>
+    <property name="to_map" value="MAZE_01"/>
    </properties>
   </object>
   <object id="39" name="BLUNDERHAVEN_BIG_CHEST" gid="2749" x="880" y="736" width="16" height="16">
@@ -487,10 +487,10 @@
   </object>
  </objectgroup>
  <objectgroup id="5" name="entry_points">
-  <object id="14" name="VillageHouseDoor" x="680" y="752">
+  <object id="14" name="LOST_CORK_TAVERN_DOOR" x="680" y="752">
    <point/>
   </object>
-  <object id="28" name="JacobsChamberDoor" x="376" y="896">
+  <object id="28" name="JACOBS_CHAMBER_DOOR" x="376" y="896">
    <point/>
   </object>
   <object id="20" name="NextToMaze" x="904" y="688">
@@ -499,25 +499,31 @@
   <object id="87" name="start" gid="2817" x="688" y="752" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="8" name="waypoints">
-  <object id="12" name="Rob" x="1032" y="904">
+  <object id="12" name="ROB" x="1032" y="904">
    <polyline points="0.106,0.181 0.106,-47.819 0.106,0.181"/>
   </object>
-  <object id="8" name="Bart_BCKP" x="760" y="744">
+  <object id="8" name="BART" x="760" y="744">
+   <properties>
+    <property name="enabled" type="bool" value="false"/>
+   </properties>
    <polygon points="0,0 0,192 240,192 240,-32 160,-32 160,-32 160,-32 160,0"/>
   </object>
-  <object id="17" name="Robin" x="649.5" y="841.875">
+  <object id="17" name="ROBIN" x="649.5" y="841.875">
    <polygon points="-1.5,-17.875 -1.5,46.125 -57.5,46.125 -169.5,-81.875 -193.5,-81.875 -161.5,-81.875 -161.5,-41.875 -161.5,-17.875 -137.5,-17.875 -65.5,62.125 -1.5,62.125"/>
   </object>
-  <object id="9" name="Johny_BCKP" x="697.053" y="742.066">
+  <object id="9" name="JOHNY" x="697.053" y="742.066">
+   <properties>
+    <property name="enabled" type="bool" value="false"/>
+   </properties>
    <polygon points="-1.053,1.934 222.947,1.934 222.947,-30.066 334.947,-30.066 334.947,-62.066 366.947,-62.066 366.947,-30.066 366.947,-62.066 334.947,-62.066 334.947,-30.066 222.947,-30.066 222.947,1.934 -17.053,1.934 -17.053,-14.066"/>
   </object>
-  <object id="16" name="Marry" x="799" y="814.75">
+  <object id="16" name="MARRY" x="799" y="814.75">
    <polygon points="1,-6.75 81,-6.75 81,-22.75 81,-6.75 1,-6.75 1,-22.75"/>
   </object>
   <object id="26" name="intro" x="568" y="120">
    <polyline points="0,0 0,160 160,224 208,272 208,320 144,368 144,400 176,448 160,496 176,544 120,600"/>
   </object>
-  <object id="33" name="Cat01" x="976" y="752">
+  <object id="33" name="CAT_01" x="976" y="752">
    <polygon points="0,0 62,0 62,64 0,64"/>
   </object>
  </objectgroup>
@@ -534,38 +540,38 @@
   <object id="125" name="shrine" x="568" y="152"/>
  </objectgroup>
  <objectgroup id="9" name="spawn_points">
-  <object id="76" name="Snake_01" gid="2823" x="961.372" y="863.896" width="16" height="16"/>
-  <object id="77" name="FishRed05" gid="2824" x="1080" y="756.8" width="16" height="16"/>
-  <object id="78" name="FishRed04" gid="2824" x="1064" y="852.8" width="16" height="16"/>
-  <object id="79" name="FishRed03" gid="2824" x="1080" y="964.8" width="16" height="16"/>
-  <object id="80" name="FishRed02" gid="2824" x="968" y="980.8" width="16" height="16"/>
-  <object id="81" name="FishRed01" gid="2824" x="728" y="996.8" width="16" height="16"/>
-  <object id="82" name="Frog03" gid="2835" x="1057.6" y="912" width="16" height="16"/>
-  <object id="83" name="Frog02" gid="2835" x="1048" y="816" width="16" height="16"/>
-  <object id="84" name="Frog01" gid="2835" x="1048" y="784" width="16" height="16"/>
-  <object id="85" name="Cat01" gid="2825" x="1024" y="816" width="16" height="16"/>
-  <object id="86" name="Cat02" gid="2825" x="926.4" y="758.4" width="16" height="16"/>
-  <object id="88" name="Horse" gid="2834" x="932.8" y="864" width="23" height="16"/>
-  <object id="93" name="Cow" gid="2833" x="817.6" y="864" width="23" height="16"/>
-  <object id="89" name="Pig" gid="2832" x="953.6" y="912" width="16" height="16"/>
-  <object id="90" name="ChickenWhite" gid="2831" x="912" y="843.2" width="16" height="16"/>
-  <object id="91" name="ChickenBrown" gid="2829" x="876.8" y="827.2" width="16" height="16"/>
-  <object id="92" name="ChickenBlack" gid="2828" x="814.4" y="840" width="16" height="16"/>
-  <object id="94" name="ChickenCute" gid="2830" x="862.4" y="852.8" width="16" height="16"/>
-  <object id="98" name="Dog_orange" type="Dog_orange" gid="2826" x="670.4" y="777.6" width="16" height="16"/>
-  <object id="99" name="Dog_purple" type="Dog_purple" gid="2827" x="688" y="811.2" width="16" height="16"/>
-  <object id="101" name="Racoon" gid="2836" x="728" y="592" width="16" height="16"/>
-  <object id="102" name="Boar" gid="2837" x="760" y="432" width="16" height="16"/>
-  <object id="95" name="Marry" gid="2822" x="792" y="800" width="16" height="16"/>
-  <object id="75" name="Rob" gid="2821" x="1024" y="912" width="16" height="16"/>
-  <object id="96" name="Bart" gid="2820" x="832" y="736" width="16" height="16"/>
-  <object id="97" name="Johny" gid="2818" x="720" y="800" width="16" height="16"/>
+  <object id="76" name="SNAKE" gid="2823" x="961.372" y="863.896" width="16" height="16"/>
+  <object id="77" name="FISH_RED_05" gid="2824" x="1080" y="756.8" width="16" height="16"/>
+  <object id="78" name="FISH_RED_04" gid="2824" x="1064" y="852.8" width="16" height="16"/>
+  <object id="79" name="FISH_RED_03" gid="2824" x="1080" y="964.8" width="16" height="16"/>
+  <object id="80" name="FISH_RED_02" gid="2824" x="968" y="980.8" width="16" height="16"/>
+  <object id="81" name="FISH_RED_01" gid="2824" x="728" y="996.8" width="16" height="16"/>
+  <object id="82" name="FROG_03" gid="2835" x="1057.6" y="912" width="16" height="16"/>
+  <object id="83" name="FROG_02" gid="2835" x="1048" y="816" width="16" height="16"/>
+  <object id="84" name="FROG_01" gid="2835" x="1048" y="784" width="16" height="16"/>
+  <object id="85" name="CAT_01" gid="2825" x="1024" y="816" width="16" height="16"/>
+  <object id="86" name="CAT_02" gid="2825" x="926.4" y="758.4" width="16" height="16"/>
+  <object id="88" name="HORSE" gid="2834" x="932.8" y="864" width="23" height="16"/>
+  <object id="93" name="COW" gid="2833" x="817.6" y="864" width="23" height="16"/>
+  <object id="89" name="PIG" gid="2832" x="953.6" y="912" width="16" height="16"/>
+  <object id="90" name="CHICKEN_WHITE" gid="2831" x="912" y="843.2" width="16" height="16"/>
+  <object id="91" name="CHICKEN_BROWN" gid="2829" x="876.8" y="827.2" width="16" height="16"/>
+  <object id="92" name="CHICKEN_BLACK" gid="2828" x="814.4" y="840" width="16" height="16"/>
+  <object id="94" name="CHICKEN_CUTE" gid="2830" x="862.4" y="852.8" width="16" height="16"/>
+  <object id="98" name="DOG_ORANGE" gid="2826" x="670.4" y="777.6" width="16" height="16"/>
+  <object id="99" name="DOG_PURPLE" gid="2827" x="688" y="811.2" width="16" height="16"/>
+  <object id="101" name="RACOON" gid="2836" x="728" y="592" width="16" height="16"/>
+  <object id="102" name="BOAR" gid="2837" x="760" y="432" width="16" height="16"/>
+  <object id="95" name="MARRY" gid="2822" x="792" y="800" width="16" height="16"/>
+  <object id="75" name="ROB" gid="2821" x="1024" y="912" width="16" height="16"/>
+  <object id="96" name="BART" gid="2820" x="832" y="736" width="16" height="16"/>
+  <object id="97" name="JOHNY" gid="2818" x="720" y="800" width="16" height="16"/>
   <object id="108" name="MADAME_SARCASMIA" gid="2845" x="1008" y="736" width="16" height="16"/>
   <object id="109" name="MISS_INFORMATION" gid="2846" x="1008" y="688" width="16" height="16"/>
   <object id="110" name="CLAPBACK_SWORD" gid="2848" x="896" y="736" width="16" height="16"/>
   <object id="112" name="POTIONEER_PUZZLEMINT" gid="2849" x="960" y="736" width="16" height="16"/>
   <object id="113" name="HAMMER_HOAXHEART" gid="2819" x="960" y="688" width="16" height="16"/>
-  <object id="114" name="Robin" gid="2850" x="640" y="832" width="16" height="16"/>
+  <object id="114" name="ROBIN" gid="2850" x="640" y="832" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="12" name="zones" visible="0">
   <object id="65" name="water" x="1056" y="720">

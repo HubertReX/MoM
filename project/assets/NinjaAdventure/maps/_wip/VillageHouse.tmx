@@ -109,11 +109,11 @@
 </data>
  </layer>
  <objectgroup id="6" name="interactions">
-  <object id="3" name="Village" x="48" y="123" width="16" height="13">
+  <object id="3" name="BLUNDERHAVEN" x="48" y="123" width="16" height="13">
    <properties>
-    <property name="destination_entry_point" value="VillageHouseDoor"/>
+    <property name="destination_entry_point" value="LOST_CORK_TAVERN_DOOR"/>
     <property name="obj_type" value="exit"/>
-    <property name="to_map" value="Village"/>
+    <property name="to_map" value="BLUNDERHAVEN"/>
    </properties>
   </object>
   <object id="6" name="SmallChest_VillageHouse" x="160" y="48" width="16" height="16">

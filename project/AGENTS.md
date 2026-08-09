@@ -534,7 +534,7 @@ odtworzyłoby prawdziwej kolejności).
 ### Asercje stanu (`debug_ui_state` + `ui_state`) — weryfikacja bez vision
 
 Vision (ss-review) jest niedeterministyczne z natury, a większość faktów, które testy chcą
-sprawdzić ("panel dialogu jest otwarty", "gracz jest na mapie Village", "HP > 0"), gra
+sprawdzić ("panel dialogu jest otwarty", "gracz jest na mapie BLUNDERHAVEN", "HP > 0"), gra
 **zna** i potrafi zrzucić. Zasada: **fakty asertuj z runtime, vision zostaw do ocen
 estetycznych**.
 
@@ -549,7 +549,7 @@ Scenariusz wysyła `debug_ui_state` jako osobną akcję, a potem asertuje:
   "type": "ui_state",
   "expect": {
     "top_state": "Scene",
-    "map": "Village",
+    "map": "BLUNDERHAVEN",
     "open_panels_contains": ["DialogPanel"],
     "dialog.npc": "BARMAN_ABSINTHRAYNER",
     "player.hp_min": 1
@@ -693,7 +693,7 @@ które nie wyprodukowały bloku JSON.
   (`scene/map_state.py:83`) przywraca. Wygenerowany labirynt zachowuje układ póki jest w `loaded_maps`.
 - **Śmierć gracza** (`characters/combat.py`, `die()`): przy `health <= 0` → `exit_state()` bieżącej sceny,
   `player.reset()` (`characters/npc.py:694`: pełne zdrowie, **przeładowanie startowego ekwipunku
-  z configu — zebrane przedmioty przepadają**, wyczyszczenie flag), nowa `Scene("Village",
+  z configu — zebrane przedmioty przepadają**, wyczyszczenie flag), nowa `Scene(START_MAP,
   "start")` + splash `"GAME OVER"`. To pełny respawn w wiosce, nie wczytanie zapisu.
 - **Persystencja ustawień** (`save_load/display_settings.py`): rozdzielczość, fullscreen,
   wybrany język (`LANG`) i trzy głośności są zapisywane automatycznie przy każdej zmianie
@@ -752,7 +752,7 @@ pokrętło pod słabszy sprzęt i przeglądarkę. Tryb czytany jest **żywo** z 
 `screen.blit(surface)` bez `dest` wywala tam grę (`TypeError: function missing required
 argument 'dest'`) przy pierwszej klatce nocy. Zawsze podawaj pozycję.
 
-Scenariusz agentowy: **Night Filter On Village** (`start_hour: 20`, dojście
+Scenariusz agentowy: **Night Filter On Blunderhaven** (`start_hour: 20`, dojście
 `walk_to_point` pod kapliczkę na północ od wioski, gdzie las jest realnie czarny -
 w centrum wioski dwa światła z waypointów `intro` rozświetlają prawie cały kadr).
 
@@ -831,7 +831,7 @@ a persystencja per mapa w `tests/test_save_load_multi_map.py`.
 ## Audio (`audio.py` + `config_model/audio.toml`)
 
 Jedno wejście do dźwięku dla całej gry (D01). Reszta kodu woła **fasadę modułową** -
-`audio.play_sfx("coins")`, `audio.play_music("Village")` - i nigdy nie przekazuje sobie
+`audio.play_sfx("coins")`, `audio.play_music("BLUNDERHAVEN")` - i nigdy nie przekazuje sobie
 referencji do managera ani nie zna nazw plików.
 
 - **Manifest**: `project/config_model/audio.toml` (ręcznie edytowany TOML, jak
@@ -875,7 +875,7 @@ która jest tłumaczona i którą widzi gracz. Te dwie warstwy nie wymieniają s
 
 - **Klucz nigdy nie trafia na ekran.** Nazwa mapy dla HUD-a siedzi w sekcji `[map]`
   plików `assets/locale/PL.toml` i `EN.toml`, kluczowana kluczem mapy (stem `.tmx`
-  albo poziom labiryntu `Maze_NN`). Źródłem napisów są dokumenty lokacji
+  albo poziom labiryntu `MAZE_NN`). Źródłem napisów są dokumenty lokacji
   (`doc/PL/Lokalizacje/`, `doc/EN/Locations/`): nazwa pliku = napis, alias = klucz.
   Nowa mapa bez wpisu w obu językach = **błąd** `just validate-world` (reguła 12).
 - **Napis nigdy nie służy za test tożsamości.** Bohatera rozpoznajemy przez
@@ -888,10 +888,76 @@ która jest tłumaczona i którą widzi gracz. Te dwie warstwy nie wymieniają s
   języka działa bez restartu. Nie domykaj języka przez `from settings import LANG`,
   a cache w panelu kluczuj **wyrenderowanym napisem**, nie kluczem encji.
 
-### Czego pilnuje `just validate-world` w sprawie kluczy (reguły 13-18)
+### Ściąga: gdzie używam jakiego klucza
 
-Reguły z C02 etap 4. Do końca etapu 5 (rename'y) walidator **świadomie świeci na czerwono** -
-błędy z reguł 13 i 15 opisują dokładnie te nazwy, które etap 5 ma zmienić.
+Reguła w jednym zdaniu: **wszystko, co jest encją - postać, mapa, skrzynia, punkt wejścia -
+nosi klucz `SCREAMING_SNAKE`**. Wyjątkiem są *miejsca wewnątrz mapy* (`house_bart`), bo nie
+są encjami, tylko punktami na mapie; piszemy je małymi i zawsze z prefiksem mapy.
+
+Nową **postać fabularną** dodaję w tej kolejności:
+
+| # | Gdzie | Co wpisuję | Przykład |
+| --- | --- | --- | --- |
+| 1 | Obsidian: `doc/PL/Postacie/*.md` | frontmatter `aliases` = klucz encji | `BARMAN_ABSINTHRAYNER` |
+| 2 | `config_model/characters.csv` | kolumna `key` = ten sam klucz; `sprite` = nazwa folderu z paczki | `BARMAN_ABSINTHRAYNER`; `Hunter` |
+| 3 | Tiled: `maps/tilesets/CharacterTileset.tsx` | własność `model_name` na kaflu = ten sam klucz | `BARMAN_ABSINTHRAYNER` |
+| 4 | Tiled: warstwa `spawn_points` | nazwa obiektu = klucz (sufiks `_NN` dopiero przy drugiej kopii) | `FISH_RED_01` |
+| 5 | `characters.csv`, kolumny miejsc | `KLUCZ_MAPY:miejsce` - zawsze z prefiksem | `LOST_CORK_TAVERN:bar` |
+| 6 | `characters.csv`, kolumna `routine` | nazwa rutyny z `routines.toml` | `barman` |
+| 7 | dialogi i questy | ten sam klucz w `visited(...)`, `dialog_key` | `visited("BARMAN_ABSINTHRAYNER", "012")` |
+
+Nową **mapę**:
+
+| # | Gdzie | Co wpisuję | Przykład |
+| --- | --- | --- | --- |
+| 1 | Obsidian: `doc/EN/Locations/` + `doc/PL/Lokalizacje/` | para plików z szablonu, `aliases` = klucz mapy | `BLUNDERHAVEN` w „Blunderhaven.md" i „Gafowo Kolonia.md" |
+| 2 | `maps/<KLUCZ>.tmx` | **nazwa pliku JEST kluczem mapy** | `LOST_CORK_TAVERN.tmx` |
+| 3 | mapa źródłowa, warstwa `interactions` | obiekt o nazwie klucza mapy docelowej + `to_map` + `destination_entry_point` | `LOST_CORK_TAVERN`, `destination_entry_point=Door` |
+| 4 | mapa docelowa, warstwa `entry_points` | obiekt wskazany w kroku 3 oraz zawsze `start` | `Door`, `start` |
+| 5 | `config_model/audio.toml`, `[music]` | klucz = klucz mapy (brak wpisu = cisza + WARN) | `LOST_CORK_TAVERN = "…ogg"` |
+| 6 | `assets/locale/PL.toml` i `EN.toml`, `[map]` | **napis dla gracza** - bez niego HUD pokaże klucz | `LOST_CORK_TAVERN = "Tawerna Brakująca klepka"` |
+
+Rejestru map nie prowadzi żaden plik danych: `scene/map_registry.py` **wylicza** go ze stemów
+`.tmx` plus `MAZE_01…MAZE_0N` dla N wierszy `maze_configs.csv` (D13). Nowa mapa istnieje
+w chwili, w której powstaje jej plik.
+
+Nowe **miejsce** (cel rutyny): obiekt w warstwie `places` (małymi, `house_smith`), a odwołanie
+w `characters.csv`/`routines.toml` **zawsze** z prefiksem: `BLUNDERHAVEN:house_smith`. Miejsce
+nie musi być unikalne w całej grze - dwie tawerny mogą mieć swój `bar`, prefiks to rozstrzyga.
+
+### Zmiana nazwy encji: `just rename-entity`
+
+Klucz encji żyje w kilku plikach naraz, więc rename robi się narzędziem, nie edytorem:
+
+```bash
+just rename-entity Village BLUNDERHAVEN        # rodzaj klucza wykryty z danych
+just rename-entity Snake_01 SNAKE --kind instance
+just rename-entity Village BLUNDERHAVEN --dry-run
+just rename-entity --list                      # co dziś istnieje, per rodzaj
+just rename-entity --sources                   # manifest plików, które skrypt zna
+```
+
+Rodzaje: `character`, `map`, `instance`, `chest`, `entry_point`, `place`. Skrypt jest
+**dosłowny** - wie, w którym polu którego pliku żyje dany rodzaj klucza, więc rename modelu
+`HORSE` nie rusza kolumny `name_EN` o tej samej treści. Mapę przemianowuje razem z plikiem
+`.tmx` (`git mv`). Na koniec sam odpala `validate_world`.
+
+Czego rename **nie** rusza i nie powinien:
+
+- **zapisów gry** - stan NPC-a i skrzyni jest kluczowany nazwą obiektu Tiled, więc rename
+  ten stan kasuje (O1). Polityka jest w D9: podbicie `settings.VERSION` = jawna odmowa
+  wczytania starego zapisu, zamiast cichego resetu.
+- **kodu** - mapa startowa mieszka w `settings.START_MAP`, klucz gracza w
+  `settings.PLAYER_CONFIG_KEY`. Nowa nazwa encji w Pythonie = nowa stała w `settings.py`,
+  nie nowy glob w skrypcie.
+- **dokumentów w Obsidianie** - klucz jest tam aliasem we frontmatterze, `just import-*`
+  wciąga zmianę z powrotem.
+
+`tests/test_rename_entity.py` failuje w dniu, w którym ktoś doda plik danych nieobjęty
+manifestem `SOURCES` - a nie przy pierwszym rename'ie po nim (D17). Nowy plik trzeba albo
+objąć globem, albo wpisać do `UNTOUCHED_SOURCES` z powodem.
+
+### Czego pilnuje `just validate-world` w sprawie kluczy (reguły 13-18)
 
 - **13** - nazwa obiektu w `spawn_points` to klucz modelu, opcjonalnie z `_NN`
   (`FISH_RED_01`). Numer należy się instancji dopiero wtedy, gdy kopii na mapie jest
@@ -945,7 +1011,7 @@ między epizodami (s). Dodanie emitera: wpis w `PARTICLES` (klasa) **+** wpis w
 `EMITTER_SCHEDULES` (harmonogram) **+** nazwa w property `particles` mapy `.tmx`.
 
 **Allow-list per mapa:** `Scene.load_particles()` czyta property `particles="leafs,rain"`
-z `.tmx` (dziś tylko `Village.tmx`; reszta `n/a`), tworzy emitery i przekazuje te, które
+z `.tmx` (dziś tylko `BLUNDERHAVEN.tmx`; reszta `n/a`), tworzy emitery i przekazuje te, które
 mają wpis w `EMITTER_SCHEDULES`, do nowego `WeatherDirector`. Reżyser jest częścią stanu
 mapy (`store_map`/`restore_map`), a `go_to_map()`/`reload_map()` wołają `weather.stop_all()`
 przed przebudową, żeby nie przeciekały uzbrojone timery między mapami.
@@ -1027,5 +1093,5 @@ klucz nigdy się nie powtarza, `@cache` = 0 trafień + nieograniczony wzrost pam
   a `characters/player.py:107` otwiera panel gdy gracz naciśnie `talk` w zasięgu NPC.
 - Zasięg rozmowy to `FRIENDLY_WAKE_DISTANCE` (`settings.py:175`); wymagana bliskość
   NPC jest sprawdzana w `scene/collisions.py:151` (`npc.model.attitude == friendly` i warunek dialogu).
-- Przykładowy dialog: Hammer w `config.json` + spawn w `Village.tmx`;
+- Przykładowy dialog: Hammer w `config.json` + spawn w `BLUNDERHAVEN.tmx`;
   scenariusz testowy: `tests/scenarios.json` → "Hammer Dialog Flow".
