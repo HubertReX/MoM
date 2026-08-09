@@ -888,6 +888,28 @@ która jest tłumaczona i którą widzi gracz. Te dwie warstwy nie wymieniają s
   języka działa bez restartu. Nie domykaj języka przez `from settings import LANG`,
   a cache w panelu kluczuj **wyrenderowanym napisem**, nie kluczem encji.
 
+### Czego pilnuje `just validate-world` w sprawie kluczy (reguły 13-18)
+
+Reguły z C02 etap 4. Do końca etapu 5 (rename'y) walidator **świadomie świeci na czerwono** -
+błędy z reguł 13 i 15 opisują dokładnie te nazwy, które etap 5 ma zmienić.
+
+- **13** - nazwa obiektu w `spawn_points` to klucz modelu, opcjonalnie z `_NN`
+  (`FISH_RED_01`). Numer należy się instancji dopiero wtedy, gdy kopii na mapie jest
+  więcej niż jedna - nadmiarowy numer to WARN.
+- **14** - wyjście w `interactions` musi mieć `to_map` i `destination_entry_point`
+  wskazujący obiekt z warstwy `entry_points` **mapy docelowej** (dla labiryntu: z szablonu
+  `assets/MazeTileset/MazeTileset_Ninja.tmx`), a `return_entry_point` - obiekt na mapie,
+  na której stoi. Obiekt `obj_type="chest"` musi nazywać klucz z `config.chests`.
+- **15** - miejsce zawsze z prefiksem mapy: `BLUNDERHAVEN:well`, także wewnątrz jednej
+  mapy. Dotyczy kolumn `home`/`work`/`social`/`hobby` i celów `location:` w `routines.toml`.
+- **16** - `model_name` na kaflu tilesetu musi być kluczem postaci. Kafel bez spawnu jest
+  niewidoczny dla reguły 1 i czeka uśpiony na `KeyError` przy pierwszym użyciu w Tiled.
+- **17** - każde odwołanie do mapy (`to_map`, prefiks miejsca, cel rutyny) wskazuje klucz
+  z rejestru `scene/map_registry.py`. Mapa nie „istnieje" dlatego, że istnieje plik `.tmx` -
+  poziom labiryntu pliku nie ma.
+- **18** (WARN) - mapa bez muzyki, mapa nieosiągalna z żadnej warstwy `interactions`,
+  plik w `assets/audio/music/` bez wpisu w `audio.toml`.
+
 ## Konwencje
 
 - Stałe → `settings.py`; typy wyliczeniowe → `enums.py`. Nie hardkoduj magic numbers w logice.

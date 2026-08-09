@@ -98,7 +98,9 @@ mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły 
   (decyzje D1-D19 zamknięte:
   [C02-klucze-encji-2026-08-08.html](../_attachements/C02-klucze-encji-2026-08-08.html);
   etapy 1-2 ✅ 2026-08-08, etap 3 ✅ 2026-08-09 - nazwy map w locale, HUD nigdy nie pokazuje
-  klucza, `PLAYER_CONFIG_KEY` zamiast `name_EN == "Player"`; następny etap 4)
+  klucza, `PLAYER_CONFIG_KEY` zamiast `name_EN == "Player"`; etap 4 ✅ 2026-08-09 - reguły
+  13-18 walidatora + `tests/test_validate_world_rules.py`, `validate-world` świeci na czerwono
+  (39 błędów) do końca etapu 5, co blokuje CI i recepty `just import-*`; następny etap 5)
 - [ ] H01 - ambient barks + wskaźnik aktywnego questa na HUD - P3
 
 ## Zasady realizacji zadań (dla agentów)

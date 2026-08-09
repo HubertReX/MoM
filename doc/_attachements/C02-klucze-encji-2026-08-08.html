@@ -141,7 +141,7 @@
 <div class="wrap">
 
 <div class="topbar">
-  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 4 po uwagach autora (W6-W13) · status: <strong>D1-D19 rozstrzygnięte · etapy 1-3 ✅ 2026-08-09 · w toku: etap 4</strong></p>
+  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 4 po uwagach autora (W6-W13) · status: <strong>D1-D19 rozstrzygnięte · etapy 1-4 ✅ 2026-08-09 · w toku: etap 5 (rename'y)</strong></p>
   <button id="themeToggle" title="Przełącz motyw">🌗 Motyw</button>
 </div>
 
@@ -1203,14 +1203,14 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
   <li>Czy rutyna z CSV istnieje w <code>routines.toml</code> - <span class="badge ok">C01 reguła 3</span></li>
   <li>Czy sprite ma swój folder - <span class="badge ok">C01 reguła 5</span></li>
   <li>Czy przedmiot z questa/dialogu istnieje - <span class="badge ok">C01 reguła 6</span></li>
-  <li>Czy nazwa instancji trzyma konwencję - <span class="badge info">nowa reguła z C02 (D1)</span></li>
-  <li>Czy odwołanie do miejsca ma prefiks mapy - <span class="badge info">nowa reguła z C02 (D3)</span></li>
-  <li>Czy drzwi prowadzą do istniejącego punktu wejścia - <span class="badge info">nowa reguła z C02 (D6)</span></li>
-  <li>Czy mapa ma muzykę i czy da się do niej dojść - <span class="badge info">nowa reguła z C02 (D7)</span></li>
-  <li>Czy plik muzyki ma wpis w manifeście - <span class="badge info">nowa reguła z C02 (O4)</span></li>
+  <li>Czy nazwa instancji trzyma konwencję - <span class="badge ok">✅ reguła 13, 2026-08-09 (D1/D2)</span></li>
+  <li>Czy odwołanie do miejsca ma prefiks mapy - <span class="badge ok">✅ reguła 15, 2026-08-09 (D3)</span></li>
+  <li>Czy drzwi prowadzą do istniejącego punktu wejścia - <span class="badge ok">✅ reguła 14, 2026-08-09 (D6)</span></li>
+  <li>Czy mapa ma muzykę i czy da się do niej dojść - <span class="badge ok">✅ reguła 18, 2026-08-09 (D7)</span></li>
+  <li>Czy plik muzyki ma wpis w manifeście - <span class="badge ok">✅ reguła 18, 2026-08-09 (O4)</span></li>
   <li><strong>Czy mapa ma nazwę wyświetlaną w PL i EN</strong> - <span class="badge ok">✅ reguła 12, 2026-08-09 (D12)</span></li>
-  <li>Czy <code>model_name</code> w tilesecie jest kluczem istniejącej postaci - <span class="badge info">nowa reguła z C02 (D14)</span></li>
-  <li>Czy mapa jest w rejestrze <code>scene/map_registry.py</code> - <span class="badge info">nowa reguła z C02 (D13)</span></li>
+  <li>Czy <code>model_name</code> w tilesecie jest kluczem istniejącej postaci - <span class="badge ok">✅ reguła 16, 2026-08-09 (D14)</span></li>
+  <li>Czy mapa jest w rejestrze <code>scene/map_registry.py</code> - <span class="badge ok">✅ reguła 17, 2026-08-09 (D13)</span></li>
   <li>Czy <code>rename_entity.py</code> zna wszystkie pliki z nazwami encji - <span class="badge info">nowy test na CI (D17)</span></li>
 </ul>
 <a class="backlink" href="#toc">↑ Spis treści</a>
@@ -1256,15 +1256,20 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
         ryby bez cienia (zastany błąd wyszedł przy okazji)</li>
     </ul></div>
   <div class="card"><h4>Etap 4 - walidator przed rename'em</h4>
-    <p style="margin:0 0 var(--s2)"><span class="badge info">siatka bezpieczeństwa</span></p>
+    <p style="margin:0 0 var(--s2)"><span class="badge ok">✅ zrobione 2026-08-09</span> <span class="badge info">siatka bezpieczeństwa</span></p>
     <ul style="margin:0">
-      <li>konwencja nazwy instancji (D1)</li>
-      <li><code>interactions</code>/<code>entry_points</code> (D6)</li>
-      <li>„mapa bez muzyki / nieosiągalna / plik bez wpisu" (D7, O4)</li>
-      <li>„odwołanie do miejsca bez prefiksu" (D3)</li>
-      <li>„mapa spoza rejestru" (D13); „mapa bez nazwy wyświetlanej" (D12) <span class="badge ok">✅ zrobione w etapie 3</span></li>
-      <li>„<code>model_name</code> w tilesecie musi być kluczem postaci" (D14)</li>
-      <li>walidator <em>świeci na czerwono</em> - to zamierzone</li>
+      <li>reguła 13 - konwencja nazwy instancji (D1) <strong>ERROR</strong>; nadmiarowy numer
+        na jedynej kopii (D2) <strong>WARN</strong></li>
+      <li>reguła 14 - <code>interactions</code>/<code>entry_points</code> (D6): jedyna reguła, która
+        czyta <strong>własności</strong> obiektów, nie same nazwy</li>
+      <li>reguła 15 - „odwołanie do miejsca bez prefiksu" (D3)</li>
+      <li>reguła 16 - „<code>model_name</code> w tilesecie musi być kluczem postaci" (D14)</li>
+      <li>reguła 17 - „mapa spoza rejestru" (D13); „mapa bez nazwy wyświetlanej" (D12)
+        <span class="badge ok">✅ zrobione w etapie 3</span></li>
+      <li>reguła 18 <strong>WARN</strong> - „mapa bez muzyki / nieosiągalna / plik bez wpisu" (D7, O4)</li>
+      <li>walidator <em>świeci na czerwono</em>: <strong>39 błędów, 10 ostrzeżeń</strong> - to zamierzone
+        i znika w etapie 5</li>
+      <li><code>tests/test_validate_world_rules.py</code> (24 testy) - przechodzi mimo czerwonego świata</li>
     </ul></div>
   <div class="card"><h4>Etap 5 - rename'y</h4>
     <p style="margin:0 0 var(--s2)"><span class="badge warn">tu giną stare zapisy</span></p>

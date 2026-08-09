@@ -61,11 +61,24 @@ LOCALE_LANGS = ("PL", "EN")
 # nie importuje gry (patrz docstring), a `map_registry` ciągnie `settings`, czyli pygame'a.
 MAZE_MAP_PREFIX = "Maze"
 
+# Szablon labiryntu. Poziom labiryntu nie ma pliku `.tmx` - powstaje w locie z tego
+# szablonu, więc jego warstwa `entry_points` jest jedynym źródłem prawdy o tym, dokąd
+# wolno celować z `destination_entry_point` prowadzącego do labiryntu.
+MAZE_TEMPLATE = ASSETS / "MazeTileset" / "MazeTileset_Ninja.tmx"
+
 # Tiled object layers this validator understands
 SPAWN_LAYER = "spawn_points"
 PLACES_LAYER = "places"
 WAYPOINTS_LAYER = "waypoints"
-CHECKED_LAYERS = (SPAWN_LAYER, PLACES_LAYER, WAYPOINTS_LAYER, "entry_points", "interactions")
+ENTRY_LAYER = "entry_points"
+INTERACTIONS_LAYER = "interactions"
+CHECKED_LAYERS = (SPAWN_LAYER, PLACES_LAYER, WAYPOINTS_LAYER, ENTRY_LAYER, INTERACTIONS_LAYER)
+
+# Kolumny `characters.csv`, których wartością jest miejsce z warstwy `places`.
+PLACE_COLUMNS = ("home", "work", "social", "hobby")
+
+# `<KLUCZ_MODELU>` albo `<KLUCZ_MODELU>_<NN>` - konwencja nazwy instancji z D1/D2.
+_INSTANCE_SUFFIX = re.compile(r"_(\d+)$")
 
 # gid flip flags occupy the top three bits; strip them to get the real tile id
 _GID_MASK = 0x1FFFFFFF
@@ -88,11 +101,18 @@ class GameMap:
     path: Path
     # layer -> list of object names, in file order (duplicates preserved on purpose)
     objects: dict[str, list[str]] = field(default_factory=dict)
+    # layer -> własności obiektów, w tej samej kolejności co `objects[layer]`.
+    # Nazwa obiektu nie mówi wszystkiego: wyjście zna cel w `to_map`, a nie w nazwie.
+    props: dict[str, list[dict[str, str]]] = field(default_factory=dict)
     # spawn object name -> the character key it resolves to (see _resolve_model_name)
     spawns: dict[str, str] = field(default_factory=dict)
 
     def names(self, layer: str) -> set[str]:
         return set(self.objects.get(layer, []))
+
+    def entries(self, layer: str) -> list[tuple[str, dict[str, str]]]:
+        """(nazwa obiektu, jego własności) dla warstwy - w kolejności z pliku."""
+        return list(zip(self.objects.get(layer, []), self.props.get(layer, []), strict=False))
 
 
 @dataclass
@@ -104,6 +124,10 @@ class World:
     sprites: set[str]
     #: `config_model/audio.toml` w surowej postaci; ``None`` = brak/nie parsuje się
     audio: dict | None = None
+    #: ścieżka tilesetu (względem repo) -> {lokalne id kafla: `model_name`}
+    tilesets: dict[str, dict[int, str]] = field(default_factory=dict)
+    #: nazwy obiektów z warstwy `entry_points` szablonu labiryntu (MAZE_TEMPLATE)
+    maze_entry_points: set[str] = field(default_factory=set)
 
     @property
     def places(self) -> dict[str, set[str]]:
@@ -198,12 +222,15 @@ def load_map(path: Path) -> GameMap:
         if layer not in CHECKED_LAYERS:
             continue
         names: list[str] = []
+        props: list[dict[str, str]] = []
         for obj in group.iter("object"):
             name = obj.get("name") or ""
             names.append(name)
+            props.append({p.get("name", ""): p.get("value", "") for p in obj.iter("property")})
             if layer == SPAWN_LAYER:
                 game_map.spawns[name] = _resolve_model_name(obj, tile_models)
         game_map.objects[layer] = names
+        game_map.props[layer] = props
     return game_map
 
 
@@ -223,8 +250,23 @@ def load_world() -> World:
 
     maps = [load_map(p) for d in MAP_DIRS for p in sorted(d.glob("*.tmx"))]
     sprites = {p.name for p in SPRITE_DIR.iterdir() if p.is_dir()} if SPRITE_DIR.is_dir() else set()
+
+    # Rekursywnie, bo tilesety leżą w podkatalogu `maps/tilesets/` (C02, D15). Puste
+    # słowniki odpadają: interesują nas wyłącznie tilesety niosące klucze postaci.
+    tilesets: dict[str, dict[int, str]] = {}
+    for directory in MAP_DIRS:
+        for path in sorted(directory.rglob("*.tsx")):
+            models = _tileset_model_names(path)
+            if models:
+                tilesets[str(path.relative_to(REPO_ROOT))] = models
+
+    maze_entry_points: set[str] = set()
+    if MAZE_TEMPLATE.is_file():
+        maze_entry_points = load_map(MAZE_TEMPLATE).names(ENTRY_LAYER)
+
     return World(config=config, characters_csv=characters_csv, routines=routines,
-                 maps=maps, sprites=sprites, audio=audio)
+                 maps=maps, sprites=sprites, audio=audio,
+                 tilesets=tilesets, maze_entry_points=maze_entry_points)
 
 
 #############################################################################################################
@@ -281,6 +323,59 @@ def _game_map_keys(world: World) -> list[str]:
     maze = {f"{MAZE_MAP_PREFIX}_{int(level):02d}"
             for level in (world.config.get("maze_configs") or {})}
     return sorted(static | maze)
+
+
+def _is_maze_key(world: World, map_key: str) -> bool:
+    """Czy klucz jest poziomem labiryntu - liczone z rejestru, nie z prefiksu.
+
+    ``Maze_09`` przy czterech wierszach `maze_configs.csv` jest mapą, której nie ma,
+    a nie labiryntem (to samo rozróżnienie, co `map_registry.is_maze_map`).
+    """
+    levels = len(world.config.get("maze_configs") or {})
+    match = re.match(rf"^{re.escape(MAZE_MAP_PREFIX)}_(\d{{2,}})$", map_key)
+    return bool(match) and 1 <= int(match.group(1)) <= levels
+
+
+def _entry_points_of(world: World, map_key: str) -> set[str] | None:
+    """Nazwy obiektów z warstwy `entry_points` mapy - albo ``None``, gdy mapy nie ma.
+
+    Poziom labiryntu nie ma pliku `.tmx`: jego punkty wejścia (`Entry`, `Re-Entry`)
+    przychodzą z szablonu, który generator przerabia na konkretny poziom.
+    """
+    for game_map in world.maps:
+        if game_map.name == map_key:
+            return game_map.names(ENTRY_LAYER)
+    if _is_maze_key(world, map_key):
+        return world.maze_entry_points
+    return None
+
+
+def _map_references(world: World) -> list[tuple[str, str]]:
+    """(gdzie napisane, klucz mapy) dla każdego odwołania do mapy poza samym `.tmx`.
+
+    Jedno miejsce zamiast pięciu: reguła „mapa spoza rejestru" ma świecić tak samo
+    dla drzwi, dla prefiksu miejsca i dla celu rutyny (D13).
+    """
+    found: list[tuple[str, str]] = []
+    for game_map in world.maps:
+        for name, props in game_map.entries(INTERACTIONS_LAYER):
+            to_map = props.get("to_map", "").strip()
+            if to_map:
+                found.append((f"{game_map.path.name}:{INTERACTIONS_LAYER}:{name}", to_map))
+
+    for row in world.characters_csv:
+        for column in PLACE_COLUMNS:
+            value = (row.get(column) or "").strip()
+            if ":" in value:
+                found.append((f"characters.csv:{row.get('key', '?')}:{column}",
+                              value.split(":", 1)[0]))
+
+    for name, routine in world.routines.items():
+        for step in routine.get("slot", []) or []:
+            kind, _, arg = str(step.get("at", "")).partition(":")
+            if kind == "location" and ":" in arg:
+                found.append((f"routines.toml:{name}", arg.split(":", 1)[0]))
+    return found
 
 
 def _played_sfx_keys() -> set[str]:
@@ -551,7 +646,9 @@ def check_audio_manifest(world: World) -> list[Violation]:
     if not isinstance(settings, dict):
         out.append(Violation(ERROR, "audio.toml:[music.settings]", "musi być tabelą"))
 
-    map_names = {m.name for m in world.maps}
+    # rejestr, nie lista plików `.tmx`: poziom labiryntu jest mapą bez pliku (D13),
+    # a prototypy z `assets/map/` mapami nie są
+    map_names = set(_game_map_keys(world))
     for key, file_name in music_files.items():
         if not (AUDIO_DIR / "music" / file_name).is_file():
             out.append(Violation(ERROR, "audio.toml:[music]",
@@ -620,6 +717,231 @@ def check_map_display_names(world: World) -> list[Violation]:
     return out
 
 
+def check_spawn_naming(world: World) -> list[Violation]:
+    """Rule 13: nazwa obiektu w `spawn_points` = klucz modelu [+ `_NN`] (C02, D1/D2).
+
+    Dziś obok siebie stoją `BARMAN_ABSINTHRAYNER`, `Johny`, `FishRed01` i `Dog_orange`,
+    więc autor przy każdej nowej postaci zgaduje, która forma jest ta właściwa. Po D1
+    nazwa instancji to klucz modelu, a numer dochodzi dopiero wtedy, gdy kopii na mapie
+    jest więcej niż jedna (D2) - stąd drugi, łagodniejszy poziom tej reguły.
+
+    Nazwa obiektu nie jest ozdobą: zapis kluczuje po niej stan NPC-a (`npc_states[npc.name]`),
+    a warstwa `waypoints` szuka krzywej pod tą samą nazwą.
+    """
+    out: list[Violation] = []
+    for game_map in world.maps:
+        copies = Counter(game_map.spawns.values())
+        for obj_name, model in sorted(game_map.spawns.items()):
+            if not model or obj_name == model:
+                continue
+            suffix = _INSTANCE_SUFFIX.search(obj_name)
+            base = obj_name[:suffix.start()] if suffix else obj_name
+            if base != model:
+                out.append(Violation(
+                    ERROR, f"{game_map.path.name}:{SPAWN_LAYER}",
+                    f"'{obj_name}' stawia model '{model}' - nazwa instancji ma brzmieć "
+                    f"'{model}' albo '{model}_NN' (D1)",
+                ))
+            elif copies[model] == 1:
+                out.append(Violation(
+                    WARN, f"{game_map.path.name}:{SPAWN_LAYER}",
+                    f"'{obj_name}' to jedyna kopia '{model}' na tej mapie - numer "
+                    f"instancji jest zbędny (D2)",
+                ))
+    return out
+
+
+def check_interaction_targets(world: World) -> list[Violation]:
+    """Rule 14: żadne drzwi nie prowadzą donikąd (C02, D6).
+
+    Wyjście niesie trzy dane, z których każda może kłamać osobno: nazwę (klucz mapy
+    docelowej), `to_map` i `destination_entry_point`. Nietrafiony punkt wejścia stawia
+    gracza w (0, 0), a nietrafiona mapa wywala ładowarkę - jedno i drugie widać dopiero
+    po przejściu przez te konkretne drzwi.
+
+    Ta reguła jako jedyna czyta WŁASNOŚCI obiektów, nie same nazwy.
+    """
+    out: list[Violation] = []
+    chests = set(world.config.get("chests") or {})
+    known_maps = set(_game_map_keys(world))
+
+    for game_map in world.maps:
+        own_entries = game_map.names(ENTRY_LAYER)
+        for name, props in game_map.entries(INTERACTIONS_LAYER):
+            source = f"{game_map.path.name}:{INTERACTIONS_LAYER}"
+            obj_type = props.get("obj_type", "").strip()
+
+            if obj_type == "chest":
+                if name not in chests:
+                    out.append(Violation(
+                        ERROR, source,
+                        f"skrzynia '{name}' nie ma wpisu w config.chests",
+                    ))
+                continue
+
+            if obj_type != "exit":
+                out.append(Violation(
+                    ERROR, source,
+                    f"'{name}' ma obj_type='{obj_type}' - ładowarka zna tylko "
+                    f"'exit' i 'chest', więc ten obiekt jest niewidoczny w grze",
+                ))
+                continue
+
+            to_map = props.get("to_map", "").strip()
+            if not to_map:
+                out.append(Violation(ERROR, source, f"wyjście '{name}' nie ma własności 'to_map'"))
+            elif name != to_map:
+                # nie ERROR: klucz mapy docelowej jest w `to_map`, więc gra działa.
+                # Rozjazd i tak jest miną - obiekt nazwany starą nazwą mapy przeżyje
+                # rename i nikt tego nie zauważy.
+                out.append(Violation(
+                    WARN, source,
+                    f"wyjście '{name}' prowadzi do '{to_map}' - nazwa obiektu ma być "
+                    f"kluczem mapy docelowej (D6)",
+                ))
+
+            destination = props.get("destination_entry_point", "").strip()
+            targets = _entry_points_of(world, to_map) if to_map else None
+            if not destination:
+                out.append(Violation(
+                    ERROR, source,
+                    f"wyjście '{name}' nie ma własności 'destination_entry_point'",
+                ))
+            elif to_map in known_maps and targets is not None and destination not in targets:
+                out.append(Violation(
+                    ERROR, source,
+                    f"wyjście '{name}' celuje w punkt '{destination}', którego mapa "
+                    f"'{to_map}' nie ma na warstwie '{ENTRY_LAYER}' "
+                    f"(zna: {', '.join(sorted(targets)) or 'nic'})",
+                ))
+
+            back = props.get("return_entry_point", "").strip()
+            if back and back not in own_entries:
+                out.append(Violation(
+                    ERROR, source,
+                    f"wyjście '{name}' wraca w punkt '{back}', którego ta mapa nie ma "
+                    f"na warstwie '{ENTRY_LAYER}'",
+                ))
+    return out
+
+
+def check_place_prefixes(world: World) -> list[Violation]:
+    """Rule 15: miejsce zawsze z prefiksem mapy - `MAPA:miejsce` (C02, D3).
+
+    `bar`, `tables` i `badroom` istniały równocześnie na dwóch mapach, a goła nazwa
+    trafiała na pierwszą z brzegu. Prefiks jest obowiązkowy także wewnątrz jednej mapy:
+    inaczej dzień, w którym druga mapa dostaje `well`, zmienia znaczenie wpisów, których
+    nikt nie ruszał.
+    """
+    out: list[Violation] = []
+    for row in world.characters_csv:
+        for column in PLACE_COLUMNS:
+            value = (row.get(column) or "").strip()
+            if value and ":" not in value:
+                out.append(Violation(
+                    ERROR, f"characters.csv:{row.get('key', '?')}",
+                    f"{column}='{value}' nie ma prefiksu mapy - ma być 'MAPA:{value}' (D3)",
+                ))
+
+    for name, routine in world.routines.items():
+        for step in routine.get("slot", []) or []:
+            at = str(step.get("at", ""))
+            kind, _, arg = at.partition(":")
+            if kind == "location" and ":" not in arg:
+                out.append(Violation(
+                    ERROR, f"routines.toml:{name}",
+                    f"krok at='{at}' nie ma prefiksu mapy - ma być 'location:MAPA:{arg}' (D3)",
+                ))
+    return out
+
+
+def check_tileset_model_names(world: World) -> list[Violation]:
+    """Rule 16: `model_name` na kaflu tilesetu jest kluczem istniejącej postaci (D14, O8).
+
+    Reguła 1 sprawdza wartość ROZWIĄZANĄ dla obiektu stojącego na mapie, więc kafel,
+    z którego nikt jeszcze nie postawił spawnu, przechodzi jej pod nosem - i czeka
+    uśpiony, aż pierwszy spawn z niego postawiony wywali grę na `KeyError`.
+    """
+    known = set(world.config.get("characters") or {})
+    out: list[Violation] = []
+    for tileset, models in sorted(world.tilesets.items()):
+        for tile_id, model in sorted(models.items()):
+            if model not in known:
+                out.append(Violation(
+                    ERROR, tileset,
+                    f"kafel {tile_id} ma model_name='{model}', którego nie ma "
+                    f"w config.characters",
+                ))
+    return out
+
+
+def check_map_references(world: World) -> list[Violation]:
+    """Rule 17: każde odwołanie do mapy wskazuje mapę z rejestru (C02, D13).
+
+    Mapa „istniała", bo istniał plik `.tmx` - a poziom labiryntu pliku nie ma i nigdy
+    nie miał. Rejestr (`map_registry.all_map_keys`) jest jedyną listą legalnych kluczy;
+    tutaj konfrontujemy z nią drzwi, prefiksy miejsc i cele rutyn naraz.
+    """
+    known = set(_game_map_keys(world))
+    out: list[Violation] = []
+    for source, map_key in _map_references(world):
+        if map_key not in known:
+            out.append(Violation(
+                ERROR, source,
+                f"odwołuje się do mapy '{map_key}', której nie ma w rejestrze map "
+                f"(zna: {', '.join(sorted(known))})",
+            ))
+    return out
+
+
+def check_map_coverage(world: World) -> list[Violation]:
+    """Rule 18 (WARN): mapa bez muzyki, mapa nieosiągalna, utwór bez wpisu (D7, O4).
+
+    Trzy objawy jednego kształtu - dane i świat rozjechały się po cichu. Żaden nie jest
+    błędem: cisza na mapie bywa zamierzona, mapa może czekać na podpięcie, a utwór
+    odłożony na Akt 1 ma prawo leżeć w repo (W5). Ale każdy chce być widziany.
+    """
+    out: list[Violation] = []
+    map_keys = _game_map_keys(world)
+
+    music: dict[str, str] = {}
+    if world.audio is not None:
+        music = {k: v for k, v in (world.audio.get("music") or {}).items() if isinstance(v, str)}
+
+    for key in map_keys:
+        # w labiryncie klucz `maze` ma pierwszeństwo przed nazwą mapy (patrz audio.toml)
+        if key in music or (_is_maze_key(world, key) and "maze" in music):
+            continue
+        out.append(Violation(WARN, "audio.toml:[music]",
+                             f"mapa '{key}' nie ma wpisu muzyki - będzie na niej cisza"))
+
+    reachable = {map_key for _, map_key in _map_references(world)}
+    # Poziomy 2+ labiryntu nie są wymienione w żadnym `.tmx`: schody w dół dostawia
+    # generator (`maze_utils.build_tileset_map_from_maze`), gdy poprzedni poziom istnieje.
+    reachable |= {key for key in map_keys
+                  if _is_maze_key(world, key) and int(key.rsplit("_", 1)[1]) > 1}
+    for key in map_keys:
+        if key not in reachable:
+            out.append(Violation(
+                WARN, "maps",
+                f"mapa '{key}' nie jest celem żadnego wyjścia z warstwy "
+                f"'{INTERACTIONS_LAYER}' - gracz nie ma jak tam wejść "
+                f"(mapa startowa jest tu wyjątkiem)",
+            ))
+
+    music_dir = AUDIO_DIR / "music"
+    if music_dir.is_dir():
+        used = set(music.values())
+        for path in sorted(music_dir.glob("*.ogg")):
+            if path.name not in used:
+                out.append(Violation(
+                    WARN, "assets/audio/music",
+                    f"'{path.name}' nie ma wpisu w audio.toml - {path.stat().st_size // 1024} kB "
+                    f"w repo i w paczce web, których gra nigdy nie odtworzy",
+                ))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -633,6 +955,12 @@ CHECKS = (
     check_duplicate_object_names,
     check_audio_manifest,
     check_map_display_names,
+    check_spawn_naming,
+    check_interaction_targets,
+    check_place_prefixes,
+    check_tileset_model_names,
+    check_map_references,
+    check_map_coverage,
 )
 
 

@@ -4,9 +4,10 @@ Priorytet: **P3** (Faza 4). Rozmiar: M → **L** (po uwagach autora z rev. 2). Z
 korzysta z walidatora z [C01](C01-validate-world.md) i z bramki zgodności zapisu z
 [B02](B02-polityka-wersji-save.md).
 
-Status: **rev. 4 - D1-D19 zamknięte. Etapy 1, 2 i 3 zrobione** (2026-08-09). D13 rozstrzygnięte
-inaczej niż w rev. 3: rejestr map jest wyliczany, `maps.csv` nie powstaje. Następny: etap 4
-(nowe reguły walidatora) - musi wyprzedzić rename'y z etapu 5.
+Status: **rev. 4 - D1-D19 zamknięte. Etapy 1-4 zrobione** (2026-08-09). D13 rozstrzygnięte
+inaczej niż w rev. 3: rejestr map jest wyliczany, `maps.csv` nie powstaje. Następny: etap 5
+(rename'y). **Uwaga: `just validate-world` jest teraz czerwony (39 błędów) - to zamierzone
+przez etap 4 i znika w etapie 5, ale do tego czasu blokuje CI oraz recepty `just import-*`.**
 
 ## Wymagania autora (wiążące, ustalone 2026-08-08)
 
@@ -414,30 +415,75 @@ w ustawieniach bez restartu; ryby w wiosce bez cienia. Napisy w sekcji `[map]` s
 przepisane z nazw plików w Obsidianie - jeśli któraś lokacja ma się nazywać inaczej,
 zmiana jest jednym wierszem w `PL.toml`/`EN.toml`.
 
-## Etap 4: nowe reguły walidatora - PRZED rename'ami (D1, D3, D6, D7, D13, D14)
+## Etap 4: nowe reguły walidatora - PRZED rename'ami (D1, D3, D6, D7, D13, D14) - ZROBIONE ✅ 2026-08-09
 
-Plik: `scripts/validate_world.py` (+ testy w `tests/`).
+Plik: `scripts/validate_world.py` (+ `tests/test_validate_world_rules.py`, 24 testy).
 
-1. **Konwencja nazwy instancji** (D1/D2): nazwa obiektu w `spawn_points` = klucz z
-   `model_name`, opcjonalnie z sufiksem `_NN`. Poziom: ERROR.
-2. **Drzwi donikąd** (D6): obiekt w `interactions` musi nazywać istniejącą mapę albo
-   istniejący klucz skrzyni; `destination_entry_point` musi wskazywać obiekt z warstwy
-   `entry_points` **mapy docelowej**. Poziom: ERROR. Uwaga: walidator czyta dziś same nazwy
-   obiektów - trzeba dołożyć czytanie własności, wzorem `_resolve_model_name`.
-3. **Miejsce bez prefiksu mapy** (D3): wartość w `home`/`work`/`social`/`hobby` oraz
-   `location:` w `routines.toml` musi mieć kształt `MAPA:miejsce`. Poziom: ERROR.
-4. **`model_name` w tilesecie musi być kluczem istniejącej postaci** (D14, O8). Poziom:
-   ERROR. Dziś walidator sprawdza tylko wartość *rozwiązaną dla obiektu na mapie*, więc
-   sześć zepsutych kafli przeszło mu pod nosem.
-5. **Mapa spoza rejestru** (D13) - odwołanie do mapy, której nie zna
+1. **Reguła 13 - konwencja nazwy instancji** (D1/D2): nazwa obiektu w `spawn_points` = klucz
+   z `model_name`, opcjonalnie z sufiksem `_NN`. Poziom: ERROR. Druga połowa (D2: numer
+   należy się dopiero drugiej kopii na mapie) jako WARN.
+2. **Reguła 14 - drzwi donikąd** (D6): obiekt w `interactions` musi nazywać istniejącą mapę
+   albo istniejący klucz skrzyni; `destination_entry_point` musi wskazywać obiekt z warstwy
+   `entry_points` **mapy docelowej**. Poziom: ERROR. To jedyna reguła czytająca **własności**
+   obiektów, nie same nazwy.
+3. **Reguła 15 - miejsce bez prefiksu mapy** (D3): wartość w `home`/`work`/`social`/`hobby`
+   oraz `location:` w `routines.toml` musi mieć kształt `MAPA:miejsce`. Poziom: ERROR.
+4. **Reguła 16 - `model_name` w tilesecie musi być kluczem istniejącej postaci** (D14, O8).
+   Poziom: ERROR. Reguła 1 sprawdza tylko wartość *rozwiązaną dla obiektu na mapie*, więc
+   sześć zepsutych kafli przeszło jej pod nosem.
+5. **Reguła 17 - mapa spoza rejestru** (D13) - odwołanie do mapy, której nie zna
    `map_registry.all_map_keys`. Poziom: ERROR. Druga połowa tej reguły (**mapa bez nazwy
-   wyświetlanej**, D12) jest już zrobiona w etapie 3 jako reguła 12; `_game_map_keys`
-   w `validate_world.py` czeka gotowe.
-6. **Mapa bez muzyki**, **mapa nieosiągalna z żadnej warstwy `interactions`** oraz **plik
-   w `assets/audio/music/` bez wpisu w manifeście** (D7, O4). Poziom: WARN.
+   wyświetlanej**, D12) jest zrobiona w etapie 3 jako reguła 12.
+6. **Reguła 18 - mapa bez muzyki**, **mapa nieosiągalna z żadnej warstwy `interactions`** oraz
+   **plik w `assets/audio/music/` bez wpisu w manifeście** (D7, O4). Poziom: WARN.
 
 Po tym etapie `just validate-world` **świeci na czerwono** - to zamierzone. Walidator jest
 siatką bezpieczeństwa dla etapu 5, więc musi powstać wcześniej.
+
+### Czym wykonanie różni się od planu
+
+- **Reguła 14 nie sprawdza nazwy obiektu wprost przeciw rejestrowi map.** Plan mówił „obiekt
+  musi nazywać istniejącą mapę". Klucz mapy docelowej siedzi jednak we własności `to_map`,
+  a nie w nazwie - gra działa nawet przy rozjeździe. Rozbite na dwa poziomy: `to_map` spoza
+  rejestru to ERROR (reguła 17), a `nazwa != to_map` to WARN. Zapala się dziś raz, na obiekcie
+  `Maze` prowadzącym do `Maze_01`, i to jest cały efekt - a nie błąd nie do naprawienia
+  w etapie 5.
+- **Punkty wejścia labiryntu czytamy z szablonu `assets/MazeTileset/MazeTileset_Ninja.tmx`.**
+  Poziom labiryntu nie ma pliku `.tmx`, więc „mapa docelowa" nie miała warstwy `entry_points`
+  do sprawdzenia. Szablon jest jedynym źródłem prawdy o `Entry`/`Re-Entry` - i to domyka
+  pułapkę „`MazeTileset_Ninja.tmx` jest niewidoczny dla walidatora" w części, którą da się
+  sprawdzić statycznie.
+- **Reguła 14 sprawdza też `return_entry_point`** (punkt powrotu na mapie, na której stoją
+  drzwi). Plan wymieniał tylko `destination_entry_point`, ale to ta sama klasa pomyłki
+  odbita w drugą stronę.
+- **Reguła 11 (audio) przestała ufać liście plików `.tmx`.** Sprawdzała klucz muzyki przeciw
+  `{nazwy wczytanych plików}`, czyli akceptowała prototypy z `assets/map/` i odrzucała każdy
+  poziom labiryntu. Przepięta na ten sam rejestr, co reszta etapu 4.
+- **Reguła 18 zna dwa wyjątki, bez których byłaby szumem**: klucz muzyki `maze` ma
+  pierwszeństwo przed nazwą mapy (więc poziomy labiryntu nie potrzebują własnych wpisów),
+  a poziomy 2+ labiryntu są osiągalne przez schody dostawiane przez generator, nie przez
+  wyjście w żadnym `.tmx`.
+- **`GameMap` niesie teraz własności obiektów** (`props`, równolegle do `objects`), a `World` -
+  mapę wszystkich tilesetów z `model_name` oraz punkty wejścia szablonu labiryntu.
+
+### Wynik
+
+- `just validate-world` - **39 błędów, 10 ostrzeżeń** (przed etapem: 0 / 5). Rozkład:
+  27 nazw instancji (reguła 13), 11 miejsc bez prefiksu w `characters.csv` + 1 w `routines.toml`
+  (reguła 15); nowe ostrzeżenia to 4 nieużywane utwory (O4/W5) i 1 rozjazd nazwy wyjścia `Maze`
+- **zero błędów** w regułach 14, 16 i 17 - świat jest już spójny w drzwiach, tilesetach
+  i odwołaniach do map; te trzy reguły są od razu bramkami regresji dla etapu 5
+- `just test-unit` - **531/531 w 38 plikach** (24 nowe); `mypy` - czysty (107 plików)
+- `just test-smoke` **nie był uruchamiany**: etap nie dotyka ani jednej linijki w `project/`,
+  więc nie ma czego zregresować w grze
+
+**Skutek uboczny do świadomego przyjęcia:** `just validate-world` jest bramką na CI (ostatni
+krok `unit_tests.yml`) i domyka recepty `just import-entities` / `import-dialogs` /
+`import-quests`. Do czasu etapu 5 CI jest czerwone, a import treści z Obsidiana kończy się
+błędem po zapisaniu plików (walidator niczego nie psuje - `import_entities.py` zdąży zapisać
+`config.json`, tylko recepta kończy się kodem 1). Alternatywą byłoby trzymanie listy znanych
+błędów w pliku, ale to trzeci rejestr stanu przejściowego dla jednego commita - taniej jest
+zrobić etap 5.
 
 ## Etap 5: rename'y (D1, D2, D3, D4, D5, D9, D10, D17, D18)
 
