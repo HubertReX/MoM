@@ -867,6 +867,27 @@ referencji do managera ani nie zna nazw plików.
   ≤ 1,5 MB na utwór. Pygbag pakuje `assets/` w całości - `web.zip` urósł z 1,3 MB do
   7,1 MB. Konwersja i licencje: `project/assets/audio/SOURCES.md`.
 
+## Klucz encji vs nazwa wyświetlana (C02)
+
+Każda encja - także **mapa** - ma **klucz** (`LOST_CORK_TAVERN`, `Player`, `FISH_RED`),
+którym posługują się dane, kod i dokumenty w Obsidianie, oraz **nazwę wyświetlaną**,
+która jest tłumaczona i którą widzi gracz. Te dwie warstwy nie wymieniają się rolami:
+
+- **Klucz nigdy nie trafia na ekran.** Nazwa mapy dla HUD-a siedzi w sekcji `[map]`
+  plików `assets/locale/PL.toml` i `EN.toml`, kluczowana kluczem mapy (stem `.tmx`
+  albo poziom labiryntu `Maze_NN`). Źródłem napisów są dokumenty lokacji
+  (`doc/PL/Lokalizacje/`, `doc/EN/Locations/`): nazwa pliku = napis, alias = klucz.
+  Nowa mapa bez wpisu w obu językach = **błąd** `just validate-world` (reguła 12).
+- **Napis nigdy nie służy za test tożsamości.** Bohatera rozpoznajemy przez
+  `npc.config_key == PLAYER_CONFIG_KEY`, a nie przez `model.name_EN == "Player"` -
+  inaczej wpisanie "Gracz" w kolumnę `name_PL` po cichu wyłącza walkę, śmierć
+  i dźwięki gracza. `tests/test_map_display_names.py` pilnuje, że kod do tego nie wraca.
+- **`NPC.name` ≠ `NPC.config_key`.** Pierwsze to nazwa obiektu Tiled (pod nią zapisuje się
+  stan), drugie to klucz z `config.json` (pod nim żyją dialogi, questy i model).
+- Napis czytamy na żywo: `_("map.<klucz>")` sięga po bieżące `settings.LANG`, więc zmiana
+  języka działa bez restartu. Nie domykaj języka przez `from settings import LANG`,
+  a cache w panelu kluczuj **wyrenderowanym napisem**, nie kluczem encji.
+
 ## Konwencje
 
 - Stałe → `settings.py`; typy wyliczeniowe → `enums.py`. Nie hardkoduj magic numbers w logice.

@@ -236,6 +236,13 @@ def normalise_sentiment(sentiment: str) -> str:
     return SENTIMENT_EMOJI_TO_NAME.get(sentiment, sentiment)
 
 
+# Klucz postaci gracza w `config.json` / `characters.csv` (C02, O6). Kod odróżniał
+# gracza od NPC-ów przez `model.name_EN == "Player"`, czyli przez **napis dla gracza** -
+# tę samą warstwę, którą W2 każe tłumaczyć. Wpisanie "Gracz" w kolumnę `name_PL`
+# po cichu wyłączyłoby walkę, śmierć i dźwięki bohatera. Porównujemy po kluczu,
+# a napis niech sobie żyje w locale.
+PLAYER_CONFIG_KEY = "Player"
+
 TILE_SIZE = 16
 X_TILES = 80  # 100
 Y_TILES = 45  # 64

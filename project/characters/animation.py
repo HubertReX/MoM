@@ -18,6 +18,7 @@ from animation.transitions import AnimationTransition
 from settings import (
     AVATAR_SCALE,
     CHARACTERS_DIR,
+    PLAYER_CONFIG_KEY,
     SPRITE_SHEET_DEFINITION_4x7,
     SPRITE_SHEET_DEFINITIONS,
     STUNNED_COLOR,
@@ -48,7 +49,7 @@ def load_sprites(npc: "NPC") -> None:
     npc.avatar = pygame.image.load(str(CHARACTERS_DIR / npc.model.sprite / "Faceset.png")).convert_alpha()
     # Player avatar will be shown on the right side of the screen
     # and need to be flipped to face left
-    if npc.model.name_EN != "Player":
+    if npc.config_key != PLAYER_CONFIG_KEY:
         npc.avatar = pygame.transform.flip(npc.avatar, True, False)
 
     npc.avatar = pygame.transform.scale(npc.avatar, (TILE_SIZE * AVATAR_SCALE, TILE_SIZE * AVATAR_SCALE))

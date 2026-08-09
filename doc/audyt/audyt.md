@@ -95,8 +95,10 @@ mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły 
 
 - [x] [E03 - prawdziwa mgła wojny w labiryncie (dokument decyzyjny + implementacja); po E01](E03-fog-of-war-labirynt.md) - P3 ✅ 2026-08-02 (dokument decyzyjny D1-D11 + `scene/fog_of_war.py`: trzy stany widoczności, dwa algorytmy wybierane w SettingsMenu, potwory jako źródła światła, stan mgły w zapisie bez podbicia wersji; web `draw` +0,3 ms przy budżecie 16,7 ms)
 - [x] [C02 - stopniowe ujednolicenie kluczy Tiled ↔ config](C02-ujednolicenie-kluczy.md) - P3
-  (dokument decyzyjny D1-D11 **czeka na akceptację**:
-  [C02-klucze-encji-2026-08-08.html](../_attachements/C02-klucze-encji-2026-08-08.html))
+  (decyzje D1-D19 zamknięte:
+  [C02-klucze-encji-2026-08-08.html](../_attachements/C02-klucze-encji-2026-08-08.html);
+  etapy 1-2 ✅ 2026-08-08, etap 3 ✅ 2026-08-09 - nazwy map w locale, HUD nigdy nie pokazuje
+  klucza, `PLAYER_CONFIG_KEY` zamiast `name_EN == "Player"`; następny etap 4)
 - [ ] H01 - ambient barks + wskaźnik aktywnego questa na HUD - P3
 
 ## Zasady realizacji zadań (dla agentów)

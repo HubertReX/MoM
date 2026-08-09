@@ -51,6 +51,16 @@ MAP_DIRS = (
 )
 SPRITE_DIR = ASSETS / "NinjaAdventure" / "characters"
 
+# Mapy, które gra faktycznie ładuje. `ASSETS/"map"` powyżej to prototypy w starszym
+# schemacie (warstwa `exits`, brak `obj_type`) - walidator je czyta, ale nie są
+# lokacjami i nie mają dostać nazw wyświetlanych.
+GAME_MAPS_DIR = ASSETS / "NinjaAdventure" / "maps"
+LOCALE_DIR = ASSETS / "locale"
+LOCALE_LANGS = ("PL", "EN")
+# Powtórzone za `project/scene/map_registry.MAZE_MAP_PREFIX` świadomie: ten skrypt
+# nie importuje gry (patrz docstring), a `map_registry` ciągnie `settings`, czyli pygame'a.
+MAZE_MAP_PREFIX = "Maze"
+
 # Tiled object layers this validator understands
 SPAWN_LAYER = "spawn_points"
 PLACES_LAYER = "places"
@@ -258,6 +268,19 @@ def _maze_monsters(world: World) -> set[str]:
         if boss:
             keys.add(str(boss))
     return keys
+
+
+def _game_map_keys(world: World) -> list[str]:
+    """Klucze map, które gra ładuje: statyczne `.tmx` plus poziomy labiryntu.
+
+    Ten sam rejestr, co `project/scene/map_registry.all_map_keys` - poziom labiryntu
+    nie ma pliku `.tmx`, więc sama obecność pliku nigdy nie wystarczyła za listę
+    legalnych map (C02, D13).
+    """
+    static = {p.stem for p in GAME_MAPS_DIR.glob("*.tmx")}
+    maze = {f"{MAZE_MAP_PREFIX}_{int(level):02d}"
+            for level in (world.config.get("maze_configs") or {})}
+    return sorted(static | maze)
 
 
 def _played_sfx_keys() -> set[str]:
@@ -553,6 +576,50 @@ def check_audio_manifest(world: World) -> list[Violation]:
     return out
 
 
+def check_map_display_names(world: World) -> list[Violation]:
+    """Rule 12: każda mapa ma nazwę wyświetlaną w PL i EN (C02, D12/W2).
+
+    Klucz encji (`LOST_CORK_TAVERN`) służy do projektowania świata, a gracz ma widzieć
+    napis w swoim języku. HUD bierze go z sekcji `[map]` w locale; brak wpisu oznacza,
+    że na ekranie wyląduje surowy klucz - dokładnie to, co C02 likwiduje (O5).
+    Dodana mapa bez wpisu ma się zapalić tutaj, a nie dopiero na zrzucie ekranu.
+    """
+    out: list[Violation] = []
+    tables: dict[str, dict[str, str]] = {}
+    for lang in LOCALE_LANGS:
+        path = LOCALE_DIR / f"{lang}.toml"
+        try:
+            with open(path, "rb") as f:
+                data = tomllib.load(f)
+        except (OSError, tomllib.TOMLDecodeError) as exc:
+            out.append(Violation(ERROR, f"locale/{lang}.toml", f"nie da się wczytać: {exc}"))
+            continue
+        section = data.get("map", {})
+        if not isinstance(section, dict):
+            out.append(Violation(ERROR, f"locale/{lang}.toml:[map]", "musi być tabelą"))
+            continue
+        tables[lang] = {key: str(value) for key, value in section.items()}
+
+    if len(tables) < len(LOCALE_LANGS):
+        return out
+
+    map_keys = _game_map_keys(world)
+    for key in map_keys:
+        for lang in LOCALE_LANGS:
+            if not tables[lang].get(key, "").strip():
+                out.append(Violation(
+                    ERROR, f"locale/{lang}.toml:[map]",
+                    f"mapa '{key}' nie ma nazwy wyświetlanej - HUD pokaże graczowi surowy klucz",
+                ))
+    for lang in LOCALE_LANGS:
+        for key in sorted(set(tables[lang]) - set(map_keys)):
+            out.append(Violation(
+                WARN, f"locale/{lang}.toml:[map]",
+                f"'{key}' nie jest kluczem żadnej mapy - martwy wpis po rename'ie?",
+            ))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -565,6 +632,7 @@ CHECKS = (
     check_legacy_waypoints,
     check_duplicate_object_names,
     check_audio_manifest,
+    check_map_display_names,
 )
 
 

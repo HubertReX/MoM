@@ -15,6 +15,7 @@ import scene
 from enums import ItemTypeEnum
 from objects import ItemSprite
 from settings import (
+    PLAYER_CONFIG_KEY,
     _,
     entity_name,
     get_buy_price_multiplier,
@@ -166,7 +167,7 @@ def pick_up(npc: "NPC", item: ItemSprite) -> bool:
                 scene.NotificationTypeEnum.failure)
 
     # tylko bohater - kupiec chowający sprzedany przedmiot nie brzęczy graczowi w ucho
-    if result and npc.model.name_EN == "Player":
+    if result and npc.config_key == PLAYER_CONFIG_KEY:
         audio.play_sfx("coins" if item.model.type == ItemTypeEnum.money else "item_pick_up")
 
     return result
@@ -301,7 +302,7 @@ def drop_item(npc: "NPC", show: bool = True, item: "ItemSprite | None" = None) -
 
     # `show=False` to transfer w handlu albo łup wypadający z trupa, nie rzut
     # gracza o ziemię - te ścieżki mają własne dźwięki
-    if show and npc.model.name_EN == "Player":
+    if show and npc.config_key == PLAYER_CONFIG_KEY:
         audio.play_sfx("item_drop")
 
     return selected_item

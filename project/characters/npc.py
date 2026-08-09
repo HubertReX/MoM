@@ -391,6 +391,7 @@ class NPC(pygame.sprite.Sprite):
 
     def create_health_bar(self) -> HealthBar:
         return HealthBar(self.name,
+                         self.config_key,
                          self.model,
                          self.game.render_text,
                          self.label_group,
@@ -401,7 +402,10 @@ class NPC(pygame.sprite.Sprite):
     def create_shadow(self) -> Shadow:
         empty: bool = False
         # TODO: add proper handling of shadows hiding when NPC is in water
-        if "Fish" in self.model.name_EN:
+        # Po kluczu, nie po `name_EN` (C02, O6): napis dla gracza brzmi "red fish",
+        # więc test `"Fish" in name_EN` nie trafiał od zawsze i ryby chodziły
+        # z cieniem pod wodą. Klucz `FISH_RED` jest stabilny i nietłumaczony.
+        if self.config_key.startswith("FISH"):
             empty = True
         return Shadow(self.shadow_group, (0, 0), (TILE_SIZE - 2, 6), empty)
 

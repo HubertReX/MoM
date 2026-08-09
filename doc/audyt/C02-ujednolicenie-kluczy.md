@@ -4,9 +4,9 @@ Priorytet: **P3** (Faza 4). Rozmiar: M → **L** (po uwagach autora z rev. 2). Z
 korzysta z walidatora z [C01](C01-validate-world.md) i z bramki zgodności zapisu z
 [B02](B02-polityka-wersji-save.md).
 
-Status: **rev. 4 - D1-D19 zamknięte. Etapy 1 i 2 zrobione** (2026-08-08). D13 rozstrzygnięte
-inaczej niż w rev. 3: rejestr map jest wyliczany, `maps.csv` nie powstaje. Następny: etap 3
-(warstwa nazw wyświetlanych) - musi wyprzedzić rename map z etapu 5.
+Status: **rev. 4 - D1-D19 zamknięte. Etapy 1, 2 i 3 zrobione** (2026-08-09). D13 rozstrzygnięte
+inaczej niż w rev. 3: rejestr map jest wyliczany, `maps.csv` nie powstaje. Następny: etap 4
+(nowe reguły walidatora) - musi wyprzedzić rename'y z etapu 5.
 
 ## Wymagania autora (wiążące, ustalone 2026-08-08)
 
@@ -356,24 +356,63 @@ Czysto techniczny, bez ani jednego rename'u - odwracalny osobnym commitem.
 w prawdziwej grze (headless i smoke to potwierdzają, ale sterownik `dummy` nie jest wierny -
 patrz notatka o zrzutach headless).
 
-## Etap 3: warstwa nazw wyświetlanych (D12, W2, O6) - PRZED renamem map
+## Etap 3: warstwa nazw wyświetlanych (D12, W2, O6) - ZROBIONE ✅ 2026-08-09
 
-**Musi wyprzedzić etap 5**: gdyby rename map poszedł pierwszy, gracz zobaczyłby na HUD-zie
+**Musiał wyprzedzić etap 5**: gdyby rename map poszedł pierwszy, gracz zobaczyłby na HUD-zie
 `JACOBS_CHAMBER`, czyli zmiana pogorszyłaby stan widoczny w grze, zanim go poprawi.
 
-- `project/assets/locale/PL.toml` i `EN.toml` - nowa sekcja `[map]`, zasilona z dokumentów
-  lokacji w `doc/`
-- `project/ui/panels/hud.py` - `_update_location_cache` czyta nazwę z locale zamiast
-  wyświetlać `scene.current_map`; `_format_map_name` (hack na `Maze_01`) znika
-- `combat.py`, `objects.py` - `name_EN == "Player"` → porównanie po kluczu (O6)
-- `scripts/validate_locale.py` albo `validate_world.py` - reguła „mapa bez nazwy
-  wyświetlanej w PL i EN = ERROR"
+- `project/assets/locale/PL.toml` i `EN.toml` - nowa sekcja `[map]`, **7 wpisów** (3 mapy
+  statyczne + 4 poziomy labiryntu), napisy wzięte wprost z nazw plików dokumentów lokacji
+  (`doc/PL/Lokalizacje/`, `doc/EN/Locations/`)
+- `project/ui/panels/hud.py` - `_update_location_cache` czyta `_("map.<klucz>")`;
+  `_format_map_name` (hack na `Maze_01`) skasowany
+- `settings.py` - nowa stała `PLAYER_CONFIG_KEY = "Player"`
+- `combat.py` (4×), `objects.py`, `animation.py`, `inventory.py` (2×), `movement.py`,
+  `npc.py` - `name_EN == "Player"` → `config_key == PLAYER_CONFIG_KEY` (O6)
+- `scripts/validate_world.py` - **reguła 12**: „mapa bez nazwy wyświetlanej w PL i EN = ERROR"
+  (plus WARN na wpis w locale, który nie jest żadną mapą)
+- `tests/test_map_display_names.py` (8 testów) + wpis „Klucz encji vs nazwa wyświetlana"
+  w `project/AGENTS.md`
 
-Pułapka: zmiana języka w locie musi działać. Czytaj `settings.LANG` na żywo, nie przez
-`from settings import LANG`, a panele odświeżaj przez `rebuild_i18n()`.
+### Czym wykonanie różni się od planu
 
-Kryterium: HUD pokazuje „Tawerna Brakująca Klepka" / „the Lost Cork Tavern", a
-przełączenie języka w ustawieniach zmienia napis bez restartu. **Weryfikacja u autora.**
+- **Miejsc z `name_EN == "Player"` było 9, nie 2.** Plan wymieniał `combat.py` i `objects.py`;
+  ten sam test siedział też w `animation.py:51` (odbicie awatara), `inventory.py:169,304`
+  (dźwięki podniesienia i upuszczenia) i `movement.py:575` (kamera po cofnięciu ruchu).
+  Zostawienie połowy oznaczałoby, że „Gracz" w `name_PL` psuje grę tylko trochę - a to gorzej
+  niż nie psuje wcale, bo trudniej zauważyć. Test pilnuje teraz **całego** `project/`.
+- **`HealthBar` dostał nowy parametr `config_key`.** Nie miał żadnego dostępu do klucza:
+  `name` to nazwa obiektu Tiled, a dla gracza brzmi ona „Malachi", nie „Player".
+- **Przy okazji wyszedł zastany błąd: ryby miały cień pod wodą.** `npc.py:404` testowało
+  `"Fish" in self.model.name_EN`, a `name_EN` dla `FISH_RED` to „red fish" - z małej litery,
+  więc warunek nie trafiał **nigdy**. Po przejściu na `config_key.startswith("FISH")` warunek
+  działa i cień znika, czyli tak, jak zamierzał autor `TODO` w tej linijce. **Do obejrzenia
+  w grze** - to jedyna widoczna zmiana wyglądu w tym etapie poza HUD-em.
+- **Cache panelu lokacji jest kluczowany napisem, nie kluczem mapy.** Dzięki temu zmiana
+  języka unieważnia go sama i HUD nie potrzebuje własnego `rebuild_i18n()` - pozostałe
+  napisy w tym panelu i tak są czytane co klatkę przez `_()`.
+- **Brak wpisu = fallback do samego klucza**, nie do `map.KLUCZ`. `_()` zwraca cały klucz
+  z kropką, co na ekranie wyglądałoby jak literówka w kodzie, a nie jak brakujące tłumaczenie.
+- **`_location_text` skasowane** - po zmianie klucza cache'u nikt go już nie czytał.
+- Nazwa PL wioski to **„Gafowo Kolonia"** (z `doc/PL/Lokalizacje/Gafowo Kolonia.md`), a nie
+  „Porażkowo" - to drugie jest nazwą `QUIRKSHIRE`. Napisy poziomów labiryntu: „Labirynt -
+  poziom N" / „the Maze - level N", żeby numer poziomu nie zginął (dotąd HUD pokazywał „Maze 1").
+
+### Wynik
+
+- `just validate-world` - 0 błędów, te same 5 znanych ostrzeżeń; `validate_locale` - OK
+  (227 kluczy); `mypy` - czysty (107 plików)
+- `just test-unit` - **507/507 w 37 plikach** (8 nowych)
+- `just test-smoke` - 6/6 scenariuszy, ss-review PASS
+- headless przez prawdziwą `Scene`: HUD pokazuje „Gafowo Kolonia" (PL) / „Blunderhaven" (EN),
+  przełączenie `settings.LANG` w locie zmienia napis bez restartu, `Maze_02` →
+  „Labirynt - poziom 2", `LOST_CORK_TAVERN` → „Tawerna Brakująca klepka", nieznana mapa →
+  sam klucz
+
+**Do weryfikacji u autora:** nazwa lokacji na HUD-zie w grze i przełączenie języka
+w ustawieniach bez restartu; ryby w wiosce bez cienia. Napisy w sekcji `[map]` są
+przepisane z nazw plików w Obsidianie - jeśli któraś lokacja ma się nazywać inaczej,
+zmiana jest jednym wierszem w `PL.toml`/`EN.toml`.
 
 ## Etap 4: nowe reguły walidatora - PRZED rename'ami (D1, D3, D6, D7, D13, D14)
 
@@ -390,7 +429,10 @@ Plik: `scripts/validate_world.py` (+ testy w `tests/`).
 4. **`model_name` w tilesecie musi być kluczem istniejącej postaci** (D14, O8). Poziom:
    ERROR. Dziś walidator sprawdza tylko wartość *rozwiązaną dla obiektu na mapie*, więc
    sześć zepsutych kafli przeszło mu pod nosem.
-5. **Mapa spoza `maps.csv`** i **mapa bez nazwy wyświetlanej** (D13, D12). Poziom: ERROR.
+5. **Mapa spoza rejestru** (D13) - odwołanie do mapy, której nie zna
+   `map_registry.all_map_keys`. Poziom: ERROR. Druga połowa tej reguły (**mapa bez nazwy
+   wyświetlanej**, D12) jest już zrobiona w etapie 3 jako reguła 12; `_game_map_keys`
+   w `validate_world.py` czeka gotowe.
 6. **Mapa bez muzyki**, **mapa nieosiągalna z żadnej warstwy `interactions`** oraz **plik
    w `assets/audio/music/` bez wpisu w manifeście** (D7, O4). Poziom: WARN.
 
@@ -428,7 +470,7 @@ Zakres (pełna tabela w dokumencie HTML):
 ## Kryteria akceptacji
 
 - `just validate-world` - 0 błędów, ostrzeżenia tylko znane (dziś 5)
-- `just test-unit` - komplet zielony (dziś 499 testów w 36 plikach) + nowy `test_rename_entity.py`
+- `just test-unit` - komplet zielony (dziś 507 testów w 37 plikach) + nowy `test_rename_entity.py`
 - scenariusz agentowy z przewinięciem doby: `BART` i `JOHNY` docierają do `market_stall_*`,
   barman do `bar` (rutyny przeżyły rename)
 - nowy zapis wczytuje się w komplecie; **stary jest widocznie odrzucony**, nie po cichu okrojony

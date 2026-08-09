@@ -141,7 +141,7 @@
 <div class="wrap">
 
 <div class="topbar">
-  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 3 po uwagach autora (W6-W13) · status: <strong>D1-D19 rozstrzygnięte - gotowe do wykonania</strong></p>
+  <p class="eyebrow" style="margin:0">C02 · dokument decyzyjny · 2026-08-08 · rev. 4 po uwagach autora (W6-W13) · status: <strong>D1-D19 rozstrzygnięte · etapy 1-3 ✅ 2026-08-09 · w toku: etap 4</strong></p>
   <button id="themeToggle" title="Przełącz motyw">🌗 Motyw</button>
 </div>
 
@@ -574,7 +574,7 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
 </div>
 
 <div class="dec" id="d12">
-  <h3><span class="qid">D12</span> Gdzie żyją nazwy wyświetlane graczowi (W2) <span class="badge err">nowa, do rozstrzygnięcia</span></h3>
+  <h3><span class="qid">D12</span> Gdzie żyją nazwy wyświetlane graczowi (W2) <span class="badge ok">✅ przyjęte A, wdrożone 2026-08-09</span></h3>
   <p>W2 wymaga warstwy, której dziś nie ma. Potrzebna od razu, bo bez niej rename map pogarsza sytuację:
   gracz zobaczy na HUD-zie <code>JACOBS_CHAMBER</code> zamiast dzisiejszego, przypadkiem znośnego <code>JacobsChamber</code>.</p>
   <div class="tablewrap"><table>
@@ -601,6 +601,14 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
   <code>notify.bought</code> niż do <code>speed_walk</code>.</p>
   <p style="margin:var(--s3) 0 0"><strong>Niezależnie od wyboru</strong> dochodzi reguła walidatora: „mapa bez
   nazwy wyświetlanej = ERROR" - inaczej pierwsza mapa Aktu 1 znowu pokaże graczowi klucz.</p>
+  <div class="callout ok" style="margin:var(--s3) 0 0">
+    <p style="margin:0"><strong>Wdrożone (etap 3, 2026-08-09).</strong> Sekcja <code>[map]</code> ma 7 wpisów
+    w obu językach, HUD czyta je przez <code>_("map.&lt;klucz&gt;")</code>, a reguła 12
+    <code>validate-world</code> pilnuje kompletu. Napisy wzięte wprost z nazw plików dokumentów lokacji,
+    więc wioska to <strong>„Gafowo Kolonia"</strong> / „Blunderhaven", a poziomy labiryntu -
+    „Labirynt - poziom N" / „the Maze - level N". Zmiana dowolnego napisu = jeden wiersz w
+    <code>PL.toml</code>/<code>EN.toml</code>.</p>
+  </div>
 </div>
 
 <div class="dec">
@@ -745,7 +753,7 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
 <h3 style="margin-top:var(--s5)">Decyzje dołożone w rev. 3 (uwagi autora W6-W13)</h3>
 
 <div class="dec" id="d13">
-  <h3><span class="qid">D13</span> Właściwości labiryntu poza <code>.tmx</code> (W8)</h3>
+  <h3><span class="qid">D13</span> Właściwości labiryntu poza <code>.tmx</code> (W8) <span class="badge ok">✅ wdrożone 2026-08-08 - rejestr wyliczany, bez <code>maps.csv</code></span></h3>
   <p>Dziś obiekt <code>Maze</code> w warstwie <code>interactions</code> mapy <code>Village</code> niesie siedem
   własności: <code>obj_type</code>, <code>to_map</code>, <code>entry_point</code>, <code>return_entry_point</code>,
   <code>is_maze</code>, <code>maze_cols</code>, <code>maze_rows</code>. Po wejściu w kod trzy ostatnie okazały się
@@ -782,24 +790,23 @@ wystarczy „D1-D11 ok". Jeśli nie, napisz numer i wybraną literę.</p>
         <td>Opisują to konkretne przejście, więc siedzą tam, gdzie trzeba</td></tr>
     </tbody>
   </table></div>
-  <p style="margin:var(--s3) 0 0"><strong>Skąd wtedy <code>is_maze</code>?</strong> Z nowego, minimalnego
-  rejestru map - <code>project/config_model/maps.csv</code>:</p>
-  <pre><code>key;kind;doc_EN;doc_PL
-BLUNDERHAVEN;static;Blunderhaven;Gafowo Kolonia
-LOST_CORK_TAVERN;static;the Lost Cork Tavern;Tawerna Brakująca klepka
-JACOBS_CHAMBER;static;;
-MAZE;maze;Caverns of Confusion;Jaskinie zagmatwania</code></pre>
-  <p><code>is_maze</code> wyjścia = <code>maps[to_map].kind == "maze"</code> (poziomy <code>MAZE_01</code>,
-  <code>MAZE_02</code>… zdejmują sufiks - kod i tak już parsuje <code>split("_")[1]</code>, żeby dostać numer
-  poziomu). Ten sam plik daje walidatorowi <strong>listę legalnych kluczy map</strong>, której dziś nie ma
-  (mapa „istnieje", bo istnieje plik <code>.tmx</code> - a labirynt nie ma pliku), i domyka regułę z D12:
-  każdy klucz z <code>maps.csv</code> musi mieć nazwę wyświetlaną w PL i EN.</p>
-  <div class="callout warn">
-    <p style="margin:0"><strong>Do rozstrzygnięcia:</strong> czy kolumny <code>doc_EN</code>/<code>doc_PL</code>
-    (nazwy plików w <code>doc/</code>) mają być w <code>maps.csv</code>, czy nazwy wyświetlane mają jechać
-    wyłącznie przez locale (D12=A), a <code>maps.csv</code> ma zostać goły (<code>key;kind</code>).
-    Rekomendacja: <strong>goły</strong> - jedna prawda o napisach UI, a powiązanie z dokumentem trzyma
-    alias w samym <code>.md</code>, tak jak dziś.</p>
+  <p style="margin:var(--s3) 0 0"><strong>Skąd wtedy <code>is_maze</code>?</strong> Rev. 3 proponowała nowy
+  plik <code>project/config_model/maps.csv</code> (<code>key;kind</code>). Autor zakwestionował potrzebę
+  osobnego pliku - słusznie: rejestr jest <strong>wyliczalny z tego, co już jest</strong>, a <code>kind</code>
+  przechowywałby wartość pochodną.</p>
+  <pre><code>zbiór map = {stemy maps/*.tmx} ∪ {MAZE_01 … MAZE_0N dla N wierszy maze_configs.csv}
+is_maze   = klucz należy do tego drugiego zbioru</code></pre>
+  <div class="callout ok">
+    <p style="margin-bottom:var(--s2)"><strong>✅ Wdrożone 2026-08-08:</strong>
+    <code>project/scene/map_registry.py</code> - <code>maze_map_keys</code>, <code>is_maze_map</code>,
+    <code>maze_level</code>, <code>static_map_keys</code>, <code>all_map_keys</code>,
+    <code>unknown_map_keys</code>. Zero nowych plików danych, zero zmian w <code>config_pydantic.py</code>,
+    zero regeneracji web-configu.</p>
+    <p style="margin:0">Głębokość labiryntu <em>już dziś</em> jest ograniczona liczbą wierszy
+    <code>maze_configs.csv</code> (<code>max_level = len(maze_configs)</code>, <code>map_loader.py:472</code>),
+    a kod od dawna parsuje numer poziomu z klucza konwencją. Ten sam rejestr daje walidatorowi
+    <strong>listę legalnych kluczy map</strong>, której dziś nie ma (mapa „istnieje", bo istnieje plik
+    <code>.tmx</code> - a labirynt pliku nie ma) - i na nim stoi reguła 12 z etapu 3 (D12).</p>
   </div>
 </div>
 
@@ -1181,7 +1188,7 @@ mieć swój <code>bar</code>. Prefiks mapy to rozstrzyga, dlatego jest obowiązk
     <tr><td>4</td><td>mapa źródłowa, warstwa <code>interactions</code></td><td>obiekt o nazwie klucza mapy docelowej + własność <code>destination_entry_point</code></td><td><code>LOST_CORK_TAVERN</code>, <code>destination_entry_point=LOST_CORK_TAVERN_DOOR</code></td></tr>
     <tr><td>5</td><td>mapa docelowa, warstwa <code>entry_points</code></td><td>obiekt o nazwie z kroku 2 + zawsze <code>start</code></td><td><code>LOST_CORK_TAVERN_DOOR</code>, <code>start</code></td></tr>
     <tr><td>6</td><td><code>audio.toml</code>, sekcja <code>[music]</code></td><td>klucz = klucz mapy (brak wpisu = cisza, po D7 walidator ostrzeże)</td><td><code>LOST_CORK_TAVERN = "…ogg"</code></td></tr>
-    <tr><td>7</td><td><code>locale/PL.toml</code> i <code>EN.toml</code>, sekcja <code>[map]</code></td><td><strong>nazwa dla gracza</strong> - bez niej HUD pokaże klucz (D12)</td><td><code>LOST_CORK_TAVERN = "Tawerna Brakująca Klepka"</code></td></tr>
+    <tr><td>7</td><td><code>locale/PL.toml</code> i <code>EN.toml</code>, sekcja <code>[map]</code></td><td><strong>nazwa dla gracza</strong> - bez niej HUD pokaże klucz (D12)</td><td><code>LOST_CORK_TAVERN = "Tawerna Brakująca klepka"</code></td></tr>
   </tbody>
 </table></div>
 <p class="prose" style="margin-top:var(--s3)">Krok 7 to nowość z W2 i najłatwiejszy do zapomnienia -
@@ -1201,9 +1208,9 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
   <li>Czy drzwi prowadzą do istniejącego punktu wejścia - <span class="badge info">nowa reguła z C02 (D6)</span></li>
   <li>Czy mapa ma muzykę i czy da się do niej dojść - <span class="badge info">nowa reguła z C02 (D7)</span></li>
   <li>Czy plik muzyki ma wpis w manifeście - <span class="badge info">nowa reguła z C02 (O4)</span></li>
-  <li><strong>Czy mapa ma nazwę wyświetlaną w PL i EN</strong> - <span class="badge info">nowa reguła z C02 (D12)</span></li>
+  <li><strong>Czy mapa ma nazwę wyświetlaną w PL i EN</strong> - <span class="badge ok">✅ reguła 12, 2026-08-09 (D12)</span></li>
   <li>Czy <code>model_name</code> w tilesecie jest kluczem istniejącej postaci - <span class="badge info">nowa reguła z C02 (D14)</span></li>
-  <li>Czy mapa jest w rejestrze <code>maps.csv</code> - <span class="badge info">nowa reguła z C02 (D13)</span></li>
+  <li>Czy mapa jest w rejestrze <code>scene/map_registry.py</code> - <span class="badge info">nowa reguła z C02 (D13)</span></li>
   <li>Czy <code>rename_entity.py</code> zna wszystkie pliki z nazwami encji - <span class="badge info">nowy test na CI (D17)</span></li>
 </ul>
 <a class="backlink" href="#toc">↑ Spis treści</a>
@@ -1213,7 +1220,7 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
 
 <div class="grid cols-2">
   <div class="card"><h4>Etap 1 - sprzątanie po rename'ie tawerny + higiena plików</h4>
-    <p style="margin:0 0 var(--s2)"><span class="badge warn">niezależne od reszty</span></p>
+    <p style="margin:0 0 var(--s2)"><span class="badge ok">✅ zrobione 2026-08-08</span> <span class="badge warn">niezależne od reszty</span></p>
     <ul style="margin:0">
       <li><code>VillageHouse.tmx</code> → <code>maps/_wip/</code> (W3); ładowarka i walidator ignorują <code>_wip/</code></li>
       <li>usunąć martwy klucz <code>VillageHouse</code> z <code>audio.toml</code></li>
@@ -1223,22 +1230,30 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
       <li>naprawa 6 kafli <code>model_name</code> w <code>CharacterTileset.tsx</code> i usunięcie 3 własności
         z obiektów; kafel dla <code>ROBIN</code> (D14)</li>
     </ul></div>
-  <div class="card"><h4>Etap 2 - rejestr map i właściwości labiryntu <span class="badge err">nowy</span></h4>
-    <p style="margin:0 0 var(--s2)"><span class="badge info">czysto techniczny, bez rename'ów</span></p>
+  <div class="card"><h4>Etap 2 - rejestr map i właściwości labiryntu</h4>
+    <p style="margin:0 0 var(--s2)"><span class="badge ok">✅ zrobione 2026-08-08</span> <span class="badge info">czysto techniczny, bez rename'ów</span></p>
     <ul style="margin:0">
-      <li><code>maps.csv</code> - rejestr map z kolumną <code>kind</code> (D13)</li>
+      <li>rejestr map <strong>wyliczany</strong> - <code>scene/map_registry.py</code>; <code>maps.csv</code>
+        nie powstał (D13 rozstrzygnięte inaczej niż w rev. 3)</li>
       <li><code>is_maze</code>, <code>maze_cols</code>, <code>maze_rows</code> znikają z <code>.tmx</code>
         i z <code>Collider</code></li>
       <li><code>entry_point</code> → <code>destination_entry_point</code> na obiektach wyjść</li>
       <li>para plików <code>.md</code> dla map bez dokumentu (D16) - <strong>do Twojej edycji w Obsidian</strong></li>
     </ul></div>
   <div class="card"><h4>Etap 3 - warstwa nazw wyświetlanych</h4>
-    <p style="margin:0 0 var(--s2)"><span class="badge err">musi być PRZED renamem map</span></p>
+    <p style="margin:0 0 var(--s2)"><span class="badge ok">✅ zrobione 2026-08-09</span> <span class="badge err">musiał być PRZED renamem map</span></p>
     <ul style="margin:0">
-      <li>sekcja <code>[map]</code> w <code>PL.toml</code> / <code>EN.toml</code> (D12), zasilona z <code>doc/</code></li>
-      <li><code>hud.py</code> czyta nazwę z locale zamiast pokazywać <code>current_map</code></li>
-      <li><code>_format_map_name</code> (hack na <code>Maze_01</code>) znika - labirynt dostaje normalny wpis</li>
-      <li><strong>weryfikacja u Ciebie:</strong> HUD pokazuje „Tawerna Brakująca Klepka", przełączenie języka działa w locie</li>
+      <li>sekcja <code>[map]</code> w <code>PL.toml</code> / <code>EN.toml</code> (D12) - 7 wpisów,
+        napisy wprost z nazw plików dokumentów lokacji</li>
+      <li><code>hud.py</code> czyta <code>_("map.&lt;klucz&gt;")</code>; cache kluczowany
+        <strong>napisem</strong>, więc zmiana języka unieważnia go sama</li>
+      <li><code>_format_map_name</code> (hack na <code>Maze_01</code>) skasowany - labirynt ma
+        normalne wpisy „Labirynt - poziom N"</li>
+      <li>O6: <code>name_EN == "Player"</code> → <code>config_key == PLAYER_CONFIG_KEY</code>
+        w <strong>9 miejscach</strong> (plan liczył 2), pilnowane testem na całe <code>project/</code></li>
+      <li>reguła 12 walidatora + <code>tests/test_map_display_names.py</code> (8 testów)</li>
+      <li><strong>weryfikacja u Ciebie:</strong> nazwa na HUD i przełączenie języka w locie;
+        ryby bez cienia (zastany błąd wyszedł przy okazji)</li>
     </ul></div>
   <div class="card"><h4>Etap 4 - walidator przed rename'em</h4>
     <p style="margin:0 0 var(--s2)"><span class="badge info">siatka bezpieczeństwa</span></p>
@@ -1247,7 +1262,7 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
       <li><code>interactions</code>/<code>entry_points</code> (D6)</li>
       <li>„mapa bez muzyki / nieosiągalna / plik bez wpisu" (D7, O4)</li>
       <li>„odwołanie do miejsca bez prefiksu" (D3)</li>
-      <li>„mapa bez nazwy wyświetlanej" (D12), „mapa spoza <code>maps.csv</code>" (D13)</li>
+      <li>„mapa spoza rejestru" (D13); „mapa bez nazwy wyświetlanej" (D12) <span class="badge ok">✅ zrobione w etapie 3</span></li>
       <li>„<code>model_name</code> w tilesecie musi być kluczem postaci" (D14)</li>
       <li>walidator <em>świeci na czerwono</em> - to zamierzone</li>
     </ul></div>
@@ -1264,9 +1279,10 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
 
 <div class="callout warn">
   <p style="margin:0"><strong>Dlaczego etap 2 wskoczył przed nazwy wyświetlane.</strong>
-  <code>maps.csv</code> jest listą, po której chodzi reguła „każda mapa ma nazwę w PL i EN" - bez niego
+  Rejestr map jest listą, po której chodzi reguła „każda mapa ma nazwę w PL i EN" - bez niego
   walidator nie wie nawet, ile map istnieje (labirynt nie ma pliku <code>.tmx</code>). Etap 2 nie zmienia
-  ani jednej nazwy, więc jest odwracalny osobnym commitem.</p>
+  ani jednej nazwy, więc jest odwracalny osobnym commitem. <span class="badge ok">✅ potwierdzone</span> -
+  reguła 12 z etapu 3 stoi dokładnie na tym rejestrze (<code>_game_map_keys</code>).</p>
 </div>
 
 <div class="callout err">
@@ -1280,7 +1296,7 @@ to właśnie historia mapy <code>Village</code>, która nazywa się roboczo do d
   <thead><tr><th>Bramka</th><th>Komenda</th><th>Kryterium</th></tr></thead>
   <tbody>
     <tr><td>Spójność świata</td><td><code>just validate-world</code></td><td>0 błędów; ostrzeżenia tylko te znane (dziś 5)</td></tr>
-    <tr><td>Testy jednostkowe</td><td><code>just test-unit</code></td><td>komplet zielony (dziś 499 w 36 plikach)</td></tr>
+    <tr><td>Testy jednostkowe</td><td><code>just test-unit</code></td><td>komplet zielony (dziś 507 w 37 plikach)</td></tr>
     <tr><td>Rutyny naprawdę działają</td><td>scenariusz agentowy z przewinięciem doby</td><td><code>BART</code> i <code>JOHNY</code> docierają do <code>market_stall_*</code>, barman do <code>bar</code></td></tr>
     <tr><td>Zapis/wczytanie</td><td>scenariusz autosave + wczytanie</td><td>nowy zapis wczytuje się w komplecie; stary jest <strong>widocznie odrzucony</strong>, nie po cichu okrojony</td></tr>
     <tr><td>Muzyka</td><td>przejście wioska → tawerna</td><td>utwór dalej się zmienia po przemianowaniu map (weryfikacja u autora - zrzut tego nie pokaże)</td></tr>

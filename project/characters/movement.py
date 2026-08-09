@@ -22,6 +22,7 @@ from settings import (
     NPC_MAX_REST_TIME,
     NPC_MIN_REST_TIME,
     NPC_RANDOM_WALK_DISTANCE,
+    PLAYER_CONFIG_KEY,
     Point,
     RECALCULATE_PATH_DISTANCE,
     SHOULD_NPC_REST_PROBABILITY,
@@ -572,7 +573,7 @@ def move_back(npc: "NPC") -> None:
     """
     # npc.debug([f"{npc.rect.topleft=}", f"{npc.old_rect.topleft=}"])
     npc.pos = npc.prev_pos.copy()
-    if npc.model.name_EN == "Player":  # and npc.scene.camera.target == npc.prev_pos:
+    if npc.config_key == PLAYER_CONFIG_KEY:  # and npc.scene.camera.target == npc.prev_pos:
         npc.scene.camera.target = npc.pos
 
     npc.adjust_rect()

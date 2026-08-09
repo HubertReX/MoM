@@ -11,6 +11,7 @@ from settings import (
     IS_WEB,
     MAIN_FONT,
     PANEL_BG_COLOR,
+    PLAYER_CONFIG_KEY,
     TILE_SIZE,
     TRANSPARENT_COLOR,
     entity_name,
@@ -169,6 +170,7 @@ class HealthBarUI(pygame.sprite.Sprite):
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self,
                  name: str,
+                 config_key: str,
                  model: Character,
                  render_text: Callable,
                  groups: pygame.sprite.Group,
@@ -180,6 +182,10 @@ class HealthBar(pygame.sprite.Sprite):
         self.image.fill(TRANSPARENT_COLOR)
         self.visible: bool = True
         self.name = name
+        # `name` to nazwa obiektu Tiled ("Malachi"), `config_key` to klucz z config.json
+        # ("Player") - pasek życia potrzebuje tego drugiego, żeby wiedzieć, czy rysuje
+        # bohatera (C02, O6). Nazwa wyświetlana jest tłumaczona i nie nadaje się na test.
+        self.config_key = config_key
         self.model = model
         self.render_text = render_text
         self.translate_pos: Callable = lambda pos:  pos
@@ -208,7 +214,7 @@ class HealthBar(pygame.sprite.Sprite):
             return
         y: int = 8
         # show health bar only for enemies
-        if self.model.attitude == AttitudeEnum.enemy.value or self.model.name_EN == "Player":
+        if self.model.attitude == AttitudeEnum.enemy.value or self.config_key == PLAYER_CONFIG_KEY:
             self.image.blit(self.image_full, self.rect_full.topleft)
 
             percentage = min(1.0, percentage)

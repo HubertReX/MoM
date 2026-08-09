@@ -16,7 +16,7 @@ from rich import print
 import audio
 from enums import AttitudeEnum, NPCEventActionEnum
 from objects import NotificationTypeEnum
-from settings import PUSHED_TIME, STUNNED_TIME
+from settings import PLAYER_CONFIG_KEY, PUSHED_TIME, STUNNED_TIME
 
 if TYPE_CHECKING:
     from characters.npc import NPC
@@ -25,10 +25,10 @@ if TYPE_CHECKING:
 def die(npc: "NPC", drop_items: bool = True) -> None:
     # `drop_items=False` to wyjście NPC-a z mapy, nie śmierć - nie ozwucza się.
     # Rozpisane na dwa `play_sfx`, a nie warunek w argumencie: walidator
-    # `check_audio_manifest` czyta literały z nawiasu wywołania, więc napis w
-    # warunku ("Player") wyglądałby dla niego jak klucz eventu.
+    # `check_audio_manifest` czyta literały z nawiasu wywołania, więc każdy napis
+    # w argumencie wyglądałby dla niego jak klucz eventu.
     if drop_items:
-        if npc.model.name_EN == "Player":
+        if npc.config_key == PLAYER_CONFIG_KEY:
             audio.play_sfx("player_die")
         else:
             audio.play_sfx("monster_die")
@@ -38,7 +38,7 @@ def die(npc: "NPC", drop_items: bool = True) -> None:
     npc.emote.kill()
 
     # drop items and money on the ground
-    if npc.model.name_EN != "Player" and drop_items:
+    if npc.config_key != PLAYER_CONFIG_KEY and drop_items:
         npc.is_dead = True
         # The line above is the only thing that makes this a *death* - an NPC
         # leaving the map via an exit also calls die(), but with drop_items=False.
@@ -63,7 +63,7 @@ def die(npc: "NPC", drop_items: bool = True) -> None:
             npc.scene.item_sprites.add(item)
             npc.scene.group.add(item, layer=npc.scene.sprites_layer - 1)
 
-    if npc.model.name_EN == "Player" and npc.model.health <= 0:
+    if npc.config_key == PLAYER_CONFIG_KEY and npc.model.health <= 0:
         npc.is_dead = True
         npc.scene.exit_state()
         from ui.panels.save_load import DeadState
@@ -84,7 +84,7 @@ def check_cooldown(npc: "NPC") -> None:
 
 ###############################################################################################################
 def process_custom_event(npc: "NPC", **kwargs: str) -> None:
-    # if npc.model.name_EN == "Player":
+    # if npc.config_key == PLAYER_CONFIG_KEY:
     #     print(kwargs["action"])
 
     action = kwargs.get("action", "")
@@ -129,7 +129,7 @@ def encounter(npc: "NPC", oponent: "NPC") -> None:
 
         # w starciu obrywają obaj - liczy się ten, w którego skórze siedzi gracz
         # (rozpisane na dwie gałęzie z tego samego powodu, co w `die`)
-        if npc.model.name_EN == "Player":
+        if npc.config_key == PLAYER_CONFIG_KEY:
             audio.play_sfx("player_hit")
         else:
             audio.play_sfx("monster_hit")

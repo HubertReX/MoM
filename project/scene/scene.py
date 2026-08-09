@@ -40,6 +40,7 @@ from settings import (
     MONSTER_WAKE_DISTANCE,
     NOTIFICATION_DURATION,
     NOTIFICATION_STAGGER,
+    PLAYER_CONFIG_KEY,
     # PANEL_BG_COLOR,
     EMITTER_SCHEDULES,
     PARTICLES,
@@ -191,7 +192,7 @@ class Scene(State):
             self.label_sprites,
             (settings.WIDTH // 2, settings.HEIGHT // 2),
             name="Malachi",
-            model_name="Player",
+            model_name=PLAYER_CONFIG_KEY,
             emotes=self.icons,
         )
         # moved here to avoid circular imports

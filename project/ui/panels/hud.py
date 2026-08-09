@@ -117,7 +117,6 @@ class HUD(Widget):
         self.available_action_bg = theme.nine_patch("panel_brown.png", 216, 36, border=3)
 
         # location panel: centred at the top, same vertical band as the stats panel
-        self._location_text: str = ""
         self._location_display: str = ""
         self._location_rt_surf: pygame.Surface | None = None
         self._location_panel_w: int = 0
@@ -229,20 +228,22 @@ class HUD(Widget):
     #############################################################################################################
     # MARK: location panel
 
-    @staticmethod
-    def _format_map_name(raw: str) -> str:
-        """Human-readable map name: 'Maze_01' -> 'Maze 1'."""
-        if raw.startswith("Maze_") and raw[5:].isdigit():
-            return f"Maze {int(raw[5:])}"
-        return raw
-
     def _update_location_cache(self) -> None:
-        """Re-render the location name text when the map changes."""
+        """Re-render the location name text when the map - or the language - changes.
+
+        Cache key is the *rendered* name, not the map key: `_()` reads the live
+        `settings.LANG`, so a language switch changes the string and invalidates the
+        surface by itself, with no extra `rebuild_i18n()` hook on this panel (C02, D12).
+        A map without a `[map]` entry falls back to its key - loud enough to notice,
+        and `just validate-world` fails on it anyway (rule 12).
+        """
         map_name = self.scene.current_map
-        if map_name == self._location_text and self._location_rt_surf is not None:
+        display = _(f"map.{map_name}")
+        if display == f"map.{map_name}":       # brak wpisu - `_()` zwraca sam klucz
+            display = map_name
+        if display == self._location_display and self._location_rt_surf is not None:
             return
-        self._location_text = map_name
-        self._location_display = self._format_map_name(map_name)
+        self._location_display = display
         from ..widgets.rich_text import RichText
         rt = RichText(
             f"[center][shadow]{self._location_display}[/shadow][/center]",

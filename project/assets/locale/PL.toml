@@ -191,6 +191,22 @@ dbg_fly = "Tryb latania"
 [hud]
 datetime = "D:{day} G:{hour}:{min:02d}"
 
+# === Nazwy map (C02, D12/W2) ===
+# Klucz = klucz mapy (stem pliku .tmx albo poziom labiryntu). Gracz nigdy nie widzi
+# klucza - HUD pokazuje wyłącznie te napisy. Źródłem nazw są dokumenty lokacji
+# w `doc/PL/Lokalizacje/` (nazwa pliku = nazwa wyświetlana, alias = klucz).
+# Etap 5 C02 przemianuje klucze (`Village` -> `BLUNDERHAVEN`, `JacobsChamber` ->
+# `JACOBS_CHAMBER`, `Maze_NN` -> `MAZE_NN`) razem z tymi wpisami.
+
+[map]
+Village = "Gafowo Kolonia"
+LOST_CORK_TAVERN = "Tawerna Brakująca klepka"
+JacobsChamber = "Komnata Jakuba"
+Maze_01 = "Labirynt - poziom 1"
+Maze_02 = "Labirynt - poziom 2"
+Maze_03 = "Labirynt - poziom 3"
+Maze_04 = "Labirynt - poziom 4"
+
 # === Stan gry ===
 
 [game]
