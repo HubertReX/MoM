@@ -352,6 +352,132 @@ def test_obsidian_mentions_point_at_the_vault_files_to_fix_by_hand() -> None:
 
 
 ###############################################################################################################
+# 5. Zakres `MAPA:nazwa` - zmiana tylko na jednej mapie
+###############################################################################################################
+
+def test_a_scoped_place_rename_leaves_the_other_map_alone() -> None:
+    """`tables` stoi w tawernie i w domu w wiosce - prawie zawsze chodzi o jedno z nich."""
+    box = _sandbox()
+    try:
+        root = Path(box.name)
+        rename_entity.rename("tables", "dining_tables", PLACE, scope="LOST_CORK_TAVERN")
+        tavern = (root / "project/assets/NinjaAdventure/maps/LOST_CORK_TAVERN.tmx").read_text(
+            encoding="utf-8")
+        other = (root / "project/assets/NinjaAdventure/maps/_wip/VillageHouse.tmx").read_text(
+            encoding="utf-8")
+        assert_true('name="dining_tables"' in tavern, "mapa w zakresie nie została zmieniona")
+        assert_true('name="tables"' in other, "mapa spoza zakresu została ruszona")
+    finally:
+        _restore()
+        box.cleanup()
+
+
+def test_a_scoped_place_rename_only_touches_cells_with_that_map_prefix() -> None:
+    """Prefiks w komórce jest jedynym, co odróżnia dwa miejsca o tej samej nazwie."""
+    box = _sandbox()
+    try:
+        root = Path(box.name)
+        csv_path = root / "project/config_model/characters.csv"
+        before = csv_path.read_text(encoding="utf-8")
+        assert_true("LOST_CORK_TAVERN:tables" in before, "fixture stracił sens")
+        rename_entity.rename("tables", "dining_tables", PLACE, scope="BLUNDERHAVEN")
+        after = csv_path.read_text(encoding="utf-8")
+        assert_true("LOST_CORK_TAVERN:tables" in after,
+                    "komórka z innym prefiksem została zmieniona")
+        assert_true("dining_tables" not in after, "coś się zmieniło mimo pustego zakresu")
+    finally:
+        _restore()
+        box.cleanup()
+
+
+def test_a_scoped_entry_point_follows_only_doors_leading_to_that_map() -> None:
+    """`destination_entry_point` nazywa punkt na mapie z `to_map` tego samego obiektu.
+
+    Wioska ma dwa wyjścia celujące w punkt `Door` - jedno do tawerny, drugie do komnaty.
+    Zakres musi rozdzielić je po `to_map`, a nie po pliku, w którym stoją.
+    """
+    box = _sandbox()
+    try:
+        root = Path(box.name)
+        rename_entity.rename("Door", "TAVERN_DOOR", ENTRY_POINT, scope="LOST_CORK_TAVERN")
+        village = (root / "project/assets/NinjaAdventure/maps/BLUNDERHAVEN.tmx").read_text(
+            encoding="utf-8")
+        chamber = (root / "project/assets/NinjaAdventure/maps/JACOBS_CHAMBER.tmx").read_text(
+            encoding="utf-8")
+        assert_eq(village.count('value="TAVERN_DOOR"'), 1, "zmieniono więcej niż jedne drzwi")
+        assert_true('value="Door"' in village, "wyjście do komnaty straciło swój punkt")
+        assert_true('name="Door"' in chamber, "punkt wejścia komnaty został przemianowany")
+    finally:
+        _restore()
+        box.cleanup()
+
+
+def test_a_scoped_instance_rename_skips_the_bare_route_reference() -> None:
+    """`route:ROB` bez prefiksu mapy jest niejednoznaczny - lepiej zostawić i powiedzieć."""
+    box = _sandbox()
+    try:
+        root = Path(box.name)
+        rename_entity.rename("ROB", "GUARD_ROB", INSTANCE, scope="BLUNDERHAVEN")
+        routines = (root / "project/config_model/routines.toml").read_text(encoding="utf-8")
+        assert_true("route:ROB" in routines, "goła nazwa została zmieniona mimo zakresu")
+        village = (root / "project/assets/NinjaAdventure/maps/BLUNDERHAVEN.tmx").read_text(
+            encoding="utf-8")
+        assert_eq(village.count('name="GUARD_ROB"'), 2, "spawn i krzywa mają iść razem")
+    finally:
+        _restore()
+        box.cleanup()
+    assert_true(bool(rename_entity.bare_route_references("ROB")),
+                "skrypt musi umieć wskazać taki krok do sprawdzenia")
+
+
+def test_an_unscoped_rename_still_changes_every_map() -> None:
+    """Zakres jest opcją, nie nowym wymogiem - stare wywołanie ma działać jak dotąd."""
+    box = _sandbox()
+    try:
+        root = Path(box.name)
+        rename_entity.rename("tables", "dining_tables", PLACE)
+        for path in ("LOST_CORK_TAVERN.tmx", "_wip/VillageHouse.tmx"):
+            text = (root / "project/assets/NinjaAdventure/maps" / path).read_text(encoding="utf-8")
+            assert_true('name="dining_tables"' in text, f"{path} nie zostało zmienione")
+    finally:
+        _restore()
+        box.cleanup()
+
+
+def test_the_scope_prefix_is_parsed_and_validated() -> None:
+    assert_eq(rename_entity.split_scope("LOST_CORK_TAVERN:tables"),
+              ("LOST_CORK_TAVERN", "tables"))
+    assert_eq(rename_entity.split_scope("tables"), ("", "tables"))
+    try:
+        rename_entity.split_scope("NIE_MA_TAKIEJ_MAPY:tables")
+    except SystemExit as exc:
+        assert_true("nie jest mapą" in str(exc), str(exc))
+    else:
+        raise AssertionError("nieistniejąca mapa w zakresie przeszła bez błędu")
+
+
+def test_a_global_key_cannot_be_scoped_to_one_map() -> None:
+    """Klucz postaci jest jeden w całej grze - obietnica zawężenia byłaby fałszywa."""
+    try:
+        rename_entity.split_scope("BLUNDERHAVEN:HORSE", CHARACTER)
+    except SystemExit as exc:
+        assert_true("globalny" in str(exc), str(exc))
+        return
+    raise AssertionError("zakres dla klucza globalnego przeszedł bez błędu")
+
+
+def test_the_scope_resolves_the_instance_vs_model_ambiguity() -> None:
+    """Po C02 nazwa instancji JEST kluczem modelu, więc bez zakresu `ROB` jest dwuznaczny."""
+    assert_eq(rename_entity.detect_kind("ROB", MAP_SCOPED_KINDS), INSTANCE)
+    try:
+        rename_entity.detect_kind("ROB")
+    except SystemExit as exc:
+        assert_true("--kind" in str(exc), str(exc))
+        return
+    raise AssertionError("dwuznaczna nazwa bez zakresu przeszła bez pytania o --kind")
+
+
+###############################################################################################################
 # 3. Kontrakt CLI
 ###############################################################################################################
 
@@ -405,6 +531,14 @@ def main() -> None:
         test_global_keys_carry_no_origin,
         test_the_maze_template_placeholders_are_not_listed_as_keys,
         test_obsidian_mentions_point_at_the_vault_files_to_fix_by_hand,
+        test_a_scoped_place_rename_leaves_the_other_map_alone,
+        test_a_scoped_place_rename_only_touches_cells_with_that_map_prefix,
+        test_a_scoped_entry_point_follows_only_doors_leading_to_that_map,
+        test_a_scoped_instance_rename_skips_the_bare_route_reference,
+        test_an_unscoped_rename_still_changes_every_map,
+        test_the_scope_prefix_is_parsed_and_validated,
+        test_a_global_key_cannot_be_scoped_to_one_map,
+        test_the_scope_resolves_the_instance_vs_model_ambiguity,
     ]
     for t in tests:
         t()

@@ -930,11 +930,12 @@ nie musi być unikalne w całej grze - dwie tawerny mogą mieć swój `bar`, pre
 Klucz encji żyje w kilku plikach naraz, więc rename robi się narzędziem, nie edytorem:
 
 ```bash
-just rename-entity Village BLUNDERHAVEN        # rodzaj klucza wykryty z danych
+just rename-entity Village BLUNDERHAVEN                  # rodzaj klucza wykryty z danych
 just rename-entity Snake_01 SNAKE --kind instance
+just rename-entity LOST_CORK_TAVERN:tables dining_tables # tylko na tej mapie
 just rename-entity Village BLUNDERHAVEN --dry-run
-just rename-entity --list                      # co dziś istnieje, per rodzaj
-just rename-entity --sources                   # manifest plików, które skrypt zna
+just rename-entity --list                                # co dziś istnieje, per rodzaj
+just rename-entity --sources                             # manifest plików, które skrypt zna
 ```
 
 Rodzaje: `character`, `map`, `instance`, `chest`, `entry_point`, `place`, `item`. Skrypt jest
@@ -947,6 +948,16 @@ w całej grze. `instance`, `entry_point` i `place` są unikalne **tylko w obręb
 (ładowarka trzyma je w słownikach per scena), więc dwie tawerny mogą mieć swój `bar` i swoje
 `Door`. Stąd obowiązkowy prefiks mapy w odwołaniach do miejsc (D3), a `--list` dopisuje przy
 nich mapę, **która je definiuje** - nie tę, która się do nich odwołuje.
+
+Dla tych trzech rodzajów starą nazwę podaje się z zakresem `MAPA:nazwa` albo bez - bez zakresu
+skrypt najpierw ostrzega, na ilu mapach ta nazwa stoi. Zakres pilnuje trzech rzeczy naraz:
+nazwy obiektu w `.tmx` tylko tej mapy, prefiksu w komórkach miejsc (`LOST_CORK_TAVERN:tables`,
+nie `BLUNDERHAVEN:tables`) i - dla punktów wejścia - `to_map` obiektu, który się do nich
+odwołuje, bo `destination_entry_point` nazywa punkt **na mapie docelowej**. Przy zakresie
+rodzaj nie musi być podawany: skoro globalnego klucza nie da się zawęzić, `BLUNDERHAVEN:ROB`
+jednoznacznie znaczy instancję, a nie model o tej samej nazwie. Gołe `route:NAZWA`
+w `routines.toml` nie ma prefiksu, więc przy zawężonym rename'ie zostaje nietknięte
+i skrypt wypisuje je jako rzecz do sprawdzenia ręcznie.
 
 Czego rename **nie** rusza i nie powinien:
 
