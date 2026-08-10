@@ -11,7 +11,7 @@ ma dostać dwie rzeczy: świeży punkt powrotu i szybką drogę do niego.
 
 **Połowa tego zadania powstała przy B02** (2026-07-28):
 
-- `DeathScreen` (`project/ui/panels/save_load.py:798`) pokazuje po śmierci listę
+- `DeadState` (`project/ui/panels/save_load.py`) pokazuje po śmierci listę
   zapisanych slotów do wczytania, z widoczną odmową wczytania (niezgodna wersja =
   komunikat na panelu, nie cichy print do konsoli) i bez niszczenia stanu gry.
 - Autosave przy wejściu do labiryntu działa (`project/scene/map_state.py:152-157`,
@@ -105,7 +105,7 @@ druga jest tańsza, ale gubi informację „dziś już zapisano" po wczytaniu za
 2. Scenariusz agentowy (`"start_hour": 5`): poczekaj do przekroczenia 6:00 →
    `ui_state` potwierdza toast/zapis, slot 0 istnieje i ma świeży znacznik czasu.
    Zielony na desktopie i na web.
-3. Po śmierci `DeathScreen` pokazuje ten slot jako wybieralny (ręczna weryfikacja
+3. Po śmierci `DeadState` pokazuje ten slot jako wybieralny (ręczna weryfikacja
    przez `debug_death_screen` w `agent_ctrl`).
 4. `just test-unit`, `just mypy` = 0, `just validate-locale`,
    `MOM_SKIP_SS_REVIEW=1 just test-smoke` - zielone.
