@@ -109,11 +109,28 @@ mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły 
   (silnik: `ConditionScope.bark` + sekcja `## Barki` w Obsidian, `BarkSprite` w przestrzeni
   świata, emoji z `activity` rutyny, wskaźnik questa - automat + ręczne przypięcie
   klawiszem `T` + kaskada po ukończeniu, zamki i klucze na skrzyniach i drzwiach,
-  model `RAT`; decyzje autora W1-W9, D1-D9)
+  model `RAT`; decyzje autora W1-W9, D1-D9.
+  **Zrealizowane 2026-08-10**, wszystkie pięć etapów: `settings.DAY_PHASES` jako jedyne
+  źródło granic pór dnia (`night_filter` przestał mieć trzy komplety literałów),
+  `ConditionScope.bark` z `time_of_day`/`activity`/`on_map`, import `## Barki` + pul
+  z `doc/PL/Barki.md`, `BarkDirector` + `BarkSprite`, pole `emotes` w slotach rutyn,
+  wskaźnik questa z pięciostopniową kaskadą i pinem przeżywającym zapis, zamki
+  `requires_item`/`consumes_key` na skrzyniach i drzwiach. Reguły walidatora **20**
+  (encje we wszystkich warunkach - bramka dla „wieś wie o klątwie") i **21** (pule barków);
+  reguła 19 objęła klucze do zamków. Nowe testy: `test_day_phases`, `test_bark_conditions`,
+  `test_bark_import`, `test_barks`, `test_routine_emotes`, `test_quest_tracking`,
+  `test_locks_and_keys` - `just test-unit` 47/47 (729), `test-smoke` 6/6, nowe scenariusze
+  „Ambient Barks", „NPC Routine Emotes", „Quest Tracker on HUD".
+  **Zostaje do zrobienia:** wiersz `RAT` w `characters.csv` czeka na sprite `HamsterGray`,
+  którego wgrywa autor - reguła 5 walidatora słusznie odrzuca postać ze sprite'em bez
+  folderu, więc dopisanie wiersza przed assetem zepsułoby `validate-world`.
+  Treść barków przychodzi z [H03](H03-sidequesty-i-klatwa.md); dziś silnik stoi pusty,
+  więc gra wygląda dokładnie jak przed zadaniem)
 - [ ] [H03 - sidequesty Aktu 1 i samospełniająca się przepowiednia](H03-sidequesty-i-klatwa.md) - P3
   (treść: 7 sidequestów w 3 łańcuchach - Barman `Q04`, Kowal `Q05`, Zielarka `Q06` -
   dryf Malachiego w 3 fazach, powitania zależne od wiedzy o klątwie, teksty barków;
-  **twarda zależność od H01**, pisane ręką autora w Obsidian)
+  **twarda zależność od H01** - odblokowane 2026-08-10, pisane ręką autora w Obsidian.
+  Format barków: [jak napisać barka](../jak-napisac-barka.md))
 
 ## Zasady realizacji zadań (dla agentów)
 

@@ -210,6 +210,15 @@ tags: [sciagawka, questy]
 > Nie edytuj ręcznie - wszystko poniżej jest wyprowadzone z kodu (enumy, whitelista
 > warunków, walidatory), więc nie może rozjechać się z tym, co robi import i silnik.
 
+> [!important] Kolejność sekcji jest kolejnością podpowiadaną graczowi
+> HUD pokazuje **jeden** quest naraz - wskaźnik „co teraz?" (H01/D7). Gdy śledzony krok
+> się zamknie, gra przechodzi do następnego: najpierw do tego, co ten krok właśnie
+> odblokował, potem do nieukończonego rodzeństwa - a w obu przypadkach bierze
+> **pierwszy w kolejności definicji**, czyli pierwszy w kolejności sekcji w tym pliku.
+> Kolejność, w której to piszesz, jest więc kolejnością, w jakiej gracz to zobaczy.
+> Parasole wskaźnik pomija (to tytuł rozdziału, nie instrukcja), choć gracz może
+> przypiąć dowolny quest ręcznie klawiszem `T` w dzienniku.
+
 ## Szablon questa
 
 Jeden plik = jeden główny quest. Nagłówek sekcji jest **kluczem** questa, dosłownie, i musi

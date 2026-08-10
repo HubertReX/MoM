@@ -220,6 +220,20 @@ zwracały ``False``, przez co:
 - Warunek ``visited("005")`` w pętli ``not visited("005")`` zawsze ``True`` → ekspozycje
   zawsze pokazywane, nawet po odwiedzeniu.
 
+**Bramką na tę klasę błędu jest reguła 20 walidatora** (H01/D3), nie ten akapit. Cichy
+``False`` to najgorszy tryb awarii treści w tej grze: literówka w kluczu wewnątrz
+``visited()`` / ``quest_done()`` / ``has_item()`` niczego nie wywala - warunek po prostu
+nigdy nie zapala, więc opcja dialogowa nigdy się nie pokazuje, a bark nigdy nie mówi.
+``just validate-world`` parsuje KAŻDY warunek (dialogu, questa i barka) i sprawdza, czy
+nazwana encja istnieje: quest, przedmiot, postać wraz z jej węzłem, mapa, krok rutyny,
+faza doby. Dlaczego walidator, a nie importer: ``validate_condition()`` celowo nie wie nic
+o grze, a dialogi i questy importują się dwoma osobnymi przebiegami, więc żaden z nich nie
+widzi obu stron naraz.
+
+To jest też jedyna gwarancja pod „wieś wie o klątwie": ten fakt świata jest wyrażony
+questem (``quest_done("Q01_S01_LEARN_ABOUT_CURSE")``), więc skasowanie albo przemianowanie
+tego questa wyłączyłoby reakcje wsi - i wyłącznie reguła 20 to zauważy.
+
 ### Reset kursora po rozmowie
 
 Gdy dialog kończy się na węźle ``is_final`` (lub dead-endzie z 0 widocznymi opcjami),
@@ -731,6 +745,15 @@ Trzy rzeczy trzymają koszt w ryzach:
 `day_night_ratio()` jest jedynym źródłem rozkładu godzin - czyta je i filtr rastrowy,
 i `get_lights()` dla shaderów (kontrakt K3).
 
+**Granice pór dnia mieszkają w `settings.DAY_PHASES`** (H01/D1) i tylko tam. Dawniej
+liczby 6/9/17/20 stały literałami w trzech miejscach tego modułu; dziś `filter_color`,
+warunek aureoli i `day_night_ratio` czytają je przez `scene.world_clock.day_phase()`
+i `phase_bounds()`. Te same granice widzi predykat `time_of_day(faza)` w warunkach
+barków - inaczej gracz zobaczyłby zachód słońca w jednym momencie, a usłyszał „dobry
+wieczór" w innym. `night` jako jedyna faza **zawija się przez północ**, więc nigdy nie
+sprawdzaj przynależności naiwnym `start <= h < end`; `tests/test_day_phases.py` pilnuje
+podziału doby bez dziur i zakładek.
+
 ### `settings.NIGHT_FILTER_MODE` - pokrętło jakość/FPS
 
 Na WASM koszt filtra to **wyłącznie liczba pikseli mieszanych per-pixel-alfą**: skalowanie
@@ -755,6 +778,73 @@ argument 'dest'`) przy pierwszej klatce nocy. Zawsze podawaj pozycję.
 Scenariusz agentowy: **Night Filter On Blunderhaven** (`start_hour: 20`, dojście
 `walk_to_point` pod kapliczkę na północ od wioski, gdzie las jest realnie czarny -
 w centrum wioski dwa światła z waypointów `intro` rozświetlają prawie cały kadr).
+
+## Barki i emoji ambientowe (H01)
+
+Dwa **niezależne** kanały życia wsi. Emoji nad głową nie zastępuje kwestii i odwrotnie -
+oba wchodzą, a który się lepiej sprawdza, ocenia autor po fakcie.
+
+### Barki (`characters/barks.py`, `objects.BarkSprite`)
+
+Bark to **sam tekst z obrysem w przestrzeni świata**, nie panel i nie toast. Rysowany
+`FONT_SIZE_EXTRA_TINY` (8 px) i **nie wolno tego podnieść**: napis nie jest skalowany
+w dół jak tekst UI, tylko w GÓRĘ zoomem kamery (~3,8x), więc 10 px czyta się w świecie
+jak nagłówek. Ten sam powód i ten sam komentarz stoją przy imieniu postaci
+w `HealthBar.set_bar`.
+
+Skąd się bierze treść:
+
+- **własna sekcja `## Barki`** w pliku postaci (`doc/PL/Postacie/`) plus
+- **wspólna pula** z `doc/PL/Barki.md`, wskazana kolumną `barks` w `characters.csv`;
+  nagłówek sekcji w tamtym pliku **jest** kluczem puli, dosłownie (ta sama konwencja co
+  w questach). Obie strony **sumują się**, nie wykluczają.
+
+Warunki idą przez `ConditionScope.bark` - ten sam silnik co dialogi, trzeci zakres obok
+`dialog` i `quest`. Ma mówiącego (więc `sentiment` i jednoargumentowe `visited()`), nie
+ma `selected()` (bark nie jest rozmową) i dostaje trzy nazwy, których nie zna żaden inny
+zakres: `time_of_day`, `activity`, `on_map`. Most na żywe dane: `dialog/bark_context.py`.
+
+Rzeczy, które łatwo zepsuć:
+
+- **Cykl życia sprite'a musi iść za `EmoteSprite`** - `materialize`/`dematerialize`,
+  zasypianie i budzenie, śmierć, `reset`. Bark bez tego zostanie wisieć nad pustym polem
+  po kimś, kto poszedł spać.
+- **`_particle_rng()`, nigdy gołe `random`.** Bark, który przy tym samym ziarnie raz
+  wypada tak, a raz inaczej, unieważnia każdą asercję scenariusza agentowego (A04).
+- **Ostatnio użyta kwestia jest wykluczona z następnego losowania** u tej samej postaci -
+  bez tego Barman powtarza ten sam żart dwa razy pod rząd i wychodzi z tego usterka.
+- **Trzeci bark przepada, nie czeka w kolejce.** Bark jest tłem, nie wiadomością; kolejka
+  sprawiłaby, że wieś odzywa się seriami długo po tym, jak gracz stamtąd odszedł.
+
+Asercje: `debug_ui_state` niesie `barks` i `barks_count` - scenariusz „Ambient Barks"
+sprawdza stan, **nie** zrzut ekranu (headless nie jest wierny dla kompozycji klatki).
+
+Format dla autora: [doc/jak-napisac-barka.md](../doc/jak-napisac-barka.md).
+
+### Emoji z kroku rutyny (`npc_schedule.Slot.emotes`)
+
+Opcjonalne pole `emotes` w slocie `routines.toml`, a nie osobna tabela `activity -> emoji`:
+`activity` to za gruba miara (`stand` obejmuje barmana za barem, kowala przy kowadle
+i Barta przy straganie - trzy różne obrazki), a tabela na górze pliku jest łatwa do
+zapomnienia przy dopisywaniu kroku na dole. Wariant `_anim` jest osobnym wpisem listy,
+więc **częstość waży sama lista**, nie próg zaszyty w kodzie.
+
+Dwie pułapki, obie zmierzone i obie naprawione:
+
+- **Nie zeruj odliczania na granicy kroku.** Przy `GAME_TIME_SPEED 0.25` krok rutyny trwa
+  ~12-48 sekund realnych, a odstęp między emoji to 40-90 s - przeliczany od nowa na każdej
+  granicy termin prawie nigdy nie wypadał wewnątrz kroku.
+- **Emoji tyka w `update_schedule`, nie w `_continue_slot`.** To drugie celowo wychodzi
+  wcześniej, gdy postać jeszcze idzie - a idzie prawie cały czas. Sztandarowy przypadek
+  („głodny, gdy idzie na lunch") dzieje się właśnie w drodze.
+
+Literówka w nazwie emoji **nie ma prawa być cicha**: `EMOTE_SHEET_DEFINITION` to zwykły
+słownik, więc `zzz_animm` dałoby `KeyError` w losowym momencie rozgrywki albo - gorzej -
+postać, która po prostu nigdy nic nie pokaże. Nazwa spoza arkusza jest odrzucana przy
+wczytaniu rutyn (ostrzeżenie) i jest błędem reguły 4 walidatora. `settings.EMOTE_FALLBACKS`
+pozwala pisać nazwy, których asset jeszcze nie istnieje (`food`, `sweat`); podstawienie
+trzyma wariant (`_anim` na `_anim`), a test pilnuje, że wpis zniknie w dniu, w którym
+prawdziwy sprite trafi do arkusza.
 
 ## Mgła wojny w labiryncie (`scene/fog_of_war.py`, E03)
 

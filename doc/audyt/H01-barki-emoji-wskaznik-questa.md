@@ -5,9 +5,58 @@ Priorytet: **P3** (Faza 4). Rozmiar: **L**. Zależności: **miękka** - korzysta
 deterministycznego ([A04](A04-tryb-deterministyczny-testow.md)) i z layout self-checks
 ([A03](A03-layout-selfchecks.md)).
 
-Status: **rev. 1 - do realizacji**. To jest **połowa silnikowa**. Treść (sidequesty,
-dialogi klątwy, teksty barków) mieszka w [H03](H03-sidequesty-i-klatwa.md) i powstaje
-w Obsidian ręką autora - tutaj budujemy wyłącznie to, co ma tę treść unieść.
+Status: **zrealizowane 2026-08-10** (wszystkie pięć etapów). To jest **połowa silnikowa**.
+Treść (sidequesty, dialogi klątwy, teksty barków) mieszka w
+[H03](H03-sidequesty-i-klatwa.md) i powstaje w Obsidian ręką autora - tutaj zbudowaliśmy
+wyłącznie to, co ma tę treść unieść. Silnik stoi dziś pusty, więc gra wygląda dokładnie
+jak przed zadaniem.
+
+## Co się zmieniło wobec planu (realizacja)
+
+Trzy miejsca, w których kod świadomie odszedł od dokumentu - i dlaczego:
+
+- **`T` na queście wybranym przez automat PRZYPINA, nie odpina.** Tabela w D7 mówiła
+  „aktualnie śledzony -> odpięcie", zakładając milcząco, że *śledzony* znaczy *przypięty*.
+  Wskaźnik jest jednak ustawiony także wtedy, gdy wybrał go automat - i wtedy „odpięcie"
+  nic by nie zmieniło (`auto_pick` odda ten sam quest), a gracz dostałby komunikat
+  o powrocie do trybu, z którego nigdy nie wyszedł. Co gorsza, questa wybranego automatem
+  nie dałoby się przypiąć **nigdy**. Rozróżnienie idzie więc po stanie: przypięty ->
+  odpinamy, śledzony automatycznie -> przypinamy.
+- **Krok 4 kaskady to „ostatni w kolejności definicji", nie „najpóźniej odblokowany".**
+  `QuestState` niesie wyłącznie `{done: bool}` (D13), więc czasu odblokowania po prostu
+  nie ma, a dokładanie znacznika czasu wyłącznie dla tego fallbacku byłoby nowym polem
+  w zapisie - dokładnie tym, czego D7 chciało uniknąć.
+- **Sukces przypięcia nie dostaje toasta**, tylko znacznik na liście (dokument to
+  przewidywał, ale pierwsza wersja implementacji dała jedno i drugie - zrzut ekranu
+  pokazał toasta zasłaniającego listę, czyli dokładnie to, przed czym D7 ostrzegało).
+  Odmowa toasta dostaje, bo nie zmienia niczego na ekranie.
+
+Dwa błędy, które wyszły dopiero z licznika `routine_emotes_shown` w `debug_ui_state`
+(bez niego asercja „coś wisi nad głową" nie ma zębów, bo `dots_anim` wisi nad każdym
+rozmownym NPC-em, a `$_anim` nad każdym kupcem):
+
+- **zerowanie odliczania emoji na granicy kroku** - przy `GAME_TIME_SPEED 0.25` krok
+  rutyny trwa ~12-48 sekund realnych, a odstęp między emoji to 40-90 s, więc przeliczany
+  od nowa termin prawie nigdy nie wypadał wewnątrz kroku;
+- **tykanie emoji w `_continue_slot`**, które celowo wychodzi wcześniej, gdy postać
+  jeszcze idzie - a idzie prawie cały czas. Sztandarowy przypadek z tego dokumentu
+  („głodny, gdy idzie na lunch") dzieje się właśnie w drodze.
+
+Dwie rzeczy z planu **nie weszły**, obie z podanym powodem:
+
+- **wiersz `RAT` w `characters.csv` (D9)** - sprite `HamsterGray` nie istnieje w repo (wg
+  W9 wgrywa go autor), a reguła 5 walidatora słusznie odrzuca postać ze sprite'em bez
+  folderu. Dopisanie wiersza przed assetem postawiłoby `just validate-world` na czerwono.
+- **rodzaj `bark_pool` w `scripts/rename_entity.py`** - dokument stawiał to jako pytanie
+  („do sprawdzenia przy realizacji") i odpowiedź brzmi „jeszcze nie":
+  `test_every_kind_has_at_least_one_source` odrzuca rodzaj klucza, który nie ma w repo ani
+  jednego wystąpienia, a pul nie ma do czasu treści z H03. Wtedy dopisać.
+
+Do weryfikacji u autora (headless tego nie rozstrzyga): czytelność barka na trawie i na
+podłodze tawerny, czy 3,5 s to dobry czas życia, czy cooldown 60 s nie jest za długi, czy
+emoji nie robią się szumem przy 30 NPC. Osobne pytanie projektowe: krok `sleep` ustawia
+`zzz` na stałe, ale `update_sleepers` zdejmuje śpiącą postać z grupy rysowania, więc dziś
+widać to tylko przez klatkę przed zniknięciem.
 
 Zadanie zamyka znaleziska **G-3** (sentyment ma głębsze skutki niż widać) i **G-4**
 (noc/rutyny to koszt bez nagrody gameplayowej) z [audytu](audyt.md) oraz dwie pozycje
