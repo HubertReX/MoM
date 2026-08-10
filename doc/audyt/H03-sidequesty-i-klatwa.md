@@ -11,7 +11,7 @@ i imiona są jego domeną, a ten plik ma dać strukturę, haczyki i punkty zacze
 w istniejących mechanikach, nie gotowy tekst do wklejenia.
 
 Zadanie realizuje **G-3** (świat reaguje na sentyment), **G-4** (noc i rutyny dają coś
-gameplayowi) oraz „regrywalność w tonie gry" z [audytu](audyt.md).
+gameplayowi) oraz „_regrywalność w tonie gry_" z [audytu](audyt.md).
 
 ## Decyzje autora (wiążące, ustalone 2026-08-10)
 
@@ -36,7 +36,7 @@ gameplayowi) oraz „regrywalność w tonie gry" z [audytu](audyt.md).
 ### Uwagi autora do unikania na przyszłość
 
 - **Quest bez twistu, smaczku i żartu jest słaby** - nawet jeśli mechanicznie działa.
-  Odrzucony wariant „zioła z krzaków" upadł właśnie na tym.
+  Odrzucony wariant „_zioła z krzaków_" upadł właśnie na tym.
 - **Nie planuj mechanik, których nie ma.** Nie istnieje zbieranie przedmiotów zależne od
   pory dnia; nie ma łowienia ryb. Quest oparty na takiej mechanice to nie quest, tylko
   ukryte zadanie silnikowe.
@@ -60,11 +60,11 @@ to już morał.
 Fazę wyznacza stan questów głównego wątku - dokładnie tak, jak ustala
 [H01/D3](H01-barki-emoji-wskaznik-questa.md). Nic nowego w zapisie, nic nowego w configu.
 
-| Faza | Warunek | Jak brzmi Malachi | Przykład |
-| --- | --- | --- | --- |
-| 0 - lekceważy | `not quest_done("Q01_S01_LEARN_ABOUT_CURSE")` | żartuje, bagatelizuje | „Klątwa? Dajcie spokój, po prostu mam słaby tydzień." |
-| 1 - tłumaczy się | `quest_done("Q01_S01_...")` i `not quest_done("Q03_S00_...")` | przyznaje, ale z zastrzeżeniem | „Tak, klątwa. Ale to była wyjątkowo pechowa noc, nie osobowość." |
-| 2 - uwierzył | `quest_done("Q03_S00_LEARN_ABOUT_CURSE")` | uprzedza innych, zanim go poproszą | „Nie, nie podam ci tego. Sam weź." |
+| Faza             | Warunek                                                       | Jak brzmi Malachi                  | Przykład                                                           |
+| ---------------- | ------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| 0 - lekceważy    | `not quest_done("Q01_S01_LEARN_ABOUT_CURSE")`                 | żartuje, bagatelizuje              | „_Klątwa? Dajcie spokój, po prostu mam słaby tydzień._"            |
+| 1 - tłumaczy się | `quest_done("Q01_S01_...")` i `not quest_done("Q03_S00_...")` | przyznaje, ale z zastrzeżeniem     | „_Tak, klątwa. Ale to była wyjątkowo pechowa noc, nie osobowość._" |
+| 2 - uwierzył     | `quest_done("Q03_S00_LEARN_ABOUT_CURSE")`                     | uprzedza innych, zanim go poproszą | „_Nie, nie podam ci tego. Sam weź._"                               |
 
 Reguły pisania faz:
 
@@ -81,57 +81,57 @@ jednego szablonu. Powitanie to pierwszy węzeł dialogu, więc technicznie jest 
 na węźle startowym - dokładnie ten wzór, który działa dziś u [[Zielarka Zmora|Zielarka]] (węzeł [[Zielarka Zmora#016|016]] jako
 bramka).
 
-| Postać | Charakter | Ton po plotce | Szkic pierwszej linii |
-| --- | --- | --- | --- |
-| Barman Absyntnent | żartobliwy, rozmowny, zabobonny | teatralna troska, ale interes ważniejszy | „O, jest i on! Siadaj. Nie tam. Tam. Przy ścianie nośnej." |
-| Kowal Kłamca | mruk, opryskliwy, gardzi wsią | udaje, że go to nie obchodzi, czyli obchodzi go bardzo | „Wiem. Wszyscy wiedzą. Nie dotykaj niczego po lewej." |
-| Zielarka Zmora | zabobonna, nieufna, cwana | zawodowe zainteresowanie okazem | „Wejdź. Powoli. Chcę zobaczyć, jak się poruszasz." |
-| Bart / Johny (straganiarze) | statyści | plotka z drugiej ręki, przekręcona | „Podobno pan zabił trzech czarodziejów. Rabat dla bohaterów: żaden." |
-| Marysia | statystka | szczere współczucie, niezręczne | „Modliłam się za pana. Trochę. Miałam dużo prania." |
-| Miecz Ciętej-riposty | złośliwy komentator | jedyny, kto nie wierzy - i to on ma rację | „Zauważyłeś, że przestałeś dotykać klamek? Ja zauważyłem." |
+| Postać                              | Charakter                       | Ton po plotce                                          | Szkic pierwszej linii                                                  |
+| ----------------------------------- | ------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| [[Barman Absyntnent]]               | żartobliwy, rozmowny, zabobonny | teatralna troska, ale interes ważniejszy               | „_O, jest i on! Siadaj. Nie tam. Tam. Przy ścianie nośnej._"           |
+| [[Kowal Kłamca]]                    | mruk, opryskliwy, gardzi wsią   | udaje, że go to nie obchodzi, czyli obchodzi go bardzo | „_Wiem. Wszyscy wiedzą. Nie dotykaj niczego po lewej._"                |
+| [[Zielarka Zmora]]                  | zabobonna, nieufna, cwana       | zawodowe zainteresowanie okazem                        | „_Wejdź. Powoli. Chcę zobaczyć, jak się poruszasz._"                   |
+| [[Bart]] / [[Johny]] (straganiarze) | statyści                        | plotka z drugiej ręki, przekręcona                     | „_Podobno pan zabił trzech czarodziejów. Rabat dla bohaterów: żaden._" |
+| [[Marysia]]                         | statystka                       | szczere współczucie, niezręczne                        | „_Modliłam się za pana. Trochę. Miałam dużo prania._"                  |
+| [[Miecz Ciętej-riposty]]            | złośliwy komentator             | jedyny, kto nie wierzy - i to on ma rację              | „_Zauważyłeś, że przestałeś dotykać klamek? Ja zauważyłem._"           |
 
-Zasada z W3 w praktyce: **na trzy reakcje jedna ma być bezpośrednia, dwie subtelne.**
+Zasada z **W3** w praktyce: **na trzy reakcje jedna ma być bezpośrednia, dwie subtelne.**
 Subtelna reakcja to taka, w której o klątwie nie pada ani słowo, a i tak wiadomo -
-Kowal odsuwający kubek, Barman zmieniający Malachiemu stolik.
+[[Kowal]] odsuwający kubek, [[Barman]] zmieniający ==Malachiemu== stolik.
 
 ## Siedem sidequestów
 
 Trzy łańcuchy, po jednym na postać, każdy jako parasol `all_subquests` z krokami.
-Parasol domyka się sam, gdy zamkną się wszystkie kroki, i daje nagrodę „za relację".
+Parasol domyka się sam, gdy zamkną się wszystkie kroki, i daje nagrodę „_za relację_".
 
 Kroki są **kolejnością zaufania**: pierwszy dostajesz od ręki, ostatni dopiero,
 gdy postać cię zna. Bramka to `Requires:` na poprzednim kroku, a nie sentyment -
 sentyment ma wpływać na **ton**, nie na dostępność, żeby żaden gracz nie utknął.
 
-| Klucz                        | Postać   | Haczyk                              | Mechanika                  |
-| ---------------------------- | -------- | ----------------------------------- | -------------------------- |
-| `Q04_S01_CATS_FISH`          | Barman   | kot zjadł zapas ryb                 | krzak + skrzynia + oddanie |
-| `Q04_S02_TAVERN_TROPHY`      | Barman   | chce uchodzić za bywałego           | klejnot + oddanie          |
-| `Q04_S03_TAVERN_CELLAR`      | Barman   | piwnica, do której nikt nie schodzi | klucz + drzwi + walka      |
-| `Q05_S01_ORE_UNDER_BOULDER`  | Kowal    | posłaniec z rudą nie przyszedł      | pożyczony topór + głaz     |
-| `Q05_S02_TOUCH_THE_ARMOUR`   | Kowal    | test pechowca na jego dziele        | dialog + plotka            |
-| `Q06_S01_MARIOLKAS_BOX`      | Zielarka | zamknięta skrzynka po uczennicy     | klucz + skrzynia           |
-| `Q06_S02_FIRST_HUMAN_TESTED` | Zielarka | testowała na kurach, kury zdechły   | dialog + zdrowie           |
+| Klucz                        | Postać       | Haczyk                              | Mechanika                  |
+| ---------------------------- | ------------ | ----------------------------------- | -------------------------- |
+| `Q04_S01_CATS_FISH`          | [[Barman]]   | kot zjadł zapas ryb                 | krzak + skrzynia + oddanie |
+| `Q04_S02_TAVERN_TROPHY`      | [[Barman]]   | chce uchodzić za bywałego           | klejnot + oddanie          |
+| `Q04_S03_TAVERN_CELLAR`      | [[Barman]]   | piwnica, do której nikt nie schodzi | klucz + drzwi + walka      |
+| `Q05_S01_ORE_UNDER_BOULDER`  | [[Kowal]]    | posłaniec z rudą nie przyszedł      | pożyczony topór + głaz     |
+| `Q05_S02_TOUCH_THE_ARMOUR`   | [[Kowal]]    | test pechowca na jego dziele        | dialog + plotka            |
+| `Q06_S01_MARIOLKAS_BOX`      | [[Zielarka]] | zamknięta skrzynka po uczennicy     | klucz + skrzynia           |
+| `Q06_S02_FIRST_HUMAN_TESTED` | [[Zielarka]] | testowała na kurach, kury zdechły   | dialog + zdrowie           |
 
 ---
 
 ### Q04 - „Sprawy najwyższej wagi" (Barman Absyntnent)
 
-Tytuł parasola jest ironiczny i to jest cały żart: dla Barmana sprawy wsi mają rangę
-polityki międzynarodowej. **Nagroda parasola:** `max_items=+1` (Barman załatwia mu
-lepszy plecak „od znajomego, nie pytaj").
+Tytuł parasola jest ironiczny i to jest cały żart: dla [[Barman Absyntnent|Barmana]] sprawy wsi mają rangę
+polityki międzynarodowej. **Nagroda parasola:** `max_items=+1` ([[Barman]] załatwia mu
+lepszy plecak „_od znajomego, nie pytaj_").
 
 #### Q04_S01 - Ryby, które zjadł kot
 
-**Haczyk.** Kot zjadł zapas ryb. Dla Barmana to nie jest problem gastronomiczny, tylko
+**Haczyk.** Kot zjadł zapas ryb. Dla [[Barman Absyntnent|Barmana]] to nie jest problem gastronomiczny, tylko
 początek wojny domowej.
 
 **Mechanika (wszystko istnieje):** kot ma skrytkę za krzakiem; krzak trzeba rozwalić
 (`DESTRUCTIBLE_MIN_DAMAGE`), skrytka to mała skrzynia z `fish`, oddanie przez
 `items_returned` w dialogu.
 
-**Twist.** Ryby są nadgryzione, a kot patrzy na Malachiego przez cały czas z jednego
-miejsca. Barman ogłasza, że kot jest opętany. Kot nie zaprzecza.
+**Twist.** Ryby są nadgryzione, a kot patrzy na ==Malachiego== przez cały czas z jednego
+miejsca. [[Barman]] ogłasza, że kot jest opętany. Kot nie zaprzecza.
 
 ```
 Barman: Sprawa jest poważna. Kot zjadł zapas ryb.
@@ -150,14 +150,14 @@ i handel dostaje sens), czy tylko skrytka kota.
 
 #### Q04_S02 - Trofeum z dalekiego świata
 
-**Haczyk.** Barman chce uchodzić za bywałego - to jego konflikt wewnętrzny wprost
-z `doc/PL/Postacie/Barman Absyntnent.md`. Prosi o „coś egzotycznego" nad bar.
+**Haczyk.** [[Barman]] chce uchodzić za bywałego - to jego konflikt wewnętrzny wprost
+z `doc/PL/Postacie/Barman Absyntnent.md`. Prosi o „_coś egzotycznego_" nad bar.
 
 **Mechanika:** dowolny klejnot z labiryntu albo z piwnicy, oddany w dialogu.
 
 **Twist i klamra całego zadania.** Barman na oczach gracza wymyśla legendę, a przez
 kolejne dni **barki innych postaci powtarzają ją coraz bardziej przekręconą**. To ten
-sam mechanizm, który produkuje klątwę Malachiego, tylko widziany z zewnątrz i śmieszny.
+sam mechanizm, który produkuje klątwę ==Malachiego==, tylko widziany z zewnątrz i śmieszny.
 
 ```
 Barman (do chłopów): ...i wtedy ten smok mówi do mnie: TY? Znowu TY?
@@ -171,25 +171,25 @@ Miecz: Zastanów się nad tym przez chwilę.
 
 Barki po tym queście (przykłady do dopisania w `doc/PL/Barki.md`):
 
-- dzień 1, Bart: „Podobno w karczmie jest smoczy kamień."
-- dzień 2, Marysia: „Ten kamień jest ze smoka, co pożarł całą wieś."
-- dzień 3, Johny: „Trzy wsie. I biskupa."
+- dzień 1, [[Bart]]: „_Podobno w karczmie jest smoczy kamień._"
+- dzień 2, [[Marysia]]: „_Ten kamień jest ze smoka, co pożarł całą wieś._"
+- dzień 3, [[Johny]]: „_Trzy wsie. I biskupa._"
 
 **Nagroda:** `money=80`, `sentiment=+15 @BARMAN_ABSINTHRAYNER`.
 **Requires:** `Q04_S01_CATS_FISH`.
 
 #### Q04_S03 - Piwnica, do której się nie schodzi
 
-**Haczyk.** Pod tawerną jest piwnica. Barman tam nie schodzi, ojciec nie schodził,
+**Haczyk.** Pod [[Tawerna Brakująca klepka|Tawerną]] jest piwnica. [[Barman]] tam nie schodzi, ojciec nie schodził,
 dziadek zszedł raz i przez dwa lata nie pił. Klucz gdzieś jest.
 
 **Mechanika (nowa z H01):** klucz `silver_key` → zamknięte drzwi (`requires_item`) →
 **nowa mała mapa piwnicy** → `RAT` (sprite `HamsterGray`, ~15 HP, do ubicia `stick`iem).
 To pierwszy kontakt gracza z walką, celowo na przeciwniku, który nie wymaga dobrej broni.
 
-**Twist.** To są szczury. Miecz mówi, że to szczury. Barman ogłasza, że to znak.
-Wieś przyjmuje wersję Barmana, bo jest ciekawsza - i to jest dokładnie ta sama
-operacja, którą wieś wykonała na Malachim.
+**Twist.** To są szczury. [[Miecz]] mówi, że to szczury. [[Barman]] ogłasza, że to znak.
+Wieś przyjmuje wersję [[Barmana]], bo jest ciekawsza - i to jest dokładnie ta sama
+operacja, którą wieś wykonała na ==Malachim==.
 
 ```
 Miecz: To są szczury.
@@ -199,7 +199,7 @@ Barman: ZNAK, młodzieńcze. Dziura też jest częścią znaku.
 ```
 
 **Nagroda:** dostęp do piwnicy na stałe, skrzynia z `golden_key` (patrz `Q06_S01`),
-`max_health=+10` („piwo z beczki, której nikt nie ruszał od 20 lat").
+`max_health=+10` („_piwo z beczki, której nikt nie ruszał od 20 lat_").
 **Requires:** `Q04_S02_TAVERN_TROPHY`.
 
 **Do rozstrzygnięcia:** gdzie leży `silver_key`. Propozycja: w `BLUNDERHAVEN_BIG_CHEST`
@@ -215,16 +215,16 @@ broń i nie chce za to pieniędzy, co u niego znaczy przyjaźń).
 
 #### Q05_S01 - Ruda spod głazu
 
-**Haczyk.** Zamówienie z Porażkowa czeka, posłaniec z rudą nie przyszedł trzeci raz.
-Kowal wie, gdzie leży złoże - pod głazem, którego kijem nie ruszysz.
+**Haczyk.** Zamówienie z [[Porażkowo|Porażkowa]] czeka, posłaniec z rudą nie przyszedł trzeci raz.
+[[Kowal]] wie, gdzie leży złoże - pod głazem, którego kijem nie ruszysz.
 
 **Mechanika:** Kowal **pożycza** `axe` (35 dmg) przez `items_received`, gracz rozbija
 głazy (`DESTRUCTIBLE_MIN_DAMAGE`), wraca z rudą, **oddaje topór** przez `items_returned`.
 To jest naturalna lekcja mechaniki niszczenia - gracz uczy się jej z narzędziem
-w ręku, a nie z komunikatu „broń za słaba".
+w ręku, a nie z komunikatu „_broń za słaba_".
 
-**Twist.** Kowal odbiera topór i waży go w dłoni dłużej, niż to konieczne. Nic nie mówi.
-To wystarczy - Malachi (faza 1 lub 2) sam zaczyna się tłumaczyć, choć nikt go nie oskarżył.
+**Twist.** [[Kowal]] odbiera topór i waży go w dłoni dłużej, niż to konieczne. Nic nie mówi.
+To wystarczy - ==Malachi== (faza 1 lub 2) sam zaczyna się tłumaczyć, choć nikt go nie oskarżył.
 
 ```
 Kowal: Posłaniec nie przyszedł. Trzeci raz.
