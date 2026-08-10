@@ -497,6 +497,12 @@ BORED_TIME: float = 4.0
 STUNNED_TIME: int = 800
 # how long is NPC in pushed state [ms]
 PUSHED_TIME: int = 1000
+# O ile pikseli rozsuwają się postacie, które na siebie wpadły (`combat.push_apart`).
+# Odbicie, a nie tylko zatrzymanie: bez tego przechodzące zwierzę potrafiło
+# zablokować gracza, bo `slide` w ostateczności cofa go tam, skąd przyszedł -
+# czyli z powrotem w to samo zderzenie. Za mało = kot dalej się klei; za dużo =
+# postacie odskakują od siebie jak kule bilardowe.
+NPC_PUSH_DISTANCE: int = 6
 
 # initial game day numer
 INITIAL_DAY: int = 1

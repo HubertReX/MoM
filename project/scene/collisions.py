@@ -55,8 +55,13 @@ def resolve(scene: "Scene") -> None:
 
             # engage fight with enemy or push back friendly NPC
             player.encounter(oponent)
-            # slide along wall or do a step_back
-            player.slide(awake_NPCs)
+            # Ślizg TYLKO wtedy, gdy zderzenie dalej trwa. `encounter` rozsuwa
+            # postacie (`push_apart`), a `slide` zaczyna od skasowania ruchu w osi
+            # X - więc wołany bezwarunkowo zabierałby graczowi pół kroku nawet
+            # wtedy, gdy droga jest już wolna.
+            if player.feet.collidelist(awake_NPCs) > -1:  # type: ignore[type-var]
+                # slide along wall or do a step_back
+                player.slide(awake_NPCs)
 
         # collision of weapon with other NPC and destructibles
         if player.is_attacking and player.selected_weapon:

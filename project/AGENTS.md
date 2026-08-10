@@ -1188,6 +1188,25 @@ klucz nigdy się nie powtarza, `@cache` = 0 trafień + nieograniczony wzrost pam
 - **FSM (`npc_state.py`):** `get_new_state()` (`npc_state.py:14`) wybiera stan wg priorytetu
   (stunned > dead > attacking > fly > jump > talk > run > walk > bored > idle). Nowy stan:
   podklasa `NPC_State` + warunek w `get_new_state()` + klucze animacji w sheetcie.
+- **⚠️ Żaden stan blokujący sterowanie nie może wygasać przez `pygame.time.set_timer`.**
+  Postać ma JEDEN `custom_event_id` na wszystkie akcje, a timery są kluczowane **typem
+  zdarzenia**, więc uzbrojenie kolejnej akcji kasuje poprzednią, która jeszcze nie
+  wystrzeliła; do tego `Game.unregister_custom_events()` czyści przy zmianie mapy słownik
+  obsług, zostawiając uzbrojone timery. Tak wyglądał zastany błąd „gracz sparaliżowany
+  w walce": wpadnięcie na przechodzące zwierzę w trakcie ogłuszenia uzbrajało `pushed`,
+  kasowało `stunned`, a obsługa `pushed` nie zdejmuje flagi - `is_stunned` zostawało
+  włączone do końca sesji (`Player.movement` wychodzi wtedy od razu, `collisions.resolve`
+  pomija zderzenia z NPC, więc bohater stał nałożony na wroga, migał i nie zadawał
+  obrażeń). Dziś **czas jest źródłem prawdy**: `combat.check_cooldown` (wołane co klatkę
+  z `NPC_State.update`) zdejmuje ogłuszenie po `stun_cooldown`, tak samo jak
+  `weapon_cooldown` i `switch_cooldown`. Warunek jest przedziałem, nie zwykłym „minął
+  czas", bo `game.time_elapsed` cofa się do zera przy `reload_map` i wczytaniu zapisu.
+  Testy: `tests/test_combat_stun.py`.
+- **Zderzenie z nie-wrogiem ROZSUWA** (`combat.push_apart`, `NPC_PUSH_DISTANCE`): odsuwany
+  jest ten drugi, a gdy ma za plecami ścianę - cofa się wchodzący. Sam `slide` nie
+  wystarcza, bo w ostateczności cofa do `prev_pos`, czyli z powrotem w to samo zderzenie -
+  i przechodzący kot potrafił zablokować gracza na dobre. `collisions.resolve` woła `slide`
+  **tylko gdy zderzenie po rozsunięciu dalej trwa**.
 - **AI ruchu:** waypointy z mapy Tiled / random-walk (animals) / pościg A* (monsters,
   budzą się w `MONSTER_WAKE_DISTANCE`, `settings.py:112`). Ścieżki: `find_path()`
   (`characters/movement.py:357`) → `a_star_cached` z `maze_generator` (`characters/movement.py:18`).

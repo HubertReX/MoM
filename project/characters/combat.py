@@ -16,7 +16,7 @@ from rich import print
 import audio
 from enums import AttitudeEnum, NPCEventActionEnum
 from objects import NotificationTypeEnum
-from settings import PLAYER_CONFIG_KEY, PUSHED_TIME, STUNNED_TIME
+from settings import NPC_PUSH_DISTANCE, PLAYER_CONFIG_KEY, PUSHED_TIME, STUNNED_TIME
 
 if TYPE_CHECKING:
     from characters.npc import NPC
@@ -74,6 +74,44 @@ def die(npc: "NPC", drop_items: bool = True) -> None:
 
 
 ###############################################################################################################
+def stun(npc: "NPC") -> None:
+    """Ogłusz postać na ``STUNNED_TIME`` ms, licząc CZASEM, nie timerem zdarzeń.
+
+    Dawniej ogłuszenie zdejmowało zdarzenie z `pygame.time.set_timer`. Wszystkie
+    akcje jednej postaci (``stunned``, ``pushed``, ``attacking``,
+    ``switching_weapon``) dzielą jednak jeden `custom_event_id`, a timery są
+    kluczowane TYPEM zdarzenia - uzbrojenie kolejnej akcji kasowało poprzednią.
+    Wpadnięcie na przechodzącego kota w trakcie ogłuszenia uzbrajało ``pushed``,
+    kasowało ``stunned``, a obsługa ``pushed`` nie zdejmuje flagi - więc
+    `is_stunned` zostawało włączone na zawsze i gracz nie mógł już nic zrobić.
+    """
+    if npc.is_dead:
+        # trup nie potrzebuje ogłuszenia, a `end_stun` musiałby potem zgadywać,
+        # czy `die()` już poszło
+        return
+    npc.is_stunned = True
+    npc.stun_cooldown = npc.game.time_elapsed + STUNNED_TIME / 1000.0
+    npc.health_bar.show()
+    npc.health_bar_cooldown = max(npc.health_bar_cooldown, npc.stun_cooldown)
+
+
+###############################################################################################################
+def end_stun(npc: "NPC") -> None:
+    """Zdejmij ogłuszenie. Idempotentne - druga próba jest cicho ignorowana.
+
+    Wołane z dwóch stron (odliczanie w `check_cooldown` oraz zaległe zdarzenie
+    z timera), więc podwójne wejście musi być bezpieczne: bez strażnika
+    `npc.die()` poszłoby dwa razy i wypchnęło drugi ekran śmierci.
+    """
+    if not npc.is_stunned:
+        return
+    npc.is_stunned = False
+    npc.health_bar.hide()
+    if npc.model.health == 0 and not npc.is_dead:
+        npc.die()
+
+
+###############################################################################################################
 def check_cooldown(npc: "NPC") -> None:
     if npc.is_attacking and npc.game.time_elapsed > npc.weapon_cooldown:
         npc.is_attacking = False
@@ -81,6 +119,22 @@ def check_cooldown(npc: "NPC") -> None:
 
     if not npc.can_switch_weapon and npc.game.time_elapsed > npc.switch_cooldown:
         npc.can_switch_weapon = True
+
+    # Ogłuszenie kończy się z zegara. To jest JEDYNE miejsce, które je zdejmuje
+    # w normalnym przebiegu - patrz `stun` po powód.
+    #
+    # Warunek jest przedziałem, a nie zwykłym „minął czas", bo `game.time_elapsed`
+    # potrafi cofnąć się do zera (`reload_map`, wczytanie zapisu). Termin z daleką
+    # przyszłością znaczy wtedy „zegar poszedł od nowa", a nie „jeszcze chwila" -
+    # bez tego jedno wczytanie zapisu w złym momencie zamrażałoby postać na kilka
+    # minut. Ogłuszenie ma zawsze wygasnąć.
+    if npc.is_stunned and not (0.0 <= npc.stun_cooldown - npc.game.time_elapsed <= STUNNED_TIME / 1000.0):
+        end_stun(npc)
+
+    if npc.health_bar_cooldown and not (
+            0.0 <= npc.health_bar_cooldown - npc.game.time_elapsed <= PUSHED_TIME / 1000.0):
+        npc.health_bar_cooldown = 0.0
+        npc.health_bar.hide()
 
 
 ###############################################################################################################
@@ -90,16 +144,12 @@ def process_custom_event(npc: "NPC", **kwargs: str) -> None:
 
     action = kwargs.get("action", "")
     if action == NPCEventActionEnum.pushed:
-        # pushed state is invalidated
-        # show health bar
+        # zaległe zdarzenie: dziś pasek życia gaśnie z `health_bar_cooldown`
         npc.health_bar.hide()
     elif action ==  NPCEventActionEnum.stunned:
-        # stunned state is invalidated
-        # show health bar
-        npc.health_bar.hide()
-        npc.is_stunned = False
-        if npc.model.health == 0:
-            npc.die()
+        # zaległe zdarzenie z timera - normalnie ogłuszenie zdejmuje `check_cooldown`.
+        # `end_stun` jest idempotentne, więc podwójne wejście niczego nie psuje.
+        end_stun(npc)
 
     elif action ==  NPCEventActionEnum.attacking:
         # attack cool off end
@@ -112,6 +162,46 @@ def process_custom_event(npc: "NPC", **kwargs: str) -> None:
         print(f"unknown action '{action}' for npc '{npc.name}'")
         npc.scene.add_notification(
             f"unknown action '[act]{action}[/act]' for npc '[char]{npc.name}[/char]'", NotificationTypeEnum.debug)
+
+
+###############################################################################################################
+def _shift(npc: "NPC", delta: vec) -> bool:
+    """Przesuń postać o ``delta``, o ile nie wchodzi tym w ścianę. ``True`` = udało się.
+
+    ``prev_pos`` idzie razem z pozycją: bez tego `slide` w tej samej klatce
+    potraktowałby rozsunięcie jak ruch gracza i cofnąłby je z powrotem
+    w zderzenie.
+    """
+    before = npc.pos.copy()
+    npc.pos += delta
+    npc.adjust_rect()
+    if npc.feet.collidelist(npc.scene.walls) > -1:
+        npc.pos = before
+        npc.adjust_rect()
+        return False
+    npc.prev_pos = npc.pos.copy()
+    return True
+
+
+###############################################################################################################
+def push_apart(npc: "NPC", oponent: "NPC") -> None:
+    """Rozsuń dwie postacie, które weszły na siebie - „odbicie" zamiast blokady.
+
+    Odpychany jest przede wszystkim TEN DRUGI: gracz idzie tam, gdzie chciał iść,
+    a zwierzę schodzi mu z drogi. Gdy za drugim jest ściana (nie ma go dokąd
+    odsunąć), cofa się wchodzący - inaczej oboje utknęliby na dobre w kącie.
+    """
+    away = oponent.pos - npc.pos
+    if away.length_squared() < 1e-6:
+        # idealne nałożenie: kierunek bierzemy z ruchu wchodzącego
+        away = npc.pos - npc.prev_pos
+    if away.length_squared() < 1e-6:
+        # nikt się nie ruszał (np. NPC zespawnował się na graczu) - byle spójnie
+        away = vec(0.0, 1.0)
+    away = away.normalize()
+
+    if not _shift(oponent, away * NPC_PUSH_DISTANCE):
+        _shift(npc, -away * NPC_PUSH_DISTANCE)
 
 
 ###############################################################################################################
@@ -142,17 +232,9 @@ def encounter(npc: "NPC", oponent: "NPC") -> None:
         # if oponent.model.health == 0:
         #     oponent.die()
 
-        npc.is_stunned = True
-        npc.set_event_timer(npc, NPCEventActionEnum.stunned, STUNNED_TIME, 1)
-        npc.health_bar.show()
-
-        oponent.is_stunned = True
-        oponent.set_event_timer(oponent, NPCEventActionEnum.stunned, STUNNED_TIME, 1)
+        stun(npc)
+        stun(oponent)
         oponent.emote.set_temporary_emote("fight_anim", 4.0)
-
-        # show health bar (for STUNNED_TIME ms)
-        # npc.health_bar.set_bar(npc.model.health / npc.model.max_health, npc.game)
-        oponent.health_bar.show()
 
         # push the npc
         player_move = npc.pos - oponent.pos
@@ -168,18 +250,22 @@ def encounter(npc: "NPC", oponent: "NPC") -> None:
         npc.adjust_rect()
         oponent.adjust_rect()
     else:
-        # push the npc
-        player_move = npc.pos - npc.prev_pos
-        if player_move != vec(0, 0):
-            # oponent.pos += player_move.normalize() * TILE_SIZE
+        # Wpadnięcie na kogoś, kto nie jest wrogiem: ROZSUWAMY obu, zamiast tylko
+        # zatrzymywać wchodzącego. Wcześniej jedyną reakcją był ślizg po cudzym
+        # ciele - a że zwierzę wchodzi z własnej woli, a `slide` w ostateczności
+        # cofa do `prev_pos` (czyli z powrotem w to samo zderzenie), przechodzący
+        # kot potrafił zablokować gracza na dobre.
+        # „zaskoczenie" należy się temu, na kogo wpadli - ale tylko wtedy, gdy
+        # ktoś naprawdę szedł. Sprawdzane PRZED rozsunięciem, bo `push_apart`
+        # zrównuje `prev_pos` z nową pozycją.
+        was_moving = npc.pos != npc.prev_pos
+        push_apart(npc, oponent)
+        if was_moving:
             oponent.emote.set_temporary_emote("shocked_anim", 4.0)
-        oponent.adjust_rect()
 
-        npc.set_event_timer(npc,    NPCEventActionEnum.pushed, PUSHED_TIME, 1)
-        oponent.set_event_timer(oponent, NPCEventActionEnum.pushed, PUSHED_TIME, 1)
-
-        # show health bar (for PUSHED_TIME ms)
-        # npc.health_bar.set_bar(npc.model.health / npc.model.max_health, npc.game)
+        now = npc.game.time_elapsed + PUSHED_TIME / 1000.0
+        npc.health_bar_cooldown = max(npc.health_bar_cooldown, now)
+        oponent.health_bar_cooldown = max(oponent.health_bar_cooldown, now)
         oponent.health_bar.show()
 
 
@@ -198,12 +284,7 @@ def hit(npc: "NPC", oponent: "NPC") -> None:
         # if oponent.model.health == 0:
         #     oponent.die()
 
-        oponent.is_stunned = True
-        oponent.set_event_timer(oponent, NPCEventActionEnum.stunned, STUNNED_TIME, 1)
-
-        # show health bar (for STUNNED_TIME ms)
-        # npc.health_bar.set_bar(npc.model.health / npc.model.max_health, npc.game)
-        oponent.health_bar.show()
+        stun(oponent)
 
         # push the npc
         player_move = npc.pos - oponent.pos
@@ -233,5 +314,17 @@ def hit(npc: "NPC", oponent: "NPC") -> None:
 
 ###############################################################################################################
 def set_event_timer(npc: "NPC", target: "NPC", action: NPCEventActionEnum, interval: int, repeat: int) -> None:
+    """UWAGA: jedna postać ma JEDEN `custom_event_id` na wszystkie akcje.
+
+    `pygame.time.set_timer` kluczuje timery **typem zdarzenia**, więc uzbrojenie
+    tu kolejnej akcji kasuje poprzednią, która jeszcze nie wystrzeliła. Do tego
+    `Game.unregister_custom_events()` czyści przy zmianie mapy słownik obsług,
+    a same timery zostają uzbrojone - zaległe zdarzenie trafia wtedy w próżnię.
+
+    Dlatego **żaden stan blokujący sterowanie nie ma prawa zależeć od tego
+    timera**. Ogłuszenie tak działało i kończyło się zawieszeniem gracza na
+    dobre (patrz `stun`); dziś każdy stan wygasa z czasem w `check_cooldown`,
+    a timer jest już tylko przyspieszaczem dla `attacking` i `switching_weapon`.
+    """
     event = pygame.event.Event(target.custom_event_id, action=action)
     pygame.time.set_timer(event, interval, repeat)

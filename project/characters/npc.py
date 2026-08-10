@@ -237,6 +237,17 @@ class NPC(pygame.sprite.Sprite):
         self.switch_duration_cooldown: int = 400
         # double check cooldown since events fail
         self.switch_cooldown: float = 0.0
+        # Kiedy kończy się ogłuszenie - z TEGO pola, a nie ze zdarzenia z timera.
+        # Wszystkie akcje jednej postaci dzieliły jeden `custom_event_id`, a
+        # `pygame.time.set_timer` kluczuje timery typem zdarzenia, więc uzbrojenie
+        # dowolnej z nich KASOWAŁO poprzednią. Wystarczyło wpaść na przechodzące
+        # zwierzę w trakcie ogłuszenia (zdarzenie `pushed`), żeby `is_stunned`
+        # zostało włączone NA ZAWSZE - a `Player.movement` wychodzi wtedy od razu,
+        # więc gracz był sparaliżowany do końca sesji. Ta sama zasada, co przy
+        # `weapon_cooldown` i `switch_cooldown` wyżej: czas jest źródłem prawdy.
+        self.stun_cooldown: float = 0.0
+        # do kiedy pokazywać pasek życia po zderzeniu (dawne zdarzenie `pushed`)
+        self.health_bar_cooldown: float = 0.0
         # rest duration
         self.end_rest_time: float = -1.0
 
@@ -802,6 +813,8 @@ class NPC(pygame.sprite.Sprite):
         self.is_flying = False
         self.is_jumping = False
         self.is_stunned = False
+        self.stun_cooldown = 0.0
+        self.health_bar_cooldown = 0.0
         self.is_talking = False
         self.items = []
         self.selected_item_idx = -1
