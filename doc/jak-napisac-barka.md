@@ -63,12 +63,13 @@ Pula dla mieszkańców bez własnego pliku postaci.
 
 ## Warunki
 
-Zakres `bark` zna to, co dialog, plus trzy rzeczy o świecie:
+Zakres `bark` zna to, co dialog, plus cztery rzeczy o świecie:
 
 | Warunek                                              | Znaczenie                         |
 | ---------------------------------------------------- | --------------------------------- |
 | `time_of_day("morning"/"day"/"evening"/"night")`     | pora dnia na zegarze świata       |
 | `activity("sleep"/"stand"/"wander"/"patrol"/"idle")` | co mówiący akurat robi wg rutyny  |
+| `at("type:work")`, `at("location:Tavern")`           | **który krok rutyny** akurat trwa |
 | `on_map("KLUCZ_MAPY")`                               | na której mapie stoi mówiący      |
 | `sentiment > 60`                                     | sentyment **mówiącego** do gracza |
 | `visited("WĘZEŁ")`, `visited("POSTAĆ", "WĘZEŁ")`     | czy węzeł dialogu był odwiedzony  |
@@ -81,6 +82,24 @@ Zakres `bark` zna to, co dialog, plus trzy rzeczy o świecie:
 `activity()` mówi, co robi **ta** postać. Barman ma lunch o innej porze niż Bart,
 więc bark „głodny" to `activity("wander")` na slocie `type:social`, a nie
 `time_of_day("day")`.
+
+**`at()` to krok dnia, `activity()` to czynność.** `activity("stand")` znaczy tylko
+tyle, że postać stoi - tak samo barman za barem, kowal przy kowadle i Bart przy
+straganie. Dopiero `at()` mówi, KTÓRY to krok rutyny: wartość jest **dosłownie
+tym, co stoi w polu `at`** danego kroku w `config_model/routines.toml`, razem
+z rodzajem:
+
+```markdown
+- [at("type:work")] Robota sama się nie zrobi.
+- [at("type:social")] W końcu chwila przerwy.
+- [at("type:home") and time_of_day("evening")] Nogi mnie bolą.
+- [at("location:Tavern")] Tu zawsze pachnie tak samo.
+```
+
+Skrót bez rodzaju (`at("work")`) **nie zadziała** i `just validate-world` powie
+to wprost - tak samo jak przy literówce (`at("type:wrok")`). Postać bez rutyny
+nie pasuje do żadnego `at(...)` i to nie jest błąd; po prostu milczy na takich
+liniach.
 
 **`selected()` nie działa w barku** - bark nie jest częścią rozmowy, więc „którą
 opcję wybrałeś" nie ma tu znaczenia. Import odrzuci taki warunek.

@@ -506,6 +506,39 @@ def test_every_kind_has_at_least_one_source() -> None:
     assert_eq(empty, [], "rodzaj bez ani jednego klucza w repo")
 
 
+def test_a_rename_reaches_inside_bark_conditions() -> None:
+    """Barki to trzecia treść z warunkami - i jedyna, która pyta o mapę.
+
+    Bez tego rename mapy zostawiał `on_map("STARA")` w sekcji `barks`, czyli warunek,
+    który już nigdy nie zapali. Test jest na samej funkcji, a nie na treści repo:
+    pokrycie nie może zależeć od tego, czy autor akurat trzyma taki bark w `Barki.md`.
+    """
+    data = {
+        "barks": {
+            "BARMAN": [{"msg": "bark.BARMAN.001", "condition": 'on_map("LOST_CORK_TAVERN")'}],
+            "VILLAGERS": [
+                {"msg": "bark.VILLAGERS.001", "condition": 'visited("BARMAN", "012")'},
+                {"msg": "bark.VILLAGERS.002", "condition": 'has_item("golden_key")'},
+                {"msg": "bark.VILLAGERS.003", "condition": "True"},
+            ],
+        }
+    }
+
+    assert_eq(rename_entity._rename_in_barks(data, MAP, "LOST_CORK_TAVERN", "TAVERN"), 1)
+    assert_eq(data["barks"]["BARMAN"][0]["condition"], 'on_map("TAVERN")')
+
+    # postać: klucz właściciela puli ORAZ argument `visited(...)` w warunku
+    assert_eq(rename_entity._rename_in_barks(data, CHARACTER, "BARMAN", "BARKEEP"), 2)
+    assert_true("BARKEEP" in data["barks"], f"{list(data['barks'])}")
+    assert_eq(data["barks"]["VILLAGERS"][0]["condition"], 'visited("BARKEEP", "012")')
+
+    assert_eq(rename_entity._rename_in_barks(data, ITEM, "golden_key", "brass_key"), 1)
+    assert_eq(data["barks"]["VILLAGERS"][1]["condition"], 'has_item("brass_key")')
+
+    # rodzaj, którego w warunkach barków nie ma, nie rusza niczego
+    assert_eq(rename_entity._rename_in_barks(data, CHEST, "MAZE_01_BIG_CHEST", "X"), 0)
+
+
 def main() -> None:
     tests = [
         test_every_data_file_is_either_covered_or_explicitly_excluded,
@@ -539,6 +572,7 @@ def main() -> None:
         test_the_scope_prefix_is_parsed_and_validated,
         test_a_global_key_cannot_be_scoped_to_one_map,
         test_the_scope_resolves_the_instance_vs_model_ambiguity,
+        test_a_rename_reaches_inside_bark_conditions,
     ]
     for t in tests:
         t()

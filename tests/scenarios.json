@@ -1057,14 +1057,16 @@
                 "type": "screenshot_review",
                 "target": "journal_with_marker",
                 "expected_state": "MENU",
-                "expect": "The quest journal is open. The selected quest row in the left-hand list carries a small right-aligned marker word showing it is the tracked quest, and the footer hint line mentions the T key.",
+                "expect": "The quest journal is open. The selected quest row in the left-hand list ends with a small round ring marker (a symbol, not a word) showing it is the tracked quest, the DETAILS header line on the right ends with the word 'tracked' next to the same ring, and the footer hint line mentions the T key.",
                 "expected_elements": [
                     "quest journal panel with a left list and a right details pane",
-                    "a small right-aligned marker on the selected row in the left list",
+                    "a small round ring marker at the right end of the selected row in the left list",
+                    "the word 'tracked' right-aligned on the DETAILS header line",
                     "footer hint line that includes a T keycap"
                 ],
                 "ui_quality_checks": [
-                    "the marker does not overlap the quest title next to it",
+                    "the ring marker on the list does not overlap or touch the quest title next to it",
+                    "the word 'tracked' stays on the DETAILS header line and does not overlap the DETAILS label or the quest title below it",
                     "no text overflows or touches any panel frame"
                 ]
             }

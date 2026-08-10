@@ -3,8 +3,8 @@
 
 Bark to trzeci kontekst warunków, obok dialogu i questa. Ma mówiącego (więc
 `sentiment` i jednoargumentowe `visited()` mają sens), ale dzieje się w świecie,
-a nie w rozmowie - stąd trzy predykaty, których nie zna żaden inny zakres:
-`time_of_day`, `activity`, `on_map`.
+a nie w rozmowie - stąd cztery predykaty, których nie zna żaden inny zakres:
+`time_of_day`, `activity`, `at`, `on_map`.
 
 Testowana jest granica zakresu, nie treść: co wolno napisać w warunku barka,
 czego nie wolno napisać nigdzie indziej, i że pomyłka jest **głośna**. Cichy
@@ -42,6 +42,7 @@ class FakeBarkContext:
         *,
         phase: str = "day",
         activity_name: str = "stand",
+        slot_at: str = "type:work",
         map_key: str = "BLUNDERHAVEN",
         sentiment: int = 50,
         items: dict[str, int] | None = None,
@@ -50,6 +51,7 @@ class FakeBarkContext:
     ) -> None:
         self._phase = phase
         self._activity = activity_name
+        self._at = slot_at
         self._map = map_key
         self._sentiment = sentiment
         self._items = items or {}
@@ -78,6 +80,9 @@ class FakeBarkContext:
     def activity(self, name: str) -> bool:
         return name == self._activity
 
+    def at(self, spec: str) -> bool:
+        return spec == self._at
+
     def on_map(self, map_key: str) -> bool:
         return map_key == self._map
 
@@ -95,10 +100,11 @@ def _rejects(condition: str, scope: ConditionScope = BARK) -> str:
 # Co wolno w zakresie bark
 # ---------------------------------------------------------------------------
 
-def test_the_three_world_predicates_validate() -> None:
+def test_the_four_world_predicates_validate() -> None:
     for condition in (
         'time_of_day("morning")',
         'activity("sleep")',
+        'at("type:work")',
         'on_map("BLUNDERHAVEN")',
     ):
         validate_condition(condition, BARK)
@@ -144,7 +150,8 @@ def test_world_predicates_are_rejected_in_dialog_and_quest() -> None:
     o dokładnie ten cichy `False`, przed którym broni podział na zakresy.
     """
     for scope in (ConditionScope.dialog, ConditionScope.quest):
-        for condition in ('time_of_day("day")', 'activity("stand")', 'on_map("X")'):
+        for condition in ('time_of_day("day")', 'activity("stand")',
+                          'at("type:work")', 'on_map("X")'):
             _rejects(condition, scope)
 
 
@@ -153,6 +160,8 @@ def test_bark_predicates_take_exactly_one_string() -> None:
     _rejects('time_of_day("day", "night")')
     _rejects("on_map(BLUNDERHAVEN)")          # goła nazwa, nie literał
     _rejects('activity(phase="sleep")')       # argument nazwany
+    _rejects("at()")
+    _rejects('at("type:work", "type:home")')
 
 
 def test_the_sandbox_still_holds_in_the_bark_scope() -> None:
@@ -180,6 +189,32 @@ def test_activity_is_not_the_same_question_as_time_of_day() -> None:
     assert check_condition('activity("wander")', ctx, BARK)
     assert not check_condition('activity("stand")', ctx, BARK)
     assert check_condition('time_of_day("day") and activity("wander")', ctx, BARK)
+
+
+def test_at_names_the_step_not_the_activity() -> None:
+    """Ten sam `activity`, dwa różne kroki dnia - `at` je rozróżnia.
+
+    `stand` znaczy „stoi" i tyle: barman za barem i Bart przy straganie mają go
+    tak samo. Dopiero `at` mówi, KTÓRY to krok - i to jest odpowiedź na pytanie
+    „co ta postać teraz robi w swoim dniu".
+    """
+    working = FakeBarkContext(activity_name="stand", slot_at="type:work")
+    lunching = FakeBarkContext(activity_name="stand", slot_at="type:social")
+
+    assert check_condition('at("type:work")', working, BARK)
+    assert not check_condition('at("type:social")', working, BARK)
+    assert check_condition('activity("stand") and at("type:social")', lunching, BARK)
+    assert not check_condition('activity("stand") and at("type:work")', lunching, BARK)
+
+
+def test_at_takes_the_spec_verbatim() -> None:
+    """Wartość jest dokładnie tym, co autor napisał w routines.toml - z prefiksem."""
+    ctx = FakeBarkContext(slot_at="location:Tavern")
+
+    assert check_condition('at("location:Tavern")', ctx, BARK)
+    # sam argument bez rodzaju nie pasuje - i nie ma pasować; walidator świata
+    # (reguła 20) odrzuci taki warunek już przy `just validate-world`
+    assert not check_condition('at("Tavern")', ctx, BARK)
 
 
 def test_on_map_reads_the_context() -> None:
@@ -235,6 +270,21 @@ def test_speaker_activity_reads_the_current_slot() -> None:
     assert speaker_activity(WithSlot()) == "stand"
 
 
+def test_speaker_slot_at_reads_the_current_step() -> None:
+    from dialog.bark_context import speaker_slot_at
+    from npc_schedule import Slot
+
+    class WithSlot:
+        _schedule_slot = Slot(from_minutes=8 * 60, at="type:work", activity="stand")
+
+    class NoRoutine:
+        _schedule_slot = None
+
+    assert speaker_slot_at(WithSlot()) == "type:work"
+    # postać bez rutyny nie pasuje do żadnego `at(...)` - tak samo jak do `activity(...)`
+    assert speaker_slot_at(NoRoutine()) == ""
+
+
 def test_speaker_map_prefers_the_logical_map() -> None:
     from dialog.bark_context import speaker_map
     from npc_runtime import NpcRuntime
@@ -254,7 +304,7 @@ def test_speaker_map_prefers_the_logical_map() -> None:
 
 if __name__ == "__main__":
     tests = [
-        ("trzy predykaty świata przechodzą walidację", test_the_three_world_predicates_validate),
+        ("cztery predykaty świata przechodzą walidację", test_the_four_world_predicates_validate),
         ("wspólne predykaty nadal działają", test_the_shared_predicates_still_work),
         ("predykaty się składają", test_predicates_compose),
         ("selected() nie jest predykatem barka", test_selected_is_not_a_bark_predicate),
@@ -263,12 +313,15 @@ if __name__ == "__main__":
         ("piaskownica trzyma się w zakresie bark", test_the_sandbox_still_holds_in_the_bark_scope),
         ("time_of_day czyta kontekst", test_time_of_day_reads_the_context),
         ("activity to nie to samo co time_of_day", test_activity_is_not_the_same_question_as_time_of_day),
+        ("at nazywa krok rutyny, nie aktywność", test_at_names_the_step_not_the_activity),
+        ("at bierze zapis wprost z routines.toml", test_at_takes_the_spec_verbatim),
         ("on_map czyta kontekst", test_on_map_reads_the_context),
         ("sentyment jest mówiącego", test_sentiment_is_the_speakers),
         ("quest_done niesie fakt świata", test_quest_done_carries_the_world_fact),
         ("visited domyślnie o mówiącym", test_visited_defaults_to_the_speaker),
         ("brak rutyny = pusta aktywność", test_speaker_activity_is_empty_without_a_routine),
         ("aktywność z bieżącego slotu", test_speaker_activity_reads_the_current_slot),
+        ("krok `at` z bieżącego slotu", test_speaker_slot_at_reads_the_current_step),
         ("mapa mówiącego to mapa logiczna", test_speaker_map_prefers_the_logical_map),
     ]
     failures = 0

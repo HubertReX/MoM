@@ -63,6 +63,46 @@ Zadanie zamyka znaleziska **G-3** (sentyment ma głębsze skutki niż widać) i 
 z rozdziału „gdzie gracz może się nudzić": *martwe odpowiedzi* i *brak celu
 krótkoterminowego na HUD*.
 
+## Poprawki po pierwszym teście u autora (2026-08-10)
+
+Autor wgrał `HamsterGray`, dopisał wiersz `RAT`, napisał pierwsze barki - i zobaczył
+trzy rzeczy, których headless nie pokazał:
+
+- **Czarne prostokąty wokół barków.** `BarkSprite` dostaje
+  `blendmode = pygame.BLEND_ALPHA_SDL2`, który `PyscrollGroup` podaje dalej jako flagę
+  blitu. Bez niej SDL blituje sprite'a ścieżką „copy" i wpisuje alfę źródła do
+  `game.canvas`: przezroczyste tło barka wychodzi na ekranie czarnym prostokątem
+  wielkości całego sprite'a - także wokół **milczącego** barka, bo ten jest
+  przezroczysty w całości, więc raz odezwana postać zostawiała czarną plamę na stałe.
+  To ta sama pułapka i to samo lekarstwo, co przy cząstkach rozpadu (`particles.emit`)
+  i kursorze myszy (`game.custom_cursor`) - obie opisane w `project/AGENTS.md`.
+  **Dlaczego bramka tego nie złapała:** format okna na macOS ma maskę alfy, a SDL
+  dummy nie ma jej wcale, więc ta sama scena headless wygląda czysto. Zrzut agenta
+  na prawdziwym ekranie wymaga `MOM_AGENT_SS_CANVAS=1` (`self.screen` po `flip()`
+  to pusty back-buffer), a `agent_ctrl.capture` zapisuje teraz `convert(24)` - bez
+  tego PNG z prawdziwego ekranu jest w całości przezroczysty i nie da się go obejrzeć.
+- **Warunek po kroku rutyny, nie tylko po `activity`** (życzenie autora): nowy predykat
+  **`at("type:work")`** w `ConditionScope.bark`. Cytuje pole `at` kroku **dosłownie tak,
+  jak stoi w `routines.toml`**, z rodzajem (`type:` / `location:` / `route:`), więc
+  obsługuje wszystkie trzy warianty destynacji jednym predykatem i nie wprowadza
+  drugiego słownika nazw. Rozróżnienie względem `activity()`: `activity("stand")` to
+  „stoi" i obejmuje barmana, kowala i Barta naraz, a `at()` mówi, **który to krok dnia**.
+  Słownik dozwolonych wartości bierze się wprost z `routines.toml`, a pilnuje go
+  **reguła 20** walidatora - `at("type:wrok")` i skrót `at("work")` bez rodzaju są
+  błędem przy `just validate-world`, a nie cichym `False`.
+- **Znacznik śledzonego questa nachodził na tytuł.** W kolumnie wątków nie ma miejsca
+  na słowo, więc na liście został **sam symbol** (pierścień z oczkiem, kształtami -
+  font pikselowy nie ma ◉), a napis „śledzony" przeniósł się na prawą stronę, do linii
+  nagłówka **SZCZEGÓŁY**, i pokazuje się tam dla questa, którego szczegóły akurat widać.
+  Licznik/`manual` zostaje widoczny obok symbolu - wcześniej znacznik go kasował.
+
+Przy okazji, bo od treści barków zrobiło się czerwono: `scripts/rename_entity.py`
+nie ruszał sekcji `barks` w `config.json`, więc rename mapy zostawiał w warunku
+`on_map("STARA_NAZWA")` (i `test_rename_entity` to złapał). Rename obsługuje teraz
+właściciela puli oraz argumenty `on_map` / `visited` / `has_item` / `item_count`
+w warunkach barków. Osobnego **rodzaju** klucza `bark_pool` dalej nie ma - to wciąż
+czeka na treść z H03.
+
 ## Decyzje autora (wiążące, ustalone 2026-08-10)
 
 - **W1** - bark to **sam tekst z obrysem**, rysowany w przestrzeni świata (jak imię pod

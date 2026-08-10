@@ -669,6 +669,51 @@ def _rename_item_in_content(node: object, old: str, new: str,
     return node, 0
 
 
+#: Klucz encji **wewnątrz warunku barka** (H01/D1) - argument predykatu, per rodzaj.
+#: Barki to trzecia treść z warunkami, obok dialogów i questów, ale jedyna, która
+#: pyta o mapę (`on_map`), więc rename mapy mijał ją, dopóki tej tabeli nie było.
+#: Rodzaj, którego tu nie ma, po prostu nie występuje w warunkach barków.
+_BARK_CONDITION_RE: dict[str, re.Pattern[str]] = {
+    MAP: re.compile(r'(on_map\(\s*")([^"]+)("\s*\))'),
+    CHARACTER: re.compile(r'(visited\(\s*")([^"]+)("\s*,)'),
+    ITEM: re.compile(r'((?:has_item|item_count)\(\s*")([^"]+)("\s*\))'),
+}
+
+
+def _rename_in_barks(data: dict, kind: str, old: str, new: str) -> int:
+    """Klucz encji w sekcji `barks`: właściciel puli i argumenty w warunkach.
+
+    Właścicielem wpisu jest klucz postaci **albo** nazwa wspólnej puli (D2) - dla
+    runtime'u to ta sama rzecz, więc rename postaci musi ruszyć też ten klucz.
+    """
+    barks = data.get("barks")
+    if not isinstance(barks, dict):
+        return 0
+    hits = 0
+    if kind == CHARACTER and old in barks:
+        data["barks"] = {(new if key == old else key): value for key, value in barks.items()}
+        barks = data["barks"]
+        hits += 1
+
+    pattern = _BARK_CONDITION_RE.get(kind)
+    if pattern is None:
+        return hits
+
+    def swap(match: re.Match[str]) -> str:
+        nonlocal hits
+        if match.group(2) != old:
+            return match.group(0)
+        hits += 1
+        return f"{match.group(1)}{new}{match.group(3)}"
+
+    for entries in barks.values():
+        for entry in entries or ():
+            condition = entry.get("condition")
+            if isinstance(condition, str) and condition:
+                entry["condition"] = pattern.sub(swap, condition)
+    return hits
+
+
 def _edit_config_json(text: str, ren: Rename, file_map: str) -> Edit:
     data = json.loads(text)
     kind, old, new = ren.kind, ren.old, ren.new
@@ -727,6 +772,8 @@ def _edit_config_json(text: str, ren: Rename, file_map: str) -> Edit:
             if section in data:
                 data[section], count = _rename_item_in_content(data[section], old, new)
                 hits += count
+
+    hits += _rename_in_barks(data, kind, old, new)
 
     if not hits:
         return text, 0

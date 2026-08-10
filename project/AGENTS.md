@@ -801,11 +801,28 @@ Skąd się bierze treść:
 
 Warunki idą przez `ConditionScope.bark` - ten sam silnik co dialogi, trzeci zakres obok
 `dialog` i `quest`. Ma mówiącego (więc `sentiment` i jednoargumentowe `visited()`), nie
-ma `selected()` (bark nie jest rozmową) i dostaje trzy nazwy, których nie zna żaden inny
-zakres: `time_of_day`, `activity`, `on_map`. Most na żywe dane: `dialog/bark_context.py`.
+ma `selected()` (bark nie jest rozmową) i dostaje cztery nazwy, których nie zna żaden inny
+zakres: `time_of_day`, `activity`, `at`, `on_map`. Most na żywe dane:
+`dialog/bark_context.py`.
+
+`activity()` i `at()` pytają o **ten sam krok rutyny, ale o co innego**: `activity("stand")`
+znaczy „stoi" i obejmuje barmana, kowala i Barta naraz, a `at("type:work")` cytuje pole
+`at` kroku **dosłownie tak, jak stoi w `routines.toml`** (`type:work`, `location:Tavern`,
+`route:Patrol`), czyli mówi, który to krok dnia. Słownik `at()` jest wzięty wprost
+z `routines.toml`, więc `at("type:wrok")` (albo skrót `at("work")` bez rodzaju) wywala
+**regułę 20** walidatora zamiast siedzieć cicho jako `False` na zawsze.
 
 Rzeczy, które łatwo zepsuć:
 
+- **`BarkSprite` musi mieć `blendmode = BLEND_ALPHA_SDL2`.** Bez tego SDL blituje go
+  ścieżką „copy" i wpisuje alfę źródła do `game.canvas` - przezroczyste tło sprite'a
+  robi się na ekranie czarnym prostokątem wielkości całego barka, także wokół
+  milczącego (bo ten jest przezroczysty w całości). To ta sama pułapka, co przy
+  cząstkach rozpadu i kursorze myszy (patrz „Pułapka (przezroczystość)" wyżej).
+  **Headless tego nie pokazuje**: format okna na macOS ma maskę alfy, SDL dummy nie ma
+  jej wcale, więc scenariusze agentowe i zrzuty z `SDL_VIDEODRIVER=dummy` były czyste,
+  a autor widział czarne prostokąty. Zrzut agenta na prawdziwym ekranie wymaga
+  `MOM_AGENT_SS_CANVAS=1` (samo `self.screen` po `flip()` to pusty back-buffer).
 - **Cykl życia sprite'a musi iść za `EmoteSprite`** - `materialize`/`dematerialize`,
   zasypianie i budzenie, śmierć, `reset`. Bark bez tego zostanie wisieć nad pustym polem
   po kimś, kto poszedł spać.

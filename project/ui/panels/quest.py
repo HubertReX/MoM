@@ -73,6 +73,9 @@ _RIGHT_EDGE0 = 1160
 _LIST_TOP0 = 168
 _ROW_H = 30
 _STEP_INDENT = 42
+#: szerokość zarezerwowana w kolumnie wątków na znacznik śledzenia (H01/D7) -
+#: średnica pierścienia + odstęp, żeby tytuł ani licznik pod niego nie weszły
+_TRACK_MARK_ROOM = 22
 # `:golden_coin:` and friends are item sprites, not emotes, so markup has to be
 # told they are drawable here - see _reward_icons.
 _ITEM_EMOJIS = frozenset(ITEMS_SHEET_DEFINITION)
@@ -415,20 +418,27 @@ class QuestPanel(Widget):
                 self._draw_marker(surface, _LEFT_X + indent, y + 6, row.key)
 
             badge = self._thread_badge(row.key, quest) if row.is_thread else ""
-            if row.key == getattr(self.scene, "tracked_quest_key", None):
-                # Znacznik śledzonego questa (H01/D7). BEZ niego przypięcie jest
-                # niewidoczne w momencie, w którym gracz je wykonuje: dziennik
-                # zasłania statystyki i sam wskaźnik, więc efekt byłby widoczny
-                # dopiero po zamknięciu panelu. Znacznik na liście zamiast toastu -
-                # toast tuż po fanfarze ukończenia questa to trzeci komunikat
-                # w tej samej sekundzie.
-                self._text(surface, _("quest.tracked_mark"), (_SPLIT_X - 20, y + 9),
-                           FONT_SIZE_TINY, _GOLD, align="right")
-                badge = ""      # znacznik i licznik dzielą to samo miejsce
+            # Znacznik śledzonego questa (H01/D7). BEZ niego przypięcie jest
+            # niewidoczne w momencie, w którym gracz je wykonuje: dziennik
+            # zasłania statystyki i sam wskaźnik, więc efekt byłby widoczny
+            # dopiero po zamknięciu panelu. Znacznik na liście zamiast toastu -
+            # toast tuż po fanfarze ukończenia questa to trzeci komunikat
+            # w tej samej sekundzie.
+            #
+            # Na LIŚCIE to sam symbol, nie napis: kolumna wątków jest wąska,
+            # a napis „śledzony" nachodził na tytuł questa. Słowo stoi po prawej,
+            # w nagłówku SZCZEGÓŁÓW (patrz `_draw_details`) - tam jest miejsce,
+            # a legendę symbolu i tak trzeba zobaczyć tylko raz.
+            tracked = row.key == getattr(self.scene, "tracked_quest_key", None)
+            mark_room = _TRACK_MARK_ROOM if tracked else 0
+            if tracked:
+                self._draw_track_mark(surface, _SPLIT_X - 24, y + _ROW_H // 2)
+            badge_right = _SPLIT_X - 20 - mark_room
             name_x = _LEFT_X + indent + 24
-            # reserve room for the badge, or a long title runs under it and on
-            # past the divider into the details pane
-            name_room = _SPLIT_X - 16 - name_x - (self._font(FONT_SIZE_TINY).size(badge)[0] + 8 if badge else 0)
+            # reserve room for the badge and the tracked mark, or a long title runs
+            # under them and on past the divider into the details pane
+            name_room = (_SPLIT_X - 16 - name_x - mark_room
+                         - (self._font(FONT_SIZE_TINY).size(badge)[0] + 8 if badge else 0))
             name = self._rich_line(
                 get_msg(self._messages, quest.name), name_room, FONT_SIZE_SMALL,
                 _TITLE if idx == self.selected else colour,
@@ -437,8 +447,20 @@ class QuestPanel(Widget):
 
             if badge:
                 colour = _MANUAL if quest.completion is CompletionMode.manual else _ACTIVE
-                self._text(surface, badge, (_SPLIT_X - 20, y + 9), FONT_SIZE_TINY, colour, align="right")
+                self._text(surface, badge, (badge_right, y + 9), FONT_SIZE_TINY, colour, align="right")
             y += _ROW_H
+
+    def _draw_track_mark(self, surface: pygame.Surface, cx: int, cy: int) -> None:
+        """Kółko z oczkiem = „ten quest jest śledzony", rysowane kształtami.
+
+        Kształty, nie glif - z tego samego powodu co `_draw_marker`: font pikselowy
+        nie ma ✔ ani ◉ i narysowałby kwadrat-tofu. Pierścień odróżnia się od
+        markerów kroków (te stoją przy lewej krawędzi, ten przy prawej) i od
+        podświetlenia zaznaczenia, bo to dwie różne rzeczy: zaznaczenie mówi „na
+        to patrzysz", znacznik mówi „za tym idziesz".
+        """
+        pygame.draw.circle(surface, _GOLD, (cx, cy), 6, width=2)
+        pygame.draw.circle(surface, _GOLD, (cx, cy), 2)
 
     def _thread_badge(self, key: str, quest: QuestDef) -> str:
         """A thread's progress ('2/3'), or its 'manual' tag — shown right of the title."""
@@ -452,6 +474,15 @@ class QuestPanel(Widget):
         # stay put while the content below them scrolls.
         row = self._current_row()
         self._label(surface, _("quest.details"), (_RIGHT_X, _LIST_TOP - 26))
+        if row is not None and row.key == getattr(self.scene, "tracked_quest_key", None):
+            # Słowo stoi TU, a nie na liście: w kolumnie wątków nachodziło na tytuł
+            # questa (H01/D7). Ta linia jest pusta po prawej, a napis dotyczy
+            # dokładnie tego questa, którego szczegóły widać niżej - więc czyta się
+            # jak podpis panelu, a nie jak kolejny wiersz listy. Symbol tej samej
+            # rzeczy zostaje na liście, przy odpowiednim wierszu.
+            self._draw_track_mark(surface, _RIGHT_EDGE - 8, _LIST_TOP - 26 + 8)
+            self._text(surface, _("quest.tracked_mark"), (_RIGHT_EDGE - 22, _LIST_TOP - 26 + 1),
+                       FONT_SIZE_TINY, _GOLD, align="right")
         if row is None:
             self._text(surface, _("quest.empty"), (_RIGHT_X, _LIST_TOP + 20), FONT_SIZE_SMALL, _GREY)
             return

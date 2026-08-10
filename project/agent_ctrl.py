@@ -721,7 +721,7 @@ class AgentController:
             filename = f"agent_{time_str}_{self._counter:04d}.png"
         path = os.path.join(self.screenshot_dir, filename)
         try:
-            pygame.image.save(surface, path)
+            pygame.image.save(surface.convert(24), path)
             self.log(f"[agent_ctrl] screenshot -> {path}")
             return path
         except (pygame.error, OSError) as e:

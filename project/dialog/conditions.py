@@ -57,8 +57,20 @@ none. :class:`ConditionScope` picks which names are legal:
                               ``evening``, ``night``)
   ``activity(name)``          the speaker's current routine step is ``name``
                               (``npc_schedule.ACTIVITIES``)
+  ``at(spec)``                the speaker's current routine step points *there*
+                              — the ``at`` field of the step, verbatim as written
+                              in ``routines.toml`` (``type:work``,
+                              ``location:Tavern``, ``route:Patrol``)
   ``on_map(key)``             the speaker stands on map ``key``
   ==========================  ===============================================
+
+  ``activity`` and ``at`` answer two different questions about the same step and
+  are meant to be combined: ``activity("stand")`` is true for the barman behind
+  the bar, the smith at the anvil and Bart at his stall alike, while
+  ``at("type:work")`` says the step is the working one rather than lunch. Neither
+  is a substitute for ``time_of_day``: the clock says what hour the *world* is
+  at, the step says what *this* character is doing (the barman's lunch is not at
+  the same hour as everybody else's).
 
   ``selected()`` stays out: a bark is not part of a conversation, so "which
   option did you pick" has no bark-time meaning.
@@ -175,6 +187,14 @@ class BarkConditionContext(ConditionContext, Protocol):
         """Is the speaker's current routine step ``name`` (``npc_schedule.ACTIVITIES``)?"""
         ...
 
+    def at(self, spec: str) -> bool:
+        """Does the speaker's current routine step point at ``spec``?
+
+        ``spec`` is the ``at`` field of the step, written exactly as in
+        ``routines.toml``: ``type:work``, ``location:Tavern``, ``route:Patrol``.
+        """
+        ...
+
     def on_map(self, map_key: str) -> bool:
         """Does the speaker stand on map ``map_key``?"""
         ...
@@ -216,6 +236,7 @@ _BARK_PREDICATES: dict[str, tuple[int, int]] = {
     **_COMMON_PREDICATES,
     "time_of_day": (1, 1),
     "activity": (1, 1),
+    "at": (1, 1),
     "on_map": (1, 1),
 }
 
@@ -536,6 +557,8 @@ class _Interpreter:
             return self.ctx.time_of_day(args[0])  # type: ignore[attr-defined]
         if name == "activity":
             return self.ctx.activity(args[0])  # type: ignore[attr-defined]
+        if name == "at":
+            return self.ctx.at(args[0])  # type: ignore[attr-defined]
         if name == "on_map":
             return self.ctx.on_map(args[0])  # type: ignore[attr-defined]
         # unreachable after validation

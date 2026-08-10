@@ -358,6 +358,17 @@ class BarkSprite(pygame.sprite.Sprite):
         self.image.fill(TRANSPARENT_COLOR)
         self.rect: pygame.FRect = self.image.get_frect(midbottom=pos)
         self._line_h = line_h
+        #: `PyscrollGroup.draw` czyta ten atrybut sprite'a i podaje go dalej jako
+        #: flagę blitu. BEZ niego SDL wybiera ścieżkę "copy" i wpisuje alfę ŹRÓDŁA
+        #: do `game.canvas`, robiąc w nim całkowicie przezroczystą dziurę wielkości
+        #: całego barka - na ekranie czarny prostokąt (także wokół milczącego
+        #: sprite'a, bo on jest przezroczysty w całości). To ta sama pułapka i to
+        #: samo lekarstwo, co przy cząstkach (`particles.emit`, patrz „Pułapka
+        #: (przezroczystość)" w `project/AGENTS.md`) i przy kursorze myszy
+        #: (`game.custom_cursor`). Widać ją WYŁĄCZNIE na prawdziwym ekranie:
+        #: format okna na macOS ma maskę alfy, a headless SDL dummy nie ma jej
+        #: wcale, więc scenariusze agentowe pokazywały czysty obraz.
+        self.blendmode: int = pygame.BLEND_ALPHA_SDL2
 
     @classmethod
     def _shared_font(cls) -> pygame.font.Font:
@@ -382,6 +393,10 @@ class BarkSprite(pygame.sprite.Sprite):
         self.message_key = ""
         self.time_left = 0.0
         self.image.fill(TRANSPARENT_COLOR)
+        # alfa powierzchni zostaje z ostatniego zaniku, a `say()` może przyjść
+        # zanim ktokolwiek ją wyzeruje - bez tego następna kwestia zaczyna
+        # rozmowę półprzezroczysta
+        self.image.set_alpha(255)
 
     def update(self, dt: float) -> None:
         """Odliczanie i zanik. Wołane przez `scene.group.update(dt)`."""

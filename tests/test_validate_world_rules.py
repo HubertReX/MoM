@@ -472,6 +472,29 @@ def test_bark_only_predicates_are_checked_too() -> None:
     assert_true(any("NARNIA" in m for m in messages), f"{messages}")
 
 
+def test_at_must_name_a_step_that_routines_toml_declares() -> None:
+    """`at(...)` cytuje pole `at` kroku rutyny, więc literówka w nim też ma być głośna.
+
+    Bez tej reguły `at("type:wrok")` jest cichym `False` na zawsze - dokładnie tą
+    klasą awarii, dla której reguła 20 w ogóle powstała.
+    """
+    routines = {"townsfolk": {"slot": [
+        {"from": "08:00", "at": "type:work", "activity": "stand"},
+        {"from": "13:00", "at": "location:Tavern", "activity": "wander"},
+    ]}}
+    world = _conditions_world(routines=routines)
+    world.config["barks"] = {"BARMAN": [
+        {"msg": "bark.BARMAN.001", "condition": 'at("type:work")'},
+        {"msg": "bark.BARMAN.002", "condition": 'at("location:Tavern")'},
+        {"msg": "bark.BARMAN.003", "condition": 'at("type:wrok")'},
+        {"msg": "bark.BARMAN.004", "condition": 'at("Tavern")'},
+    ]}
+    messages = _errors(check_condition_entities(world))
+    assert_eq(len(messages), 2, f"{messages}")
+    assert_true(any("type:wrok" in m for m in messages), f"{messages}")
+    assert_true(any('at("Tavern")' in m for m in messages), f"{messages}")
+
+
 def test_a_one_argument_visited_in_a_shared_pool_is_not_guessed_at() -> None:
     """Puli nie da się przypisać do jednego grafu - lepiej milczeć niż zmyślać błąd."""
     world = _conditions_world()
@@ -566,6 +589,7 @@ def main() -> None:
         test_an_unknown_quest_is_an_error,
         test_an_unknown_item_in_a_condition_is_an_error,
         test_bark_only_predicates_are_checked_too,
+        test_at_must_name_a_step_that_routines_toml_declares,
         test_a_one_argument_visited_in_a_shared_pool_is_not_guessed_at,
         test_an_unparseable_condition_does_not_crash_the_validator,
         test_the_real_world_conditions_name_only_real_entities,

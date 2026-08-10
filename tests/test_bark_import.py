@@ -147,6 +147,18 @@ def test_a_bark_condition_is_validated_in_the_bark_scope() -> None:
     assert "selected" in message, message
 
 
+def test_a_routine_step_condition_survives_the_import() -> None:
+    """`at(...)` przechodzi tą samą drogą co reszta - importer nie zna predykatów z osobna."""
+    path = _write('## Barki\n\n'
+                  '- [at("type:work")] Robota sama sie nie zrobi.\n'
+                  '- [activity("stand") and at("type:social")] Chwila przerwy.\n')
+
+    assert [b.condition for b in parse_character_barks(path)] == [
+        'at("type:work")',
+        'activity("stand") and at("type:social")',
+    ]
+
+
 def test_a_typo_in_a_predicate_name_is_refused() -> None:
     path = _write('## Barki\n\n- [time_of_dya("morning")] Literówka.\n')
 
@@ -302,6 +314,7 @@ if __name__ == "__main__":
         ("za długi bark to twardy błąd z linią", test_a_too_long_bark_is_a_hard_error_with_a_line_number),
         ("niełamliwy ciąg odrzucony", test_an_unbreakable_run_is_refused),
         ("warunek walidowany w zakresie bark", test_a_bark_condition_is_validated_in_the_bark_scope),
+        ("warunek at() przechodzi import", test_a_routine_step_condition_survives_the_import),
         ("literówka w predykacie odrzucona", test_a_typo_in_a_predicate_name_is_refused),
         ("markup nie liczy się do długości", test_markup_does_not_count_towards_the_length),
         ("nawias na początku to zawsze warunek", test_a_leading_bracket_is_always_read_as_a_condition),

@@ -7,8 +7,9 @@ crosses into it through exactly one method here.
 What makes a bark its own scope rather than a dialog one: the speaker is known
 (so ``sentiment`` and one-argument ``visited()`` work), but nobody is standing in
 a conversation, and the three facts that decide whether a one-liner fits are
-about the world - what time it is, what the speaker is doing right now, and which
-map it is on. Those are `time_of_day`, `activity` and `on_map`.
+about the world - what time it is, what the speaker is doing right now, which step
+of its day that is, and which map it is on. Those are `time_of_day`, `activity`,
+`at` and `on_map`.
 
 Everything is read *live* on each call. A bark condition is checked at the moment
 the hero walks up, and the clock, the routine step and the map have all moved
@@ -36,6 +37,21 @@ def speaker_activity(npc: Any) -> str:
     """
     slot = getattr(npc, "_schedule_slot", None)
     return str(getattr(slot, "activity", "") or "") if slot is not None else ""
+
+
+def speaker_slot_at(npc: Any) -> str:
+    """Where the speaker's current routine step points, or ``""``.
+
+    The raw ``at`` field of the step (``type:work``, ``location:Tavern``,
+    ``route:Patrol``) - the same string the author wrote in ``routines.toml``,
+    not a resolved position. That is the whole point: ``activity`` says *what*
+    the character is doing (``stand`` covers the barman, the smith and Bart),
+    while this says *which step of the day* it is.
+
+    ``""`` for a character with no routine, exactly like `speaker_activity`.
+    """
+    slot = getattr(npc, "_schedule_slot", None)
+    return str(getattr(slot, "at", "") or "") if slot is not None else ""
 
 
 def speaker_map(npc: Any) -> str:
@@ -99,6 +115,9 @@ class NPCBarkContext(BarkConditionContext):
 
     def activity(self, name: str) -> bool:
         return speaker_activity(self.npc) == name
+
+    def at(self, spec: str) -> bool:
+        return speaker_slot_at(self.npc) == spec
 
     def on_map(self, map_key: str) -> bool:
         return speaker_map(self.npc) == map_key

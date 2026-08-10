@@ -1215,6 +1215,24 @@ def check_item_keys(world: World) -> list[Violation]:
     return out
 
 
+def _routine_slot_specs(world: World) -> set[str]:
+    """Every `at` value any routine step declares - the vocabulary of `at(...)`.
+
+    Read from routines.toml rather than from a list of allowed prefixes, so
+    ``at("type:wrok")`` is caught by the same rule that already catches
+    ``activity("stnad")``. A bark condition naming a step no routine has would
+    otherwise sit at False forever - the silent-corpse failure mode rule 20
+    exists for.
+    """
+    specs: set[str] = set()
+    for routine in world.routines.values():
+        for step in routine.get("slot", []) or []:
+            spec = str(step.get("at", "")).strip()
+            if spec:
+                specs.add(spec)
+    return specs
+
+
 def check_condition_entities(world: World) -> list[Violation]:
     """Rule 20: every entity named inside a condition exists (H01/D3).
 
@@ -1245,6 +1263,7 @@ def check_condition_entities(world: World) -> list[Violation]:
     maps = set(_game_map_keys(world))
     activities = _module_str_literals(PROJECT_DIR / "npc_schedule.py", "ACTIVITIES")
     phases = _module_str_literals(PROJECT_DIR / "settings.py", "DAY_PHASES")
+    slot_specs = _routine_slot_specs(world)
 
     out: list[Violation] = []
     for site in _all_conditions(world):
@@ -1269,6 +1288,12 @@ def check_condition_entities(world: World) -> list[Violation]:
                     ERROR, site.source,
                     f"activity(\"{args[0]}\") nie jest krokiem rutyny "
                     f"(są: {', '.join(sorted(activities))})",
+                ))
+            elif predicate == "at" and args and slot_specs and args[0] not in slot_specs:
+                out.append(Violation(
+                    ERROR, site.source,
+                    f"at(\"{args[0]}\") nie jest krokiem żadnej rutyny w routines.toml "
+                    f"(pole `at`; są: {', '.join(sorted(slot_specs))})",
                 ))
             elif predicate == "time_of_day" and args and phases and args[0] not in phases:
                 out.append(Violation(
