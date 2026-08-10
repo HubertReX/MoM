@@ -139,7 +139,11 @@ class Scene(State):
         # Parsed routines.toml. Global (the rhythm of a day is not per-map) and
         # read once per scene; an unreadable file yields empty routines and the
         # game behaves exactly as it did before routines existed.
-        self.routines: Routines = load_routines(ROUTINES_FILE, warn=print)
+        # `known_emotes` przekazujemy, a nie importujemy w `npc_schedule`: ten
+        # moduł jest celowo wolny od pygame'a i od gry, a arkusz emoji mieszka
+        # w `settings`. Bez tej listy literówka w polu `emotes` byłaby cicha (H01/D6).
+        self.routines: Routines = load_routines(
+            ROUTINES_FILE, warn=print, known_emotes=settings.known_emote_names())
         # roster rutyn budowany raz, przy pierwszej mapie hubowej (map_loader.load_map)
         self._roster_loaded: bool = False
         self.items: list[ItemSprite] = []

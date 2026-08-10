@@ -42,6 +42,7 @@ import game
 import npc_state
 from npc_runtime import NpcRuntime
 from npc_schedule import Destination, Slot, current_slot, destinations_of, resolve_at, slot_jitter
+from world_rng import stable_hash
 import scene
 from characters import animation, combat, inventory, movement
 from scene import debug_overlay
@@ -124,6 +125,18 @@ class NPC(pygame.sprite.Sprite):
         self._wander_anchor: vec | None = None
         self._wander_next_time: float = 0.0
         self._idle_emoted: bool = False
+        # Emoji z kroku rutyny (H01/D6). `None` = generator jeszcze nie zasiany;
+        # zasiewamy go leniwie, bo `scene.world_seed` bywa nadpisany po wczytaniu
+        # zapisu, a chcemy ziarno TEGO świata, nie tego sprzed wczytania.
+        self._emote_rng: random.Random | None = None
+        self._emote_next_time: float = 0.0
+        #: Ile razy TA postać pokazała emoji z kroku rutyny. Licznik istnieje po to,
+        #: żeby scenariusz agentowy miał co asertować: samo „coś wisi nad głową"
+        #: nie odróżnia emoji z rutyny od `dots_anim` u każdego rozmownego NPC-a
+        #: i od `$_anim` u kupca, więc asercja na tym byłaby bez zębów (A02).
+        self._routine_emotes_shown: int = 0
+        #: Kiedy zwierzę może znów zareagować na gracza (H01/W7).
+        self._animal_reaction_time: float = 0.0
         # Which map this character just walked in from, set on the frame a cross-map
         # transit completes and consumed by the presence reconciler to pick the
         # doorway it should appear at. Transient - never saved, never trusted stale.
@@ -489,6 +502,13 @@ class NPC(pygame.sprite.Sprite):
         if slot != self._schedule_slot:
             self._schedule_slot = slot
             self._begin_slot(slot)
+        # Emoji z kroku rutyny tyka TUTAJ, a nie w `_continue_slot`, bo tamto
+        # celowo wychodzi wcześniej, gdy postać jeszcze idzie - a idzie prawie
+        # cały czas. Sztandarowy przypadek z dokumentu ("głodny, gdy idzie na
+        # lunch") dzieje się właśnie W DRODZE, więc emoji nie może czekać
+        # na dojście. (Zmierzone: z bramką na dojściu 4 postacie z rutyną
+        # pokazały 3 emoji na 90 sekund.)
+        self._routine_emote_step(slot)
         self._continue_slot(slot)
 
     #############################################################################################################
@@ -506,6 +526,12 @@ class NPC(pygame.sprite.Sprite):
         self._wander_anchor = None
         self._wander_next_time = 0.0
         self._idle_emoted = False
+        # UWAGA: odliczania emoji NIE zerujemy na granicy kroku, choć to kusi.
+        # Przy GAME_TIME_SPEED 0.25 jeden krok rutyny trwa ~12-48 sekund realnych,
+        # a odstęp między emoji to 40-90 s - przeliczanie go od nowa na każdej
+        # granicy sprawiało, że termin prawie nigdy nie wypadał wewnątrz kroku
+        # i emoji z rutyn nie pokazywały się PRAKTYCZNIE NIGDY. Zegar biegnie
+        # ciągle, a emoji bierze się z kroku, który akurat trwa.
 
         destination = resolve_at(
             slot.at,
@@ -559,13 +585,72 @@ class NPC(pygame.sprite.Sprite):
             # afterwards - a sleeping character gets no update of its own, so it
             # could never wake itself.
             self.wants_to_sleep = True
-        elif slot.activity == "wander":
+            # Sleep is the exception to the jitter below: `zzz` hangs CONSTANTLY,
+            # because sleeping is not a moment. Recognised by `activity`, never by
+            # the emote's name. (Today `update_sleepers` drops the sprite out of
+            # the draw group entirely, so this shows only in the frame before the
+            # character vanishes - it is the honest state either way.)
+            self.emote.set_emote(self._slot_emote(slot, default="zzz"))
+            return
+        if slot.activity == "wander":
             self._wander_step()
         elif slot.activity == "idle" and not self._idle_emoted:
             self._idle_emoted = True
             self.emote.set_temporary_emote("dots_anim", IDLE_EMOTE_DURATION)
         # `stand` and `patrol` need nothing here: one is standing still, and the
         # other never stops travelling, so it never reaches this line.
+
+    #############################################################################################################
+    def _slot_emote(self, slot: Slot, default: str = "") -> str:
+        """One emote drawn from the step's list, resolved through the fallbacks."""
+        if not slot.emotes:
+            return default
+        return settings.resolve_emote(self._routine_emote_rng().choice(list(slot.emotes)))
+
+    #############################################################################################################
+    def _routine_emote_rng(self) -> random.Random:
+        """This character's own seeded generator for emote rolls (A04).
+
+        Seeded from the world seed **and** the character's name, so two runs of a
+        scenario show the same sequence of emoji, and two characters standing side
+        by side do not blink in lockstep. Never the bare `random` module: a
+        scenario asserting on emotes would be a coin toss.
+        """
+        if self._emote_rng is None:
+            self._emote_rng = random.Random(
+                stable_hash(getattr(self.scene, "world_seed", 0), self.name, "emote"))
+        return self._emote_rng
+
+    #############################################################################################################
+    def _routine_emote_step(self, slot: Slot) -> None:
+        """Show one of the step's emoji every 40-90 s, at a jittered moment (W3).
+
+        The moment and the variant are random on purpose: emoji tied strictly to
+        the step boundary would make the whole village tick like clockwork, which
+        is the opposite of what this is for. No `emotes` on the step means no
+        emoji, and that is not an error.
+        """
+        if not slot.emotes or self.is_asleep:
+            # Śpiący jest zdjęty z grupy rysowania, więc emoji poszłoby w próżnię -
+            # i jeszcze zjadłoby termin następnego. Sam `sleep` ma osobny kanał:
+            # stałe `zzz` ustawiane w `_continue_slot`.
+            return
+        now = self.scene.game.time_elapsed
+        if self._emote_next_time == 0.0:
+            # Pierwszy rzut jest KRÓTSZY od normalnego odstępu: wieś ma pokazać
+            # oznaki życia niedługo po tym, jak gracz wejdzie, a dopiero potem
+            # przejść w wolniejszy rytm. Rozrzut po całym MAX-ie robił dwie złe
+            # rzeczy naraz - kazał czekać do półtorej minuty i wypadał poza kroki,
+            # które trwają krócej niż on.
+            self._emote_next_time = now + self._routine_emote_rng().uniform(
+                0.0, settings.ROUTINE_EMOTE_MIN_GAP)
+            return
+        if now < self._emote_next_time:
+            return
+        self._emote_next_time = now + self._routine_emote_rng().uniform(
+            settings.ROUTINE_EMOTE_MIN_GAP, settings.ROUTINE_EMOTE_MAX_GAP)
+        self.emote.set_temporary_emote(self._slot_emote(slot), settings.ROUTINE_EMOTE_DURATION)
+        self._routine_emotes_shown += 1
 
     #############################################################################################################
     def _wander_step(self) -> None:

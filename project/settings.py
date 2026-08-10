@@ -581,6 +581,59 @@ BARK_FADE_DURATION: float = 0.8
 #: ZAWSZE dawałoby kwestię.
 BARK_CHANCE: float = 0.55
 
+# ---------------------------------------------------------------------------
+# Emoji z rutyn (H01/D6) - drugi, niezależny kanał ambientu
+# ---------------------------------------------------------------------------
+# Ile sekund między dwoma emoji tej samej postaci. Przedział, nie stała: przy
+# stałej cała wieś zaczęłaby migać w tym samym rytmie. Losowanie idzie
+# z generatora zasianego nazwą postaci i ziarnem świata, więc ten sam seed daje
+# ten sam ciąg (A04).
+ROUTINE_EMOTE_MIN_GAP: float = 40.0
+ROUTINE_EMOTE_MAX_GAP: float = 90.0
+ROUTINE_EMOTE_DURATION: float = 3.0
+
+#: Emoji, których arkusz jeszcze NIE MA, a które autor już może wpisać do
+#: `routines.toml`. Do czasu dorysowania sprite'a nazwa rozwiązuje się na
+#: istniejącą; gdy asset wejdzie do `EMOTE_SHEET_DEFINITION`, wpis stąd znika
+#: i nic innego się nie zmienia. To NIE jest ciche łykanie literówek: nazwa
+#: spoza arkusza I spoza tej tabeli jest odrzucana przy wczytaniu rutyn.
+#: Podstawienie trzyma wariant: statyczne na statyczne, `_anim` na animowane -
+#: inaczej lista `["food", "food", "food_anim"]` przestałaby cokolwiek ważyć,
+#: bo wszystkie trzy wpisy dawałyby ten sam obrazek.
+EMOTE_FALLBACKS: dict[str, str] = {
+    "food":       "happy",
+    "food_anim":  "heart_anim",
+    "sweat":      "dots",
+    "sweat_anim": "dots_anim",
+}
+
+
+def resolve_emote(name: str) -> str:
+    """Nazwa emoji -> klucz istniejącego sprite'a (patrz `EMOTE_FALLBACKS`)."""
+    return EMOTE_FALLBACKS.get(name, name)
+
+
+def known_emote_names() -> set[str]:
+    """Wszystko, co autorowi wolno wpisać w polu `emotes` slotu rutyny."""
+    return set(EMOTE_SHEET_DEFINITION) | set(EMOTE_FALLBACKS)
+
+
+# ---------------------------------------------------------------------------
+# Reakcje zwierząt na gracza (H01/W7)
+# ---------------------------------------------------------------------------
+# Mechanizm już był - zwierzę potrącone przez gracza wpada w `Stunned` i pokazuje
+# `shocked_anim` (`npc_state.get_new_state`). Tu jest jego rozszerzenie na
+# sytuację, która zdarza się o wiele częściej niż zderzenie: gracz po prostu
+# podchodzi. Onomatopeje ("Muuu", "Ko-ko") to treść i idą pulą barków, nie tędy.
+ANIMAL_REACTION_RADIUS_TILES: float = 2.5
+ANIMAL_REACTION_COOLDOWN: float = 20.0
+ANIMAL_REACTION_DURATION: float = 2.5
+#: Z czego zwierzę wybiera reakcję. Jeden wpis może się powtórzyć, żeby ważyć
+#: częstość - tak samo jak w liście `emotes` slotu rutyny.
+ANIMAL_REACTION_EMOTES: tuple[str, ...] = (
+    "wondering", "wondering", "exclamation", "dots_anim", "happy",
+)
+
 
 #: Znaczniki, które nie zajmują pikseli: tagi RichText (`[shadow]`, `[/shadow]`)
 #: i klucze emote (`:happy:`).

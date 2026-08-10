@@ -980,5 +980,32 @@
             },
             { "type": "no_layout_violations" }
         ]
+    },
+    {
+        "name": "NPC Routine Emotes",
+        "slug": "npc_routine_emotes",
+        "platform": ["desktop"],
+        "start_hour": 13,
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "walk_across_the_village", "commands": ["walk_to_point:568,200"], "wait": 10.0 },
+            { "slug": "let_the_afternoon_run", "commands": [], "wait": 30.0 },
+            { "slug": "village_at_lunch", "commands": ["screenshot"] },
+            { "slug": "dump_state_at_lunch", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            { "type": "process_alive" },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "BLUNDERHAVEN",
+                    "world_seed": 12345,
+                    "routine_emotes_shown_min": 1,
+                    "barks_count_max": 2
+                }
+            },
+            { "type": "no_layout_violations" }
+        ]
     }
 ]

@@ -22,6 +22,23 @@
 # degraduje sie do "zostań gdzie jesteś", a nie do wyjatku. Dzięki temu
 # niekompletne dane nigdy nie wywalają gry i nie trzeba mapować całej wioski
 # na raz.
+#
+# `emotes` (opcjonalne) - emoji, ktore postac moze pokazac nad glowa NA TYM KROKU.
+# Emoji opisuje konkretny krok dnia, wiec mieszka w tym kroku, a nie w osobnej
+# tabeli `activity -> emoji`: `stand` znaczy "stoi" i tyle, wiec barman za barem,
+# kowal przy kowadle i Bart przy straganie maja ten sam `activity`, a to trzy
+# rozne obrazki. Brak pola = brak emoji, i to nie jest blad.
+#
+# Wariant `_anim` wpisuje sie WPROST, jako osobny element - dzieki temu czestosc
+# steruje sama lista (["food", "food", "food_anim"] to jeden na trzy), zamiast
+# stalym progiem zaszytym w kodzie. Emoji leci co 40-90 s, w losowanym momencie,
+# zeby wies nie tykala jak zegarek.
+#
+# Nazwa spoza `EMOTE_SHEET_DEFINITION` (settings.py) jest ODRZUCANA przy wczytaniu,
+# z ostrzezeniem w konsoli - literowka `zzz_animm` nie ma prawa byc cicha.
+# Wyjatek: `food` i `sweat` to nazwy, ktorych arkusz jeszcze nie ma, a ktore juz
+# wolno pisac - rozwiazuja sie na istniejace przez `settings.EMOTE_FALLBACKS`,
+# a gdy autor dorysuje sprite'y, wpis stamtad znika i nic sie tu nie zmienia.
 
 [defaults]
 wander_radius       = 2     # promien mikro-wędrowki, w kaflach
@@ -45,6 +62,7 @@ activity = "wander"
 from     = "08:00"
 at       = "type:work"
 activity = "stand"
+emotes   = ["sweat", "star", "dots"]
 
 # Lunch w tawernie
 
@@ -52,6 +70,7 @@ activity = "stand"
 from     = "13:00"
 at       = "type:social"
 activity = "wander"
+emotes   = ["food", "food", "food_anim", "happy"]
 
 [[routine.townsfolk.slot]]
 from     = "16:00"
@@ -64,11 +83,13 @@ activity = "stand"
 from     = "18:30"
 at       = "type:hobby"
 activity = "wander"
+emotes   = ["happy", "star", "smile"]
 
 [[routine.townsfolk.slot]]
 from     = "20:00"
 at       = "type:home"
 activity = "sleep"
+emotes   = ["zzz", "zzz_anim"]
 
 # =====================================================================
 #  barman - nie przerywa pracy w porze lunchu
@@ -90,6 +111,7 @@ activity = "stand"
 from     = "12:00"
 at       = "location:LOST_CORK_TAVERN:tables"
 activity = "wander"
+emotes   = ["sweat", "dots"]
 
 [[routine.barman.slot]]
 from     = "13:30"
@@ -107,6 +129,7 @@ activity = "wander"
 from     = "21:00"
 at       = "type:home"
 activity = "sleep"
+emotes   = ["zzz", "zzz_anim"]
 
 
 # =====================================================================
@@ -117,6 +140,7 @@ activity = "sleep"
 from     = "05:30"
 at       = "type:work"
 activity = "wander"
+emotes   = ["sweat", "sweat", "star"]
 
 [[routine.farmer.slot]]
 from     = "11:00"
@@ -137,6 +161,7 @@ activity = "wander"
 from     = "21:00"
 at       = "type:home"
 activity = "sleep"
+emotes   = ["zzz", "zzz_anim"]
 
 
 # =====================================================================
@@ -157,6 +182,7 @@ activity = "patrol"
 from     = "02:00"
 at       = "type:home"
 activity = "sleep"
+emotes   = ["zzz", "zzz_anim"]
 
 # Rutyny `farmer` i `guard` nie maja dziś żadnej obsady - są gotowymi
 # szablonami na postacie, których na mapie jeszcze nie ma. Żeby którąś

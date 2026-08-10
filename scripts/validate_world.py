@@ -323,10 +323,15 @@ def _settings_sheet_keys(*names: str) -> set[str]:
         return set()
     wanted, out = set(names), set()
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Dict):
+        # `X = {...}` oraz `X: dict[str, str] = {...}` - anotowana forma jest
+        # osobnym węzłem AST, a `EMOTE_FALLBACKS` jest właśnie taka
+        if isinstance(node, ast.Assign):
+            targets = [t for t in node.targets if isinstance(t, ast.Name)]
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            targets = [node.target]
+        else:
             continue
-        targets = {t.id for t in node.targets if isinstance(t, ast.Name)}
-        if not targets & wanted:
+        if not isinstance(node.value, ast.Dict) or not ({t.id for t in targets} & wanted):
             continue
         out |= {key.value for key in node.value.keys
                 if isinstance(key, ast.Constant) and isinstance(key.value, str)}
@@ -630,6 +635,7 @@ def check_routine_targets(world: World) -> list[Violation]:
     sure the column it names exists at all.
     """
     columns = {"home", "work", "social", "hobby"}
+    known_emotes = _settings_sheet_keys("EMOTE_SHEET_DEFINITION", "EMOTE_FALLBACKS")
     out = []
     for name, routine in world.routines.items():
         for step in routine.get("slot", []) or []:
@@ -651,6 +657,35 @@ def check_routine_targets(world: World) -> list[Violation]:
                     f"step at='{at}' names a column that characters.csv does not have "
                     f"(expected one of: {', '.join(sorted(columns))})",
                 ))
+            out.extend(_check_slot_emotes(name, step, known_emotes))
+    return out
+
+
+def _check_slot_emotes(routine: str, step: dict, known: set[str]) -> list[Violation]:
+    """Part of rule 4: the step's optional `emotes` list names emoji that exist (H01/D6).
+
+    `EMOTE_SHEET_DEFINITION` is a plain dict, so `zzz_animm` gives either a
+    `KeyError` at a random moment of play or - worse, because nobody notices it -
+    a character that simply never shows anything. Loading the routines already
+    drops an unknown name with a console warning; this is the CI half of the same
+    guard.
+    """
+    if not known:
+        return []           # settings.py unreadable - not this rule's business
+    out = []
+    raw = step.get("emotes")
+    if raw is None:
+        return out          # no field = no emoji, a normal state
+    if not isinstance(raw, list):
+        return [Violation(ERROR, f"routines.toml:{routine}",
+                          f"`emotes` musi być listą, jest {type(raw).__name__}")]
+    for entry in raw:
+        if str(entry) not in known:
+            out.append(Violation(
+                ERROR, f"routines.toml:{routine}",
+                f"emotes zawiera '{entry}', którego nie ma w EMOTE_SHEET_DEFINITION "
+                f"ani w EMOTE_FALLBACKS (settings.py)",
+            ))
     return out
 
 

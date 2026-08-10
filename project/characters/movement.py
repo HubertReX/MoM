@@ -17,6 +17,10 @@ from rich import print
 from enums import AttitudeEnum, RaceEnum
 from maze_generator.maze_utils import a_star_cached, nearest_walkable
 from settings import (
+    ANIMAL_REACTION_COOLDOWN,
+    ANIMAL_REACTION_DURATION,
+    ANIMAL_REACTION_EMOTES,
+    ANIMAL_REACTION_RADIUS_TILES,
     MAX_NO_ATTEMPTS_TO_FIND_RANDOM_POS,
     MONSTER_WAKE_DISTANCE,
     NPC_MAX_REST_TIME,
@@ -29,6 +33,7 @@ from settings import (
     TILE_SIZE,
     WANDER_PAUSE,
     WAYPOINT_ARRIVE_RADIUS_SQ,
+    resolve_emote,
 )
 
 if TYPE_CHECKING:
@@ -123,7 +128,35 @@ def movement(npc: "NPC") -> None:
 
 
 ###############################################################################################################
+def animal_reaction(npc: "NPC") -> None:
+    """Zwierzę zauważa gracza, który podszedł blisko (H01/W7).
+
+    Rozszerzenie mechanizmu, który już był, a nie nowy: potrącone zwierzę wpada
+    w `Stunned` i pokazuje `shocked_anim` (`npc_state.get_new_state`). Tyle że
+    zderzenie jest rzadkie, a podejście blisko - ciągłe, więc wieś była martwa
+    dokładnie tam, gdzie najłatwiej ją ożywić.
+
+    Emoji wybiera zasiany generator postaci (A04), a cooldown pilnuje, żeby
+    zwierzę nie migało za każdym razem, gdy gracz przestąpi z nogi na nogę.
+    Onomatopeje ("Muuu", "Ko-ko") to TREŚĆ i idą pulą barków - tędy leci sam obrazek.
+    """
+    if npc.is_stunned or npc.is_dead:
+        # potrącone zwierzę ma już swoją, mocniejszą reakcję - nie nadpisujemy jej
+        return
+    now = npc.game.time_elapsed
+    if now < npc._animal_reaction_time:
+        return
+    radius = ANIMAL_REACTION_RADIUS_TILES * TILE_SIZE
+    if (npc.pos - npc.scene.player.pos).magnitude_squared() > radius ** 2:
+        return
+    npc._animal_reaction_time = now + ANIMAL_REACTION_COOLDOWN
+    emote = npc._routine_emote_rng().choice(list(ANIMAL_REACTION_EMOTES))
+    npc.emote.set_temporary_emote(resolve_emote(emote), ANIMAL_REACTION_DURATION)
+
+
+###############################################################################################################
 def movement_animal(npc: "NPC") -> None:
+    animal_reaction(npc)
     # distance_from_player = (npc.pos - npc.scene.player.pos).magnitude_squared()
     distance_from_target = (npc.pos - npc.target).magnitude_squared()
 

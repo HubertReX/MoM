@@ -264,6 +264,11 @@ class AgentController:
             # więc obrazek nie rozstrzyga, czy bark jest widoczny.
             "barks": [],
             "barks_count": 0,
+            # emoji z kroku rutyny (H01/D6) - drugi kanał ambientu. Kto co
+            # pokazuje nad głową, plus skalar do asercji liczbowej.
+            "emotes": [],
+            "emotes_count": 0,
+            "routine_emotes_shown": 0,
             # layout self-checks (ui/layout.py) - deterministyczna detekcja overflow,
             # niezależna od sceny: raportują też panele menu
             "layout_violations": _layout_violations(),
@@ -274,6 +279,16 @@ class AgentController:
         ui = getattr(scene, "ui", None)
         if ui is not None:
             info["open_panels"] = list(ui.open_panel_names)
+
+        info["emotes"] = self._active_emotes(scene)
+        info["emotes_count"] = len(info["emotes"])
+        # ile razy KTOKOLWIEK pokazał emoji Z KROKU RUTYNY. `emotes_count` sam
+        # tego nie rozstrzyga: `dots_anim` wisi nad każdym rozmownym NPC-em,
+        # a `$_anim` nad każdym kupcem, niezależnie od rutyn.
+        info["routine_emotes_shown"] = sum(
+            int(getattr(npc, "_routine_emotes_shown", 0))
+            for npc in (getattr(scene, "loaded_NPCs", None) or {}).values()
+        )
 
         barks = getattr(scene, "barks", None)
         if barks is not None:
@@ -301,6 +316,27 @@ class AgentController:
                     "sentiment": int(getattr(npc, "sentiment", 0)),
                 }
         return info
+
+    @staticmethod
+    def _active_emotes(scene: Any) -> "list[dict[str, str]]":
+        """Kto pokazuje coś nad głową i co dokładnie (H01/D6).
+
+        Liczy się emoji CHWILOWE (`temporary_emote`) oraz stałe różne od `clear` -
+        `clear` to stan spoczynku, nie treść. Pomijamy śpiących: są zdjęci z grupy
+        rysowania, więc raportowanie ich mówiłoby o czymś, czego nie widać.
+        """
+        out: list[dict[str, str]] = []
+        for npc in getattr(scene, "NPCs", None) or []:
+            emote = getattr(npc, "emote", None)
+            if emote is None or getattr(npc, "is_asleep", False):
+                continue
+            shown = getattr(emote, "temporary_emote", "") or ""
+            if not shown:
+                resting = getattr(emote, "emote", "") or ""
+                shown = resting if resting not in ("", "clear", "empty") else ""
+            if shown:
+                out.append({"npc": getattr(npc, "config_key", "") or npc.name, "emote": shown})
+        return out
 
     def _dump_ui_state(self, game: Any) -> None:
         """Zapisz zrzut stanu: plik JSON na desktopie, localStorage na web.

@@ -465,9 +465,15 @@ class _FakeScene:
 class _FakeEmote:
     def __init__(self) -> None:
         self.emotes: list[str] = []
+        #: emoji STAŁE - krok `sleep` ustawia `zzz` na stałe, bo spanie nie jest
+        #: chwilą (H01/D6), więc atrapa musi umieć jedno i drugie
+        self.resting: str = ""
 
     def set_temporary_emote(self, emote: str, duration: float) -> None:
         self.emotes.append(emote)
+
+    def set_emote(self, emote: str) -> None:
+        self.resting = emote
 
 
 class _FakeGame:

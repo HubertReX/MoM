@@ -65,6 +65,22 @@ class Slot:
     from_minutes: int
     at: str
     activity: str
+    #: Emoji this step may show above the character's head (H01/D6). Optional,
+    #: and an empty tuple is a normal state, not an error - the same philosophy
+    #: as an empty destination cell. The village does not have to be plastered
+    #: with emoji to feel alive.
+    #:
+    #: It lives on the *step* rather than in a separate `activity -> emoji` table
+    #: for three reasons: a table at the top of the file is easy to forget when
+    #: you append a step at the bottom; `activity` is too coarse a measure
+    #: (`stand` covers the barman behind the bar, the smith at the anvil and Bart
+    #: at his stall - three different pictures); and it would be a third registry
+    #: describing something the step already owns.
+    #:
+    #: An `_anim` variant is written as its own entry, so the author controls how
+    #: often it shows with the list itself (``["food", "food", "food_anim"]`` is
+    #: one in three) instead of a 30% threshold buried in the code.
+    emotes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -131,11 +147,43 @@ def parse_time(text: str) -> int:
     return value
 
 
-def parse_routines(data: dict[str, Any], *, warn: Any = None) -> Routines:
+def _parse_emotes(raw: Any, known: "set[str] | None", where: str, warn: Any) -> tuple[str, ...]:
+    """The slot's ``emotes`` list, with unknown names dropped **loudly** (H01/D6).
+
+    A typo here must never be quiet. ``EMOTE_SHEET_DEFINITION`` is a plain dict,
+    so ``zzz_animm`` would either raise ``KeyError`` at a random moment of play
+    or - if somebody "fixed" that with ``get()`` - leave a character that simply
+    never shows anything. The second is worse, because nobody notices it.
+
+    ``known`` is passed in rather than imported: this module is deliberately free
+    of pygame and of the game, and the emote sheet lives in ``settings``. ``None``
+    means "no list to check against" (unit tests feeding a literal dict), and
+    then names pass through unchecked.
+    """
+    if raw is None:
+        return ()
+    if not isinstance(raw, list):
+        _warn(warn, f"{where}: `emotes` must be a list, got {type(raw).__name__}; ignored")
+        return ()
+    names: list[str] = []
+    for entry in raw:
+        name = str(entry)
+        if known is not None and name not in known:
+            _warn(warn, f"{where}: unknown emote '{name}'; dropped")
+            continue
+        names.append(name)
+    return tuple(names)
+
+
+def parse_routines(data: dict[str, Any], *, warn: Any = None,
+                   known_emotes: "set[str] | None" = None) -> Routines:
     """Build the parsed form from an already-loaded TOML document.
 
     Split out from `load_routines` so tests can feed a literal dict, and so a
     malformed step is reported rather than silently dropped.
+
+    ``known_emotes`` is the set of names a slot's ``emotes`` field may use; the
+    game passes ``settings.known_emote_names()``.
     """
     raw_defaults = data.get("defaults") or {}
     defaults = Defaults(
@@ -153,6 +201,8 @@ def parse_routines(data: dict[str, Any], *, warn: Any = None) -> Routines:
                     from_minutes=parse_time(raw["from"]),
                     at=str(raw["at"]),
                     activity=str(raw.get("activity", "stand")),
+                    emotes=_parse_emotes(
+                        raw.get("emotes"), known_emotes, f"routine '{key}' slot #{index}", warn),
                 )
             except (KeyError, ValueError) as exc:
                 _warn(warn, f"routine '{key}' slot #{index}: {exc}; skipped")
@@ -174,7 +224,8 @@ def parse_routines(data: dict[str, Any], *, warn: Any = None) -> Routines:
     return Routines(defaults=defaults, routines=routines)
 
 
-def load_routines(path: str | Path, *, warn: Any = None) -> Routines:
+def load_routines(path: str | Path, *, warn: Any = None,
+                  known_emotes: "set[str] | None" = None) -> Routines:
     """Read routines.toml. A missing or broken file yields empty routines.
 
     Empty is a working state: no character gets a routine and everybody keeps the
@@ -190,7 +241,7 @@ def load_routines(path: str | Path, *, warn: Any = None) -> Routines:
     except tomllib.TOMLDecodeError as exc:
         _warn(warn, f"routines file {path} is not valid TOML: {exc}")
         return Routines(defaults=Defaults(), routines={})
-    return parse_routines(data, warn=warn)
+    return parse_routines(data, warn=warn, known_emotes=known_emotes)
 
 
 def _warn(warn: Any, message: str) -> None:
