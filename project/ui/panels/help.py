@@ -146,6 +146,7 @@ _COLUMNS: tuple[tuple[_Group, ...], ...] = (
         _Group("help.grp_items", (
             _row(("I",), "help.inventory"),
             _row(("J",), "help.quest_log"),
+            _row(("T",), "help.track_quest"),
             _row(("1", "–", "6"), "help.hotbar"),
             _row((",", "/", "."), "help.cycle"),
         )),

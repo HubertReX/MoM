@@ -192,6 +192,8 @@ class SaveManager:
             maps=map_states,
             quests=self._build_quest_state(scene),
             world_seed=scene.world_seed,
+            tracked_quest_key=str(getattr(scene, "tracked_quest_key", "") or ""),
+            tracked_quest_pinned=bool(getattr(scene, "tracked_quest_pinned", False)),
         )
 
     def _build_quest_state(self, scene: Scene) -> dict[str, dict[str, Any]]:
@@ -543,6 +545,20 @@ class SaveManager:
         self._apply_routine_npc_states(new_scene, save.maps)
         self._apply_game_clock(new_scene, save.clock)
         self._apply_quest_state(new_scene, save.quests)
+        self._apply_tracked_quest(new_scene, save)
+
+    def _apply_tracked_quest(self, scene: Scene, save: SaveGame) -> None:
+        """Przywróć wskaźnik „co teraz?" (H01/D7), sprawdzając klucz przeciw treści.
+
+        Musi iść PO `_apply_quest_state`: ważność śledzonego questa zależy od tego,
+        co jest już ukończone. Nieznany klucz (quest przemianowany albo skasowany
+        po zapisie) to cichy powrót do automatu - nigdy wyjątek w połowie ładowania.
+        """
+        scene.tracked_quest_key = save.tracked_quest_key or None
+        scene.tracked_quest_pinned = save.tracked_quest_pinned
+        quests = getattr(scene, "quests", None)
+        if quests is not None:
+            quests.validate_tracked()
 
     def _apply_quest_state(self, scene: Scene, quests: dict[str, dict[str, Any]]) -> None:
         """Restore quest progress, dropping quests the content no longer defines.

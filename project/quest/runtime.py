@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, Callable
 import audio
 from enums import NotificationTypeEnum
 from dialog.result_sink import ResultSink
+from quest import tracker
 from quest.context_adapter import QuestConditionContext
 from quest.engine import QuestCheckResult, check_quests
 from quest.entities import QuestDef
@@ -74,6 +75,64 @@ class QuestRuntime:
         # Injectable so tests can watch what the rewards do without building the
         # whole character/UI stack; the game leaves it at the default.
         self._sink_factory: Callable[[], ResultSink] = sink_factory or self._game_sink
+        # Nowa gra ma dostać wskaźnik od razu, a nie dopiero po pierwszym
+        # zdarzeniu questowym. Wczytany zapis i tak nadpisze to przez
+        # `validate_tracked`, więc kolejność jest bezpieczna.
+        self.refresh_tracked()
+
+    #############################################################################################################
+    # MARK: tracked quest (H01/D7)
+
+    def refresh_tracked(self, result: "QuestCheckResult | None" = None) -> None:
+        """Przelicz wskaźnik „co teraz?" - TYLKO przy zdarzeniu questowym.
+
+        Nigdy co klatkę: reguła liczona co klatkę zaczęłaby migotać między dwoma
+        questami przy pierwszym remisie, a wynik i tak zmienia się wyłącznie wtedy,
+        gdy coś się domknęło albo odblokowało. Reszta czasu to odczyt pola.
+        """
+        key, pinned = tracker.next_tracked(
+            self.defs,
+            self.scene.quest_state,
+            getattr(self.scene, "tracked_quest_key", None),
+            bool(getattr(self.scene, "tracked_quest_pinned", False)),
+            list(result.newly_done) if result else [],
+            list(result.newly_unlocked) if result else [],
+        )
+        self.scene.tracked_quest_key = key
+        self.scene.tracked_quest_pinned = pinned
+
+    def validate_tracked(self) -> None:
+        """Sprawdź wczytany klucz przeciw definicjom (wczytanie zapisu).
+
+        Autor przemianuje albo skasuje questa, a zapis zostanie z kluczem, którego
+        już nie ma. Nieznany klucz to **cichy powrót do automatu**, nie ``KeyError``
+        w połowie wczytywania.
+        """
+        key = getattr(self.scene, "tracked_quest_key", None)
+        if key and key not in self.defs:
+            print(f"[quest] zapis śledzi questa '{key}', którego już nie ma - wracam do automatu")
+            self.scene.tracked_quest_key = None
+            self.scene.tracked_quest_pinned = False
+        self.refresh_tracked()
+
+    def track(self, key: str | None) -> str:
+        """Przypnij/odepnij ``key`` (klawisz ``T``); zwraca klucz komunikatu."""
+        new_key, pinned, message = tracker.toggle_pin(
+            self.defs, self.scene.quest_state,
+            getattr(self.scene, "tracked_quest_key", None), key,
+            bool(getattr(self.scene, "tracked_quest_pinned", False)),
+        )
+        self.scene.tracked_quest_key = new_key
+        self.scene.tracked_quest_pinned = pinned
+        return message
+
+    def tracked_name(self) -> str:
+        """Tytuł śledzonego questa w języku gracza, albo ``""``."""
+        key = getattr(self.scene, "tracked_quest_key", None)
+        quest = self.defs.get(key) if key else None
+        return self._quest_name(quest) if quest is not None else ""
+
+    #############################################################################################################
 
     def on_event(self, source: str) -> QuestCheckResult:
         """Check quests because something happened that could have changed them."""
@@ -106,6 +165,11 @@ class QuestRuntime:
             sink = self._sink_factory()
             for key in result.newly_done:
                 apply_quest_rewards(self.defs[key], sink)
+
+        if result:
+            # wskaźnik przelicza się TYLKO tutaj - przy realnej zmianie stanu
+            # questów; przez resztę czasu HUD czyta gotowe pole (D7)
+            self.refresh_tracked(result)
 
         self._announce(result)
         return result

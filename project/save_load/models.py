@@ -562,6 +562,16 @@ class SaveGame:
     # existed default to 0, which is a poorer seed but still a *stable* one; the
     # alternative, rolling a fresh seed on every load, is the hole itself.
     world_seed: int = 0
+    # Wskaźnik „co teraz?" na HUD-zie (H01/D7). Pola OPCJONALNE z wartością
+    # domyślną - dokładnie tak, jak E03 wstawiło stan mgły wojny, **bez podbijania
+    # wersji zapisu**: brak pola w starym zapisie znaczy „tryb automatyczny",
+    # czyli stan, w którym gra i tak startuje. `save_compatibility` bez zmian.
+    #
+    # Klucz z zapisu trzeba przy wczytaniu zweryfikować przeciw definicjom
+    # (`QuestRuntime.validate_tracked`): autor przemianuje albo skasuje questa,
+    # a zapis zostanie wskazujący na nic.
+    tracked_quest_key: str = ""
+    tracked_quest_pinned: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return _to_dict(self)
@@ -576,6 +586,8 @@ class SaveGame:
             maps={k: MapState.from_dict(v) for k, v in data.get("maps", {}).items()},
             quests=raw_quests if isinstance(raw_quests, dict) else {},
             world_seed=int(data.get("world_seed", 0)),
+            tracked_quest_key=str(data.get("tracked_quest_key", "") or ""),
+            tracked_quest_pinned=bool(data.get("tracked_quest_pinned", False)),
         )
 
 

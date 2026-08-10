@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any
 import pygame
 
 import settings
+from enums import NotificationTypeEnum
 from quest.engine import is_unlocked, quest_progress
 from quest.entities import CompletionMode, QuestDef
 from quest.graph import children_of
@@ -140,6 +141,10 @@ _RULE = theme.RULE
 _MANUAL = theme.WARN
 
 _FILTERS = ("active", "done", "all")
+
+#: Prefiks kluczy locale, które `quest.tracker.toggle_pin` zwraca przy ODMOWIE.
+#: Tylko one trafiają do toasta - sukces widać na liście (patrz `toggle_tracked`).
+_TRACK_REFUSED_PREFIX = "quest.track_refused"
 
 
 @dataclass(slots=True)
@@ -264,6 +269,25 @@ class QuestPanel(Widget):
     def handle_details_wheel(self, events: list[pygame.event.Event]) -> None:
         """Mouse wheel scrolls the details pane (not a documented shortcut)."""
         self._details_scroll.handle_wheel(events)
+
+    def toggle_tracked(self) -> None:
+        """T: przypnij albo odepnij wskaźnik na zaznaczonym queście (H01/D7).
+
+        **Sukces nie dostaje toastu** - dostaje znacznik na liście, który gracz
+        widzi w tym samym miejscu, w którym właśnie nacisnął klawisz. Toast tuż
+        po fanfarze ukończenia questa byłby trzecim komunikatem w tej samej
+        sekundzie, a przy przypięciu jeszcze zasłaniałby listę, na której widać
+        skutek.
+
+        **Odmowa dostaje** - i to jest cała asymetria: quest ukończony albo
+        zablokowany nie zmienia niczego na ekranie, więc bez komunikatu gracz nie
+        wie, czy gra go nie usłyszała, czy nie chce.
+        """
+        row = self._current_row()
+        message = self.scene.quests.track(row.key if row is not None else None)
+        notify = getattr(self.scene, "add_notification", None)
+        if message.startswith(_TRACK_REFUSED_PREFIX) and notify is not None:
+            notify(_(message), NotificationTypeEnum.info)
 
     def toggle_expand(self) -> None:
         row = self._current_row()
@@ -391,6 +415,16 @@ class QuestPanel(Widget):
                 self._draw_marker(surface, _LEFT_X + indent, y + 6, row.key)
 
             badge = self._thread_badge(row.key, quest) if row.is_thread else ""
+            if row.key == getattr(self.scene, "tracked_quest_key", None):
+                # Znacznik śledzonego questa (H01/D7). BEZ niego przypięcie jest
+                # niewidoczne w momencie, w którym gracz je wykonuje: dziennik
+                # zasłania statystyki i sam wskaźnik, więc efekt byłby widoczny
+                # dopiero po zamknięciu panelu. Znacznik na liście zamiast toastu -
+                # toast tuż po fanfarze ukończenia questa to trzeci komunikat
+                # w tej samej sekundzie.
+                self._text(surface, _("quest.tracked_mark"), (_SPLIT_X - 20, y + 9),
+                           FONT_SIZE_TINY, _GOLD, align="right")
+                badge = ""      # znacznik i licznik dzielą to samo miejsce
             name_x = _LEFT_X + indent + 24
             # reserve room for the badge, or a long title runs under it and on
             # past the divider into the details pane

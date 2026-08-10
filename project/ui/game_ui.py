@@ -219,6 +219,12 @@ class GameUI:
             if self._edge("talk"):
                 quests.scroll_details()
                 INPUTS["talk"] = False
+            # T: przypnij/odepnij wskaźnik na zaznaczonym queście (H01/D7). Jeden
+            # klawisz robi obie rzeczy - drugi skrót na odpięcie byłby skrótem,
+            # którego nikt nigdy nie użyje.
+            if self._edge("track_quest"):
+                quests.toggle_tracked()
+                INPUTS["track_quest"] = False
             quests.handle_details_wheel(events)
             if INPUTS["quit"]:
                 self.close(QuestPanel)

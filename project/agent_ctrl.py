@@ -269,6 +269,10 @@ class AgentController:
             "emotes": [],
             "emotes_count": 0,
             "routine_emotes_shown": 0,
+            # wskaźnik "co teraz?" (H01/D7). DWA pola, nie jedno: bez `pinned`
+            # scenariusz nie odróżni "automat trafił w to samo" od "pin działa".
+            "tracked_quest": getattr(scene, "tracked_quest_key", None),
+            "tracked_quest_pinned": bool(getattr(scene, "tracked_quest_pinned", False)),
             # layout self-checks (ui/layout.py) - deterministyczna detekcja overflow,
             # niezależna od sceny: raportują też panele menu
             "layout_violations": _layout_violations(),

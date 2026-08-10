@@ -1007,5 +1007,67 @@
             },
             { "type": "no_layout_violations" }
         ]
+    },
+    {
+        "name": "Quest Tracker on HUD",
+        "slug": "quest_tracker_hud",
+        "platform": ["desktop"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "hud_with_tracker", "commands": ["screenshot"], "wait": 1.0 },
+            { "slug": "dump_state_automatic", "commands": ["debug_ui_state"], "wait": 0.5 },
+            { "slug": "open_journal", "commands": ["quest_log"], "wait": 1.0 },
+            { "slug": "pin_selected_quest", "commands": ["track_quest"], "wait": 0.5 },
+            { "slug": "journal_with_marker", "commands": ["screenshot"], "wait": 0.5 },
+            { "slug": "dump_state_pinned", "commands": ["debug_ui_state"], "wait": 0.5 },
+            { "slug": "close_journal", "commands": ["quest_log"], "wait": 0.5 },
+            { "slug": "quick_save", "commands": ["quick_save"], "wait": 1.0 },
+            { "slug": "quick_load", "commands": ["quick_load"], "wait": 3.0 },
+            { "slug": "dump_state_after_load", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            { "type": "process_alive" },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "BLUNDERHAVEN",
+                    "tracked_quest": "Q00_S00_WHAT_IS_GOING_ON",
+                    "tracked_quest_pinned": true,
+                    "player.is_dead": false
+                }
+            },
+            { "type": "no_layout_violations" },
+            {
+                "type": "screenshot_review",
+                "target": "hud_with_tracker",
+                "expected_state": "GAMEPLAY",
+                "expect": "Normal gameplay in the village. Under the centred location-name box at the top of the screen there is a SECOND, smaller box with one line of text naming the current quest goal - this is the quest tracker.",
+                "expected_elements": [
+                    "centred box at the top with the location name",
+                    "a smaller box directly under it with a single line of quest-goal text"
+                ],
+                "ui_quality_checks": [
+                    "the tracker line is fully inside its box and does not touch or cross the frame",
+                    "the tracker box is clearly narrower/shorter than the location box above it and does not overlap it",
+                    "the tracker box does not overlap the stats panel in the top-right corner"
+                ]
+            },
+            {
+                "type": "screenshot_review",
+                "target": "journal_with_marker",
+                "expected_state": "MENU",
+                "expect": "The quest journal is open. The selected quest row in the left-hand list carries a small right-aligned marker word showing it is the tracked quest, and the footer hint line mentions the T key.",
+                "expected_elements": [
+                    "quest journal panel with a left list and a right details pane",
+                    "a small right-aligned marker on the selected row in the left list",
+                    "footer hint line that includes a T keycap"
+                ],
+                "ui_quality_checks": [
+                    "the marker does not overlap the quest title next to it",
+                    "no text overflows or touches any panel frame"
+                ]
+            }
+        ]
     }
 ]

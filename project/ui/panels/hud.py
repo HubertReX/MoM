@@ -126,6 +126,13 @@ class HUD(Widget):
         self._location_key: tuple[str, int] | None = None
         self._location_rt_surf: pygame.Surface | None = None
         self._update_location_cache()
+        # wskaźnik questa (H01/D7): druga, węższa linijka pod panelem lokacji.
+        # Osobne pudełko, nie druga linia w tamtym: nazwa mapy zmienia się przy
+        # przejściu, a wskaźnik przy zdarzeniu questowym - wspólny cache
+        # przerysowywałby oba za każdym razem.
+        self._tracker_panel = Panel("nine_patch_04.png", pad=(28, 18), name="HUD(quest_tracker)")
+        self._tracker_key: tuple[str, int] | None = None
+        self._tracker_rt_surf: pygame.Surface | None = None
 
         # toast: ta sama zasada, inny wygląd ramki i ciaśniejszy odstęp
         self._notification_panel = Panel("nine_patch_04c.png", border=3,
@@ -279,8 +286,57 @@ class HUD(Widget):
         self._update_location_cache()
         if self._location_rt_surf is None:
             return
-        self._location_panel.draw(surface, self._location_rt_surf,
-                                  anchor="midtop", offset=(0, HUD_EDGE))
+        rect = self._location_panel.draw(surface, self._location_rt_surf,
+                                         anchor="midtop", offset=(0, HUD_EDGE))
+        self.show_quest_tracker(surface, rect)
+
+    #############################################################################################################
+    # MARK: quest tracker (H01/D7)
+
+    def _update_tracker_cache(self) -> None:
+        """Przerysuj linię wskaźnika, gdy zmieni się śledzony quest albo język.
+
+        Ta sama sztuczka, co przy nazwie lokacji: kluczem cache'u jest GOTOWY
+        napis, a nie klucz questa - `_()` i `get_msg()` czytają żywy
+        `settings.LANG`, więc przełączenie języka samo unieważnia surface.
+        """
+        quests = getattr(self.scene, "quests", None)
+        name = quests.tracked_name() if quests is not None else ""
+        display = _("quest.tracker", name=name) if name else ""
+        key = (display, settings.WIDTH)
+        if key == self._tracker_key:
+            return
+        self._tracker_key = key
+        if not display:
+            self._tracker_rt_surf = None
+            return
+        from ..widgets.rich_text import render_tight
+        side = self.stats_bg.get_width() + 2 * HUD_EDGE
+        max_w, _max_h = self._tracker_panel.max_content_size(
+            (settings.WIDTH - 2 * side, settings.HEIGHT - 2 * HUD_EDGE))
+        self._tracker_rt_surf = render_tight(
+            f"[center]{display}[/center]",
+            max_w,
+            self.icons,
+            base_size=FONT_SIZE_SMALL,
+            base_color=theme.WHITE,
+            show_scrollbar=False,
+            name="HUD(quest_tracker)",
+        )
+
+    def show_quest_tracker(self, surface: pygame.Surface, above: pygame.Rect) -> None:
+        """Jedna linia „co teraz?" pod panelem lokacji.
+
+        Znika razem ze statystykami (wołane tylko z gałęzi `stats=True`
+        w `draw_overlay`): dziennik i panel pomocy zasłaniają ten pas ekranu, więc
+        rysowanie pod nimi byłoby rysowaniem w niewidoczne. Brak kandydata =
+        **brak pudełka**, a nie pusta ramka.
+        """
+        self._update_tracker_cache()
+        if self._tracker_rt_surf is None:
+            return
+        self._tracker_panel.draw(surface, self._tracker_rt_surf,
+                                 anchor="midtop", offset=(0, above.bottom + 4))
 
     #############################################################################################################
     # MARK: hotbar

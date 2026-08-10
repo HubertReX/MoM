@@ -830,6 +830,10 @@ ACTIONS: dict[str, dict[str, Any]] = {
     # F11 was the only other free function key and it is fullscreen in the browser,
     # which rules it out because MoM also runs on pygbag.
     "quest_log": {"show": ["key_J"], "msg": "action.quest_log", "keys": [pygame.K_j, pygame.K_F10]},
+    # T jak *track* / śledź - wolny klawisz (zero trafień K_t w project/). Działa
+    # WYŁĄCZNIE w dzienniku, na zaznaczonym queście: dziennik ma już zaznaczenie
+    # (W/S) i już obsługuje `_edge`, więc to naprawdę jeden klawisz, a nie nowy tryb.
+    "track_quest": {"show": ["key_T"], "msg": "action.track_quest", "keys": [pygame.K_t]},
     "next_item": {"show": None, "msg": "action.next_item", "keys": [pygame.K_PERIOD]},
     "prev_item": {"show": None, "msg": "action.prev_item", "keys": [pygame.K_COMMA]},
     "item_1": {"show": None, "msg": "action.item_1", "keys": [pygame.K_1]},

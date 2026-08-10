@@ -110,6 +110,12 @@ class Scene(State):
         # `self.properties`. A new game starts with nothing done; loading a save
         # replaces this wholesale (see SaveManager._apply_quest_state).
         self.quest_state: QuestState = QuestState()
+        # Wskaźnik „co teraz?" na HUD-zie (H01/D7). `tracked_quest_pinned=False`
+        # znaczy „to wynik automatu" - automat wolno mu nadpisać przy każdym
+        # zdarzeniu questowym; `True` znaczy „gracz tak chce" i wtedy automat NIE
+        # rusza wskaźnika, dopóki ten quest żyje. Jedno i drugie idzie do zapisu.
+        self.tracked_quest_key: str | None = None
+        self.tracked_quest_pinned: bool = False
         self.entry_point = entry_point
         self.new_scene: Collider | None = None
         self.is_maze = is_maze
