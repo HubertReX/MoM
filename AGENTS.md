@@ -191,6 +191,13 @@ MOM_SKIP_SS_REVIEW=1 MOM_AGENT_CONTROL=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=d
 **Pełny protokół, komendy agenta, struktura scenariuszy, izolacja, ścieżki save'ów,
 znane ograniczenia:** [`project/AGENTS.md`](./project/AGENTS.md) - sekcja „Testowanie gry przez agentów AI".
 
+## 🔑 Złota zasada: jak pisać teksty w tym repo
+
+Dwie rzeczy obowiązują **wszędzie**: w plikach `.md`, w komentarzach w kodzie, w docstringach, w komunikatach dla gracza, w opisach commitów i w treści w Obsidianie.
+
+- **Nie łam akapitów twardym enterem.** Akapit (albo punkt listy) to **jedna linia**, choćby miała 400 znaków — zawijanie jest sprawą czytnika, nie pliku. Autor czyta te pliki w kilku programach o różnej szerokości i każdy zawija po swojemu, a sztywne łamanie po ~80 znakach oznacza, że poprawka jednego słowa wymusza przelanie całego akapitu (i produkuje diff, w którym nie widać, co się naprawdę zmieniło). Łamiemy linię tylko tam, gdzie łamie ją Markdown: między akapitami, punktami listy, wierszami tabeli, liniami bloku kodu. Przykład **jak nie robić**: `doc/audyt/H03-sidequesty-i-klatwa.md`.
+- **Polski tekst piszemy z polskimi znakami.** `ą ć ę ł ń ó ś ź ż` — zawsze, bez wyjątków dla komentarzy w kodzie i plików konfiguracyjnych. Wszystko w tym projekcie jest w UTF-8 i każdy system to poprawnie wyświetla; „uproszczony" zapis bez ogonków jest błędem ortograficznym, który autor musi po agencie poprawiać, a edytory podkreślają go jako literówki. Przykład **jak nie robić**: `project/config_model/routines.toml` sprzed poprawki autora.
+
 ## Praca z agentami AI
 
 Po zakończeniu realizacji zadania, aktualizuj pliki `AGENTS.md`. Zapytaj czy zrobić commit - oferuj to
