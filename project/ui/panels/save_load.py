@@ -40,6 +40,12 @@ _ROW_STEP = 34           # row pitch (height + spacing)
 _QUICK_GAP = 16          # extra space under the quick save row, holding its divider
 _ROW_INSET = 12          # left/right text inset inside a slot row
 _DEATH_PANEL_H = 560     # death panel height: slot list (380) + room for the error line
+_DEATH_PANEL_MIN_W = 600  # dolna granica szerokości; wyżej decyduje najszerszy wiersz
+_DEATH_TITLE_H = 80      # pas na nagłówek „Zginąłeś!" nad listą zapisów
+_DEATH_FOOTER_H = 100    # pas na komunikat o błędzie i przycisk „Restart" pod listą
+_CONFIRM_FONT = 24       # pytanie „wczytać?" nad przyciskami Tak/Nie
+_CONFIRM_TEXT_DY = -30   # pytanie NAD środkiem listy...
+_CONFIRM_BUTTONS_DY = 24  # ...a przyciski pod nim (kiedyś jedno na drugim)
 _DEATH_ERROR_SIZE = 20   # font size of the refused-load message on the death panel
 _CAP_ROW_H = 32          # native keycap height (design-system: caps render at 32px)
 _BOX_NINE_PATCH = "nine_patch_12b.png"  # darker sub-panel for confirm / rename dialogs
@@ -140,9 +146,35 @@ class _SlotButton:
         return name, f"{version}  {_format_timestamp(m.timestamp)}  {_format_playtime(m.playtime)}"
 
 
+def _fit_text(font: pygame.font.Font, text: str, max_w: int) -> str:
+    """Skróć tekst wielokropkiem tak, żeby zmieścił się w ``max_w`` pikselach.
+
+    Wielokropek jest z trzech kropek, a nie ze znaku „…": font pikselowy gry nie
+    ma tego glifu i narysowałby kwadrat-tofu.
+    """
+    if max_w <= 0 or font.size(text)[0] <= max_w:
+        return text if font.size(text)[0] <= max_w else ""
+    while text and font.size(text + "...")[0] > max_w:
+        text = text[:-1]
+    return f"{text}..." if text else ""
+
+
+def _slot_row_width(font: pygame.font.Font, slot: "_SlotButton") -> int:
+    """Ile pikseli potrzebuje wiersz slotu, żeby nazwa i metryczka się nie stykały."""
+    name, meta = slot.parts
+    return font.size(name)[0] + (font.size(meta)[0] + _GAP if meta else 0) + 2 * _ROW_INSET
+
+
 def _draw_slot_row(surface: pygame.Surface, slot: "_SlotButton", selected: bool) -> None:
     """Shared render for one save/load slot row: name left, meta (date + playtime)
-    right-aligned, so nothing clips regardless of name length."""
+    right-aligned, so nothing clips regardless of name length.
+
+    Gdy jedno i drugie nie mieści się w wierszu, tekst jest **skracany**, a nie
+    rysowany jeden na drugim. Tak wyglądał ekran śmierci: pudełko ma tam 600 px,
+    a sama metryczka („v0.4 2026-08-10 23:06   0g 04min") mierzy ponad 500 px, więc
+    wyrównana do prawej zaczynała się w tym samym miejscu, co nazwa - dwa napisy
+    jeden na drugim, nie do odczytania.
+    """
     bg_color = (50, 48, 42) if selected else (30, 28, 22)
     pygame.draw.rect(surface, bg_color, slot.rect)
     if selected:
@@ -155,8 +187,19 @@ def _draw_slot_row(surface: pygame.Surface, slot: "_SlotButton", selected: bool)
     loadable = slot.occupied and slot.compat is SaveCompatEnum.ok
     name_col = theme.WHITE if loadable else theme.GREY
     cy = slot.rect.centery
-    name_surf = font.render(name, False, name_col)
-    surface.blit(name_surf, name_surf.get_rect(midleft=(slot.rect.left + _ROW_INSET, cy)))
+    room = slot.rect.width - 2 * _ROW_INSET
+
+    meta_w = font.size(meta)[0] if meta else 0
+    if meta and font.size(name)[0] + meta_w + _GAP > room:
+        # metryczka niesie wersję i powód nieczytelności zapisu, więc dostaje
+        # pierwszeństwo - ale nazwie zostaje zawsze co najmniej ćwiartka wiersza
+        meta = _fit_text(font, meta, int(room * 0.75) - _GAP)
+        meta_w = font.size(meta)[0] if meta else 0
+    name = _fit_text(font, name, room - meta_w - (_GAP if meta else 0))
+
+    if name:
+        name_surf = font.render(name, False, name_col)
+        surface.blit(name_surf, name_surf.get_rect(midleft=(slot.rect.left + _ROW_INSET, cy)))
     if meta:
         meta_surf = font.render(meta, False, theme.GREY)
         surface.blit(meta_surf, meta_surf.get_rect(midright=(slot.rect.right - _ROW_INSET, cy)))
@@ -212,8 +255,11 @@ class _LoadSlotSelector:
             Button(_("menu.yes"), self._confirm_yes, size=_BUTTON_SIZE),
             Button(_("menu.no"), self._confirm_no, size=_BUTTON_SIZE),
         ]
+        # Przyciski POD pytaniem, nie w tym samym punkcie. Wcześniej i napis,
+        # i „Tak"/„Nie" miały środek w `rect.center`, więc na ekranie śmierci
+        # pytanie i odpowiedzi rysowały się jedno na drugim.
         for i, btn in enumerate(self._confirm_buttons):
-            btn.rect.center = (cx - 60 + i * 120, cy)
+            btn.rect.center = (cx - 60 + i * 120, cy + _CONFIRM_BUTTONS_DY)
 
     def _confirm_yes(self) -> None:
         if self._confirm_action == "load" and self.on_load is not None:
@@ -285,8 +331,13 @@ class _LoadSlotSelector:
             overlay = pygame.Surface(self.rect.size, pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 160))
             surface.blit(overlay, self.rect.topleft)
-            cf = theme.menu_font(24).render(self._confirm_text, False, (255, 230, 180))
-            surface.blit(cf, cf.get_rect(center=(self.rect.centerx, self.rect.centery)))
+            font = theme.menu_font(_CONFIRM_FONT)
+            # pytanie skracamy do szerokości pudełka - inaczej długa nazwa zapisu
+            # wychodzi poza ramkę listy
+            text = _fit_text(font, self._confirm_text, self.rect.width - 2 * _ROW_INSET)
+            cf = font.render(text, False, (255, 230, 180))
+            surface.blit(cf, cf.get_rect(
+                center=(self.rect.centerx, self.rect.centery + _CONFIRM_TEXT_DY)))
             for i, btn in enumerate(self._confirm_buttons):
                 btn.selected = i == self._confirm_selected
                 btn.draw(surface)
@@ -802,16 +853,17 @@ class DeathScreen(Widget):
         self.scene = scene
         self.game = scene.game
 
-        bw, bh = 600, _DEATH_PANEL_H
+        # ta sama geometria, co w `DeadState` - liczona z treści, nie z zaszytych 600 px
+        bw, bh = _death_panel_size(self.game)
         self.bg = theme.nine_patch("nine_patch_12b.png", bw, bh)
         self.rect = self.bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
         self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
 
         slot_rect = pygame.Rect(
             self.rect.left + _PAD,
-            self.rect.top + 80,
+            self.rect.top + _DEATH_TITLE_H,
             self.rect.width - 2 * _PAD,
-            380,
+            self.rect.height - _DEATH_TITLE_H - _DEATH_FOOTER_H,
         )
         self._selector = _LoadSlotSelector(
             self.game,
@@ -904,6 +956,30 @@ def _draw_death_error(surface: pygame.Surface, panel_rect: pygame.Rect, msg: str
     surface.blit(surf, surf.get_rect(center=(panel_rect.centerx, panel_rect.bottom - 74)))
 
 
+def _death_panel_size(game: "Game") -> tuple[int, int]:
+    """Rozmiar pudełka ekranu śmierci - z TREŚCI, nie z zaszytej liczby.
+
+    Szerokość bierze się z najszerszego wiersza listy zapisów: sama metryczka
+    („v0.4 2026-08-10 23:06   0g 04min") mierzy ponad 500 px, więc w pudełku 600 px
+    nie miała szans stanąć obok nazwy - i obie rysowały się jedna na drugiej.
+    Zasada z design systemu: rozmiar panelu to MAKSIMUM ograniczone viewportem,
+    a nie stała (`ui/AGENTS.md`, „Panel musi się zmieścić w viewporcie").
+    """
+    font = theme.menu_font(_SLOT_FONT)
+    widest = 0
+    for i, info in enumerate(game.save_manager.list_slots()):
+        if info is None or not info.is_occupied:
+            continue
+        widest = max(widest, _slot_row_width(font, _SlotButton(i, info, pygame.Rect(0, 0, 0, 0))))
+    # `_PAD` wchodzi DWA razy z każdej strony: raz pudełko odsuwa listę, drugi raz
+    # lista odsuwa wiersz (`_LoadSlotSelector._refresh_slots`). `_slot_row_width`
+    # dokłada już własny `_ROW_INSET`.
+    needed = widest + 4 * _PAD
+    width = max(_DEATH_PANEL_MIN_W, min(settings.WIDTH - 2 * _PAD, needed))
+    height = min(settings.HEIGHT - 2 * _PAD, _DEATH_PANEL_H)
+    return width, height
+
+
 from state import State as _State
 
 
@@ -915,15 +991,17 @@ class DeadState(_State):
         # a ta oddaje muzykę mapie
         audio.play_music("death")
         self._title_surf = theme.menu_font(48).render(_("save.you_died"), False, (200, 40, 40))
-        bg_w, bg_h = 600, _DEATH_PANEL_H
+        bg_w, bg_h = _death_panel_size(game)
         self._bg = theme.nine_patch("nine_patch_12b.png", bg_w, bg_h)
         self._bg_rect = self._bg.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2))
 
+        # wysokość listy z pudełka, nie z osobnej stałej: przy niskim viewporcie
+        # `_death_panel_size` przycina pudełko, a lista musi zejść razem z nim
         slot_rect = pygame.Rect(
             self._bg_rect.left + _PAD,
-            self._bg_rect.top + 80,
+            self._bg_rect.top + _DEATH_TITLE_H,
             self._bg_rect.width - 2 * _PAD,
-            380,
+            self._bg_rect.height - _DEATH_TITLE_H - _DEATH_FOOTER_H,
         )
         self._selector = _LoadSlotSelector(
             self.game,

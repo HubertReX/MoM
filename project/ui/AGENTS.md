@@ -112,6 +112,16 @@ self._location_panel.draw(surface, surf, anchor="midtop", offset=(0, HUD_EDGE))
   `_recompute_geometry()` wołanym w `__init__` i w `open()`. Jeśli rozmiar panelu może się
   zmienić, w `open()` przebuduj też nine-patch tła - samo przesunięcie `rect` zostawia
   tło w starym rozmiarze (`theme.nine_patch` jest cache'owany per rozmiar, więc to darmowe).
+- **Dwa napisy w jednym wierszu = pomiar ALBO skracanie, nigdy „jeden do lewej, drugi do
+  prawej i jakoś to będzie".** Ekran śmierci miał zaszyte 600 px, a sama metryczka zapisu
+  („v0.4 2026-08-10 23:06   0g 04min") mierzy ponad 500 px - wyrównana do prawej zaczynała
+  się w tym samym miejscu, co nazwa, i cała lista była nie do odczytania. Dziś szerokość
+  pudełka liczy `_death_panel_size` z najszerszego wiersza, a `_draw_slot_row` skraca tekst
+  wielokropkiem, gdy i tak się nie mieści (wielokropek z trzech kropek - font pikselowy nie
+  ma glifu „…"). Testy: `tests/test_death_screen_layout.py`.
+- **Pytanie i jego przyciski nie mogą mieć tego samego środka.** W `_LoadSlotSelector` napis
+  „Wczytać zapis?" i „Tak"/„Nie" były centrowane w `rect.center` - na ekranie wychodził
+  zlepek. Odstępy stoją dziś w stałych `_CONFIRM_TEXT_DY` / `_CONFIRM_BUTTONS_DY`.
 - **Szerokości kolumn mierz z fontu, nie zgaduj.** Najdłuższy opis zależy od **języka**:
   polskie „Rozmawiaj / otwórz / atakuj" ma 378 px i po cichu wychodziło poza swój slot
   341 px. Licz zapotrzebowanie kolumny z `theme.measure(...)` po realnych stringach

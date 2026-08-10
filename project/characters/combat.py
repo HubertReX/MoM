@@ -23,6 +23,15 @@ if TYPE_CHECKING:
 
 
 def die(npc: "NPC", drop_items: bool = True) -> None:
+    # Śmierć jest JEDNORAZOWA. Bez tego strażnika drugie wywołanie odgrywa dzwon
+    # `player_die` jeszcze raz, a u gracza dokłada do tego `scene.exit_state()`,
+    # który zdejmuje ze stosu... właśnie postawiony ekran śmierci, i stawia nowy.
+    # Tak działało to do niedawna: `encounter` zabijało od razu, a zaległe
+    # zdarzenie `stunned` 800 ms później robiło to drugi raz.
+    # `drop_items=False` (NPC schodzi z mapy) NIE ustawia `is_dead`, więc ta
+    # ścieżka przechodzi tędy jak dawniej.
+    if npc.is_dead:
+        return
     # `drop_items=False` to wyjście NPC-a z mapy, nie śmierć - nie ozwucza się.
     # Rozpisane na dwa `play_sfx`, a nie warunek w argumencie: walidator
     # `check_audio_manifest` czyta literały z nawiasu wywołania, więc każdy napis

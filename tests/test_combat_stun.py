@@ -198,6 +198,23 @@ def test_ending_a_stun_twice_kills_only_once() -> None:
     assert_eq(npc.deaths, 1, "śmierć poszła dwa razy")
 
 
+def test_dying_a_second_time_is_a_no_op() -> None:
+    """`die()` musi być jednorazowe.
+
+    Drugie wejście gra dzwon śmierci jeszcze raz, a u gracza dodatkowo zdejmuje ze
+    stosu dopiero co postawiony ekran śmierci i stawia następny. Test woła PRAWDZIWE
+    `combat.die` na oznaczonym trupie: bez strażnika funkcja poszłaby dalej i wywróciła
+    się na pierwszym polu sceny, którego atrapa nie ma.
+    """
+    npc, _other, _game = _pair()
+    npc.is_dead = True
+    npc.health_bar.visible = True
+
+    combat.die(npc)                       # ma po prostu wyjść
+
+    assert_true(npc.health_bar.visible, "drugie `die()` ruszyło stan postaci")
+
+
 def test_a_dead_character_is_not_stunned() -> None:
     npc, _other, _game = _pair()
     npc.is_dead = True
@@ -279,6 +296,7 @@ if __name__ == "__main__":
          test_a_bump_during_a_stun_does_not_freeze_the_hero_forever),
         ("cofnięty zegar nie zamraża postaci", test_a_clock_reset_does_not_freeze_a_character),
         ("podwójne zdjęcie ogłuszenia zabija raz", test_ending_a_stun_twice_kills_only_once),
+        ("drugie `die()` nic nie robi", test_dying_a_second_time_is_a_no_op),
         ("trup nie jest ogłuszany", test_a_dead_character_is_not_stunned),
         ("wpadnięcie na zwierzę je odsuwa", test_bumping_into_an_animal_pushes_it_away),
         ("zwierzę pod ścianą odsuwa wchodzącego",
