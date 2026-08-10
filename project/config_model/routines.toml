@@ -23,29 +23,28 @@
 # niekompletne dane nigdy nie wywalają gry i nie trzeba mapować całej wioski
 # na raz.
 #
-# `emotes` (opcjonalne) - emoji, ktore postac moze pokazac nad glowa NA TYM KROKU.
-# Emoji opisuje konkretny krok dnia, wiec mieszka w tym kroku, a nie w osobnej
-# tabeli `activity -> emoji`: `stand` znaczy "stoi" i tyle, wiec barman za barem,
-# kowal przy kowadle i Bart przy straganie maja ten sam `activity`, a to trzy
-# rozne obrazki. Brak pola = brak emoji, i to nie jest blad.
-#
-# Wariant `_anim` wpisuje sie WPROST, jako osobny element - dzieki temu czestosc
-# steruje sama lista (["food", "food", "food_anim"] to jeden na trzy), zamiast
-# stalym progiem zaszytym w kodzie. Emoji leci co 40-90 s, w losowanym momencie,
-# zeby wies nie tykala jak zegarek.
+# `emotes` (opcjonalne) - emoji, które postać może pokazać nad głową NA TYM KROKU.
+# Emoji opisuje konkretny krok dnia, więc mieszka w tym kroku, a nie w osobnej
+# tabeli `activity -> emoji`: `stand` znaczy "stoi" i tyle, więc barman za barem,
+# kowal przy kowadle i Bart przy straganie mają ten sam `activity`, a to trzy
+# różne obrazki. Brak pola = brak emoji, i to nie jest błąd.
+# Wariant `_anim` wpisuje się WPROST, jako osobny element - dzięki temu częstość
+# steruje samą listą (["food", "food", "food_anim"] to jeden na trzy), zamiast
+# stałym progiem zaszytym w kodzie. Emoji leci co 40-90 s, w losowanym momencie,
+# żeby wieś nie tykała jak zegarek.
 #
 # Nazwa spoza `EMOTE_SHEET_DEFINITION` (settings.py) jest ODRZUCANA przy wczytaniu,
-# z ostrzezeniem w konsoli - literowka `zzz_animm` nie ma prawa byc cicha.
-# Wyjatek: `food` i `sweat` to nazwy, ktorych arkusz jeszcze nie ma, a ktore juz
-# wolno pisac - rozwiazuja sie na istniejace przez `settings.EMOTE_FALLBACKS`,
-# a gdy autor dorysuje sprite'y, wpis stamtad znika i nic sie tu nie zmienia.
+# z ostrzeżeniem w konsoli - literówka `zzz_animm` nie ma prawa być cicha.
+# Wyjątek: `food` i `sweat` to nazwy, których arkusz jeszcze nie ma, a które już
+# wolno pisać - rozwiązują się na istniejące przez `settings.EMOTE_FALLBACKS`,
+# a gdy autor dorysuje sprite'y, wpis stamtąd znika i nic się tu nie zmienia.
 
 [defaults]
-wander_radius       = 2     # promien mikro-wędrowki, w kaflach
+wander_radius       = 2     # promien mikro-wędrówki, w kaflach
 slot_jitter_minutes = 20    # +/- czasu 'from', deterministycznie z hasha nazwy NPC
 transit_minutes     = 15    # minuty gry od przejscia przez drzwi do pojawienia sie po
                             # drugiej stronie (v5). NPC najpierw dochodzi do drzwi na
-                            # oczach gracza (dowolnie dlugo), potem znika, a po tylu
+                            # oczach gracza (dowolnie długo), potem znika, a po tylu
                             # minutach jest przy celu na drugiej mapie. ~1 s realne.
 
 
