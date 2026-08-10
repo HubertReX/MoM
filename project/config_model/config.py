@@ -156,6 +156,8 @@ class Chest():
     items: list[str]
     total_items_count: int = field(repr=False)
     random_items: list[str]
+    requires_item: str = field(repr=False)
+    consumes_key: bool = field(repr=False)
 
     @classmethod
     def from_dict(cls: type["Chest"], data: dict[str, Any]) -> "Chest":
@@ -166,6 +168,8 @@ class Chest():
             items=[str(x) for x in data.get("items", [])],
             total_items_count=int(data.get("total_items_count", 0)),
             random_items=[str(x) for x in data.get("random_items", [])],
+            requires_item=str(data.get("requires_item", '')),
+            consumes_key=bool(data.get("consumes_key", False)),
         )
 
 

@@ -291,6 +291,10 @@ def load_interactions(scene: "Scene", exits_layer: TiledTileLayer) -> None:
                     obj.to_map,
                     obj.destination_entry_point,
                     getattr(obj, "return_entry_point", ""),
+                    # zamek na drzwiach (H01/D8) - własności obiektu w Tiled,
+                    # te same dwie co kolumny skrzyni; brak = drzwi otwarte
+                    getattr(obj, "requires_item", "") or "",
+                    str(getattr(obj, "consumes_key", "")).lower() in ("true", "1"),
                 )
                 scene.exits.append(exit)
             elif getattr(obj, "obj_type", "") == "chest":

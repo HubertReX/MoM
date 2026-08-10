@@ -26,6 +26,38 @@ if TYPE_CHECKING:
     from scene.scene import Scene
 
 
+def unlock(scene: "Scene", requires_item: str, consumes_key: bool, *, quiet: bool = False) -> bool:
+    """Czy gracz może otworzyć ten zamek - i zużyj klucz, jeśli tak każe (H01/D8).
+
+    JEDEN kształt zamka dla skrzyni i dla drzwi, nie dwa mechanizmy: obie strony
+    czytają te same dwa pola i wołają tę samą funkcję. Pusty ``requires_item``
+    znaczy „bez zamka" i jest normalnym stanem - większość skrzyń i drzwi go ma.
+
+    Odmowa **nazywa brakujący przedmiot**, dokładnie jak `notify.weapon_too_weak`
+    przy za słabej broni: gracz ma wiedzieć, czego mu brakuje, a nie tylko że
+    „nic się nie stało". ``quiet`` wyłącza toast dla wywołań, które tylko PYTAJĄ
+    (podpowiedź na HUD-zie), zamiast faktycznie próbować otworzyć.
+    """
+    if not requires_item:
+        return True
+
+    held = next((item for item in scene.player.items if item.name == requires_item), None)
+    if held is None:
+        if not quiet:
+            model = (getattr(scene.game.conf, "items", None) or {}).get(requires_item)
+            name = entity_name(model) if model is not None else requires_item
+            scene.add_notification(
+                _("notify.locked_needs_key", name=name), NotificationTypeEnum.warning)
+        return False
+
+    if consumes_key and not quiet:
+        # Klucz jednorazowy znika dopiero PO udanym otwarciu - inaczej samo
+        # podejście do zamkniętych drzwi zjadałoby go bez skutku. `show=False`
+        # zdejmuje przedmiot z ekwipunku, NIE rzucając go na ziemię.
+        scene.player.drop_item(show=False, item=held)
+    return True
+
+
 def handle(scene: "Scene") -> None:
     """Obsłuż wszystkie akcje gracza z tej klatki (kolejność jak w dawnym ``update``)."""
     player = scene.player

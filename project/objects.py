@@ -49,7 +49,9 @@ class Collider(pygame.sprite.Sprite):
         name: str,
         to_map: str,
         destination_entry_point: str,
-        return_entry_point: str = ""
+        return_entry_point: str = "",
+        requires_item: str = "",
+        consumes_key: bool = False,
     ) -> None:
 
         super().__init__(groups)
@@ -61,6 +63,11 @@ class Collider(pygame.sprite.Sprite):
         #: który mówi, gdzie gracz stoi teraz (C02/D13)
         self.destination_entry_point = destination_entry_point
         self.return_entry_point = return_entry_point
+        #: Zamek (H01/D8) - te same dwa pola, co na skrzyni, tylko wzięte
+        #: z WŁASNOŚCI obiektu w Tiled. Puste = drzwi otwarte, czyli wszystkie
+        #: dzisiejsze.
+        self.requires_item = requires_item
+        self.consumes_key = consumes_key
 
 #################################################################################################################
 

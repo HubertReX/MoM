@@ -369,6 +369,28 @@ def test_a_chest_csv_row_with_an_unknown_item_is_an_error() -> None:
     assert_true("gold_bar" in messages[0], messages[0])
 
 
+def test_a_chest_lock_naming_an_unknown_item_is_an_error() -> None:
+    """H01/D8: klucz to zwykły przedmiot, więc podlega tej samej regule co reszta."""
+    messages = _errors(check_item_keys(_items_world(
+        chests_csv=[{"key": "BOX", "items": "", "random_items": "", "requires_item": "brass_key"}])))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("brass_key" in messages[0], messages[0])
+
+
+def test_an_empty_chest_lock_is_not_an_error() -> None:
+    """Pusta komórka znaczy „bez zamka" - stan wszystkich dzisiejszych skrzyń."""
+    assert_eq(_errors(check_item_keys(_items_world(
+        chests_csv=[{"key": "BOX", "items": "", "random_items": "", "requires_item": ""}]))), [])
+
+
+def test_a_door_lock_naming_an_unknown_item_is_an_error() -> None:
+    """Drzwi noszą te same dwie własności co skrzynia - i tę samą regułę."""
+    door_map = _map("Village", interactions=[("Door", {"requires_item": "brass_key"})])
+    messages = _errors(check_item_keys(_items_world(maps=[door_map])))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("brass_key" in messages[0] and "zawsze" in messages[0], messages[0])
+
+
 def test_the_real_world_item_keys_are_consistent() -> None:
     """Bramka regresji: sześć źródeł kluczy przedmiotów mówi dziś to samo."""
     assert_eq(_errors(check_item_keys(WORLD)), [], "klucze przedmiotów są spójne")
@@ -534,6 +556,9 @@ def main() -> None:
         test_a_tile_naming_an_item_that_does_not_exist_is_an_error,
         test_an_item_with_no_sprite_is_an_error,
         test_a_chest_csv_row_with_an_unknown_item_is_an_error,
+        test_a_chest_lock_naming_an_unknown_item_is_an_error,
+        test_an_empty_chest_lock_is_not_an_error,
+        test_a_door_lock_naming_an_unknown_item_is_an_error,
         test_the_real_world_item_keys_are_consistent,
         test_a_condition_naming_only_real_entities_reports_nothing,
         test_a_typo_inside_visited_is_an_error,

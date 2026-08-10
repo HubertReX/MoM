@@ -156,6 +156,13 @@ class Chest(BaseModel):
                                                    description="total numer of items to generate (persistent + random)")]  # noqa E501
     random_items:       Annotated[list[str], Field(default_factory=list,
                                                    description="list of items to generate randomly")]
+    # Zamek (H01/D8). JEDEN kształt dla skrzyni i dla drzwi: drzwi noszą te same
+    # dwie WŁASNOŚCI na obiekcie w warstwie `interactions` w Tiled, a obie strony
+    # wołają `scene.player_actions.unlock`. Puste = bez zamka.
+    requires_item:      Annotated[str,       Field("", repr=False,
+                                                   description="item key needed to open this chest; empty = unlocked")]
+    consumes_key:       Annotated[bool,      Field(False, repr=False,
+                                                   description="whether opening uses the key up")]
 
 
 ###################################################################################################################

@@ -29,6 +29,7 @@ import game
 import scene
 from characters.npc import NPC
 from objects import HealthBarUI, NotificationTypeEnum
+from scene import player_actions
 from ui.panels.dialog import DialogPanel
 from ui.panels.trade import TradePanel
 
@@ -61,6 +62,11 @@ class Player(NPC):
         self.speed_walk = int(self.speed_walk * 1.4)
         self.speed = self.speed_run
         self.health_bar_ui = self.create_health_bar_ui(label_group, pos, INVENTORY_ITEM_SCALE)
+        #: Nazwa zamkniętych drzwi, o których gracz już usłyszał (H01/D8). Kolizja
+        #: z progiem trzyma się przez wiele klatek, więc bez tego komunikat
+        #: „brakuje klucza" leciałby co klatkę. Czyszczone, gdy gracz zejdzie
+        #: z progu - następne podejście znów ma prawo do komunikatu.
+        self._locked_door_told: str = ""
         # label_group.remove(self.health_bar)
     #############################################################################################################
 
@@ -87,6 +93,16 @@ class Player(NPC):
         if INPUTS["open"]:
             if self.chest_in_range and self.chest_in_range.model.is_closed and not self.is_talking:
                 chest = self.chest_in_range
+                # Zamek (H01/D8): odmowa nazywa brakujący klucz i NIE otwiera
+                # skrzyni. Ta sama funkcja obsługuje drzwi - jeden kształt zamka
+                # w dwóch miejscach, nie dwa mechanizmy.
+                if not player_actions.unlock(
+                    self.scene,
+                    getattr(chest.model, "requires_item", "") or "",
+                    bool(getattr(chest.model, "consumes_key", False)),
+                ):
+                    INPUTS["open"] = False
+                    return
                 chest.open()
                 audio.play_sfx("chest_open")
                 self.scene.add_notification(_("notify.chest_opened"), NotificationTypeEnum.success)
@@ -289,11 +305,24 @@ class Player(NPC):
 
         for exit in self.scene.exit_sprites:
             if self.feet.colliderect(exit.rect):
-                # if exit.to_map == "Maze":
-                #     pass
+                # Zamknięte drzwi (H01/D8): odmowa z nazwą brakującego klucza,
+                # ta sama funkcja co przy skrzyni. Komunikat RAZ na podejście,
+                # nie co klatkę - kolizja trzyma się tak długo, jak długo gracz
+                # stoi na progu (ten sam problem i to samo lekarstwo, co przy
+                # `notify.weapon_too_weak` w `scene/collisions.py`).
+                if exit.requires_item:
+                    already_told = self._locked_door_told == exit.name
+                    if not player_actions.unlock(self.scene, exit.requires_item,
+                                                 exit.consumes_key, quiet=already_told):
+                        self._locked_door_told = exit.name
+                        break
+                self._locked_door_told = ""
                 self.scene.new_scene = exit
                 self.scene.transition.exiting = True
                 break
+        else:
+            # gracz zszedł z progu - następne podejście znów ma prawo do komunikatu
+            self._locked_door_told = ""
                 # self.scene.go_to_scene()
 
     #############################################################################################################

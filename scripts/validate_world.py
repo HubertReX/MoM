@@ -1193,6 +1193,25 @@ def check_item_keys(world: World) -> list[Violation]:
                         ERROR, f"chests.csv:{row.get('key', '?')}",
                         f"{column} zawiera '{item}', którego nie ma w config.items",
                     ))
+        # zamek (H01/D8): klucz to zwykły przedmiot, więc podlega tej samej regule
+        # co reszta - pusta komórka znaczy „bez zamka" i nie jest błędem
+        needed = (row.get("requires_item") or "").strip()
+        if needed and needed not in known:
+            out.append(Violation(
+                ERROR, f"chests.csv:{row.get('key', '?')}",
+                f"requires_item='{needed}' nie ma w items.csv - skrzyni nie dałoby się otworzyć niczym",
+            ))
+
+    # to samo dla drzwi: `requires_item` na obiekcie warstwy `interactions` w Tiled
+    for game_map in world.maps:
+        for obj_name, props in game_map.entries(INTERACTIONS_LAYER):
+            needed = (props.get("requires_item") or "").strip()
+            if needed and needed not in known:
+                out.append(Violation(
+                    ERROR, f"{game_map.path.name}:{INTERACTIONS_LAYER}",
+                    f"'{obj_name}' ma requires_item='{needed}', którego nie ma w items.csv - "
+                    f"drzwi byłyby zamknięte na zawsze",
+                ))
     return out
 
 
