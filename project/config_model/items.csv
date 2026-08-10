@@ -1,25 +1,25 @@
 key;name_EN;name_PL;type;value;weight;damage;cooldown_time;health_impact
-GNOMES_WHISKER;Gnome's whisker;Wąs gnoma;key;800;0.1;;;
-MERMAIDS_TEAR;Mermaid's tear;Łza syrenki;key;800;0.1;;;
-PHOENIX_FEATHER;Phoenix feather;Pióro feniksa;key;800;0.1;;;
-POTION_CURSE_NO_MORE;Potion curse-no-more;Potion curse-no-more;consumable;1000;0.5;;;10
+GNOMES_WHISKER;Gnome's whisker;Wąs Gnoma;key;800;0.1;;;
+MERMAIDS_TEAR;Mermaid's tear;Łza Syrenki;key;800;0.1;;;
+PHOENIX_FEATHER;Phoenix feather;Pióro Feniksa;key;800;0.1;;;
+POTION_CURSE_NO_MORE;Potion curse-no-more;Eliksir anty-zaklęcia;consumable;1000;0.5;;;10
 axe;War Axe;Topór wojenny;weapon;170;5.0;35;0.5;
-beef;Baked beef;Baked beef;consumable;30;2.0;;;50
+beef;Baked beef;Pieczona wołowina;consumable;30;2.0;;;50
 club;War hammer;Maczuga;weapon;;7.0;30;0.6;
-empty_pot;Empty pot;Empty pot;consumable;10;0.1;;;
+empty_pot;Empty pot;Pusty fiolka;consumable;10;0.1;;;
 fish;Fresh fish;Świeża ryba;consumable;15;0.5;;;15
-gem_big_blue;Blue big gem;Niebieski duży klejnot;gem;80;3.0;;;
-gem_big_green;Green big gem;Zielony duży klejnot;gem;30;3.0;;;
-gem_big_orange;Orange big gem;Pomarańczowy duży klejnot;gem;90;3.0;;;
-gem_big_purple;Purple big gem;Purpurowy duży klejnot;gem;60;3.0;;;
+gem_big_blue;Blue big gem;Duży niebieski klejnot;gem;80;3.0;;;
+gem_big_green;Green big gem;Duży zielony klejnot;gem;30;3.0;;;
+gem_big_orange;Orange big gem;Duży pomarańczowy klejnot;gem;90;3.0;;;
+gem_big_purple;Purple big gem;Duży purpurowy klejnot;gem;60;3.0;;;
 gem_crystal_blue;Blue crystal;Niebieski krzyształ;gem;60;2.0;;;
 gem_crystal_green;Green crystal;Zielony krzyształ;gem;20;2.0;;;
 gem_crystal_orange;Orange crystal;Pomarańczowy krzyształ;gem;80;2.0;;;
 gem_crystal_purple;Purple crystal;Purpurowy krzyształ;gem;40;2.0;;;
-gem_small_blue;Blue small gem;Niebieski mały klejnot;gem;40;;;;
-gem_small_green;Green small gem;Zielony mały klejnot;gem;10;;;;
-gem_small_orange;Orange small gem;Pomarańczowy mały klejnot;gem;60;;;;
-gem_small_purple;Purple small gem;Purpurowy mały klejnot;gem;20;;;;
+gem_small_blue;Blue small gem;Mały niebieski klejnot;gem;40;;;;
+gem_small_green;Green small gem;Mały zielony klejnot;gem;10;;;;
+gem_small_orange;Orange small gem;Mały pomarańczowy klejnot;gem;60;;;;
+gem_small_purple;Purple small gem;Mały purpurowy klejnot;gem;20;;;;
 golden_coin;Golden coin;Złota moneta;money;1000;0.02;;;
 golden_key;Golden key;Złoty klucz;key;500;0.01;;;
 hammer;War hammer;Młot wojenny;weapon;70;5.0;25;0.5;

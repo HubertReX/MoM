@@ -45,7 +45,8 @@
             "social": "LOST_CORK_TAVERN:tables",
             "hobby": "BLUNDERHAVEN:pier",
             "routine": "townsfolk",
-            "barks": "VILLAGERS"
+            "barks": "VILLAGERS",
+            "speed_walk": 18
         },
         "FRED": {
             "sprite": "Villager2",
@@ -395,7 +396,8 @@
             "social": "LOST_CORK_TAVERN:tables",
             "hobby": "BLUNDERHAVEN:shrine",
             "routine": "townsfolk",
-            "barks": "VILLAGERS"
+            "barks": "VILLAGERS",
+            "speed_walk": 10
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
@@ -726,7 +728,7 @@
             "type": "gem",
             "value": 10,
             "name_EN": "Green small gem",
-            "name_PL": "Zielony mały klejnot"
+            "name_PL": "Mały zielony klejnot"
         },
         "gem_crystal_green": {
             "type": "gem",
@@ -740,13 +742,13 @@
             "value": 30,
             "weight": 3.0,
             "name_EN": "Green big gem",
-            "name_PL": "Zielony duży klejnot"
+            "name_PL": "Duży zielony klejnot"
         },
         "gem_small_purple": {
             "type": "gem",
             "value": 20,
             "name_EN": "Purple small gem",
-            "name_PL": "Purpurowy mały klejnot"
+            "name_PL": "Mały purpurowy klejnot"
         },
         "gem_crystal_purple": {
             "type": "gem",
@@ -760,13 +762,13 @@
             "value": 60,
             "weight": 3.0,
             "name_EN": "Purple big gem",
-            "name_PL": "Purpurowy duży klejnot"
+            "name_PL": "Duży purpurowy klejnot"
         },
         "gem_small_blue": {
             "type": "gem",
             "value": 40,
             "name_EN": "Blue small gem",
-            "name_PL": "Niebieski mały klejnot"
+            "name_PL": "Mały niebieski klejnot"
         },
         "gem_crystal_blue": {
             "type": "gem",
@@ -780,13 +782,13 @@
             "value": 80,
             "weight": 3.0,
             "name_EN": "Blue big gem",
-            "name_PL": "Niebieski duży klejnot"
+            "name_PL": "Duży niebieski klejnot"
         },
         "gem_small_orange": {
             "type": "gem",
             "value": 60,
             "name_EN": "Orange small gem",
-            "name_PL": "Pomarańczowy mały klejnot"
+            "name_PL": "Mały pomarańczowy klejnot"
         },
         "gem_crystal_orange": {
             "type": "gem",
@@ -800,7 +802,7 @@
             "value": 90,
             "weight": 3.0,
             "name_EN": "Orange big gem",
-            "name_PL": "Pomarańczowy duży klejnot"
+            "name_PL": "Duży pomarańczowy klejnot"
         },
         "silver_key": {
             "type": "key",
@@ -822,7 +824,7 @@
             "weight": 2.0,
             "health_impact": 50,
             "name_EN": "Baked beef",
-            "name_PL": "Baked beef"
+            "name_PL": "Pieczona wołowina"
         },
         "honey": {
             "type": "consumable",
@@ -836,7 +838,7 @@
             "value": 10,
             "weight": 0.1,
             "name_EN": "Empty pot",
-            "name_PL": "Empty pot"
+            "name_PL": "Pusty fiolka"
         },
         "water_pot": {
             "type": "consumable",
@@ -891,28 +893,28 @@
             "weight": 0.5,
             "health_impact": 10,
             "name_EN": "Potion curse-no-more",
-            "name_PL": "Potion curse-no-more"
+            "name_PL": "Eliksir anty-zaklęcia"
         },
         "GNOMES_WHISKER": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Gnome's whisker",
-            "name_PL": "Wąs gnoma"
+            "name_PL": "Wąs Gnoma"
         },
         "MERMAIDS_TEAR": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Mermaid's tear",
-            "name_PL": "Łza syrenki"
+            "name_PL": "Łza Syrenki"
         },
         "PHOENIX_FEATHER": {
             "type": "key",
             "value": 800,
             "weight": 0.1,
             "name_EN": "Phoenix feather",
-            "name_PL": "Pióro feniksa"
+            "name_PL": "Pióro Feniksa"
         }
     },
     "maze_configs": {

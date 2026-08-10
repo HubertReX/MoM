@@ -1,6 +1,6 @@
 # Items
 
-[**translation**](../PL/items.md)
+[**translation**](../PL/przedmioty.md)
 
 ## EN
 
