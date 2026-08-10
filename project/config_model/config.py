@@ -84,6 +84,7 @@ class Character():
     social: str = field(repr=False, default='')
     hobby: str = field(repr=False, default='')
     routine: str = field(repr=False, default='')
+    barks: str = field(repr=False, default='')
 
     @classmethod
     def from_dict(cls: type["Character"], data: dict[str, Any]) -> "Character":
@@ -114,6 +115,7 @@ class Character():
             social=str(data.get("social", '')),
             hobby=str(data.get("hobby", '')),
             routine=str(data.get("routine", '')),
+            barks=str(data.get("barks", '')),
         )
 
 
@@ -176,6 +178,7 @@ class Config():
     dialogs: dict[str, Any]
     quests: dict[str, Any] = field(repr=False)
     messages: dict[str, dict[str, str]]
+    barks: dict[str, list[dict[str, str]]]
 
     @classmethod
     def build(cls, data: dict[str, Any]) -> "Config":
@@ -201,6 +204,8 @@ class Config():
 
         messages = data.get("messages", {})
 
+        barks = data.get("barks", {})
+
         # keyword args on purpose: this used to be positional, and inserting a
         # field in the middle would have silently shifted a value into the wrong slot
         return cls(
@@ -211,6 +216,7 @@ class Config():
             dialogs=dialogs,
             quests=quests,
             messages=messages,
+            barks=barks,
         )
 
 

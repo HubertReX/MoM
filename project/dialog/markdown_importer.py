@@ -65,7 +65,7 @@ from typing import Any, Callable
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
-from dialog.conditions import ConditionError, validate_condition
+from dialog.conditions import ConditionError, ConditionScope, validate_condition
 
 
 class DialogImportError(ValueError):
@@ -90,6 +90,8 @@ class DialogImportError(ValueError):
 # ---------------------------------------------------------------------------
 
 from settings import (
+    BARK_LINE_CHARS,
+    BARK_MAX_LINES,
     SENTIMENT_EMOJI_TO_NAME,
     SENTIMENT_NAME_TO_EMOTE,
 )
@@ -602,6 +604,292 @@ def import_dialogs(
     return messages, character_dialogs, character_meta
 
 
+# ---------------------------------------------------------------------------
+# Barks (H01/D2, D5)
+# ---------------------------------------------------------------------------
+
+#: Namespace of every bark message key: ``bark.<OWNER>.<nnn>``. Owner is a
+#: character key **or** a pool key - to the runtime those are the same thing
+#: (a list of candidates with conditions), which is why one config section
+#: carries both.
+BARK_MESSAGE_PREFIX = "bark."
+
+# The bark section inside a character file. Both spellings are accepted so the
+# EN copy may keep the PL heading: node headings are digits-only, so every other
+# `## ...` is prose the importer already ignores, and there is nothing to clash
+# with.
+_BARK_SECTION_TITLES: frozenset[str] = frozenset({"barki", "barks"})
+
+# any level-2 heading; in the shared pool file its title **is** the pool key
+_H2_RE = re.compile(r"^##(?!#)\s*(?P<title>.+?)\s*$")
+
+# A bark line. The optional leading `[...]` is ALWAYS read as a condition - a
+# broken one is a loud `file:line` error rather than text that silently never
+# shows. That is the whole point of importing barks through the same engine as
+# dialog options, so a bark cannot join the "silent False" family of bugs.
+_BARK_LINE_RE = re.compile(
+    r"^[-*]\s+(?:\[(?P<condition>[^\]]+)\]\s*)?(?P<text>\S.*)$"
+)
+
+# markup that costs no pixels: rich tags and inline emote keys. Stripped only to
+# *measure* the line - the stored text keeps them.
+_MARKUP_RE = re.compile(r"\[/?[a-zA-Z_][a-zA-Z0-9_]*\]|:[a-z0-9_]+:")
+
+#: Pool file per language, relative to the vault root. Missing file = no pools,
+#: which is a working state (a village where nobody has been given lines yet).
+_BARK_POOL_FILES: dict[str, str] = {"PL": "PL/Barki.md", "EN": "EN/Barks.md"}
+
+#: A pool key is an entity key like every other key after C02: SCREAMING_SNAKE,
+#: no spaces, no Polish letters. The heading **is** the key, literally - same
+#: convention as quest files.
+_POOL_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
+
+
+@dataclass
+class _ParsedBark:
+    text: str
+    condition: str | None
+    line_no: int
+
+
+def bark_visible_text(text: str) -> str:
+    """The bark with markup removed - what the player's eye actually measures."""
+    return _MARKUP_RE.sub("", text).strip()
+
+
+def wrap_bark(text: str, width: int = BARK_LINE_CHARS) -> list[str]:
+    """Break a bark at spaces, the way ``BarkSprite`` will draw it.
+
+    Shared by the importer (to refuse a too-long line at build time) and by the
+    sprite (to draw it), so "fits" means the same thing in both places.
+    """
+    lines: list[str] = []
+    current = ""
+    for word in bark_visible_text(text).split():
+        candidate = f"{current} {word}".strip()
+        if current and len(candidate) > width:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return lines
+
+
+def _validate_bark_text(text: str, owner: str, file: str, line: int) -> None:
+    """Refuse a bark that cannot be drawn - loudly, at import time (D4)."""
+    lines = wrap_bark(text)
+    if not lines:
+        raise DialogImportError(f"empty bark for {owner!r}", file=file, line=line)
+    if len(lines) > BARK_MAX_LINES:
+        raise DialogImportError(
+            f"bark for {owner!r} needs {len(lines)} lines, at most {BARK_MAX_LINES} fit "
+            f"({BARK_LINE_CHARS} characters each): {bark_visible_text(text)!r}",
+            file=file,
+            line=line,
+        )
+    for wrapped in lines:
+        if len(wrapped) > BARK_LINE_CHARS:
+            raise DialogImportError(
+                f"bark for {owner!r} has an unbreakable {len(wrapped)}-character run, "
+                f"at most {BARK_LINE_CHARS} fit: {wrapped!r}",
+                file=file,
+                line=line,
+            )
+
+
+def _validate_bark_condition(condition: str, owner: str, file: str, line: int) -> str:
+    """Whitelist-check a bark condition in the *bark* scope (D1)."""
+    try:
+        validate_condition(condition, ConditionScope.bark)
+    except ConditionError as exc:
+        raise DialogImportError(
+            f"invalid bark condition for {owner!r}: {exc}", file=file, line=line
+        ) from exc
+    return condition
+
+
+def _parse_bark_lines(
+    lines: list[str], start: int, owner: str, path: Path
+) -> tuple[list[_ParsedBark], int]:
+    """Read bark bullets from ``start`` until the next heading. Returns (barks, index)."""
+    barks: list[_ParsedBark] = []
+    idx = start
+    while idx < len(lines):
+        line = lines[idx].rstrip()
+        if line.startswith("#"):
+            break
+        idx += 1
+        match = _BARK_LINE_RE.match(line)
+        if not match:
+            # prose for the author (the pool file explicitly invites it) - only
+            # bullets reach the game
+            continue
+        text = match.group("text").strip()
+        condition = match.group("condition")
+        _validate_bark_text(text, owner, str(path), idx)
+        if condition:
+            _validate_bark_condition(condition.strip(), owner, str(path), idx)
+        barks.append(_ParsedBark(text=text, condition=condition.strip() if condition else None,
+                                 line_no=idx))
+    return barks, idx
+
+
+def parse_character_barks(path: Path) -> list[_ParsedBark]:
+    """The ``## Barki`` section of one character file, or an empty list.
+
+    No section is the normal state, not an error: a character with nothing to say
+    simply says nothing - the same rule as an empty destination cell in
+    ``routines.toml``.
+    """
+    if not path.exists():
+        return []
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for idx, line in enumerate(lines):
+        heading = _H2_RE.match(line.rstrip())
+        if heading and heading.group("title").strip().lower() in _BARK_SECTION_TITLES:
+            barks, _ = _parse_bark_lines(lines, idx + 1, path.stem, path)
+            return barks
+    return []
+
+
+def parse_bark_pools(path: Path) -> dict[str, list[_ParsedBark]]:
+    """Every pool in a shared bark file: ``{POOL_KEY: [bark, ...]}``.
+
+    The section heading **is** the pool key, literally - the convention quest
+    files already use ("the section heading is the quest key, literally, and must
+    be globally unique"). Prose under a heading is for the author and never
+    reaches the game.
+    """
+    if not path.exists():
+        return {}
+    lines = path.read_text(encoding="utf-8").splitlines()
+    pools: dict[str, list[_ParsedBark]] = {}
+    idx = 0
+    while idx < len(lines):
+        heading = _H2_RE.match(lines[idx].rstrip())
+        if not heading:
+            idx += 1
+            continue
+        key = heading.group("title").strip()
+        line_no = idx + 1
+        if not _POOL_KEY_RE.match(key):
+            raise DialogImportError(
+                f"bark pool heading {key!r} is not an entity key "
+                f"(SCREAMING_SNAKE, no spaces or diacritics)",
+                file=str(path),
+                line=line_no,
+            )
+        if key in pools:
+            raise DialogImportError(
+                f"duplicate bark pool {key!r}", file=str(path), line=line_no
+            )
+        barks, idx = _parse_bark_lines(lines, idx + 1, key, path)
+        pools[key] = barks
+    return pools
+
+
+def _bark_message_key(owner: str, index: int) -> str:
+    """``bark.BARMAN_ABSINTHRAYNER.003`` - owner is a character key **or** a pool key."""
+    return f"{BARK_MESSAGE_PREFIX}{owner}.{index:03d}"
+
+
+def _emit_barks(
+    owner: str,
+    pl_barks: list[_ParsedBark],
+    en_barks: list[_ParsedBark],
+    *,
+    source: str,
+    resolve_pl: Callable[[str, str | None], str | None] | None = None,
+    resolve_en: Callable[[str, str | None], str | None] | None = None,
+) -> tuple[dict[str, dict[str, str]], list[dict[str, str]]]:
+    """Turn one owner's parsed barks into ``(messages, config entries)``.
+
+    PL is the source of truth for the *conditions* (as it is for every other bit
+    of character metadata); EN supplies only the translated text. A count
+    mismatch is an error for the same reason it is for dialog nodes: the two
+    files would silently describe different behaviour.
+    """
+    if en_barks and len(en_barks) != len(pl_barks):
+        raise DialogImportError(
+            f"bark count mismatch for {owner!r} (PL={len(pl_barks)}, EN={len(en_barks)})",
+            file=source,
+        )
+
+    messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
+    entries: list[dict[str, str]] = []
+    for index, pl_bark in enumerate(pl_barks, start=1):
+        key = _bark_message_key(owner, index)
+        en_bark = en_barks[index - 1] if en_barks else pl_bark
+        messages["PL"][key] = _convert_text(pl_bark.text, resolve_pl)
+        messages["EN"][key] = _convert_text(en_bark.text, resolve_en)
+        entries.append({"msg": key, "condition": pl_bark.condition or "True"})
+    return messages, entries
+
+
+def import_character_barks(
+    src_dir: Path,
+    character_name: str,
+    *,
+    characters: dict[str, Any] | None = None,
+) -> tuple[dict[str, dict[str, str]], list[dict[str, str]]]:
+    """Import one named character's ``## Barki`` section from PL + EN.
+
+    Separate from :func:`import_character_dialog` on purpose: barks are optional
+    for every character, and a character with none must cost nothing - not a
+    changed return shape, not a changed call site.
+    """
+    character_key = _character_name_to_key(character_name)
+    pl_barks = parse_character_barks(_find_markdown_file(src_dir, "PL", character_name))
+    if not pl_barks:
+        return {"PL": {}, "EN": {}}, []
+    en_barks = parse_character_barks(_find_markdown_file(src_dir, "EN", character_name))
+    return _emit_barks(
+        character_key,
+        pl_barks,
+        en_barks,
+        source=str(src_dir),
+        resolve_pl=_make_name_resolver(characters, "PL") if characters else None,
+        resolve_en=_make_name_resolver(characters, "EN") if characters else None,
+    )
+
+
+def import_bark_pools(
+    src_dir: Path, *, characters: dict[str, Any] | None = None
+) -> tuple[dict[str, dict[str, str]], dict[str, list[dict[str, str]]]]:
+    """Import the shared pools from ``doc/PL/Barki.md`` (+ the EN mirror).
+
+    A pool serves the extras and the animals - everybody with no character file
+    of their own. Which pool a character draws from is the ``barks`` column in
+    ``characters.csv``; a character may have **both** its own section and a pool,
+    and the two sum rather than exclude (D2).
+    """
+    pl_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["PL"])
+    if not pl_pools:
+        return {"PL": {}, "EN": {}}, {}
+    en_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["EN"])
+
+    resolve_pl = _make_name_resolver(characters, "PL") if characters else None
+    resolve_en = _make_name_resolver(characters, "EN") if characters else None
+
+    messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
+    pools: dict[str, list[dict[str, str]]] = {}
+    for key, pl_barks in pl_pools.items():
+        pool_messages, entries = _emit_barks(
+            key,
+            pl_barks,
+            en_pools.get(key, []),
+            source=str(src_dir / _BARK_POOL_FILES["PL"]),
+            resolve_pl=resolve_pl,
+            resolve_en=resolve_en,
+        )
+        for lang in ("PL", "EN"):
+            messages[lang].update(pool_messages[lang])
+        pools[key] = entries
+    return messages, pools
+
+
 def load_valid_items(csv_path: Path) -> set[str]:
     """Load item keys from MoM ``items.csv`` (semicolon-delimited)."""
     keys: set[str] = set()
@@ -729,6 +1017,21 @@ def _collect_text_references(dialogs: dict[str, Any]) -> set[str]:
     return refs
 
 
+def _collect_bark_text_references(barks: dict[str, Any]) -> set[str]:
+    """Message keys the *barks* point at.
+
+    Same reason as :func:`_collect_quest_text_references`: ``messages`` is one
+    shared namespace and the sweep below deletes every key no dialog references,
+    so without this every bark line would be imported and immediately deleted.
+    """
+    return {
+        entry["msg"]
+        for entries in barks.values()
+        for entry in entries
+        if entry.get("msg")
+    }
+
+
 def _collect_quest_text_references(quests: dict[str, Any]) -> set[str]:
     """Message keys the *quests* point at — not ours to sweep.
 
@@ -808,8 +1111,12 @@ def build_dialog_config(
     new_messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     new_dialogs: dict[str, Any] = {}
     new_meta: dict[str, Any] = {}
+    new_barks: dict[str, list[dict[str, str]]] = {}
     imported: list[str] = []
     errors: list[str] = []
+    # Character keys whose import blew up - their previous config entries are
+    # preserved rather than wiped (a WIP file must not delete yesterday's work).
+    failed_keys: set[str] = set()
 
     characters_config: dict[str, Any] = config.get("characters", {})
 
@@ -818,15 +1125,36 @@ def build_dialog_config(
             char_messages, char_dialog, char_meta = import_character_dialog(
                 src_dir, name, valid_items=valid_items, characters=characters_config
             )
+            bark_messages, bark_entries = import_character_barks(
+                src_dir, name, characters=characters_config
+            )
             for lang in ("PL", "EN"):
                 new_messages[lang].update(char_messages[lang])
+                new_messages[lang].update(bark_messages[lang])
             new_dialogs.update(char_dialog)
             new_meta[_character_name_to_key(name)] = char_meta
+            if bark_entries:
+                new_barks[_character_name_to_key(name)] = bark_entries
             imported.append(name)
         except DialogImportError as exc:
             errors.append(f"  {exc}")
+            failed_keys.add(_character_name_to_key(name))
         except Exception as exc:
             errors.append(f"  {name}: {exc}")
+            failed_keys.add(_character_name_to_key(name))
+
+    # Shared pools (doc/PL/Barki.md). A broken pool file must not take the whole
+    # dialog import down with it - it is content, and content fails per file.
+    try:
+        pool_messages, pools = import_bark_pools(src_dir, characters=characters_config)
+        for lang in ("PL", "EN"):
+            new_messages[lang].update(pool_messages[lang])
+        new_barks.update(pools)
+    except DialogImportError as exc:
+        errors.append(f"  {exc}")
+        # keep whatever pools were in the config before
+        for key, entries in config.get("barks", {}).items():
+            new_barks.setdefault(key, entries)
 
     if imported:
         print(f"Imported {len(imported)} character(s): {', '.join(imported)}")
@@ -852,10 +1180,20 @@ def build_dialog_config(
 
     existing_dialogs.update(new_dialogs)
 
+    # `barks` is rebuilt wholesale, not merged: deleting a `## Barki` section has
+    # to delete the barks. The only carry-over is a character whose import failed,
+    # which is the same "preserve failed characters" rule the dialogs follow.
+    barks: dict[str, Any] = dict(new_barks)
+    for key in failed_keys:
+        if key in config.get("barks", {}):
+            barks.setdefault(key, config["barks"][key])
+    config["barks"] = barks
+
     # Remove orphaned message keys (dialog keys only — quest keys belong to
     # quest/markdown_importer.py and are swept there)
     referenced = _collect_text_references(existing_dialogs)
     referenced |= _collect_quest_text_references(config.get("quests", {}))
+    referenced |= _collect_bark_text_references(barks)
     for lang in ("PL", "EN"):
         if lang in existing_messages:
             orphaned = set(existing_messages[lang]) - referenced
@@ -1400,8 +1738,14 @@ if __name__ == "__main__":
 
 
 __all__ = [
+    "BARK_MESSAGE_PREFIX",
     "DialogImportError",
+    "import_bark_pools",
+    "import_character_barks",
     "import_character_dialog",
     "import_dialogs",
     "load_valid_items",
+    "parse_bark_pools",
+    "parse_character_barks",
+    "wrap_bark",
 ]

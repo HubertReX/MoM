@@ -516,6 +516,39 @@ if _start_hour is not None:
         print(f"[settings] MOM_TEST_START_HOUR={_start_hour!r} is not an int - ignored")
 # game time speed (N game hours / 1 real time second)
 GAME_TIME_SPEED: float = 0.25
+
+# ---------------------------------------------------------------------------
+# Fazy doby (H01/D1)
+# ---------------------------------------------------------------------------
+# JEDYNE źródło granic pory dnia. Te same liczby rysują filtr nocy
+# (`scene/night_filter.py`) i odpowiadają predykatowi `time_of_day(faza)`
+# w warunkach barków - inaczej gracz zobaczyłby zachód słońca w jednym
+# momencie, a usłyszał "dobry wieczór" w innym.
+#
+# Faza zaczyna się o podanej godzinie i trwa do początku następnej;
+# ostatnia zawija się przez północ do pierwszej (20:00 -> 06:00).
+# Krotka MUSI być posortowana rosnąco i pokrywać dobę bez dziur - pilnuje
+# tego `tests/test_day_phases.py`.
+#
+# Nazwy są po angielsku, jak cała reszta mini-DSL warunków: `time_of_day("morning")`
+# stoi obok `has_item("silver_key")`, a napisy dla gracza i tak żyją w locale.
+DAY_PHASES: tuple[tuple[str, float], ...] = (
+    ("morning",  6.0),
+    ("day",      9.0),
+    ("evening", 17.0),
+    ("night",   20.0),
+)
+
+# ---------------------------------------------------------------------------
+# Barki - ambientowe zaczepki NPC (H01)
+# ---------------------------------------------------------------------------
+# Kształt napisu. Bark to tekst z obrysem rysowany w PRZESTRZENI ŚWIATA (jak imię
+# pod postacią), a nie panel - dlatego jest krótki i dlatego te dwie liczby czyta
+# zarówno importer (twardy błąd z `file:line` przy `just import-dialogs`), jak
+# i `BarkSprite`. Autor ma się dowiedzieć o za długim żarcie przy imporcie,
+# a nie zobaczyć go uciętego w grze.
+BARK_MAX_LINES: int = 2
+BARK_LINE_CHARS: int = 28
 # how many seconds a notification will be displayed. Long enough to read a
 # quest-done toast, which can run to four lines (headline + success prose).
 NOTIFICATION_DURATION: float = 8.0

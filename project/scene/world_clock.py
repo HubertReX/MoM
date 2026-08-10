@@ -29,6 +29,44 @@ def reset(scene: "Scene") -> None:
     scene.minute_f = 0.0
 
 
+def day_phase(hour: float) -> str:
+    """Nazwa fazy doby dla godziny zmiennoprzecinkowej (H01/D1).
+
+    Granice czyta z ``settings.DAY_PHASES`` - jedynego źródła prawdy, z którego
+    korzysta też filtr pory dnia. Faza trwa od swojej godziny do początku
+    następnej, a ostatnia **zawija się przez północ**: naiwne ``start <= h < end``
+    zwróciłoby dla 02:00 pustkę i nocny bark nigdy by nie zapalił.
+    """
+    h = hour % 24.0
+    # domyślnie ostatnia faza: jeśli o tej godzinie nic się dziś jeszcze nie
+    # zaczęło, w mocy jest ta, która zaczęła się wczoraj
+    current = settings.DAY_PHASES[-1][0]
+    for name, start in settings.DAY_PHASES:
+        if h >= start:
+            current = name
+        else:
+            break
+    return current
+
+
+def phase_bounds(phase: str) -> tuple[float, float]:
+    """``(początek, koniec)`` fazy w godzinach; koniec ostatniej zawija przez północ.
+
+    Filtr pory dnia interpoluje kolor wewnątrz fazy, więc potrzebuje obu granic -
+    i musi je brać stąd, żeby nie zrobić drugiego kompletu liczb 6/9/17/20.
+    """
+    phases = settings.DAY_PHASES
+    for index, (name, start) in enumerate(phases):
+        if name == phase:
+            return start, phases[(index + 1) % len(phases)][1]
+    raise KeyError(f"unknown day phase {phase!r} (have: {', '.join(n for n, _ in phases)})")
+
+
+def phase_names() -> tuple[str, ...]:
+    """Nazwy faz w kolejności doby - dla walidatora warunków i komunikatów błędów."""
+    return tuple(name for name, _ in settings.DAY_PHASES)
+
+
 def abs_minutes(scene: "Scene") -> int:
     """Absolute game-minute (day + clock), monotonic across midnight and day turns.
 

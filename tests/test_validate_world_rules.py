@@ -30,6 +30,8 @@ from validate_world import (                                     # noqa: E402
     WARN,
     GameMap,
     World,
+    check_bark_pools,
+    check_condition_entities,
     check_interaction_targets,
     check_map_coverage,
     check_map_references,
@@ -373,6 +375,133 @@ def test_the_real_world_item_keys_are_consistent() -> None:
 
 
 ###############################################################################################################
+# MARK: rule 20 - encje w warunkach (H01, D3)
+def _conditions_world(**overrides: object) -> World:
+    """Świat z jednym dialogiem, jednym questem i jedną pulą barków - do psucia."""
+    config = dict(WORLD.config)
+    config["characters"] = {"BARMAN": {}, "COW": {}}
+    config["items"] = {"golden_key": {}}
+    config["quests"] = {"Q01_LEARN": {}}
+    config["dialogs"] = {"BARMAN": {
+        "DIALOG_NODES": {"000": {}, "012": {}},
+        "DIALOG_OPTIONS": {},
+    }}
+    config["barks"] = {}
+    fields: dict[str, object] = {"config": config, "items_csv": [{"key": "golden_key"}]}
+    fields.update(overrides)
+    return _world(**fields)
+
+
+def _with_condition(condition: str, **overrides: object) -> World:
+    """Świat, w którym jedna opcja dialogowa Barmana niesie podany warunek."""
+    world = _conditions_world(**overrides)
+    world.config["dialogs"]["BARMAN"]["DIALOG_OPTIONS"] = {
+        "000to012_1": {"condition": condition},
+    }
+    return world
+
+
+def test_a_condition_naming_only_real_entities_reports_nothing() -> None:
+    world = _with_condition(
+        'visited("BARMAN", "012") and has_item("golden_key") and quest_done("Q01_LEARN")'
+    )
+    assert_eq(_errors(check_condition_entities(world)), [], "poprawny warunek nie zgłasza nic")
+
+
+def test_a_typo_inside_visited_is_an_error() -> None:
+    """Sedno reguły: dziś taka literówka daje cichy `False` na zawsze.
+
+    Tak zniknął kiedyś cały dialog Miecza - opcja, której gracz nigdy nie zobaczył,
+    bez jednego komunikatu w konsoli.
+    """
+    messages = _errors(check_condition_entities(_with_condition('visited("BARMAN", "0012")')))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("0012" in messages[0] and "cichy False" in messages[0], messages[0])
+
+
+def test_the_one_argument_visited_is_checked_against_the_owning_character() -> None:
+    """W dialogu wiadomo, czyj to graf - więc `visited("013")` też da się sprawdzić."""
+    assert_eq(_errors(check_condition_entities(_with_condition('visited("012")'))), [])
+    assert_true(_errors(check_condition_entities(_with_condition('visited("013")'))))
+
+
+def test_an_unknown_quest_is_an_error() -> None:
+    """D3: `quest_done` niesie fakt świata, więc skasowanie questa musi być głośne."""
+    messages = _errors(check_condition_entities(_with_condition('quest_done("Q99_GHOST")')))
+    assert_true(any("Q99_GHOST" in m for m in messages), f"{messages}")
+
+
+def test_an_unknown_item_in_a_condition_is_an_error() -> None:
+    messages = _errors(check_condition_entities(_with_condition('item_count("silver_key") > 1')))
+    assert_true(any("silver_key" in m for m in messages), f"{messages}")
+
+
+def test_bark_only_predicates_are_checked_too() -> None:
+    world = _conditions_world()
+    world.config["barks"] = {"BARMAN": [
+        {"msg": "bark.BARMAN.001", "condition": 'time_of_day("rano")'},
+        {"msg": "bark.BARMAN.002", "condition": 'activity("dancing")'},
+        {"msg": "bark.BARMAN.003", "condition": 'on_map("NARNIA")'},
+    ]}
+    messages = _errors(check_condition_entities(world))
+    assert_eq(len(messages), 3, f"{messages}")
+    assert_true(any("rano" in m for m in messages), f"{messages}")
+    assert_true(any("dancing" in m for m in messages), f"{messages}")
+    assert_true(any("NARNIA" in m for m in messages), f"{messages}")
+
+
+def test_a_one_argument_visited_in_a_shared_pool_is_not_guessed_at() -> None:
+    """Puli nie da się przypisać do jednego grafu - lepiej milczeć niż zmyślać błąd."""
+    world = _conditions_world()
+    world.config["barks"] = {"VILLAGERS": [
+        {"msg": "bark.VILLAGERS.001", "condition": 'visited("013")'},
+    ]}
+    assert_eq(_errors(check_condition_entities(world)), [], "pula nie ma jednego właściciela")
+
+
+def test_an_unparseable_condition_does_not_crash_the_validator() -> None:
+    """Składni pilnują importery z `file:line` - walidator ma tylko nie wybuchnąć."""
+    assert_eq(_errors(check_condition_entities(_with_condition("to nie jest ==== wyrażenie"))), [])
+
+
+def test_the_real_world_conditions_name_only_real_entities() -> None:
+    """Bramka H01: reguła 20 puszczona na dzisiejszej treści musi wyjść na zero."""
+    assert_eq(_errors(check_condition_entities(WORLD)), [], "zastane warunki są spójne")
+
+
+###############################################################################################################
+# MARK: rule 21 - pule barków (H01, D2)
+def test_an_empty_barks_cell_is_not_an_error() -> None:
+    """Ta sama filozofia, co pusta komórka destynacji: postać po prostu milczy."""
+    world = _conditions_world(characters_csv=[{"key": "COW", "barks": ""}])
+    assert_eq(check_bark_pools(world), [], "pusta komórka nie jest błędem")
+
+
+def test_a_barks_cell_naming_a_missing_pool_is_an_error() -> None:
+    world = _conditions_world(characters_csv=[{"key": "COW", "barks": "FARM_ANIMALS"}])
+    messages = _errors(check_bark_pools(world))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("FARM_ANIMALS" in messages[0], messages[0])
+
+
+def test_a_pool_nobody_draws_from_is_a_warning() -> None:
+    """Tekst napisany i nigdy nieusłyszany to strata, a nie awaria."""
+    world = _conditions_world(characters_csv=[])
+    world.config["barks"] = {"FARM_ANIMALS": []}
+    violations = check_bark_pools(world)
+    assert_eq(_errors(violations), [], "martwa pula nie jest błędem")
+    assert_true(any(v.severity == WARN and "FARM_ANIMALS" in v.message for v in violations),
+                f"{violations}")
+
+
+def test_a_characters_own_section_is_not_a_dead_pool() -> None:
+    """Klucz postaci w `barks` to jej własna sekcja - ma odbiorcę z definicji."""
+    world = _conditions_world(characters_csv=[])
+    world.config["barks"] = {"BARMAN": [{"msg": "bark.BARMAN.001", "condition": "True"}]}
+    assert_eq(check_bark_pools(world), [], "własna sekcja nie jest martwą pulą")
+
+
+###############################################################################################################
 def main() -> None:
     tests = [
         test_an_instance_named_after_its_model_passes,
@@ -406,6 +535,19 @@ def main() -> None:
         test_an_item_with_no_sprite_is_an_error,
         test_a_chest_csv_row_with_an_unknown_item_is_an_error,
         test_the_real_world_item_keys_are_consistent,
+        test_a_condition_naming_only_real_entities_reports_nothing,
+        test_a_typo_inside_visited_is_an_error,
+        test_the_one_argument_visited_is_checked_against_the_owning_character,
+        test_an_unknown_quest_is_an_error,
+        test_an_unknown_item_in_a_condition_is_an_error,
+        test_bark_only_predicates_are_checked_too,
+        test_a_one_argument_visited_in_a_shared_pool_is_not_guessed_at,
+        test_an_unparseable_condition_does_not_crash_the_validator,
+        test_the_real_world_conditions_name_only_real_entities,
+        test_an_empty_barks_cell_is_not_an_error,
+        test_a_barks_cell_naming_a_missing_pool_is_an_error,
+        test_a_pool_nobody_draws_from_is_a_warning,
+        test_a_characters_own_section_is_not_a_dead_pool,
     ]
     for t in tests:
         t()

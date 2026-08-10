@@ -469,14 +469,110 @@ def _played_sfx_keys() -> set[str]:
     return keys
 
 
-def _condition_items(world: World) -> list[tuple[str, str]]:
-    """(item key, where it was written) for every `has_item("...")` in dialogs/quests."""
-    found: list[tuple[str, str]] = []
-    for section in ("dialogs", "quests"):
-        blob = json.dumps(world.config.get(section, {}), ensure_ascii=False)
-        for item in re.findall(r'has_item\(\\?"([^"\\]+)\\?"\)', blob):
-            found.append((item, f"config.json:{section}"))
-    return found
+def _module_str_literals(path: Path, name: str) -> set[str]:
+    """String constants of a module-level assignment, read with `ast` - no import.
+
+    Handles a flat tuple of strings (``ACTIVITIES``) and a tuple of
+    ``(name, number)`` pairs (``DAY_PHASES``): in both cases the strings are the
+    names we want. Same trick and the same reason as `_settings_sheet_keys` -
+    importing would drag pygame into a validator that must run bare.
+    """
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError):
+        return set()
+    for node in ast.walk(tree):
+        targets = (
+            node.targets if isinstance(node, ast.Assign)
+            else [node.target] if isinstance(node, ast.AnnAssign) else []
+        )
+        if not any(isinstance(t, ast.Name) and t.id == name for t in targets):
+            continue
+        value = node.value
+        if not isinstance(value, (ast.Tuple, ast.List)):
+            continue
+        out: set[str] = set()
+        for element in value.elts:
+            if isinstance(element, ast.Constant) and isinstance(element.value, str):
+                out.add(element.value)
+            elif isinstance(element, (ast.Tuple, ast.List)) and element.elts:
+                first = element.elts[0]
+                if isinstance(first, ast.Constant) and isinstance(first.value, str):
+                    out.add(first.value)
+        return out
+    return set()
+
+
+@dataclass(frozen=True)
+class _ConditionSite:
+    """One authored condition, and enough context to check what it names."""
+
+    condition: str
+    source: str
+    #: Character the condition is evaluated "inside", for one-argument
+    #: ``visited("012")``. ``None`` for a quest (no current NPC) and for a shared
+    #: bark pool (many characters, so the node cannot be pinned to one graph).
+    owner: str | None
+
+
+def _all_conditions(world: World) -> list[_ConditionSite]:
+    """Every authored condition in the config: dialog options, quests, barks.
+
+    One collector, so rule 20 covers all three the same way. This is the
+    difference between "a typo is a silent False forever" and "a typo names its
+    own file at build time".
+    """
+    sites: list[_ConditionSite] = []
+
+    for char_key, dialog in (world.config.get("dialogs") or {}).items():
+        if not isinstance(dialog, dict):
+            continue
+        for opt_key, option in (dialog.get("DIALOG_OPTIONS") or {}).items():
+            condition = (option or {}).get("condition") if isinstance(option, dict) else None
+            if condition and condition != "True":
+                sites.append(_ConditionSite(
+                    str(condition), f"config.json:dialogs:{char_key}:{opt_key}", char_key))
+
+    for quest_key, quest in (world.config.get("quests") or {}).items():
+        if not isinstance(quest, dict):
+            continue
+        for field_name in ("test", "progress"):
+            expression = quest.get(field_name)
+            if expression:
+                sites.append(_ConditionSite(
+                    str(expression), f"config.json:quests:{quest_key}:{field_name}", None))
+
+    known_characters = set(world.config.get("characters") or {})
+    for owner, entries in (world.config.get("barks") or {}).items():
+        for index, entry in enumerate(entries or [], start=1):
+            condition = (entry or {}).get("condition") if isinstance(entry, dict) else None
+            if condition and condition != "True":
+                sites.append(_ConditionSite(
+                    str(condition), f"config.json:barks:{owner}:{index:03d}",
+                    owner if owner in known_characters else None))
+
+    return sites
+
+
+def _condition_calls(condition: str) -> list[tuple[str, list[str]]]:
+    """``[(predicate, [string args]), ...]`` for one condition, or ``[]`` if unparseable.
+
+    An unparseable condition is not this rule's business - the importers already
+    refuse one at build time with `file:line`. Here it must simply not crash the
+    validator.
+    """
+    try:
+        tree = ast.parse(condition, mode="eval")
+    except SyntaxError:
+        return []
+    calls: list[tuple[str, list[str]]] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            calls.append((node.func.id, [
+                arg.value for arg in node.args
+                if isinstance(arg, ast.Constant) and isinstance(arg.value, str)
+            ]))
+    return calls
 
 
 #############################################################################################################
@@ -574,7 +670,12 @@ def check_sprites(world: World) -> list[Violation]:
 
 
 def check_items(world: World) -> list[Violation]:
-    """Rule 6: item keys in inventories, chests, quest rewards and conditions exist."""
+    """Rule 6: item keys in inventories, chests and quest rewards exist.
+
+    Item keys written *inside conditions* moved to rule 20, which parses the
+    condition instead of grepping the JSON blob: it names the exact option,
+    covers ``item_count`` as well as ``has_item``, and reaches barks too.
+    """
     known = set(world.config.get("items", {}))
     out = []
 
@@ -605,10 +706,6 @@ def check_items(world: World) -> list[Violation]:
                     f"rewards item '{item}', which is not in config.items",
                 ))
 
-    for item, where in _condition_items(world):
-        if item not in known:
-            out.append(Violation(
-                ERROR, where, f"condition has_item(\"{item}\") names an item not in config.items"))
     return out
 
 
@@ -1064,6 +1161,141 @@ def check_item_keys(world: World) -> list[Violation]:
     return out
 
 
+def check_condition_entities(world: World) -> list[Violation]:
+    """Rule 20: every entity named inside a condition exists (H01/D3).
+
+    The worst failure mode content has: a typo in a key inside ``visited()`` /
+    ``quest_done()`` / ``has_item()`` does not raise anything. The condition just
+    never fires, so a dialog option is never offered and a bark never speaks -
+    for the rest of the game, on every save. That is how the whole Clapback Sword
+    dialog once went dark (see "Znane bugi (fix 2026-07-08)" in
+    `project/AGENTS.md`).
+
+    Why here and not in `validate_condition()`: the condition engine checks
+    syntax, arity and the whitelist, and deliberately knows nothing about the
+    game - and dialogs and quests are imported in two separate passes, so neither
+    importer ever sees both sides. `validate_world` reads *every* source, which is
+    exactly what this needs. Same class as rule 16.
+
+    This is also what makes ``quest_done("Q01_S01_LEARN_ABOUT_CURSE")`` usable as
+    the world fact "the village knows about the curse" (H01/D3): deleting or
+    renaming that quest silently switches the village's reactions off, and the
+    guarantee against that is this rule - not a paragraph in `AGENTS.md`.
+    """
+    quests = set(world.config.get("quests") or {})
+    characters = set(world.config.get("characters") or {})
+    dialogs = world.config.get("dialogs") or {}
+    items = set(world.config.get("items") or {}) | {
+        row["key"].strip() for row in world.items_csv if (row.get("key") or "").strip()
+    }
+    maps = set(_game_map_keys(world))
+    activities = _module_str_literals(PROJECT_DIR / "npc_schedule.py", "ACTIVITIES")
+    phases = _module_str_literals(PROJECT_DIR / "settings.py", "DAY_PHASES")
+
+    out: list[Violation] = []
+    for site in _all_conditions(world):
+        for predicate, args in _condition_calls(site.condition):
+            if predicate == "quest_done" and args and args[0] not in quests:
+                out.append(Violation(
+                    ERROR, site.source,
+                    f"quest_done(\"{args[0]}\") nazywa questa, którego nie ma w config.quests",
+                ))
+            elif predicate in ("has_item", "item_count") and args and args[0] not in items:
+                out.append(Violation(
+                    ERROR, site.source,
+                    f"{predicate}(\"{args[0]}\") nazywa przedmiot spoza items.csv",
+                ))
+            elif predicate == "on_map" and args and args[0] not in maps:
+                out.append(Violation(
+                    ERROR, site.source,
+                    f"on_map(\"{args[0]}\") nazywa mapę spoza rejestru map",
+                ))
+            elif predicate == "activity" and args and activities and args[0] not in activities:
+                out.append(Violation(
+                    ERROR, site.source,
+                    f"activity(\"{args[0]}\") nie jest krokiem rutyny "
+                    f"(są: {', '.join(sorted(activities))})",
+                ))
+            elif predicate == "time_of_day" and args and phases and args[0] not in phases:
+                out.append(Violation(
+                    ERROR, site.source,
+                    f"time_of_day(\"{args[0]}\") nie jest fazą doby "
+                    f"(są: {', '.join(sorted(phases))})",
+                ))
+            elif predicate == "visited":
+                out.extend(_check_visited(site, args, characters, dialogs))
+    return out
+
+
+def _check_visited(
+    site: _ConditionSite, args: list[str], characters: set[str], dialogs: dict
+) -> list[Violation]:
+    """`visited(npc, node)` / `visited(node)` - both the character and its node must exist."""
+    if len(args) == 2:
+        npc, node = args
+    elif len(args) == 1 and site.owner:
+        npc, node = site.owner, args[0]
+    else:
+        # one-argument form in a context with no current character (a shared bark
+        # pool): the node belongs to whoever ends up speaking, so there is nothing
+        # single to check against
+        return []
+
+    if npc not in characters:
+        return [Violation(
+            ERROR, site.source,
+            f"visited(\"{npc}\", …) nazywa postać, której nie ma w config.characters",
+        )]
+    nodes = (dialogs.get(npc) or {}).get("DIALOG_NODES") or {}
+    if not nodes:
+        return [Violation(
+            ERROR, site.source,
+            f"visited(\"{npc}\", \"{node}\") pyta o dialog, którego '{npc}' nie ma",
+        )]
+    if node not in nodes:
+        return [Violation(
+            ERROR, site.source,
+            f"visited(\"{npc}\", \"{node}\") nazywa węzeł, którego nie ma w dialogu '{npc}' - "
+            f"to jest cichy False na zawsze",
+        )]
+    return []
+
+
+def check_bark_pools(world: World) -> list[Violation]:
+    """Rule 21: the `barks` column names a pool that exists; every pool has a taker.
+
+    An unknown pool is an ERROR (the character silently loses half its lines); a
+    pool nobody draws from is a WARN (text written and never heard - a waste, not
+    a failure). An empty `barks` cell is neither: like an empty destination cell
+    in `routines.toml`, it just means this character has nothing shared to say.
+    """
+    pools = set(world.config.get("barks") or {})
+    characters = set(world.config.get("characters") or {})
+    out: list[Violation] = []
+
+    requested: set[str] = set()
+    for row in world.characters_csv:
+        pool = (row.get("barks") or "").strip()
+        if not pool:
+            continue
+        requested.add(pool)
+        if pool not in pools:
+            out.append(Violation(
+                ERROR, f"characters.csv:{row.get('key', '?')}",
+                f"barks='{pool}' - takiej puli nie ma w doc/PL/Barki.md "
+                f"(uruchom `just import-dialogs`)",
+            ))
+
+    # A character key in `barks` is that character's OWN section, not a pool -
+    # it has a taker by definition.
+    for pool in sorted(pools - requested - characters):
+        out.append(Violation(
+            WARN, "config.json:barks",
+            f"puli '{pool}' nie używa żadna postać - jej teksty są martwe",
+        ))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -1084,6 +1316,8 @@ CHECKS = (
     check_map_references,
     check_map_coverage,
     check_item_keys,
+    check_condition_entities,
+    check_bark_pools,
 )
 
 

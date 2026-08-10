@@ -97,6 +97,13 @@ class Character(BaseModel):
     # "who does what and where" is answerable from one row. Empty means no routine:
     # the character keeps the legacy Tiled waypoint loop.
     routine:       Annotated[str,          Field("", description="key of the daily routine from routines.toml", repr=False)]
+    # Which shared bark pool this character draws from (a section key in
+    # `doc/PL/Barki.md`). It SUMS with the character's own `## Barki` section
+    # rather than replacing it - otherwise a character with one joke of its own
+    # would have to restate every "good morning" the village shares. Empty is not
+    # an error, exactly like an empty destination cell: such a character is
+    # simply silent.
+    barks:         Annotated[str,          Field("", description="key of the shared bark pool from doc/PL/Barki.md", repr=False)]
 
     @field_validator("disposition", mode="before")
     @classmethod
@@ -207,6 +214,8 @@ class Config(BaseModel):
                                                     description="Quest definitions keyed by quest key")]
     messages:     Annotated[dict[str, dict[str, str]], Field(default_factory=dict, repr=False,
                                                              description="Localized UI strings keyed by language")]
+    barks:        Annotated[dict[str, list[dict[str, str]]], Field(default_factory=dict, repr=False,
+                                                                   description="Ambient one-liners keyed by owner - a character key OR a shared pool key; each entry is {msg, condition}")]  # noqa E501
 
     @model_validator(mode='after')
     def check_character_items(self) -> Self:

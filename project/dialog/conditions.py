@@ -44,6 +44,24 @@ none. :class:`ConditionScope` picks which names are legal:
   ask), and ``visited()`` **requires** its ``npc`` argument, so a quest cannot
   accidentally ask "did *nobody in particular* visit this node?" and silently
   get ``False`` forever.
+- ``bark`` (H01/D1) — the ambient one-liner an NPC throws at a passing hero. It
+  *has* a current character (the one talking), so ``sentiment`` and one-argument
+  ``visited()`` make sense, but it is evaluated out in the world rather than
+  inside a conversation, so it also knows three things no other scope does:
+
+  ==========================  ===============================================
+  DSL                         meaning
+  ==========================  ===============================================
+  ``time_of_day(phase)``      the world clock is in ``phase`` — one of
+                              ``settings.DAY_PHASES`` (``morning``, ``day``,
+                              ``evening``, ``night``)
+  ``activity(name)``          the speaker's current routine step is ``name``
+                              (``npc_schedule.ACTIVITIES``)
+  ``on_map(key)``             the speaker stands on map ``key``
+  ==========================  ===============================================
+
+  ``selected()`` stays out: a bark is not part of a conversation, so "which
+  option did you pick" has no bark-time meaning.
 
 Data reaches the engine through a :class:`ConditionContext` (a ``Protocol`` — the
 game adapter and tests both satisfy it); :class:`DialogConditionContext` adds the
@@ -83,6 +101,7 @@ class ConditionScope(StrEnum):
 
     dialog = auto()
     quest = auto()
+    bark = auto()
 
 
 @runtime_checkable
@@ -133,6 +152,34 @@ class DialogConditionContext(ConditionContext, Protocol):
         ...
 
 
+@runtime_checkable
+class BarkConditionContext(ConditionContext, Protocol):
+    """A :class:`ConditionContext` evaluated for an ambient bark (H01/D1).
+
+    The speaker is known (hence ``sentiment``), but there is no conversation on
+    screen — instead the world around it is: what time it is, what the speaker is
+    doing right now, and which map it stands on. The game adapter lives in
+    ``dialog/bark_context.py``; tests supply a stub.
+    """
+
+    @property
+    def sentiment(self) -> int:
+        """The speaker's sentiment toward the hero."""
+        ...
+
+    def time_of_day(self, phase: str) -> bool:
+        """Is the world clock in ``phase`` (a name from ``settings.DAY_PHASES``)?"""
+        ...
+
+    def activity(self, name: str) -> bool:
+        """Is the speaker's current routine step ``name`` (``npc_schedule.ACTIVITIES``)?"""
+        ...
+
+    def on_map(self, map_key: str) -> bool:
+        """Does the speaker stand on map ``map_key``?"""
+        ...
+
+
 # ---------------------------------------------------------------------------
 # Whitelist tables
 # ---------------------------------------------------------------------------
@@ -162,15 +209,27 @@ _QUEST_PREDICATES: dict[str, tuple[int, int]] = {
     "visited": (2, 2),
 }
 
+# A bark is spoken by somebody, so `visited` and `sentiment` work as in a dialog
+# — but it happens out in the world, so it also gets the three names that only
+# make sense there. No `selected()`: a bark is not part of a conversation.
+_BARK_PREDICATES: dict[str, tuple[int, int]] = {
+    **_COMMON_PREDICATES,
+    "time_of_day": (1, 1),
+    "activity": (1, 1),
+    "on_map": (1, 1),
+}
+
 _PREDICATES_BY_SCOPE: dict[ConditionScope, dict[str, tuple[int, int]]] = {
     ConditionScope.dialog: _DIALOG_PREDICATES,
     ConditionScope.quest: _QUEST_PREDICATES,
+    ConditionScope.bark: _BARK_PREDICATES,
 }
 
 # bare names that resolve to a value (not a call), per scope
 _VALUE_NAMES_BY_SCOPE: dict[ConditionScope, frozenset[str]] = {
     ConditionScope.dialog: frozenset({"sentiment"}),
     ConditionScope.quest: frozenset(),
+    ConditionScope.bark: frozenset({"sentiment"}),
 }
 
 # Predicates that return a *number* rather than a yes/no. Only these (or a
@@ -450,7 +509,7 @@ class _Interpreter:
 
     def _eval_name(self, node: ast.Name) -> Any:
         if node.id == "sentiment":
-            # dialog scope only; validation keeps quests from reaching this
+            # dialog + bark scopes; validation keeps quests from reaching this
             return self.ctx.sentiment  # type: ignore[attr-defined]
         # unreachable after validation
         raise ConditionError(f"unknown name {node.id!r}")
@@ -472,11 +531,19 @@ class _Interpreter:
         if name == "selected":
             # dialog scope only; validation keeps quests from reaching this
             return self.ctx.selected(args[0])  # type: ignore[attr-defined]
+        # bark scope only — see BarkConditionContext
+        if name == "time_of_day":
+            return self.ctx.time_of_day(args[0])  # type: ignore[attr-defined]
+        if name == "activity":
+            return self.ctx.activity(args[0])  # type: ignore[attr-defined]
+        if name == "on_map":
+            return self.ctx.on_map(args[0])  # type: ignore[attr-defined]
         # unreachable after validation
         raise ConditionError(f"unknown predicate {name!r}")
 
 
 __all__ = [
+    "BarkConditionContext",
     "ConditionContext",
     "ConditionError",
     "ConditionScope",

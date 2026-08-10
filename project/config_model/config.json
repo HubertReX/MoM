@@ -4033,5 +4033,6 @@
             "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"017\")",
             "parent": "Q03_S00_LEARN_ABOUT_CURSE"
         }
-    }
+    },
+    "barks": {}
 }

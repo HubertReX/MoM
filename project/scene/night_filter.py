@@ -40,7 +40,7 @@ from settings import (
     vec3,
 )
 
-from scene import fog_of_war
+from scene import fog_of_war, world_clock
 
 if TYPE_CHECKING:
     from scene.scene import Scene
@@ -101,25 +101,36 @@ def _blit_light(scene: "Scene", world_pos: vec, scale: float) -> None:
     scene.filter_surf.blit(circle, pos_vec, special_flags=pygame.BLEND_RGBA_MIN)
 
 
+def _scene_hour(scene: "Scene") -> float:
+    """Godzina sceny jako ułamek - jedno miejsce zamiast trzech kopii wyrażenia."""
+    return scene.hour + (scene.minute / 60)
+
+
 def filter_color(scene: "Scene") -> list[int]:
-    """Kolor (RGBA) filtra pory dnia dla bieżącego stanu sceny."""
+    """Kolor (RGBA) filtra pory dnia dla bieżącego stanu sceny.
+
+    Granice faz przychodzą z ``settings.DAY_PHASES`` przez ``world_clock``
+    (H01/D1) - wzory interpolacji zostają dokładnie te, co były, więc przy tych
+    samych granicach obraz jest identyczny co do piksela.
+    """
     color: list[int] = list(BG_COLOR)
-    hour: float = scene.hour + (scene.minute / 60)
 
     if scene.is_maze:
         return list(NIGHT_FILTER)
-    if hour < 6 or hour >= 20:
+
+    hour = _scene_hour(scene)
+    phase = world_clock.day_phase(hour)
+    if phase == "night":
         return list(NIGHT_FILTER)
-    if 6 <= hour < 9:
-        weight = (hour - 6) / (9 - 6)
-        for i in range(4):
-            color[i] = pygame.math.lerp(NIGHT_FILTER[i], DAY_FILTER[i], weight)  # type: ignore[call-overload]
-    elif 9 <= hour < 17:
+    if phase == "day":
         return list(DAY_FILTER)
-    elif 17 <= hour < 20:
-        weight = (hour - 17) / (20 - 17)
-        for i in range(4):
-            color[i] = pygame.math.lerp(DAY_FILTER[i], NIGHT_FILTER[i], weight)  # type: ignore[call-overload]
+
+    # `morning` rozjaśnia (noc -> dzień), `evening` ściemnia (dzień -> noc)
+    start, end = world_clock.phase_bounds(phase)
+    weight = (hour - start) / (end - start)
+    source, target = (NIGHT_FILTER, DAY_FILTER) if phase == "morning" else (DAY_FILTER, NIGHT_FILTER)
+    for i in range(4):
+        color[i] = pygame.math.lerp(source[i], target[i], weight)  # type: ignore[call-overload]
     return color
 
 
@@ -156,8 +167,10 @@ def apply_time_of_day_filter(scene: "Scene", screen: pygame.Surface) -> None:
     else:
         scene.filter_surf.fill(color)
 
-        hour: float = scene.hour + (scene.minute / 60)
-        if (hour > 17 or hour < 9) or scene.is_maze:
+        # aureole świateł palą się poza pełnym dniem. Dawniej `hour > 17 or hour < 9`;
+        # różnica wypada tylko dokładnie o 17:00, a tam `day_night_ratio` to 0.0
+        # i funkcja wychodzi wcześniej, więc obraz jest ten sam.
+        if world_clock.day_phase(_scene_hour(scene)) != "day" or scene.is_maze:
             scale = (scene.camera.zoom / ZOOM_LEVEL)
             for npc in scene.NPCs + [scene.player]:
                 _blit_light(scene, npc.pos + vec(0, -8), scale)
@@ -226,14 +239,16 @@ def day_night_ratio(scene: "Scene") -> float:
     if scene.is_maze:
         return 1.0
 
-    hour: float = scene.hour + (scene.minute / 60)
-    if hour < 6.00 or hour >= 20.00:
+    hour = _scene_hour(scene)
+    phase = world_clock.day_phase(hour)
+    if phase == "night":
         return 1.0
-    if 6.00 <= hour < 9.00:
-        return 1.0 - ((hour - 6.00) / (9.00 - 6.00))
-    if 9.00 <= hour < 17.00:
+    if phase == "day":
         return 0.0
-    return (hour - 17.00) / (20.00 - 17.00)
+    start, end = world_clock.phase_bounds(phase)
+    weight = (hour - start) / (end - start)
+    # rano noc ustępuje, wieczorem narasta
+    return 1.0 - weight if phase == "morning" else weight
 
 
 def get_lights(scene: "Scene") -> tuple[list[vec3], float]:
