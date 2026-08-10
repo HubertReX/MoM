@@ -13,10 +13,10 @@ jest stanem domyślnym.
 
 Dwa miejsca, i one się **sumują**, a nie wykluczają:
 
-| Kto | Gdzie |
-| --- | --- |
-| postać z własnym plikiem (`doc/PL/Postacie/`) | sekcja `## Barki` w tym pliku |
-| statyści i zwierzęta | wspólna pula w [Barki](PL/Barki.md) |
+| Kto                                           | Gdzie                               |
+| --------------------------------------------- | ----------------------------------- |
+| postać z własnym plikiem (`doc/PL/Postacie/`) | sekcja `## Barki` w tym pliku       |
+| statyści i zwierzęta                          | wspólna pula w [Barki](PL/Barki.md) |
 
 Postać może mieć jedno i drugie. Barman ma swoje żarty **i** mówi „dzień dobry"
 jak każdy inny mieszkaniec - gdyby pula wykluczała własne linie, każda postać
@@ -65,15 +65,15 @@ Pula dla mieszkańców bez własnego pliku postaci.
 
 Zakres `bark` zna to, co dialog, plus trzy rzeczy o świecie:
 
-| Warunek | Znaczenie |
-| --- | --- |
-| `time_of_day("morning"/"day"/"evening"/"night")` | pora dnia na zegarze świata |
-| `activity("sleep"/"stand"/"wander"/"patrol"/"idle")` | co mówiący akurat robi wg rutyny |
-| `on_map("KLUCZ_MAPY")` | na której mapie stoi mówiący |
-| `sentiment > 60` | sentyment **mówiącego** do gracza |
-| `visited("WĘZEŁ")`, `visited("POSTAĆ", "WĘZEŁ")` | czy węzeł dialogu był odwiedzony |
-| `has_item("KLUCZ")`, `item_count("KLUCZ") >= 2` | ekwipunek gracza |
-| `quest_done("KLUCZ")` | czy quest ukończony |
+| Warunek                                              | Znaczenie                         |
+| ---------------------------------------------------- | --------------------------------- |
+| `time_of_day("morning"/"day"/"evening"/"night")`     | pora dnia na zegarze świata       |
+| `activity("sleep"/"stand"/"wander"/"patrol"/"idle")` | co mówiący akurat robi wg rutyny  |
+| `on_map("KLUCZ_MAPY")`                               | na której mapie stoi mówiący      |
+| `sentiment > 60`                                     | sentyment **mówiącego** do gracza |
+| `visited("WĘZEŁ")`, `visited("POSTAĆ", "WĘZEŁ")`     | czy węzeł dialogu był odwiedzony  |
+| `has_item("KLUCZ")`, `item_count("KLUCZ") >= 2`      | ekwipunek gracza                  |
+| `quest_done("KLUCZ")`                                | czy quest ukończony               |
 
 Łączy się je przez `and`, `or`, `not` i nawiasy. Bez warunku bark leci zawsze.
 

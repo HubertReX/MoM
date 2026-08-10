@@ -10,6 +10,15 @@ angry: -2
 smart: -1
 funny: 2
 ---
+## Barks
+
+
+- Barki The mugs won't wash themselves. 
+- [time_of_day("morning")] At this hour, it's just me and the mice. 
+- [time_of_day("evening")] Last call! Just kidding. 
+- [sentiment > 60] Oh, my favorite customer! 
+- [quest_done("Q01_S01_LEARN_ABOUT_CURSE")] Sit over there. Further. Even further.
+
 ## 000
 
 * Hey :red_exclamation: Welcome to our [loc]Tavern[/loc]! I'm [[BARMAN_ABSINTHRAYNER]]. And who might fortune have brought my way?

@@ -34,6 +34,14 @@ chciałby być postrzegany jako światły i bywały, ale tak na prawdę jest pro
 
 Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to początek nowej historii, a każda nalewka to intrygująca zagadka. Rozmowny, towarzyski, zna wiele osób i miejsca, ale tylko w najbliższej okolicy. Całe życie pracuje w [[Tawerna Brakująca klepka]] gdzie też się urodził. Jest prostym człowiekiem, który nie widział wielkiego świata bo trochę się go boi, ale tego nie przyzna. Wierzy w zabobony, brzydzi się magią
 
+## Barki
+
+- Kufle same się nie umyją.
+- [time_of_day("morning")] O tej porze to tylko ja i myszy
+- [time_of_day("evening")] Ostatnia kolejka! Żartowałem
+- [sentiment > 60] O, mój ulubiony klient!
+- [quest_done("Q01_S01_LEARN_ABOUT_CURSE")] Siadaj tam. Dalej. Jeszcze dalej.
+
 ## 000
 
 * Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [[Barman Absyntnent]]. A kogo tu do mnie los sprowadził?

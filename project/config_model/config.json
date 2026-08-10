@@ -44,7 +44,8 @@
             "work": "BLUNDERHAVEN:market_stall_1",
             "social": "LOST_CORK_TAVERN:tables",
             "hobby": "BLUNDERHAVEN:pier",
-            "routine": "townsfolk"
+            "routine": "townsfolk",
+            "barks": "VILLAGERS"
         },
         "FRED": {
             "sprite": "Villager2",
@@ -78,7 +79,8 @@
             "work": "BLUNDERHAVEN:market_stall_2",
             "social": "LOST_CORK_TAVERN:tables",
             "hobby": "BLUNDERHAVEN:well",
-            "routine": "townsfolk"
+            "routine": "townsfolk",
+            "barks": "VILLAGERS"
         },
         "ROB": {
             "sprite": "Villager4",
@@ -87,7 +89,9 @@
             "money": 20,
             "name_EN": "Rob",
             "name_PL": "Kuba",
-            "has_dialog": false
+            "has_dialog": false,
+            "routine": "townsfolk",
+            "barks": "VILLAGERS"
         },
         "ROBIN": {
             "sprite": "Villager4",
@@ -96,7 +100,9 @@
             "money": 20,
             "name_EN": "Robin",
             "name_PL": "Robin",
-            "has_dialog": false
+            "has_dialog": false,
+            "routine": "townsfolk",
+            "barks": "VILLAGERS"
         },
         "MARRY": {
             "sprite": "Woman",
@@ -107,7 +113,8 @@
             "money": 25,
             "name_EN": "Marry",
             "name_PL": "Marysia",
-            "has_dialog": false
+            "has_dialog": false,
+            "routine": "townsfolk"
         },
         "FISH_RED": {
             "sprite": "FishRed",
@@ -128,7 +135,8 @@
             "speed_walk": 15,
             "name_EN": "Cat",
             "name_PL": "Kotek",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "DOG_ORANGE": {
             "sprite": "Dog1",
@@ -140,7 +148,8 @@
             "speed_walk": 15,
             "name_EN": "Dog",
             "name_PL": "Piesek",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "DOG_PURPLE": {
             "sprite": "Dog2",
@@ -152,7 +161,8 @@
             "speed_walk": 15,
             "name_EN": "Dog",
             "name_PL": "Piesek",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "CHICKEN_BLACK": {
             "sprite": "ChickenBlack",
@@ -164,7 +174,8 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Kurczak",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "CHICKEN_BROWN": {
             "sprite": "ChickenBrown",
@@ -176,7 +187,8 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Kurczak",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "CHICKEN_CUTE": {
             "sprite": "ChickenCute",
@@ -188,7 +200,8 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Kurczak",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "CHICKEN_WHITE": {
             "sprite": "ChickenWhite",
@@ -200,7 +213,8 @@
             "speed_walk": 15,
             "name_EN": "Chicken",
             "name_PL": "Kurczak",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "PIG": {
             "sprite": "Pig",
@@ -212,7 +226,8 @@
             "speed_walk": 20,
             "name_EN": "Pig",
             "name_PL": "Świnka",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "COW": {
             "sprite": "Cow",
@@ -223,7 +238,8 @@
             ],
             "name_EN": "Cow",
             "name_PL": "Krówka",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "HORSE": {
             "sprite": "Horse",
@@ -234,7 +250,8 @@
             ],
             "name_EN": "Horse",
             "name_PL": "Konik",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "FROG": {
             "sprite": "Frog",
@@ -246,7 +263,8 @@
             "speed_walk": 10,
             "name_EN": "Frog",
             "name_PL": "Żabcia",
-            "has_dialog": false
+            "has_dialog": false,
+            "barks": "FARM_ANIMALS"
         },
         "RACOON": {
             "sprite": "Racoon",
@@ -376,7 +394,8 @@
             "work": "BLUNDERHAVEN:smithy",
             "social": "LOST_CORK_TAVERN:tables",
             "hobby": "BLUNDERHAVEN:shrine",
-            "routine": "townsfolk"
+            "routine": "townsfolk",
+            "barks": "VILLAGERS"
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
@@ -400,7 +419,8 @@
             "work": "LOST_CORK_TAVERN:bar",
             "social": "BLUNDERHAVEN:well",
             "hobby": "BLUNDERHAVEN:shrine",
-            "routine": "barman"
+            "routine": "barman",
+            "barks": "VILLAGERS"
         },
         "CLAPBACK_SWORD": {
             "sprite": "Knight",
@@ -419,7 +439,8 @@
             "name_EN": "Clapback Sword",
             "name_PL": "Miecz Ciętej-riposty",
             "has_dialog": true,
-            "friendly": 0.7
+            "friendly": 0.7,
+            "barks": "FARM_ANIMALS"
         },
         "POTIONEER_PUZZLEMINT": {
             "sprite": "EggGirl",
@@ -3624,7 +3645,31 @@
             "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS": "The smith does not go to the city and has no plans to start. He does know exactly who in this village talks to every stranger passing through.",
             "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME": "How to get there?",
             "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION": "The city is somewhere to the north. \"Somewhere\" is decidedly not enough to set off on.",
-            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Two days north, past the Tangled Forest of Irritation, then turn east. The barman has never been to the city, but he knows the route by heart."
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Two days north, past the Tangled Forest of Irritation, then turn east. The barman has never been to the city, but he knows the route by heart.",
+            "bark.VILLAGERS.001": "Good morning",
+            "bark.VILLAGERS.002": "Good evening",
+            "bark.VILLAGERS.003": "Top of the morning to ya",
+            "bark.VILLAGERS.004": "Howdy-do",
+            "bark.VILLAGERS.005": "Sure stinks in here",
+            "bark.VILLAGERS.006": "Lovely weather we're having",
+            "bark.VILLAGERS.007": "Nights are chilly again",
+            "bark.VILLAGERS.008": "Work won't do itself",
+            "bark.VILLAGERS.009": "Sure is boring around here",
+            "bark.VILLAGERS.010": "Could go for a bite",
+            "bark.VILLAGERS.011": "Some rest at last",
+            "bark.VILLAGERS.012": "Oh, look, here comes our walking disaster",
+            "bark.VILLAGERS.013": "Hmm, who's this fresh meat",
+            "bark.FARM_ANIMALS.001": "Moo",
+            "bark.FARM_ANIMALS.002": "Moo?",
+            "bark.FARM_ANIMALS.003": "Awoooo",
+            "bark.FARM_ANIMALS.004": "woof, woof",
+            "bark.FARM_ANIMALS.005": "meow",
+            "bark.FARM_ANIMALS.006": "mEOw",
+            "bark.BARMAN_ABSINTHRAYNER.001": "Barki The mugs won't wash themselves.",
+            "bark.BARMAN_ABSINTHRAYNER.002": "At this hour, it's just me and the mice.",
+            "bark.BARMAN_ABSINTHRAYNER.003": "Last call! Just kidding.",
+            "bark.BARMAN_ABSINTHRAYNER.004": "Oh, my favorite customer!",
+            "bark.BARMAN_ABSINTHRAYNER.005": "Sit over there. Further. Even further."
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
@@ -3944,7 +3989,31 @@
             "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS": "[char]Kowal[/char] do miasta nie jeździ i nie zamierza zacząć. Wie za to dokładnie, kto w tej wiosce gada ze wszystkimi przybyszami.",
             "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME": "Jak tam dotrzeć?",
             "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION": "Miasto jest gdzieś na północy. \"Gdzieś\" to stanowczo za mało, żeby ruszać w drogę.",
-            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Dwa dni na północ, za [loc]Splątanym lasem irytacji[/loc] skręcić na wschód. [char]Barman[/char] w mieście nie był, ale trasę zna na pamięć."
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Dwa dni na północ, za [loc]Splątanym lasem irytacji[/loc] skręcić na wschód. [char]Barman[/char] w mieście nie był, ale trasę zna na pamięć.",
+            "bark.VILLAGERS.001": "Dzień dobry",
+            "bark.VILLAGERS.002": "Dobry wieczór",
+            "bark.VILLAGERS.003": "Uszanowanko",
+            "bark.VILLAGERS.004": "Siemka",
+            "bark.VILLAGERS.005": "Ależ tu śmierdzi",
+            "bark.VILLAGERS.006": "Ładny mamy dzień",
+            "bark.VILLAGERS.007": "Noce znów są chłodne",
+            "bark.VILLAGERS.008": "Robota sama się nie zrobi",
+            "bark.VILLAGERS.009": "Nudno tu",
+            "bark.VILLAGERS.010": "Zjadłbym coś",
+            "bark.VILLAGERS.011": "W końcu chwila przerwy",
+            "bark.VILLAGERS.012": "O, idzie nasz pechowiec",
+            "bark.VILLAGERS.013": "Hmm, kim jest ten nowy",
+            "bark.FARM_ANIMALS.001": "Muuu",
+            "bark.FARM_ANIMALS.002": "Mu?",
+            "bark.FARM_ANIMALS.003": "Hauuuuu",
+            "bark.FARM_ANIMALS.004": "hał, hał",
+            "bark.FARM_ANIMALS.005": "miau",
+            "bark.FARM_ANIMALS.006": "mIAu",
+            "bark.BARMAN_ABSINTHRAYNER.001": "Kufle same się nie umyją.",
+            "bark.BARMAN_ABSINTHRAYNER.002": "O tej porze to tylko ja i myszy",
+            "bark.BARMAN_ABSINTHRAYNER.003": "Ostatnia kolejka! Żartowałem",
+            "bark.BARMAN_ABSINTHRAYNER.004": "O, mój ulubiony klient!",
+            "bark.BARMAN_ABSINTHRAYNER.005": "Siadaj tam. Dalej. Jeszcze dalej."
         }
     },
     "quests": {
@@ -4045,5 +4114,108 @@
             "parent": "Q03_S00_LEARN_ABOUT_CURSE"
         }
     },
-    "barks": {}
+    "barks": {
+        "BARMAN_ABSINTHRAYNER": [
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.001",
+                "condition": "True"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.002",
+                "condition": "time_of_day(\"morning\")"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.003",
+                "condition": "time_of_day(\"evening\")"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.004",
+                "condition": "sentiment > 60"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.005",
+                "condition": "quest_done(\"Q01_S01_LEARN_ABOUT_CURSE\")"
+            }
+        ],
+        "VILLAGERS": [
+            {
+                "msg": "bark.VILLAGERS.001",
+                "condition": "time_of_day(\"morning\") or time_of_day(\"day\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.002",
+                "condition": "time_of_day(\"evening\") or time_of_day(\"night\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.003",
+                "condition": "sentiment > 70"
+            },
+            {
+                "msg": "bark.VILLAGERS.004",
+                "condition": "sentiment > 80"
+            },
+            {
+                "msg": "bark.VILLAGERS.005",
+                "condition": "on_map(\"LOST_CORK_TAVERN\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.006",
+                "condition": "on_map(\"BLUNDERHAVEN\") and time_of_day(\"day\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.007",
+                "condition": "on_map(\"BLUNDERHAVEN\") and time_of_day(\"night\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.008",
+                "condition": "activity(\"stand\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.009",
+                "condition": "activity(\"idle\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.010",
+                "condition": "activity(\"wander\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.011",
+                "condition": "activity(\"wander\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.012",
+                "condition": "quest_done(\"Q01_S01_LEARN_ABOUT_CURSE\")"
+            },
+            {
+                "msg": "bark.VILLAGERS.013",
+                "condition": "not quest_done(\"Q01_S01_LEARN_ABOUT_CURSE\")"
+            }
+        ],
+        "FARM_ANIMALS": [
+            {
+                "msg": "bark.FARM_ANIMALS.001",
+                "condition": "True"
+            },
+            {
+                "msg": "bark.FARM_ANIMALS.002",
+                "condition": "True"
+            },
+            {
+                "msg": "bark.FARM_ANIMALS.003",
+                "condition": "True"
+            },
+            {
+                "msg": "bark.FARM_ANIMALS.004",
+                "condition": "True"
+            },
+            {
+                "msg": "bark.FARM_ANIMALS.005",
+                "condition": "True"
+            },
+            {
+                "msg": "bark.FARM_ANIMALS.006",
+                "condition": "True"
+            }
+        ]
+    }
 }
