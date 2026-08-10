@@ -479,6 +479,17 @@
                 "weak": 1,
                 "angry": 1
             }
+        },
+        "RAT": {
+            "name_EN": "Rat",
+            "name_PL": "Szczur",
+            "sprite": "HamsterGray",
+            "race": "monster",
+            "attitude": "enemy",
+            "health": 15,
+            "max_health": 15,
+            "has_dialog": false,
+            "damage": 5
         }
     },
     "chests": {

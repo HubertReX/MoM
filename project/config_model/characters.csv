@@ -34,3 +34,4 @@ SLIME;Slime;Śluzak;Slime;monster;enemy;40;40;;;false;;;;;;;;;;;;;;;;;;;;;
 SNAKE;Snake;Wąż;Snake;monster;enemy;50;50;life_pot;;false;;;;;;20;75;;;;;;;;;;;;;;
 SPIDER;Spider;Pająk;SpiderRed;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;;
 SPIRIT;Spirit;Duszek;Spirit;monster;enemy;;;;;false;;;;;;;;;;;;;;;;;;;;;
+RAT;Rat;Szczur;HamsterGray;monster;enemy;15;15;;;false;;;;;;5;;;;;;;;;;;;;;;
