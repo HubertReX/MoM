@@ -126,12 +126,18 @@ class HUD(Widget):
         self._location_key: tuple[str, int] | None = None
         self._location_rt_surf: pygame.Surface | None = None
         self._update_location_cache()
-        # wskaźnik questa (H01/D7): druga, węższa linijka pod panelem lokacji.
-        # Osobne pudełko, nie druga linia w tamtym: nazwa mapy zmienia się przy
-        # przejściu, a wskaźnik przy zdarzeniu questowym - wspólny cache
+        # wskaźnik questa (H01/D7): pudełko w LEWYM GÓRNYM rogu, nad stosem toastów.
+        # Osobne pudełko, nie druga linia w panelu lokacji: nazwa mapy zmienia się
+        # przy przejściu, a wskaźnik przy zdarzeniu questowym - wspólny cache
         # przerysowywałby oba za każdym razem.
+        #
+        # Był pod nazwą lokacji, na środku u góry - i to był błąd: środek górnej
+        # krawędzi ma już nazwę mapy, a razem zasłaniały centralną część ekranu,
+        # czyli dokładnie to miejsce, w którym gracz patrzy na akcję. Lewa górna
+        # kolumna należy do rzeczy „tekstowych" (toasty), prawa górna do statystyk,
+        # środek zostaje pusty.
         self._tracker_panel = Panel("nine_patch_04.png", pad=(28, 18), name="HUD(quest_tracker)")
-        self._tracker_key: tuple[str, int] | None = None
+        self._tracker_key: tuple[str, int, int] | None = None
         self._tracker_rt_surf: pygame.Surface | None = None
 
         # toast: ta sama zasada, inny wygląd ramki i ciaśniejszy odstęp
@@ -286,9 +292,8 @@ class HUD(Widget):
         self._update_location_cache()
         if self._location_rt_surf is None:
             return
-        rect = self._location_panel.draw(surface, self._location_rt_surf,
-                                         anchor="midtop", offset=(0, HUD_EDGE))
-        self.show_quest_tracker(surface, rect)
+        self._location_panel.draw(surface, self._location_rt_surf,
+                                  anchor="midtop", offset=(0, HUD_EDGE))
 
     #############################################################################################################
     # MARK: quest tracker (H01/D7)
@@ -303,7 +308,9 @@ class HUD(Widget):
         quests = getattr(self.scene, "quests", None)
         name = quests.tracked_name() if quests is not None else ""
         display = _("quest.tracker", name=name) if name else ""
-        key = (display, settings.WIDTH)
+        # szerokość pudełka lokacji jest częścią klucza: wskaźnik stoi po jego
+        # LEWEJ, więc dłuższa nazwa mapy zabiera mu miejsce i wymaga przelania
+        key = (display, settings.WIDTH, self._location_box_width())
         if key == self._tracker_key:
             return
         self._tracker_key = key
@@ -311,11 +318,15 @@ class HUD(Widget):
             self._tracker_rt_surf = None
             return
         from ..widgets.rich_text import render_tight
-        side = self.stats_bg.get_width() + 2 * HUD_EDGE
-        max_w, _max_h = self._tracker_panel.max_content_size(
-            (settings.WIDTH - 2 * side, settings.HEIGHT - 2 * HUD_EDGE))
+        # Wskaźnik dzieli górny pas z DWIEMA rzeczami: pudełkiem lokacji (środek)
+        # i statystykami (prawy górny róg). Węższy z dwóch budżetów wygrywa -
+        # inaczej przy wąskim oknie wskaźnik wjeżdżał pod nazwę mapy i zjadał jej
+        # pierwszą literę. Tekst, który się nie mieści, zawija się na kolejną
+        # linię, a `Panel` rośnie wzwyż (i tyle samo zjada stos toastów).
+        max_w = min(self._left_column_text_width(self._tracker_panel),
+                    self._space_left_of_location(self._tracker_panel))
         self._tracker_rt_surf = render_tight(
-            f"[center]{display}[/center]",
+            display,
             max_w,
             self.icons,
             base_size=FONT_SIZE_SMALL,
@@ -324,19 +335,41 @@ class HUD(Widget):
             name="HUD(quest_tracker)",
         )
 
-    def show_quest_tracker(self, surface: pygame.Surface, above: pygame.Rect) -> None:
-        """Jedna linia „co teraz?" pod panelem lokacji.
+    def _location_box_width(self) -> int:
+        """Szerokość pudełka z nazwą lokacji (0, gdy jeszcze nie ma napisu)."""
+        surf = self._location_rt_surf
+        return 0 if surf is None else surf.get_width() + 2 * self._location_panel.pad[0]
 
-        Znika razem ze statystykami (wołane tylko z gałęzi `stats=True`
-        w `draw_overlay`): dziennik i panel pomocy zasłaniają ten pas ekranu, więc
-        rysowanie pod nimi byłoby rysowaniem w niewidoczne. Brak kandydata =
-        **brak pudełka**, a nie pusta ramka.
+    def _space_left_of_location(self, panel: Panel) -> int:
+        """Ile pikseli tekstu mieści się na LEWO od wyśrodkowanego pudełka lokacji."""
+        free = (settings.WIDTH - self._location_box_width()) // 2 - HUD_EDGE - _NOTIFICATION_GAP
+        return max(1, free - 2 * panel.pad[0])
+
+    def _left_column_text_width(self, panel: Panel) -> int:
+        """Ile pikseli tekstu mieści się w lewej kolumnie HUD-u, przy danym pudełku.
+
+        Lewa kolumna (wskaźnik questa + toasty) kończy się tam, gdzie zaczyna się
+        panel statystyk w prawym górnym rogu - obie rzeczy dzielą ten sam pas.
+        """
+        stats_left = settings.WIDTH - self.stats_bg.get_width() - HUD_EDGE
+        return max(1, stats_left - HUD_EDGE - 2 * panel.pad[0] - _NOTIFICATION_GAP)
+
+    def show_quest_tracker(self, surface: pygame.Surface) -> int:
+        """Jedna linia „co teraz?" w lewym górnym rogu; zwraca wysokość pudełka.
+
+        Wynik jest przesunięciem dla stosu toastów: toasty zatrzymują się POD
+        wskaźnikiem, a gdy nie ma czego śledzić (brak pudełka, nie pusta ramka),
+        jadą do samej góry, tak jak przed H01.
+
+        Nie na środku u góry: tam stoi już nazwa lokacji, a dwa pudełka jedno pod
+        drugim zasłaniały środek ekranu - czyli to miejsce, w którym gracz patrzy
+        na akcję.
         """
         self._update_tracker_cache()
         if self._tracker_rt_surf is None:
-            return
-        self._tracker_panel.draw(surface, self._tracker_rt_surf,
-                                 anchor="midtop", offset=(0, above.bottom + 4))
+            return 0
+        return self._tracker_panel.draw(surface, self._tracker_rt_surf,
+                                        pos=(HUD_EDGE, HUD_EDGE)).height
 
     #############################################################################################################
     # MARK: hotbar
@@ -553,7 +586,8 @@ class HUD(Widget):
         self.draw_hotbar(surface, player, hotbar_topleft(player.max_items), show_shortcuts=True)
         self.show_available_actions(surface)
 
-    def draw_overlay(self, surface: pygame.Surface, *, stats: bool = True) -> None:
+    def draw_overlay(self, surface: pygame.Surface, *, stats: bool = True,
+                     labels: bool = True) -> None:
         # Stack by each toast's real height, not a fixed row pitch: a quest-done
         # toast can run to four lines (a wrapped [h3] headline plus success prose),
         # and a fixed 50px step let the tall one overlap the toast below it. Only
@@ -563,10 +597,21 @@ class HUD(Widget):
         # transient news and the player should not miss one for having the log open.
         if stats:
             self.show_stats_panel(surface, self.scene.player)
+        # Nazwa lokacji i wskaźnik questa to ETYKIETY ŚWIATA, nie stan bohatera:
+        # gasną pod każdym panelem blokującym (handel, dialog, dziennik, pomoc),
+        # bo rysowały się NA panelu handlu i zasłaniały jego górną krawędź.
+        # Toasty zostają zawsze - to nowiny, których gracz nie ma prawa przegapić
+        # przez to, że akurat ma coś otwarte.
+        offset = 0
+        if labels:
+            # lokacja PRZED wskaźnikiem: wskaźnik liczy swoją szerokość z tego,
+            # ile miejsca zostawiło mu pudełko lokacji
             self.show_location_panel(surface)
+            tracker_h = self.show_quest_tracker(surface)
+            if tracker_h:
+                offset = tracker_h + _NOTIFICATION_GAP
         # Toasts LAST, so they land on top of the location name. Both live in the same
         # top band - toasts at the left edge, the location box centred - and a wide
         # toast reaches the centre, where the location panel used to bury it.
-        offset = 0
         for notification in self.scene.visible_notifications():
             offset += self.show_notification(surface, notification, offset) + _NOTIFICATION_GAP

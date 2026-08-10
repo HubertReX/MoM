@@ -31,6 +31,7 @@ from dialog.conditions import ConditionError, ConditionScope, check_condition
 from settings import (
     BARK_CHANCE,
     BARK_COOLDOWN_GLOBAL,
+    BARK_OWN_SECTION_CHANCE,
     BARK_COOLDOWN_NPC,
     BARK_MAX_ON_SCREEN,
     BARK_RADIUS_TILES,
@@ -185,16 +186,28 @@ class BarkDirector:
             owners.append(pool)
         return owners
 
-    def candidates_for(self, npc: "NPC") -> list[dict[str, str]]:
-        """Kwestie, których warunek zapala się dla tej postaci tu i teraz."""
+    def matching_by_owner(self, npc: "NPC") -> dict[str, list[dict[str, str]]]:
+        """Pasujące kwestie z podziałem na źródło: własna sekcja vs wspólna pula.
+
+        Podział jest potrzebny, bo obie strony NIE mają tej samej wagi (D5).
+        Wspólna pula jest z natury dłuższa od sekcji jednej postaci (13 linii
+        `VILLAGERS` wobec 5 Barmana), więc losowanie ze wspólnego worka topi
+        charakter postaci w „dzień dobry" - Barman mówił swoim głosem raz na
+        pięć odezwań i autor uznał, że nie mówi nim nigdy.
+        """
         barks = getattr(self.scene.game.conf, "barks", None) or {}
         context = NPCBarkContext(npc, self.scene.player)
-        matching: list[dict[str, str]] = []
+        out: dict[str, list[dict[str, str]]] = {}
         for owner in self.owners_for(npc):
-            for entry in barks.get(owner, ()):
-                if self._matches(entry, context, owner):
-                    matching.append(entry)
-        return matching
+            matching = [entry for entry in barks.get(owner, ())
+                        if self._matches(entry, context, owner)]
+            if matching:
+                out[owner] = matching
+        return out
+
+    def candidates_for(self, npc: "NPC") -> list[dict[str, str]]:
+        """Kwestie, których warunek zapala się dla tej postaci tu i teraz."""
+        return [entry for entries in self.matching_by_owner(npc).values() for entry in entries]
 
     def _matches(self, entry: dict[str, str], context: NPCBarkContext, owner: str) -> bool:
         condition = entry.get("condition") or "True"
@@ -210,9 +223,11 @@ class BarkDirector:
 
     def speak(self, npc: "NPC") -> bool:
         """Wybierz kwestię i każ ją powiedzieć. ``False`` = nie miała nic do powiedzenia."""
-        candidates = self.candidates_for(npc)
         key = npc.config_key
-        if not candidates:
+        by_owner = self.matching_by_owner(npc)
+        own = by_owner.get(key, [])
+        pool = [entry for owner, entries in by_owner.items() if owner != key for entry in entries]
+        if not own and not pool:
             # Postać bez pasującej kwestii nie ma za co być karana cooldownem
             # wsi - to nie jest bark, który się odbył. Ale nowina się zużywa,
             # inaczej próbowałaby w każdej klatce.
@@ -220,7 +235,7 @@ class BarkDirector:
             self.cooldowns[key] = BARK_COOLDOWN_NPC
             return False
 
-        entry = self._choose(candidates, key)
+        entry = self._choose_source(own, pool, key)
         text = get_msg(self.scene.game.conf.messages, entry["msg"])
         npc.bark.say(text, entry["msg"])
 
@@ -230,6 +245,23 @@ class BarkDirector:
         self._has_news.discard(key)
         self._in_range.add(key)
         return True
+
+    def _choose_source(self, own: list[dict[str, str]], pool: list[dict[str, str]],
+                       key: str) -> dict[str, str]:
+        """Najpierw ROZSTRZYGNIJ, czy postać mówi swoim głosem, potem losuj linię.
+
+        Dwa losowania zamiast jednego, bo inaczej o wadze decyduje długość
+        wspólnej puli: linia z sekcji postaci wypadałaby tym rzadziej, im
+        bogatsza jest pula statystów - a to odwrotnie, niż powinno działać.
+        ``BARK_OWN_SECTION_CHANCE`` to pokrętło dla autora: 1.0 = postać
+        z własną sekcją nigdy nie sięga po pulę, 0.0 = zachowanie sprzed
+        tej poprawki (wszystko w jednym worku).
+        """
+        if own and pool:
+            source = own if self.rng.random() < BARK_OWN_SECTION_CHANCE else pool
+        else:
+            source = own or pool
+        return self._choose(source, key)
 
     def _choose(self, candidates: list[dict[str, str]], key: str) -> dict[str, str]:
         """Losuj z zasianego generatora, z wykluczeniem ostatnio użytej kwestii (D5).

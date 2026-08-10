@@ -516,13 +516,70 @@ def load_tileset_map(scene: "Scene") -> TiledMap:
 
 #############################################################################################################
 
+def walkable_pos_near(scene: "Scene", pos: vec, max_tiles: int = 12) -> vec | None:
+    """Najbliższy PRZECHODNI kafel wokół `pos` (albo ten sam, jeśli już jest wolny).
+
+    Czyta `path_finding_grid` tak samo jak `scene/agent_api.point_near`: dodatnia
+    wartość to ściana, zero i wartości ujemne to koszt kroku po czymś, po czym da
+    się chodzić. Bez A* - postać dopiero jest stawiana na mapie, więc nie ma
+    jeszcze skąd liczyć osiągalności; chodzi wyłącznie o to, żeby nie wylądowała
+    W ŚRODKU drzewa.
+
+    Kafel liczy `NPC.get_tileset_coord`, a nie gołe `pos // TILE_SIZE`: pozycja
+    postaci to punkt `midbottom`, więc dla `y` na granicy kafli (a punkty wejścia
+    stoją dokładnie na granicy) naiwne dzielenie wskazuje kafel POD nogami -
+    i legalny punkt wejścia wychodzi wtedy „w ścianie".
+    """
+    grid = getattr(scene, "path_finding_grid", None)
+    if not grid:
+        return None
+    rows, cols = len(grid), len(grid[0])
+    tile = scene.player.get_tileset_coord(vec(pos))
+    col0, row0 = int(tile.x), int(tile.y)
+
+    def free(row: int, col: int) -> bool:
+        return 0 <= row < rows and 0 <= col < cols and grid[row][col] <= 0
+
+    if free(row0, col0):
+        return None                     # stoi na wolnym kaflu - nie ma czego ratować
+
+    for ring in range(1, max_tiles + 1):
+        for drow in range(-ring, ring + 1):
+            for dcol in range(-ring, ring + 1):
+                # tylko obwód pierścienia - wnętrze sprawdziły poprzednie obroty
+                if max(abs(drow), abs(dcol)) != ring:
+                    continue
+                row, col = row0 + drow, col0 + dcol
+                if free(row, col):
+                    return vec(col * TILE_SIZE + TILE_SIZE // 2,
+                               row * TILE_SIZE + TILE_SIZE // 2)
+    return None
+
+
 def set_entry_point(scene: "Scene") -> None:
-    default = tuple_to_vector(scene.map_view.map_rect.center)
+    # Pozycja awaryjna to punkt `start` mapy, a NIE jej geometryczny środek:
+    # środek BLUNDERHAVEN wypada w środku lasu, gdzie bohater po prostu nie może
+    # się ruszyć - awaria wyglądała wtedy jak zawieszona gra, a nie jak błąd.
+    fallback = scene.entry_points.get("start")
+    default = vec(fallback) if fallback is not None else tuple_to_vector(scene.map_view.map_rect.center)
     result = scene.player.set_entry_point(scene.entry_point, default)
+
+    # Siatka bezpieczeństwa niezależna od powodu: gdziekolwiek bohater wylądował -
+    # punkt wejścia, `start`, środek mapy - nie wolno go zostawić w ścianie.
+    # `None` znaczy „stoi na wolnym kaflu", czyli zwykły przypadek.
+    safe = walkable_pos_near(scene, scene.player.pos)
+    if safe is not None:
+        print(f"[map] pozycja startowa '{scene.entry_point}' na '{scene.current_map}' "
+              f"wypadła w ścianie ({scene.player.pos}) - przesuwam na {safe}")
+        scene.player.pos = safe
+        scene.player.adjust_rect()
+
+    # PO ewentualnym przesunięciu: `camera.target` trzyma REFERENCJĘ do wektora
+    # pozycji, więc podpięcie starego obiektu zostawiłoby kamerę tam, gdzie
+    # bohatera już nie ma
     scene.camera.target = scene.player.pos
 
     if not result:
-        print("\n[red]ERROR![/] no entry point found!\n")
         scene.add_notification(_("scene.error_no_entry"),
                                NotificationTypeEnum.debug)
 

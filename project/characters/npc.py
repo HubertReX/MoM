@@ -185,6 +185,13 @@ class NPC(pygame.sprite.Sprite):
         # image/mask przypisuje animation.load_sprites - deklaracja tutaj dla mypy
         self.image: pygame.surface.Surface
         self.mask: pygame.mask.Mask
+        # `PyscrollGroup` podaje tę flagę do blitu sprite'a. Postać dostaje
+        # `set_alpha` przy miganiu po trafieniu (`animation.animate`), a to
+        # przestawia SDL na ścieżkę "copy": alfa ŹRÓDŁA ląduje w `game.canvas`
+        # i wokół migającej postaci mruga czarny prostokąt. Ta sama pułapka
+        # i to samo lekarstwo, co przy `BarkSprite` i cząstkach - patrz
+        # „Pułapka (przezroczystość)" w `project/AGENTS.md`.
+        self.blendmode: int = pygame.BLEND_ALPHA_SDL2
         # sprite sheet -> klatki animacji, maski, avatar i pierwsza klatka
         animation.load_sprites(self)
 

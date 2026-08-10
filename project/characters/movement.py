@@ -534,8 +534,15 @@ def set_entry_point(npc: "NPC", entry_point: str, default: vec) -> bool:
         npc.adjust_rect()
     else:
         result = False
-        print(f"\n[red]ERROR![/] [char]{npc.model.name_EN}[/] no entry point found!\n")
+        # Komunikat MUSI nazywać brakujący punkt i te, które mapa zna. Bez tego
+        # jedyny ślad po awarii to bohater postawiony na pozycji awaryjnej -
+        # a gracz widzi tylko, że stoi w lesie i nie może się ruszyć.
+        known = ", ".join(sorted(npc.scene.entry_points)) or "brak"
+        print(f"\n[red]ERROR![/] [char]{npc.model.name_EN}[/] entry point "
+              f"'{entry_point}' nie istnieje na mapie '{npc.scene.current_map}' "
+              f"(mapa zna: {known})\n")
         npc.pos = default
+        npc.adjust_rect()
 
     return result
 

@@ -1042,15 +1042,17 @@
                 "type": "screenshot_review",
                 "target": "hud_with_tracker",
                 "expected_state": "GAMEPLAY",
-                "expect": "Normal gameplay in the village. Under the centred location-name box at the top of the screen there is a SECOND, smaller box with one line of text naming the current quest goal - this is the quest tracker.",
+                "expect": "Normal gameplay in the village. In the TOP-LEFT corner there is a small box with the current quest goal (the quest tracker), the location name sits in its own box centred at the top, and the stats panel is in the top-right corner. The centre of the screen is free of HUD boxes.",
                 "expected_elements": [
+                    "small quest-goal box in the top-left corner",
                     "centred box at the top with the location name",
-                    "a smaller box directly under it with a single line of quest-goal text"
+                    "stats panel in the top-right corner"
                 ],
                 "ui_quality_checks": [
-                    "the tracker line is fully inside its box and does not touch or cross the frame",
-                    "the tracker box is clearly narrower/shorter than the location box above it and does not overlap it",
-                    "the tracker box does not overlap the stats panel in the top-right corner"
+                    "the tracker text is fully inside its box and does not touch or cross the frame",
+                    "the tracker box does not overlap or touch the centred location box",
+                    "the tracker box does not overlap the stats panel in the top-right corner",
+                    "nothing but the location box occupies the top-centre of the screen"
                 ]
             },
             {

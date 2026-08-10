@@ -830,6 +830,10 @@ Rzeczy, które łatwo zepsuć:
   wypada tak, a raz inaczej, unieważnia każdą asercję scenariusza agentowego (A04).
 - **Ostatnio użyta kwestia jest wykluczona z następnego losowania** u tej samej postaci -
   bez tego Barman powtarza ten sam żart dwa razy pod rząd i wychodzi z tego usterka.
+- **Najpierw losuje się ŹRÓDŁO, potem linia** (`_choose_source`, `BARK_OWN_SECTION_CHANCE`).
+  Jeden wspólny worek dawał wagę proporcjonalną do długości puli: 5 linii Barmana wobec
+  13 linii `VILLAGERS` = własny głos raz na pięć odezwań, czyli „Barman nigdy nie mówi
+  swoich barków" w odbiorze autora.
 - **Trzeci bark przepada, nie czeka w kolejce.** Bark jest tłem, nie wiadomością; kolejka
   sprawiłaby, że wieś odzywa się seriami długo po tym, jak gracz stamtąd odszedł.
 

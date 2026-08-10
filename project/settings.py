@@ -580,6 +580,12 @@ BARK_FADE_DURATION: float = 0.8
 #: gracza w promień. Bez tego wieś tyka jak zegarek: przejście obok kogokolwiek
 #: ZAWSZE dawałoby kwestię.
 BARK_CHANCE: float = 0.55
+#: Szansa, że postać z WŁASNĄ sekcją `## Barki` powie własną kwestię, a nie linię
+#: ze wspólnej puli - sprawdzana tylko wtedy, gdy w danej chwili pasuje coś z obu
+#: stron. Bez tego o wadze decydowała długość puli: 5 linii Barmana wobec 13 linii
+#: `VILLAGERS` dawało jego własny głos raz na pięć odezwań, czyli praktycznie nigdy.
+#: 1.0 = postać z własną sekcją nigdy nie sięga po pulę, 0.0 = wszystko w jednym worku.
+BARK_OWN_SECTION_CHANCE: float = 0.7
 
 # ---------------------------------------------------------------------------
 # Emoji z rutyn (H01/D6) - drugi, niezależny kanał ambientu

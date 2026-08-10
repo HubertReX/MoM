@@ -583,6 +583,11 @@ class ItemSprite(Object):
         # self.gid = gid
         self.name = name
         self.model = model
+        # Ta sama flaga i ten sam powód, co w `BarkSprite`: broń bohatera dostaje
+        # `set_alpha` przy miganiu po trafieniu (`characters/animation.py`), a to
+        # przestawia SDL na ścieżkę "copy", która wpisuje alfę źródła do
+        # `game.canvas` - wokół sprite'a robi się czarny prostokąt.
+        self.blendmode: int = pygame.BLEND_ALPHA_SDL2
         if model.type == ItemTypeEnum.weapon:
             self.image_directions: dict[str, pygame.Surface] = {
                 "down": image[0],

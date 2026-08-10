@@ -80,6 +80,15 @@ self._location_panel.draw(surface, surf, anchor="midtop", offset=(0, HUD_EDGE))
   Argument to budżet **pudełka**, gdy ekran nie jest jedynym ograniczeniem: nazwa
   lokacji jest wyśrodkowana, a w tym samym pasie stoi panel statystyk, więc jej
   budżet to `WIDTH - 2 * (szerokość statystyk + 2 * HUD_EDGE)`.
+- **Górny pas ekranu ma trzy kolumny i środek zostaje pusty.** Lewy górny róg to
+  wskaźnik questa (H01/D7), a pod nim stos toastów; środek to nazwa lokacji; prawy
+  górny róg to statystyki. Wskaźnik liczy swoją szerokość jako MINIMUM z dwóch
+  budżetów - do panelu statystyk i do lewej krawędzi wyśrodkowanego pudełka
+  lokacji - bo przy wąskim oknie wjeżdżał pod nazwę mapy. Toasty zaczynają się pod
+  wskaźnikiem (`show_quest_tracker` zwraca wysokość pudełka), a gdy nie ma
+  śledzonego questa, jadą do samej góry. Nazwa lokacji i wskaźnik gasną pod każdym
+  panelem blokującym (handel, dialog, dziennik, pomoc) - rysowały się NA panelu
+  handlu; toasty zostają zawsze, bo to nowiny.
 - **`render_tight` zamiast przycinania gotowego surface'u.** `subsurface((0, 0,
   content_width, h))` działa tylko dla tekstu do lewej - przy `[center]` ucina
   końcówkę (tak zniknęło „klepka" z „Tawerna Brakująca klepka"). `render_tight`

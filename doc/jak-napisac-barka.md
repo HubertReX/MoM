@@ -61,22 +61,44 @@ Pula dla mieszkańców bez własnego pliku postaci.
 - Mu?
 ```
 
+**Własna sekcja waży więcej niż pula.** Gdy w danej chwili pasuje coś z obu stron,
+gra najpierw rzuca kością o ŹRÓDŁO (`BARK_OWN_SECTION_CHANCE` w `settings.py`,
+domyślnie 0,7 na rzecz własnej sekcji), a dopiero potem losuje linię w wybranym
+źródle. Bez tego o wadze decydowałaby długość puli: 5 własnych linii Barmana
+wobec 13 linii `VILLAGERS` znaczyło, że własnym głosem mówi raz na pięć odezwań.
+Wniosek dla piszącego: **nie trzeba dopisywać postaci dziesięciu linii, żeby ją
+usłyszeć** - wystarczy, że ma choćby jedną pasującą.
+
 ## Warunki
 
-Zakres `bark` zna to, co dialog, plus cztery rzeczy o świecie:
+To **cały** słownik warunków w grze - te same nazwy działają w opcjach dialogowych
+i w questach, więc nie ma po co skakać między plikami. Kolumna „gdzie" mówi, w czym
+wolno użyć danej nazwy: `bark` = ten plik, `dialog` = opcja dialogowa w pliku
+postaci, `quest` = `Test:` i `Postęp:` w pliku misji.
 
-| Warunek                                              | Znaczenie                         |
-| ---------------------------------------------------- | --------------------------------- |
-| `time_of_day("morning"/"day"/"evening"/"night")`     | pora dnia na zegarze świata       |
-| `activity("sleep"/"stand"/"wander"/"patrol"/"idle")` | co mówiący akurat robi wg rutyny  |
-| `at("type:work")`, `at("location:Tavern")`           | **który krok rutyny** akurat trwa |
-| `on_map("KLUCZ_MAPY")`                               | na której mapie stoi mówiący      |
-| `sentiment > 60`                                     | sentyment **mówiącego** do gracza |
-| `visited("WĘZEŁ")`, `visited("POSTAĆ", "WĘZEŁ")`     | czy węzeł dialogu był odwiedzony  |
-| `has_item("KLUCZ")`, `item_count("KLUCZ") >= 2`      | ekwipunek gracza                  |
-| `quest_done("KLUCZ")`                                | czy quest ukończony               |
+| Warunek                                              | Gdzie                  | Znaczenie                                                     |
+| ---------------------------------------------------- | ---------------------- | ------------------------------------------------------------- |
+| `time_of_day("morning"/"day"/"evening"/"night")`     | bark                   | pora dnia na zegarze świata (granice 6/9/17/20)               |
+| `activity("sleep"/"stand"/"wander"/"patrol"/"idle")` | bark                   | co mówiący akurat robi wg rutyny                              |
+| `at("type:work")`, `at("location:Tavern")`           | bark                   | **który krok rutyny** akurat trwa (pole `at` z `routines.toml`) |
+| `on_map("KLUCZ_MAPY")`                               | bark                   | na której mapie stoi mówiący                                  |
+| `sentiment > 60`                                     | bark, dialog           | sentyment **mówiącego** do gracza (liczba 0-100)              |
+| `visited("WĘZEŁ")`                                   | bark, dialog           | czy gracz był w tym węźle u **mówiącego**                     |
+| `visited("POSTAĆ", "WĘZEŁ")`                         | bark, dialog, quest    | …u wskazanej postaci (w queście **obowiązkowe** dwa argumenty) |
+| `has_item("KLUCZ")`                                  | bark, dialog, quest    | czy gracz ma przedmiot                                        |
+| `item_count("KLUCZ") >= 2`                           | bark, dialog, quest    | ile sztuk ma gracz (liczba)                                   |
+| `quest_done("KLUCZ")`                                | bark, dialog, quest    | czy quest ukończony                                           |
+| `selected("KLUCZ_OPCJI")`                            | dialog                 | którą opcję gracz wybrał w tej rozmowie                       |
 
-Łączy się je przez `and`, `or`, `not` i nawiasy. Bez warunku bark leci zawsze.
+Łączy się je przez `and`, `or`, `not` i nawiasy. Liczby (`sentiment`, `item_count`)
+porównuje się przez `==`, `!=`, `<`, `<=`, `>`, `>=`. Klucze pisze się **w cudzysłowie**,
+dokładnie tak, jak brzmi klucz encji (`golden_key`, `BARMAN_ABSINTHRAYNER`,
+`Q01_S01_LEARN_ABOUT_CURSE`). Bez warunku bark leci zawsze.
+
+Wszystko poza tą tabelą jest odrzucane przy imporcie z numerem linii: nie ma
+odwołań do pól gry (`scene.hour`), indeksów, wywołań w wywołaniu ani zmiennych.
+Literówkę w **kluczu** łapie `just validate-world` (reguła 20) - i to jest ważne,
+bo sam warunek z literówką jest składniowo poprawny, tylko nigdy nie zapala.
 
 **Nie myl `time_of_day` z `activity`.** Zegar mówi, która jest godzina na świecie;
 `activity()` mówi, co robi **ta** postać. Barman ma lunch o innej porze niż Bart,

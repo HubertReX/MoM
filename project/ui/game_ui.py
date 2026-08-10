@@ -387,5 +387,11 @@ class GameUI:
             panel.draw(surface)
 
         # notifications always on top; the stats box hides behind a full-screen panel
-        # (the journal or the help reference)
-        self.hud.draw_overlay(surface, stats=not (self.is_open(QuestPanel) or self.is_open(HelpPanel)))
+        # (the journal or the help reference), and the world labels (location name +
+        # quest tracker) hide behind ANY blocking panel - they were drawing on top of
+        # the trade screen and covering its top edge
+        self.hud.draw_overlay(
+            surface,
+            stats=not (self.is_open(QuestPanel) or self.is_open(HelpPanel)),
+            labels=not blocking,
+        )

@@ -96,6 +96,41 @@ trzy rzeczy, których headless nie pokazał:
   nagłówka **SZCZEGÓŁY**, i pokazuje się tam dla questa, którego szczegóły akurat widać.
   Licznik/`manual` zostaje widoczny obok symbolu - wcześniej znacznik go kasował.
 
+### Druga tura (ten sam dzień, po zagraniu z poprawkami)
+
+- **Miganie przy walce** to ta sama pułapka przezroczystości, co czarne prostokąty
+  barków: `characters/animation.py` woła `set_alpha` na sprite'cie postaci (i broni)
+  przy oszołomieniu po trafieniu. `NPC` i `ItemSprite` dostały więc
+  `blendmode = BLEND_ALPHA_SDL2` - tak samo jak `BarkSprite`.
+- **Barman „nigdy" nie mówił swoich barków** - i nie była to awaria konfiguracji.
+  Wszystko działało, tylko losowanie szło z JEDNEGO worka: 5 jego linii wobec 13 linii
+  puli `VILLAGERS` = własny głos raz na pięć odezwań (zmierzone: 78/400). Teraz gra
+  rzuca najpierw o **źródło** (`BARK_OWN_SECTION_CHANCE`, domyślnie 0,7 na rzecz
+  własnej sekcji), a dopiero potem o linię - 283/400. Wniosek dla autora: postaci
+  nie trzeba dopisywać dziesięciu linii, żeby ją usłyszeć.
+- **Wskaźnik questa przeniesiony w LEWY GÓRNY róg**, a stos toastów zaczyna się pod
+  nim (bez śledzonego questa toasty jadą do samej góry, jak przedtem). Powód autora:
+  górny środek miał już nazwę lokacji, a dwa pudełka jedno pod drugim zasłaniały
+  centralną część ekranu, czyli miejsce akcji.
+- **Etykiety świata gasną pod panelem blokującym.** Nazwa lokacji i wskaźnik rysowały
+  się NA ekranie handlu i zasłaniały jego górną krawędź. Teraz `draw_overlay` ma
+  osobną flagę `labels`, wyłączaną przy każdym panelu z `_BLOCKING` (handel, dialog,
+  dziennik, pomoc). Toasty zostają - to nowiny, nie ozdoba.
+- **„Gracz po wyjściu z tawerny ląduje w lesie i nie może się ruszyć"** to pozycja
+  awaryjna z `map_loader.set_entry_point`: gdy mapa nie zna nazwy punktu wejścia,
+  bohater szedł na **geometryczny środek mapy**, a środek BLUNDERHAVEN (560, 560)
+  wypada w środku lasu, gdzie nie ma ani jednego wolnego kafla w promieniu 25 px
+  (sprawdzone w `walls`). Trzy zmiany: pozycją awaryjną jest punkt `start` mapy,
+  **każda** pozycja startowa jest sprawdzana przeciw siatce A* i w razie czego
+  przesuwana na najbliższy wolny kafel, a komunikat błędu nazywa wreszcie brakujący
+  punkt i te, które mapa zna (`entry point 'X' nie istnieje na mapie 'Y'`).
+  **Wyzwalacza nie udało się odtworzyć** (22 cykle drzwiami tam i z powrotem, bez
+  jednego trafienia), więc to jest naprawa skutku plus instrumentacja przyczyny:
+  następne wystąpienie zostawi w logu nazwę, której zabrakło. Podejrzani, na których
+  warto wtedy spojrzeć: szablon labiryntu ma w wyjściu `return_ep='0'`, a
+  `restore_map` nadpisuje `return_map`/`return_entry_point` zaraz po tym, jak
+  `go_to_map` je ustawiło.
+
 Przy okazji, bo od treści barków zrobiło się czerwono: `scripts/rename_entity.py`
 nie ruszał sekcji `barks` w `config.json`, więc rename mapy zostawiał w warunku
 `on_map("STARA_NAZWA")` (i `test_rename_entity` to złapał). Rename obsługuje teraz

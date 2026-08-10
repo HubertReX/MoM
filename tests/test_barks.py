@@ -163,6 +163,44 @@ def test_own_section_and_pool_sum() -> None:
               ["bark.BART.001", "bark.VILLAGERS.001"])
 
 
+def test_the_own_section_outweighs_the_shared_pool() -> None:
+    """Waga własnej sekcji NIE może zależeć od długości wspólnej puli.
+
+    Barman ma 5 własnych linii, `VILLAGERS` ma ich 13 - przy losowaniu z jednego
+    worka mówił swoim głosem raz na pięć odezwań, więc autor uznał, że nie mówi
+    nim w ogóle. Rozstrzygamy najpierw ŹRÓDŁO (`BARK_OWN_SECTION_CHANCE`), potem
+    linię w źródle.
+    """
+    npc = FakeNpc("BARMAN", pool="VILLAGERS")
+    director = _director(
+        [npc],
+        {"BARMAN": _entries("bark.BARMAN.001", "bark.BARMAN.002"),
+         "VILLAGERS": _entries(*[f"bark.VILLAGERS.{i:03d}" for i in range(1, 14)])},
+        seed=None,
+    )
+    by_owner = director.matching_by_owner(npc)
+    own = by_owner["BARMAN"]
+    pool = by_owner["VILLAGERS"]
+
+    own_hits = sum(
+        1 for _ in range(400)
+        if director._choose_source(own, pool, "BARMAN")["msg"].startswith("bark.BARMAN.")
+    )
+
+    # przy wadze 0.7 i 400 próbach margines jest szeroki, ale wyklucza zarówno
+    # stary rozkład (~13%), jak i „pula przestała działać" (100%)
+    assert_true(200 < own_hits < 360, f"własnych kwestii: {own_hits}/400")
+
+
+def test_a_character_without_an_own_section_still_uses_the_pool() -> None:
+    """Statysta nie ma własnej sekcji - waga nie może go uciszyć."""
+    npc = FakeNpc("BART", pool="VILLAGERS")
+    director = _director([npc], {"VILLAGERS": _entries("bark.VILLAGERS.001")}, seed=None)
+
+    assert_eq(director.speak(npc), True)
+    assert_eq(npc.bark.message_key, "bark.VILLAGERS.001")
+
+
 def test_an_empty_pool_cell_is_not_an_error() -> None:
     """Postać bez puli bierze tylko swoje - i to jest normalny stan."""
     npc = FakeNpc("BART")
@@ -443,6 +481,8 @@ def test_active_reports_who_speaks_and_with_what() -> None:
 if __name__ == "__main__":
     tests = [
         ("własna sekcja i pula sumują się", test_own_section_and_pool_sum),
+        ("własna sekcja waży więcej niż pula", test_the_own_section_outweighs_the_shared_pool),
+        ("statysta bez sekcji nadal bierze z puli", test_a_character_without_an_own_section_still_uses_the_pool),
         ("pusta pula nie jest błędem", test_an_empty_pool_cell_is_not_an_error),
         ("postać bez kwestii milczy", test_a_character_with_nothing_to_say_stays_silent),
         ("warunki filtrują kandydatów", test_conditions_filter_the_candidates),
