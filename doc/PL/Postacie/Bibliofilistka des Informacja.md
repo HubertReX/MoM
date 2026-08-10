@@ -2,6 +2,8 @@
 aliases:
   - MISS_INFORMATION
   - Mariolka
+  - Bibliofilistka
+  - Bibliotekarka
 alternative: Dezinformacja
 EN: "[[Bibliofilistka des Informacja|Miss Information]]"
 inspirations:

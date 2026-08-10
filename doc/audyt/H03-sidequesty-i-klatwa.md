@@ -239,19 +239,19 @@ przy udźwigu, to jedyna sensowna rola tej mechaniki w prologu).
 
 #### Q05_S02 - Dotknij tej zbroi
 
-**Haczyk.** Kowal słyszał, że Malachi psuje wszystko, czego dotknie. Chce to sprawdzić
+**Haczyk.** [[Kowal]] słyszał, że ==Malachi== psuje wszystko, czego dotknie. Chce to sprawdzić
 na swoim najlepszym wyrobie - bo od 30 lat nikt nie powiedział mu prawdy o jego pracy.
 
 **Mechanika:** czysty dialog, bez przedmiotów. Dostępny **tylko** gdy
 `quest_done("Q01_S01_LEARN_ABOUT_CURSE")` - to jest quest, którego nie ma, dopóki
 plotka nie ruszy.
 
-**Twist.** Zbroja rozsypuje się. Kowal milczy, płaci za milczenie - i sentyment **rośnie**,
-bo Malachi jest pierwszym człowiekiem od 30 lat, który dał mu szczerą informację
-zwrotną. Kowal nie umie tego nazwać, więc płaci.
+**Twist.** Zbroja rozsypuje się. [[Kowal Kłamca|Kowal]] milczy, płaci za milczenie - i sentyment **rośnie**,
+bo ==Malachi== jest pierwszym człowiekiem od 30 lat, który dał mu szczerą informację
+zwrotną. [[Kowal Kłamca|Kowal]] nie umie tego nazwać, więc płaci.
 
 Klątwa nie karze mechanicznie (W1) - ale **plotka i tak idzie dalej**: wieczorem
-Barman już wie, mimo że Kowal z nikim nie rozmawia. Tego nie tłumaczymy. To jest żart.
+[[Barman Absyntnent|Barman]] już wie, mimo że [[Kowal Kłamca|Kowal]] z nikim nie rozmawia. Tego nie tłumaczymy. To jest żart.
 
 ```
 Kowal: Podobno psujesz wszystko, czego dotkniesz.
@@ -273,13 +273,13 @@ Miecz: Zapłacił ci za milczenie. Zapamiętaj to - to jest
 
 ### Q06 - „Dla dobra nauki" (Zielarka Zmora)
 
-Zielarka nazywa nauką wszystko, co robi, łącznie z rzeczami, za które w mieście byłaby
+[[Zielarka Zmora|Zielarka]] nazywa nauką wszystko, co robi, łącznie z rzeczami, za które w mieście byłaby
 sądzona. **Nagroda parasola:** `life_pot` x2 i wiedza, która ustawia Akt 2.
 
 #### Q06_S01 - Skrzynka Mariolki
 
-**Haczyk.** Po uczennicy (tej, która została Bibliofilistką des Informacja) została
-zamknięta skrzynka z zapiskami. Zielarka nigdy jej nie otworzyła. Klucza nie pamięta.
+**Haczyk.** Po uczennicy ([[Bibliofilistka des Informacja]]) została jej
+zamknięta skrzynka z zapiskami. [[Zielarka Zmora|Zielarka]] nigdy jej nie otworzyła. Klucza nie pamięta.
 
 **Mechanika (nowa z H01):** zamknięta skrzynia z `requires_item="golden_key"`.
 Klucz leży w piwnicy tawerny (`Q04_S03`) - **łańcuchy się przecinają**, i to jest
@@ -298,25 +298,25 @@ Miecz: Bo przeczytałeś ją głośno, a ja mam bardzo dobrą pamięć.
 ```
 
 To zdanie **zapala Akt 2** i jest najważniejszą linijką w całym H03: od tej chwili
-klątwa nie jest chorobą do wyleczenia, tylko rzeczą do przekazania - a Malachi zna
+klątwa nie jest chorobą do wyleczenia, tylko rzeczą do przekazania - a ==Malachi== zna
 już całkiem sporo osób.
 
 **Nagroda:** `max_health=+10`, `sentiment=+15 @POTIONEER_PUZZLEMINT`.
-**Requires:** `Q03_S01_WHO_HAS_MORE_KNOWLEDGE` (musi wiedzieć, kim była Mariolka).
+**Requires:** `Q03_S01_WHO_HAS_MORE_KNOWLEDGE` (musi wiedzieć, kim była [[Bibliofilistka des Informacja|Mariolka]]).
 
-**Do rozstrzygnięcia u autora:** czy ta kartka ma być tu, czy dopiero u Bibliofilistki
+**Do rozstrzygnięcia u autora:** czy ta kartka ma być tu, czy dopiero u [[Bibliofilistka des Informacja|Bibliofilistka]]
 w Akcie 2. Tu jest wcześniej i mocniej, ale zjada część niespodzianki Aktu 2.
 
 #### Q06_S02 - Pierwszy testowany człowiek
 
-**Haczyk.** Zielarka testowała miksturę na kurach. Kury zdechły. Malachi i tak ma pecha,
+**Haczyk.** [[Zielarka Zmora|Zielarka]] testowała miksturę na kurach. Kury zdechły. ==Malachi== i tak ma pecha,
 więc gorzej nie będzie - i płaci z góry.
 
 **Mechanika:** dialog + efekty węzła (`health_lost` / `health_restored`), zero nowego kodu.
 
-**Twist - i drugi silnik przepowiedni.** Mikstura działa **bez zarzutu**. Zielarka nie
+**Twist - i drugi silnik przepowiedni.** Mikstura działa **bez zarzutu**. [[Zielarka Zmora|Zielarka]] nie
 przyjmuje wniosku, że receptura była dobra, tylko ogłasza, że **klątwa zjadła truciznę** -
-a wieś to podchwytuje. Od tej pory ludzie zaczynają prosić Malachiego, żeby próbował
+a wieś to podchwytuje. Od tej pory ludzie zaczynają prosić ==Malachiego==, żeby próbował
 rzeczy przed nimi, i to zostaje w barkach na stałe.
 
 ```
@@ -334,8 +334,8 @@ Zielarka: Nie bądź śmieszny.
 
 Barki odblokowane tym questem (do `doc/PL/Barki.md`):
 
-- Bart: „Panie, spróbuje pan tego sera? Tak na wszelki wypadek."
-- Marysia: „Mąż mówi, że jak pan przejdzie koło studni, to woda się dłużej trzyma."
+- [[Bart]]: „_Panie, spróbuje pan tego sera? Tak na wszelki wypadek._"
+- [[Marysia]]: „_Mąż mówi, że jak pan przejdzie koło studni, to woda się dłużej trzyma._"
 
 **Nagroda:** `money=100`, `life_pot`, `sentiment=+10 @POTIONEER_PUZZLEMINT`.
 **Requires:** `Q01_S01_LEARN_ABOUT_CURSE` (bez plotki ten quest nie ma prawa istnieć).
@@ -344,18 +344,17 @@ Barki odblokowane tym questem (do `doc/PL/Barki.md`):
 
 ## Barki - co napisać i gdzie
 
-Format i mechanizm: [H01](H01-barki-emoji-wskaznik-questa.md), etap 1. Tutaj lista
-tego, co ma powstać treściowo.
+Format i mechanizm: [H01](H01-barki-emoji-wskaznik-questa.md), etap 1. Tutaj lista tego, co ma powstać treściowo.
 
-| Plik | Kto | Ile linii (cel) |
-| --- | --- | --- |
-| `doc/PL/Postacie/Barman Absyntnent.md` | Barman | 10-14 |
-| `doc/PL/Postacie/Kowal Kłamca.md` | Kowal | 6-8, w tym dwie samo „..." |
-| `doc/PL/Postacie/Zielarka Zmora.md` | Zielarka | 8-10 |
-| `doc/PL/Postacie/Miecz Ciętej-riposty.md` | Miecz | 15-20 (komentuje wszystko) |
-| `doc/PL/Barki.md`, pula `VILLAGERS` | Bart, Johny, Marry, Fred, Rob, Robin | 15-20 |
-| `doc/PL/Barki.md`, pula `FARM_ANIMALS` | krowa, świnia, koń, kury | 6-8 |
-| `doc/PL/Barki.md`, pula `PETS` | psy, kot | 4-6 |
+| Plik                                      | Kto                                                          | Ile linii (cel)            |
+| ----------------------------------------- | ------------------------------------------------------------ | -------------------------- |
+| `doc/PL/Postacie/Barman Absyntnent.md`    | [[Barman Absyntnent\|Barman]]                                | 10-14                      |
+| `doc/PL/Postacie/Kowal Kłamca.md`         | [[Kowal Kłamca\|Kowal]]                                      | 6-8, w tym dwie samo „..." |
+| `doc/PL/Postacie/Zielarka Zmora.md`       | [[Zielarka Zmora\|Zielarka]]                                 | 8-10                       |
+| `doc/PL/Postacie/Miecz Ciętej-riposty.md` | [[Miecz Ciętej-riposty\|Miecz]]                              | 15-20 (komentuje wszystko) |
+| `doc/PL/Barki.md`, pula `VILLAGERS`       | [[Bart]], [[Johny]], [[Marry]], [[Fred]], [[Rob]], [[Robin]] | 15-20                      |
+| `doc/PL/Barki.md`, pula `FARM_ANIMALS`    | krowa, świnia, koń, kury                                     | 6-8                        |
+| `doc/PL/Barki.md`, pula `PETS`            | psy, kot                                                     | 4-6                        |
 
 Nazwa puli to **nagłówek sekcji**, dosłownie, w `SCREAMING_SNAKE` - tak jak klucz questa
 jest nagłówkiem sekcji w pliku questa. Kto z której puli bierze, mówi kolumna `barks`
@@ -371,7 +370,7 @@ Wytyczne, żeby barki nie zamieniły się w szum:
 - **Trzy warstwy na każdą postać:** neutralne (zawsze), zależne od pory dnia lub
   czynności, zależne od stanu świata (klątwa, ukończone questy).
 - **Zwierzęta mówią mało i zawsze to samo** - w tym tkwi żart. Krowa ma trzy linijki
-  i wszystkie brzmią „Muuu". Miecz komentuje **rzadko**, bo to on jest tu puentą.
+  i wszystkie brzmią „_Muuu_". Miecz komentuje **rzadko**, bo to on jest tu puentą.
 
 ## Co musi powstać poza tekstem
 
@@ -390,7 +389,7 @@ Rzeczy, których agent nie zrobi za autora:
 Nowa mapa oznacza komplet z C02: klucz `SCREAMING_SNAKE`, para plików `.md` PL i EN
 w `doc/PL/Lokalizacje/` i `doc/EN/Locations/`, wpis w sekcji `[map]` obu plików locale,
 wpis w `audio.toml`, punkty wejścia i drzwi zgodne z regułą 14 walidatora.
-Ściąga „gdzie używam jakiego klucza" jest w `project/AGENTS.md`.
+Ściąga „_gdzie używam jakiego klucza_" jest w `project/AGENTS.md`.
 
 ## Kolejność pisania (propozycja)
 
@@ -448,7 +447,7 @@ wpis w `audio.toml`, punkty wejścia i drzwi zgodne z regułą 14 walidatora.
 3. **Kartka Mariolki** („klątwę można tylko komuś oddać") - tu w Akcie 1, czy dopiero
    u Bibliofilistki w Akcie 2?
 4. **Piwnica** - ile poziomów, ilu szczurów, czy jest tam coś poza `golden_key`?
-5. **Nazwy parasoli** („Sprawy najwyższej wagi", „Nikomu ani słowa", „Dla dobra nauki") -
+5. **Nazwy parasoli** („_Sprawy najwyższej wagi_", „_Nikomu ani słowa_", „_Dla dobra nauki_") -
    zostają, czy masz lepsze?
 6. **Kot** - czy zostaje podejrzany do końca Aktu 1 (osobny bieg żartu w barkach),
    czy sprawa się zamyka wraz z questem?
