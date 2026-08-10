@@ -1,4 +1,5 @@
 import json
+import re as _re
 from collections import namedtuple
 
 try:
@@ -549,6 +550,67 @@ DAY_PHASES: tuple[tuple[str, float], ...] = (
 # a nie zobaczyć go uciętego w grze.
 BARK_MAX_LINES: int = 2
 BARK_LINE_CHARS: int = 28
+
+# Kolor obrysu barka. Ten sam, co pod imieniem postaci (`HealthBar.set_bar`) -
+# jedno źródło prawdy dla napisów wtapianych w świat. Czytelność na trawie
+# i na podłodze tawerny weryfikuje autor na żywym ekranie: zrzut headless nie
+# jest wierny dla kompozycji całej klatki.
+BARK_SHADOW_COLOR: tuple[int, int, int] = (84, 135, 137)
+
+# Nastawy zachowania. Wszystkie do empirycznego dokręcenia przez autora - dlatego
+# są tutaj, a nie zaszyte w `BarkDirector`.
+#: promień zaczepki „na zbliżenie", w kaflach
+BARK_RADIUS_TILES: float = 3.5
+#: szerszy promień dla barka wynikającego z ZMIANY KROKU RUTYNY: postać właśnie
+#: ruszyła na lunch i ma o tym coś do powiedzenia, więc wolno jej zagadać
+#: z dalszej odległości - byle gracz to widział
+BARK_ROUTINE_RADIUS_TILES: float = 7.0
+#: ile sekund ta sama postać milczy po swoim barku
+BARK_COOLDOWN_NPC: float = 60.0
+#: ile sekund milczy CAŁA wieś po dowolnym barku - inaczej wejście w tłum
+#: odpala pięć naraz
+BARK_COOLDOWN_GLOBAL: float = 8.0
+#: ile barków wolno widzieć naraz; trzeci nie czeka w kolejce, tylko przepada -
+#: bark jest tłem, nie wiadomością
+BARK_MAX_ON_SCREEN: int = 2
+#: jak długo bark jest na ekranie (z zanikiem alfą na końcu)
+BARK_DURATION: float = 3.5
+BARK_FADE_DURATION: float = 0.8
+#: szansa, że postać w zasięgu faktycznie się odezwie, sprawdzana raz na wejście
+#: gracza w promień. Bez tego wieś tyka jak zegarek: przejście obok kogokolwiek
+#: ZAWSZE dawałoby kwestię.
+BARK_CHANCE: float = 0.55
+
+
+#: Znaczniki, które nie zajmują pikseli: tagi RichText (`[shadow]`, `[/shadow]`)
+#: i klucze emote (`:happy:`).
+_BARK_MARKUP_RE = _re.compile(r"\[/?[a-zA-Z_][a-zA-Z0-9_]*\]|:[a-z0-9_]+:")
+
+
+def bark_visible_text(text: str) -> str:
+    """Bark bez znaczników - to, co gracz naprawdę widzi.
+
+    Tagi RichText i klucze `:emote:` nie zajmują pikseli, więc nie mogą zajmować
+    znaków. Wspólne dla importera (mierzy, czy się zmieści) i dla `BarkSprite`
+    (rysuje) - „mieści się" musi znaczyć w obu miejscach to samo.
+    """
+    return _BARK_MARKUP_RE.sub("", text).strip()
+
+
+def wrap_bark(text: str, width: int = BARK_LINE_CHARS) -> list[str]:
+    """Złam bark na spacjach, dokładnie tak, jak narysuje go `BarkSprite`."""
+    lines: list[str] = []
+    current = ""
+    for word in bark_visible_text(text).split():
+        candidate = f"{current} {word}".strip()
+        if current and len(candidate) > width:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return lines
 # how many seconds a notification will be displayed. Long enough to read a
 # quest-done toast, which can run to four lines (headline + success prose).
 NOTIFICATION_DURATION: float = 8.0

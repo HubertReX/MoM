@@ -36,6 +36,7 @@ def die(npc: "NPC", drop_items: bool = True) -> None:
     npc.shadow.kill()
     npc.health_bar.kill()
     npc.emote.kill()
+    npc.bark.kill()
 
     # drop items and money on the ground
     if npc.config_key != PLAYER_CONFIG_KEY and drop_items:

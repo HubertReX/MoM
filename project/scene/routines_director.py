@@ -68,13 +68,17 @@ def update_sleepers(scene: "Scene") -> None:
 
         if npc.wants_to_sleep and not npc.is_asleep:
             npc.is_asleep = True
-            scene.group.remove(npc, npc.shadow, npc.health_bar, npc.emote)
+            scene.group.remove(npc, npc.shadow, npc.health_bar, npc.emote, npc.bark)
+            # bark musi zgasnąć razem z postacią, inaczej zostanie wisieć nad
+            # pustym miejscem po kimś, kto właśnie poszedł spać
+            npc.bark.silence()
         elif not npc.wants_to_sleep and npc.is_asleep:
             npc.is_asleep = False
             scene.group.add(npc, layer=scene.sprites_layer)
             scene.group.add(npc.shadow, layer=scene.sprites_layer - 2)
             scene.group.add(npc.health_bar, layer=scene.sprites_layer + 1)
             scene.group.add(npc.emote, layer=scene.sprites_layer + 1)
+            scene.group.add(npc.bark, layer=scene.sprites_layer + 1)
 
 
 def awake_NPCs(scene: "Scene") -> list[Any]:
@@ -355,11 +359,13 @@ def materialize(scene: "Scene", npc: "Any") -> None:
     scene.shadow_sprites.add(npc.shadow)
     scene.label_sprites.add(npc.health_bar)
     scene.label_sprites.add(npc.emote)
+    scene.label_sprites.add(npc.bark)
     npc.register_custom_event()
     scene.group.add(npc, layer=scene.sprites_layer)
     scene.group.add(npc.shadow, layer=scene.sprites_layer - 2)
     scene.group.add(npc.health_bar, layer=scene.sprites_layer + 1)
     scene.group.add(npc.emote, layer=scene.sprites_layer + 1)
+    scene.group.add(npc.bark, layer=scene.sprites_layer + 1)
 
 
 def dematerialize(scene: "Scene", npc: "Any") -> None:
@@ -373,9 +379,12 @@ def dematerialize(scene: "Scene", npc: "Any") -> None:
     """
     if npc in scene.NPCs:
         scene.NPCs.remove(npc)
-    scene.group.remove(npc, npc.shadow, npc.health_bar, npc.emote)
+    scene.group.remove(npc, npc.shadow, npc.health_bar, npc.emote, npc.bark)
     scene.shadow_sprites.remove(npc.shadow)
-    scene.label_sprites.remove(npc.health_bar, npc.emote)
+    scene.label_sprites.remove(npc.health_bar, npc.emote, npc.bark)
+    # Kwestia w połowie zdania zostałaby wisieć nad pustym polem po kimś, kto
+    # zszedł z mapy - i wróciłaby przy następnym `materialize`.
+    npc.bark.silence()
     npc.is_asleep = False
     npc.wants_to_sleep = False
 

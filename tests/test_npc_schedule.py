@@ -483,6 +483,7 @@ def _npc(routine_key: str, destinations: dict, scene: "_FakeScene", name: str = 
     npc.origin_map = scene.current_map
     npc.game = _FakeGame()
     npc.emote = _FakeEmote()
+    npc.bark = _FakeBark()
     npc.runtime = type("R", (), {"routine_key": routine_key})()
     npc.model = type("M", (), destinations)()
     npc._schedule_slot = None
@@ -752,6 +753,16 @@ class _FakeGroup:
         self.members.difference_update(sprites)
 
 
+class _FakeBark:
+    """Tyle z `BarkSprite`, ile widzi cykl życia postaci (H01, etap 2)."""
+
+    def __init__(self) -> None:
+        self.silenced = 0
+
+    def silence(self) -> None:
+        self.silenced += 1
+
+
 class _Sleeper:
     """A character that only knows how to want to sleep."""
 
@@ -759,13 +770,16 @@ class _Sleeper:
         self.wants_to_sleep = wants
         self.is_asleep = False
         self.shadow, self.health_bar, self.emote = object(), object(), object()
+        # bark ma ten sam cykl życia co emote: wchodzi i wychodzi z grupy razem
+        # z postacią, inaczej zostanie wisieć nad pustym polem po kimś, kto poszedł spać
+        self.bark = _FakeBark()
         self.schedule_checks = 0
 
     def update_schedule(self) -> None:
         self.schedule_checks += 1
 
     def sprites(self) -> tuple:
-        return (self, self.shadow, self.health_bar, self.emote)
+        return (self, self.shadow, self.health_bar, self.emote, self.bark)
 
 
 def _scene_with(*npcs):
@@ -873,6 +887,8 @@ def _routine_npc(name: str, logical_map: str, origin_map: str = "Village",
     npc.pos = pvec(0, 0)
     npc.prev_pos = pvec(0, 0)
     npc.shadow, npc.health_bar, npc.emote = object(), object(), object()
+    # bark wchodzi i wychodzi z grup razem z resztą etykiet (H01, etap 2)
+    npc.bark = _FakeBark()
     npc.runtime = NpcRuntime(routine_key=routine_key, logical_map=logical_map)
     dests = {"home": "", "work": "", "social": "", "hobby": ""}
     dests.update(destinations)

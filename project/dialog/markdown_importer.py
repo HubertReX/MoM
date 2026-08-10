@@ -94,6 +94,8 @@ from settings import (
     BARK_MAX_LINES,
     SENTIMENT_EMOJI_TO_NAME,
     SENTIMENT_NAME_TO_EMOTE,
+    bark_visible_text,
+    wrap_bark,
 )
 
 # emoji appearing inside node/option text -> inline :emote: tag
@@ -631,10 +633,6 @@ _BARK_LINE_RE = re.compile(
     r"^[-*]\s+(?:\[(?P<condition>[^\]]+)\]\s*)?(?P<text>\S.*)$"
 )
 
-# markup that costs no pixels: rich tags and inline emote keys. Stripped only to
-# *measure* the line - the stored text keeps them.
-_MARKUP_RE = re.compile(r"\[/?[a-zA-Z_][a-zA-Z0-9_]*\]|:[a-z0-9_]+:")
-
 #: Pool file per language, relative to the vault root. Missing file = no pools,
 #: which is a working state (a village where nobody has been given lines yet).
 _BARK_POOL_FILES: dict[str, str] = {"PL": "PL/Barki.md", "EN": "EN/Barks.md"}
@@ -650,31 +648,6 @@ class _ParsedBark:
     text: str
     condition: str | None
     line_no: int
-
-
-def bark_visible_text(text: str) -> str:
-    """The bark with markup removed - what the player's eye actually measures."""
-    return _MARKUP_RE.sub("", text).strip()
-
-
-def wrap_bark(text: str, width: int = BARK_LINE_CHARS) -> list[str]:
-    """Break a bark at spaces, the way ``BarkSprite`` will draw it.
-
-    Shared by the importer (to refuse a too-long line at build time) and by the
-    sprite (to draw it), so "fits" means the same thing in both places.
-    """
-    lines: list[str] = []
-    current = ""
-    for word in bark_visible_text(text).split():
-        candidate = f"{current} {word}".strip()
-        if current and len(candidate) > width:
-            lines.append(current)
-            current = word
-        else:
-            current = candidate
-    if current:
-        lines.append(current)
-    return lines
 
 
 def _validate_bark_text(text: str, owner: str, file: str, line: int) -> None:

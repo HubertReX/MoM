@@ -46,7 +46,7 @@ import scene
 from characters import animation, combat, inventory, movement
 from scene import debug_overlay
 import splash_screen
-from objects import ChestSprite, EmoteSprite, HealthBar, ItemSprite, Shadow
+from objects import BarkSprite, ChestSprite, EmoteSprite, HealthBar, ItemSprite, Shadow
 
 
 #################################################################################################################
@@ -176,6 +176,11 @@ class NPC(pygame.sprite.Sprite):
         animation.load_sprites(self)
 
         self.emote: EmoteSprite = EmoteSprite(label_group, pos, emotes)
+        # Drugi, niezależny kanał ambientu (H01/W2): emoji nad głową i bark tekstowy
+        # nie zastępują się nawzajem. Sprite istnieje przez całe życie postaci
+        # i normalnie jest przezroczysty - dokładnie jak emote, dzięki czemu jego
+        # cykl życia to ten sam kod (materialize/dematerialize, sen, reset).
+        self.bark: BarkSprite = BarkSprite(label_group, pos, self.game.render_text)
 
         self.tileset_coord: Point = self.get_tileset_coord()
         self.rect: pygame.FRect = self.image.get_frect(midbottom = self.pos)
@@ -698,6 +703,7 @@ class NPC(pygame.sprite.Sprite):
     def reset(self) -> None:
         self.shadow = self.create_shadow()
         self.emote = self.create_emote()
+        self.bark = self.create_bark()
         self.health_bar = self.create_health_bar()
         self.is_attacking = False
         self.is_dead = False
@@ -713,6 +719,10 @@ class NPC(pygame.sprite.Sprite):
     #############################################################################################################
     def create_emote(self) -> EmoteSprite:
         return EmoteSprite(self.scene.label_sprites, vector_to_tuple(self.pos), self.scene.icons)
+
+    #############################################################################################################
+    def create_bark(self) -> BarkSprite:
+        return BarkSprite(self.scene.label_sprites, vector_to_tuple(self.pos), self.game.render_text)
     #############################################################################################################
 
     def move_back(self) -> None:

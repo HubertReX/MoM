@@ -124,6 +124,10 @@ def adjust_rect(npc: "NPC") -> None:
 
     # if npc.emote:
     npc.emote.rect.midbottom = npc.rect.midtop
+    # Bark siada NAD emote, nie zamiast niego: to dwa niezależne kanały ambientu
+    # (H01/W2), a imię postaci jest pod nią, więc żaden z trzech napisów nie
+    # zasłania pozostałych.
+    npc.bark.rect.midbottom = npc.emote.rect.midtop
 
     if npc.selected_weapon and npc.is_attacking:
         direction = npc.get_direction_360()

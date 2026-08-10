@@ -953,5 +953,32 @@
             { "type": "no_layout_violations" },
             { "type": "process_alive" }
         ]
+    },
+    {
+        "name": "Ambient Barks",
+        "slug": "ambient_barks",
+        "platform": ["desktop"],
+        "actions": [
+            { "slug": "start_new_game", "commands": ["accept"], "wait": 3.0 },
+            { "slug": "walk_north_past_the_villagers", "commands": ["walk_to_point:568,200"], "wait": 8.0 },
+            { "slug": "walk_back_to_the_market", "commands": ["walk_to_char:bart"], "wait": 8.0 },
+            { "slug": "village_after_walk", "commands": ["screenshot"] },
+            { "slug": "dump_state_after_walk", "commands": ["debug_ui_state"], "wait": 0.5 }
+        ],
+        "assertions": [
+            { "type": "process_alive" },
+            {
+                "type": "ui_state",
+                "expect": {
+                    "top_state": "Scene",
+                    "map": "BLUNDERHAVEN",
+                    "is_maze": false,
+                    "barks_count_max": 2,
+                    "player.hp_min": 1,
+                    "player.is_dead": false
+                }
+            },
+            { "type": "no_layout_violations" }
+        ]
     }
 ]

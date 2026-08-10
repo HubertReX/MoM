@@ -86,7 +86,8 @@ je asercją `ui_state` (patrz `tests/automate_display_test.py`). Zawartość zrz
      "open_panels": ["DialogPanel"],
      "player": {"hp": 80, "max_hp": 80, "money": 20, "pos": [512, 384],
                 "items": ["lance", "stick"], "is_dead": false},
-     "dialog": {"npc": "BARMAN_ABSINTHRAYNER", "node": "hub", "sentiment": 50}}
+     "dialog": {"npc": "BARMAN_ABSINTHRAYNER", "node": "hub", "sentiment": 50},
+     "barks": [{"npc": "BART", "msg": "bark.VILLAGERS.002"}], "barks_count": 1}
 
 Działa też w menu - wtedy `top_state` to np. `MainMenuScreen`, a pola sceny są `null`
 (to legalny wynik, nie błąd). Scena jest szukana w dół stosu stanów, więc menu otwarte
@@ -258,6 +259,11 @@ class AgentController:
             "open_panels": [],
             "player": None,
             "dialog": None,
+            # ambientowe barki (H01): kto mówi w tej chwili i czym. Asercja stanu,
+            # NIE zrzut ekranu - headless nie jest wierny dla kompozycji klatki,
+            # więc obrazek nie rozstrzyga, czy bark jest widoczny.
+            "barks": [],
+            "barks_count": 0,
             # layout self-checks (ui/layout.py) - deterministyczna detekcja overflow,
             # niezależna od sceny: raportują też panele menu
             "layout_violations": _layout_violations(),
@@ -268,6 +274,14 @@ class AgentController:
         ui = getattr(scene, "ui", None)
         if ui is not None:
             info["open_panels"] = list(ui.open_panel_names)
+
+        barks = getattr(scene, "barks", None)
+        if barks is not None:
+            info["barks"] = barks.active()
+            # skalar obok listy: matcher `ui_state` umie porównywać liczby
+            # (`barks_count_max`), a listy nie - a to właśnie limit „najwyżej dwa
+            # naraz" jest tu niezmiennikiem wartym asercji
+            info["barks_count"] = len(info["barks"])
 
         player = getattr(scene, "player", None)
         if player is not None:

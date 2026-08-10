@@ -4,6 +4,11 @@ from typing import Callable
 import pygame
 
 from settings import (
+    BARK_DURATION,
+    BARK_FADE_DURATION,
+    BARK_LINE_CHARS,
+    BARK_MAX_LINES,
+    BARK_SHADOW_COLOR,
     BLACK_COLOR,
     CHAR_NAME_COLOR,
     FONT_SIZE_EXTRA_TINY,
@@ -16,6 +21,7 @@ from settings import (
     TRANSPARENT_COLOR,
     entity_name,
     load_image,
+    wrap_bark,
 )
 from enums import AttitudeEnum, ItemTypeEnum, NotificationTypeEnum
 if IS_WEB:
@@ -289,6 +295,142 @@ class HealthBar(pygame.sprite.Sprite):
             return
         self.visible = False
         self.set_bar(-1)
+
+#################################################################################################################
+
+
+class BarkSprite(pygame.sprite.Sprite):
+    """Ambientowa zaczepka nad głową postaci - sam tekst z obrysem (H01/W1, D4).
+
+    **Nie panel i nie toast.** Panel zasłoniłby za dużo mapy, a toast oderwałby
+    kwestię od mówiącego. To ta sama technika, co imię pod postacią
+    (`HealthBar.set_bar`): napis wtapiany w świat, w tej samej grupie
+    `label_sprites`, rysowany zoomem kamery.
+
+    **Font `FONT_SIZE_EXTRA_TINY` (8 px), nie minimum UI (10 px)** - i nie wolno
+    tego podnieść. Napis nie jest skalowany w dół jak tekst UI, tylko w GÓRĘ
+    zoomem kamery (~3,8x), więc 10 px czyta się w świecie jak nagłówek. Powód
+    jest ten sam co w `HealthBar` i stoi tam wypisany.
+
+    Sprite istnieje przez całe życie postaci (jak `EmoteSprite`) i normalnie jest
+    całkowicie przezroczysty. Dzięki temu jego cykl życia to dokładnie ten sam
+    kod, co dla emote - a bark, który nie idzie za postacią, zostaje wisieć nad
+    pustym polem po kimś, kto poszedł spać.
+    """
+
+    #: Cache metryk fontu: powierzchnia jest liczona z treści (28 znaków x 2 linie),
+    #: a nie z zaszytego rozmiaru pudełka - `pygame.font.Font` per sprite byłby
+    #: kosztem na każdą postać we wsi.
+    _font: pygame.font.Font | None = None
+
+    def __init__(
+        self,
+        group: pygame.sprite.Group,
+        pos: tuple[int, int],
+        render_text: Callable,
+        # cudzysłów NIE jest ozdobą: `pygame._common` istnieje tylko dla mypy,
+        # a adnotacja w sygnaturze jest ewaluowana przy definicji klasy
+        # (ten moduł nie ma `from __future__ import annotations`)
+        color: "pygame._common.ColorValue" = CHAR_NAME_COLOR,
+    ) -> None:
+        super().__init__(group)
+        self.render_text = render_text
+        self.color = color
+        #: klucz wiadomości aktualnie mówionej - dla asercji agentowych (A02)
+        self.message_key: str = ""
+        self.text: str = ""
+        self.time_left: float = 0.0
+
+        font = self._shared_font()
+        line_h = FONT_SIZE_EXTRA_TINY + 4
+        # +4 na obrys po obu stronach; "W" jest najszerszym znakiem tego fontu,
+        # więc mieści się KAŻDY dopuszczony przez importer bark
+        width = font.size("W" * BARK_LINE_CHARS)[0] + 4
+        self.image: pygame.Surface = pygame.Surface(
+            (width, line_h * BARK_MAX_LINES + 4)).convert_alpha()
+        self.image.fill(TRANSPARENT_COLOR)
+        self.rect: pygame.FRect = self.image.get_frect(midbottom=pos)
+        self._line_h = line_h
+
+    @classmethod
+    def _shared_font(cls) -> pygame.font.Font:
+        if cls._font is None:
+            cls._font = pygame.font.Font(MAIN_FONT, FONT_SIZE_EXTRA_TINY)
+        return cls._font
+
+    @property
+    def is_speaking(self) -> bool:
+        return self.time_left > 0.0
+
+    def say(self, text: str, message_key: str = "") -> None:
+        """Pokaż kwestię przez `BARK_DURATION` sekund, z zanikiem na końcu."""
+        self.text = text
+        self.message_key = message_key
+        self.time_left = BARK_DURATION
+        self._render()
+
+    def silence(self) -> None:
+        """Zgaś natychmiast - postać zasnęła, zeszła z mapy albo umarła."""
+        self.text = ""
+        self.message_key = ""
+        self.time_left = 0.0
+        self.image.fill(TRANSPARENT_COLOR)
+
+    def update(self, dt: float) -> None:
+        """Odliczanie i zanik. Wołane przez `scene.group.update(dt)`."""
+        if self.time_left <= 0.0:
+            return
+        self.time_left -= dt
+        if self.time_left <= 0.0:
+            self.silence()
+            return
+        # alfa spada dopiero na ostatnim odcinku - kwestia ma być czytelna,
+        # a nie migotać przez cały czas życia
+        if self.time_left < BARK_FADE_DURATION:
+            self.image.set_alpha(int(255 * (self.time_left / BARK_FADE_DURATION)))
+
+    def _check_layout(self, lines: list[str]) -> None:
+        """A03: kwestia, która się nie mieści, jest ZGŁASZANA, a nie po cichu ucinana.
+
+        Importer odrzuca za długie barki już przy `just import-dialogs`, więc tu
+        normalnie nic się nie zapala. To siatka na tekst, który dotarł do gry inną
+        drogą: ręcznie zmieniony `config.json`, wywołanie `say()` z kodu.
+        """
+        from ui.layout import report_violation
+
+        if len(lines) > BARK_MAX_LINES:
+            report_violation(
+                "BarkSprite", "v-overflow",
+                f"bark {self.message_key or self.text!r} potrzebuje {len(lines)} linii, "
+                f"mieszczą się {BARK_MAX_LINES}",
+            )
+        for line in lines:
+            if len(line) > BARK_LINE_CHARS:
+                report_violation(
+                    "BarkSprite", "h-overflow",
+                    f"linia dłuższa niż {BARK_LINE_CHARS} znaków: {line!r}",
+                )
+                break
+
+    def _render(self) -> None:
+        self.image.fill(TRANSPARENT_COLOR)
+        self.image.set_alpha(255)
+        # `wrap_bark` jest wspólne z importerem - a importer odrzucił już wszystko,
+        # co nie mieści się w BARK_MAX_LINES, więc tutaj nie ma czego ucinać
+        wrapped = wrap_bark(self.text)
+        self._check_layout(wrapped)
+        lines = wrapped[:BARK_MAX_LINES]
+        top = self.image.get_height() - self._line_h * len(lines) - 2
+        for index, line in enumerate(lines):
+            self.render_text(
+                line,
+                (int(self.rect.width // 2), top + index * self._line_h),
+                self.color,
+                font_size=FONT_SIZE_EXTRA_TINY,
+                shadow=BARK_SHADOW_COLOR,
+                centred=True,
+                surface=self.image,
+            )
 
 #################################################################################################################
 

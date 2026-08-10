@@ -254,6 +254,14 @@ class Scene(State):
         # reference, so it is safe here, before the map exists; nothing is
         # evaluated until the first event or sweep.
         self.quests = QuestRuntime(self)
+        # Reżyser barków (H01). Jak QuestRuntime: konstrukcja tylko trzyma
+        # referencję do sceny i zasiewa generator, więc jest bezpieczna zanim
+        # istnieje mapa - nic się nie liczy do pierwszego `update`.
+        # Import tutaj, nie na górze pliku, z tego samego powodu co `Player`
+        # niżej: pakiet `characters` importuje `scene`, więc import modułowy
+        # zamyka cykl i wywala grę przy starcie.
+        from characters.barks import BarkDirector
+        self.barks: "BarkDirector" = BarkDirector(self)
         # self.load_items_def()
         self.load_map()
         if USE_PARTICLES:
@@ -616,6 +624,10 @@ class Scene(State):
 
         # zegar świata (B01 krok 3): upływ minut, przełom doby i upkeep dnia
         world_clock.tick(self, dt)
+
+        # ambientowe barki (H01) - PO zegarze, żeby warunek `time_of_day` widział
+        # tę samą godzinę, co filtr pory dnia rysowany w tej klatce
+        self.barks.update(dt)
 
         # kolizje klatki (B01 krok 4): ściany, NPC-e, broń, destruktible,
         # skrzynia i NPC w zasięgu rozmowy
