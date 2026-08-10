@@ -103,8 +103,17 @@ mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły 
   `just rename-entity` znające sześć rodzajów kluczy + `tests/test_rename_entity.py` (D17),
   27 instancji, 6 modeli, 6 map (`Village` → `BLUNDERHAVEN`, `Maze_0N` → `MAZE_0N`),
   prefiksy miejsc, `settings.START_MAP`, wersja zapisu 0.3 → 0.4; `validate-world` z powrotem
-  na zero, ściąga „gdzie używam jakiego klucza" w `project/AGENTS.md`)
-- [ ] H01 - ambient barks + wskaźnik aktywnego questa na HUD - P3
+  na zero, ściąga „gdzie używam jakiego klucza" w `project/AGENTS.md`;
+  odhaczone w raporcie HTML 2026-08-10)
+- [x] [H01 - ambient barki, emoji z rutyn, wskaźnik questa na HUD](H01-barki-emoji-wskaznik-questa.md) - P3
+  (silnik: `ConditionScope.bark` + sekcja `## Barki` w Obsidian, `BarkSprite` w przestrzeni
+  świata, emoji z `activity` rutyny, wskaźnik questa - automat + ręczne przypięcie
+  klawiszem `T` + kaskada po ukończeniu, zamki i klucze na skrzyniach i drzwiach,
+  model `RAT`; decyzje autora W1-W9, D1-D9)
+- [ ] [H03 - sidequesty Aktu 1 i samospełniająca się przepowiednia](H03-sidequesty-i-klatwa.md) - P3
+  (treść: 7 sidequestów w 3 łańcuchach - Barman `Q04`, Kowal `Q05`, Zielarka `Q06` -
+  dryf Malachiego w 3 fazach, powitania zależne od wiedzy o klątwie, teksty barków;
+  **twarda zależność od H01**, pisane ręką autora w Obsidian)
 
 ## Zasady realizacji zadań (dla agentów)
 

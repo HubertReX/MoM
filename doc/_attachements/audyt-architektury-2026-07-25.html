@@ -148,7 +148,7 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
 <div class="grid cols-4" style="margin:var(--s5) 0">
   <div class="card metric"><div class="num">30,5K</div><div class="label">LOC własnego kodu (project/, 2026-08-08)</div></div>
   <div class="card metric"><div class="num">499 <span class="badge ok">100% pass</span></div><div class="label">testów jednostkowych (36 plików)</div></div>
-  <div class="card metric"><div class="num">20 / 24</div><div class="label">zadań zrobionych / w backlogu</div></div>
+  <div class="card metric"><div class="num">21 / 24</div><div class="label">zadań zrobionych / w backlogu</div></div>
   <div class="card metric"><div class="num">~1,2 ms</div><div class="label">klatka desktop w dzień (32 NPC, po E01)</div></div>
 </div>
 
@@ -158,7 +158,7 @@ Wynik: ocena stanu, plan naprawy i backlog zadań dla agentów AI w <code>doc/au
     <li><strong>Faza 1</strong> (A01-A07, C01, F01-F03) <span class="badge ok">zamknięta 2026-07-25</span>: ss-review na gemini z checklistami i werdyktem JSON, <code>debug_ui_state</code> + asercje stanu, layout self-checks, tryb deterministyczny, <code>just validate-world</code>, mypy = 0.</li>
     <li><strong>Faza 2</strong> (B01, A08, G01, B02) <span class="badge ok">zamknięta 2026-07-28</span>: <code>scene.py</code> i <code>characters.py</code> rozbite na pakiety <code>project/scene/</code> i <code>project/characters/</code> (16 kroków), web-runner z jednym serwerem pygbag (25 → 11,5 min) + <code>just test-smoke</code> (96 s), codegen configu web, polityka wersji zapisu z jedną bramką <code>save_compatibility</code>.</li>
     <li><strong>Faza 3</strong> <span class="badge warn">4 z 6</span>: zrobione E01 (filtr nocy desktop+web, 2026-07-29), D01 (audio, 2026-07-29), E02 (FPS_CAP=60 + profiler, 2026-07-30), U01 (<code>bar.py</code> asset-driven, 2026-08-01). <strong>Zostają H02</strong> (dzienny autosave o 6:00) <strong>i D02</strong> (dokument progresji statystyk) - oba mają gotowe pliki zadań, kodu jeszcze nie ma.</li>
-    <li><strong>Faza 4</strong>: E03 (mgła wojny w labiryncie) <span class="badge ok">zrobione 2026-08-02</span> - dokument decyzyjny D1-D11, prototyp <code>FoW-prototype.py</code>, potem <code>scene/fog_of_war.py</code> (644 linie). Zostają C02 i H01 (wciąż do rozpisania) oraz treść Aktu 1.</li>
+    <li><strong>Faza 4</strong>: E03 (mgła wojny w labiryncie) <span class="badge ok">zrobione 2026-08-02</span> - dokument decyzyjny D1-D11, prototyp <code>FoW-prototype.py</code>, potem <code>scene/fog_of_war.py</code> (644 linie). C02 (ujednolicenie kluczy encji) <span class="badge ok">zrobione 2026-08-09</span> - decyzje D1-D19, pięć etapów, narzędzie <code>just rename-entity</code>, wersja zapisu 0.3 → 0.4. Zostaje H01 (wciąż do rozpisania) oraz treść Aktu 1.</li>
     <li><strong>Znaleziska przy okazji</strong> (poza backlogiem, naprawione): <code>pygame.mixer.music.load()</code> blokował ~0,7 s przy każdej zmianie mapy (sterownik dummy tego nie odtwarzał, więc headless CI był ślepy); <code>rich.print</code> łykał prefiksy <code>[tag]</code> w <code>self.log</code>; paski UI ujednolicone do skali 4x razem z panelem pomocy.</li>
   </ul>
 </div>
@@ -419,6 +419,14 @@ Zadanie C01: <code>just validate-world</code> - jeden skrypt czytający wszystki
 nazwy instancji Tiled do konwencji (docelowo: nazwa instancji = klucz configu małymi literami,
 chyba że na mapie jest wiele instancji tego samego modelu). Mapa przepływu (ten rozdział)
 wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></div>
+<div class="callout ok"><p><strong>Stan na 2026-08-09: C02 zrobione</strong> <span class="badge ok">zrobione</span> -
+ale konwencja wyszła <em>inna</em> niż zakładał ten rozdział: nazwa instancji to klucz configu
+<strong>SCREAMING_SNAKE</strong> (<code>FISH_RED_01</code>), nie „małymi literami". Doszły też rzeczy,
+których plan nie przewidywał: klucze map (<code>Village</code> → <code>BLUNDERHAVEN</code>), warstwa nazw
+wyświetlanych w <code>locale/*.toml</code> (sekcja <code>[map]</code>) i narzędzie <code>just rename-entity</code>
+znające sześć rodzajów kluczy. Ten rozdział opisuje stan sprzed C02 i celowo nie jest przepisywany -
+aktualna ściąga „gdzie używam jakiego klucza" żyje w <code>project/AGENTS.md</code>, a decyzje D1-D19
+w <code>doc/audyt/C02-ujednolicenie-kluczy.md</code> i <code>C02-klucze-encji-2026-08-08.html</code>.</p></div>
 <a class="backlink" href="#toc">↑ Spis treści</a>
 
 <!-- ============================================================ -->
@@ -692,7 +700,7 @@ wchodzi do dokumentacji i będzie aktualizowana przy zmianach pipeline'u.</p></d
     <ul style="margin:0"><li><span class="badge ok">✓</span> E03 mgła wojny w labiryncie (dokument + prototyp + implementacja) - 2026-08-02</li>
     <li>mapy Aktu 1 (Tiled), dialogi i questy w Obsidian</li>
     <li>G-3/G-4/G-5 wzmocnienia mechanik w treści</li><li>H01: ambient barks, wskaźnik questa na HUD (do rozpisania)</li>
-    <li>C02 ujednolicenie kluczy Tiled ↔ config (do rozpisania)</li>
+    <li><span class="badge ok">✓</span> C02 ujednolicenie kluczy Tiled ↔ config (D1-D19, etapy 1-5) - 2026-08-09</li>
     <li>polerowanie + publikacja itch.io/GH Pages</li></ul></div>
 </div>
 
@@ -712,7 +720,7 @@ jako osobny moduł z czystym API - i tak ma powstać).</p></div>
   postęp na <strong>2026-08-08</strong>: <span class="badge ok">zrobione</span> = kod scommitowany i kryteria
   spełnione, <span class="badge info">plan gotowy</span> = plik zadania napisany, czeka na wykonanie,
   <span class="badge warn">do rozpisania</span> = jest tylko wpis w backlogu.</p>
-  <p><strong>Bilans: 20 z 24 zadań zrobionych.</strong> Zostają dwa z Fazy 3 (H02, D02) i dwa nierozpisane (C02, H01).</p>
+  <p><strong>Bilans: 21 z 24 zadań zrobionych.</strong> Zostają dwa z Fazy 3 (H02, D02) i jedno nierozpisane (H01).</p>
 </div>
 
 <div class="tablewrap">
@@ -739,7 +747,7 @@ jako osobny moduł z czystym API - i tak ma powstać).</p></div>
     <tr><td>U01</td><td>bar.py: scrollbar.png jako realne źródło wyglądu suwaka (asset-driven, nie hardcode)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge ok">zrobione</span></td><td>D-13 zamknięte: <code>bar.load_model()</code> parsuje sprite, test odtwarza go 1:1; suwaki węższe o 4 px (decyzja autora - asset zostaje)</td><td>S</td></tr>
     <tr><td>D02</td><td>Dokument decyzyjny mini-progresji statystyk: szybkość, max_health, damage, bazowy sentyment (±)</td><td class="prio-p2">P2</td><td>3</td><td><span class="badge info">plan gotowy</span></td><td>G-2: kierunek autora; zadanie kończy się dokumentem do akceptacji, parametry w CSV (Twoja domena). <strong>Drugie z dwóch, które zostały</strong></td><td>M</td></tr>
     <tr><td>E03</td><td>Prawdziwa mgła wojny w labiryncie (trzy stany widoczności + stan w zapisie)</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge ok">zrobione</span></td><td>Dokument D1-D11 → prototyp <code>FoW-prototype.py</code> → <code>scene/fog_of_war.py</code>; dwa algorytmy w SettingsMenu, potwory świecą, web +0,3 ms</td><td>L</td></tr>
-    <tr><td>C02</td><td>Stopniowe ujednolicenie kluczy (Tiled ↔ config)</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge warn">do rozpisania</span></td><td>Po C01; seria małych, bezpiecznych rename'ów</td><td>M</td></tr>
+    <tr><td>C02</td><td>Stopniowe ujednolicenie kluczy (Tiled ↔ config)</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge ok">zrobione</span></td><td>Decyzje D1-D19 + pięć etapów: sprzątanie tawerny i tilesetów, wyliczany rejestr map (bez <code>maps.csv</code>), nazwy map w locale (HUD nigdy nie pokazuje klucza), reguły 12-18 walidatora, rename'y przez <code>just rename-entity</code>; zapis 0.3 → 0.4</td><td>L</td></tr>
     <tr><td>H01</td><td>Ambient barks + wskaźnik aktywnego questa na HUD</td><td class="prio-p3">P3</td><td>4</td><td><span class="badge warn">do rozpisania</span></td><td>G-3/G-4: tanie ożywienie świata pod treść Aktu 1</td><td>M</td></tr>
   </tbody>
 </table>
