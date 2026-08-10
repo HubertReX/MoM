@@ -18,11 +18,11 @@ gameplayowi) oraz „regrywalność w tonie gry" z [audytu](audyt.md).
 - **W1** - klątwa **nie karze mechanicznie**. Sentyment i ceny się nie zmieniają, bo
   wieść się rozeszła. Zmienia się **wyłącznie to, co postacie mówią**.
 - **W2** - plotka rozchodzi się przez **dialogi, nie przez symulację**. Po przejściu
-  którejkolwiek linii, w której Malachi przyznaje się do klątwy, u innych postaci
+  którejkolwiek linii, w której ==Malachi== przyznaje się do klątwy, u innych postaci
   pojawiają się nowe opcje, część domyślnych znika, a powitanie dostaje nutkę -
   uszczypliwości, pogardy albo współczucia, zależnie od charakteru postaci.
 - **W3** - raz subtelnie, raz wprost. Monotonia jest gorsza niż brak reakcji.
-- **W4** - **Malachi stopniowo sam zaczyna wierzyć**. Bez wyboru dla gracza: proza
+- **W4** - ==Malachi== **stopniowo sam zaczyna wierzyć**. Bez wyboru dla gracza: proza
   dryfuje sama, od śmiechu przez tłumaczenie się do tego, że przestaje dotykać klamek.
 - **W5** - sidequesty mają być **różnorodne**: każdy inny w charakterze. Rutynowe questy
   klepane na jedno kopyto, bez haczyka i bez osadzenia w świecie, są najgorszą rzeczą,
@@ -31,7 +31,7 @@ gameplayowi) oraz „regrywalność w tonie gry" z [audytu](audyt.md).
   Niski koszt, a zawsze można wyciąć.
 - **W7** - piwnica to **nowa mała mapa** (nie `VillageHouse.tmx`), z gryzoniami jako
   pierwszym, łatwym przeciwnikiem niewymagającym mocnej broni.
-- **W8** - zwierzęta dostają onomatopeje, a Miecz Ciętej-riposty je komentuje.
+- **W8** - zwierzęta dostają onomatopeje, a [[Miecz Ciętej-riposty]] je komentuje.
 
 ### Uwagi autora do unikania na przyszłość
 
@@ -45,14 +45,14 @@ gameplayowi) oraz „regrywalność w tonie gry" z [audytu](audyt.md).
 
 To jest **oś tonalna całego zadania** i sprawdzian dla każdej dopisanej linijki.
 
-Malachi wraca z tawerny przeklęty przez czarodziejów - to fakt. Ale wszystko, co się
-dzieje potem, wieś **produkuje sama**: Barman opowiada, Zielarka potwierdza, Kowal nie
-zaprzecza, a Malachi po pewnym czasie sam zaczyna się z tego tłumaczyć. Beczka, obok
+==Malachi== wraca z [[Tawerna Brakująca klepka|tawerny]] przeklęty przez czarodziejów - to fakt. Ale wszystko, co się
+dzieje potem, wieś **produkuje sama**: [[Barman Absyntnent]] opowiada, [[Zielarka Zmora]] potwierdza, [[Kowal Kłamca]] nie
+zaprzecza, a ==Malachi== po pewnym czasie sam zaczyna się z tego tłumaczyć. Beczka, obok
 której stał, była beczką, dopóki nikt nie wiedział o klątwie. Teraz jest dowodem.
 
 Ten sam mechanizm dostaje **jawną, komediową klamrę** w queście o trofeum
-(`Q04_S02`): gracz na własne oczy widzi, jak Barman wymyśla legendę o sobie i jak wieś
-w nią wchodzi w trzy dni. Miecz ma to nazwać wprost - raz, i nigdy więcej, bo dwa razy
+([[#Q04_S02 - Trofeum z dalekiego świata]]): gracz na własne oczy widzi, jak [[Barman Absyntnent]] wymyśla legendę o sobie i jak wieś
+w nią wchodzi w trzy dni. [[Miecz Ciętej-riposty|Miecz]] ma to nazwać wprost - raz, i nigdy więcej, bo dwa razy
 to już morał.
 
 ## Dryf Malachiego (W4) - trzy fazy, zero nowej maszynerii
@@ -68,17 +68,17 @@ Fazę wyznacza stan questów głównego wątku - dokładnie tak, jak ustala
 
 Reguły pisania faz:
 
-- **Faza 2 nie jest smutna, tylko praktyczna.** Malachi nie użala się - on organizuje
+- **Faza 2 nie jest smutna, tylko praktyczna.** ==Malachi== nie użala się - on organizuje
   życie wokół klątwy, jak człowiek, który przestał kłócić się z pogodą.
-- Faza 2 zostaje w mocy **także w sidequestach**: w tej fazie Malachi sam z siebie
-  ostrzega Kowala przed dotknięciem zbroi. Kowal i tak nalega.
+- Faza 2 zostaje w mocy **także w sidequestach**: w tej fazie ==Malachi== sam z siebie
+  ostrzega [[Kowal Kłamca|Kowala]] przed dotknięciem zbroi. [[Kowal Kłamca|Kowal]] i tak nalega.
 - **Miecz ma to zauważyć raz**, mniej więcej w połowie fazy 2, i nie wracać do tematu.
 
 ## Powitania (W2, W3) - kto jak reaguje
 
 Każda postać reaguje **zgodnie ze swoim charakterem z `doc/PL/Postacie/`**, nie według
 jednego szablonu. Powitanie to pierwszy węzeł dialogu, więc technicznie jest to warunek
-na węźle startowym - dokładnie ten wzór, który działa dziś u Zielarki (węzeł `016` jako
+na węźle startowym - dokładnie ten wzór, który działa dziś u [[Zielarka Zmora|Zielarka]] (węzeł [[Zielarka Zmora#016|016]] jako
 bramka).
 
 | Postać | Charakter | Ton po plotce | Szkic pierwszej linii |
@@ -103,15 +103,15 @@ Kroki są **kolejnością zaufania**: pierwszy dostajesz od ręki, ostatni dopie
 gdy postać cię zna. Bramka to `Requires:` na poprzednim kroku, a nie sentyment -
 sentyment ma wpływać na **ton**, nie na dostępność, żeby żaden gracz nie utknął.
 
-| Klucz | Postać | Haczyk | Mechanika |
-| --- | --- | --- | --- |
-| `Q04_S01_CATS_FISH` | Barman | kot zjadł zapas ryb | krzak + skrzynia + oddanie |
-| `Q04_S02_TAVERN_TROPHY` | Barman | chce uchodzić za bywałego | klejnot + oddanie |
-| `Q04_S03_TAVERN_CELLAR` | Barman | piwnica, do której nikt nie schodzi | klucz + drzwi + walka |
-| `Q05_S01_ORE_UNDER_BOULDER` | Kowal | posłaniec z rudą nie przyszedł | pożyczony topór + głaz |
-| `Q05_S02_TOUCH_THE_ARMOUR` | Kowal | test pechowca na jego dziele | dialog + plotka |
-| `Q06_S01_MARIOLKAS_BOX` | Zielarka | zamknięta skrzynka po uczennicy | klucz + skrzynia |
-| `Q06_S02_FIRST_HUMAN_TESTED` | Zielarka | testowała na kurach, kury zdechły | dialog + zdrowie |
+| Klucz                        | Postać   | Haczyk                              | Mechanika                  |
+| ---------------------------- | -------- | ----------------------------------- | -------------------------- |
+| `Q04_S01_CATS_FISH`          | Barman   | kot zjadł zapas ryb                 | krzak + skrzynia + oddanie |
+| `Q04_S02_TAVERN_TROPHY`      | Barman   | chce uchodzić za bywałego           | klejnot + oddanie          |
+| `Q04_S03_TAVERN_CELLAR`      | Barman   | piwnica, do której nikt nie schodzi | klucz + drzwi + walka      |
+| `Q05_S01_ORE_UNDER_BOULDER`  | Kowal    | posłaniec z rudą nie przyszedł      | pożyczony topór + głaz     |
+| `Q05_S02_TOUCH_THE_ARMOUR`   | Kowal    | test pechowca na jego dziele        | dialog + plotka            |
+| `Q06_S01_MARIOLKAS_BOX`      | Zielarka | zamknięta skrzynka po uczennicy     | klucz + skrzynia           |
+| `Q06_S02_FIRST_HUMAN_TESTED` | Zielarka | testowała na kurach, kury zdechły   | dialog + zdrowie           |
 
 ---
 

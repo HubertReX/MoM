@@ -1,6 +1,7 @@
 ---
 aliases:
   - POTIONEER_PUZZLEMINT
+  - Zielarka
 alternative:
 EN: "[[Potioneer Puzzlemint]]"
 inspirations:

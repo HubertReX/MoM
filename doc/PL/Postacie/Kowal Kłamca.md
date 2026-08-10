@@ -1,6 +1,7 @@
 ---
 aliases:
   - HAMMER_HOAXHEART
+  - Kowal
 alternative:
 EN: "[[Hammer Hoaxheart]]"
 inspirations:

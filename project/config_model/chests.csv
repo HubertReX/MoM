@@ -3,9 +3,9 @@ MAZE_01_BIG_CHEST;MAZE_01_BIG_CHEST;3;golden_coin,life_pot,fish;false;gem_big_gr
 MAZE_02_BIG_CHEST;MAZE_02_BIG_CHEST;3;golden_coin,life_pot,fish;false;gem_big_purple;;
 MAZE_03_BIG_CHEST;MAZE_03_BIG_CHEST;3;golden_coin,life_pot,fish;false;gem_big_blue;;
 MAZE_04_BIG_CHEST;MAZE_04_BIG_CHEST;3;golden_coin,life_pot,fish;false;gem_big_orange;;
-BLUNDERHAVEN_BIG_CHEST;BLUNDERHAVEN_BIG_CHEST;;;false;sai,beef,shrimp;;
-MAZE_01_SMALL_CHEST;MAZE_01_SMALL_CHEST;1;gem_small_green,gem_crystal_green,shrimp;;;;
-MAZE_02_SMALL_CHEST;MAZE_02_SMALL_CHEST;1;gem_small_purple,gem_crystal_purple,shrimp;;;;
-MAZE_03_SMALL_CHEST;MAZE_03_SMALL_CHEST;1;gem_small_blue,gem_crystal_blue,shrimp;;;;
-MAZE_04_SMALL_CHEST;MAZE_04_SMALL_CHEST;1;gem_small_orange,gem_crystal_orange,shrimp;;;;
-LOST_CORK_TAVERN_SMALL_CHEST;LOST_CORK_TAVERN_SMALL_CHEST;;;;golden_coin;;
+BLUNDERHAVEN_BIG_CHEST;BLUNDERHAVEN_BIG_CHEST;;;false;sai,beef,golden_key;silver_key;true
+MAZE_01_SMALL_CHEST;MAZE_01_SMALL_CHEST;1;gem_small_green,gem_crystal_green,shrimp;true;;;
+MAZE_02_SMALL_CHEST;MAZE_02_SMALL_CHEST;1;gem_small_purple,gem_crystal_purple,shrimp;true;;;
+MAZE_03_SMALL_CHEST;MAZE_03_SMALL_CHEST;1;gem_small_blue,gem_crystal_blue,shrimp;true;;;
+MAZE_04_SMALL_CHEST;MAZE_04_SMALL_CHEST;1;gem_small_orange,gem_crystal_orange,shrimp;true;;;
+LOST_CORK_TAVERN_SMALL_CHEST;LOST_CORK_TAVERN_SMALL_CHEST;;;true;golden_coin, silver_key;;

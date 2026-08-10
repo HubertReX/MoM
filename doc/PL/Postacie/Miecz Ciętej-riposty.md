@@ -1,6 +1,7 @@
 ---
 aliases:
   - CLAPBACK_SWORD
+  - Miecz
 alternative:
 EN: "[[EN/Characters/Clapback Sword]]"
 inspirations:

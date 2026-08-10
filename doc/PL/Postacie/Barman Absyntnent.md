@@ -1,6 +1,7 @@
 ---
 aliases:
   - BARMAN_ABSINTHRAYNER
+  - Barman
 alternative:
 EN: "[[Barman Absinthrayner]]"
 inspirations:

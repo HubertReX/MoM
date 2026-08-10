@@ -521,7 +521,8 @@
                 "gem_small_green",
                 "gem_crystal_green",
                 "shrimp"
-            ]
+            ],
+            "is_small": true
         },
         "MAZE_01_BIG_CHEST": {
             "name": "MAZE_01_BIG_CHEST",
@@ -543,7 +544,8 @@
                 "gem_small_purple",
                 "gem_crystal_purple",
                 "shrimp"
-            ]
+            ],
+            "is_small": true
         },
         "MAZE_02_BIG_CHEST": {
             "name": "MAZE_02_BIG_CHEST",
@@ -565,7 +567,8 @@
                 "gem_small_blue",
                 "gem_crystal_blue",
                 "shrimp"
-            ]
+            ],
+            "is_small": true
         },
         "MAZE_03_BIG_CHEST": {
             "name": "MAZE_03_BIG_CHEST",
@@ -587,7 +590,8 @@
                 "gem_small_orange",
                 "gem_crystal_orange",
                 "shrimp"
-            ]
+            ],
+            "is_small": true
         },
         "MAZE_04_BIG_CHEST": {
             "name": "MAZE_04_BIG_CHEST",
@@ -605,8 +609,10 @@
         "LOST_CORK_TAVERN_SMALL_CHEST": {
             "name": "LOST_CORK_TAVERN_SMALL_CHEST",
             "items": [
-                "golden_coin"
-            ]
+                "golden_coin",
+                "silver_key"
+            ],
+            "is_small": true
         },
         "BLUNDERHAVEN_BIG_CHEST": {
             "name": "BLUNDERHAVEN_BIG_CHEST",
@@ -614,8 +620,10 @@
             "items": [
                 "sai",
                 "beef",
-                "shrimp"
-            ]
+                "golden_key"
+            ],
+            "requires_item": "silver_key",
+            "consumes_key": true
         }
     },
     "items": {
