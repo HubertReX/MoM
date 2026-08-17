@@ -51,7 +51,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "O co tu chodzi#Q00_S00_WHAT_IS_GOING_ON"
+   "link": "Q00_S00 O co tu chodzi"
   },
   {
    "id": "Q01_S00_BREAK_THE_CURSE",
@@ -77,8 +77,8 @@
      "bold": false
     }
    ],
-   "completion": "manual",
-   "completion_text": "zamyka ją tylko kod gry",
+   "completion": "all_subquests",
+   "completion_text": "zamyka się, gdy zamkną się jej kroki",
    "test": null,
    "progress": null,
    "progress_total": 0,
@@ -89,11 +89,11 @@
     "+5 obrażeń"
    ],
    "colour": {
-    "bg": "#ffd8a8",
-    "border": "#f08c00"
+    "bg": "#b2f2bb",
+    "border": "#2f9e44"
    },
-   "problem": "completion: manual - zamknie ją tylko kod gry (mark_done)",
-   "link": "Przełamać klątwę#Q01_S00_BREAK_THE_CURSE"
+   "problem": null,
+   "link": "Q01_S00 Przełamać klątwę"
   },
   {
    "id": "Q01_S01_LEARN_ABOUT_CURSE",
@@ -111,7 +111,7 @@
      "bold": false
     },
     {
-     "text": "karczmie",
+     "text": "Tawernie",
      "bold": true
     },
     {
@@ -134,10 +134,10 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Przełamać klątwę#Q01_S01_LEARN_ABOUT_CURSE"
+   "link": "Q01_S01 Dowiedz się więcej o klątwie"
   },
   {
-   "id": "Q01_S05_MEET_MADAME_SARCASMIA",
+   "id": "Q01_S02_MEET_MADAME_SARCASMIA",
    "level": 3,
    "name": "Spotkaj się z Sarkażmijką",
    "name_runs": [
@@ -152,7 +152,7 @@
    ],
    "description_runs": [
     {
-     "text": "Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para - i podobno ma o sobie bardzo wysokie mniemanie.",
+     "text": "Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie **bardzo** wysokie mniemanie.",
      "bold": false
     }
    ],
@@ -171,7 +171,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Przełamać klątwę#Q01_S05_MEET_MADAME_SARCASMIA"
+   "link": "Q01_S02 Spotkaj się z Sarkażmijką"
   },
   {
    "id": "Q03_S00_LEARN_ABOUT_CURSE",
@@ -185,15 +185,7 @@
    ],
    "description_runs": [
     {
-     "text": "W tej okolicy nikt nie zaglądał do książki od czasów, gdy ",
-     "bold": false
-    },
-    {
-     "text": "karczma",
-     "bold": true
-    },
-    {
-     "text": " miała jeszcze cały dach. Ale ktoś, gdzieś, musi wiedzieć o klątwach coś więcej niż plotki.",
+     "text": "W tej okolicy nikt do książek nie zagląda, brak tu sołtysa, księdza, albo chociaż starego dziada, który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o klątwach więcej niż same plotki.",
      "bold": false
     }
    ],
@@ -212,7 +204,7 @@
     "border": "#2f9e44"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#Q03_S00_LEARN_ABOUT_CURSE"
+   "link": "Q03_S00 Znajdź kogoś kto wie o klątwach"
   },
   {
    "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
@@ -247,11 +239,11 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#Q03_S01_WHO_HAS_MORE_KNOWLEDGE"
+   "link": "Q03_S01 Kto ma wiedzę o magii"
   },
   {
    "id": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
-   "level": 4,
+   "level": 5,
    "name": "Gdzie znaleźć tę osobę?",
    "name_runs": [
     {
@@ -286,11 +278,11 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#Q03_S02_WHERE_TO_FIND_THIS_PERSON"
+   "link": "Q03_S02 Gdzie znaleźć tę osobę"
   },
   {
    "id": "Q03_S03_HOW_TO_GET_THERE",
-   "level": 4,
+   "level": 6,
    "name": "Jak tam dotrzeć?",
    "name_runs": [
     {
@@ -300,7 +292,7 @@
    ],
    "description_runs": [
     {
-     "text": "Miasto jest gdzieś na północy. \"Gdzieś\" to stanowczo za mało, żeby ruszać w drogę.",
+     "text": "Miasto jest gdzieś na północy. \"_Gdzieś_\" to stanowczo za mało, żeby ruszać w drogę.",
      "bold": false
     }
    ],
@@ -317,7 +309,7 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Znajdź kogoś kto wie o klątwach#Q03_S03_HOW_TO_GET_THERE"
+   "link": "Q03_S03 Jak tam dotrzeć"
   }
  ],
  "edges": [
@@ -329,16 +321,21 @@
   {
    "from": "Q01_S00_BREAK_THE_CURSE",
    "to": "Q01_S01_LEARN_ABOUT_CURSE",
-   "kind": "parent"
-  },
-  {
-   "from": "Q01_S01_LEARN_ABOUT_CURSE",
-   "to": "Q01_S05_MEET_MADAME_SARCASMIA",
    "kind": "requires"
   },
   {
    "from": "Q01_S00_BREAK_THE_CURSE",
-   "to": "Q01_S05_MEET_MADAME_SARCASMIA",
+   "to": "Q01_S01_LEARN_ABOUT_CURSE",
+   "kind": "parent"
+  },
+  {
+   "from": "Q01_S01_LEARN_ABOUT_CURSE",
+   "to": "Q01_S02_MEET_MADAME_SARCASMIA",
+   "kind": "requires"
+  },
+  {
+   "from": "Q01_S00_BREAK_THE_CURSE",
+   "to": "Q01_S02_MEET_MADAME_SARCASMIA",
    "kind": "parent"
   },
   {
@@ -349,12 +346,27 @@
   {
    "from": "Q03_S00_LEARN_ABOUT_CURSE",
    "to": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "kind": "requires"
+  },
+  {
+   "from": "Q03_S00_LEARN_ABOUT_CURSE",
+   "to": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
    "kind": "parent"
+  },
+  {
+   "from": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "to": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
+   "kind": "requires"
   },
   {
    "from": "Q03_S00_LEARN_ABOUT_CURSE",
    "to": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
    "kind": "parent"
+  },
+  {
+   "from": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
+   "to": "Q03_S03_HOW_TO_GET_THERE",
+   "kind": "requires"
   },
   {
    "from": "Q03_S00_LEARN_ABOUT_CURSE",

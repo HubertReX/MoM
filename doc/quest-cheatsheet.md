@@ -8,68 +8,74 @@ tags: [sciagawka, questy]
 > Nie edytuj ręcznie - wszystko poniżej jest wyprowadzone z kodu (enumy, whitelista
 > warunków, walidatory), więc nie może rozjechać się z tym, co robi import i silnik.
 
-> [!important] Kolejność sekcji jest kolejnością podpowiadaną graczowi
+> [!important] Kolejność kluczy jest kolejnością podpowiadaną graczowi
 > HUD pokazuje **jeden** quest naraz - wskaźnik „co teraz?" (H01/D7). Gdy śledzony krok
 > się zamknie, gra przechodzi do następnego: najpierw do tego, co ten krok właśnie
 > odblokował, potem do nieukończonego rodzeństwa - a w obu przypadkach bierze
-> **pierwszy w kolejności definicji**, czyli pierwszy w kolejności sekcji w tym pliku.
-> Kolejność, w której to piszesz, jest więc kolejnością, w jakiej gracz to zobaczy.
+> **pierwszy w kolejności definicji**, czyli pierwszy po kluczu (`Q01_S01` przed
+> `Q01_S02`). Numer w kluczu jest więc kolejnością, w jakiej gracz to zobaczy.
 > Parasole wskaźnik pomija (to tytuł rozdziału, nie instrukcja), choć gracz może
 > przypiąć dowolny quest ręcznie klawiszem `T` w dzienniku.
 
 ## Szablon questa
 
-Jeden plik = jeden główny quest. Nagłówek sekcji jest **kluczem** questa, dosłownie, i musi
-być globalnie unikalny. Alias to **własny klucz parasola** - sekcji, której podlegają
-wszystkie pozostałe w pliku.
+**Jeden plik = jeden quest.** Alias we frontmatterze jest **kluczem** questa, dosłownie, i
+musi być globalnie unikalny; nagłówek `# H1` jest jego tytułem.
 
-**PL** (`doc/PL/Misje/<Tytuł questa>.md`) jest źródłem prawdy;
-**EN** (`doc/EN/Quests/<Quest title>.md`) daje samą prozę.
+**PL** (`doc/PL/Misje/Qxx_Syy <Tytuł questa>.md`) jest źródłem prawdy;
+**EN** (`doc/EN/Quests/Qxx_Syy <Quest title>.md`) daje samą prozę.
 
 ```markdown
 ---
 aliases:
-  - Q01_S00_BREAK_THE_CURSE
+  - Q01_S01_LEARN_ABOUT_CURSE
 ---
-
-# Przełamać klątwę
-
-Proza wprowadzająca do łańcucha (opcjonalna, nie trafia do gry).
-
-## Q01_S00_BREAK_THE_CURSE
-
-**Tytuł**: Przełamać klątwę
+# Dowiedz się więcej o klątwie
 
 Opis, który gracz zobaczy w dzienniku. Obsługuje znaczniki: [char]Kowal[/].
 
-**Completion**: manual
-**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]
-**Sukces**: Klątwa zdjęta. Miecz milczy pierwszy raz od tygodni.
-**Nagroda**: max_health=20
-**Nagroda**: damage=5
-
-## Q01_S01_LEARN_ABOUT_CURSE
-
-**Tytuł**: Dowiedz się więcej o klątwie
-
-Każda sekcja poza tą z aliasu jest krokiem parasola - `parent` bierze się z pliku.
-
-**Completion**: test
-**Test**: visited("BARMAN_ABSINTHRAYNER", "012")
+**Requires**: [[Q01_S00 Przełamać klątwę]]
+**Completion**: `test`
+**Test**: `visited(`[[Barman Absyntnent#012|Barman#012]]`)`
 **Sukces**: Barman gada. Barman zawsze gada.
+**Nagroda**: `health=20`
+
+## Notatki
+
+Cokolwiek dla autora - importer przestaje czytać na pierwszym `##`.
 ```
+
+### Klucz mówi, do jakiego wątku należy quest
+
+Klucz czyta się `Qxx_Syy_NAZWA`: `Qxx` to **wątek**, `Syy` to **krok w nim**. Krok `S00`
+jest parasolem wątku, a każdy inny krok tego samego `Qxx` jest jego podquestem - `parent`
+**nie jest nigdzie zapisywany**, tylko wyliczany z klucza. Dlatego:
+
+- wątek bez `S00` to błąd importu (kroki nie miałyby rodzica),
+- dwa `S00` w jednym wątku to też błąd,
+- nazwa pliku powtarza prefiks `Qxx_Syy` po to, żeby katalog sortował się w kolejności gry.
+
+Kolejność **między krokami** to osobna rzecz: mówi o niej `Requires`, nie numeracja.
+
+### Notatki - to, czego gracz nie zobaczy
+
+Wszystko od **pierwszego nagłówka `##`** w dół importer pomija. Tam trafiają uwagi
+autorskie, długi treści, „dlaczego tak" - proza **nad** nim należy do gracza i ląduje w
+dzienniku. Pole `**Coś**:` zapisane poniżej `##` nie działa; import wypisze o tym
+ostrzeżenie zamiast po cichu je zjeść.
 
 ## Lista pól
 
-| Pole | Można też napisać | Obowiązkowe | Skąd czytane |
-| --- | --- | --- | --- |
-| `title` | `title`, `tytul`, `tytuł` | tak | PL i EN |
-| `success` | `success`, `sukces` | tak | PL i EN |
-| `completion` | `completion`, `ukonczenie`, `ukończenie` | tak | **tylko PL** |
-| `test` | `test` | gdy `completion: test` | **tylko PL** |
-| `requires` | `requires`, `wymaga` | nie | **tylko PL** |
-| `progress` | `postep`, `postęp`, `progress` | nie | **tylko PL** |
-| `reward` | `nagroda`, `reward` | nie | **tylko PL** |
+| Pole         | Można też napisać                        | Obowiązkowe            | Skąd czytane |
+| ------------ | ---------------------------------------- | ---------------------- | ------------ |
+| `success`    | `success`, `sukces`                      | tak                    | PL i EN      |
+| `completion` | `completion`, `ukonczenie`, `ukończenie` | tak                    | **tylko PL** |
+| `test`       | `test`                                   | gdy `completion: test` | **tylko PL** |
+| `requires`   | `requires`, `wymaga`                     | nie                    | **tylko PL** |
+| `progress`   | `postep`, `postęp`, `progress`           | nie                    | **tylko PL** |
+| `reward`     | `nagroda`, `reward`                      | nie                    | **tylko PL** |
+
+**Tytuł** nie jest polem - to nagłówek `# H1` pliku.
 
 Poza tymi polami obowiązkowa jest też **proza opisu** - akapit, który nie jest linią
 `Pole:`. To on trafia do dziennika jako opis questa.
@@ -78,27 +84,60 @@ Poza tymi polami obowiązkowa jest też **proza opisu** - akapit, który nie jes
 jest ignorowane z ostrzeżeniem - dzięki temu plik **EN** można bezpiecznie wygenerować
 LLM-em: najgorsze, co zrobi, to źle napisana proza, nigdy zepsuty quest.
 
+## Backquote i wikilinki - jak się pisze wartości
+
+Wartość, którą czyta silnik (`Completion`, `Test`, `Postęp`, `Nagroda`), zamyka się w
+**backquote'ach**: w Obsidianie widać wtedy od razu, gdzie kończy się proza, a zaczyna
+kod. Importer je zdejmuje.
+
+Odwołanie do postaci albo questa pisze się w środku jako **prawdziwy wikilink**, przeplatany
+z backquote'ami - dzięki temu jedno wyrażenie jest jednocześnie warunkiem dla silnika i
+krawędzią w grafie Obsidiana, po którym widać, kto od czego zależy:
+
+```markdown
+**Test**: `visited(`[[Barman Absyntnent#012|Barman#012]]`) or visited(`[[Barman Absyntnent#009|Barman#009]]`)`
+```
+
+Import rozwija linki po kluczach z frontmatteru notatki, na którą wskazują:
+
+- `[[Notatka#kotwica]]` -> `"KLUCZ", "kotwica"` - kotwica to węzeł dialogu, więc jeden link
+  daje **oba** argumenty `visited()`. Sufiks `-end` w nagłówku dialogu nie należy do klucza
+  węzła i jest obcinany.
+- `[[Notatka]]` -> `"KLUCZ"` - sama encja.
+
+Link do notatki, której w vaulcie nie ma, to błąd importu z numerem linii - literówka w
+nazwie postaci nie ma szans dożyć do gry. Stary zapis z gołymi stringami
+(`visited("BARMAN_ABSINTHRAYNER", "012")`) nadal działa, ale nie rysuje się w grafie.
+
+> [!warning] Nie zaczynaj backquote'a od znaku równości
+> Zawartość backquote'a zaczynającą się od znaku równości Dataview bierze za **inline
+> query** i zamiast operatora wypisuje w notatce błąd parsera (tak umiera zapis równości
+> wpisany wprost). Wstaw spację po otwierającym backquote - ` ==` - wygląda tak samo,
+> a Dataview przestaje się tym interesować.
+
 ## Requires - zależności między questami
 
-Link do questa, który musi być ukończony, aby **odblokować** ten krok. Klucz to tekst po
-ostatnim `#`, więc każdy poniższy zapis znaczy to samo:
+Link do questa, który musi być ukończony, aby **odblokować** ten krok. Każdy poniższy zapis
+znaczy to samo:
 
-| Zapis | Kiedy |
-| --- | --- |
-| `[[#Q01_S05_MEET_MADAME_SARCASMIA]]` | cel w **tym samym pliku** - jedyna forma, którą Obsidian rozwiązuje wewnątrz notatki |
-| `[[Q01_S00_BREAK_THE_CURSE#Q01_S01_LEARN_ABOUT_CURSE]]` | **krok innego łańcucha** - alias rozwiązuje plik, więc link przeżyje zmianę nazwy pliku |
-| `[[Q00_S00_WHAT_IS_GOING_ON]]` | **parasol innego łańcucha** - alias JEST jego kluczem, więc powtarzanie go po `#` mówiłoby to samo dwa razy |
-| `Q01_S01_LEARN_ABOUT_CURSE` | goły klucz, dalej działa |
+| Zapis                                      | Kiedy                                                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `[[Q01_S01 Dowiedz się więcej o klątwie]]` | **po nazwie notatki** - to podpowiada autouzupełnianie Obsidiana i to rysuje graf                 |
+| `[[Q01_S01_LEARN_ABOUT_CURSE]]`            | **po aliasie**, czyli po kluczu - alias rozwiązuje notatkę, więc link przeżyje zmianę nazwy pliku |
+| `Q01_S01_LEARN_ABOUT_CURSE`                | goły klucz, dalej działa                                                                          |
 
 Można wymienić kilka naraz, **po przecinku**.
 
+`Requires` to jedyne miejsce, w którym zapisuje się **kolejność kroków w wątku**: parasol
+bierze się z klucza, ale to, czy kroki idą po kolei, czy równolegle, wynika wyłącznie stąd.
+
 ## Completion - kiedy quest się zamyka
 
-| Wartość | Znaczenie |
-| --- | --- |
+| Wartość         | Znaczenie                                                          |
+| --------------- | ------------------------------------------------------------------ |
 | `all_subquests` | parasol - zamyka się, gdy zamkną się wszystkie jej podrzędne kroki |
-| `test` | zamyka się sama, gdy `Test:` staje się prawdą |
-| `manual` | zamyka ją **wyłącznie kod gry** (`mark_done`) |
+| `test`          | zamyka się sama, gdy `Test:` staje się prawdą                      |
+| `manual`        | zamyka ją **wyłącznie kod gry** (`mark_done`)                      |
 
 Odrzucane przy imporcie (`just import-quests`):
 
@@ -115,15 +154,15 @@ Odrzucane przy imporcie (`just import-quests`):
 Mini-DSL, nie `eval()`: whitelista dopuszczalnych komend, wszystko inne to błąd importu
 (`just import-quests`) z numerem linii.
 
-| Wywołanie | Znaczenie |
-| --- | --- |
-| `has_item("MERMAIDS_TEAR")` | gracz ma przedmiot `ITEM` w ekwipunku |
-| `item_count("MERMAIDS_TEAR") >= 3` | ile sztuk `ITEM` gracz ma (liczba, nie prawda/fałsz) |
-| `quest_done("Q01_S01_LEARN_ABOUT_CURSE")` | quest `KEY` jest ukończony |
-| `visited("BARMAN_ABSINTHRAYNER", "012")` | gracz odwiedził węzeł dialogu `NODE` u postaci `NPC` |
+| Wywołanie                                 | Znaczenie                                            |
+| ----------------------------------------- | ---------------------------------------------------- |
+| `has_item("MERMAIDS_TEAR")`               | gracz ma przedmiot `ITEM` w ekwipunku                |
+| `item_count("MERMAIDS_TEAR") >= 3`        | ile sztuk `ITEM` gracz ma (liczba, nie prawda/fałsz) |
+| `quest_done("Q01_S01_LEARN_ABOUT_CURSE")` | quest `KEY` jest ukończony                           |
+| `visited("BARMAN_ABSINTHRAYNER", "012")`  | gracz odwiedził węzeł dialogu `NODE` u postaci `NPC` |
 
 **Łączenie**: `and`, `or`, `not`, nawiasy.
-**Porównania**: `==` `!=` `<` `<=` `>` `>=` `in` `not in`.
+**Porównania**: ` ==` `!=` `<` `<=` `>` `>=` `in` `not in`.
 
 Gołych nazw-wartości nie ma - `sentiment` działa tylko w dialogu, bo quest nie ma kontekstu bieżącej postaci.
 
@@ -167,15 +206,15 @@ nich `Postęp:`.
 Jedna linia `Nagroda:` per bonus dla gracza - **wszystkie są aplikowane**, nie tylko
 pierwsza.
 
-| Kategoria | Znaczenie | Przykład |
-| --- | --- | --- |
-| `money=nn` | złoto | `money=50` |
-| `items=KEY_1,KEY_2` | przedmioty (po przecinku) | `items=MERMAIDS_TEAR, PHOENIX_FEATHER` |
-| `health=nn` | leczy bieżące HP | `health=20` |
-| `max_health=nn` | podnosi max HP **i bieżące o tyle samo** | `max_health=20` |
-| `damage=nn` | zwiększa obrażenia zadawane przez gracza | `damage=5` |
-| `max_items=nn` | sloty w pasku (limit `MAX_HOTBAR_ITEMS_LIMIT=8`) | `max_items=7` |
-| `sentiment=nn @CHAR_KEY` | sympatia NPC - **wymaga `@NPC_KEY`** | `sentiment=10 @BARMAN_ABSINTHRAYNER` |
+| Kategoria                | Znaczenie                                        | Przykład                               |
+| ------------------------ | ------------------------------------------------ | -------------------------------------- |
+| `money=nn`               | złoto                                            | `money=50`                             |
+| `items=KEY_1,KEY_2`      | przedmioty (po przecinku)                        | `items=MERMAIDS_TEAR, PHOENIX_FEATHER` |
+| `health=nn`              | leczy bieżące HP                                 | `health=20`                            |
+| `max_health=nn`          | podnosi max HP **i bieżące o tyle samo**         | `max_health=20`                        |
+| `damage=nn`              | zwiększa obrażenia zadawane przez gracza         | `damage=5`                             |
+| `max_items=nn`           | sloty w pasku (limit `MAX_HOTBAR_ITEMS_LIMIT=8`) | `max_items=7`                          |
+| `sentiment=nn @CHAR_KEY` | sympatia NPC - **wymaga `@NPC_KEY`**             | `sentiment=10 @BARMAN_ABSINTHRAYNER`   |
 
 Odrzucane przy imporcie:
 
@@ -193,17 +232,17 @@ temu przeważenie nagrody nie dotyka tłumaczeń.
 Działają w `Tytuł`, w prozie opisu i w `Sukces`. W grze renderują się odpowiednim stylem,
 a w tooltipie grafu spłaszczają się do **pogrubienia**.
 
-| Rodzaj | Znaczniki |
-| --- | --- |
-| kolor | `[act]`, `[char]`, `[error]`, `[item]`, `[loc]`, `[num]`, `[quest]`, `[text]` |
-| rozmiar / nagłówek | `[big]`, `[h1]`, `[h2]`, `[h3]`, `[small]` |
-| wyróżnienie | `[b]`, `[bold]`, `[i]`, `[italic]`, `[u]`, `[underline]` |
-| cień | `[dark]`, `[light]`, `[shadow]` |
-| wyrównanie | `[center]`, `[left]`, `[right]` |
-| link | `[link https://...]tekst[/link]` |
+| Rodzaj             | Znaczniki                                                                     |
+| ------------------ | ----------------------------------------------------------------------------- |
+| kolor              | `[act]`, `[char]`, `[error]`, `[item]`, `[loc]`, `[num]`, `[quest]`, `[text]` |
+| rozmiar / nagłówek | `[big]`, `[h1]`, `[h2]`, `[h3]`, `[small]`                                    |
+| wyróżnienie        | `[b]`, `[bold]`, `[i]`, `[italic]`, `[u]`, `[underline]`                      |
+| cień               | `[dark]`, `[light]`, `[shadow]`                                               |
+| wyrównanie         | `[center]`, `[left]`, `[right]`                                               |
+| link               | `[link https://...]tekst[/link]`                                              |
 
-`[/]` zamyka **ostatni otwarty** znacznik, więc `[char]Kowal[/]` == `[char]Kowal[/char]`,
-a `[h3][char]X[/][/]` domyka najpierw `char`, potem `h3`.
+`[/]` zamyka **ostatni otwarty** znacznik, więc `[char]Kowal[/]` znaczy to samo co
+`[char]Kowal[/char]`, a `[h3][char]X[/][/]` domyka najpierw `char`, potem `h3`.
 
 Emotki wstawia się jako `:nazwa:` - pełen arkusz z kluczami:
 ![[_attachements/mom-emote-sheet.png]]

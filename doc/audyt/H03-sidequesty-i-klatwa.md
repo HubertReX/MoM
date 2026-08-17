@@ -218,7 +218,7 @@ Miecz: "Zapłacił Ci za milczenie. Zapamiętaj to - to jest pierwszy raz, kiedy
 ```
 
 **Nagroda:** `money=120`, `sentiment=+10 @HAMMER_HOAXHEART`
-**Requires:** `Q05_S01_ORE_UNDER_BOULDER` ([[#Q05_S01 - Ruda spod głazu]]) **i** `Q01_S01_LEARN_ABOUT_CURSE` ([[Przełamać klątwę#Q01_S01_LEARN_ABOUT_CURSE]])
+**Requires:** `Q05_S01_ORE_UNDER_BOULDER` ([[#Q05_S01 - Ruda spod głazu]]) **i** `Q01_S01_LEARN_ABOUT_CURSE` ([[Q01_S01 Dowiedz się więcej o klątwie]])
 
 ---
 
@@ -254,7 +254,7 @@ Miecz: "Bo przeczytałeś ją głośno, a ja mam bardzo dobrą pamięć."
 To zdanie **zapala Akt 2** i jest najważniejszą linijką w całym Prologu: od tej chwili klątwa nie jest chorobą do wyleczenia, tylko rzeczą do przekazania - a [[Malachiasz|Malachi]] zna już całkiem sporo osób.
 
 **Nagroda:** `max_health=+10`, `sentiment=+15 @POTIONEER_PUZZLEMINT`
-**Requires:** `Q03_S01_WHO_HAS_MORE_KNOWLEDGE` ([[Znajdź kogoś kto wie o klątwach#Q03_S01_WHO_HAS_MORE_KNOWLEDGE]]) bo musi wiedzieć, kim była [[Bibliofilistka des Informacja|Mariolka]].
+**Requires:** `Q03_S01_WHO_HAS_MORE_KNOWLEDGE` ([[Q03_S01 Kto ma wiedzę o magii]]) bo musi wiedzieć, kim była [[Bibliofilistka des Informacja|Mariolka]].
 
 **Do rozstrzygnięcia u autora:** czy ta kartka ma być tu, czy dopiero u [[Bibliofilistka des Informacja|Bibliofilistki]] w Akcie 2. Tu jest wcześniej i mocniej, ale zjada część niespodzianki Aktu 2.
 
@@ -284,7 +284,7 @@ Barki odblokowane tym questem (do `doc/PL/Barki.md`):
 - [[Marysia]]: „_Mąż mówi, że jak pan przejdzie koło studni, to woda się dłużej trzyma._"
 
 **Nagroda:** `money=100`, `life_pot`, `sentiment=+10 @POTIONEER_PUZZLEMINT`.
-**Requires:** `Q01_S01_LEARN_ABOUT_CURSE` [[Przełamać klątwę#Q01_S01_LEARN_ABOUT_CURSE]] bez plotki ten quest nie ma prawa istnieć.
+**Requires:** `Q01_S01_LEARN_ABOUT_CURSE` [[Q01_S01 Dowiedz się więcej o klątwie]] bez plotki ten quest nie ma prawa istnieć.
 
 ---
 

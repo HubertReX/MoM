@@ -396,7 +396,7 @@ Autor chce, żeby po ujawnieniu klątwy zmieniły się powitania, doszły nowe o
 dialogowe, a część domyślnych zniknęła. Kuszące jest dopisać do configu tabelę
 „światowych faktów". Nie trzeba - **ten fakt już jest zapisany i już się serializuje**:
 
-`Q01_S01_LEARN_ABOUT_CURSE` (`doc/PL/Misje/Przełamać klątwę.md`) ma dziś test
+`Q01_S01_LEARN_ABOUT_CURSE` (`doc/PL/Misje/Q01_S01 Dowiedz się więcej o klątwie.md`) ma dziś test
 `visited("BARMAN_ABSINTHRAYNER", "012") or visited("BARMAN_ABSINTHRAYNER", "009")`.
 Wystarczy **rozszerzyć ten test** o pozostałe linie, w których Malachi się przyznaje
 (u Zielarki `#009`, u Miecza, u kolejnych postaci z H03), i każdy bark oraz każda opcja

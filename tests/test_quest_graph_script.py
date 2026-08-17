@@ -26,7 +26,7 @@ from test_quest_entities import SAMPLE
 Q00 = "Q00_S00_WHAT_IS_GOING_ON"
 Q01_S00 = "Q01_S00_BREAK_THE_CURSE"
 Q01_S01 = "Q01_S01_LEARN_ABOUT_CURSE"
-Q01_S05 = "Q01_S05_MEET_MADAME_SARCASMIA"
+Q01_S02 = "Q01_S02_MEET_MADAME_SARCASMIA"
 Q03_S00 = "Q03_S00_LEARN_ABOUT_CURSE"
 Q03_S01 = "Q03_S01_WHO_HAS_MORE_KNOWLEDGE"
 
@@ -46,7 +46,7 @@ def _defs():  # type: ignore[no-untyped-def]
 def test_rank_follows_the_longest_unlock_path() -> None:
     """A quest waits for *all* of its requires, so its rank is its slowest dep + 1.
 
-    Q01_S05 is the case that separates this from a BFS: its parent sits at rank 1,
+    Q01_S02 is the case that separates this from a BFS: its parent sits at rank 1,
     but it also requires Q01_S01 at rank 2. Shortest-path would draw it at rank 2,
     beside the very quest it is waiting for - a picture claiming the two open
     together, when one gates the other.
@@ -56,8 +56,8 @@ def test_rank_follows_the_longest_unlock_path() -> None:
     assert_eq(rank[Q00], 0, "nothing gates the opening quest")
     assert_eq(rank[Q01_S00], 1, "one requires deep")
     assert_eq(rank[Q01_S01], 2, "a step sits one past its thread")
-    assert_eq(rank[Q01_S05], 3, "past its requires (2), not just its parent (1)")
-    assert_true(rank[Q01_S05] > rank[Q01_S01], "drawn after what it waits for")
+    assert_eq(rank[Q01_S02], 3, "past its requires (2), not just its parent (1)")
+    assert_true(rank[Q01_S02] > rank[Q01_S01], "drawn after what it waits for")
     assert_eq(rank[Q03_S00], 3, "a cross-chain requires still ranks")
     assert_eq(rank[Q03_S01], 4, "and its steps follow it")
 
@@ -90,7 +90,7 @@ def test_a_healthy_chain_is_not_flagged() -> None:
     """Q03: an all_subquests umbrella over three test steps closes by itself."""
     broken = uncloseable(_defs())
 
-    for key in (Q00, Q01_S01, Q01_S05, Q03_S00, Q03_S01):
+    for key in (Q00, Q01_S01, Q01_S02, Q03_S00, Q03_S01):
         assert_true(key not in broken, f"{key} closes on its own")
 
 
@@ -102,9 +102,9 @@ def test_both_gate_kinds_become_edges() -> None:
     assert_eq(edges[(Q00, Q01_S00)], "requires", "done-gate")
     assert_eq(edges[(Q01_S00, Q01_S01)], "parent", "unlocked-gate, drawn thread -> step")
     assert_eq(edges[(Q01_S01, Q03_S00)], "requires", "the cross-chain edge is not lost")
-    # Q01_S05 is gated both ways: both edges exist, neither swallows the other
-    assert_eq(edges[(Q01_S00, Q01_S05)], "parent", "its thread")
-    assert_eq(edges[(Q01_S01, Q01_S05)], "requires", "and its prerequisite")
+    # Q01_S02 is gated both ways: both edges exist, neither swallows the other
+    assert_eq(edges[(Q01_S00, Q01_S02)], "parent", "its thread")
+    assert_eq(edges[(Q01_S01, Q01_S02)], "requires", "and its prerequisite")
 
 
 def test_names_resolve_through_messages() -> None:

@@ -17,9 +17,12 @@ SORT file.aliases ASC, file ASC
 
 ## lista
 
-- [[O co tu chodzi]]
-- [[Przełamać klątwę]]
-- [[Znajdź kogoś kto wie o klątwach]]
+Jeden plik = jeden quest, więc poniżej są same parasole wątków (krok `S00`). Pełną listę
+z krokami daje tabela wyżej.
+
+- [[Q00_S00 O co tu chodzi]]
+- [[Q01_S00 Przełamać klątwę]]
+- [[Q03_S00 Znajdź kogoś kto wie o klątwach]]
 
 ### **PL Finding the Amulet of Un-Cursing**
 

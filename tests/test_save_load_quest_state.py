@@ -124,21 +124,18 @@ def test_reimporting_content_does_not_lose_progress() -> None:
 aliases:
   - Q00_S00_WHAT_IS_GOING_ON
 ---
-
-## Q00_S00_WHAT_IS_GOING_ON
-
-**Tytuł**: O co tu chodzi?
+# O co tu chodzi?
 
 Miecz gada.
 
-**Completion**: test
-**Test**: visited("CLAPBACK_SWORD", "015")
+**Completion**: `test`
+**Test**: `visited("CLAPBACK_SWORD", "015")`
 **Sukces**: To klątwa.
 """
-    en = pl.replace("**Tytuł**: O co tu chodzi?", "**Title**: What is going on?").replace(
+    en = pl.replace("# O co tu chodzi?", "# What is going on?").replace(
         "Miecz gada.", "The sword talks."
     ).replace("**Sukces**: To klątwa.", "**Success**: It is a curse.").replace(
-        '**Completion**: test\n**Test**: visited("CLAPBACK_SWORD", "015")\n', ""
+        '**Completion**: `test`\n**Test**: `visited("CLAPBACK_SWORD", "015")`\n', ""
     )
 
     with tempfile.TemporaryDirectory() as tmp:

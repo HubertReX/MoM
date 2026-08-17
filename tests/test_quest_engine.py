@@ -31,7 +31,7 @@ from test_quest_entities import SAMPLE, _msgs
 Q00 = "Q00_S00_WHAT_IS_GOING_ON"
 Q01_S00 = "Q01_S00_BREAK_THE_CURSE"
 Q01_S01 = "Q01_S01_LEARN_ABOUT_CURSE"
-Q01_S05 = "Q01_S05_MEET_MADAME_SARCASMIA"
+Q01_S02 = "Q01_S02_MEET_MADAME_SARCASMIA"
 Q03_S00 = "Q03_S00_LEARN_ABOUT_CURSE"
 Q03_S01 = "Q03_S01_WHO_HAS_MORE_KNOWLEDGE"
 Q03_S02 = "Q03_S02_WHERE_TO_FIND_THIS_PERSON"
@@ -69,7 +69,7 @@ BARMAN_CURSE = {"BARMAN_ABSINTHRAYNER": {"012"}}          # Q01_S01
 BARMAN_ROUTE = {"BARMAN_ABSINTHRAYNER": {"017"}}          # Q03_S03
 POTIONEER = {"POTIONEER_PUZZLEMINT": {"014"}}             # Q03_S01
 HAMMER = {"HAMMER_HOAXHEART": {"009"}}                    # Q03_S02
-SARCASMIA = {"MADAME_SARCASMIA": {"SARCASMIA_AA_BACK_SO_SOON"}}  # Q01_S05
+SARCASMIA = {"MADAME_SARCASMIA": {"SARCASMIA_AA_BACK_SO_SOON"}}  # Q01_S02
 
 
 def test_only_the_opening_quest_is_unlocked_at_start() -> None:
@@ -97,8 +97,8 @@ def test_finishing_the_opening_quest_opens_the_curse_thread() -> None:
     assert_true(is_unlocked(defs, state, Q01_S01), "first curse step unlocked")
     assert_true(Q01_S00 in result.newly_unlocked, "umbrella reported as newly unlocked")
     assert_true(Q01_S01 in result.newly_unlocked, "step reported as newly unlocked")
-    # ...but Q01_S05 waits on S01, and the Q03 thread waits on S01 too
-    assert_true(not is_unlocked(defs, state, Q01_S05), "Sarcasmia still gated")
+    # ...but Q01_S02 waits on S01, and the Q03 thread waits on S01 too
+    assert_true(not is_unlocked(defs, state, Q01_S02), "Sarcasmia still gated")
     assert_true(not is_unlocked(defs, state, Q03_S00), "Q03 thread still gated")
 
 
@@ -120,7 +120,7 @@ def test_cascade_completes_a_chain_in_one_sweep() -> None:
     assert_true(Q01_S01 not in result.newly_unlocked, "no 'you may now start' for a finished quest")
     # and its completion opened the next two things
     assert_true(is_unlocked(defs, state, Q03_S00), "Q03 thread opened by the cascade")
-    assert_true(is_unlocked(defs, state, Q01_S05), "Sarcasmia opened by the cascade")
+    assert_true(is_unlocked(defs, state, Q01_S02), "Sarcasmia opened by the cascade")
     assert_true(Q03_S00 in result.newly_unlocked, "reported as newly unlocked")
 
     # a second sweep with nothing new is quiet
@@ -175,7 +175,7 @@ def test_manual_quest_never_completes_on_its_own() -> None:
     check_quests(defs, state, ctx)
 
     assert_true(state.is_done(Q01_S01), "its children can finish")
-    assert_true(state.is_done(Q01_S05), "both children finish")
+    assert_true(state.is_done(Q01_S02), "both children finish")
     assert_true(not state.is_done(Q01_S00), "but the manual umbrella stays open")
     assert_true(not is_complete(defs, state, ctx, Q01_S00), "manual is never complete automatically")
 

@@ -65,8 +65,8 @@ SAMPLE: dict[str, object] = {
         "test": 'visited("BARMAN_ABSINTHRAYNER", "012")',
         "parent": "Q01_S00_BREAK_THE_CURSE",
     },
-    "Q01_S05_MEET_MADAME_SARCASMIA": {
-        **_msgs("Q01_S05_MEET_MADAME_SARCASMIA"),
+    "Q01_S02_MEET_MADAME_SARCASMIA": {
+        **_msgs("Q01_S02_MEET_MADAME_SARCASMIA"),
         "completion": "test",
         "test": 'visited("MADAME_SARCASMIA", "SARCASMIA_AA_BACK_SO_SOON")',
         "parent": "Q01_S00_BREAK_THE_CURSE",
@@ -168,11 +168,11 @@ def test_children_and_links() -> None:
         ["Q01_S01_LEARN_ABOUT_CURSE"],
         "cross-chain requires edge",
     )
-    # Q01_S05 got the requires edge SSiS never gave it
+    # Q01_S02 got the requires edge SSiS never gave it
     assert_eq(
-        defs["Q01_S05_MEET_MADAME_SARCASMIA"].requires,
+        defs["Q01_S02_MEET_MADAME_SARCASMIA"].requires,
         ["Q01_S01_LEARN_ABOUT_CURSE"],
-        "Q01_S05 is reachable",
+        "Q01_S02 is reachable",
     )
 
 
