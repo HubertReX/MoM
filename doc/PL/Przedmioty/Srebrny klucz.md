@@ -13,3 +13,5 @@ aliases:
 EN: "[[Silver key]]"
 ---
 # Srebrny klucz
+
+`= "![[item_" + this.key + ".png|64]]"`

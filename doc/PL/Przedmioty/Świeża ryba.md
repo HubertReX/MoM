@@ -13,3 +13,5 @@ aliases:
 EN: "[[Fresh fish]]"
 ---
 # Świeża ryba
+
+`= "![[item_" + this.key + ".png|64]]"`

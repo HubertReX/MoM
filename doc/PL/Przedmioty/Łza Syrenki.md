@@ -14,4 +14,6 @@ EN: "[[Mermaid's tear]]"
 ---
 # Łza Syrenki
 
+`= "![[item_" + this.key + ".png|64]]"`
+
 Plotka głosi, że [char]Melancholijna Syrenka[/char] spędza czas szlochając na samotnej skale w pobliżu [loc]Mglistego Bagna[/loc].

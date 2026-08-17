@@ -13,3 +13,5 @@ aliases:
 EN: "[[Baked beef]]"
 ---
 # Pieczona wołowina
+
+`= "![[item_" + this.key + ".png|64]]"`

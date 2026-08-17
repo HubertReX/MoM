@@ -5,3 +5,5 @@ aliases:
 PL: "[[Katana]]"
 ---
 # Katana
+
+`= "![[item_" + this.key + ".png|64]]"`

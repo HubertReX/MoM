@@ -5,3 +5,5 @@ aliases:
 PL: "[[Mały pomarańczowy klejnot]]"
 ---
 # Orange small gem
+
+`= "![[item_" + this.key + ".png|64]]"`

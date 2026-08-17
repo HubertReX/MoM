@@ -1,6 +1,6 @@
 ---
 key: club
-name_EN: War hammer
+name_EN: Club
 name_PL: Maczuga
 type: weapon
 value:
@@ -10,6 +10,8 @@ cooldown_time: 0.6
 health_impact:
 aliases:
   - club
-EN: "[[War hammer]]"
+EN: "[[Club]]"
 ---
 # Maczuga
+
+`= "![[item_" + this.key + ".png|64]]"`

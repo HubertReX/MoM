@@ -5,3 +5,5 @@ aliases:
 PL: "[[Kij]]"
 ---
 # Stick
+
+`= "![[item_" + this.key + ".png|64]]"`

@@ -216,6 +216,46 @@ def test_an_item_note_is_linkable_from_a_condition() -> None:
         )
 
 
+def test_documented_defaults_match_the_model() -> None:
+    """`przedmioty.md` obiecuje, co znaczy puste property - obietnica ma być prawdziwa.
+
+    Pusta komórka nie trafia do `config.json`, więc przedmiot dostaje default z klasy
+    `Item`. Tabela w notatce jest jedynym miejscem, gdzie autor to widzi; rozjechana
+    z modelem kłamie z autorytetem, więc rozjazd ma failować tutaj.
+    """
+    from config_model.config_pydantic import Item
+
+    note = (REPO_ROOT / "doc/PL/przedmioty.md").read_text(encoding="utf-8")
+    documented = {}
+    for line in note.splitlines():
+        if not line.startswith("| `"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        documented[cells[0].strip("`")] = cells[-1].strip("`")
+
+    assert_true(bool(documented), "tabela properties istnieje")
+    for name, field in Item.model_fields.items():
+        if name not in documented:
+            continue
+        if field.is_required():
+            assert_eq(documented[name], "**obowiązkowe**", f"{name} jest obowiązkowe")
+        else:
+            assert_eq(documented[name], str(field.default), f"default {name}")
+
+    for name in ("value", "weight", "damage", "cooldown_time", "health_impact"):
+        assert_true(name in documented, f"{name} jest opisane w notatce")
+
+
+def test_every_item_has_an_icon() -> None:
+    """Notatka pokazuje `item_<klucz>.png` - brak pliku to pusty kwadrat w Obsidianie."""
+    attachments = REPO_ROOT / "doc/_attachements"
+    if not (REAL_VAULT / "PL/Przedmioty").exists():
+        return
+    for row in build_rows(REAL_VAULT):
+        icon = attachments / f"item_{row['key']}.png"
+        assert_true(icon.exists(), f"{icon.name} istnieje (uruchom `just gen-item-icons`)")
+
+
 def main() -> None:
     tests = [
         test_export_writes_one_note_per_item_per_language,
@@ -228,6 +268,8 @@ def main() -> None:
         test_a_note_without_a_key_stops_the_import,
         test_two_notes_with_one_key_stop_the_import,
         test_an_item_note_is_linkable_from_a_condition,
+        test_documented_defaults_match_the_model,
+        test_every_item_has_an_icon,
     ]
     for test in tests:
         test()

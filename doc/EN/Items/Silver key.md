@@ -5,3 +5,5 @@ aliases:
 PL: "[[Srebrny klucz]]"
 ---
 # Silver key
+
+`= "![[item_" + this.key + ".png|64]]"`

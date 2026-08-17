@@ -2,32 +2,27 @@
 
 [**translation**](../PL/przedmioty.md)
 
-> [!info] Item data lives in one note per item
-> See `EN/Items/`; the Polish notes are the source of truth (all `items.csv` columns are properties there). This page is a loose scratchpad for descriptions.
+One note per item, in `EN/Items/` - a mirror of `PL/Przedmioty/`, which is the source of truth. The Polish note carries every `items.csv` column as a property; the English note carries the key, the alias and the name, so an item can be linked from English dialog and quest files:
 
-## EN
+```markdown
+**Test**: `has_item(`[[Mermaid's tear]]`)`
+* [[#012]] 1[`has_item(`[[Phoenix feather]]`)`]😐: I have everything you asked for.
+```
 
-### 💧 **Melancholic Mermaid's tear**
+Rules, property defaults and the `just` recipes live in the Polish note: [[przedmioty]].
 
-Tear shed by a [char]Melancholic Mermaid[/] on a lonely rock near the [location]Misty Mire[/].
+## List
 
-### 〰 **Grumpy Gnome's whisker**
+```dataview
+TABLE WITHOUT ID
+  ("![[item_" + key + ".png|32]]") as "Icon",
+  file.link as "Item",
+  key as "Key"
+FROM ""
+WHERE file.folder = "EN/Items"
+SORT file.name ASC
+```
 
-A [item]whisker[/] of an ill-tempered gnome called the [char]Grumpy Gnome[/].
-might be found in the [location]Quicksand Quagmire[/]
+## Not an item yet
 
-### 🐦 **Mopey Phoenix feather**
-
-A [item]feather[/] of the [char]Mopey Phoenix[/] plucked during a solar eclipse.
-
-[char]Mopey Phoenix[/] frequents the [location]Cliffside Clamor[/], because of course, it does.
-This particular [item]feather[/] has been plucked during a solar eclipse.
-
-### ⚗️ **potion curse-no-more**
-
-Magical [item]potion[/] prepared by [char]Madame Sarcasmia[/]. It is said to be able to undo even the most stubborn curses, or kill you.
-ALT: 🧪 🧉
-
-### **the Amulet of Un-Cursing**
-
-Aye, I've heard whispers of such a relic, said to possess the power to undo even the most stubborn curses.
+**the Amulet of Un-Cursing** - "Aye, I've heard whispers of such a relic, said to possess the power to undo even the most stubborn curses." Until it has a row in `items.csv`, it is only a rumour in dialogue.

@@ -5,3 +5,5 @@ aliases:
 PL: "[[Purpurowy krzyształ]]"
 ---
 # Purple crystal
+
+`= "![[item_" + this.key + ".png|64]]"`

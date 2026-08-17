@@ -14,4 +14,6 @@ EN: "[[Phoenix feather]]"
 ---
 # Pióro Feniksa
 
+`= "![[item_" + this.key + ".png|64]]"`
+
 Pióro [char]Przygnębionego Feniksa[/char], wyrwane podczas zaćmienia słońca. Feniks przesiaduje na [loc]Wrzawie na zboczu klifu[/loc], bo oczywiście, że tak.

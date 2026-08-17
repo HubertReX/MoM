@@ -13,3 +13,5 @@ aliases:
 EN: "[[Sai]]"
 ---
 # Sztylet
+
+`= "![[item_" + this.key + ".png|64]]"`

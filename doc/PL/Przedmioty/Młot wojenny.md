@@ -10,6 +10,8 @@ cooldown_time: 0.5
 health_impact:
 aliases:
   - hammer
-EN: "[[War hammer (hammer)]]"
+EN: "[[War hammer]]"
 ---
 # Młot wojenny
+
+`= "![[item_" + this.key + ".png|64]]"`

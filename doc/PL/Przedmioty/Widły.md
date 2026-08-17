@@ -13,3 +13,5 @@ aliases:
 EN: "[[Pitchfork]]"
 ---
 # Widły
+
+`= "![[item_" + this.key + ".png|64]]"`

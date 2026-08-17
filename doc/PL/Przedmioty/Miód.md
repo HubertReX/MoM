@@ -13,3 +13,5 @@ aliases:
 EN: "[[Bee honey]]"
 ---
 # Miód
+
+`= "![[item_" + this.key + ".png|64]]"`

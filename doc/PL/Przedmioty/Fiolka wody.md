@@ -13,3 +13,5 @@ aliases:
 EN: "[[Water pot]]"
 ---
 # Fiolka wody
+
+`= "![[item_" + this.key + ".png|64]]"`

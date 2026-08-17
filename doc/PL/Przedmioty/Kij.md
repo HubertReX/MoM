@@ -13,3 +13,5 @@ aliases:
 EN: "[[Stick]]"
 ---
 # Kij
+
+`= "![[item_" + this.key + ".png|64]]"`

@@ -13,3 +13,5 @@ aliases:
 EN: "[[Golden coin]]"
 ---
 # Złota moneta
+
+`= "![[item_" + this.key + ".png|64]]"`

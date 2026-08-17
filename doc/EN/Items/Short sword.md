@@ -4,4 +4,6 @@ aliases:
   - sword_short
 PL: "[[Krótki miecz]]"
 ---
-# Krótki miecz
+# Short sword
+
+`= "![[item_" + this.key + ".png|64]]"`

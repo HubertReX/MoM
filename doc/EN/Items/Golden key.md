@@ -5,3 +5,5 @@ aliases:
 PL: "[[Złoty klucz]]"
 ---
 # Golden key
+
+`= "![[item_" + this.key + ".png|64]]"`

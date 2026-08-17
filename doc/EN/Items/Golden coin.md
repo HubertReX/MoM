@@ -5,3 +5,5 @@ aliases:
 PL: "[[Złota moneta]]"
 ---
 # Golden coin
+
+`= "![[item_" + this.key + ".png|64]]"`

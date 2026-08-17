@@ -13,3 +13,5 @@ aliases:
 EN: "[[Long sword]]"
 ---
 # Długi miecz
+
+`= "![[item_" + this.key + ".png|64]]"`

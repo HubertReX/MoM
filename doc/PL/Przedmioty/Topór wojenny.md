@@ -13,3 +13,5 @@ aliases:
 EN: "[[War Axe]]"
 ---
 # Topór wojenny
+
+`= "![[item_" + this.key + ".png|64]]"`

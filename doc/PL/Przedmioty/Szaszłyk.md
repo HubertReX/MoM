@@ -13,3 +13,5 @@ aliases:
 EN: "[[Shashlik]]"
 ---
 # Szaszłyk
+
+`= "![[item_" + this.key + ".png|64]]"`

@@ -269,6 +269,15 @@ def _note_names(rows: list[dict[str, str]]) -> dict[tuple[str, str], str]:
     return names
 
 
+#: Ciało nowej notatki: nagłówek i ikona z `doc/_attachements/` (`just gen-item-icons`).
+#: Dataview składa nazwę pliku z klucza, więc nie trzeba jej wpisywać ręcznie.
+ICON_LINE = '`= "![[item_" + this.key + ".png|64]]"`'
+
+
+def _new_body(name: str) -> str:
+    return f"# {name}\n\n{ICON_LINE}\n"
+
+
 def _split_note(path: Path) -> str:
     """Treść notatki pod frontmatterem, albo ``""`` dla nowej notatki."""
     if not path.exists():
@@ -302,7 +311,7 @@ def export_notes(csv_path: Path, src_dir: Path) -> tuple[int, int]:
         for lang in ("PL", "EN"):
             path = _lang_dir(src_dir, lang) / f"{note_names[(key, lang)]}.md"
             other = note_names[(key, "EN" if lang == "PL" else "PL")]
-            body = _split_note(path) or f"# {row[f'name_{lang}']}\n"
+            body = _split_note(path) or _new_body(row[f"name_{lang}"])
             text = f"{_frontmatter(key, row, lang, other)}\n{body}"
             if not text.endswith("\n"):
                 text += "\n"

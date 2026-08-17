@@ -14,4 +14,6 @@ EN: "[[Gnome's whisker]]"
 ---
 # Wąs Gnoma
 
+`= "![[item_" + this.key + ".png|64]]"`
+
 Wąsik złośliwca zwanego [char]Gniewnym Gnomem[/char]. Można go spotkać w [loc]bagnie ruchomych piasków[/loc].

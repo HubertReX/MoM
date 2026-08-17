@@ -1,6 +1,6 @@
 ---
 key: sword_short
-name_EN: Krótki miecz
+name_EN: Short sword
 name_PL: Krótki miecz
 type: weapon
 value:
@@ -10,6 +10,8 @@ cooldown_time: 0.1
 health_impact:
 aliases:
   - sword_short
-EN: "[[Krótki miecz]]"
+EN: "[[Short sword]]"
 ---
 # Krótki miecz
+
+`= "![[item_" + this.key + ".png|64]]"`

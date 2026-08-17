@@ -14,4 +14,6 @@ EN: "[[Potion curse-no-more]]"
 ---
 # Eliksir anty-zaklęcia
 
+`= "![[item_" + this.key + ".png|64]]"`
+
 Magiczna mikstura warzona przez [char]Madame Sarkażmijkę[/char]. Podobno cofa nawet najbardziej uporczywe klątwy - albo zabija.

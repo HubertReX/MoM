@@ -1,7 +1,7 @@
 ---
 key: empty_pot
 name_EN: Empty pot
-name_PL: Pusty fiolka
+name_PL: Pusta fiolka
 type: consumable
 value: 10
 weight: 0.1
@@ -12,4 +12,6 @@ aliases:
   - empty_pot
 EN: "[[Empty pot]]"
 ---
-# Pusty fiolka
+# Pusta fiolka
+
+`= "![[item_" + this.key + ".png|64]]"`

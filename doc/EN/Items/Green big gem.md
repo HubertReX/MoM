@@ -5,3 +5,5 @@ aliases:
 PL: "[[Duży zielony klejnot]]"
 ---
 # Green big gem
+
+`= "![[item_" + this.key + ".png|64]]"`

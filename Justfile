@@ -247,6 +247,18 @@ gen-faces:
     #!powershell
     .venv\Scripts\python.exe scripts\gen_face_attachments.py
 
+# Regenerate item icons in `doc/_attachements/ (item_<key>.png)` from the sprite sheets the game itself uses
+[unix]
+gen-item-icons *ARGS:
+    # Pass `--scale N` for a bigger PNG (default 4, i.e. 64x64 from a 16x16 tile).
+    .venv/bin/python scripts/gen_item_attachments.py {{ARGS}}
+
+# Regenerate item icons in `doc/_attachements/ (item_<key>.png)` from the sprite sheets the game itself uses
+[windows]
+gen-item-icons *ARGS:
+    #!powershell
+    .venv\Scripts\python.exe scripts\gen_item_attachments.py {{ARGS}}
+
 # Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
 [unix]
 dialog-graph *key:

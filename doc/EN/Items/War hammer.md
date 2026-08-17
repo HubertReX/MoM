@@ -1,7 +1,9 @@
 ---
-key: club
+key: hammer
 aliases:
-  - club
-PL: "[[Maczuga]]"
+  - hammer
+PL: "[[Młot wojenny]]"
 ---
 # War hammer
+
+`= "![[item_" + this.key + ".png|64]]"`

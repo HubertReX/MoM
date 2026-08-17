@@ -13,3 +13,5 @@ aliases:
 EN: "[[Green crystal]]"
 ---
 # Zielony krzyształ
+
+`= "![[item_" + this.key + ".png|64]]"`

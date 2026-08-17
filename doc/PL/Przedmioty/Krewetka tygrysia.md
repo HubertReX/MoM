@@ -13,3 +13,5 @@ aliases:
 EN: "[[Tiger shrimp]]"
 ---
 # Krewetka tygrysia
+
+`= "![[item_" + this.key + ".png|64]]"`

@@ -643,7 +643,7 @@
             "weight": 7.0,
             "damage": 30,
             "cooldown_time": 0.6,
-            "name_EN": "War hammer",
+            "name_EN": "Club",
             "name_PL": "Maczuga"
         },
         "axe": {
@@ -707,7 +707,7 @@
             "type": "weapon",
             "damage": 15,
             "cooldown_time": 0.1,
-            "name_EN": "Krótki miecz",
+            "name_EN": "Short sword",
             "name_PL": "Krótki miecz"
         },
         "sai": {
@@ -838,7 +838,7 @@
             "value": 10,
             "weight": 0.1,
             "name_EN": "Empty pot",
-            "name_PL": "Pusty fiolka"
+            "name_PL": "Pusta fiolka"
         },
         "water_pot": {
             "type": "consumable",

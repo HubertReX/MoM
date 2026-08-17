@@ -2,6 +2,8 @@
 key: empty_pot
 aliases:
   - empty_pot
-PL: "[[Pusty fiolka]]"
+PL: "[[Pusta fiolka]]"
 ---
 # Empty pot
+
+`= "![[item_" + this.key + ".png|64]]"`

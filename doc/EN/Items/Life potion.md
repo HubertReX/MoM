@@ -5,3 +5,5 @@ aliases:
 PL: "[[Mikstura zdrowia]]"
 ---
 # Life potion
+
+`= "![[item_" + this.key + ".png|64]]"`

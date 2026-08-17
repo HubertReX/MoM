@@ -5,3 +5,5 @@ aliases:
 PL: "[[Świeża ryba]]"
 ---
 # Fresh fish
+
+`= "![[item_" + this.key + ".png|64]]"`

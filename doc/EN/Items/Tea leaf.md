@@ -5,3 +5,5 @@ aliases:
 PL: "[[Liść herbaty]]"
 ---
 # Tea leaf
+
+`= "![[item_" + this.key + ".png|64]]"`
