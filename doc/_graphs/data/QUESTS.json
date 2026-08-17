@@ -34,7 +34,15 @@
    ],
    "description_runs": [
     {
-     "text": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a Twój miecz nie przestaje do Ciebie gadać. To chyba nie jest normalne...",
+     "text": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a ",
+     "bold": false
+    },
+    {
+     "text": "Twój",
+     "bold": true
+    },
+    {
+     "text": " miecz nie przestaje do Ciebie gadać. To chyba nie jest normalne...",
      "bold": false
     }
    ],
