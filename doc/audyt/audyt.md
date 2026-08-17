@@ -130,7 +130,7 @@ mapowanie w `audio.toml`, autosave o 6:00 do slotu 0, rozdzielenie nocy i mgły 
   (treść: 7 sidequestów w 3 łańcuchach - Barman `Q04`, Kowal `Q05`, Zielarka `Q06` -
   dryf Malachiego w 3 fazach, powitania zależne od wiedzy o klątwie, teksty barków;
   **twarda zależność od H01** - odblokowane 2026-08-10, pisane ręką autora w Obsidian.
-  Format barków: [jak napisać barka](../jak-napisac-barka.md))
+  Format barków: [jak napisać barka](jak-napisac-barka.md))
 
 ## Zasady realizacji zadań (dla agentów)
 
