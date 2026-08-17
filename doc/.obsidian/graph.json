@@ -1,11 +1,11 @@
 {
   "collapse-filter": false,
-  "search": "",
+  "search": "path:PL  ",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
   "showOrphans": true,
-  "collapse-color-groups": false,
+  "collapse-color-groups": true,
   "colorGroups": [
     {
       "query": "path:PL/Lokalizacje  ",
@@ -22,30 +22,23 @@
       }
     },
     {
-      "query": "path:EN/Locations  ",
+      "query": "path:PL/Misje  ",
       "color": {
         "a": 1,
-        "rgb": 6215260
-      }
-    },
-    {
-      "query": "path:EN/Characters  ",
-      "color": {
-        "a": 1,
-        "rgb": 16378973
+        "rgb": 6080726
       }
     }
   ],
   "collapse-display": true,
-  "showArrow": false,
+  "showArrow": true,
   "textFadeMultiplier": 0,
-  "nodeSizeMultiplier": 1,
-  "lineSizeMultiplier": 1,
-  "collapse-forces": true,
-  "centerStrength": 0.518713248970312,
-  "repelStrength": 10,
-  "linkStrength": 1,
-  "linkDistance": 250,
-  "scale": 1.9114461333525854,
+  "nodeSizeMultiplier": 2.49633089005236,
+  "lineSizeMultiplier": 2.29396858638743,
+  "collapse-forces": false,
+  "centerStrength": 0.577298429319372,
+  "repelStrength": 9.90492146596859,
+  "linkStrength": 0.168628272251309,
+  "linkDistance": 154,
+  "scale": 1.993124746181775,
   "close": true
 }
