@@ -40,6 +40,10 @@ Siedzi w chałupie na końcu wioski, koło lasu.
  
 Szkoliła kiedyś [[Bibliofilistka des Informacja|Bibliofilistkę des Informację]] na zielarkę.
 
+## Barki
+
+==TODO==
+
 ## 016
 
 * Ktoś Ty? Kto Cię tu przysłał?

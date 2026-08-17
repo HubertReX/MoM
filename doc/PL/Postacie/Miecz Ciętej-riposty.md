@@ -34,6 +34,10 @@ funny: 2
 
 Pierwszy i stały towarzysz **Malachiego** to rozmawiający miecz. Bardziej interesuje go dokuczenie swojemu właścicielowi niż pomaganie, ale wciąż jest cennym źródłem informacji na temat otaczającego świata na początku gry. Można go również traktować jako swoistego nauczyciela, uczącego podstaw mechaniki gry. Zawsze jest sarkastyczny i uszczypliwy, ale w zabawny i życzliwy sposób.
 
+## Barki
+
+==TODO==
+
 ## 000
 
 * O:red_exclamation: Jesteś!

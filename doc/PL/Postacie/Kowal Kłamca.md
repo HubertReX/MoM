@@ -36,6 +36,10 @@ Czuje, że stać go na więcej niż [[Gafowo Kolonia]], gardzi prostotą tutejsz
 
 Kowal, który twierdzi, że jego miecze mogą przeciąć cień i że jego zbroje są nieprzeniknione.  W rzeczywistości nie są najlepsze w królestwie, ale zaskakująco dobre jak na wiejskiego kowala.
 
+## Barki
+
+==TODO==
+
 ## 000
 
 * Po coś tu przylazł? Co z Ciebie za jeden?
