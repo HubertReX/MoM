@@ -8,5 +8,7 @@ aliases:
 
 **Requires**: [[Q03_S00 Znajdź kogoś kto wie o klątwach]]
 **Completion**: `test`
-**Test**: `visited(`[[Zielarka Zmora#014|Zielarka#014]]`) or visited(`[[Zielarka Zmora#017|Zielarka#017]]`)`
-**Success**: Kiedyś wołali na nią [[Bibliofilistka des Informacja|Mariolka]]. Teraz mówią [[Bibliofilistka des Informacja]] i podobno pilnuje zakazanych ksiąg w [[Tajna biblioteka|tajnej bibliotece]].
+**Test**: `visited(`[[Zielarka Zmora#014]]`) or visited(`[[Zielarka Zmora#017]]`)`
+**Success**: Kiedyś wołali na nią [[Bibliofilistka des Informacja|Mariolka]]. Teraz mówią na nią [[Bibliofilistka des Informacja]] i podobno pilnuje zakazanych ksiąg w [[Tajna biblioteka|tajnej bibliotece]].
+
+## Notatki

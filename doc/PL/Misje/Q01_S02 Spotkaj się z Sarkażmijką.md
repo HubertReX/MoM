@@ -11,3 +11,5 @@ Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Pod
 **Test**: `visited(`[[Madame Sarkażmijka#001]]`)`
 **Success**: [[Madame Sarkażmijka|Sarkażmijka]] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za _drobną_ przysługę.
 **Reward**: `money=50`
+
+## Notatki

@@ -8,6 +8,9 @@ Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W
 
 **Requires**: [[Q01_S00 Przełamać klątwę]]
 **Completion**: `test`
-**Test**: `visited(`[[Barman Absyntnent#012|Barman#012]]`) or visited(`[[Barman Absyntnent#009|Barman#009]]`)`
+**Test**: `visited(`[[Barman Absyntnent#012]]`) or visited(`[[Barman Absyntnent#009]]`)`
 **Success**: [[Barman Absyntnent|Barman]] zna kogoś od mikstur: jest stara, ślepa, mieszka koło lasu i czasem, po jej miksturach, ludziom robi się gorzej. Czy może być lepsza rekomendacja?
 **Reward**: `health=20`
+
+## Notatki
+

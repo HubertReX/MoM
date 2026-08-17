@@ -14,4 +14,4 @@ Klątwa nie zdejmie się sama. Ktoś pewnie wie jak to działa, ktoś pewnie umi
 
 ## Notatki
 
-Główny wątek fabularny. Parasol domyka się sam, gdy zamkną się wszystkie kroki - a dalszych kroków (dług treści D15) jeszcze nie ma.
+Główny wątek fabularny. Parasol domyka się sam, gdy zamkną się wszystkie kroki.
