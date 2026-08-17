@@ -17,8 +17,7 @@ SORT file.aliases ASC, file ASC
 
 ## lista
 
-Jeden plik = jeden quest, więc poniżej są same parasole wątków (krok `S00`). Pełną listę
-z krokami daje tabela wyżej.
+Jeden plik = jeden quest, więc poniżej są same parasole wątków (krok `S00`). Pełną listę z krokami daje tabela wyżej.
 
 - [[Q00_S00 O co tu chodzi]]
 - [[Q01_S00 Przełamać klątwę]]
