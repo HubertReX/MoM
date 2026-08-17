@@ -2,6 +2,9 @@
 
 [**translation**](../EN/items.md)
 
+> [!info] Dane przedmiotów mieszkają w katalogu `PL/Przedmioty/`
+> Jedna notatka = jeden przedmiot, wszystkie kolumny `items.csv` jako properties. Ta notatka jest luźnym brudnopisem opisów; po zmianie danych uruchom `just import-items`.
+
 ## PL
 
 ### 💧 **łza Melancholijnej Syrenki**

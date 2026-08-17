@@ -1,0 +1,15 @@
+---
+key: beef
+name_EN: Baked beef
+name_PL: Pieczona wołowina
+type: consumable
+value: 30
+weight: 2.0
+damage:
+cooldown_time:
+health_impact: 50
+aliases:
+  - beef
+EN: "[[Baked beef]]"
+---
+# Pieczona wołowina

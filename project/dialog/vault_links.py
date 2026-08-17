@@ -21,11 +21,13 @@ import re
 from pathlib import Path
 
 # Katalogi notatek, na które wolno wskazać z wyrażenia, w kolejności pierwszeństwa.
-# Postacie niosą klucze dialogów, misje własne klucze, lokalizacje klucze map.
+# Postacie niosą klucze dialogów, misje własne klucze, lokalizacje klucze map,
+# przedmioty klucze z `items.csv`.
 ENTITY_SUBDIRS: tuple[str, ...] = (
     "PL/Postacie", "EN/Characters",
     "PL/Misje", "EN/Quests",
     "PL/Lokalizacje", "EN/Locations",
+    "PL/Przedmioty", "EN/Items",
 )
 
 # `[[Cel]]`, `[[Cel#kotwica]]`, `[[Cel#kotwica|napis]]`, `[[#kotwica]]`.
@@ -75,8 +77,44 @@ def parse_aliases(text: str) -> list[str]:
     return [a for a in aliases if a]
 
 
+def parse_frontmatter(text: str) -> dict[str, str]:
+    """Skalarne pola frontmatteru jako **surowe napisy**, w kolejności zapisu.
+
+    Wartości nie są konwertowane na liczby celowo: notatka przedmiotu jeździ tam
+    i z powrotem do ``items.csv``, a `5.0` po drodze przez `float` wróciłoby jako
+    `5` i robiło diff w pliku, którego nikt nie edytował. Listy (``aliases``)
+    pomijamy - od nich jest :func:`parse_aliases`.
+    """
+    lines = text.splitlines()
+    start = next((i for i, line in enumerate(lines) if line.strip() == "---"), None)
+    if start is None:
+        return {}
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        return {}
+
+    fields: dict[str, str] = {}
+    for line in lines[start + 1:end]:
+        if not line.strip() or line[:1] in (" ", "\t", "-", "#"):
+            continue  # element listy albo kontynuacja - nie skalar
+        name, sep, value = line.partition(":")
+        if not sep or not name.strip():
+            continue
+        fields[name.strip()] = value.strip().strip("\"'")
+    return fields
+
+
 def note_key(text: str) -> str:
-    """Klucz encji z frontmatteru notatki - pierwszy alias w UPPER_SNAKE."""
+    """Klucz encji z frontmatteru notatki.
+
+    Najpierw jawne pole ``key:``, potem pierwszy alias w UPPER_SNAKE. Jawne pole
+    jest tam, gdzie klucz nie jest UPPER_SNAKE - przedmioty mają w `items.csv`
+    klucze pisane małymi literami (`golden_key`, `life_pot`) i po aliasie nie dałoby
+    się ich odróżnić od nazwy wyświetlanej.
+    """
+    explicit = parse_frontmatter(text).get("key", "")
+    if explicit:
+        return explicit
     return next((a for a in parse_aliases(text) if _KEY_RE.match(a)), "")
 
 
@@ -165,5 +203,6 @@ __all__ = [
     "expand_links",
     "note_key",
     "parse_aliases",
+    "parse_frontmatter",
     "resolve_entity",
 ]

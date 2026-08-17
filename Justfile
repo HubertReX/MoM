@@ -193,6 +193,27 @@ import-quests *chain:
     # see the note in `import-entities`: content edits get validated on the spot
     just validate-world
 
+# Import item notes from the `doc/` vault into `items.csv` (and on into `config.json`).
+[unix]
+import-items *ARGS:
+    #!/usr/bin/env bash
+    # Pipeline: doc/PL/Przedmioty/*.md -> items.csv -> config.json (import-entities
+    # is the sole writer of the `items` section, hence the cascade).
+    # Pass `--export` to go the other way: items.csv -> notes (first seeding,
+    # regeneration). The export rewrites the frontmatter only, so prose survives.
+    set -e
+    .venv/bin/python project/config_model/items_markdown.py {{ARGS}}
+    if [ -z "{{ARGS}}" ]; then
+        just import-entities
+    fi
+
+# Import item notes from the `doc/` vault into `items.csv` (and on into `config.json`).
+[windows]
+import-items *ARGS:
+    #!powershell
+    .venv\Scripts\python.exe project\config_model\items_markdown.py {{ARGS}}
+    if ("{{ARGS}}" -eq "") { just import-entities }
+
 # Regenerate dialog-system doc images (emote sheet + RichText tag palette) in `doc/_attachements/` from real MoM modules
 [unix]
 gen-dialog-docs:

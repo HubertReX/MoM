@@ -107,13 +107,14 @@ Co da się zlinkować, a co nie:
 
 | W warunku                          | Zapis w notatce                                                | Wychodzi z importu                        |
 | ---------------------------------- | -------------------------------------------------------------- | ----------------------------------------- |
-| węzeł **innej** postaci            | `` `visited(`[[Barman Absyntnent#012|Barman#012]]`)` ``        | `visited("BARMAN_ABSINTHRAYNER", "012")`  |
+| węzeł **innej** postaci            | `` `visited(`[[Barman Absyntnent#012]]`)` ``                   | `visited("BARMAN_ABSINTHRAYNER", "012")`  |
 | węzeł **mówiącego** (tylko dialog) | `` `visited(`[[#005]]`)` ``                                    | `visited("005")`                          |
 | mapa                               | `` `on_map(`[[Gafowo Kolonia]]`)` ``                           | `on_map("BLUNDERHAVEN")`                  |
 | quest                              | `` `quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)` `` | `quest_done("Q01_S01_LEARN_ABOUT_CURSE")` |
-| przedmiot, opcja, pora dnia        | `` `has_item("MERMAIDS_TEAR")` ``                              | bez zmian                                 |
+| przedmiot                          | `` `has_item(`[[Łza Syrenki]]`)` ``                            | `has_item("MERMAIDS_TEAR")`               |
+| opcja dialogowa, pora dnia         | `` `selected("007to008_1")` ``                                 | bez zmian                                 |
 
-Przedmioty i opcje **nie mają własnych notatek**, więc zostają zwykłym napisem w cudzysłowie - klucz pisze się dokładnie tak, jak brzmi (`MERMAIDS_TEAR`, `007to008_1`).
+Klucze opcji dialogowych i pory dnia **nie mają własnych notatek**, więc zostają zwykłym napisem w cudzysłowie - pisze się je dokładnie tak, jak brzmią (`007to008_1`, `"morning"`). Wariant z aliasem (`[[Notatka#012|Barman#012]]`) w tabeli nie stoi z jednego powodu: pionowa kreska rozbiłaby komórkę - w treści notatek jest jak najbardziej w porządku.
 
 Link do notatki, której w vaulcie nie ma, to **błąd importu z numerem linii**. To jest ta różnica, która się liczy: literówka w nazwie postaci przestaje być warunkiem, który nigdy nie zapala, i staje się czerwonym komunikatem przy `just import-dialogs`.
 

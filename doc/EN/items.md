@@ -2,6 +2,9 @@
 
 [**translation**](../PL/przedmioty.md)
 
+> [!info] Item data lives in one note per item
+> See `EN/Items/`; the Polish notes are the source of truth (all `items.csv` columns are properties there). This page is a loose scratchpad for descriptions.
+
 ## EN
 
 ### 💧 **Melancholic Mermaid's tear**

@@ -47,19 +47,19 @@ Kafelek i postać mają zawsze ten sam rozmiar w pikselach (`TILE_SIZE = 16` nat
 
 ## Co gdzie jest
 
-| Katalog              | Zawartość                                                | Edytować?                                                                     |
-| -------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `project/`           | Rdzeń kodu gry (source)                                  | ✅ tak — patrz [`project/AGENTS.md`](./project/AGENTS.md)                     |
-| `art/`               | Assety menu + pomocnicze grafiki NinjaAdventure          | ✅ ostrożnie                                                                  |
-| `doc/`               | Scenariusz intro (cutscene, odpalany **F4**)             | ✅                                                                            |
-| `.github/workflows/` | CI: `pygbag.yml` (GitHub Pages), `itch_io.yml` (itch.io) | ✅ ostrożnie                                                                  |
-| `tests`              | Zestawy scenariuszy testów automatycznych                | ✅ tak - patrz [`project/AGENTS.md`](./project/AGENTS.md)                     |
-| `Tasks`              | Zadania dla Ciebie do wykonania                          | ✅ tak, ale zgodnie ze ściśle określonymi zasadami                            |
-| `scripts/`           | Skrypty narzędziowe repo (walidatory, generatory, fixtures, szablon pygbag) | ✅ tak — tu trafia każdy skrypt, od którego coś zależy       |
-| `utils/`             | Śmietnik skryptów/eksperymentów                          | ⛔ **pomijać** — patrz uwaga niżej                                            |
-| `references/`        | Screenshoty z innych gier (referencje)                   | ⛔ **pomijać**                                                                |
-| `screenshots/`       | Migawki z rozwoju gry                                    | ⛔ **pomijać**                                                                |
-| `.venv/`             | Wirtualne środowisko                                     | ⛔ **pomijać**                                                                |
+| Katalog              | Zawartość                                                                                      | Edytować?                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `project/`           | Rdzeń kodu gry (source)                                                                        | ✅ tak — patrz [`project/AGENTS.md`](./project/AGENTS.md)              |
+| `art/`               | Assety menu + pomocnicze grafiki NinjaAdventure                                                | ✅ ostrożnie                                                           |
+| `doc/`               | Vault Obsidiana: postacie, misje, lokalizacje, przedmioty, scenariusz intro (cutscene, **F4**) | ✅ — źródło prawdy dla treści, importowane recepturami `just import-*` |
+| `.github/workflows/` | CI: `pygbag.yml` (GitHub Pages), `itch_io.yml` (itch.io)                                       | ✅ ostrożnie                                                           |
+| `tests`              | Zestawy scenariuszy testów automatycznych                                                      | ✅ tak - patrz [`project/AGENTS.md`](./project/AGENTS.md)              |
+| `Tasks`              | Zadania dla Ciebie do wykonania                                                                | ✅ tak, ale zgodnie ze ściśle określonymi zasadami                     |
+| `scripts/`           | Skrypty narzędziowe repo (walidatory, generatory, fixtures, szablon pygbag)                    | ✅ tak — tu trafia każdy skrypt, od którego coś zależy                 |
+| `utils/`             | Śmietnik skryptów/eksperymentów                                                                | ⛔ **pomijać** — patrz uwaga niżej                                     |
+| `references/`        | Screenshoty z innych gier (referencje)                                                         | ⛔ **pomijać**                                                         |
+| `screenshots/`       | Migawki z rozwoju gry                                                                          | ⛔ **pomijać**                                                         |
+| `.venv/`             | Wirtualne środowisko                                                                           | ⛔ **pomijać**                                                         |
 
 > **`utils/` to piaskownica i nic produkcyjnego nie może z niej korzystać.** Szablon
 > pygbag (`scripts/pygbag/black.tmpl`) oraz narzędzia PNG (`scripts/find_bad_png.py`,
@@ -144,11 +144,11 @@ Skrót: `just test-agent "<scenariusz>"` (desktop), `just test-web "<scenariusz>
 
 Trzy poziomy bramki - wybieraj najtańszą, która pokrywa zmianę:
 
-| Komenda | Zakres | Czas |
-|---|---|---|
-| `just test-agent "<nazwa>"` | jeden scenariusz | ~30-60 s |
-| `just test-smoke` | zestaw smoke: 6 scenariuszy z rozłącznych obszarów (save/load, dialog, labirynt, panele UI, ustawienia, text input) - lista w `TEST_CONFIG["SMOKE_SCENARIOS"]` | ~4-5 min |
-| `just test-agent` / `just test-web` | wszystko na danym backendzie | ~18 / ~10 min |
+| Komenda                             | Zakres                                                                                                                                                         | Czas          |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `just test-agent "<nazwa>"`         | jeden scenariusz                                                                                                                                               | ~30-60 s      |
+| `just test-smoke`                   | zestaw smoke: 6 scenariuszy z rozłącznych obszarów (save/load, dialog, labirynt, panele UI, ustawienia, text input) - lista w `TEST_CONFIG["SMOKE_SCENARIOS"]` | ~4-5 min      |
+| `just test-agent` / `just test-web` | wszystko na danym backendzie                                                                                                                                   | ~18 / ~10 min |
 
 `just test-web` trzyma **jeden serwer pygbag i jedną przeglądarkę na cały przebieg** -
 scenariusz startuje przez reload strony (build WASM jest w przebiegu identyczny).

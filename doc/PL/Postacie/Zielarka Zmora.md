@@ -49,7 +49,7 @@ Szkoliła kiedyś [[Bibliofilistka des Informacja|Bibliofilistkę des Informacj�
 * Ktoś Ty? Kto Cię tu przysłał?
 
 * [[#000]] 1[`visited(`[[Barman Absyntnent#012|Barman#012]]`) or visited(`[[Barman Absyntnent#009|Barman#009]]`)`]😐: [[Barman Absyntnent]] powiedział mi o Tobie.
-* [[#992-end]] 2[`not visited(`[[Barman Absyntnent#012|Barman#012]]`) and not visited(`[[Barman Absyntnent#012|Barman#012]]`)`]😐: Nikt, ja sam tu trafiłem.
+* [[#992-end]] 2[`not visited(`[[Barman Absyntnent#012|Barman#012]]`) and not visited(`[[Barman Absyntnent#009|Barman#009]]`)`]😐: Nikt, ja sam tu trafiłem.
 
 ## 000
 

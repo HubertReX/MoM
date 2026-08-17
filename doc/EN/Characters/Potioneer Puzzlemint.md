@@ -29,7 +29,7 @@ funny: 1
 * Who are you? Who sent you here?
 
 * [[#000]] 1[`visited(`[[Barman Absinthrayner#012|Barman#012]]`)`]😐: [[Barman Absinthrayner]] told me about you.
-* [[#992-end]] 2[`not visited(`[[Barman Absinthrayner#012|Barman#012]]`)`]😐: Nobody, I found my own way here.
+* [[#992-end]] 2[`not visited(`[[Barman Absinthrayner#012|Barman#012]]`) and not visited(`[[Barman Absinthrayner#009|Barman#009]]`)`]😐: Nobody, I found my own way here.
 
 ## 000
 

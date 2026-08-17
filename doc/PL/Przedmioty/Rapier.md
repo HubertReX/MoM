@@ -1,0 +1,15 @@
+---
+key: rapier
+name_EN: Rapier
+name_PL: Rapier
+type: weapon
+value:
+weight:
+damage:
+cooldown_time: 0.1
+health_impact:
+aliases:
+  - rapier
+EN: "[[Rapier]]"
+---
+# Rapier

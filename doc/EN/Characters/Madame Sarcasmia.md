@@ -114,11 +114,11 @@ Good luck, dearie.
 
 * Ah, back so soon, I see. Do tell, have you managed to scrounge up my little collection of trinkets?
 
-* [[#012]] 1[`has_item("MERMAIDS_TEAR") and has_item("GNOMES_WHISKER") and has_item("PHOENIX_FEATHER")`]😐: Indeed, I have all three items you requested. A [char]Mermaid's[/char] [item]tear[/item], a [char]Phoenix[/char] [item]feather[/item], and a [char]Gnome's[/char] [item]whisker[/item].
-* [[#013]] 2[`not has_item("MERMAIDS_TEAR") and (has_item("GNOMES_WHISKER") or has_item("PHOENIX_FEATHER"))`]😢: Well, I don't have the [char]Mermaid's[/char] [item]tear[/item].
-* [[#014]] 3[`not has_item("GNOMES_WHISKER") and (has_item("MERMAIDS_TEAR") or has_item("PHOENIX_FEATHER"))`]😢: Well, I don't have the [char]Gnome's[/char] [item]whisker[/item].
-* [[#015]] 4[`not has_item("PHOENIX_FEATHER") and (has_item("GNOMES_WHISKER") or has_item("MERMAIDS_TEAR"))`]😢: Well, I don't have the [char]Phoenix's[/char] [item]feather[/item].
-* [[#016]] 5[`not has_item("MERMAIDS_TEAR") and not has_item("GNOMES_WHISKER") and not has_item("PHOENIX_FEATHER")`]😢: Unfortunately, I've come empty-handed. Turns out, [char]Mermaids[/char] are rather protective of their [item]tears[/item], [char]Phoenix[/char] don't appreciate plucking, and [char]Gnomes[/char] are surprisingly agile.
+* [[#012]] 1[`has_item(`[[Mermaid's tear]]`) and has_item(`[[Gnome's whisker]]`) and has_item(`[[Phoenix feather]]`)`]😐: Indeed, I have all three items you requested. A [char]Mermaid's[/char] [item]tear[/item], a [char]Phoenix[/char] [item]feather[/item], and a [char]Gnome's[/char] [item]whisker[/item].
+* [[#013]] 2[`not has_item(`[[Mermaid's tear]]`) and (has_item(`[[Gnome's whisker]]`) or has_item(`[[Phoenix feather]]`))`]😢: Well, I don't have the [char]Mermaid's[/char] [item]tear[/item].
+* [[#014]] 3[`not has_item(`[[Gnome's whisker]]`) and (has_item(`[[Mermaid's tear]]`) or has_item(`[[Phoenix feather]]`))`]😢: Well, I don't have the [char]Gnome's[/char] [item]whisker[/item].
+* [[#015]] 4[`not has_item(`[[Phoenix feather]]`) and (has_item(`[[Gnome's whisker]]`) or has_item(`[[Mermaid's tear]]`))`]😢: Well, I don't have the [char]Phoenix's[/char] [item]feather[/item].
+* [[#016]] 5[`not has_item(`[[Mermaid's tear]]`) and not has_item(`[[Gnome's whisker]]`) and not has_item(`[[Phoenix feather]]`)`]😢: Unfortunately, I've come empty-handed. Turns out, [char]Mermaids[/char] are rather protective of their [item]tears[/item], [char]Phoenix[/char] don't appreciate plucking, and [char]Gnomes[/char] are surprisingly agile.
 
 ## 012
 

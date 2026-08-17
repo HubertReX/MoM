@@ -126,11 +126,11 @@ Powodzenia, kochanieńki.
 
 * Ach, wracasz tak szybko, jak widzę. Powiedz, czy udało Ci się zebrać moją małą kolekcję bibelotów?
 
-* [[#012]] 1[`has_item("MERMAIDS_TEAR") and has_item("GNOMES_WHISKER") and has_item("PHOENIX_FEATHER")`]😐: Rzeczywiście, mam wszystkie trzy przedmioty. [item]Łzę[/item] [char]Syrenki[/char], [item]pióro[/item] [char]Feniksa[/char] i [item]wąsik[/item] [char]Gnoma[/char].
-* [[#013]] 2[`not has_item("MERMAIDS_TEAR") and (has_item("GNOMES_WHISKER") or has_item("PHOENIX_FEATHER"))`]😢: Cóż, nie mam [item]łzy[/item] [char]Syrenki[/char].
-* [[#014]] 3[`not has_item("GNOMES_WHISKER") and (has_item("MERMAIDS_TEAR") or has_item("PHOENIX_FEATHER"))`]😢: Cóż, nie mam [item]wąsika[/item] [char]Gnoma[/char].
-* [[#015]] 4[`not has_item("PHOENIX_FEATHER") and (has_item("GNOMES_WHISKER") or has_item("MERMAIDS_TEAR"))`]😢: Cóż, nie mam [item]pióra[/item] [char]Feniksa[/char].
-* [[#016]] 5[`not has_item("MERMAIDS_TEAR") and not has_item("GNOMES_WHISKER") and not has_item("PHOENIX_FEATHER")`]😢: Niestety, wracam z pustymi rękoma. Jak się okazuje, [char]Syrenki[/char] są dość opiekuńcze wobec swoich [item]łez[/item], [char]Feniksy[/char] nie lubią być skubane, a [char]Gnomy[/char] są zaskakująco zwinne.
+* [[#012]] 1[`has_item(`[[Łza Syrenki]]`) and has_item(`[[Wąs Gnoma]]`) and has_item(`[[Pióro Feniksa]]`)`]😐: Rzeczywiście, mam wszystkie trzy przedmioty. [item]Łzę[/item] [char]Syrenki[/char], [item]pióro[/item] [char]Feniksa[/char] i [item]wąsik[/item] [char]Gnoma[/char].
+* [[#013]] 2[`not has_item(`[[Łza Syrenki]]`) and (has_item(`[[Wąs Gnoma]]`) or has_item(`[[Pióro Feniksa]]`))`]😢: Cóż, nie mam [item]łzy[/item] [char]Syrenki[/char].
+* [[#014]] 3[`not has_item(`[[Wąs Gnoma]]`) and (has_item(`[[Łza Syrenki]]`) or has_item(`[[Pióro Feniksa]]`))`]😢: Cóż, nie mam [item]wąsika[/item] [char]Gnoma[/char].
+* [[#015]] 4[`not has_item(`[[Pióro Feniksa]]`) and (has_item(`[[Wąs Gnoma]]`) or has_item(`[[Łza Syrenki]]`))`]😢: Cóż, nie mam [item]pióra[/item] [char]Feniksa[/char].
+* [[#016]] 5[`not has_item(`[[Łza Syrenki]]`) and not has_item(`[[Wąs Gnoma]]`) and not has_item(`[[Pióro Feniksa]]`)`]😢: Niestety, wracam z pustymi rękoma. Jak się okazuje, [char]Syrenki[/char] są dość opiekuńcze wobec swoich [item]łez[/item], [char]Feniksy[/char] nie lubią być skubane, a [char]Gnomy[/char] są zaskakująco zwinne.
 
 ## 012
 

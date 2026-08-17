@@ -2458,7 +2458,7 @@
                 },
                 "016to992_2": {
                     "next_node": "992",
-                    "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"012\") and not visited(\"BARMAN_ABSINTHRAYNER\", \"012\")",
+                    "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"012\") and not visited(\"BARMAN_ABSINTHRAYNER\", \"009\")",
                     "sentiment": "neutral",
                     "order": 2,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_016to992_2"
