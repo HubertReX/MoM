@@ -7,7 +7,7 @@ value: 20
 weight: 0.15
 damage:
 cooldown_time:
-health_impact: 5
+health_impact: 3
 aliases:
   - water_pot
 EN: "[[Water pot]]"

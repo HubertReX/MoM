@@ -3,10 +3,10 @@ key: sai
 name_EN: Sai
 name_PL: Sztylet
 type: weapon
-value: 20
+value: 40
 weight:
 damage:
-cooldown_time: 0.1
+cooldown_time: 0.2
 health_impact:
 aliases:
   - sai

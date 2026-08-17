@@ -3,8 +3,8 @@ key: hammer
 name_EN: War hammer
 name_PL: Młot wojenny
 type: weapon
-value: 70
-weight: 5.0
+value: 80
+weight: 5
 damage: 25
 cooldown_time: 0.5
 health_impact:

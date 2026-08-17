@@ -3,8 +3,8 @@ key: beef
 name_EN: Baked beef
 name_PL: Pieczona wołowina
 type: consumable
-value: 30
-weight: 2.0
+value: 50
+weight: 2
 damage:
 cooldown_time:
 health_impact: 50

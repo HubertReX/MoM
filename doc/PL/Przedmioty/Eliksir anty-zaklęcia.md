@@ -7,7 +7,7 @@ value: 1000
 weight: 0.5
 damage:
 cooldown_time:
-health_impact: 10
+health_impact: 1000
 aliases:
   - POTION_CURSE_NO_MORE
 EN: "[[Potion curse-no-more]]"

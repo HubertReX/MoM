@@ -631,7 +631,7 @@
     "items": {
         "hammer": {
             "type": "weapon",
-            "value": 70,
+            "value": 80,
             "weight": 5.0,
             "damage": 25,
             "cooldown_time": 0.5,
@@ -644,7 +644,8 @@
             "damage": 30,
             "cooldown_time": 0.6,
             "name_EN": "Club",
-            "name_PL": "Maczuga"
+            "name_PL": "Maczuga",
+            "value": 100
         },
         "axe": {
             "type": "weapon",
@@ -668,7 +669,8 @@
             "weight": 2.5,
             "cooldown_time": 0.4,
             "name_EN": "Pitchfork",
-            "name_PL": "Widły"
+            "name_PL": "Widły",
+            "value": 30
         },
         "lance": {
             "type": "weapon",
@@ -706,14 +708,16 @@
         "sword_short": {
             "type": "weapon",
             "damage": 15,
-            "cooldown_time": 0.1,
+            "cooldown_time": 0.2,
             "name_EN": "Short sword",
-            "name_PL": "Krótki miecz"
+            "name_PL": "Krótki miecz",
+            "value": 70,
+            "weight": 2
         },
         "sai": {
             "type": "weapon",
-            "value": 20,
-            "cooldown_time": 0.1,
+            "value": 40,
+            "cooldown_time": 0.2,
             "name_EN": "Sai",
             "name_PL": "Sztylet"
         },
@@ -820,7 +824,7 @@
         },
         "beef": {
             "type": "consumable",
-            "value": 30,
+            "value": 50,
             "weight": 2.0,
             "health_impact": 50,
             "name_EN": "Baked beef",
@@ -844,7 +848,7 @@
             "type": "consumable",
             "value": 20,
             "weight": 0.15,
-            "health_impact": 5,
+            "health_impact": 3,
             "name_EN": "Water pot",
             "name_PL": "Fiolka wody"
         },
@@ -891,7 +895,7 @@
             "type": "consumable",
             "value": 1000,
             "weight": 0.5,
-            "health_impact": 10,
+            "health_impact": 1000,
             "name_EN": "Potion curse-no-more",
             "name_PL": "Eliksir anty-zaklęcia"
         },
