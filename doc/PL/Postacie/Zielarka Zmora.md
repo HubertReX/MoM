@@ -48,8 +48,8 @@ Szkoliła kiedyś [[Bibliofilistka des Informacja|Bibliofilistkę des Informacj�
 
 * Ktoś Ty? Kto Cię tu przysłał?
 
-* [[#000]] 1[Barman_Absinthrayner.012.visited or Barman_Absinthrayner.009.visited]😐: [[Barman Absyntnent]] powiedział mi o Tobie.
-* [[#992-end]] 2[Barman_Absinthrayner.012.not_visited and Barman_Absinthrayner.012.not_visited]😐: Nikt, ja sam tu trafiłem.
+* [[#000]] 1[`visited(`[[Barman Absyntnent#012|Barman#012]]`) or visited(`[[Barman Absyntnent#009|Barman#009]]`)`]😐: [[Barman Absyntnent]] powiedział mi o Tobie.
+* [[#992-end]] 2[`not visited(`[[Barman Absyntnent#012|Barman#012]]`) and not visited(`[[Barman Absyntnent#012|Barman#012]]`)`]😐: Nikt, ja sam tu trafiłem.
 
 ## 000
 
@@ -148,8 +148,8 @@ Tak jak ja.
 * Co jeszcze chciałbyś wiedzieć?
 
 * [[#013]] 1😐: Co się z nią później stało?
-* [[#014]] 2[character.sentiment>=42]😐: Jak się ona nazywa?
-* [[#017]] 2[character.sentiment<42]😐: Jak się ona nazywa?
+* [[#014]] 2[`sentiment >= 42`]😐: Jak się ona nazywa?
+* [[#017]] 2[`sentiment < 42`]😐: Jak się ona nazywa?
 * [[#015]] 4😐: Gdzie mogę ją znaleźć?
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy.

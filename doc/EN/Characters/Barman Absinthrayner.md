@@ -14,10 +14,10 @@ funny: 2
 
 
 - The mugs won't wash themselves. 
-- [time_of_day("morning")] At this hour, it's just me and the mice. 
-- [time_of_day("evening")] Last call! Just kidding. 
-- [sentiment > 60] Oh, my favorite customer! 
-- [quest_done("Q01_S01_LEARN_ABOUT_CURSE")] Sit over there. Further. Even further.
+- [`time_of_day("morning")`] At this hour, it's just me and the mice. 
+- [`time_of_day("evening")`] Last call! Just kidding. 
+- [`sentiment > 60`] Oh, my favorite customer! 
+- [`quest_done(`[[Q01_S01 Learn more about the curse]]`)`] Sit over there. Further. Even further.
 
 ## 000
 
@@ -82,12 +82,12 @@ Well then. Tough luck. Nobody here will really help you. We don't have **magic**
 
 * Well, there are a few villages around here, but ours is the biggest, the rest is rubbish. Are you interested in any particular place?
 
-* [[#010]] 1[Potioneer_Puzzlemint.004.not_visited and Hammer_Hoaxheart.004.not_visited]😐: I don't know any specific places around here. Can you tell me more generally?
-* [[#011]] 2[Hammer_Hoaxheart.004.visited]😐: What can you tell me about the city of [loc]Porażkowo[/loc]?
-* [[#018]] 3[Potioneer_Puzzlemint.004.visited]😐: What can you tell me about [loc]Bagna niedogodności[/loc]?
-* [[#019]] 4[Potioneer_Puzzlemint.004.visited]😐: What can you tell me about [loc]Splątany las irytacji[/loc]?
-* [[#020]] 5[Potioneer_Puzzlemint.004.visited]😐: What can you tell me about [loc]Jaskinia zagmatwania[/loc]?
-* [[#001]] 9[Potioneer_Puzzlemint.004.visited or Hammer_Hoaxheart.004.visited]😐: Thanks, that's enough for me
+* [[#010]] 1[`not visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`) and not visited(`[[Hammer Hoaxheart#004|Hammer#004]]`)`]😐: I don't know any specific places around here. Can you tell me more generally?
+* [[#011]] 2[`visited(`[[Hammer Hoaxheart#004|Hammer#004]]`)`]😐: What can you tell me about the city of [loc]Porażkowo[/loc]?
+* [[#018]] 3[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [loc]Bagna niedogodności[/loc]?
+* [[#019]] 4[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [loc]Splątany las irytacji[/loc]?
+* [[#020]] 5[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [loc]Jaskinia zagmatwania[/loc]?
+* [[#001]] 9[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`) or visited(`[[Hammer Hoaxheart#004|Hammer#004]]`)`]😐: Thanks, that's enough for me
 
 ## 010
 

@@ -71,10 +71,10 @@ Nawet mnie nie proś.
 
 * No już, już, dobrze. Pytaj. Co chcesz wiedzieć?
 
-* [[#003]] 1[003.not_visited]😐: Co się wczoraj wydarzyło?
-* [[#004]] 2[004.not_visited]😐: Kim Ty jesteś?
-* [[#005]] 3[005.not_visited]😐: Gdzie my jesteśmy?
-* [[#006]] 4[003.visited and 004.visited and 005.visited]😐: To co teraz?
+* [[#003]] 1[`not visited(`[[#003]]`)`]😐: Co się wczoraj wydarzyło?
+* [[#004]] 2[`not visited(`[[#004]]`)`]😐: Kim Ty jesteś?
+* [[#005]] 3[`not visited(`[[#005]]`)`]😐: Gdzie my jesteśmy?
+* [[#006]] 4[`visited(`[[#003]]`) and visited(`[[#004]]`) and visited(`[[#005]]`)`]😐: To co teraz?
 
 ## 003
 
@@ -119,10 +119,10 @@ No i chyba ja siłą rzeczy też.
 
 * Co jeszcze chcesz wiedzieć?
 
-* [[#003]] 1[003.not_visited]😐: Co się wczoraj wydarzyło?
-* [[#004]] 2[004.not_visited]😐: Kim Ty jesteś?
-* [[#005]] 3[005.not_visited]😐: Gdzie my jesteśmy?
-* [[#006]] 4[003.visited and 004.visited and 005.visited]😐: To co teraz zrobimy?
+* [[#003]] 1[`not visited(`[[#003]]`)`]😐: Co się wczoraj wydarzyło?
+* [[#004]] 2[`not visited(`[[#004]]`)`]😐: Kim Ty jesteś?
+* [[#005]] 3[`not visited(`[[#005]]`)`]😐: Gdzie my jesteśmy?
+* [[#006]] 4[`visited(`[[#003]]`) and visited(`[[#004]]`) and visited(`[[#005]]`)`]😐: To co teraz zrobimy?
 
 ## 006
 

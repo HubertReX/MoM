@@ -38,10 +38,10 @@ Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to
 ## Barki
 
 - Kufle same się nie umyją.
-- [time_of_day("morning")] O tej porze to tylko ja i myszy
-- [time_of_day("evening")] Ostatnia kolejka! Żartowałem
-- [sentiment > 60] O, mój ulubiony klient!
-- [quest_done("Q01_S01_LEARN_ABOUT_CURSE")] Siadaj tam. Dalej. Jeszcze dalej.
+- [`time_of_day("morning")`] O tej porze to tylko ja i myszy
+- [`time_of_day("evening")`] Ostatnia kolejka! Żartowałem
+- [`sentiment > 60`] O, mój ulubiony klient!
+- [`quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] Siadaj tam. Dalej. Jeszcze dalej.
 
 ## 000
 
@@ -106,12 +106,12 @@ No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma **magi
 
 * No jest tu trochę wiosek w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?
 
-* [[#010]] 1[Potioneer_Puzzlemint.004.not_visited and Hammer_Hoaxheart.004.not_visited]😐: Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?
-* [[#011]] 2[Hammer_Hoaxheart.004.visited]😐: Co wiesza na temat miasta [loc]Porażkowo[/loc]?
-* [[#018]] 3[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Bagna niedogodności[/loc]
-* [[#019]] 4[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Splątanego lasu irytacji[/loc]
-* [[#020]] 5[Potioneer_Puzzlemint.004.visited]😐: Co wiesza na temat [loc]Jaskini zagmatwania[/loc]
-* [[#001]] 9[Potioneer_Puzzlemint.004.visited or Hammer_Hoaxheart.004.visited]😐: Dzięki, to mi wystarczy
+* [[#010]] 1[`not visited(`[[Zielarka Zmora#004|Zielarka#004]]`) and not visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?
+* [[#011]] 2[`visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Co wiesza na temat miasta [loc]Porażkowo[/loc]?
+* [[#018]] 3[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [loc]Bagna niedogodności[/loc]
+* [[#019]] 4[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [loc]Splątanego lasu irytacji[/loc]
+* [[#020]] 5[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [loc]Jaskini zagmatwania[/loc]
+* [[#001]] 9[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`) or visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Dzięki, to mi wystarczy
 
 ## 010
 

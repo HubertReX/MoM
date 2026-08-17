@@ -66,6 +66,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
 from dialog.conditions import ConditionError, ConditionScope, validate_condition
+from dialog.vault_links import VaultLinkError, build_entity_index, expand_links
 
 
 class DialogImportError(ValueError):
@@ -123,6 +124,11 @@ _TAG_CONVERSIONS: dict[str, str] = {
 # Parsing helpers
 # ---------------------------------------------------------------------------
 
+# The inside of a `[...]` condition: anything but brackets, plus whole `[[...]]`
+# wikilinks. An entity reference in a condition is written as a real link (see
+# `vault_links`), so the brackets nest exactly one level deep.
+_CONDITION_BODY = r"(?:[^\[\]]|\[\[[^\[\]]*\]\])+"
+
 # one regex with named groups (Decision D6)
 # Supports both old [anchor](#target) and new [[#target]] formats.
 _OPTION_RE = re.compile(
@@ -133,7 +139,9 @@ _OPTION_RE = re.compile(
     r"\[(?P<anchor>[^\]]+)\]\(#(?P<target>[^)]+)\)"
     r")"
     r"\s*(?P<order>\d+)"
-    r"(?:\[(?P<condition>[^\]]+)\])?"
+    # The condition may hold whole wikilinks (`visited(`[[Barman#012]]`)`), so the
+    # brackets nest one level - a plain `[^\]]+` would stop at the link's `]]`.
+    r"(?:\[(?P<condition>" + _CONDITION_BODY + r")\])?"
     r"(?P<sentiment>[^\s:]+)"
     r"\s*:\s*"
     r"(?P<text>.*)$"
@@ -460,6 +468,7 @@ def import_character_dialog(
     character_key = _character_name_to_key(character_name)
     pl_path = _find_markdown_file(src_dir, "PL", character_name)
     en_path = _find_markdown_file(src_dir, "EN", character_name)
+    index = build_entity_index(src_dir)
     pl_nodes = _parse_file(pl_path)
     en_nodes = _parse_file(en_path)
 
@@ -547,6 +556,7 @@ def import_character_dialog(
                 option_key,
                 str(pl_path),
                 pl_opt.line_no,
+                index,
             )
 
             messages["PL"][option_message_key] = _convert_text(pl_opt.text, resolve_pl)
@@ -630,7 +640,7 @@ _H2_RE = re.compile(r"^##(?!#)\s*(?P<title>.+?)\s*$")
 # shows. That is the whole point of importing barks through the same engine as
 # dialog options, so a bark cannot join the "silent False" family of bugs.
 _BARK_LINE_RE = re.compile(
-    r"^[-*]\s+(?:\[(?P<condition>[^\]]+)\]\s*)?(?P<text>\S.*)$"
+    r"^[-*]\s+(?:\[(?P<condition>" + _CONDITION_BODY + r")\]\s*)?(?P<text>\S.*)$"
 )
 
 #: Pool file per language, relative to the vault root. Missing file = no pools,
@@ -672,19 +682,28 @@ def _validate_bark_text(text: str, owner: str, file: str, line: int) -> None:
             )
 
 
-def _validate_bark_condition(condition: str, owner: str, file: str, line: int) -> str:
-    """Whitelist-check a bark condition in the *bark* scope (D1)."""
+def _validate_bark_condition(
+    condition: str, owner: str, file: str, line: int, index: dict[str, str] | None = None
+) -> str:
+    """Wikilinks -> keys, then whitelist-check in the *bark* scope (D1).
+
+    Returns the converted condition, which is what the game gets: the vault keeps
+    the linked spelling, ``config.json`` keeps the keys.
+    """
+    out = _expand_condition_links(condition, index, f"bark for {owner!r}", file, line)
+    out = _VISITED_NPC_RE.sub(_replace_visited_npc, out)
+    out = _VISITED_SELF_RE.sub(_replace_visited_self, out)
     try:
-        validate_condition(condition, ConditionScope.bark)
+        validate_condition(out, ConditionScope.bark)
     except ConditionError as exc:
         raise DialogImportError(
             f"invalid bark condition for {owner!r}: {exc}", file=file, line=line
         ) from exc
-    return condition
+    return out
 
 
 def _parse_bark_lines(
-    lines: list[str], start: int, owner: str, path: Path
+    lines: list[str], start: int, owner: str, path: Path, index: dict[str, str] | None = None
 ) -> tuple[list[_ParsedBark], int]:
     """Read bark bullets from ``start`` until the next heading. Returns (barks, index)."""
     barks: list[_ParsedBark] = []
@@ -703,13 +722,12 @@ def _parse_bark_lines(
         condition = match.group("condition")
         _validate_bark_text(text, owner, str(path), idx)
         if condition:
-            _validate_bark_condition(condition.strip(), owner, str(path), idx)
-        barks.append(_ParsedBark(text=text, condition=condition.strip() if condition else None,
-                                 line_no=idx))
+            condition = _validate_bark_condition(condition.strip(), owner, str(path), idx, index)
+        barks.append(_ParsedBark(text=text, condition=condition or None, line_no=idx))
     return barks, idx
 
 
-def parse_character_barks(path: Path) -> list[_ParsedBark]:
+def parse_character_barks(path: Path, index: dict[str, str] | None = None) -> list[_ParsedBark]:
     """The ``## Barki`` section of one character file, or an empty list.
 
     No section is the normal state, not an error: a character with nothing to say
@@ -722,12 +740,12 @@ def parse_character_barks(path: Path) -> list[_ParsedBark]:
     for idx, line in enumerate(lines):
         heading = _H2_RE.match(line.rstrip())
         if heading and heading.group("title").strip().lower() in _BARK_SECTION_TITLES:
-            barks, _ = _parse_bark_lines(lines, idx + 1, path.stem, path)
+            barks, _ = _parse_bark_lines(lines, idx + 1, path.stem, path, index)
             return barks
     return []
 
 
-def parse_bark_pools(path: Path) -> dict[str, list[_ParsedBark]]:
+def parse_bark_pools(path: Path, index: dict[str, str] | None = None) -> dict[str, list[_ParsedBark]]:
     """Every pool in a shared bark file: ``{POOL_KEY: [bark, ...]}``.
 
     The section heading **is** the pool key, literally - the convention quest
@@ -758,7 +776,7 @@ def parse_bark_pools(path: Path) -> dict[str, list[_ParsedBark]]:
             raise DialogImportError(
                 f"duplicate bark pool {key!r}", file=str(path), line=line_no
             )
-        barks, idx = _parse_bark_lines(lines, idx + 1, key, path)
+        barks, idx = _parse_bark_lines(lines, idx + 1, key, path, index)
         pools[key] = barks
     return pools
 
@@ -814,10 +832,11 @@ def import_character_barks(
     changed return shape, not a changed call site.
     """
     character_key = _character_name_to_key(character_name)
-    pl_barks = parse_character_barks(_find_markdown_file(src_dir, "PL", character_name))
+    index = build_entity_index(src_dir)
+    pl_barks = parse_character_barks(_find_markdown_file(src_dir, "PL", character_name), index)
     if not pl_barks:
         return {"PL": {}, "EN": {}}, []
-    en_barks = parse_character_barks(_find_markdown_file(src_dir, "EN", character_name))
+    en_barks = parse_character_barks(_find_markdown_file(src_dir, "EN", character_name), index)
     return _emit_barks(
         character_key,
         pl_barks,
@@ -838,10 +857,11 @@ def import_bark_pools(
     ``characters.csv``; a character may have **both** its own section and a pool,
     and the two sum rather than exclude (D2).
     """
-    pl_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["PL"])
+    index = build_entity_index(src_dir)
+    pl_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["PL"], index)
     if not pl_pools:
         return {"PL": {}, "EN": {}}, {}
-    en_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["EN"])
+    en_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["EN"], index)
 
     resolve_pl = _make_name_resolver(characters, "PL") if characters else None
     resolve_en = _make_name_resolver(characters, "EN") if characters else None
@@ -1454,12 +1474,20 @@ def _convert_condition(
     option_key: str,
     file: str,
     line: int,
+    index: dict[str, str] | None = None,
 ) -> str:
-    """Convert RPG condition syntax to the MoM mini-DSL."""
+    """Convert the authored condition to the MoM mini-DSL.
+
+    Three spellings arrive here and one leaves. The vault spelling wraps the
+    condition in backticks and writes entity references as wikilinks, so it draws
+    an edge in the Obsidian graph (``vault_links``); the legacy dotted forms
+    (``Barman_Absinthrayner.012.visited``, ``character.sentiment``) still convert,
+    because a file nobody has touched yet must keep importing.
+    """
     if condition == "True":
         return condition
 
-    out = condition
+    out = _expand_condition_links(condition, index, f"option {option_key!r}", file, line)
     out = _SENTIMENT_COND_RE.sub("sentiment", out)
     out = _VISITED_NPC_RE.sub(_replace_visited_npc, out)
     out = _VISITED_SELF_RE.sub(_replace_visited_self, out)
@@ -1474,6 +1502,21 @@ def _convert_condition(
         ) from exc
 
     return out
+
+
+def _expand_condition_links(
+    condition: str, index: dict[str, str] | None, label: str, file: str, line: int
+) -> str:
+    """Wikilinks -> entity keys, backticks off. See :mod:`dialog.vault_links`.
+
+    ``self_anchor`` is on: a dialog always has a current character, so ``[[#005]]``
+    means "node 005 of whoever is speaking" - the same shorthand the option targets
+    already use.
+    """
+    try:
+        return expand_links(condition, index or {}, label=label, self_anchor=True)
+    except VaultLinkError as error:
+        raise DialogImportError(str(error), file=file, line=line) from error
 
 
 def _replace_visited_npc(match: re.Match[str]) -> str:

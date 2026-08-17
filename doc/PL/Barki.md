@@ -12,19 +12,19 @@ Uzupełnij tłumaczenia na język angielski w pliku [[Barks]], a po każdej zmia
 
 Pula dla mieszkańców wsi:
 
-- [time_of_day("morning") or time_of_day("day")] Dzień dobry
-- [time_of_day("evening") or time_of_day("night")] Dobry wieczór
-- [sentiment > 70] Uszanowanko
-- [sentiment > 80] Siemka
-- [on_map("LOST_CORK_TAVERN")] Ależ tu śmierdzi
-- [on_map("BLUNDERHAVEN") and time_of_day("day")] Ładny mamy dzień
-- [on_map("BLUNDERHAVEN") and time_of_day("night")] Noce znów są chłodne
-- [activity("stand")] Robota sama się nie zrobi
-- [activity("idle")] Nudno tu
-- [activity("wander")] Zjadłbym coś
-- [activity("wander")] W końcu chwila przerwy
-- [quest_done("Q01_S01_LEARN_ABOUT_CURSE")] O, idzie nasz pechowiec
-- [not quest_done("Q01_S01_LEARN_ABOUT_CURSE")] Hmm, kim jest ten nowy
+- [`time_of_day("morning") or time_of_day("day")`] Dzień dobry
+- [`time_of_day("evening") or time_of_day("night")`] Dobry wieczór
+- [`sentiment > 70`] Uszanowanko
+- [`sentiment > 80`] Siemka
+- [`on_map(`[[Tawerna Brakująca klepka|Tawerna]]`)`] Ależ tu śmierdzi
+- [`on_map(`[[Gafowo Kolonia]]`) and time_of_day("day")`] Ładny mamy dzień
+- [`on_map(`[[Gafowo Kolonia]]`) and time_of_day("night")`] Noce znów są chłodne
+- [`activity("stand")`] Robota sama się nie zrobi
+- [`activity("idle")`] Nudno tu
+- [`activity("wander")`] Zjadłbym coś
+- [`activity("wander")`] W końcu chwila przerwy
+- [`quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] O, idzie nasz pechowiec
+- [`not quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] Hmm, kim jest ten nowy
 
 ## FARM_ANIMALS
 

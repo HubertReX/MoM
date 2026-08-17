@@ -132,6 +132,11 @@ def test_markup_conversion() -> None:
 
 
 def test_condition_conversion() -> None:
+    """The vault writes conditions with wikilinks; the config gets keys.
+
+    The real files are the fixture on purpose: this is the check that the
+    interleaved spelling an author actually types survives the round trip.
+    """
     items = load_valid_items(ITEMS_CSV)
     messages, cfg, _ = import_character_dialog(
         VAULT, "Barman Absinthrayner", valid_items=items
@@ -141,18 +146,94 @@ def test_condition_conversion() -> None:
         option["condition"],
         'not visited("POTIONEER_PUZZLEMINT", "004") and '
         'not visited("HAMMER_HOAXHEART", "004")',
-        "cross-npc visited conversion",
+        "cross-npc link -> both arguments",
     )
 
     messages, cfg, _ = import_character_dialog(
         VAULT, "Potioneer Puzzlemint", valid_items=items
     )
     option = cfg["POTIONEER_PUZZLEMINT"]["DIALOG_OPTIONS"]["012to014_2"]
+    assert_eq(option["condition"], "sentiment >= 42", "sentiment comparison")
+
+    messages, cfg, _ = import_character_dialog(VAULT, "Clapback Sword", valid_items=items)
+    option = cfg["CLAPBACK_SWORD"]["DIALOG_OPTIONS"]["002to003_1"]
     assert_eq(
-        option["condition"],
-        "sentiment>=42",
-        "character.sentiment conversion",
+        option["condition"], 'not visited("003")', "a same-note [[#003]] means my own node"
     )
+
+
+def test_condition_wikilinks_are_expanded() -> None:
+    """`visited(`[[Barman Absyntnent#012|Barman#012]]`)` -> the two-argument call.
+
+    Written straight into a throwaway vault rather than taken from doc/, so the
+    test states the spelling instead of merely agreeing with whatever the files
+    happen to say today.
+    """
+    import tempfile
+
+    barman = (
+        "---\naliases:\n  - BARMAN_ABSINTHRAYNER\n  - Barman\n---\n"
+        "# Barman Absyntnent\n\n## 012\n\n* Gada.\n"
+    )
+    speaker = (
+        "---\naliases:\n  - POTIONEER_PUZZLEMINT\n---\n"
+        "# Zielarka Zmora\n\n## 000\n\n* Czego?\n\n"
+        "* [[#001]] 1[`visited(`[[Barman Absyntnent#012|Barman#012]]`)`]😐: Barman mnie przysłał.\n"
+        "* [[#001]] 2[`not visited(`[[#001]]`)`]😐: Nikt, sam trafiłem.\n\n"
+        "## 001\n\n* Aha.\n"
+    )
+    speaker_en = speaker.replace("Czego?", "What?").replace(
+        "Barman mnie przysłał.", "The barman sent me."
+    ).replace("Nikt, sam trafiłem.", "Nobody, I found my own way.").replace("Aha.", "I see.")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        for sub in ("PL/Postacie", "EN/Characters"):
+            (root / sub).mkdir(parents=True)
+        (root / "PL/Postacie/Barman Absyntnent.md").write_text(barman, encoding="utf-8")
+        (root / "PL/Postacie/Zielarka Zmora.md").write_text(speaker, encoding="utf-8")
+        (root / "EN/Characters/Zielarka Zmora.md").write_text(speaker_en, encoding="utf-8")
+
+        _, cfg, _ = import_character_dialog(root, "POTIONEER_PUZZLEMINT")
+
+    options = cfg["POTIONEER_PUZZLEMINT"]["DIALOG_OPTIONS"]
+    assert_eq(
+        options["000to001_1"]["condition"],
+        'visited("BARMAN_ABSINTHRAYNER", "012")',
+        "another character's node needs both arguments",
+    )
+    assert_eq(
+        options["000to001_2"]["condition"],
+        'not visited("001")',
+        "my own node needs only the node",
+    )
+
+
+def test_a_condition_link_to_nothing_fails() -> None:
+    """A typo in a character name must not survive as a condition nobody notices."""
+    import tempfile
+
+    speaker = (
+        "---\naliases:\n  - POTIONEER_PUZZLEMINT\n---\n"
+        "# Zielarka Zmora\n\n## 000\n\n* Czego?\n\n"
+        "* [[#001]] 1[`visited(`[[Barman Absyntnenttt#012]]`)`]😐: Barman mnie przysłał.\n\n"
+        "## 001\n\n* Aha.\n"
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        for sub in ("PL/Postacie", "EN/Characters"):
+            (root / sub).mkdir(parents=True)
+        (root / "PL/Postacie/Zielarka Zmora.md").write_text(speaker, encoding="utf-8")
+        (root / "EN/Characters/Zielarka Zmora.md").write_text(speaker, encoding="utf-8")
+
+        try:
+            import_character_dialog(root, "POTIONEER_PUZZLEMINT")
+        except DialogImportError as error:
+            assert_true(
+                "Barman Absyntnenttt" in str(error), f"names the offender: {error}"
+            )
+            return
+    raise AssertionError("expected a DialogImportError for an unresolvable link")
 
 
 def test_result_parsing() -> None:
@@ -380,6 +461,8 @@ def main() -> None:
             ("test_sentiment_conversion", test_sentiment_conversion),
             ("test_markup_conversion", test_markup_conversion),
             ("test_condition_conversion", test_condition_conversion),
+            ("test_condition_wikilinks_are_expanded", test_condition_wikilinks_are_expanded),
+            ("test_a_condition_link_to_nothing_fails", test_a_condition_link_to_nothing_fails),
             ("test_result_parsing", test_result_parsing),
             ("test_import_multiple_characters", test_import_multiple_characters),
             ("test_missing_file_raises", test_missing_file_raises),

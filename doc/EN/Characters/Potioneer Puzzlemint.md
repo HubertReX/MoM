@@ -28,8 +28,8 @@ funny: 1
 
 * Who are you? Who sent you here?
 
-* [[#000]] 1[Barman_Absinthrayner.012.visited]😐: [[Barman Absinthrayner]] told me about you.
-* [[#992-end]] 2[Barman_Absinthrayner.012.not_visited]😐: Nobody, I found my own way here.
+* [[#000]] 1[`visited(`[[Barman Absinthrayner#012|Barman#012]]`)`]😐: [[Barman Absinthrayner]] told me about you.
+* [[#992-end]] 2[`not visited(`[[Barman Absinthrayner#012|Barman#012]]`)`]😐: Nobody, I found my own way here.
 
 ## 000
 
@@ -128,8 +128,8 @@ Like me.
 * What else would you like to know?
 
 * [[#013]] 1😐: What happened to her after that?
-* [[#014]] 2[character.sentiment>=42]😐: What's her name?
-* [[#017]] 2[character.sentiment<42]😐: What's her name?
+* [[#014]] 2[`sentiment >= 42`]😐: What's her name?
+* [[#017]] 2[`sentiment < 42`]😐: What's her name?
 * [[#015]] 4😐: Where can I find her?
 
 * [[#001]] 9😐: Thanks, that's enough for me.

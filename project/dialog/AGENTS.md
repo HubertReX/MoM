@@ -105,7 +105,8 @@ który występuje w `config.json` jako klucz sekcji `character_dialogs`.
 | `graph.py` | `entities`, `conditions` | ✅ | `init_dialog(dict) → {key: DialogNode}`, resolve referencji |
 | `result_sink.py` | `entities` | ✅ | `visit_node()`, `apply_result()`, `ResultSink` Protocol |
 | `context_adapter.py` | `conditions`, **`characters`** (TYPE_CHECKING) | ✅ | `NPCConditionContext(ConditionContext)` — adapter do gry |
-| `markdown_importer.py` | `conditions` (walidacja) | ❌ (tylko desktop) | Build-time: `.md → config.json` |
+| `vault_links.py` | — | ❌ (tylko build-time) | Wikilink w wyrażeniu → klucz encji: `build_entity_index()`, `expand_links()`. Używa też importer questów |
+| `markdown_importer.py` | `conditions` (walidacja), `vault_links` | ❌ (tylko desktop) | Build-time: `.md → config.json` |
 | `result_sink_adapter.py` | `result_sink`, **`characters`** (TYPE_CHECKING) | ✅ | `GameResultSink(ResultSink)` |
 
 ### Uwaga dotycząca formatu MD
@@ -115,6 +116,8 @@ legacy `### <numer>` jest nadal akceptowane. Wszystko przed pierwszym
 numerycznym nagłówkiem (frontmatter, sekcja `# Info` z podsekcjami) jest
 ignorowane przez importer — klucze węzłów są wyłącznie cyfrowe, więc
 nagłówki prozy (`## Cechy charakteru`) nie kolidują.
+
+**Warunek opcji i barka pisze się w backquote'ach, a odwołania do encji w środku jako wikilinki** - przeplatane, tak samo jak w plikach misji: `* [[#010]] 2[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: …`. Nawias warunku zagnieżdża się więc o jeden poziom (`_CONDITION_BODY`), `vault_links.expand_links()` zdejmuje backquote'y i zamienia linki na klucze (`[[#005]]` = węzeł mówiącego), a link do nieistniejącej notatki to błąd importu z numerem linii. Stare zapisy (`Potioneer_Puzzlemint.004.visited`, `character.sentiment`, gołe stringi) nadal się importują. Pełna ściągawka warunków: [`doc/jak-napisac-barka.md`](../../doc/jak-napisac-barka.md).
 
 Tekst węzła dialogowego w plikach `.md` zaczyna się od `* ` (gwiazdka + spacja)
 ale może się ciągnąć przez wiele linii — również takich, które **nie** zaczynają

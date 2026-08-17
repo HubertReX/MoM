@@ -41,10 +41,10 @@ At this rate, I'll rust next to your skeleton soon. What a mess. You really made
 
 * Alright, alright, fine. Ask away. What do you want to know?
 
-* [[#003]] 1[003.not_visited]😐: What happened yesterday?
-* [[#004]] 2[004.not_visited]😐: Who are you?
-* [[#005]] 3[005.not_visited]😐: Where are we?
-* [[#006]] 4[003.visited and 004.visited and 005.visited]😐: So, what now?
+* [[#003]] 1[`not visited(`[[#003]]`)`]😐: What happened yesterday?
+* [[#004]] 2[`not visited(`[[#004]]`)`]😐: Who are you?
+* [[#005]] 3[`not visited(`[[#005]]`)`]😐: Where are we?
+* [[#006]] 4[`visited(`[[#003]]`) and visited(`[[#004]]`) and visited(`[[#005]]`)`]😐: So, what now?
 
 ## 003
 
@@ -83,10 +83,10 @@ And I guess me too.
 
 * What else do you want to know?
 
-* [[#003]] 1[003.not_visited]😐: What happened yesterday?
-* [[#004]] 2[004.not_visited]😐: Who are you?
-* [[#005]] 3[005.not_visited]😐: Where are we?
-* [[#006]] 4[003.visited and 004.visited and 005.visited]😐: So, what now?
+* [[#003]] 1[`not visited(`[[#003]]`)`]😐: What happened yesterday?
+* [[#004]] 2[`not visited(`[[#004]]`)`]😐: Who are you?
+* [[#005]] 3[`not visited(`[[#005]]`)`]😐: Where are we?
+* [[#006]] 4[`visited(`[[#003]]`) and visited(`[[#004]]`) and visited(`[[#005]]`)`]😐: So, what now?
 
 ## 006
 

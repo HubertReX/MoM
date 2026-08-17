@@ -40,10 +40,10 @@ Sarkazm to jej sposób radzenia sobie z przyziemnymi i nudnymi sprawami, bo jej 
 
 * No cóż, cóż, co my tu mamy? Jak przypuszczam, jesteś kolejną zagubioną duszą szukającą jakiegoś cudownego lekarstwa? Unosi brwi :wondering:.
 
-* [[#001]] 1[not visited("005")]😇: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… [quest]odwieczną klątwę ciągłego pecha[/quest].
-* [[#001]] 2[not visited("005")]😉: Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.
-* [[#007]] 3[not visited("005")]🧠: Czy możesz mi powiedzieć coś więcej o sobie?
-* [[#011]] 4[visited("005")]😐: Wracam. Masz już dla mnie jakieś wskazówki?
+* [[#001]] 1[`not visited(`[[#005]]`)`]😇: Uh, tak, właśnie. Słyszałem, że jesteś potężną czarodziejką i miałem nadzieję, że pomożesz mi przełamać tę… [quest]odwieczną klątwę ciągłego pecha[/quest].
+* [[#001]] 2[`not visited(`[[#005]]`)`]😉: Nie, po prostu pomyślałem, że twoja komnata wymaga remontu.
+* [[#007]] 3[`not visited(`[[#005]]`)`]🧠: Czy możesz mi powiedzieć coś więcej o sobie?
+* [[#011]] 4[`visited(`[[#005]]`)`]😐: Wracam. Masz już dla mnie jakieś wskazówki?
 
 ## 001
 
@@ -96,9 +96,9 @@ Powodzenia, kochanieńki.
 
 * Och, brawo! Pytania! Wal śmiało, tylko spróbuj mnie nie zanudzić :dots:.
 
-* [[#008]] 1[not selected("007to008_1")]🧠: O co chodzi z tym całym sarkazmem? Nie możesz przez chwilę być poważna?
-* [[#009]] 2[not selected("007to009_2")]🧠: Czy masz jakieś najnowsze wiadomości o tym co się dzieje w okolicy?
-* [[#010]] 3[not selected("007to010_3")]🧠: Jeszcze jedno pytanie. Co najbardziej lubisz w tej krainie?
+* [[#008]] 1[`not selected("007to008_1")`]🧠: O co chodzi z tym całym sarkazmem? Nie możesz przez chwilę być poważna?
+* [[#009]] 2[`not selected("007to009_2")`]🧠: Czy masz jakieś najnowsze wiadomości o tym co się dzieje w okolicy?
+* [[#010]] 3[`not selected("007to010_3")`]🧠: Jeszcze jedno pytanie. Co najbardziej lubisz w tej krainie?
 * [[#000]] 9😐: W porządku, dowiedziałem się wystarczająco wiele.
 
 ## 008
@@ -126,11 +126,11 @@ Powodzenia, kochanieńki.
 
 * Ach, wracasz tak szybko, jak widzę. Powiedz, czy udało Ci się zebrać moją małą kolekcję bibelotów?
 
-* [[#012]] 1[has_item("MERMAIDS_TEAR") and has_item("GNOMES_WHISKER") and has_item("PHOENIX_FEATHER")]😐: Rzeczywiście, mam wszystkie trzy przedmioty. [item]Łzę[/item] [char]Syrenki[/char], [item]pióro[/item] [char]Feniksa[/char] i [item]wąsik[/item] [char]Gnoma[/char].
-* [[#013]] 2[not has_item("MERMAIDS_TEAR") and (has_item("GNOMES_WHISKER") or has_item("PHOENIX_FEATHER"))]😢: Cóż, nie mam [item]łzy[/item] [char]Syrenki[/char].
-* [[#014]] 3[not has_item("GNOMES_WHISKER") and (has_item("MERMAIDS_TEAR") or has_item("PHOENIX_FEATHER"))]😢: Cóż, nie mam [item]wąsika[/item] [char]Gnoma[/char].
-* [[#015]] 4[not has_item("PHOENIX_FEATHER") and (has_item("GNOMES_WHISKER") or has_item("MERMAIDS_TEAR"))]😢: Cóż, nie mam [item]pióra[/item] [char]Feniksa[/char].
-* [[#016]] 5[not has_item("MERMAIDS_TEAR") and not has_item("GNOMES_WHISKER") and not has_item("PHOENIX_FEATHER")]😢: Niestety, wracam z pustymi rękoma. Jak się okazuje, [char]Syrenki[/char] są dość opiekuńcze wobec swoich [item]łez[/item], [char]Feniksy[/char] nie lubią być skubane, a [char]Gnomy[/char] są zaskakująco zwinne.
+* [[#012]] 1[`has_item("MERMAIDS_TEAR") and has_item("GNOMES_WHISKER") and has_item("PHOENIX_FEATHER")`]😐: Rzeczywiście, mam wszystkie trzy przedmioty. [item]Łzę[/item] [char]Syrenki[/char], [item]pióro[/item] [char]Feniksa[/char] i [item]wąsik[/item] [char]Gnoma[/char].
+* [[#013]] 2[`not has_item("MERMAIDS_TEAR") and (has_item("GNOMES_WHISKER") or has_item("PHOENIX_FEATHER"))`]😢: Cóż, nie mam [item]łzy[/item] [char]Syrenki[/char].
+* [[#014]] 3[`not has_item("GNOMES_WHISKER") and (has_item("MERMAIDS_TEAR") or has_item("PHOENIX_FEATHER"))`]😢: Cóż, nie mam [item]wąsika[/item] [char]Gnoma[/char].
+* [[#015]] 4[`not has_item("PHOENIX_FEATHER") and (has_item("GNOMES_WHISKER") or has_item("MERMAIDS_TEAR"))`]😢: Cóż, nie mam [item]pióra[/item] [char]Feniksa[/char].
+* [[#016]] 5[`not has_item("MERMAIDS_TEAR") and not has_item("GNOMES_WHISKER") and not has_item("PHOENIX_FEATHER")`]😢: Niestety, wracam z pustymi rękoma. Jak się okazuje, [char]Syrenki[/char] są dość opiekuńcze wobec swoich [item]łez[/item], [char]Feniksy[/char] nie lubią być skubane, a [char]Gnomy[/char] są zaskakująco zwinne.
 
 ## 012
 

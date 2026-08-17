@@ -50,9 +50,9 @@ wikilinks, interleaved with the backticks::
     `visited(`[[Zielarka Zmora#014|Zielarka#014]]`)`
 
 That way one expression is both a runnable condition *and* an edge in the
-Obsidian graph. :func:`_expand_expression` puts it back together: backticks are
-dropped and every wikilink becomes the key(s) it points at — ``[[Note#anchor]]``
--> ``"KEY", "anchor"``, ``[[Note]]`` -> ``"KEY"``.
+Obsidian graph. :func:`dialog.vault_links.expand_links` puts it back together:
+backticks are dropped and every wikilink becomes the key(s) it points at —
+``[[Note#anchor]]`` -> ``"KEY", "anchor"``, ``[[Note]]`` -> ``"KEY"``.
 
 Everything from the first ``##`` heading onwards is **author notes** and is
 ignored (``## Notatki``). That is where chain-level commentary goes, since the
@@ -87,6 +87,14 @@ from dialog.conditions import (
     validate_condition,
     validate_number,
 )
+from dialog.vault_links import (
+    WIKI_RE as _WIKI_RE,
+    VaultLinkError,
+    build_entity_index,
+    expand_links,
+    note_key,
+    resolve_entity as _resolve_entity,
+)
 from quest.graph import init_quests
 
 
@@ -117,12 +125,6 @@ _LANG_SUBDIRS: dict[str, tuple[str, ...]] = {
     "EN": ("EN/Quests",),
 }
 
-# Notes a wikilink inside an expression may point at. Characters carry the
-# dialog keys a `visited()` names; quests carry their own keys.
-_ENTITY_SUBDIRS: tuple[str, ...] = (
-    "PL/Postacie", "EN/Characters", "PL/Misje", "EN/Quests",
-)
-
 _DEFAULT_QUEST_SRC = _PROJECT_ROOT.parent / "doc"
 _DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config_model" / "config.json"
 
@@ -145,11 +147,6 @@ _KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 # chain's umbrella, which is where `parent` comes from.
 _QUEST_KEY_RE = re.compile(r"^(?P<chain>Q\d+)_S(?P<step>\d+)_(?P<slug>[A-Z][A-Z0-9_]*)$")
 _UMBRELLA_STEP = "00"
-
-# `[[Target]]`, `[[Target#anchor]]`, `[[Target#anchor|display]]`, `[[#anchor]]`.
-_WIKI_RE = re.compile(
-    r"\[\[(?P<target>[^\]|#]*)(?:#(?P<anchor>[^\]|]+))?(?:\|(?P<display>[^\]]*))?\]\]"
-)
 
 # PL or EN spelling -> canonical field name. The title is the `# H1` heading,
 # not a field, so it is deliberately absent here.
@@ -204,39 +201,6 @@ def _lang_dir(src_dir: Path, lang: str) -> Path:
     )
 
 
-def _parse_aliases(text: str, path: str = "") -> list[str]:
-    """Pull the ``aliases`` list out of the YAML frontmatter.
-
-    Deliberately tiny: the vault has no YAML parser dependency, and the only
-    frontmatter a quest file needs is its key.
-    """
-    lines = text.splitlines()
-    start = next((i for i, line in enumerate(lines) if line.strip() == "---"), None)
-    if start is None:
-        return []
-    end = next((i for i in range(start + 1, len(lines)) if lines[i].strip() == "---"), None)
-    if end is None:
-        return []
-
-    aliases: list[str] = []
-    in_aliases = False
-    for line in lines[start + 1:end]:
-        stripped = line.strip()
-        if stripped.startswith("aliases:"):
-            in_aliases = True
-            inline = stripped[len("aliases:"):].strip()
-            if inline.startswith("[") and inline.endswith("]"):
-                aliases.extend(a.strip().strip("\"'") for a in inline[1:-1].split(",") if a.strip())
-                in_aliases = False
-            continue
-        if in_aliases:
-            if stripped.startswith("- "):
-                aliases.append(stripped[2:].strip().strip("\"'"))
-                continue
-            in_aliases = False
-    return [a for a in aliases if a]
-
-
 def _key_of(path: Path) -> str:
     """The quest's config key: the UPPER_SNAKE alias in the frontmatter.
 
@@ -245,8 +209,7 @@ def _key_of(path: Path) -> str:
     ``[[Q03_S01_WHO_HAS_MORE_KNOWLEDGE]]`` as well as ``[[Kto ma wiedzę o
     magii]]``: Obsidian resolves both to the same note.
     """
-    aliases = _parse_aliases(path.read_text(encoding="utf-8"), str(path))
-    key = next((a for a in aliases if _KEY_RE.match(a)), "")
+    key = note_key(path.read_text(encoding="utf-8"))
     if not key:
         raise QuestImportError(
             "no quest key in frontmatter aliases (expected the quest's own key, "
@@ -320,78 +283,22 @@ def _resolve_chain(src_dir: Path, wanted: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Wikilinks inside expressions
+# Parsing a quest file
 # ---------------------------------------------------------------------------
-
-
-def build_entity_index(src_dir: Path) -> dict[str, str]:
-    """``{note name or alias: config key}`` for everything an expression can name.
-
-    A wikilink in an expression is written the way Obsidian wants it — pointing
-    at a note by its localized name — and has to come out of the importer as the
-    key the engine knows. Both spellings land in the same map, so
-    ``[[Zielarka Zmora#014]]`` and ``[[POTIONEER_PUZZLEMINT#014]]`` are one edge.
-
-    First writer wins, so a display alias can never shadow a note that owns the
-    same name outright.
-    """
-    index: dict[str, str] = {}
-    for sub in _ENTITY_SUBDIRS:
-        directory = src_dir / sub
-        if not directory.exists():
-            continue
-        for path in sorted(directory.glob("*.md")):
-            aliases = _parse_aliases(path.read_text(encoding="utf-8"), str(path))
-            key = next((a for a in aliases if _KEY_RE.match(a)), "")
-            if not key:
-                continue
-            for name in (path.stem, *aliases):
-                index.setdefault(name, key)
-    return index
-
-
-def _resolve_entity(name: str, index: dict[str, str]) -> str | None:
-    """A wikilink target -> config key, or ``None`` when nothing owns that name."""
-    candidate = name.rsplit("/", 1)[-1].strip()
-    return index.get(candidate) or index.get(candidate.replace("_", " "))
 
 
 def _expand_expression(
     value: str, index: dict[str, str], path: Path, line_no: int, *, label: str
 ) -> str:
-    """``` `visited(`[[Zielarka Zmora#014|Zielarka#014]]`)` ``` -> the runnable condition.
+    """:func:`dialog.vault_links.expand_links`, with this importer's error type.
 
-    Backticks are pure Obsidian formatting and come off. A wikilink becomes the
-    key(s) it names: with an anchor it is a dialog node, so it expands to both
-    arguments ``"KEY", "anchor"``; without one it is the entity itself, ``"KEY"``.
-    The ``-end`` suffix on a dialog heading marks a terminal node and is not part
-    of the node key (same rule as the dialog importer).
+    A quest has no current character, so ``[[#005]]`` - the "a node of mine" form
+    that dialog options use - has nothing to resolve against and is refused.
     """
-
-    def _replace(match: re.Match[str]) -> str:
-        target = match.group("target").strip()
-        anchor = (match.group("anchor") or "").strip()
-        if not target:
-            raise QuestImportError(
-                f"{label} has a same-note wikilink ({match.group(0)}) — an expression "
-                f"names another note, so the link needs its name",
-                file=str(path),
-                line=line_no,
-            )
-        key = _resolve_entity(target, index)
-        if key is None:
-            raise QuestImportError(
-                f"{label} links to {target!r}, which is not a character or quest note "
-                f"in the vault",
-                file=str(path),
-                line=line_no,
-            )
-        if not anchor:
-            return f'"{key}"'
-        node = anchor.removesuffix("-end")
-        return f'"{key}", "{node}"'
-
-    return _WIKI_RE.sub(_replace, value).replace("`", "").strip()
+    try:
+        return expand_links(value, index, label=label)
+    except VaultLinkError as error:
+        raise QuestImportError(str(error), file=str(path), line=line_no) from error
 
 
 def _parse_file(path: Path, index: dict[str, str], *, machine_fields: bool) -> _ParsedQuest:

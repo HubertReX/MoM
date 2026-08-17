@@ -37,10 +37,10 @@ Każdy bark to jedno wypunktowanie (`-` albo `*`). Opcjonalny nawias kwadratowy
 ## Barki
 
 - Kufle same się nie umyją.
-- [time_of_day("morning")] O tej porze to tylko ja i myszy.
-- [time_of_day("evening")] Ostatnia kolejka! Żartowałem.
-- [sentiment > 60] O, mój ulubiony klient!
-- [quest_done("Q01_S01_LEARN_ABOUT_CURSE")] Siadaj tam. Dalej. Jeszcze dalej.
+- [`time_of_day("morning")`] O tej porze to tylko ja i myszy.
+- [`time_of_day("evening")`] Ostatnia kolejka! Żartowałem.
+- [`sentiment > 60`] O, mój ulubiony klient!
+- [`quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] Siadaj tam. Dalej. Jeszcze dalej.
 ```
 
 W `Barki.md` nagłówek sekcji **jest kluczem puli**, w `SCREAMING_SNAKE`, bez spacji
@@ -52,8 +52,8 @@ i nie trafia do gry; liczą się tylko wypunktowania.
 
 Pula dla mieszkańców bez własnego pliku postaci.
 
-- [time_of_day("morning")] Dzień dobry.
-- [activity("stand")] Robota sama się nie zrobi.
+- [`time_of_day("morning")`] Dzień dobry.
+- [`activity("stand")`] Robota sama się nie zrobi.
 
 ## FARM_ANIMALS
 
@@ -76,24 +76,48 @@ i w questach, więc nie ma po co skakać między plikami. Kolumna „gdzie" mów
 wolno użyć danej nazwy: `bark` = ten plik, `dialog` = opcja dialogowa w pliku
 postaci, `quest` = `Test:` i `Postęp:` w pliku misji.
 
-| Warunek                                              | Gdzie                  | Znaczenie                                                     |
-| ---------------------------------------------------- | ---------------------- | ------------------------------------------------------------- |
-| `time_of_day("morning"/"day"/"evening"/"night")`     | bark                   | pora dnia na zegarze świata (granice 6/9/17/20)               |
-| `activity("sleep"/"stand"/"wander"/"patrol"/"idle")` | bark                   | co mówiący akurat robi wg rutyny                              |
-| `at("type:work")`, `at("location:Tavern")`           | bark                   | **który krok rutyny** akurat trwa (pole `at` z `routines.toml`) |
-| `on_map("KLUCZ_MAPY")`                               | bark                   | na której mapie stoi mówiący                                  |
-| `sentiment > 60`                                     | bark, dialog           | sentyment **mówiącego** do gracza (liczba 0-100)              |
-| `visited("WĘZEŁ")`                                   | bark, dialog           | czy gracz był w tym węźle u **mówiącego**                     |
-| `visited("POSTAĆ", "WĘZEŁ")`                         | bark, dialog, quest    | …u wskazanej postaci (w queście **obowiązkowe** dwa argumenty) |
-| `has_item("KLUCZ")`                                  | bark, dialog, quest    | czy gracz ma przedmiot                                        |
-| `item_count("KLUCZ") >= 2`                           | bark, dialog, quest    | ile sztuk ma gracz (liczba)                                   |
-| `quest_done("KLUCZ")`                                | bark, dialog, quest    | czy quest ukończony                                           |
-| `selected("KLUCZ_OPCJI")`                            | dialog                 | którą opcję gracz wybrał w tej rozmowie                       |
+| Warunek                                              | Gdzie               | Znaczenie                                                       |
+| ---------------------------------------------------- | ------------------- | --------------------------------------------------------------- |
+| `time_of_day("morning"/"day"/"evening"/"night")`     | bark                | pora dnia na zegarze świata (granice 6/9/17/20)                 |
+| `activity("sleep"/"stand"/"wander"/"patrol"/"idle")` | bark                | co mówiący akurat robi wg rutyny                                |
+| `at("type:work")`, `at("location:Tavern")`           | bark                | **który krok rutyny** akurat trwa (pole `at` z `routines.toml`) |
+| `on_map("KLUCZ_MAPY")`                               | bark                | na której mapie stoi mówiący                                    |
+| `sentiment > 60`                                     | bark, dialog        | sentyment **mówiącego** do gracza (liczba 0-100)                |
+| `visited("WĘZEŁ")`                                   | bark, dialog        | czy gracz był w tym węźle u **mówiącego**                       |
+| `visited("POSTAĆ", "WĘZEŁ")`                         | bark, dialog, quest | …u wskazanej postaci (w queście **obowiązkowe** dwa argumenty)  |
+| `has_item("KLUCZ")`                                  | bark, dialog, quest | czy gracz ma przedmiot                                          |
+| `item_count("KLUCZ") >= 2`                           | bark, dialog, quest | ile sztuk ma gracz (liczba)                                     |
+| `quest_done("KLUCZ")`                                | bark, dialog, quest | czy quest ukończony                                             |
+| `selected("KLUCZ_OPCJI")`                            | dialog              | którą opcję gracz wybrał w tej rozmowie                         |
 
-Łączy się je przez `and`, `or`, `not` i nawiasy. Liczby (`sentiment`, `item_count`)
-porównuje się przez `==`, `!=`, `<`, `<=`, `>`, `>=`. Klucze pisze się **w cudzysłowie**,
-dokładnie tak, jak brzmi klucz encji (`golden_key`, `BARMAN_ABSINTHRAYNER`,
-`Q01_S01_LEARN_ABOUT_CURSE`). Bez warunku bark leci zawsze.
+Łączy się je przez `and`, `or`, `not` i nawiasy. Liczby (`sentiment`, `item_count`) porównuje się przez ` ==`, `!=`, `<`, `<=`, `>`, `>=`. Bez warunku bark leci zawsze.
+
+### Zapis warunku: backquote'y i wikilinki
+
+Cały warunek zamyka się w **backquote'ach**, a odwołanie do encji pisze się w środku jako **prawdziwy wikilink**, przeplatany z backquote'ami - dokładnie tak samo jak w plikach misji:
+
+```markdown
+- [`on_map(`[[Tawerna Brakująca klepka|Tawerna]]`)`] Ależ tu śmierdzi
+- [`quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] O, idzie nasz pechowiec
+```
+
+Dzięki temu jeden zapis jest naraz warunkiem dla silnika i **krawędzią w grafie Obsidiana**: widać, że ten bark zależy od tego questa, bez czytania pliku. Import zdejmuje backquote'y i zamienia linki na klucze, więc `config.json` dostaje to, co zawsze.
+
+Co da się zlinkować, a co nie:
+
+| W warunku                          | Zapis w notatce                                                | Wychodzi z importu                        |
+| ---------------------------------- | -------------------------------------------------------------- | ----------------------------------------- |
+| węzeł **innej** postaci            | `` `visited(`[[Barman Absyntnent#012|Barman#012]]`)` ``        | `visited("BARMAN_ABSINTHRAYNER", "012")`  |
+| węzeł **mówiącego** (tylko dialog) | `` `visited(`[[#005]]`)` ``                                    | `visited("005")`                          |
+| mapa                               | `` `on_map(`[[Gafowo Kolonia]]`)` ``                           | `on_map("BLUNDERHAVEN")`                  |
+| quest                              | `` `quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)` `` | `quest_done("Q01_S01_LEARN_ABOUT_CURSE")` |
+| przedmiot, opcja, pora dnia        | `` `has_item("MERMAIDS_TEAR")` ``                              | bez zmian                                 |
+
+Przedmioty i opcje **nie mają własnych notatek**, więc zostają zwykłym napisem w cudzysłowie - klucz pisze się dokładnie tak, jak brzmi (`MERMAIDS_TEAR`, `007to008_1`).
+
+Link do notatki, której w vaulcie nie ma, to **błąd importu z numerem linii**. To jest ta różnica, która się liczy: literówka w nazwie postaci przestaje być warunkiem, który nigdy nie zapala, i staje się czerwonym komunikatem przy `just import-dialogs`.
+
+Stary zapis (`Potioneer_Puzzlemint.004.visited`, `character.sentiment`, gołe stringi) **nadal się importuje** - plik, którego nikt nie ruszał, ma działać. Tyle że nie rysuje się w grafie, więc przy okazji edycji warto go przepisać.
 
 Wszystko poza tą tabelą jest odrzucane przy imporcie z numerem linii: nie ma
 odwołań do pól gry (`scene.hour`), indeksów, wywołań w wywołaniu ani zmiennych.
@@ -112,10 +136,10 @@ tym, co stoi w polu `at`** danego kroku w `config_model/routines.toml`, razem
 z rodzajem:
 
 ```markdown
-- [at("type:work")] Robota sama się nie zrobi.
-- [at("type:social")] W końcu chwila przerwy.
-- [at("type:home") and time_of_day("evening")] Nogi mnie bolą.
-- [at("location:Tavern")] Tu zawsze pachnie tak samo.
+- [`at("type:work")`] Robota sama się nie zrobi.
+- [`at("type:social")`] W końcu chwila przerwy.
+- [`at("type:home") and time_of_day("evening")`] Nogi mnie bolą.
+- [`at("location:Tavern")`] Tu zawsze pachnie tak samo.
 ```
 
 Skrót bez rodzaju (`at("work")`) **nie zadziała** i `just validate-world` powie
@@ -128,7 +152,7 @@ opcję wybrałeś" nie ma tu znaczenia. Import odrzuci taki warunek.
 
 ### „Wieś wie o klątwie"
 
-To nie jest osobny przełącznik świata, tylko quest: `quest_done("Q01_S01_LEARN_ABOUT_CURSE")`.
+To nie jest osobny przełącznik świata, tylko quest: `quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`.
 Ten sam warunek działa w barku i w opcji dialogowej, więc cała wieś reaguje na
 jedną rzecz. Skasowanie albo przemianowanie tego questa wyłączy te reakcje -
 pilnuje tego reguła 20 walidatora (`just validate-world`), nie ten akapit.

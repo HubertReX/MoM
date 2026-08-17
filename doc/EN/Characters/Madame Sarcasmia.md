@@ -28,10 +28,10 @@ funny: 2
 
 * Well, well, well, what do we have here? Another lost soul seeking a cure, I presume? Raises an eyebrow :wondering:.
 
-* [[#001]] 1[not visited("005")]😇: Uh, yes, actually. I heard you're a powerful sorceress, and I was hoping you could help me break this… age-old curse of perpetual bad luck.
-* [[#001]] 2[not visited("005")]😉: No, I just thought your chamber could use some redecorating.
-* [[#007]] 3[not visited("005")]🧠: Can you tell me a bit more about yourself?
-* [[#011]] 4[visited("005")]😐: I'm back. Any leads for me yet?
+* [[#001]] 1[`not visited(`[[#005]]`)`]😇: Uh, yes, actually. I heard you're a powerful sorceress, and I was hoping you could help me break this… age-old curse of perpetual bad luck.
+* [[#001]] 2[`not visited(`[[#005]]`)`]😉: No, I just thought your chamber could use some redecorating.
+* [[#007]] 3[`not visited(`[[#005]]`)`]🧠: Can you tell me a bit more about yourself?
+* [[#011]] 4[`visited(`[[#005]]`)`]😐: I'm back. Any leads for me yet?
 
 ## 001
 
@@ -84,9 +84,9 @@ Good luck, dearie.
 
 * Oh, goody! Questions! Fire away, and try not to bore me :dots:.
 
-* [[#008]] 1[not selected("007to008_1")]🧠: What's the deal with all the sarcasm? Can't you be serious for a moment?
-* [[#009]] 2[not selected("007to009_2")]🧠: Are there any recent developments or news around these parts?
-* [[#010]] 3[not selected("007to010_3")]🧠: One more question. What's your favorite thing about these lands?
+* [[#008]] 1[`not selected("007to008_1")`]🧠: What's the deal with all the sarcasm? Can't you be serious for a moment?
+* [[#009]] 2[`not selected("007to009_2")`]🧠: Are there any recent developments or news around these parts?
+* [[#010]] 3[`not selected("007to010_3")`]🧠: One more question. What's your favorite thing about these lands?
 * [[#000]] 9😐: Alright, I've learned enough.
 
 ## 008
@@ -114,11 +114,11 @@ Good luck, dearie.
 
 * Ah, back so soon, I see. Do tell, have you managed to scrounge up my little collection of trinkets?
 
-* [[#012]] 1[has_item("MERMAIDS_TEAR") and has_item("GNOMES_WHISKER") and has_item("PHOENIX_FEATHER")]😐: Indeed, I have all three items you requested. A [char]Mermaid's[/char] [item]tear[/item], a [char]Phoenix[/char] [item]feather[/item], and a [char]Gnome's[/char] [item]whisker[/item].
-* [[#013]] 2[not has_item("MERMAIDS_TEAR") and (has_item("GNOMES_WHISKER") or has_item("PHOENIX_FEATHER"))]😢: Well, I don't have the [char]Mermaid's[/char] [item]tear[/item].
-* [[#014]] 3[not has_item("GNOMES_WHISKER") and (has_item("MERMAIDS_TEAR") or has_item("PHOENIX_FEATHER"))]😢: Well, I don't have the [char]Gnome's[/char] [item]whisker[/item].
-* [[#015]] 4[not has_item("PHOENIX_FEATHER") and (has_item("GNOMES_WHISKER") or has_item("MERMAIDS_TEAR"))]😢: Well, I don't have the [char]Phoenix's[/char] [item]feather[/item].
-* [[#016]] 5[not has_item("MERMAIDS_TEAR") and not has_item("GNOMES_WHISKER") and not has_item("PHOENIX_FEATHER")]😢: Unfortunately, I've come empty-handed. Turns out, [char]Mermaids[/char] are rather protective of their [item]tears[/item], [char]Phoenix[/char] don't appreciate plucking, and [char]Gnomes[/char] are surprisingly agile.
+* [[#012]] 1[`has_item("MERMAIDS_TEAR") and has_item("GNOMES_WHISKER") and has_item("PHOENIX_FEATHER")`]😐: Indeed, I have all three items you requested. A [char]Mermaid's[/char] [item]tear[/item], a [char]Phoenix[/char] [item]feather[/item], and a [char]Gnome's[/char] [item]whisker[/item].
+* [[#013]] 2[`not has_item("MERMAIDS_TEAR") and (has_item("GNOMES_WHISKER") or has_item("PHOENIX_FEATHER"))`]😢: Well, I don't have the [char]Mermaid's[/char] [item]tear[/item].
+* [[#014]] 3[`not has_item("GNOMES_WHISKER") and (has_item("MERMAIDS_TEAR") or has_item("PHOENIX_FEATHER"))`]😢: Well, I don't have the [char]Gnome's[/char] [item]whisker[/item].
+* [[#015]] 4[`not has_item("PHOENIX_FEATHER") and (has_item("GNOMES_WHISKER") or has_item("MERMAIDS_TEAR"))`]😢: Well, I don't have the [char]Phoenix's[/char] [item]feather[/item].
+* [[#016]] 5[`not has_item("MERMAIDS_TEAR") and not has_item("GNOMES_WHISKER") and not has_item("PHOENIX_FEATHER")`]😢: Unfortunately, I've come empty-handed. Turns out, [char]Mermaids[/char] are rather protective of their [item]tears[/item], [char]Phoenix[/char] don't appreciate plucking, and [char]Gnomes[/char] are surprisingly agile.
 
 ## 012
 

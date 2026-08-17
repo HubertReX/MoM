@@ -409,7 +409,7 @@ def test_a_link_to_nothing_fails_the_import() -> None:
         )
         _expect_import_error(
             lambda: import_quests(vault, ALL_KEYS),
-            "is not a character or quest note",
+            "is not a character, quest or location note",
             "unresolvable link",
         )
 

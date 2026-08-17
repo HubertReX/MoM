@@ -2661,14 +2661,14 @@
                 },
                 "012to014_2": {
                     "next_node": "014",
-                    "condition": "sentiment>=42",
+                    "condition": "sentiment >= 42",
                     "sentiment": "neutral",
                     "order": 2,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_012to014_2"
                 },
                 "012to017_2": {
                     "next_node": "017",
-                    "condition": "sentiment<42",
+                    "condition": "sentiment < 42",
                     "sentiment": "neutral",
                     "order": 2,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_012to017_2"
@@ -3672,7 +3672,7 @@
             "bark.FARM_ANIMALS.004": "woof, woof",
             "bark.FARM_ANIMALS.005": "meow",
             "bark.FARM_ANIMALS.006": "mEOw",
-            "bark.BARMAN_ABSINTHRAYNER.001": "Barki The mugs won't wash themselves.",
+            "bark.BARMAN_ABSINTHRAYNER.001": "The mugs won't wash themselves.",
             "bark.BARMAN_ABSINTHRAYNER.002": "At this hour, it's just me and the mice.",
             "bark.BARMAN_ABSINTHRAYNER.003": "Last call! Just kidding.",
             "bark.BARMAN_ABSINTHRAYNER.004": "Oh, my favorite customer!",
