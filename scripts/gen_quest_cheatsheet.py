@@ -34,6 +34,7 @@ from dialog.conditions import (  # noqa: E402
     _VALUE_NAMES_BY_SCOPE,
     ConditionScope,
 )
+from dialog.vault_links import KIND_BY_SUBDIR  # noqa: E402
 from md_tables import table  # noqa: E402
 from quest.entities import CompletionMode, QuestRewardCategory  # noqa: E402
 from quest.markdown_importer import _FIELD_ALIASES, _MACHINE_FIELDS  # noqa: E402
@@ -208,6 +209,22 @@ def render(out_path: Path) -> str:
         "bo quest nie ma kontekstu bieżącej postaci."
     )
     operators = " ".join(_code(_OP_DOC[op.__name__]) for op in _COMPARE_OPS if op.__name__ in _OP_DOC)
+    # Znacznik encji bierze się z katalogu notatki - ta tabela czyta go stamtąd,
+    # zamiast powtarzać mapowanie, które mogłoby się rozjechać.
+    _KIND_EXAMPLE = {
+        "char": ("[[Zielarka Zmora]]", "Zielarka Zmora"),
+        "loc": ("[[Tawerna Brakująca klepka]]", "Tawerna Brakująca klepka"),
+        "item": ("[[Łza Syrenki]]", "Łza Syrenki"),
+    }
+    entities_rows = [
+        [f"`{link}`", f"`[{kind}]{shown}[/{kind}]`"]
+        for kind, (link, shown) in _KIND_EXAMPLE.items()
+        if kind in set(KIND_BY_SUBDIR.values())
+    ]
+    entities_rows.append(
+        ["`[[Barman Absyntnent\\|Barmana]]`", "`[char]Barmana[/char]` - odmiana z kreski"]
+    )
+    entities_table = table(["W notatce", "W grze"], entities_rows)
     requires_table = table(
         ["Zapis", "Kiedy"],
         [
@@ -376,6 +393,16 @@ Odrzucane przy imporcie:
 - `@NPC_KEY` przy czymkolwiek poza `sentiment`.
 
 Etykiety nagród składa silnik gry - nie pisz wartości liczbowej nagrody w `Sukces:`. Dzięki temu przeważenie nagrody nie dotyka tłumaczeń.
+
+## Encje w prozie - pisze się je linkiem
+
+Postać, lokalizację i przedmiot pisze się w tytule, opisie i `Sukces` **wikilinkiem**; import zamienia go na znacznik, którym gra koloruje encję:
+
+{entities_table}
+
+Znacznik bierze się z **katalogu notatki**, więc nie trzeba go wybierać, a napis po pionowej kresce niesie odmianę. Link bez kreski pokazuje nazwę notatki w języku pliku, więc `[[Zielarka Zmora]]` w pliku EN wyświetli się jako „Potioneer Puzzlemint".
+
+Znacznikiem wprost pisze się dalej to, co **nie ma notatki**: istoty ze wspomnień, rzeczowniki pospolite, zaimki (`[char]Ty[/char]`). Link do nieistniejącej notatki zostaje w tekście dosłownie i `just validate-world` (reguła 22) uzna to za błąd - gracz zobaczyłby surowe `[[nawiasy]]`.
 
 ## Znaczniki tekstu - MoM RichText
 

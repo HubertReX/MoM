@@ -8,4 +8,4 @@ PL: "[[Eliksir anty-zaklęcia]]"
 
 `= "![[item_" + this.key + ".png|64]]"`
 
-A magical potion prepared by [char]Madame Sarcasmia[/char]. It is said to undo even the most stubborn curses, or kill you.
+A magical potion prepared by [[Madame Sarcasmia]]. It is said to undo even the most stubborn curses, or kill you.

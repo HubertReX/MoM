@@ -62,9 +62,9 @@ Sarkazm to jej sposób radzenia sobie z przyziemnymi i nudnymi sprawami, bo jej 
 ## 003
 
 * Och, nic wielkiego:
-[act]*[/act] [item]łza[/item] [char]Melancholijnej Syrenki[/char],
-[act]*[/act] [item]pióro[/item] [char]Przygnębionego Feniksa[/char] wyrwane podczas zaćmienia słońca,
-[act]*[/act] oraz [item]wąsik[/item] [char]Gniewnego Gnoma[/char].
+[act]*[/act] [[Łza Syrenki|łza]] [char]Melancholijnej Syrenki[/char],
+[act]*[/act] [[Pióro Feniksa|pióro]] [char]Przygnębionego Feniksa[/char] wyrwane podczas zaćmienia słońca,
+[act]*[/act] oraz [[Wąs Gnoma|wąsik]] [char]Gniewnego Gnoma[/char].
 
 To powinna być bułka z masłem — przewraca oczami :dots:.
 
@@ -80,7 +80,7 @@ To powinna być bułka z masłem — przewraca oczami :dots:.
 
 Powodzenia, kochanieńki.
 
-* [[#005-end]] 1😐: [item]łza[/item] [char]Melancholijnej Syrenki[/char], [item]pióro[/item] [char]Przygnębionego Feniksa[/char] i [item]wąsik[/item] [char]Zrzędliwego Gnoma[/char]. Zrozumiano.
+* [[#005-end]] 1😐: [[Łza Syrenki|łza]] [char]Melancholijnej Syrenki[/char], [[Pióro Feniksa|pióro]] [char]Przygnębionego Feniksa[/char] i [[Wąs Gnoma|wąsik]] [char]Zrzędliwego Gnoma[/char]. Zrozumiano.
 * [[#005-end]] 2😉: Wrócę z twoimi bibelotami, ale oczekuję, że będziesz mieć gotowy eliksir — puszczasz oczko.
 * [[#006-end]] 3😢: To brzmi… okropnie.
 
@@ -126,11 +126,11 @@ Powodzenia, kochanieńki.
 
 * Ach, wracasz tak szybko, jak widzę. Powiedz, czy udało Ci się zebrać moją małą kolekcję bibelotów?
 
-* [[#012]] 1[`has_item(`[[Łza Syrenki]]`) and has_item(`[[Wąs Gnoma]]`) and has_item(`[[Pióro Feniksa]]`)`]😐: Rzeczywiście, mam wszystkie trzy przedmioty. [item]Łzę[/item] [char]Syrenki[/char], [item]pióro[/item] [char]Feniksa[/char] i [item]wąsik[/item] [char]Gnoma[/char].
-* [[#013]] 2[`not has_item(`[[Łza Syrenki]]`) and (has_item(`[[Wąs Gnoma]]`) or has_item(`[[Pióro Feniksa]]`))`]😢: Cóż, nie mam [item]łzy[/item] [char]Syrenki[/char].
-* [[#014]] 3[`not has_item(`[[Wąs Gnoma]]`) and (has_item(`[[Łza Syrenki]]`) or has_item(`[[Pióro Feniksa]]`))`]😢: Cóż, nie mam [item]wąsika[/item] [char]Gnoma[/char].
-* [[#015]] 4[`not has_item(`[[Pióro Feniksa]]`) and (has_item(`[[Wąs Gnoma]]`) or has_item(`[[Łza Syrenki]]`))`]😢: Cóż, nie mam [item]pióra[/item] [char]Feniksa[/char].
-* [[#016]] 5[`not has_item(`[[Łza Syrenki]]`) and not has_item(`[[Wąs Gnoma]]`) and not has_item(`[[Pióro Feniksa]]`)`]😢: Niestety, wracam z pustymi rękoma. Jak się okazuje, [char]Syrenki[/char] są dość opiekuńcze wobec swoich [item]łez[/item], [char]Feniksy[/char] nie lubią być skubane, a [char]Gnomy[/char] są zaskakująco zwinne.
+* [[#012]] 1[`has_item(`[[Łza Syrenki]]`) and has_item(`[[Wąs Gnoma]]`) and has_item(`[[Pióro Feniksa]]`)`]😐: Rzeczywiście, mam wszystkie trzy przedmioty. [[Łza Syrenki|Łzę]] [char]Syrenki[/char], [[Pióro Feniksa|pióro]] [char]Feniksa[/char] i [[Wąs Gnoma|wąsik]] [char]Gnoma[/char].
+* [[#013]] 2[`not has_item(`[[Łza Syrenki]]`) and (has_item(`[[Wąs Gnoma]]`) or has_item(`[[Pióro Feniksa]]`))`]😢: Cóż, nie mam [[Łza Syrenki|łzy]] [char]Syrenki[/char].
+* [[#014]] 3[`not has_item(`[[Wąs Gnoma]]`) and (has_item(`[[Łza Syrenki]]`) or has_item(`[[Pióro Feniksa]]`))`]😢: Cóż, nie mam [[Wąs Gnoma|wąsika]] [char]Gnoma[/char].
+* [[#015]] 4[`not has_item(`[[Pióro Feniksa]]`) and (has_item(`[[Wąs Gnoma]]`) or has_item(`[[Łza Syrenki]]`))`]😢: Cóż, nie mam [[Pióro Feniksa|pióra]] [char]Feniksa[/char].
+* [[#016]] 5[`not has_item(`[[Łza Syrenki]]`) and not has_item(`[[Wąs Gnoma]]`) and not has_item(`[[Pióro Feniksa]]`)`]😢: Niestety, wracam z pustymi rękoma. Jak się okazuje, [char]Syrenki[/char] są dość opiekuńcze wobec swoich [[Łza Syrenki|łez]], [char]Feniksy[/char] nie lubią być skubane, a [char]Gnomy[/char] są zaskakująco zwinne.
 
 ## 012
 
@@ -152,7 +152,7 @@ Powodzenia, kochanieńki.
 
 ## 015
 
-* Och, ależ to kompletnie nie zaskakuje. [item]Pióro[/item] [char]Feniksa[/char] cię przerasta, powiadasz?
+* Och, ależ to kompletnie nie zaskakuje. [[Pióro Feniksa|Pióro]] [char]Feniksa[/char] cię przerasta, powiadasz?
 
 * [[#018]] 1😢: Ale pozostałe przedmioty są tutaj, więc zrób swoje, mówiąc metaforycznie.
 

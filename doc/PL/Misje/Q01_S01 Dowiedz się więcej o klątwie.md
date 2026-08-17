@@ -4,10 +4,10 @@ aliases:
 ---
 # Dowiedz się więcej o klątwie
 
-Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W [loc]Tawernie[/loc] mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.
+Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W [[Tawerna Brakująca klepka|Tawernie]] mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.
 
 **Requires**: [[Q01_S00 Przełamać klątwę]]
 **Completion**: `test`
 **Test**: `visited(`[[Barman Absyntnent#012|Barman#012]]`) or visited(`[[Barman Absyntnent#009|Barman#009]]`)`
-**Success**: [char]Barman[/char] zna kogoś od mikstur: jest stara, ślepa, mieszka koło lasu i czasem, po jej miksturach, ludziom robi się gorzej. Czy może być lepsza rekomendacja?
+**Success**: [[Barman Absyntnent|Barman]] zna kogoś od mikstur: jest stara, ślepa, mieszka koło lasu i czasem, po jej miksturach, ludziom robi się gorzej. Czy może być lepsza rekomendacja?
 **Reward**: `health=20`

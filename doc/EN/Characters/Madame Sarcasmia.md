@@ -50,9 +50,9 @@ funny: 2
 ## 003
 
 * Oh, nothing much:
-[act]*[/act] the [item]tear[/item] of the [char]Melancholic Mermaid[/char],
-[act]*[/act] a [char]Mopey Phoenix[/char] [item]feather[/item] plucked during a solar eclipse,
-[act]*[/act] and a [item]whisker[/item] of the [char]Grumpy Gnome[/char].
+[act]*[/act] the [[Mermaid's tear|tear]] of the [char]Melancholic Mermaid[/char],
+[act]*[/act] a [char]Mopey Phoenix[/char] [[Phoenix feather|feather]] plucked during a solar eclipse,
+[act]*[/act] and a [[Gnome's whisker|whisker]] of the [char]Grumpy Gnome[/char].
 
 Should be a piece of cake. Rolls eyes :dots:.
 
@@ -68,7 +68,7 @@ Should be a piece of cake. Rolls eyes :dots:.
 
 Good luck, dearie.
 
-* [[#005-end]] 1😐: [char]Mermaid[/char] [item]tear[/item], [char]Mopey Phoenix[/char] [item]feather[/item], and [char]Grumpy Gnome[/char] [item]whisker[/item]. Got it.
+* [[#005-end]] 1😐: [char]Mermaid[/char] [[Mermaid's tear|tear]], [char]Mopey Phoenix[/char] [[Phoenix feather|feather]], and [char]Grumpy Gnome[/char] [[Gnome's whisker|whisker]]. Got it.
 * [[#005-end]] 2😉: I'll be back with your trinkets before you can say "abracadabra" — just have that potion ready.
 * [[#006-end]] 3😢: That sounds… awful.
 
@@ -114,11 +114,11 @@ Good luck, dearie.
 
 * Ah, back so soon, I see. Do tell, have you managed to scrounge up my little collection of trinkets?
 
-* [[#012]] 1[`has_item(`[[Mermaid's tear]]`) and has_item(`[[Gnome's whisker]]`) and has_item(`[[Phoenix feather]]`)`]😐: Indeed, I have all three items you requested. A [char]Mermaid's[/char] [item]tear[/item], a [char]Phoenix[/char] [item]feather[/item], and a [char]Gnome's[/char] [item]whisker[/item].
-* [[#013]] 2[`not has_item(`[[Mermaid's tear]]`) and (has_item(`[[Gnome's whisker]]`) or has_item(`[[Phoenix feather]]`))`]😢: Well, I don't have the [char]Mermaid's[/char] [item]tear[/item].
-* [[#014]] 3[`not has_item(`[[Gnome's whisker]]`) and (has_item(`[[Mermaid's tear]]`) or has_item(`[[Phoenix feather]]`))`]😢: Well, I don't have the [char]Gnome's[/char] [item]whisker[/item].
-* [[#015]] 4[`not has_item(`[[Phoenix feather]]`) and (has_item(`[[Gnome's whisker]]`) or has_item(`[[Mermaid's tear]]`))`]😢: Well, I don't have the [char]Phoenix's[/char] [item]feather[/item].
-* [[#016]] 5[`not has_item(`[[Mermaid's tear]]`) and not has_item(`[[Gnome's whisker]]`) and not has_item(`[[Phoenix feather]]`)`]😢: Unfortunately, I've come empty-handed. Turns out, [char]Mermaids[/char] are rather protective of their [item]tears[/item], [char]Phoenix[/char] don't appreciate plucking, and [char]Gnomes[/char] are surprisingly agile.
+* [[#012]] 1[`has_item(`[[Mermaid's tear]]`) and has_item(`[[Gnome's whisker]]`) and has_item(`[[Phoenix feather]]`)`]😐: Indeed, I have all three items you requested. A [char]Mermaid's[/char] [[Mermaid's tear|tear]], a [char]Phoenix[/char] [[Phoenix feather|feather]], and a [char]Gnome's[/char] [[Gnome's whisker|whisker]].
+* [[#013]] 2[`not has_item(`[[Mermaid's tear]]`) and (has_item(`[[Gnome's whisker]]`) or has_item(`[[Phoenix feather]]`))`]😢: Well, I don't have the [char]Mermaid's[/char] [[Mermaid's tear|tear]].
+* [[#014]] 3[`not has_item(`[[Gnome's whisker]]`) and (has_item(`[[Mermaid's tear]]`) or has_item(`[[Phoenix feather]]`))`]😢: Well, I don't have the [char]Gnome's[/char] [[Gnome's whisker|whisker]].
+* [[#015]] 4[`not has_item(`[[Phoenix feather]]`) and (has_item(`[[Gnome's whisker]]`) or has_item(`[[Mermaid's tear]]`))`]😢: Well, I don't have the [char]Phoenix's[/char] [[Phoenix feather|feather]].
+* [[#016]] 5[`not has_item(`[[Mermaid's tear]]`) and not has_item(`[[Gnome's whisker]]`) and not has_item(`[[Phoenix feather]]`)`]😢: Unfortunately, I've come empty-handed. Turns out, [char]Mermaids[/char] are rather protective of their [[Mermaid's tear|tears]], [char]Phoenix[/char] don't appreciate plucking, and [char]Gnomes[/char] are surprisingly agile.
 
 ## 012
 
@@ -140,7 +140,7 @@ Good luck, dearie.
 
 ## 015
 
-* Oh, how utterly unsurprising. A [char]Phoenix[/char] [item]feather[/item] eludes you, you say?
+* Oh, how utterly unsurprising. A [char]Phoenix[/char] [[Phoenix feather|feather]] eludes you, you say?
 
 * [[#018]] 1😢: But the other items are right here, so work your magic, figuratively speaking.
 

@@ -21,9 +21,9 @@ funny: 2
 
 ## 000
 
-* Hey :red_exclamation: Welcome to our [loc]Tavern[/loc]! I'm [[BARMAN_ABSINTHRAYNER]]. And who might fortune have brought my way?
+* Hey :red_exclamation: Welcome to our [[the Lost Cork Tavern|Tavern]]! I'm [[BARMAN_ABSINTHRAYNER]]. And who might fortune have brought my way?
 
-* [[#001]] 1😇: I'm [char]Malachi[/char], [bold]your[/bold] new friend :blink:
+* [[#001]] 1😇: I'm [[Malachi]], [bold]your[/bold] new friend :blink:
 * [[#001]] 2😢: Oh, don't ask, I'm [u]cursed[/u] by fate...
 * [[#001]] 3😉: If you want, I could become **your** best customer :happy:
 
@@ -47,14 +47,14 @@ My father owns this tavern, and I've been helping him since I was a kid. I know 
 
 ## 003
 
-* [loc]Gafowo Kolonia[/loc]? It may not be **Rome**, but we have everything we need here. People know each other and help one another.
+* [[Blunderhaven|Gafowo Kolonia]]? It may not be **Rome**, but we have everything we need here. People know each other and help one another.
 On a daily basis it's peaceful here, though sometimes outsiders cause quite a mess. Just like yesterday - we had three unknown **wizards** here and everything would've been fine if it weren't for some slicker who tried to cheat them at cards:angry:.
 
 I don't know exactly what happened at that table since the serving girl was handling it, but by the end things got heated. I heard some bang and screams:shocked:. Apparently they used their **magic**. Tsk, what a yokel - who ever heard of using spells at a card table:evil:.
 
 * [[#007]] 1😇: Spells? Here? That's unheard of! What happened next?
 * [[#008]] 2😢: I'm afraid I'm the unfortunate one they cast a spell on:miserable:
-* [[#007]] 3😉: [char]Sword[/char]: _I think I've heard this story already..._ But what about those wizards?
+* [[#007]] 3😉: [[Clapback Sword|Sword]]: _I think I've heard this story already..._ But what about those wizards?
 
 ## 007
 
@@ -83,10 +83,10 @@ Well then. Tough luck. Nobody here will really help you. We don't have **magic**
 * Well, there are a few villages around here, but ours is the biggest, the rest is rubbish. Are you interested in any particular place?
 
 * [[#010]] 1[`not visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`) and not visited(`[[Hammer Hoaxheart#004|Hammer#004]]`)`]😐: I don't know any specific places around here. Can you tell me more generally?
-* [[#011]] 2[`visited(`[[Hammer Hoaxheart#004|Hammer#004]]`)`]😐: What can you tell me about the city of [loc]Porażkowo[/loc]?
-* [[#018]] 3[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [loc]Bagna niedogodności[/loc]?
-* [[#019]] 4[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [loc]Splątany las irytacji[/loc]?
-* [[#020]] 5[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [loc]Jaskinia zagmatwania[/loc]?
+* [[#011]] 2[`visited(`[[Hammer Hoaxheart#004|Hammer#004]]`)`]😐: What can you tell me about the city of [[Quirkshire|Porażkowo]]?
+* [[#018]] 3[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [[Swamp of Inconvenience|Bagna niedogodności]]?
+* [[#019]] 4[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [[Tangled Forest of Annoyance|Splątany las irytacji]]?
+* [[#020]] 5[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`)`]😐: What can you tell me about [[Caverns of Confusion|Jaskinia zagmatwania]]?
 * [[#001]] 9[`visited(`[[Potioneer Puzzlemint#004|Potioneer#004]]`) or visited(`[[Hammer Hoaxheart#004|Hammer#004]]`)`]😐: Thanks, that's enough for me
 
 ## 010
@@ -98,26 +98,26 @@ Come back when you want to ask about a specific place.
 
 ## 018
 
-* [loc]Bagna niedogodności[/loc] is one big... well, marsh. There's nothing interesting there.
+* [[Swamp of Inconvenience|Bagna niedogodności]] is one big... well, marsh. There's nothing interesting there.
 
 * [[#004]] 9😐: Thanks, that's enough for me
 
 ## 019
 
-* [loc]Splątany las irytacji[/loc] can be interesting. Especially after dark. Besides what you'd find in ordinary forests - **wolves**, **bears**, and **forest pumas** - there are **trolls**, **werewolves**, and even **vampires**. Or so they say.
+* [[Tangled Forest of Annoyance|Splątany las irytacji]] can be interesting. Especially after dark. Besides what you'd find in ordinary forests - **wolves**, **bears**, and **forest pumas** - there are **trolls**, **werewolves**, and even **vampires**. Or so they say.
 
 * [[#004]] 9😐: Thanks, that's enough for me
 
 ## 020
 
-* I've never been to [loc]Jaskinia zagmatwania[/loc] myself. I don't like such places - dark, cold, no beer:blink:.
+* I've never been to [[Caverns of Confusion|Jaskinia zagmatwania]] myself. I don't like such places - dark, cold, no beer:blink:.
 
 * [[#004]] 9😐: Thanks, that's enough for me
 
 ## 011
 
 * Oh yes, well, it's a proper city, I'll give them that. They have [num]3[/num] taverns, bigger than ours. And there's no manure on the streets. People walk around in funny colorful little jackets, and they talk a bit differently too.
-It's probably because of all those **books** - they even have a [loc]library[/loc]. Apparently you can learn a lot from books. Though they probably write only forbidden things about **spells** and other nonsense.
+It's probably because of all those **books** - they even have a [[Secret Library|library]]. Apparently you can learn a lot from books. Though they probably write only forbidden things about **spells** and other nonsense.
 Who has time to read books? Better to sit outside with a beer. That's the life!
 
 * [[#017]] 1😇: Do you know how to get there?
@@ -126,7 +126,7 @@ Who has time to read books? Better to sit outside with a beer. That's the life!
 
 ## 017
 
-* It's about [num]2[/num] days' journey north. Past [loc]Splątany las irytacji[/loc] you turn east.
+* It's about [num]2[/num] days' journey north. Past [[Tangled Forest of Annoyance|Splątany las irytacji]] you turn east.
 
 * [[#001]] 9😐: Thanks, that's enough for me
 
@@ -141,7 +141,7 @@ Who has time to read books? Better to sit outside with a beer. That's the life!
 
 ## 012
 
-* Ah, I see. Hmmm, well, maybe only old [char]Potioneer Puzzlemint[/char] could help. She can prepare a [item]potion[/item] that'll get you back on your feet in no time. Unless she mixes something up, because she's old and sometimes blind.
+* Ah, I see. Hmmm, well, maybe only old [[Potioneer Puzzlemint]] could help. She can prepare a [item]potion[/item] that'll get you back on your feet in no time. Unless she mixes something up, because she's old and sometimes blind.
 Sometimes people get even worse after those [item]potions[/item]. If you're desperate, you can try. She lives in a hut at the edge of the village, near the forest.
 
 * [[#001]] 9😐: Thanks, that's enough for me

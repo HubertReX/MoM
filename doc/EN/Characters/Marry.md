@@ -5,7 +5,7 @@ aliases:
 ---
 
 Oh, yes, yes, :smile: a new joiner. Nice to meet you.
-People call me [char]Herbalist Marry[/char].
+People call me [[Marry|Herbalist Marry]].
 
 Although I've [b]not[/b] been away from [loc][link Open journal to read more]Blunderhaven[/link][/loc],
 I used to travel a lot.

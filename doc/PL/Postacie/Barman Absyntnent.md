@@ -45,9 +45,9 @@ Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to
 
 ## 000
 
-* Hej :red_exclamation: Witaj w naszej [loc]Karczmie[/loc]! Jestem [[Barman Absyntnent]]. A kogo tu do mnie los sprowadził?
+* Hej :red_exclamation: Witaj w naszej [[Tawerna Brakująca klepka|Karczmie]]! Jestem [[Barman Absyntnent]]. A kogo tu do mnie los sprowadził?
 
-* [[#001]] 1😇: Jestem [char]Malachi[/char], [bold]Twój[/bold] nowy przyjaciel :blink:
+* [[#001]] 1😇: Jestem [[Malachiasz|Malachi]], [bold]Twój[/bold] nowy przyjaciel :blink:
 * [[#001]] 2😢: Ech, szkoda gadać, jestem [u]przeklęty[/u] przez los...
 * [[#001]] 3😉: Jak chcesz, no mogę zostać **Twoim** najlepszym klientem :happy:
 
@@ -64,21 +64,21 @@ Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to
 
 ## 002
 
-* Ja się praktycznie urodziłem w tej [loc]karczmie[/loc]. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. 
+* Ja się praktycznie urodziłem w tej [[Tawerna Brakująca klepka|karczmie]]. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. 
 Mój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki:blink:
 
 * [[#001]] 1😐: Dzięki, to mi wystarczy
 
 ## 003
 
-* [loc]Gafowo Kolonia[/loc]? Może to nie jest [loc]Rzym[/loc], ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. 
+* [[Gafowo Kolonia]]? Może to nie jest [loc]Rzym[/loc], ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. 
 Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych **czarodziei** i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty:angry:. 
 
 Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki:shocked:. Ponoć użyli swojej **magii**. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów:evil:.
 
 * [[#007]] 1😇: Czary? Tutaj? To niesłychane! Co stało się dalej?
 * [[#008]] 2😢: Obawiam się, że to ja jestem tym nieszczęśnikiem, na którego rzucili czar:miserable:
-* [[#007]] 3😉: [char]Miecz[/char]: _Chyba już słyszałem tę historię..._ A co z tymi czarownikami?
+* [[#007]] 3😉: [[Miecz Ciętej-riposty|Miecz]]: _Chyba już słyszałem tę historię..._ A co z tymi czarownikami?
 
 ## 007
 
@@ -107,10 +107,10 @@ No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma **magi
 * No jest tu trochę wiosek w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?
 
 * [[#010]] 1[`not visited(`[[Zielarka Zmora#004|Zielarka#004]]`) and not visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?
-* [[#011]] 2[`visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Co wiesza na temat miasta [loc]Porażkowo[/loc]?
-* [[#018]] 3[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [loc]Bagna niedogodności[/loc]
-* [[#019]] 4[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [loc]Splątanego lasu irytacji[/loc]
-* [[#020]] 5[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [loc]Jaskini zagmatwania[/loc]
+* [[#011]] 2[`visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Co wiesza na temat miasta [[Porażkowo]]?
+* [[#018]] 3[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [[Bagno niedogodności|Bagna niedogodności]]
+* [[#019]] 4[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [[Splątany las irytacji|Splątanego lasu irytacji]]
+* [[#020]] 5[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: Co wiesza na temat [[Jaskinie zagmatwania|Jaskini zagmatwania]]
 * [[#001]] 9[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`) or visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Dzięki, to mi wystarczy
 
 ## 010
@@ -122,26 +122,26 @@ Wróć jak będziesz chciał zapytać o jakieś konkretne miejsce.
 
 ## 018
 
-* [loc]Bagna niedogodności[/loc] to jedno wielkie... no bagno. Nie ma tam niczego ciekawego.
+* [[Bagno niedogodności|Bagna niedogodności]] to jedno wielkie... no bagno. Nie ma tam niczego ciekawego.
 
 * [[#004]] 9😐: Dzięki, to mi wystarczy
 
 ## 019
 
-* [loc]Splątany las irytacji[/loc] bywa interesujący. Szczególnie po zmroku. Prócz tego co można spotkać w zwykłych lasach, jak **wilki**, **niedźwiedzie** i **leśne pumy**, są tam **trolle**, **wilkołaki** a nawet **wampiry**. Tak mówią.
+* [[Splątany las irytacji]] bywa interesujący. Szczególnie po zmroku. Prócz tego co można spotkać w zwykłych lasach, jak **wilki**, **niedźwiedzie** i **leśne pumy**, są tam **trolle**, **wilkołaki** a nawet **wampiry**. Tak mówią.
 
 * [[#004]] 9😐: Dzięki, to mi wystarczy
 
 ## 020
 
-* W [loc]Jaskini zagmatwania[/loc] nikt sam nie byłem. Nie lubię takich miejsc - ciemno, zimno, zero piwa:blink:.
+* W [[Jaskinie zagmatwania|Jaskini zagmatwania]] nikt sam nie byłem. Nie lubię takich miejsc - ciemno, zimno, zero piwa:blink:.
 
 * [[#004]] 9😐: Dzięki, to mi wystarczy
 
 ## 011
 
 * A tak, no to jest jak by nie było miasto. Nie powiem, mają ze [num]3[/num] karczmy i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej. 
-To pewno przez te **książki**, bo oni tam nawet [loc]bibliotekę[/loc] mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o **czarach** i innych głupotach. 
+To pewno przez te **książki**, bo oni tam nawet [[Tajna biblioteka|bibliotekę]] mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o **czarach** i innych głupotach. 
 Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!
 
 * [[#017]] 1😇: A wiesz może jak tam trafić?
@@ -150,7 +150,7 @@ Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu po
 
 ## 017
 
-* To ze [num]2[/num] dni drogi na północ. Za [loc]Splątanym lasem irytacji[/loc] trzeba skręcić na wschód.
+* To ze [num]2[/num] dni drogi na północ. Za [[Splątany las irytacji|Splątanym lasem irytacji]] trzeba skręcić na wschód.
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy
 

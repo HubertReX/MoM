@@ -20,14 +20,14 @@ Find a way to break your curse. #45
 Steps:
 
 - Meet Madame Sarcasmia
-- Convince [char]Madame Sarcasmia[/] to give you a [item]potion[/] to break the curse.
+- Convince [[Madame Sarcasmia]] to give you a [item]potion[/] to break the curse.
 - Find to a safe place and drink the [item]potion[/] to break the curse.
 
 ### **Trinkets for Madam Sarcasmia's little... project**
 
-**Description**: Capture all [number]3[/] [item]items[/] for the [char]Madame Sarcasmia[/] and she might prepare a magic ⚗️ [item]potion curse-no-more[/] to break the curse.
+**Description**: Capture all [number]3[/] [item]items[/] for the [[Madame Sarcasmia]] and she might prepare a magic ⚗️ [[Potion curse-no-more|potion curse-no-more]] to break the curse.
 
-**Success**: Perfect! You have captured all the [item]items[/] for the [char]Madame Sarcasmia[/] so you can go back to her and see if she has prepared the magic ⚗️ [item]potion curse-no-more[/] for you.
+**Success**: Perfect! You have captured all the [item]items[/] for the [[Madame Sarcasmia]] so you can go back to her and see if she has prepared the magic ⚗️ [[Potion curse-no-more|potion curse-no-more]] for you.
 
 **Test**: set(['MERMAIDS_TEAR', 'GNOMES_WHISKER', 'PHOENIX_FEATHER']).issubset(hero.inventory.items)
 

@@ -18,6 +18,7 @@ z którego korzystają i dialogi, i questy) jest tu z tego samego powodu.
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass, field
 from pathlib import Path
 
 # Katalogi notatek, na które wolno wskazać z wyrażenia, w kolejności pierwszeństwa.
@@ -144,6 +145,126 @@ def build_entity_index(src_dir: Path) -> dict[str, str]:
     return index
 
 
+# Katalog notatek -> znacznik RichText, którym gra pisze taką encję w tekście.
+KIND_BY_SUBDIR: dict[str, str] = {
+    "PL/Postacie": "char", "EN/Characters": "char",
+    "PL/Lokalizacje": "loc", "EN/Locations": "loc",
+    "PL/Przedmioty": "item", "EN/Items": "item",
+    "PL/Misje": "quest", "EN/Quests": "quest",
+}
+
+_LANG_BY_SUBDIR: dict[str, str] = {sub: sub.split("/")[0] for sub in KIND_BY_SUBDIR}
+
+# `Q03_S01 Kto ma wiedzę o magii` -> `Kto ma wiedzę o magii`: prefiks porządkuje
+# katalog, ale graczowi pokazuje się sam tytuł.
+_QUEST_PREFIX_RE = re.compile(r"^Q\d+_S\d+\s+")
+
+
+@dataclass(slots=True)
+class Entity:
+    """Encja vaultu widziana z tekstu: czym jest i jak się nazywa w każdym języku."""
+
+    key: str
+    kind: str
+    names: dict[str, str] = field(default_factory=dict)
+
+    def name(self, lang: str) -> str:
+        localized = self.names.get(lang)
+        if localized:
+            return localized
+        return next(iter(self.names.values()), self.key)
+
+
+@dataclass(slots=True)
+class VaultIndex:
+    """Encje vaultu pod każdą nazwą, którą można na nie wskazać.
+
+    Dwie mapy, bo służą dwóm rzeczom: ``keys`` rozwija linki w wyrażeniach
+    (warunki, testy), a ``entities`` renderuje linki w prozie na RichText.
+    """
+
+    keys: dict[str, str] = field(default_factory=dict)
+    by_key: dict[str, Entity] = field(default_factory=dict)
+    by_name: dict[str, Entity] = field(default_factory=dict)
+
+    def entity(self, name: str) -> Entity | None:
+        """Encja o tej nazwie, także taka bez klucza konfiguracyjnego.
+
+        ``keys`` niesie wyłącznie encje, które gra zna po kluczu - bo tylko takie
+        mogą stanąć w warunku. Do prozy wystarczy notatka: Malachi jest postacią
+        i ma się pokolorować jak postać, choć w `config.characters` go nie ma.
+        """
+        candidate = name.rsplit("/", 1)[-1].strip()
+        return self.by_name.get(candidate) or self.by_name.get(candidate.replace("_", " "))
+
+    def render(self, target: str, display: str | None, lang: str) -> str | None:
+        """``[[Cel|napis]]`` -> ``[char]napis[/char]``, albo ``None`` gdy to nie encja.
+
+        Napis po pionowej kresce wygrywa, bo to on niesie odmianę
+        (``[[Barman Absyntnent|Barmana]]``); bez niego bierzemy nazwę
+        wyświetlaną w języku pliku.
+        """
+        entity = self.entity(target)
+        if entity is None:
+            return None
+        text = (display or "").strip() or entity.name(lang)
+        return f"[{entity.kind}]{text}[/{entity.kind}]"
+
+
+def render_links(text: str, vault: VaultIndex, lang: str) -> str:
+    """Wikilinki w **prozie** -> RichText: ``[[Zielarka Zmora]]`` -> ``[char]Zielarka Zmora[/char]``.
+
+    Odwrotność tego, co robi :func:`expand_links` z wyrażeniami, i z tego samego
+    powodu: w vaulcie encja ma być linkiem (żeby graf Obsidiana ją widział),
+    a w grze znacznikiem (żeby dostała kolor). Link do czegoś, czego vault nie
+    zna, zostaje tekstem - w prozie link do nieistniejącej jeszcze notatki jest
+    normalnym etapem pisania, nie błędem.
+    """
+    def _replace(match: re.Match[str]) -> str:
+        display = match.group("display")
+        rendered = vault.render(match.group("target"), display, lang)
+        return rendered if rendered is not None else match.group(0)
+
+    return WIKI_RE.sub(_replace, text)
+
+
+def build_vault_index(src_dir: Path) -> VaultIndex:
+    """Cały vault jako encje: klucz, rodzaj i nazwa wyświetlana w obu językach.
+
+    Rodzaj bierze się z katalogu, nie z zawartości notatki - katalog i tak
+    decyduje o tym, czym encja jest, a duplikowanie tego w polu frontmatteru
+    byłoby drugą prawdą do rozjechania.
+    """
+    index = VaultIndex()
+    for sub, kind in KIND_BY_SUBDIR.items():
+        directory = src_dir / sub
+        if not directory.exists():
+            continue
+        lang = _LANG_BY_SUBDIR[sub]
+        for path in sorted(directory.glob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            key = note_key(text)
+            fields = parse_frontmatter(text)
+            name = fields.get(f"name_{lang}") or _QUEST_PREFIX_RE.sub("", path.stem)
+            aliases = [a for a in (path.stem, name, key, *parse_aliases(text)) if a]
+
+            if key:
+                entity = index.by_key.setdefault(key, Entity(key=key, kind=kind))
+            else:
+                # Notatka bez klucza (Malachi - bohater, nie NPC z configu) nadal
+                # jest encją dla prozy; do wyrażeń nie wejdzie, bo nie ma czym.
+                entity = next(
+                    (index.by_name[a] for a in aliases if a in index.by_name),
+                    Entity(key="", kind=kind),
+                )
+            entity.names.setdefault(lang, name)
+            for alias in aliases:
+                index.by_name.setdefault(alias, entity)
+                if key:
+                    index.keys.setdefault(alias, key)
+    return index
+
+
 def resolve_entity(name: str, index: dict[str, str]) -> str | None:
     """Cel wikilinku -> klucz encji, albo ``None``, gdy nikt nie nosi tej nazwy."""
     candidate = name.rsplit("/", 1)[-1].strip()
@@ -197,10 +318,15 @@ def expand_links(
 
 __all__ = [
     "ENTITY_SUBDIRS",
+    "KIND_BY_SUBDIR",
+    "Entity",
+    "VaultIndex",
     "WIKI_RE",
     "VaultLinkError",
     "build_entity_index",
+    "build_vault_index",
     "expand_links",
+    "render_links",
     "note_key",
     "parse_aliases",
     "parse_frontmatter",

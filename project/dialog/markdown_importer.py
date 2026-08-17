@@ -66,7 +66,12 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
 from dialog.conditions import ConditionError, ConditionScope, validate_condition
-from dialog.vault_links import VaultLinkError, build_entity_index, expand_links
+from dialog.vault_links import (
+    VaultIndex,
+    VaultLinkError,
+    build_vault_index,
+    expand_links,
+)
 
 
 class DialogImportError(ValueError):
@@ -376,20 +381,39 @@ def _discover_character_keys(src_dir: Path) -> list[str]:
 
 
 def _make_name_resolver(
-    characters: dict[str, Any], lang: str
+    characters: dict[str, Any], lang: str, vault: VaultIndex | None = None
 ) -> Callable[[str, str | None], str | None] | None:
     """Build a wikilink resolver for the given language.
 
     Returns a callable ``(target, display) -> str | None``: *target* is the
-    wikilink target (character key, localized file name, or a legacy
+    wikilink target (entity key, localized note name, or a legacy
     ``lang/File_Name`` path), *display* is the optional pipe text (used for
     grammatical declension, e.g. ``[[Barman Absyntnent|Barmana Absyntnenta]]``).
-    The callable returns the text to render inside ``[char]...[/char]``, or
-    ``None`` when the target is not a known character (link left as-is).
-    Returns ``None`` when *characters* is empty (no resolution at all).
+    The callable returns the **whole RichText span** - ``[char]Barmana[/char]``,
+    ``[loc]Tawerna[/loc]``, ``[item]Łza Syrenki[/item]`` - or ``None`` when the
+    target is nothing the vault knows (the link is then left as-is).
+
+    The vault answers first, because it knows locations and items too and it
+    knows which tag each one takes. ``characters`` stays behind it for the
+    legacy link shapes and for characters that have no note of their own.
     """
-    if not characters:
+    if not characters and vault is None:
         return None
+
+    def _from_vault(target: str, display: str | None) -> str | None:
+        if vault is None:
+            return None
+        candidate = target.rsplit("/", 1)[-1].strip()
+        # A legacy pipe carried the config key, not display text
+        # (``[[PL/Hammer_Hoaxheart|HAMMER_HOAXHEART]]``).
+        text = None if display and (display in characters or "_" in display) else display
+        return vault.render(candidate, text, lang) or vault.render(
+            candidate.replace("_", " "), text, lang
+        )
+
+    if not characters:
+        return _from_vault
+
     field = "name_PL" if lang == "PL" else "name_EN"
 
     # Lookup by config key and by display names in BOTH languages, so links
@@ -403,6 +427,10 @@ def _make_name_resolver(
                 lookup.setdefault(name, ch)
 
     def _resolve(target: str, display: str | None) -> str | None:
+        from_vault = _from_vault(target, display)
+        if from_vault is not None:
+            return from_vault
+
         # strip legacy "PL/"/"EN/" path prefix and normalise underscores
         candidate = target.rsplit("/", 1)[-1].strip()
         ch = lookup.get(candidate) or lookup.get(candidate.replace("_", " "))
@@ -420,10 +448,10 @@ def _make_name_resolver(
             # Legacy links used the config key / file stem as pipe text
             # (e.g. ``[[EN/Clapback_Sword|Clapback_Sword]]``) - treat an
             # identifier-like pipe as a reference, not display text.
-            if display in characters or "_" in display:
-                return str(canonical)
-            return display
-        return str(canonical)
+            text = str(canonical) if (display in characters or "_" in display) else display
+        else:
+            text = str(canonical)
+        return f"[char]{text}[/char]"
 
     return _resolve
 
@@ -468,7 +496,8 @@ def import_character_dialog(
     character_key = _character_name_to_key(character_name)
     pl_path = _find_markdown_file(src_dir, "PL", character_name)
     en_path = _find_markdown_file(src_dir, "EN", character_name)
-    index = build_entity_index(src_dir)
+    vault = build_vault_index(src_dir)
+    index = vault.keys
     pl_nodes = _parse_file(pl_path)
     en_nodes = _parse_file(en_path)
 
@@ -489,8 +518,8 @@ def import_character_dialog(
         pl_nodes, en_nodes, character_name, str(src_dir)
     )
 
-    resolve_pl = _make_name_resolver(characters, "PL") if characters else None
-    resolve_en = _make_name_resolver(characters, "EN") if characters else None
+    resolve_pl = _make_name_resolver(characters or {}, "PL", vault)
+    resolve_en = _make_name_resolver(characters or {}, "EN", vault)
 
     messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     dialog_config: dict[str, Any] = {
@@ -832,7 +861,8 @@ def import_character_barks(
     changed return shape, not a changed call site.
     """
     character_key = _character_name_to_key(character_name)
-    index = build_entity_index(src_dir)
+    vault = build_vault_index(src_dir)
+    index = vault.keys
     pl_barks = parse_character_barks(_find_markdown_file(src_dir, "PL", character_name), index)
     if not pl_barks:
         return {"PL": {}, "EN": {}}, []
@@ -842,8 +872,8 @@ def import_character_barks(
         pl_barks,
         en_barks,
         source=str(src_dir),
-        resolve_pl=_make_name_resolver(characters, "PL") if characters else None,
-        resolve_en=_make_name_resolver(characters, "EN") if characters else None,
+        resolve_pl=_make_name_resolver(characters or {}, "PL", vault),
+        resolve_en=_make_name_resolver(characters or {}, "EN", vault),
     )
 
 
@@ -857,14 +887,15 @@ def import_bark_pools(
     ``characters.csv``; a character may have **both** its own section and a pool,
     and the two sum rather than exclude (D2).
     """
-    index = build_entity_index(src_dir)
+    vault = build_vault_index(src_dir)
+    index = vault.keys
     pl_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["PL"], index)
     if not pl_pools:
         return {"PL": {}, "EN": {}}, {}
     en_pools = parse_bark_pools(src_dir / _BARK_POOL_FILES["EN"], index)
 
-    resolve_pl = _make_name_resolver(characters, "PL") if characters else None
-    resolve_en = _make_name_resolver(characters, "EN") if characters else None
+    resolve_pl = _make_name_resolver(characters or {}, "PL", vault)
+    resolve_en = _make_name_resolver(characters or {}, "EN", vault)
 
     messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     pools: dict[str, list[dict[str, str]]] = {}
@@ -1453,16 +1484,16 @@ def _convert_text(
     for emoji, tag in _EMOJI_TO_EMOTE_TAG.items():
         text = text.replace(emoji, tag)
 
-    # wikilinks [[Target]] / [[Target|display]] -> [char]display name[/char]
+    # wikilinks [[Target]] / [[Target|display]] -> [char]…[/char], [loc]…[/loc], …
+    # The resolver returns the whole span, because only it knows what the target
+    # is: a character, a location, an item or a quest.
     if resolve_name is not None:
         def _resolve_wikilink(m: re.Match[str]) -> str:
             display = m.group("display")
             resolved = resolve_name(
                 m.group("target"), display.strip() if display else None
             )
-            if resolved is None:
-                return m.group(0)  # unknown target - leave as-is
-            return f"[char]{resolved}[/char]"
+            return m.group(0) if resolved is None else resolved  # unknown - leave as-is
 
         text = _WIKILINK_RE.sub(_resolve_wikilink, text)
 

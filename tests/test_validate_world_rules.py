@@ -31,6 +31,7 @@ from validate_world import (                                     # noqa: E402
     GameMap,
     World,
     check_bark_pools,
+    check_unresolved_wikilinks,
     check_condition_entities,
     check_interaction_targets,
     check_map_coverage,
@@ -547,6 +548,28 @@ def test_a_characters_own_section_is_not_a_dead_pool() -> None:
 
 
 ###############################################################################################################
+# MARK: rule 22 - nierozwiązany wikilink w tekście dla gracza
+def test_a_message_without_wikilinks_passes() -> None:
+    world = _conditions_world()
+    world.config["messages"] = {"PL": {"M_X": "[char]Barman[/char] gada."}, "EN": {}}
+    assert_eq(check_unresolved_wikilinks(world), [], "gotowy RichText nie zgłasza nic")
+
+
+def test_a_wikilink_left_in_a_message_is_an_error() -> None:
+    """Import zamienia link na znacznik; ten, który został, gracz zobaczy dosłownie."""
+    world = _conditions_world()
+    world.config["messages"] = {"PL": {"M_X": "Pytaj [[Zielarka Zmoraa]]."}, "EN": {}}
+
+    messages = _errors(check_unresolved_wikilinks(world))
+    assert_eq(len(messages), 1, "jeden błąd")
+    assert_true("Zielarka Zmoraa" in messages[0], f"nazywa winowajcę: {messages[0]}")
+
+
+def test_the_real_world_has_no_unresolved_wikilinks() -> None:
+    assert_eq(check_unresolved_wikilinks(WORLD), [], "prawdziwy config jest czysty")
+
+
+###############################################################################################################
 def main() -> None:
     tests = [
         test_an_instance_named_after_its_model_passes,
@@ -597,6 +620,9 @@ def main() -> None:
         test_a_barks_cell_naming_a_missing_pool_is_an_error,
         test_a_pool_nobody_draws_from_is_a_warning,
         test_a_characters_own_section_is_not_a_dead_pool,
+        test_a_message_without_wikilinks_passes,
+        test_a_wikilink_left_in_a_message_is_an_error,
+        test_the_real_world_has_no_unresolved_wikilinks,
     ]
     for t in tests:
         t()

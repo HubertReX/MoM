@@ -117,6 +117,8 @@ numerycznym nagłówkiem (frontmatter, sekcja `# Info` z podsekcjami) jest
 ignorowane przez importer — klucze węzłów są wyłącznie cyfrowe, więc
 nagłówki prozy (`## Cechy charakteru`) nie kolidują.
 
+**Encję w prozie pisze się wikilinkiem, nie znacznikiem.** `[[Zielarka Zmora]]` w treści węzła, opcji albo barka import zamienia na `[char]Zielarka Zmora[/char]` - znacznik bierze się z katalogu notatki (`vault_links.KIND_BY_SUBDIR`: Postacie → `char`, Lokalizacje → `loc`, Przedmioty → `item`), a napis po pionowej kresce niesie odmianę (`[[Barman Absyntnent|Barmana]]`). Link bez kreski pokazuje nazwę w języku pliku. Znacznikiem wprost pisze się tylko to, co nie ma notatki (istoty ze wspomnień, rzeczowniki pospolite, zaimki); link do nieistniejącej notatki zostaje w tekście dosłownie i łapie go reguła 22 walidatora.
+
 **Warunek opcji i barka pisze się w backquote'ach, a odwołania do encji w środku jako wikilinki** - przeplatane, tak samo jak w plikach misji: `* [[#010]] 2[`visited(`[[Zielarka Zmora#004|Zielarka#004]]`)`]😐: …`. Nawias warunku zagnieżdża się więc o jeden poziom (`_CONDITION_BODY`), `vault_links.expand_links()` zdejmuje backquote'y i zamienia linki na klucze (`[[#005]]` = węzeł mówiącego), a link do nieistniejącej notatki to błąd importu z numerem linii. Stare zapisy (`Potioneer_Puzzlemint.004.visited`, `character.sentiment`, gołe stringi) nadal się importują. Pełna ściągawka warunków: [`doc/jak-napisac-barka.md`](../../doc/jak-napisac-barka.md).
 
 Tekst węzła dialogowego w plikach `.md` zaczyna się od `* ` (gwiazdka + spacja)

@@ -120,6 +120,21 @@ Link do notatki, której w vaulcie nie ma, to **błąd importu z numerem linii**
 
 Stary zapis (`Potioneer_Puzzlemint.004.visited`, `character.sentiment`, gołe stringi) **nadal się importuje** - plik, którego nikt nie ruszał, ma działać. Tyle że nie rysuje się w grafie, więc przy okazji edycji warto go przepisać.
 
+### Encję w prozie też pisze się linkiem
+
+Ta sama zasada obowiązuje **w treści** - w kwestii dialogowej, w opisie questa, w barku. Encję pisze się wikilinkiem, a import zamienia go na znacznik RichText, którym gra ją koloruje:
+
+| W notatce                        | W grze                                |
+| -------------------------------- | ------------------------------------- |
+| `[[Zielarka Zmora]]`             | `[char]Zielarka Zmora[/char]`         |
+| `[[Tawerna Brakująca klepka]]`   | `[loc]Tawerna Brakująca klepka[/loc]` |
+| `[[Łza Syrenki]]`                | `[item]Łza Syrenki[/item]`            |
+| `[[Barman Absyntnent\|Barmana]]` | `[char]Barmana[/char]`                |
+
+Znacznik bierze się z **katalogu notatki**, więc nie trzeba go wybierać ręcznie, a napis po pionowej kresce niesie odmianę - w polskim to nie ozdoba, tylko warunek, żeby zdanie było po polsku. Link bez kreski pokazuje nazwę notatki **w języku pliku**: `[[Zielarka Zmora]]` w pliku EN wyświetli się jako „Potioneer Puzzlemint".
+
+Znacznikiem wprost (`[char]…[/char]`) pisze się dalej to, co **nie ma notatki**: istoty ze wspomnień (Melancholijna Syrenka), rzeczowniki pospolite (`[item]mikstura[/item]`) i zaimki (`[char]Ty[/char]`). Link do notatki, której nie ma, zostaje w tekście dosłownie - `just validate-world` (reguła 22) traktuje to jako błąd, bo gracz zobaczyłby w dymku surowe `[[nawiasy]]`.
+
 Wszystko poza tą tabelą jest odrzucane przy imporcie z numerem linii: nie ma
 odwołań do pól gry (`scene.hour`), indeksów, wywołań w wywołaniu ani zmiennych.
 Literówkę w **kluczu** łapie `just validate-world` (reguła 20) - i to jest ważne,

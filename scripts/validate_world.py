@@ -1375,6 +1375,28 @@ def check_bark_pools(world: World) -> list[Violation]:
     return out
 
 
+def check_unresolved_wikilinks(world: World) -> list[Violation]:
+    """Rule 22: no message may still hold a `[[wikilink]]`.
+
+    W vaulcie encja jest linkiem, w grze znacznikiem - import zamienia jedno na
+    drugie (`dialog.vault_links.render_links`). Link, którego nie dało się
+    rozwiązać, zostaje tekstem i gracz widzi w dymku surowe `[[Zielarka Zmoraa]]`.
+    Literówka w nazwie notatki albo notatka jeszcze nienapisana ma wyjść tutaj,
+    a nie w dialogu.
+    """
+    out: list[Violation] = []
+    messages = world.config.get("messages") or {}
+    for lang in sorted(messages):
+        for key, text in sorted((messages.get(lang) or {}).items()):
+            if isinstance(text, str) and "[[" in text:
+                out.append(Violation(
+                    ERROR, f"config.json:messages:{lang}:{key}",
+                    f"nierozwiązany wikilink w tekście dla gracza: {text[:60]!r} "
+                    f"- czy notatka o tej nazwie istnieje?",
+                ))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -1397,6 +1419,7 @@ CHECKS = (
     check_item_keys,
     check_condition_entities,
     check_bark_pools,
+    check_unresolved_wikilinks,
 )
 
 

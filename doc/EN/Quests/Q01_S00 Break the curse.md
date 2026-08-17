@@ -6,7 +6,7 @@ aliases:
 
 A curse will not lift itself. Someone has to know how, someone has to be able to, and someone - that would be [char]you[/char] - has to put the two together.
 
-**Success**: The curse is broken! The [char]sword[/] maintains this was mostly its own doing.
+**Success**: The curse is broken! The [[Clapback Sword|sword]] maintains this was mostly its own doing.
 
 ## Notes
 

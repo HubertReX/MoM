@@ -64,7 +64,7 @@ At this rate, I'll rust next to your skeleton soon. What a mess. You really made
 
 ## 005
 
-* We are in the splendid kingdom of filth and stench called [loc]Knaveshire[/loc]. Most people here are poor villagers, with a few craftsmen and some magicians. Although most are charlatans, herbalists, quacks, and other frauds who don't know real magic. Occasionally, you might encounter remnants of the **Blue Knighthood** on the roads, but it's not what it used to be. In the forests, caves, and dark alleys, various bloodthirsty masqueraders lurk, craving blood, money, or both. The rest are adventurers like you.
+* We are in the splendid kingdom of filth and stench called [[Kingdom of Knaveshire|Knaveshire]]. Most people here are poor villagers, with a few craftsmen and some magicians. Although most are charlatans, herbalists, quacks, and other frauds who don't know real magic. Occasionally, you might encounter remnants of the **Blue Knighthood** on the roads, but it's not what it used to be. In the forests, caves, and dark alleys, various bloodthirsty masqueraders lurk, craving blood, money, or both. The rest are adventurers like you.
 And I guess me too.
 
 * [[#016]] 1😇: Alright, that's all well and good, but what place is this exactly?
@@ -73,7 +73,7 @@ And I guess me too.
 
 ## 016
 
-* Oh, right. For reasons unknown to me, you dragged us to the ruined village of [loc]Blunderhaven[/loc] in the county of [loc]Muckshire[/loc]. Yesterday, you were causing a scene in the local [loc]tavern[/loc], and now, judging by the smell, we're probably in a [loc]stable[/loc].
+* Oh, right. For reasons unknown to me, you dragged us to the ruined village of [[Blunderhaven]] in the county of [loc]Muckshire[/loc]. Yesterday, you were causing a scene in the local [[the Lost Cork Tavern|tavern]], and now, judging by the smell, we're probably in a [loc]stable[/loc].
 
 * [[#008]] 1😇: Alright, thanks - it clears up the fog in my head a bit.
 * [[#008]] 2😢: I must say, that doesn't sound too inviting.
@@ -157,7 +157,7 @@ _you are touched by the [quest]Eternal Curse of Misfortune[/quest]."_
 [[#100]]
 
 * Alright, let's think. What we know so far about this curse is a mix of children's tales and bard's nonsense songs. We need to find out more specifics. One thing is certain. If you've always thought deep down that you're special, now you have proof to confirm it. You're special - you are exceptionally good at getting into trouble.
-Now let's hit the road! We need to ask people around. I would start in the [loc]Tavern[/loc].
+Now let's hit the road! We need to ask people around. I would start in the [[the Lost Cork Tavern|Tavern]].
 
 ## 100
 

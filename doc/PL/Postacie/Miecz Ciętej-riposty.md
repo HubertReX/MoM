@@ -98,7 +98,7 @@ Ja, proszę ja Ciebie, jestem **Twoim** jedynym i najwierniejszym kompanem. Nie 
 
 ## 005
 
-* Jesteśmy we wspaniałej krainie brudu i smrodu zwanym [loc]Królestwem Pomylenia[/loc] Większość ludzi to biedni wieśniacy, jest tu trochę rzemieślników i trochę magików. Choć większość to znachorzy, zielarki, szarlatani i inni oszuści nie znający prawdziwej magii. 
+* Jesteśmy we wspaniałej krainie brudu i smrodu zwanym [[Królestwo Pomylenia|Królestwem Pomylenia]] Większość ludzi to biedni wieśniacy, jest tu trochę rzemieślników i trochę magików. Choć większość to znachorzy, zielarki, szarlatani i inni oszuści nie znający prawdziwej magii. 
 Na szlakach spotkać można czasami resztki przedstawicieli **Błękitnego Rycerstwa**, ale to już nie to samo co kiedyś. 
 W lasach, jaskiniach i ciemnych zaułkach czają się różne maszkary żądne krwi, pieniędzy lub jednego i drugiego. Reszta to poszukiwacze przygód, jak **Ty**.
 No i chyba ja siłą rzeczy też.
@@ -109,7 +109,7 @@ No i chyba ja siłą rzeczy też.
 
 ## 016
 
-* Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski [loc]Gafowo Kolonia[/loc] powiat [loc]Łękołody[/loc]. Wczoraj dokazywałeś w lokalnej [loc]karczmie[/loc], a teraz, sądząc po zapachu jesteśmy chyba w [loc]stajni[/loc].
+* Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski [[Gafowo Kolonia]] powiat [loc]Łękołody[/loc]. Wczoraj dokazywałeś w lokalnej [[Tawerna Brakująca klepka|karczmie]], a teraz, sądząc po zapachu jesteśmy chyba w [loc]stajni[/loc].
 
 * [[#008]] 1😇: Ok, dzięki - trochę to rozwiewa tę mgłę, którą mam w głowie.
 * [[#008]] 2😢: No powiem szczerze, nie brzmi to zbyt zachęcająco.
@@ -196,7 +196,7 @@ No generalnie masz prze... przechlapane.
 
 * No, dobra, pomyślmy:wondering:. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. 
 Jedno jest pewne  - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha!
-A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [loc]Tawerny[/loc].
+A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od [[Tawerna Brakująca klepka|Tawerny]].
 
 ## 100
 

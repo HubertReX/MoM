@@ -184,6 +184,21 @@ Odrzucane przy imporcie:
 
 Etykiety nagród składa silnik gry - nie pisz wartości liczbowej nagrody w `Sukces:`. Dzięki temu przeważenie nagrody nie dotyka tłumaczeń.
 
+## Encje w prozie - pisze się je linkiem
+
+Postać, lokalizację i przedmiot pisze się w tytule, opisie i `Sukces` **wikilinkiem**; import zamienia go na znacznik, którym gra koloruje encję:
+
+| W notatce                        | W grze                                    |
+| -------------------------------- | ----------------------------------------- |
+| `[[Zielarka Zmora]]`             | `[char]Zielarka Zmora[/char]`             |
+| `[[Tawerna Brakująca klepka]]`   | `[loc]Tawerna Brakująca klepka[/loc]`     |
+| `[[Łza Syrenki]]`                | `[item]Łza Syrenki[/item]`                |
+| `[[Barman Absyntnent\|Barmana]]` | `[char]Barmana[/char]` - odmiana z kreski |
+
+Znacznik bierze się z **katalogu notatki**, więc nie trzeba go wybierać, a napis po pionowej kresce niesie odmianę. Link bez kreski pokazuje nazwę notatki w języku pliku, więc `[[Zielarka Zmora]]` w pliku EN wyświetli się jako „Potioneer Puzzlemint".
+
+Znacznikiem wprost pisze się dalej to, co **nie ma notatki**: istoty ze wspomnień, rzeczowniki pospolite, zaimki (`[char]Ty[/char]`). Link do nieistniejącej notatki zostaje w tekście dosłownie i `just validate-world` (reguła 22) uzna to za błąd - gracz zobaczyłby surowe `[[nawiasy]]`.
+
 ## Znaczniki tekstu - MoM RichText
 
 Działają w `Tytuł`, w prozie opisu i w `Sukces`. W grze renderują się odpowiednim stylem, a w tooltipie grafu spłaszczają się do **pogrubienia**.

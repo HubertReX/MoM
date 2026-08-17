@@ -16,4 +16,4 @@ EN: "[[Potion curse-no-more]]"
 
 `= "![[item_" + this.key + ".png|64]]"`
 
-Magiczna mikstura warzona przez [char]Madame Sarkażmijkę[/char]. Podobno cofa nawet najbardziej uporczywe klątwy - albo zabija.
+Magiczna mikstura warzona przez [[Madame Sarkażmijka|Madame Sarkażmijkę]]. Podobno cofa nawet najbardziej uporczywe klątwy - albo zabija.

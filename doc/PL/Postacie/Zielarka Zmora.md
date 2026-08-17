@@ -72,7 +72,7 @@ Szkoliła kiedyś [[Bibliofilistka des Informacja|Bibliofilistkę des Informacj�
 
 ## 002
 
-* Ostatnimi laty rzeczywiście nie ruszam się poza [loc]Gafowo Kolonię[/loc], ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.
+* Ostatnimi laty rzeczywiście nie ruszam się poza [[Gafowo Kolonia|Gafowo Kolonię]], ale kiedyś ciągle podróżowałam. Byłam w miejscach do których mało kto miał dostęp. Teraz nie mam już siły. To ludzie do mnie przychodzą i płacą mi za pomoc. Wszyscy mnie tu darzą należytym szacunkiem. To oczywiste, zważywszy na mój sędziwy wiek.
 A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś znaku?
 
 * [[#008]] 1😇: Jestem wagą - to najmilszy znak zodiaku, nie sądzisz?
@@ -108,9 +108,9 @@ A Ty to jesteś tutaj nowy, nie widziałam Cię wcześniej. Spod jakiego jesteś
 ## 004
 
 * Jest trochę tego, pytanie co dla kogo jest ciekawe:
-1 [loc]Bagno niedogodności[/loc] jest bogate w zioła i różnego rodzaju ropuchy
-2 w [loc]Splątanym lesie irytacji[/loc] można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej
-3 [loc]Jaskinie zagmatwania[/loc] to też źródło grzybów, ale dużo bardziej niebezpieczne
+1 [[Bagno niedogodności]] jest bogate w zioła i różnego rodzaju ropuchy
+2 w [[Splątany las irytacji|Splątanym lesie irytacji]] można spotkać rzadkie grzyby i wszystkie gatunki kory leczniczej
+3 [[Jaskinie zagmatwania]] to też źródło grzybów, ale dużo bardziej niebezpieczne
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy.
 
@@ -156,25 +156,25 @@ Tak jak ja.
 
 ## 013
 
-* Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej [loc]bibliotece[/loc].
+* Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w tajnej [[Tajna biblioteka|bibliotece]].
 
 * [[#012]] 1😐: Dzięki!
 
 ## 015
 
-* Ona pracuje teraz w ukrytej [loc]bibliotece[/loc], pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [[Kowal Kłamca]] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
+* Ona pracuje teraz w ukrytej [[Tajna biblioteka|bibliotece]], pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, [[Kowal Kłamca]] miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka i kłamcy.
 
 * [[#012]] 1😐: Dziękuję, to cenne informacje.
 
 ## 014
 
-* Kiedy była u mnie wołali na nią [char]Mariolka[/char], ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać [char]Bibliofilistka des Informacja[/char].
+* Kiedy była u mnie wołali na nią [[Bibliofilistka des Informacja|Mariolka]], ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać [[Bibliofilistka des Informacja]].
 
 * [[#012]] 1😐: ok, dzięki.
 
 ## 017
 
-* Po odejściu ode mnie ludzie zaczęli na nią wołać [char]Bibliofilistka des Informacja[/char].
+* Po odejściu ode mnie ludzie zaczęli na nią wołać [[Bibliofilistka des Informacja]].
 
 * [[#012]] 1😐: ok, dzięki.
 

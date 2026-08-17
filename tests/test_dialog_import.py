@@ -304,8 +304,8 @@ def test_make_name_resolver_pl() -> None:
     }
     resolve = _make_name_resolver(chars, "PL")
     assert resolve is not None
-    assert_eq(resolve("HAMMER_HOAXHEART", None), "Kowal Kłamca")
-    assert_eq(resolve("Kowal Kłamca", None), "Kowal Kłamca", "resolve by name")
+    assert_eq(resolve("HAMMER_HOAXHEART", None), "[char]Kowal Kłamca[/char]")
+    assert_eq(resolve("Kowal Kłamca", None), "[char]Kowal Kłamca[/char]", "resolve by name")
 
 
 def test_make_name_resolver_en() -> None:
@@ -314,7 +314,7 @@ def test_make_name_resolver_en() -> None:
     }
     resolve = _make_name_resolver(chars, "EN")
     assert resolve is not None
-    assert_eq(resolve("HAMMER_HOAXHEART", None), "Hammer Hoaxheart")
+    assert_eq(resolve("HAMMER_HOAXHEART", None), "[char]Hammer Hoaxheart[/char]")
 
 
 def test_make_name_resolver_declension() -> None:
@@ -326,13 +326,13 @@ def test_make_name_resolver_declension() -> None:
     assert resolve is not None
     assert_eq(
         resolve("Barman Absyntnent", "Barmana Absyntnenta"),
-        "Barmana Absyntnenta",
+        "[char]Barmana Absyntnenta[/char]",
         "declension display kept",
     )
     # identifier-like pipe text (legacy link) falls back to canonical name
     assert_eq(
         resolve("Barman Absyntnent", "BARMAN_ABSINTHRAYNER"),
-        "Barman Absyntnent",
+        "[char]Barman Absyntnent[/char]",
         "key-like pipe ignored",
     )
 
@@ -448,6 +448,60 @@ def test_convert_text_with_markup_and_wikilink() -> None:
     )
 
 
+def test_prose_wikilinks_render_as_richtext_by_kind() -> None:
+    """Postać, lokalizacja i przedmiot dostają swój znacznik, nie wszystkie `[char]`.
+
+    Kierunek jest odwrotny niż w warunkach: tam link staje się kluczem, tu
+    znacznikiem. To ta sama zasada z dwóch stron - w vaulcie encja jest linkiem
+    (widzi ją graf Obsidiana), w grze znacznikiem (dostaje kolor).
+    """
+    from dialog.vault_links import build_vault_index, render_links
+
+    vault = build_vault_index(VAULT)
+    cases = [
+        ("[[Zielarka Zmora]]", "[char]Zielarka Zmora[/char]"),
+        ("[[Tawerna Brakująca klepka]]", "[loc]Tawerna Brakująca klepka[/loc]"),
+        ("[[Łza Syrenki]]", "[item]Łza Syrenki[/item]"),
+        ("[[Barman Absyntnent|Barmana]]", "[char]Barmana[/char]"),
+        ("[[Nie ma takiej notatki]]", "[[Nie ma takiej notatki]]"),
+    ]
+    for source, expected in cases:
+        assert_eq(render_links(source, vault, "PL"), expected, f"render {source}")
+
+
+def test_an_unpiped_link_takes_the_name_of_the_file_language() -> None:
+    """Ten sam link w pliku PL i EN pokazuje inną nazwę - o to chodzi w tłumaczeniu."""
+    from dialog.vault_links import build_vault_index, render_links
+
+    vault = build_vault_index(VAULT)
+    assert_eq(render_links("[[Zielarka Zmora]]", vault, "EN"), "[char]Potioneer Puzzlemint[/char]")
+    assert_eq(render_links("[[Potioneer Puzzlemint]]", vault, "PL"), "[char]Zielarka Zmora[/char]")
+
+
+def test_no_entity_richtext_is_left_in_the_vault_prose() -> None:
+    """Encje z notatką pisze się linkiem - `[char]Barman[/char]` już się nie pisze.
+
+    Zostawione świadomie: istoty bez notatek (Melancholijna Syrenka), rzeczowniki
+    pospolite (`potion`) i zaimki (`Ty`). Ten test pilnuje tylko tego, żeby nikt
+    nie wrócił do pisania znacznikiem tam, gdzie notatka istnieje.
+    """
+    import re
+
+    from dialog.vault_links import build_vault_index
+
+    vault = build_vault_index(VAULT)
+    tag = re.compile(r"\[(char|loc|item)\]([^\[\]]+?)\[/(?:\1)?\]")
+    offenders = []
+    for path in sorted(VAULT.rglob("*.md")):
+        if path.parts[-3:][0] not in ("PL", "EN") and path.parts[1] not in ("PL", "EN"):
+            continue
+        for match in tag.finditer(path.read_text(encoding="utf-8")):
+            entity = vault.entity(match.group(2).strip())
+            if entity is not None and entity.kind == match.group(1):
+                offenders.append(f"{path.name}: {match.group(0)}")
+    assert_eq(offenders, [], "encja z notatką ma być linkiem, nie znacznikiem")
+
+
 def main() -> None:
     tests = []
 
@@ -461,6 +515,12 @@ def main() -> None:
             ("test_sentiment_conversion", test_sentiment_conversion),
             ("test_markup_conversion", test_markup_conversion),
             ("test_condition_conversion", test_condition_conversion),
+            ("test_prose_wikilinks_render_as_richtext_by_kind",
+             test_prose_wikilinks_render_as_richtext_by_kind),
+            ("test_an_unpiped_link_takes_the_name_of_the_file_language",
+             test_an_unpiped_link_takes_the_name_of_the_file_language),
+            ("test_no_entity_richtext_is_left_in_the_vault_prose",
+             test_no_entity_richtext_is_left_in_the_vault_prose),
             ("test_condition_wikilinks_are_expanded", test_condition_wikilinks_are_expanded),
             ("test_a_condition_link_to_nothing_fails", test_a_condition_link_to_nothing_fails),
             ("test_result_parsing", test_result_parsing),

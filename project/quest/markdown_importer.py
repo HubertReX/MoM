@@ -89,10 +89,12 @@ from dialog.conditions import (
 )
 from dialog.vault_links import (
     WIKI_RE as _WIKI_RE,
+    VaultIndex,
     VaultLinkError,
-    build_entity_index,
+    build_vault_index,
     expand_links,
     note_key,
+    render_links,
     resolve_entity as _resolve_entity,
 )
 from quest.graph import init_quests
@@ -517,16 +519,16 @@ def _parse_reward(value: str, path: Path, line_no: int) -> dict[str, Any]:
 
 
 def import_quest(
-    src_dir: Path, key: str, index: dict[str, str] | None = None
+    src_dir: Path, key: str, vault: VaultIndex | None = None
 ) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
     """Import one quest file (PL + EN) into ``(messages, {key: entry})``."""
-    index = build_entity_index(src_dir) if index is None else index
+    vault = build_vault_index(src_dir) if vault is None else vault
 
     pl_path = _find_quest_file(src_dir, "PL", key)
     en_path = _find_quest_file(src_dir, "EN", key)
 
-    pl_quest = _parse_file(pl_path, index, machine_fields=True)
-    en_quest = _parse_file(en_path, index, machine_fields=False)
+    pl_quest = _parse_file(pl_path, vault.keys, machine_fields=True)
+    en_quest = _parse_file(en_path, vault.keys, machine_fields=False)
     _validate_parsed(pl_quest, key, pl_path)
     _validate_translation(en_quest, key, en_path)
 
@@ -534,17 +536,15 @@ def import_quest(
     description_key = f"{MESSAGE_PREFIX}{key}_DESCRIPTION"
     success_key = f"{MESSAGE_PREFIX}{key}_SUCCESS"
 
+    # Prose is where the player meets an entity, so a wikilink becomes the
+    # RichText span the game colours (`[char]`, `[loc]`, `[item]`).
     messages: dict[str, dict[str, str]] = {
-        "PL": {
-            name_key: pl_quest.title,
-            description_key: " ".join(pl_quest.description),
-            success_key: pl_quest.success,
-        },
-        "EN": {
-            name_key: en_quest.title,
-            description_key: " ".join(en_quest.description),
-            success_key: en_quest.success,
-        },
+        lang: {
+            name_key: render_links(quest.title, vault, lang),
+            description_key: render_links(" ".join(quest.description), vault, lang),
+            success_key: render_links(quest.success, vault, lang),
+        }
+        for lang, quest in (("PL", pl_quest), ("EN", en_quest))
     }
 
     entry: dict[str, Any] = {
@@ -655,10 +655,10 @@ def import_quests(
     messages: dict[str, dict[str, str]] = {"PL": {}, "EN": {}}
     quests: dict[str, Any] = {}
     paths: dict[str, Path] = {}
-    index = build_entity_index(src_dir)
+    vault = build_vault_index(src_dir)
 
     for key in keys:
-        quest_messages, quest_entry = import_quest(src_dir, key, index)
+        quest_messages, quest_entry = import_quest(src_dir, key, vault)
         for lang in ("PL", "EN"):
             messages[lang].update(quest_messages[lang])
         if key in quests:
@@ -864,7 +864,7 @@ if __name__ == "__main__":
 __all__ = [
     "MESSAGE_PREFIX",
     "QuestImportError",
-    "build_entity_index",
+    "build_vault_index",
     "build_quest_config",
     "collect_message_references",
     "discover_quest_keys",
