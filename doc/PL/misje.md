@@ -6,14 +6,15 @@
 
 ```dataview
 TABLE WITHOUT ID
-  file.link as "Quest",
-  file.inlinks as "Depending on this",
-  file.outlinks as "this depends on",
-  file.aliases as "AKA"
+  file.link as "Misja",
+  filter(file.outlinks, (x) => startswith(meta(x).path, "PL/Misje/"))  as "Misja zależy od",
+  filter(file.outlinks, (x) => startswith(meta(x).path, "PL/Postacie/"))  as "Odnosi się do"
 FROM ""
 WHERE file.folder = "PL/Misje"
 SORT file.aliases ASC, file ASC
 ```
+
+`  filter(file.inlinks, (x) => startswith(meta(x).path, "PL/"))  as "Zależą",`
 
 ## lista
 
