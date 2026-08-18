@@ -5,7 +5,7 @@ name_PL: Rapier
 type: weapon
 value:
 weight:
-damage:
+damage: 15
 cooldown_time: 0.1
 health_impact:
 aliases:

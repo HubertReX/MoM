@@ -24,17 +24,17 @@ golden_coin;Golden coin;Złota moneta;money;1000;0.02;;;
 golden_key;Golden key;Złoty klucz;key;500;0.01;;;
 hammer;War hammer;Młot wojenny;weapon;80;5;25;0.5;
 honey;Bee honey;Miód;consumable;20;;;;40
-katana;Katana;Katana;weapon;250;2.5;20;0.3;
-lance;Lance;Lanca;weapon;150;2.5;15;0.4;
+katana;Katana;Katana;weapon;250;2.5;30;0.3;
+lance;Lance;Lanca;weapon;150;2.5;20;0.4;
 leaf;Tea leaf;Liść herbaty;consumable;5;0.01;;;3
 life_pot;Life potion;Mikstura zdrowia;consumable;300;0.15;;;100
 pitchfork;Pitchfork;Widły;weapon;30;2.5;;0.4;
-rapier;Rapier;Rapier;weapon;;;;0.1;
+rapier;Rapier;Rapier;weapon;;;15;0.1;
 sai;Sai;Sztylet;weapon;40;;;0.2;
 shashlik;Shashlik;Szaszłyk;consumable;20;;;;30
 shrimp;Tiger shrimp;Krewetka tygrysia;consumable;15;0.1;;;5
 silver_key;Silver key;Srebrny klucz;key;500;0.01;;;
 stick;Stick;Kij;weapon;20;;5;0.2;
 sword_long;Long sword;Długi miecz;weapon;250;3.0;30;0.5;
-sword_short;Short sword;Krótki miecz;weapon;70;2;15;0.2;
+sword_short;Short sword;Krótki miecz;weapon;70;2;20;0.2;
 water_pot;Water pot;Fiolka wody;consumable;20;0.15;;;3

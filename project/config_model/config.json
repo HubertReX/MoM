@@ -676,7 +676,7 @@
             "type": "weapon",
             "value": 150,
             "weight": 2.5,
-            "damage": 15,
+            "damage": 20,
             "cooldown_time": 0.4,
             "name_EN": "Lance",
             "name_PL": "Lanca"
@@ -685,7 +685,7 @@
             "type": "weapon",
             "value": 250,
             "weight": 2.5,
-            "damage": 20,
+            "damage": 30,
             "cooldown_time": 0.3,
             "name_EN": "Katana",
             "name_PL": "Katana"
@@ -703,11 +703,12 @@
             "type": "weapon",
             "cooldown_time": 0.1,
             "name_EN": "Rapier",
-            "name_PL": "Rapier"
+            "name_PL": "Rapier",
+            "damage": 15
         },
         "sword_short": {
             "type": "weapon",
-            "damage": 15,
+            "damage": 20,
             "cooldown_time": 0.2,
             "name_EN": "Short sword",
             "name_PL": "Krótki miecz",

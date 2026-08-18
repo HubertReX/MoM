@@ -5,7 +5,7 @@ name_PL: Krótki miecz
 type: weapon
 value: 70
 weight: 2
-damage: 15
+damage: 20
 cooldown_time: 0.2
 health_impact:
 aliases:
