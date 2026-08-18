@@ -199,7 +199,7 @@ Tak czy siak, ludzie zaczęli na nią wołać [[Bibliofilistka des Informacja]].
 ## 991-end
 [[#001]]
 
-* [SENTIMENT-10]Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - **wynocha**!
+* [`shift_sentiment(-10)`]Jak śmiesz! Nie życzę sobie aby mnie tak obrażać - **wynocha**!
 
 ## 992-end
 [[#016]]

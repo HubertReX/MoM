@@ -82,7 +82,7 @@ Miecz gada. Miecz gada i nie zamierza przestać.
 **Completion**: `test`
 **Test**: `visited("CLAPBACK_SWORD", "015")`
 **Sukces**: No dobrze. Miecz gada, a ty masz problem.
-**Nagroda**: `money=50`
+**Nagroda**: `add_money(50)`
 """
 
 Q00_EN = """---
@@ -107,8 +107,8 @@ Ktoś w tym miasteczku musi wiedzieć, jak się zdejmuje klątwy.
 **Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]
 **Completion**: `all_subquests`
 **Sukces**: Wiesz już, kto, gdzie i jak.
-**Nagroda**: `money=100`
-**Nagroda**: `max_health=20`
+**Nagroda**: `add_money(100)`
+**Nagroda**: `raise_max_health(20)`
 
 ## Notatki
 
@@ -412,7 +412,7 @@ def test_a_blank_line_stays_a_paragraph_break() -> None:
 
 def test_a_field_below_the_notes_heading_is_ignored() -> None:
     """It is ignored, but loudly — a silently dropped Reward is the bug class."""
-    with_late_field = Q00_PL + "\n## Notatki\n\n**Nagroda**: `money=999`\n"
+    with_late_field = Q00_PL + "\n## Notatki\n\n**Nagroda**: `add_money(999)`\n"
     with tempfile.TemporaryDirectory() as tmp:
         vault = _full_vault(Path(tmp), **{"PL/Misje/Q00_S00 O co tu chodzi.md": with_late_field})
         _, quests = import_quests(vault, ALL_KEYS)
@@ -636,14 +636,24 @@ def test_missing_pieces_fail_with_a_useful_message() -> None:
         ),
         (Q00_PL.replace("**Completion**: `test`\n", ""), "Completion", "missing completion"),
         (
-            Q00_PL.replace("**Nagroda**: `money=50`", "**Nagroda**: `money=dużo`"),
+            Q00_PL.replace("**Nagroda**: `add_money(50)`", "**Nagroda**: `add_money(dużo)`"),
             "whole number",
             "bad reward value",
         ),
         (
-            Q00_PL.replace("**Nagroda**: `money=50`", "**Nagroda**: `50 money`"),
-            "category",
+            Q00_PL.replace("**Nagroda**: `add_money(50)`", "**Nagroda**: `50 money`"),
+            "not a call",
             "bad reward shape",
+        ),
+        (
+            Q00_PL.replace("**Nagroda**: `add_money(50)`", "**Nagroda**: `money=50`"),
+            "old grammar",
+            "legacy reward grammar",
+        ),
+        (
+            Q00_PL.replace("**Nagroda**: `add_money(50)`", "**Nagroda**: `remove_money(50)`"),
+            "cannot be used in a quest",
+            "a reward gives, it does not take",
         ),
         (Q00_PL.replace("**Sukces**:", "**Naglowek**:"), "unknown field", "unknown field name"),
         (

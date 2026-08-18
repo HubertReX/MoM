@@ -179,7 +179,7 @@ Either way, people started calling her [[Miss Information]].
 ## 991-end
 [[#001]]
 
-* [SENTIMENT-10]How dare you! I will not be insulted like that - **get out**!
+* [`shift_sentiment(-10)`]How dare you! I will not be insulted like that - **get out**!
 
 ## 992-end
 [[#016]]

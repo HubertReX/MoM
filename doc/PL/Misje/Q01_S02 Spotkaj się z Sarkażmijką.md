@@ -12,6 +12,6 @@ Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie **bardzo
 **Completion**: `test`
 **Test**: `visited(`[[Madame Sarkażmijka#001]]`)`
 **Success**: [[Madame Sarkażmijka|Sarkażmijka]] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za _drobną_ przysługę.
-**Reward**: `money=50`
+**Reward**: `add_money(50)`
 
 ## Notatki

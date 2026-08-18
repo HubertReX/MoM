@@ -434,7 +434,14 @@ def _result_badge(result: dict[str, Any]) -> str:
     if result.get("value"):
         parts.append(f"sentiment {result['value']:+d}")
     if result.get("items"):
-        parts.append(", ".join(result["items"]))
+        # krotność jest w liście (pięć ryb to pięć razy `fish`) - na etykiecie
+        # zwija się z powrotem, bo `3x fish` czyta się, a `fish, fish, fish` nie
+        counted: dict[str, int] = {}
+        for key in result["items"]:
+            counted[key] = counted.get(key, 0) + 1
+        parts.append(
+            ", ".join(k if n == 1 else f"{n}x {k}" for k, n in counted.items())
+        )
     return "[ " + "  ".join(p for p in parts if p) + " ]"
 
 

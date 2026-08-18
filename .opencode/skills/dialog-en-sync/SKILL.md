@@ -60,7 +60,7 @@ These tags appear in PL and must be carried over to EN exactly:
 - `[b]...[/b]` - alternate bold
 - `[u]...[/u]` - underline
 - `:emoji_name:` - emoji codes
-- `[SENTIMENT-X]` - sentiment value node result
+- ``[`shift_sentiment(-10)`]`` - node effect; copy the whole prefix verbatim (every effect is a call: `add_money`, `restore_health`, `lose_health`, ``[`add_n_items(1,`[[ITEM]]`)`]``)
 - `[act]` - action marker
 
 ## Dialog Structure

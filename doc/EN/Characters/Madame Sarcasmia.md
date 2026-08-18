@@ -122,7 +122,7 @@ Good luck, dearie.
 
 ## 012
 
-* [ITEMS-GNOMES_WHISKER,MERMAIDS_TEAR,PHOENIX_FEATHER] Well, color me surprised. It seems you've managed to outwit fate itself and gather the trifecta of ridiculousness. Hand them over, then, and let's see if my magic can concoct the miracle you so desperately desire.
+* [`remove_n_items(1,`[[GNOMES_WHISKER]]`,`[[MERMAIDS_TEAR]]`,`[[PHOENIX_FEATHER]]`)`] Well, color me surprised. It seems you've managed to outwit fate itself and gather the trifecta of ridiculousness. Hand them over, then, and let's see if my magic can concoct the miracle you so desperately desire.
 
 * [[#017]] 1😐: Here they are, in all their mischievous glory. I trust your potion-making skills won't disappoint?
 
@@ -174,7 +174,7 @@ Good luck, dearie.
 ## 020-end
 [[#011]]
 
-* [ITEMS+POTION_CURSE_NO_MORE] Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.
+* [`add_n_items(1,`[[POTION_CURSE_NO_MORE]]`)`] Let the magic weave its mysteries. Take this [item]potion[/item] and drink it… somewhere else. If all goes well, your curse will be no more. In other cases, I don't want to clean your guts from my alchemy workshop's walls.
 
 ## 021-end
 [[#011]]

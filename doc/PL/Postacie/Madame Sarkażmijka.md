@@ -134,7 +134,7 @@ Powodzenia, kochanieńki.
 
 ## 012
 
-* [ITEMS-GNOMES_WHISKER,MERMAIDS_TEAR,PHOENIX_FEATHER] Och, ale mnie zaskoczyłeś. Wygląda na to, że udało ci się oszukać sam los i zebrać wszystkie trzy absurdalne przedmioty. Dawaj je teraz, a zobaczymy, czy moja magia jest w stanie wyczarować to cudeńko, którego tak desperacko pragniesz.
+* [`remove_n_items(1,`[[GNOMES_WHISKER]]`,`[[MERMAIDS_TEAR]]`,`[[PHOENIX_FEATHER]]`)`] Och, ale mnie zaskoczyłeś. Wygląda na to, że udało ci się oszukać sam los i zebrać wszystkie trzy absurdalne przedmioty. Dawaj je teraz, a zobaczymy, czy moja magia jest w stanie wyczarować to cudeńko, którego tak desperacko pragniesz.
 
 * [[#017]] 1😐: Proszę bardzo, w całej ich psotliwej chwale. Ufam, że twoje umiejętności eliksirowe nie zawiodą?
 
@@ -186,7 +186,7 @@ Powodzenia, kochanieńki.
 ## 020-end
 [[#011]]
 
-* [ITEMS+POTION_CURSE_NO_MORE] Niech magia tka swoje misteria. Weź tę [item]miksturę[/item] i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.
+* [`add_n_items(1,`[[POTION_CURSE_NO_MORE]]`)`] Niech magia tka swoje misteria. Weź tę [item]miksturę[/item] i wypij ją… gdzieś indziej. Jeśli wszystko pójdzie dobrze, twoja klątwa zniknie. W przeciwnym razie nie mam ochoty czyścić twoich wnętrzności ze ścian mojego warsztatu alchemicznego.
 
 ## 021-end
 [[#011]]
