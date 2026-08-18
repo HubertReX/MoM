@@ -4,7 +4,7 @@ aliases:
 ---
 # Kto ma wiedzę o magii?
 
-[[Zielarka Zmora|Zielarka]] warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może pamięta też kogoś, kto zna się na rzeczach oficjalnie zakazanych.
+[[Zielarka Zmora|Zielarka]] warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może zna też kogoś, kto zna się na rzeczach oficjalnie zakazanych.
 
 **Completion**: `test`
 **Test**: `visited(`[[Zielarka Zmora#014]]`) or visited(`[[Zielarka Zmora#017]]`)`

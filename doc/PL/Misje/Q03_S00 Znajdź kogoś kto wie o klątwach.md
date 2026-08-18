@@ -4,11 +4,11 @@ aliases:
 ---
 # Znajdź kogoś kto wie o klątwach
 
-W tej okolicy nikt do książek nie zagląda, brak tu sołtysa, księdza, albo chociaż starego dziada, który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o klątwach więcej niż same plotki.
+W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]księdza[/], albo chociaż [char]starego dziada[/], który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o [quest]klątwach[/] więcej niż same plotki.
 
 **Requires**: [[Q01_S01 Dowiedz się więcej o klątwie]]
 **Completion**: `all_subquests`
-**Success**: Wiesz już, kto się na tym zna, gdzie mieszka i jak tam trafić. Trzy odpowiedzi bez ani grama magii. To się nawet może udać.
+**Success**: Wiesz już, **kto** się na tym zna, **gdzie** mieszka i **jak** tam trafić. Trzy odpowiedzi bez ani grama magii. To się nawet może udać.
 **Reward**: `max_health=10`
 
 ## Notatki
