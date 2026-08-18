@@ -34,15 +34,7 @@
    ],
    "description_runs": [
     {
-     "text": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a ",
-     "bold": false
-    },
-    {
-     "text": "Twój",
-     "bold": true
-    },
-    {
-     "text": " miecz nie przestaje do Ciebie gadać. To chyba nie jest normalne...",
+     "text": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a **Twój** miecz nie przestaje do **Ciebie** gadać. To chyba nie jest normalne...",
      "bold": false
     }
    ],
@@ -160,7 +152,15 @@
    ],
    "description_runs": [
     {
-     "text": "Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie **bardzo** wysokie mniemanie.",
+     "text": "Wiedzieć o ",
+     "bold": false
+    },
+    {
+     "text": "klątwie",
+     "bold": true
+    },
+    {
+     "text": " to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie **bardzo** wysokie mniemanie.",
      "bold": false
     }
    ],
@@ -329,11 +329,6 @@
   {
    "from": "Q01_S00_BREAK_THE_CURSE",
    "to": "Q01_S01_LEARN_ABOUT_CURSE",
-   "kind": "requires"
-  },
-  {
-   "from": "Q01_S00_BREAK_THE_CURSE",
-   "to": "Q01_S01_LEARN_ABOUT_CURSE",
    "kind": "parent"
   },
   {
@@ -352,7 +347,7 @@
    "kind": "requires"
   },
   {
-   "from": "Q03_S00_LEARN_ABOUT_CURSE",
+   "from": "Q01_S01_LEARN_ABOUT_CURSE",
    "to": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
    "kind": "requires"
   },

@@ -99,7 +99,7 @@
   {
    "id": "008",
    "level": 3,
-   "text": "Broń, którą tu robię nie ma sobie równych w całym Królestwie Pomylenia Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.",
+   "text": "Broń[/], którą tu robię nie ma sobie równych w całym Królestwie Pomylenia. Tutejsi kupują jedynie sierpy i podkowy. Sama biedota naokoło.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -110,7 +110,7 @@
   {
    "id": "004",
    "level": 2,
-   "text": "Pozostałe wsie są tak samo biedne. Broń i zbroje kupują jedynie zarozumiali panicze z miasta Porażkowo",
+   "text": "Pozostałe wsie[/] są tak samo biedne. Broń[/] i zbroje[/] kupują jedynie zarozumiali panicze z miasta Porażkowo.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -121,7 +121,7 @@
   {
    "id": "009",
    "level": 3,
-   "text": "Nie lubię miasta, nie jeżdżę tam. Pytaj Barmana Absyntnenta - on gada ze wszystkimi przybyszami.",
+   "text": "Nie lubię miasta[/], nie jeżdżę tam. Pytaj Barmana Absyntnenta - on gada ze wszystkimi przybyszami.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -132,7 +132,7 @@
   {
    "id": "005",
    "level": 2,
-   "text": "Moja broń jest tak dobra, że nie potrzeba mi czarów.",
+   "text": "Moja broń[/] jest tak dobra, że nie potrzeba mi czarów.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -192,7 +192,7 @@
    "key": "000to001_2",
    "order": 2,
    "sentiment": "angry",
-   "text": "Trochę kultury człowieku bo każę wójtowi odebrać Ci licencję kowalską!",
+   "text": "Trochę kultury człowieku bo każę wójtowi[/] odebrać Ci licencję kowalską!",
    "condition": null
   },
   {
@@ -232,7 +232,7 @@
    "key": "001to004_3",
    "order": 3,
    "sentiment": "neutral",
-   "text": "Masz trochę klientów z okolicznych wsi?",
+   "text": "Masz trochę klientów z okolicznych wsi[/]?",
    "condition": null
   },
   {
@@ -332,7 +332,7 @@
    "key": "003to008_3",
    "order": 3,
    "sentiment": "smart",
-   "text": "Widzę, tu kawał dobrej roboty, ale w tej wiosce raczej nikt nie odróżni porządnego miecza dwuręcznego od bastardowego?",
+   "text": "Widzę, tu kawał dobrej roboty, ale w tej wiosce[/] raczej nikt nie odróżni porządnego miecza[/] dwuręcznego od bastardowego?",
    "condition": null
   },
   {
@@ -362,7 +362,7 @@
    "key": "004to009_2",
    "order": 2,
    "sentiment": "weak",
-   "text": "Pewnie Cię poniżają ci wielcy panicze. Często musisz masz z nimi do czynienia?",
+   "text": "Pewnie Cię poniżają ci wielcy panicze. Często masz z nimi do czynienia?",
    "condition": null
   },
   {
@@ -372,7 +372,7 @@
    "key": "004to009_3",
    "order": 3,
    "sentiment": "funny",
-   "text": "A po co tym francuskim pieskom dobra broń? Polują kuszami na kury karczmarza?",
+   "text": "A po co tym francuskim pieskom dobra broń[/]? Polują kuszami[/] na kury karczmarza[/]?",
    "condition": null
   },
   {

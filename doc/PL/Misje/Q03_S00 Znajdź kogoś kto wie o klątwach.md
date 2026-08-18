@@ -13,4 +13,4 @@ W tej okolicy nikt do książek nie zagląda, brak tu sołtysa, księdza, albo c
 
 ## Notatki
 
-Wątek śledczy: kto się zna, gdzie jej szukać, którędy tam dojść. Parasol domyka się sam, gdy wszystkie trzy kroki są zrobione, a kroki idą po kolei - każdy dostaje pytanie z odpowiedzi poprzedniego.
+**Wątek śledczy**: kto się zna, gdzie jej szukać, którędy tam dojść. **Parasol** domyka się sam, gdy wszystkie trzy kroki są zrobione, a kroki idą po kolei - każdy dostaje pytanie z odpowiedzi poprzedniego.

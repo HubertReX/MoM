@@ -4,7 +4,9 @@ aliases:
 ---
 # Spotkaj się z [[Madame Sarkażmijka|Sarkażmijką]]
 
-Wiedzieć o klątwie to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie **bardzo** wysokie mniemanie.
+Wiedzieć o [quest]klątwie[/] to jedno, a zdjąć ją to zupełnie inna para kaloszy. 
+
+Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie **bardzo** wysokie mniemanie.
 
 **Requires**: [[Q01_S01 Dowiedz się więcej o klątwie]]
 **Completion**: `test`

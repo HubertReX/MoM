@@ -77,7 +77,7 @@
   {
    "id": "001",
    "level": 3,
-   "text": "Czyli jednak żyjesz, jeszcze... Jak tak dalej pójdzie to niedługo zardzewieję u boku Twojego szkieletu. No ładny bajzel. Nieźle dałeś wczoraj do wiwatu. Żeby grać w karty z czarodziejami i to znaczonymi kartami! Sam się o to prosiłeś, to teraz cierp. Nie będę Ci pomagał. Nawet mnie nie proś.",
+   "text": "Czyli jednak żyjesz, jeszcze... Jak tak dalej pójdzie to niedługo zardzewieję u boku Twojego szkieletu. No ładny bajzel. Nieźle dałeś wczoraj do wiwatu - żeby uprawiać hazard z czarodziejami[/] i to znaczonymi kartami! Sam się o to prosiłeś, to teraz cierp. Nie będę Ci pomagał. Nawet mnie nie proś.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -101,7 +101,7 @@
   {
    "id": "003",
    "level": 5,
-   "text": "Poniosła Cię ułańska fantazja! Po raz kolejny! Chciałeś ograć w karty nowoprzybyłych czarodziei, spiłeś się, przestałeś mnie słuchać, przyłapali Cię na próbie oszustwa, rzucili jakieś zaklęcie, potem był jeden wielki huk i błysk. Wtedy straciłem przytomność i obudziliśmy się tutaj.",
+   "text": "Poniosła Cię ułańska fantazja! Po raz kolejny! Chciałeś ograć w karty nowoprzybyłych czarodziei[/], spiłeś się i przestałeś mnie słuchać. Oni przyłapali Cię na próbie oszustwa, rzucili jakieś zaklęcie, potem był jeden wielki huk i błysk. Wtedy straciłem przytomność a obudziliśmy się tutaj.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -112,7 +112,7 @@
   {
    "id": "004",
    "level": 5,
-   "text": "Serio? Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich Twoich wyczynów. Jestem mieczem, wykutym przez z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się Miecz Ciętej-riposty i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.",
+   "text": "Serio? Tak się schlałeś, że nawet mnie nie pamiętasz? Aż dziwne, że będąc takim głupcem dożyłeś swojego wieku. Ja, proszę ja Ciebie, jestem Twoim jedynym i najwierniejszym kompanem. Nie to żebym miał jakiś wybór - trzymasz mnie za pasem, a ja nie potrafię sam chodzić. Jestem więc mimowolnym świadkiem wszystkich Twoich wyczynów. Jestem mieczem, wykutym z duszy ognia i prócz ciętego ostrza, mam równie cięty język. Nazywam się Miecz Ciętej-riposty i gdybyś tylko potrafił mną sprawnie władać, bylibyśmy niezwyciężeni.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -123,7 +123,7 @@
   {
    "id": "005",
    "level": 5,
-   "text": "Jesteśmy we wspaniałej krainie brudu i smrodu zwanym Królestwem Pomylenia Większość ludzi to biedni wieśniacy, jest tu trochę rzemieślników i trochę magików. Choć większość to znachorzy, zielarki, szarlatani i inni oszuści nie znający prawdziwej magii. Na szlakach spotkać można czasami resztki przedstawicieli Błękitnego Rycerstwa, ale to już nie to samo co kiedyś. W lasach, jaskiniach i ciemnych zaułkach czają się różne maszkary żądne krwi, pieniędzy lub jednego i drugiego. Reszta to poszukiwacze przygód, jak Ty. No i chyba ja siłą rzeczy też.",
+   "text": "Jesteśmy we wspaniałej krainie brudu i smrodu zwanej Królestwem Pomylenia. Większość ludzi tutaj, to biedni wieśniacy. Jest tu trochę rzemieślników i magików. Choć większość to znachorzy, zielarki, szarlatani i inni oszuści nie znający prawdziwej magii. Na szlakach spotkać można czasami resztki przedstawicieli Błękitnego Rycerstwa, ale to już nie to samo co kiedyś. W lasach, jaskiniach i ciemnych zaułkach czają się różne maszkary żądne krwi, pieniędzy lub jednego i drugiego. Reszta to poszukiwacze przygód, jak Ty. No i chyba siłą rzeczy ja też.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -134,7 +134,7 @@
   {
    "id": "016",
    "level": 6,
-   "text": "Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski Gafowo Kolonia powiat Łękołody. Wczoraj dokazywałeś w lokalnej karczmie, a teraz, sądząc po zapachu jesteśmy chyba w stajni.",
+   "text": "Ach, no tak. Z niezrozumiałych dla mnie przyczyn, przywlokłeś nas do zrujnowanej wioski Gafowo Kolonia powiat Łękołody. Wczoraj dokazywałeś w lokalnej Tawernie, a teraz, sądząc po zapachu jesteśmy chyba w stajni.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -145,7 +145,7 @@
   {
    "id": "008",
    "level": 6,
-   "text": "Co jeszcze chcesz wiedzieć?",
+   "text": "Co chcesz jeszcze wiedzieć?",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -158,7 +158,7 @@
   {
    "id": "006",
    "level": 5,
-   "text": "Obawiam się, że sprawa jest poważniejsza. Ci czarodzieje nie tylko zabrali nam pieniądze i ogłuszyli, ale też rzucili na Ciebie jakąś klątwę.",
+   "text": "Obawiam się, że sprawa jest poważniejsza niż może się wydawać. Ci czarodzieje[/] nie tylko zabrali nam pieniądze i ogłuszyli, ale też rzucili na Ciebie jakąś klątwę[/].",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -169,7 +169,7 @@
   {
    "id": "007",
    "level": 6,
-   "text": "Ja też nie pamiętam wszystkiego. Sprawdź kieszenie i torbę, może znajdziemy jakiś trop.",
+   "text": "Ja też nie pamiętam wszystkiego. Sprawdź kieszenie i torbę[/], może znajdziemy jakiś trop[/].",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -202,7 +202,7 @@
   {
    "id": "010",
    "level": 9,
-   "text": "Nie, nie, nie! Tylko nie to! Odwieczna klątwa nieszczęścia to jakaś masakra. Ja tam jestem ostatni żeby Cię bronić, ale kara to gruba przesada.",
+   "text": "Nie, nie, nie! Tylko nie to! Odwieczna klątwa nieszczęścia to jakaś masakra. Ja tam jestem ostatni żeby Cię bronić, ale TAAAKA kara to gruba przesada.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -213,7 +213,7 @@
   {
    "id": "011",
    "level": 10,
-   "text": "No dobrze, po kolei. To jest bardzo stara klątwa. Matki straszą nią niegrzeczne dzieci, karciarze przed nią ostrzegają, ale nie znam nikogo kto by padł jej ofiarą. Mówi się, że osoba nią dotknięta ma w życiu ciągłego pecha - w kartach dostajesz same blotki, wiatr Ci wieje zawsze w oczy, a w czasie burzy piorun trafia właśnie ciebie. No generalnie masz prze... przechlapane.",
+   "text": "No dobrze, po kolei. To jest bardzo stara klątwa[/]. Matki straszą nią niegrzeczne dzieci, karciarze przed nią ostrzegają, ale nie znam nikogo kto by padł jej ofiarą. Mówi się, że osoba nią dotknięta ma w życiu ciągłego pecha - w kartach dostajesz same blotki, wiatr ci wieje zawsze w oczy, a w czasie burzy piorun trafia właśnie ciebie. No generalnie masz prze... przechlapane.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -224,7 +224,7 @@
   {
    "id": "012",
    "level": 11,
-   "text": "Ty to jednak mocno oberwałeś po tej głowie. Odwieczna klątwa - sprawa chyba jest jasna.",
+   "text": "Ty to jednak mocno oberwałeś po tej głowie. Odwieczna klątwa - sprawa jest oczywista.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -235,7 +235,7 @@
   {
    "id": "013",
    "level": 11,
-   "text": "O, macierzy wszystkich mieczy duszy ognia! Jak Ty to sobie niby wyobrażasz? Ich jest trzech, Ty nie umiesz mną władać lepiej niż byle smarkacz w kalesonach, a najpewniej oni już dawno odjechali.",
+   "text": "O, macierzy wszystkich mieczy duszy ognia! Jak Ty to sobie niby wyobrażasz? Ich jest trzech[/], Ty nie umiesz władać Mieczem lepiej niż byle smarkacz w kalesonach, a najpewniej oni już dawno odjechali.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -257,7 +257,7 @@
   {
    "id": "015",
    "level": 12,
-   "text": "No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha! A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od Tawerny.",
+   "text": "No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie[/] to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha! A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od Tawerny, bo tam spotkamy najwięcej mieszkańców wsi.",
    "is_start": false,
    "is_final": true,
    "result": null,
@@ -317,7 +317,7 @@
    "key": "001to002_1",
    "order": 1,
    "sentiment": "kind",
-   "text": "No weź, nie bądź taki. Nie widzisz, że ja tu cierpię?",
+   "text": "No weź, nie bądź taki. Nie widzisz, że jestem w potrzebie?",
    "condition": null
   },
   {
@@ -437,7 +437,7 @@
    "key": "004to008_3",
    "order": 3,
    "sentiment": "funny",
-   "text": "Cięta riposta to nie tylko Twoje imię, ale i Twoja specjalność - no boki zrywać.",
+   "text": "Cięta riposta[/] to nie tylko Twoje imię, ale i Twoja specjalność - no boki zrywać.",
    "condition": null
   },
   {
@@ -447,7 +447,7 @@
    "key": "005to016_1",
    "order": 1,
    "sentiment": "kind",
-   "text": "Ok, to tak globalnie, ale co to za miejsce?",
+   "text": "Ok, to tak globalnie, ale co to za miejsce[/]?",
    "condition": null
   },
   {
@@ -457,7 +457,7 @@
    "key": "005to016_2",
    "order": 2,
    "sentiment": "angry",
-   "text": "Nie wiem po co mi ten wykład. Pytałem gdzie teraz jesteśmy.",
+   "text": "Nie wiem po co mi ten wykład. Pytałem gdzie tuuu i teeeraz jesteśmy.",
    "condition": null
   },
   {
@@ -467,7 +467,7 @@
    "key": "005to016_3",
    "order": 3,
    "sentiment": "funny",
-   "text": "No spoko, ale w jakim dokładnie śmierdzącym zakątku tego cudownego królestwa jesteśmy?",
+   "text": "No spoko, ale w jakim dokładnie śmierdzącym zakątku tego cudownego królestwa[/] jesteśmy?",
    "condition": null
   },
   {
@@ -547,7 +547,7 @@
    "key": "006to007_1",
    "order": 1,
    "sentiment": "neutral",
-   "text": "Hmm, nic sobie nie przypominam. O jaką klątwę chodzi?",
+   "text": "Hmm, nic sobie nie przypominam. O jaką klątwę[/] chodzi?",
    "condition": null
   },
   {
@@ -567,7 +567,7 @@
    "key": "006to007_3",
    "order": 3,
    "sentiment": "funny",
-   "text": "Konieczność słuchania Twoich narzekań to jedyna klątwa jaka mnie spotkała.",
+   "text": "Konieczność słuchania Twoich narzekań to jedyna klątwa[/] jaka mnie spotkała.",
    "condition": null
   },
   {
@@ -657,7 +657,7 @@
    "key": "011to012_1",
    "order": 1,
    "sentiment": "smart",
-   "text": "A jak długo trwa ta klątwa?",
+   "text": "A jak długo trwa ta klątwa[/]?",
    "condition": null
   },
   {
@@ -667,7 +667,7 @@
    "key": "011to013_2",
    "order": 2,
    "sentiment": "angry",
-   "text": "Musimy złapać tych czarodziei - muszą odwołać to zaklęcie.",
+   "text": "Musimy złapać tych czarodziei[/] - muszą odwołać to zaklęcie.",
    "condition": null
   },
   {
@@ -677,7 +677,7 @@
    "key": "011to014_3",
    "order": 3,
    "sentiment": "funny",
-   "text": "To może zbijemy majątek na obwoźnych pokazach słynnej klątwy na żywo?",
+   "text": "To może zbijemy majątek na obwoźnych pokazach słynnej klątwy[/] na żywo?",
    "condition": null
   },
   {

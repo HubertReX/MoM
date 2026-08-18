@@ -4,19 +4,6 @@ aliases:
   - ROB
 ---
 
-[h3][bold]Hej[/bold] :exclamation:[/h3]
-
-Witaj w naszej [[Tawerna Brakująca klepka|Karczmie]]! Ja jestem [char]Barman Bart[/char] :smile: .
-
-Ja się praktycznie [italic]urodziłem w tej [[Tawerna Brakująca klepka|karczmie]][/italic].
-Tak dokładnie rzecz biorąc to akuszerka przyjeła mój poród na tamtym stole w rogu.
-
-[b]Mój ojciec[/b] jest właścicielem tej [[Tawerna Brakująca klepka|karczmy]], a ja od małego mu pomagałem.
-Znam tu praktycznie wszystkich w okolicy.
-
-Za odpowiednią opłatą :blink: , potrafię [act]załatwić[/act] to i owo, a dla przyjaciół mam preferencyjne stawki.
-
-A Ty kim jesteś :red_question:
 
 ## 000
 

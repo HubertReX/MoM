@@ -44,7 +44,7 @@
   {
    "id": "000",
    "level": 0,
-   "text": "Hej Witaj w naszej Karczmie! Jestem Barman Absyntnent. A kogo tu do mnie los sprowadził?",
+   "text": "Hej Witaj w naszej Tawernie! Jestem Barman Absyntnent. A kogo tu do mnie los sprowadził?",
    "is_start": true,
    "is_final": false,
    "result": null,
@@ -66,7 +66,7 @@
   {
    "id": "002",
    "level": 2,
-   "text": "Ja się praktycznie urodziłem w tej karczmie. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. Mój ojciec jest właścicielem tej karczmy, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki",
+   "text": "Ja się praktycznie urodziłem w tej Tawernie. Tak dokładnie rzecz biorąc to akuszerka przyjęła mój poród na tamtym stole w rogu. Mój ojciec jest właścicielem, a ja, od małego mu pomagałem. Znam tu praktycznie wszystkich w okolicy. Za odpowiednią opłatą, potrafię załatwić to i owo, a dla przyjaciół mam preferencyjne stawki",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -77,7 +77,7 @@
   {
    "id": "003",
    "level": 2,
-   "text": "Gafowo Kolonia? Może to nie jest Rzym, ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych czarodziei i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty. Nie wiem, co tam się dokładnie działo, bo ten stolik obsługiwała służka, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki. Ponoć użyli swojej magii. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów.",
+   "text": "Gafowo Kolonia? Może to nie jest Rzym, ale mamy tu wszystko co nam potrzeba. Ludzie się znają i wzajemnie sobie pomagają. Na co dzień jest tu spokojnie, choć czasami przyjezdni zrobią niezły bałagan. Tak jak wczoraj, mieliśmy tu trzech nieznanych czarodziei[/] i wszystko było by dobrze, gdyby nie jakiś cwaniak, który próbował ich ograć w karty. Nie wiem, co tam się dokładnie działo, bo byłem akurat w kuchni, ale pod koniec zrobiło się gorąco. Słyszałem jakiś huk i krzyki. Ponoć użyli swojej magii. Tfu, co za sfołocz, kto to widział, aby przy stole używać czarów.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -88,7 +88,7 @@
   {
    "id": "007",
    "level": 3,
-   "text": "Zatruwają spokój strudzonym mieszkańcom. Całe szczęście czarodzieje szybko się oddalili. Już by oni na pewno nie dostali u nas noclegu. Mój ojciec z chłopami szybko by ich pogonili.",
+   "text": "Zatruwają spokój strudzonym mieszkańcom. Całe szczęście czarodzieje[/] szybko się oddalili. Już by oni na pewno nie dostali u nas noclegu. Mój ojciec z chłopami szybko by ich pogonili.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -110,7 +110,7 @@
   {
    "id": "009",
    "level": 4,
-   "text": "Ach! Odwieczna klątwą nieszczęścia? Poważnie? Myślałem, że to tylko gadanie mojej matki... No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj Zielarka Zmora, ona sama nic nie zdziała, ale może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.",
+   "text": "Ach! Odwieczna klątwą nieszczęścia? Poważnie? Myślałem, że to tylko gadanie mojej matki... No cóż. Ciężka sprawa. Tutaj raczej nikt Ci nie pomoże. U nas nie ma magii. Popytaj Zielarkę Zmorę, ona sama pewnie nic nie zdziała, ale być może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ja Cię przysłałem.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -121,7 +121,7 @@
   {
    "id": "004",
    "level": 2,
-   "text": "No jest tu trochę wiosek w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?",
+   "text": "No jest tu trochę wiosek[/] w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -134,7 +134,7 @@
   {
    "id": "010",
    "level": 3,
-   "text": "Tak ogólnie to wszędzie czyha jakieś licho i lepiej siedzieć w wiosce. Wróć jak będziesz chciał zapytać o jakieś konkretne miejsce.",
+   "text": "Tak ogólnie to wszędzie czyha jakieś licho i lepiej siedzieć w wiosce[/]. Wróć jak będziesz chciał zapytać o jakieś konkretne miejsce[/].",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -167,7 +167,7 @@
   {
    "id": "020",
    "level": 3,
-   "text": "W Jaskini zagmatwania nikt sam nie byłem. Nie lubię takich miejsc - ciemno, zimno, zero piwa.",
+   "text": "W Jaskini zagmatwania nigdy sam nie byłem. Nie lubię takich miejsc - ciemno, zimno, zero piwa.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -178,7 +178,7 @@
   {
    "id": "011",
    "level": 3,
-   "text": "A tak, no to jest jak by nie było miasto. Nie powiem, mają ze 3 karczmy i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej. To pewno przez te książki, bo oni tam nawet bibliotekę mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o czarach i innych głupotach. Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!",
+   "text": "A tak, no to jest jak by nie było miasto. Nie powiem, mają ze 3 karczmy[/] i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej. To pewno przez te książki, bo oni tam nawet bibliotekę mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o czarach i innych głupotach. Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -211,7 +211,7 @@
   {
    "id": "012",
    "level": 3,
-   "text": "Ach, rozumiem. Hmmm, no to może jedynie stara Zielarka Zmora mogła by co pomóc. Ona potrafi przygotować taką miksturę, że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. Czasami to ludziskom gorzej się robi po tych miksturach. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu.",
+   "text": "Ach, rozumiem. Hmmm, no to może jedynie stara Zielarka Zmora mogła by co pomóc. Ona potrafi przygotować taką miksturę, że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa. Czasami to ludziskom gorzej się robi po tych miksturach. Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu. Powiedz ja Cię przysłałem.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -222,7 +222,7 @@
   {
    "id": "013",
    "level": 3,
-   "text": "Halo Nie tym tonem! Jak się nie podoba, to do widzenia",
+   "text": "Halo Nie tym tonem! Jak się nie podoba, to do widzenia.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -355,7 +355,7 @@
    "key": "001to004_3",
    "order": 3,
    "sentiment": "neutral",
-   "text": "Jest tu coś ciekawego w okolicy",
+   "text": "Jest tu coś ciekawego w okolicy[/]",
    "condition": null
   },
   {
@@ -365,7 +365,7 @@
    "key": "001to005_4",
    "order": 4,
    "sentiment": "neutral",
-   "text": "Znasz kogoś, kto zna się na zaklęciach",
+   "text": "Znasz kogoś, kto zna się na zaklęciach[/]",
    "condition": null
   },
   {
@@ -375,7 +375,7 @@
    "key": "001to006_5",
    "order": 5,
    "sentiment": "neutral",
-   "text": "Gdzie mógłbym zdobyć wiedzę o zaklęciach",
+   "text": "Gdzie mógłbym zdobyć wiedzę o zaklęciach[/]",
    "condition": null
   },
   {
@@ -425,7 +425,7 @@
    "key": "003to007_3",
    "order": 3,
    "sentiment": "funny",
-   "text": "Miecz: Chyba już słyszałem tę historię... A co z tymi czarownikami?",
+   "text": "Miecz: Chyba już słyszałem tę historię... A co z tymi czarownikami[/]?",
    "condition": null
   },
   {
@@ -475,7 +475,7 @@
    "key": "009to007_2",
    "order": 2,
    "sentiment": "smart",
-   "text": "A gdzie są teraz ci czarodzieje?",
+   "text": "A gdzie są teraz ci czarodzieje[/]?",
    "condition": null
   },
   {
@@ -515,7 +515,7 @@
    "key": "004to018_3",
    "order": 3,
    "sentiment": "neutral",
-   "text": "Co wiesza na temat Bagna niedogodności",
+   "text": "Co wiesza na temat Bagna niedogodności?",
    "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"004\")"
   },
   {
@@ -525,7 +525,7 @@
    "key": "004to019_4",
    "order": 4,
    "sentiment": "neutral",
-   "text": "Co wiesza na temat Splątanego lasu irytacji",
+   "text": "Co wiesza na temat Splątanego lasu irytacji?",
    "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"004\")"
   },
   {
@@ -535,7 +535,7 @@
    "key": "004to020_5",
    "order": 5,
    "sentiment": "neutral",
-   "text": "Co wiesza na temat Jaskini zagmatwania",
+   "text": "Co wiesza na temat Jaskini zagmatwania?",
    "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"004\")"
   },
   {
@@ -615,7 +615,7 @@
    "key": "011to017_3",
    "order": 3,
    "sentiment": "funny",
-   "text": "A jak bym chciał spróbować ich lokalnego piwa to gdzie mam wypatrywać tych kolorowych kubraczków?",
+   "text": "A jak bym chciał spróbować ich lokalnego piwa[/] to gdzie mam wypatrywać tych kolorowych kubraczków?",
    "condition": null
   },
   {
