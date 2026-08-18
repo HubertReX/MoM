@@ -2,7 +2,7 @@
 aliases:
   - MISS_INFORMATION
 alternative:
-PL: "[[Miss Information|Bibliofilistka des Informacja]]"
+PL: "[[Bibliofilistka des Informacja]]"
 inspirations:
   - 
 location: "[[Quirkshire]]"
@@ -22,11 +22,11 @@ funny: 1
 
 ## 000
 
-* Witaj :exclamation:
+* Hello :exclamation:
 
-* [[#099-end]] 1😐: W sumie to nie mam pytań
+* [[#099-end]] 1😐: Actually, I have no questions
 
 ## 099-end
 [[#000]]
 
-* Do zobaczenia :exclamation:
+* See you around :exclamation:

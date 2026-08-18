@@ -34,7 +34,23 @@
    ],
    "description_runs": [
     {
-     "text": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a **Twój** miecz nie przestaje do **Ciebie** gadać. To chyba nie jest normalne...",
+     "text": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a ",
+     "bold": false
+    },
+    {
+     "text": "Twój",
+     "bold": true
+    },
+    {
+     "text": " miecz nie przestaje do ",
+     "bold": false
+    },
+    {
+     "text": "Ciebie",
+     "bold": true
+    },
+    {
+     "text": " gadać. To chyba nie jest normalne...",
      "bold": false
     }
    ],
@@ -107,7 +123,7 @@
    ],
    "description_runs": [
     {
-     "text": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. W ",
+     "text": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić.  W ",
      "bold": false
     },
     {
@@ -160,7 +176,15 @@
      "bold": true
     },
     {
-     "text": " to jedno, a zdjąć ją to zupełnie inna para kaloszy. Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie **bardzo** wysokie mniemanie.",
+     "text": " to jedno, a zdjąć ją to zupełnie inna para kaloszy.  Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie ",
+     "bold": false
+    },
+    {
+     "text": "bardzo",
+     "bold": true
+    },
+    {
+     "text": " wysokie mniemanie.",
      "bold": false
     }
    ],
@@ -300,7 +324,15 @@
    ],
    "description_runs": [
     {
-     "text": "Miasto jest gdzieś na północy. \"_Gdzieś_\" to stanowczo za mało, żeby ruszać w drogę.",
+     "text": "Miasto jest gdzieś na północy. \"",
+     "bold": false
+    },
+    {
+     "text": "Gdzieś",
+     "bold": true
+    },
+    {
+     "text": "\" to stanowczo za mało, żeby ruszać w drogę.",
      "bold": false
     }
    ],
@@ -344,11 +376,6 @@
   {
    "from": "Q01_S01_LEARN_ABOUT_CURSE",
    "to": "Q03_S00_LEARN_ABOUT_CURSE",
-   "kind": "requires"
-  },
-  {
-   "from": "Q01_S01_LEARN_ABOUT_CURSE",
-   "to": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
    "kind": "requires"
   },
   {

@@ -4,9 +4,9 @@ aliases:
 ---
 # What is going on?
 
-You woke up in a stable, in a village whose name you would rather not know, and your sword will not stop talking. Apparently that is not normal.
+You woke up in a stable, in a village whose name you would rather not know, and **your** sword will not stop talking to **you**. Apparently that is not normal...
 
-**Success**: The sword walked you back through the last day: landing here was not plain bad luck, it was a curse. The details are with the locals, and at this hour the locals are in the tavern.
+**Success**: The [[Clapback Sword|Sword]] walked **you** back through the last day: landing here was not **plain** bad luck, it was a [quest]curse[/]! The details are with the locals, and at this hour the locals are in the [[the Lost Cork Tavern|Tavern]].
 
 ## Notes
 

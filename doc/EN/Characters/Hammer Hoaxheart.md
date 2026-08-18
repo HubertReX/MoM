@@ -26,22 +26,22 @@ He is a blacksmith who claims that his swords can cut through shadows and that h
 
 ## 000
 
-* What do you want here? Who do you think you are?
+* What did you come here for? Who do **you** think you are?
 
-* [[#001]] 1😇: Easy, name's [[Malachi]], no trouble.
-* [[#001]] 2😡: Show some manners or I'll have the mayor revoke your blacksmithing license!
-* [[#001]] 3🧠: Depends on what you're offering - play your cards right and you'll profit.
+* [[#001]] 1😇: Easy, my name is [[Malachi]], I do not want trouble.
+* [[#001]] 2😡: Show some manners, man, or I will have the [char]mayor[/] revoke your _blacksmithing licence_!
+* [[#001]] 3🧠: Depends on what you have to offer - play this right and you will earn.
 
 ## 001
 
 * What do you want?
 
 * [[#002]] 1😐: Have you always been a blacksmith?
-* [[#003]] 2😐: How's business in this village?
-* [[#004]] 3😐: Do you have any customers from the surrounding villages?
-* [[#005]] 4😐: Can you forge magical items?
-* [[#006]] 5😐: Who's the smartest person around here?
-* [[#990-end]] 9😐: That's all, until next time.
+* [[#003]] 2😐: How is business treating **you** in this village?
+* [[#004]] 3😐: Do you get customers from the surrounding [loc]villages[/]?
+* [[#005]] 4😐: Can you forge **magical** items?
+* [[#006]] 5😐: Who is the smartest person around here?
+* [[#990-end]] 9😐: That is all, until next time.
 
 ## 002
 
@@ -53,59 +53,59 @@ He is a blacksmith who claims that his swords can cut through shadows and that h
 
 ## 007
 
-* Before that I don't remember.
+* And before that I do not remember.
 
-* [[#001]] 9😐: Thanks, that's enough for me
+* [[#001]] 9😐: Thanks, that is enough for me
 
 ## 003
 
 * Sometimes better, sometimes worse.
 
-* [[#008]] 1😢: The village looks poor, I'm sorry... Nobody here probably appreciates your work?
-* [[#008]] 2😡: Listen, if you're having a bad day, that's not my fault. I'm asking if lots of people buy from you, because that would be proof of your work's quality.
-* [[#008]] 3🧠: I can see some fine work here, but in this village nobody can probably tell a proper two-handed sword from a bastard sword?
+* [[#008]] 1😢: The village looks poor, my condolences... Nobody here appreciates **your** work, do they?
+* [[#008]] 2😡: Listen, if you are having a bad day, that is not my fault. I am asking whether many people buy from **you**, because that would be proof of **your** work's quality.
+* [[#008]] 3🧠: I can see fine work here, but in this [loc]village[/] nobody can tell a proper two-handed [item]sword[/] from a bastard one, can they?
 
 ## 008
 
-* The weapons I make here are unmatched in all of **Knaveshire**. Locals only buy sickles and horseshoes. Nothing but poverty around.
+* The [item]weapons[/] I make here are unmatched in all of [[Kingdom of Knaveshire|Knaveshire]]. The locals only buy sickles and horseshoes. Nothing but paupers around.
 
-* [[#001]] 9😐: Thanks, that's enough for me
+* [[#001]] 9😐: Thanks, that is enough for me
 
 ## 004
 
-* The other villages are just as poor. Only the arrogant fops from the city of **Porażkowo** buy weapons and armor.
+* The other [loc]villages[/] are just as poor. [item]Weapons[/] and [item]armour[/] are bought only by the conceited young gentlemen from the city of [[Quirkshire]].
 
 * [[#009]] 1😇: Then they must be good customers? Do you know anyone there?
-* [[#009]] 2😢: Those _grand gentlemen_ probably look down on you. Do you deal with them often?
-* [[#009]] 3😉: What would those _French poodles_ need good weapons for? Hunting the tavern keeper's chickens with crossbows?
+* [[#009]] 2😢: Those _grand gentlemen_ probably look down on **you**. Do you deal with them often?
+* [[#009]] 3😉: And what would those _French poodles_ need good [item]weapons[/] for? Hunting the [char]tavern keeper's[/] chickens with [item]crossbows[/]?
 
 ## 009
 
-* I don't like the city, I don't go there. Ask [[Barman Absinthrayner]] - he talks to all the newcomers.
+* I do not like the [loc]city[/], I do not go there. Ask [[Barman Absinthrayner]] - he talks to every newcomer.
 
-* [[#001]] 9😐: Thanks, that's enough for me
+* [[#001]] 9😐: Thanks, that is enough for me
 
 ## 005
 
-* My weapons are so good I don't need magic.
+* My [item]weapons[/] are so good that I have no need for **magic**.
 
-* [[#001]] 9😐: Thanks, that's enough for me
+* [[#001]] 9😐: Thanks, that is enough for me
 
 ## 006
 
-* Smart people don't stay here long. **Barman Absyntnent** isn't too bright, but he likes to talk. Just like you.
+* Anyone **smart** does not stay here long. [[Barman Absinthrayner]] is not too bright, but he likes to talk. Just like you.
 
 * [[#010]] 1😇: What, what? I talk a lot?
-* [[#010]] 2🧠: Are you saying you don't really enjoy conversation?
-* [[#010]] 3😉: Just like you!
+* [[#010]] 2🧠: Am I to understand that **you** do not much enjoy a conversation?
+* [[#010]] 3😉: Well, just like **you**!
 
 ## 010
 
 * ...
 
-* [[#001]] 9😐: Thanks, that's enough for me
+* [[#001]] 9😐: Thanks, that is enough for me
 
 ## 990-end
 [[#001]]
 
-* Goodbye
+* Farewell

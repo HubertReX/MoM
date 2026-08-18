@@ -1304,15 +1304,17 @@
     <span class="item"><span class="sw" style="background:#FFD700"></span> zaznaczenie / ramka aktywna</span>
   </div>
 
-  <div class="callout ok"><strong>Ustalone: zablokowane kroki (<code>○</code>) są widoczne.</strong>
-    Wewnątrz odblokowanego questu gracz widzi wszystkie kroki, także te niedostępne - lista nie skacze,
-    a gracz wie, ile go czeka. <strong>Dawkowanie fabuły to zadanie autora</strong>, nie UI: jeśli krok
-    zdradza za dużo, należy przeredagować jego tytuł albo przebudować strukturę questa - a nie chować go
-    przed graczem. Panel niczego nie ukrywa i nie musi znać intencji scenarzysty.</div>
+  <div class="callout ok"><strong>Ustalone (rewizja 2026-08-18, D-J1): zablokowany krok jest UKRYTY.</strong>
+    Odwrócenie pierwotnej decyzji. Kryterium to samo <code>Requires</code>: krok z pustym albo już
+    spełnionym <code>Requires</code> widać od razu, resztę dopiero, gdy się otworzy. Licznik przy
+    parasolu (<code>0 / 2</code>) i pasek postępu liczą <strong>wszystkie</strong> kroki, więc gracz
+    nadal wie, ile go czeka - nie wie tylko czego. Krok raz odblokowany albo ukończony nie znika.</div>
 
-  <div class="callout"><strong>Konsekwencja dla autora:</strong> tytuł kroku jest widoczny, zanim krok
-    stanie się dostępny - więc musi działać jako zapowiedź, nie jako spoiler. "Jak tam dotrzeć?" jest dobre,
-    "Wypij miksturę w kryjówce Sarkażmijki" byłoby złe. Warto to sprawdzać przy pisaniu treści (D15).</div>
+  <div class="callout"><strong>Dlaczego:</strong> w praktyce tytuł kroku to zapowiedź, której nie da się
+    odspoilerować redakcją. „Spotkaj się z Sarkażmijką" nazywa osobę, którą dopiero poprzedni krok ma
+    przedstawić - a wiersz, na którym i tak nie można działać, nie jest planem, tylko spoilerem
+    z markerem <code>○</code> obok. Dawkowanie fabuły zostaje przy autorze; panel po prostu przestał
+    mu je psuć.</div>
 
   <h3>Toasty - powiadomienia w rogu</h3>
   <p class="prose">Bez nowego mechanizmu: <code>scene.add_notification()</code>. Dźwięk dochodzi później

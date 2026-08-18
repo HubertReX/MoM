@@ -42,6 +42,10 @@ from . import bar
 _SCROLLBAR_W = 32
 _GAP = 8            # empty gutter between the content and the scrollbar column
 _STEP = 30          # one key-press / wheel-notch, ~one quest row (_ROW_H)
+#: O tyle keycap „przewiń" wystaje poza suwak w prawo. Ten sam chwyt, co klawisze
+#: w oknie dialogowym: kapsel siedzi na krawędzi ramki, a nie obok niej - dzięki
+#: temu czyta się jako element suwaka, a nie jako kolejna ikona w treści.
+_KEY_CAP_SHIFT = 10
 
 
 class ScrollView:
@@ -113,6 +117,8 @@ class ScrollView:
         surface: pygame.Surface,
         viewport: "pygame.Rect | tuple[int, int, int, int]",
         render: "Callable[[int, int], int]",
+        *,
+        key_cap: "pygame.Surface | None" = None,
     ) -> None:
         """Draw scrollable content clipped to ``viewport``.
 
@@ -120,6 +126,12 @@ class ScrollView:
         left at ``viewport.left``, wrapped to ``width`` (already narrowed to leave
         the scrollbar gutter), and returns the absolute y where it finished. The
         delta from ``top_y`` is the content height.
+
+        ``key_cap`` is the keycap sprite of the key that scrolls this view. It
+        rides the middle of the scrollbar (and only while the bar shows), which is
+        where the player is already looking when they wonder how to reach the rest
+        - a worded hint in the footer says the same thing in a place that has to
+        compete with the content underneath it.
         """
         viewport = pygame.Rect(viewport)
         self._viewport_h = viewport.height
@@ -136,9 +148,10 @@ class ScrollView:
 
         self._content_h = max(0, bottom - top_y)
         if self.overflows:
-            self._draw_scrollbar(surface, viewport)
+            self._draw_scrollbar(surface, viewport, key_cap)
 
-    def _draw_scrollbar(self, surface: pygame.Surface, viewport: pygame.Rect) -> None:
+    def _draw_scrollbar(self, surface: pygame.Surface, viewport: pygame.Rect,
+                        key_cap: "pygame.Surface | None" = None) -> None:
         """Shared beveled capsule scrollbar (``widgets/bar.py``) at the right edge."""
         x = viewport.right - self._scrollbar_w
         max_scroll = self.max_scroll
@@ -147,3 +160,8 @@ class ScrollView:
             frac_visible=viewport.height / self._content_h,
             frac_pos=self.scroll / max_scroll if max_scroll else 0.0,
         )
+        if key_cap is not None:
+            # Drawn last and outside the clip, so it sits on top of the thumb
+            # wherever the thumb happens to be.
+            cap = key_cap.get_rect(center=(x + self._scrollbar_w // 2, viewport.centery))
+            surface.blit(key_cap, cap.move(_KEY_CAP_SHIFT, 0).topleft)

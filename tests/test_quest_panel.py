@@ -6,7 +6,7 @@ Run from the project root:
 
 Drawing is checked by eye against the mock in section 6 of the design HTML; what
 is pinned here is the behaviour underneath: which rows exist, what the filters
-mean, and that a locked step stays visible.
+mean, and that a locked step is not listed at all.
 """
 
 from __future__ import annotations
@@ -29,6 +29,8 @@ from test_quest_entities import SAMPLE
 Q00 = "Q00_S00_WHAT_IS_GOING_ON"
 Q01_S00 = "Q01_S00_BREAK_THE_CURSE"
 Q03_S00 = "Q03_S00_LEARN_ABOUT_CURSE"
+Q01_S01 = "Q01_S01_LEARN_ABOUT_CURSE"
+Q01_S02 = "Q01_S02_MEET_MADAME_SARCASMIA"
 Q03_S03 = "Q03_S03_HOW_TO_GET_THERE"
 
 
@@ -95,7 +97,9 @@ def test_rows_nest_steps_under_their_thread() -> None:
     panel._rebuild()
 
     keys = [r.key for r in panel._rows]
-    assert_eq(len(keys), 8, f"every quest has a row: {keys}")
+    # 8 quests minus Q01_S02, whose `requires` (Q01_S01) is not done — see
+    # test_locked_steps_are_hidden
+    assert_eq(len(keys), 7, f"every unlocked quest has a row: {keys}")
 
     # a step is never a top-level row; it sits under its thread
     idx_thread = keys.index(Q03_S00)
@@ -106,22 +110,34 @@ def test_rows_nest_steps_under_their_thread() -> None:
     assert_true(panel._rows[idx_thread].is_thread, "the umbrella is marked as a thread")
 
 
-def test_locked_steps_stay_visible() -> None:
-    """Settled in the design: the panel hides nothing.
+def test_locked_steps_are_hidden() -> None:
+    """D-J1: a step the player cannot work on yet is not listed.
 
-    Pacing the story is the author's job — a step that gives too much away gets
-    rewritten, it does not get hidden. The panel does not know the writer's intent
-    and must not pretend to.
+    Reversal of the original rule ("the panel hides nothing"). A row nobody can
+    act on is not a plan, it is a spoiler with a marker next to it: "Spotkaj się
+    z Sarkażmijką" named the person before the step that earns the name. The gate
+    is `requires` alone — an empty or already-satisfied one shows the step at once.
     """
     panel = _panel()
     panel.filter_idx = 2
     panel._rebuild()
 
-    # nothing is done, so every step of the curse thread is locked...
-    assert_eq(panel._state(Q00), "active", "the opening quest is available")
+    keys = [r.key for r in panel._rows]
+    assert_true(Q01_S02 not in keys, "a step whose requires is unmet is not listed")
+    # its sibling has no requires of its own, so it shows from the first frame -
+    # even though the thread above it is itself still locked
     assert_eq(panel._state(Q01_S00), "locked", "the curse thread is gated")
-    # ...and yet they all have rows
-    assert_true(Q03_S03 in [r.key for r in panel._rows], "a locked step is still listed")
+    assert_true(Q01_S01 in keys, "a step with an empty requires is listed anyway")
+    assert_true(Q03_S03 in keys, "so is every step of the second chain")
+
+
+def test_a_satisfied_requires_reveals_the_step() -> None:
+    """The hidden step appears the moment the step it waits on is done."""
+    panel = _panel(done={Q00, Q01_S01})
+    panel.filter_idx = 2
+    panel._rebuild()
+
+    assert_true(Q01_S02 in [r.key for r in panel._rows], "requires satisfied → the step is listed")
 
 
 def test_markers_follow_the_three_state_legend() -> None:
@@ -146,7 +162,9 @@ def test_filters() -> None:
 
     panel.filter_idx = 2  # all
     panel._rebuild()
-    assert_eq(len(panel._rows), 8, "everything, locked included")
+    # "all" is about the *threads* filter, not about the step gate: it drops the
+    # active/done split, it does not un-hide a step whose requires is unmet (D-J1).
+    assert_eq(len(panel._rows), 7, "every thread, and every step the player may see")
 
 
 def test_filter_cycling_wraps_and_resets_selection() -> None:
@@ -345,7 +363,8 @@ def test_a_tagged_title_renders_as_text_not_markup() -> None:
 def main() -> None:
     tests = [
         test_rows_nest_steps_under_their_thread,
-        test_locked_steps_stay_visible,
+        test_locked_steps_are_hidden,
+        test_a_satisfied_requires_reveals_the_step,
         test_markers_follow_the_three_state_legend,
         test_filters,
         test_filter_cycling_wraps_and_resets_selection,

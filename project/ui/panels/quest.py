@@ -4,10 +4,12 @@ Built to the mock in section 6 of ``doc/_attachements/quest-system-ssis-2026-07-
 — its coordinates, sizes and palette are the spec, not a suggestion.
 
 Two columns: threads on the left, details of the selected one on the right.
-Nothing here decides *what* the player may know: **locked steps stay visible**
-(the ``○`` rows). Pacing the story is the author's job — if a step title gives
-too much away it gets rewritten, it does not get hidden. The panel has no idea
-what the writer intended and should not pretend otherwise.
+**A locked step is not listed** (D-J1): a row the player cannot work on is not a
+plan, it is a spoiler with a marker next to it — "Spotkaj się z Sarkażmijką"
+named the person before the step that earns the name. The gate is `requires`
+alone, so a step with an empty (or already satisfied) `requires` shows the moment
+its thread does; nothing else is hidden, and a step never disappears once it has
+been unlocked or finished.
 
 i18n split (D3): panel furniture (WĄTKI, KROKI, NAGRODA) is UI text and comes from
 the TOML via ``_()``; quest titles and descriptions are *content* and come from
@@ -211,6 +213,21 @@ class QuestPanel(Widget):
             return False
         return self._unlocked(key)
 
+    def _step_visible(self, key: str) -> bool:
+        """Czy krok ma się w ogóle pojawić na liście (D-J1).
+
+        Kryterium to `requires`, nie „odblokowany": `is_unlocked` bramkuje też
+        rodzicem, a krok pod widocznym parasolem jest tak czy inaczej pod
+        odblokowanym parasolem - dokładanie tego warunku niczego by nie zmieniło
+        poza pierwszą klatką po ukończeniu wątku.
+
+        Ukończony krok zostaje widoczny bezwarunkowo: dziennik jest zapisem tego,
+        co się stało, a znikający ukończony krok czyta się jak utrata postępu.
+        """
+        if self._done(key):
+            return True
+        return all(self._done(required) for required in self._defs[key].requires)
+
     def _rebuild(self) -> None:
         """Flatten the quest graph into the visible list of rows."""
         defs = self._defs
@@ -221,9 +238,13 @@ class QuestPanel(Widget):
             if not self._thread_matches_filter(key):
                 continue
             children = children_of(defs, key)
+            visible = [child for child in children if self._step_visible(child)]
+            # `is_thread` follows the *declared* children, not the visible ones: a
+            # thread whose steps are all still locked is a thread with a caret and
+            # nothing under it, not a leaf that suddenly grows one later.
             rows.append(_Row(key, 0, bool(children)))
-            if children and key not in self.collapsed:
-                rows.extend(_Row(child, 1, False) for child in children)
+            if visible and key not in self.collapsed:
+                rows.extend(_Row(child, 1, False) for child in visible)
         self._rows = rows
         self.selected = max(0, min(self.selected, len(rows) - 1))
 
@@ -332,15 +353,6 @@ class QuestPanel(Widget):
             glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR,
             scale=1.0,
         )
-        # right side of the footer: the details-scroll hint, shown only while the
-        # selected quest is taller than the pane (design-system footer pattern).
-        if self._details_scroll.overflows:
-            keycap.render_hint(
-                surface, self.hud.icons, self._font(FONT_SIZE_SMALL), self._font(FONT_SIZE_SMALL),
-                _("quest.scroll_hint"), (_INNER_RIGHT, _FOOTER_Y + 18), _GREY,
-                align="right", glyph_color=theme.WHITE, shadow_color=PANEL_BG_COLOR,
-                scale=1.0,
-            )
 
     def _draw_header(self, surface: pygame.Surface) -> None:
         title = _("quest.journal")
@@ -497,9 +509,15 @@ class QuestPanel(Widget):
         # pane - that is what the ScrollView is for, so it is not a violation
         layout.check_inside(
             "QuestPanel(details)", viewport, self.rect.inflate(-2 * _INNER_PAD, -2 * _INNER_PAD))
+        # The scroll key is a keycap ON the scrollbar, not a worded hint in the
+        # footer: the footer row is already full of nav hints and the hint's text
+        # overlapped the reward chips underneath it. The cap only shows while the
+        # bar does, so a quest that fits says nothing at all.
         self._details_scroll.draw(
             surface, viewport,
             lambda top_y, width: self._render_details(surface, row, top_y, width),
+            key_cap=keycap.build_cap(
+                self.hud.icons, "Space", self._font(FONT_SIZE_SMALL), theme.WHITE),
         )
 
     def _render_details(self, surface: pygame.Surface, row: _Row, y: int, width: int) -> int:
@@ -526,9 +544,14 @@ class QuestPanel(Widget):
         if self._done(row.key):
             y = self._draw_result(surface, quest, y + 26, width)
 
+        # Same gate as the left column (D-J1): KROKI lists the steps the player can
+        # see, while the section itself (label, `0 / 2`, progress bar) is keyed to
+        # the *declared* steps - the counter is progress, not a table of contents,
+        # and an umbrella whose steps are all still locked must not lose its bar.
         children = children_of(self._defs, row.key)
         if children:
-            y = self._draw_steps(surface, row.key, children, y + 26, width, right)
+            visible = [child for child in children if self._step_visible(child)]
+            y = self._draw_steps(surface, row.key, visible, y + 26, width, right)
 
         return self._draw_rewards(surface, quest, y + 26, width, right)
 
@@ -544,8 +567,12 @@ class QuestPanel(Widget):
         """
         self._label(surface, _("quest.result"), (_RIGHT_X, y))
         y = self._content_y(y)  # shared vertical-rhythm gap under the label
+        # White, not the `done` green: the base colour is what an *untagged* run
+        # gets, and the author's own spans (`[loc]Tawernie[/loc]` is that same
+        # green) then vanish into it. Prose reads as prose and the tags read as
+        # tags only when the two are not the same colour.
         prose = self._rich_block(
-            get_msg(self._messages, quest.success), width, FONT_SIZE_SMALL, _DONE,
+            get_msg(self._messages, quest.success), width, FONT_SIZE_SMALL, _WHITE,
             max_lines=_MAX_RESULT_LINES,
         )
         surface.blit(prose, (_RIGHT_X, y))

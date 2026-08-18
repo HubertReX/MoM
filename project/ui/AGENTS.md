@@ -168,6 +168,14 @@ self._location_panel.draw(surface, surf, anchor="midtop", offset=(0, HUD_EDGE))
   nie do nagłówka. Wzorzec: linia `RULE` + wiersz `keycap.render_hint` (patrz
   `help.py` `_draw_footer`, `quest.py` stopka). Lewa strona = zamknięcie/akcje, prawa =
   hinty kontekstowe (np. `↑ / ↓ przewiń`, pokazywane tylko gdy jest co scrollować).
+- **Wyjątek: gdy panel przewija JEDEN klawisz, jego keycap nie idzie do stopki, tylko NA suwak.**
+  `ScrollView.draw(..., key_cap=...)` kładzie keycap na środku paska (lekko w prawo, okrakiem
+  na ramce) i tylko wtedy, gdy pasek się pokazuje. Napis w stopce mówił to samo w miejscu,
+  w którym nachodził na treść pod spodem (dziennik: hint zachodził na kafle nagród), a klawisz
+  jest odpowiedzią na pytanie „jak dojść do reszty?", które gracz zadaje sobie patrząc
+  na suwak. Wzorzec dokładnie ten sam, co klawisze na krawędzi okna dialogowego. Panel pomocy
+  zostaje przy stopce, bo przewija go PARA klawiszy (`↑`/`↓`) - dwa capy na pasku to już nie
+  etykieta, tylko drugi widget.
 - Dodatkowo scroll kółkiem myszy (obsługa w `game_ui.py`, celowo poza listą skrótów).
 
 ## Suwak i pasek postępu — jeden komponent `ui/widgets/bar.py`

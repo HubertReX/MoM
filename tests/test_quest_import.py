@@ -342,6 +342,74 @@ def test_notes_below_a_heading_are_not_the_players_business() -> None:
     assert_true("gracz nigdy nie zobaczy" not in description, "the notes stayed out")
 
 
+def test_markdown_emphasis_becomes_richtext() -> None:
+    """`**bold**` / `_italic_` reach the player as tags, not as asterisks.
+
+    The journal draws RichText markup and has no idea what an asterisk means, so
+    without this pass the author's `**Twój**` was printed with its stars.
+
+    `**` maps to `[shadow]`, not `[bold]`: MoM sets prose in a pixel font, where
+    pygame's synthetic bold is one pixel of stem and vanishes in a paragraph. The
+    drop shadow is what reads as weight here (and is what the dialogue importer
+    already does), so this assertion pins the tag, not the CSS name.
+    """
+    emphasised = Q00_PL.replace(
+        "Miecz gada. Miecz gada i nie zamierza przestać.",
+        "Miecz gada. **Twój** miecz gada i _nie_ zamierza przestać.",
+    ).replace(
+        "**Sukces**: No dobrze.",
+        "**Sukces**: No **dobrze**.",
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _full_vault(Path(tmp), **{"PL/Misje/Q00_S00 O co tu chodzi.md": emphasised})
+        messages, _ = import_quests(vault, ALL_KEYS)
+
+    description = messages["PL"][f"{MESSAGE_PREFIX}{Q00}_DESCRIPTION"]
+    assert_eq(
+        description,
+        "Miecz gada. [shadow]Twój[/shadow] miecz gada i [italic]nie[/italic] zamierza przestać.",
+        "both emphases converted",
+    )
+    assert_true("*" not in description, "no asterisk survives into the game")
+    assert_true(
+        "[shadow]dobrze[/shadow]" in messages["PL"][f"{MESSAGE_PREFIX}{Q00}_SUCCESS"],
+        "the Sukces line is converted too",
+    )
+
+
+def test_a_field_name_is_not_read_as_emphasis() -> None:
+    """`**Sukces**:` opens a field, and the emphasis pass must never see it.
+
+    Conversion runs on the *value*, after the line has been recognised as a field,
+    so the label cannot come out as `[bold]Sukces[/bold]:` prose.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        messages, quests = import_quests(_full_vault(Path(tmp)), ALL_KEYS)
+
+    assert_true(
+        "[shadow]" not in messages["PL"][f"{MESSAGE_PREFIX}{Q00}_DESCRIPTION"],
+        "a plain quest gains no tags",
+    )
+    assert_eq(quests[Q00]["rewards"][0]["value"], 50, "the fields still parsed")
+
+
+def test_a_blank_line_stays_a_paragraph_break() -> None:
+    """Two blocks of prose stay two blocks; a hard-wrapped one stays one."""
+    two_paragraphs = Q00_PL.replace(
+        "Miecz gada. Miecz gada i nie zamierza przestać.",
+        "Miecz gada.\n\nMiecz gada i nie\nzamierza przestać.",
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _full_vault(Path(tmp), **{"PL/Misje/Q00_S00 O co tu chodzi.md": two_paragraphs})
+        messages, _ = import_quests(vault, ALL_KEYS)
+
+    assert_eq(
+        messages["PL"][f"{MESSAGE_PREFIX}{Q00}_DESCRIPTION"],
+        "Miecz gada.\n\nMiecz gada i nie zamierza przestać.",
+        "blank line survives, the wrap inside a paragraph does not",
+    )
+
+
 def test_a_field_below_the_notes_heading_is_ignored() -> None:
     """It is ignored, but loudly — a silently dropped Reward is the bug class."""
     with_late_field = Q00_PL + "\n## Notatki\n\n**Nagroda**: `money=999`\n"
@@ -844,6 +912,9 @@ def main() -> None:
         test_two_umbrellas_in_one_chain_fail,
         test_a_key_that_is_not_qxx_syy_fails,
         test_notes_below_a_heading_are_not_the_players_business,
+        test_markdown_emphasis_becomes_richtext,
+        test_a_field_name_is_not_read_as_emphasis,
+        test_a_blank_line_stays_a_paragraph_break,
         test_a_field_below_the_notes_heading_is_ignored,
         test_wikilinks_in_a_test_become_keys,
         test_an_alias_link_and_a_name_link_are_the_same_edge,

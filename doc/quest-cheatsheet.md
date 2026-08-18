@@ -64,7 +64,7 @@ Wszystko od **pierwszego nagłówka `##`** w dół importer pomija. Tam trafiaj�
 
 **Tytuł** nie jest polem - to nagłówek `# H1` pliku.
 
-Poza tymi polami obowiązkowa jest też **proza opisu** - akapit, który nie jest linią `Pole:`. To on trafia do dziennika jako opis questa.
+Poza tymi polami obowiązkowa jest też **proza opisu** - akapit, który nie jest linią `Pole:`. To on trafia do dziennika jako opis questa. **Pusta linia rozdziela akapity** i przeżywa import (w dzienniku widać pustą linię); łamanie linii wewnątrz akapitu nie - zawijanie należy do panelu.
 
 **Tylko PL** (decyzja D2): logika questa mieszka w **PL**. To samo pole napisane w **EN** jest ignorowane z ostrzeżeniem - dzięki temu plik **EN** można bezpiecznie wygenerować LLM-em: najgorsze, co zrobi, to źle napisana proza, nigdy zepsuty quest.
 
@@ -202,6 +202,10 @@ Znacznikiem wprost pisze się dalej to, co **nie ma notatki**: istoty ze wspomni
 ## Znaczniki tekstu - MoM RichText
 
 Działają w `Tytuł`, w prozie opisu i w `Sukces`. W grze renderują się odpowiednim stylem, a w tooltipie grafu spłaszczają się do **pogrubienia**.
+
+Markdownowe wyróżnienia pisze się **po markdownowemu**: `**pogrubienie**` i `_kursywa_` importer sam zamienia na `[shadow]` i `[italic]` - tak samo, jak w dialogach. Znaczników wyróżnienia nie trzeba pisać ręcznie.
+
+`**` idzie na `[shadow]`, a nie na `[bold]`, bo font pikselowy nie ma prawdziwego pogrubienia: `[bold]` to jeden dodatkowy piksel grubości kreski i w akapicie go po prostu nie widać. Wyróżnia cień.
 
 | Rodzaj             | Znaczniki                                                                     |
 | ------------------ | ----------------------------------------------------------------------------- |

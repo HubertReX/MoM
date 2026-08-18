@@ -39,7 +39,7 @@ from settings import (
     _,
 )
 
-from .. import layout, theme
+from .. import keycap, layout, theme
 from ..widget import Widget
 from ..widgets.panel import Panel
 
@@ -368,8 +368,25 @@ class HUD(Widget):
         self._update_tracker_cache()
         if self._tracker_rt_surf is None:
             return 0
-        return self._tracker_panel.draw(surface, self._tracker_rt_surf,
-                                        pos=(HUD_EDGE, HUD_EDGE)).height
+        rect = self._tracker_panel.draw(surface, self._tracker_rt_surf,
+                                        pos=(HUD_EDGE, HUD_EDGE))
+        # Keycap J okrakiem na LEWEJ krawędzi pudełka - ten sam chwyt, co klawisze
+        # w oknie dialogowym: kapsel siedzi NA ramce, więc czyta się jako „ten
+        # panel ma klawisz", a nie jako kolejna ikona w treści. Wskaźnik mówi „idź
+        # tam", a jedyne, czego gracz o nim nie wie, to czym go otworzyć.
+        #
+        # Pozycja liczona z padu panelu, nie ze zgadniętego przesunięcia: prawa
+        # krawędź capa ma stanąć jeden klik siatki (4 px) PRZED treścią, więc cap
+        # nigdy nie dotknie pierwszej litery, choćby pad się zmienił. Reszta capa
+        # wychodzi na ramkę i poza nią - pudełko stoi HUD_EDGE od brzegu ekranu,
+        # więc jest gdzie wyjść, ale nie na tyle, żeby wyjechać poza ekran.
+        cap = keycap.build_cap(
+            self.icons, "J", theme.get_font(FONT_SIZE_SMALL), theme.WHITE)
+        if cap is not None:
+            cap_right = rect.left + self._tracker_panel.pad[0] - 4
+            surface.blit(cap, (cap_right - cap.get_width(),
+                               rect.centery - cap.get_height() // 2))
+        return rect.height
 
     #############################################################################################################
     # MARK: hotbar

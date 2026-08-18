@@ -41,7 +41,11 @@ because subquests cannot fit in YAML)::
 
 Anything that is not a ``**Field**:`` line is prose and becomes the quest
 description. Field names accept PL or EN spelling (``Sukces``/``Success``), so
-the EN file reads naturally.
+the EN file reads naturally. Prose keeps its paragraphs (a blank line between
+two blocks survives as ``\n\n``) and its inline Markdown emphasis: ``**bold**``
+and ``_italic_`` become the RichText spans the panel draws, exactly as in the
+dialogue importer (``**bold**`` maps to ``[shadow]``, the only emphasis the pixel
+font actually shows). Without that pass the player read the asterisks.
 
 **Machine-readable values are wrapped in backticks** so Obsidian renders them as
 code rather than prose, and entity references inside them are written as real
@@ -167,6 +171,54 @@ _MACHINE_FIELDS = frozenset({"completion", "test", "requires", "progress", "rewa
 # Fields whose value is an engine expression: backticks come off, wikilinks
 # become the keys they point at.
 _EXPRESSION_FIELDS = frozenset({"completion", "test", "progress", "reward"})
+
+# --- inline Markdown -> RichText ------------------------------------------
+# Prose is authored in Obsidian, so emphasis is written the Markdown way. The
+# panel draws RichText markup and has no idea what an asterisk means, so the
+# author's `**Twój**` reached the player *with the asterisks*. Same conversion
+# the dialogue importer does (`dialog.markdown_importer._convert_text`), tag for
+# tag - including `**bold**` -> `[shadow]`.
+#
+# **Why not `[bold]`.** MoM sets prose in a pixel font (`font_pixel.ttf`), where
+# `set_bold` is pygame's synthetic emboldening: one extra pixel of stem. Measured
+# at FONT_SIZE_SMALL it widens "zwykly Twoj" from 154px to 165px and is invisible
+# in a paragraph - the whole block just reads slightly uneven. The drop shadow is
+# what carries weight in this font, which is why the dialogue importer picked it
+# first. Emphasis has to be *seen*; matching the CSS name is worth nothing.
+_MD_BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
+# `_x_` only between non-word characters, so a config key (`Q00_S00_WHAT`) or a
+# snake_case reward category is never mistaken for emphasis.
+_MD_ITALIC_RE = re.compile(r"(?<!\w)_(?!\s)([^_]+)_(?!\w)")
+
+
+def _convert_emphasis(text: str) -> str:
+    """Turn Markdown ``**bold**`` / ``_italic_`` into RichText tags."""
+    text = _MD_BOLD_RE.sub(r"[shadow]\1[/shadow]", text)
+    return _MD_ITALIC_RE.sub(r"[italic]\1[/italic]", text)
+
+
+def _join_prose(lines: list[str]) -> str:
+    """Join description lines into paragraphs separated by a blank line.
+
+    A hard-wrapped paragraph is one paragraph: the lines inside it join with a
+    space (wrapping belongs to the renderer, not to the file). A blank line in
+    the source is the author separating two blocks, and it survives as ``\n\n``
+    — the panel's RichText renders that as the empty line it looks like. Joining
+    everything with a space, as this used to, silently glued two paragraphs of
+    `Q01_S02` into one wall of text.
+    """
+    paragraphs: list[str] = []
+    current: list[str] = []
+    for line in lines:
+        if line:
+            current.append(line)
+        elif current:
+            paragraphs.append(" ".join(current))
+            current = []
+    if current:
+        paragraphs.append(" ".join(current))
+    return "\n\n".join(paragraphs)
+
 
 _REWARD_RE = re.compile(r"^(?P<category>[a-z_]+)\s*=\s*(?P<value>.+)$")
 # `sentiment=10 @BARMAN_ABSINTHRAYNER` — the NPC a sentiment reward applies to
@@ -348,7 +400,10 @@ def _parse_file(path: Path, index: dict[str, str], *, machine_fields: bool) -> _
             _apply_field(quest, field_match, path, line_no, index, machine_fields=machine_fields)
             continue
 
-        if line:
+        # A blank line is data: it is the author's paragraph break (see
+        # `_join_prose`). Leading blanks - between the H1 and the first sentence -
+        # are not, so they are dropped rather than opening an empty paragraph.
+        if line or quest.description:
             quest.description.append(line)
 
     if not quest.title:
@@ -537,12 +592,17 @@ def import_quest(
     success_key = f"{MESSAGE_PREFIX}{key}_SUCCESS"
 
     # Prose is where the player meets an entity, so a wikilink becomes the
-    # RichText span the game colours (`[char]`, `[loc]`, `[item]`).
+    # RichText span the game colours (`[char]`, `[loc]`, `[item]`). Emphasis is
+    # converted *before* the links, while the text is still plain Markdown: after
+    # `render_links` the string is full of `[tag]` spans that an emphasis regex
+    # has no business walking into.
     messages: dict[str, dict[str, str]] = {
         lang: {
-            name_key: render_links(quest.title, vault, lang),
-            description_key: render_links(" ".join(quest.description), vault, lang),
-            success_key: render_links(quest.success, vault, lang),
+            name_key: render_links(_convert_emphasis(quest.title), vault, lang),
+            description_key: render_links(
+                _convert_emphasis(_join_prose(quest.description)), vault, lang
+            ),
+            success_key: render_links(_convert_emphasis(quest.success), vault, lang),
         }
         for lang, quest in (("PL", pl_quest), ("EN", en_quest))
     }
