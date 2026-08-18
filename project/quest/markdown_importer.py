@@ -37,7 +37,7 @@ because subquests cannot fit in YAML)::
     **Completion**: `test`
     **Test**: `visited(`[[Zielarka Zmora#014|Zielarka#014]]`)`
     **Sukces**: Puzzlemint wie o klątwach więcej, niż chciałby przyznać.
-    **Nagroda**: `money=50`
+    **Nagroda**: `add_money(50)`
 
 Anything that is not a ``**Field**:`` line is prose and becomes the quest
 description. Field names accept PL or EN spelling (``Sukces``/``Success``), so
@@ -91,6 +91,7 @@ from dialog.conditions import (
     validate_condition,
     validate_number,
 )
+from dialog.effects import EffectError, EffectScope, parse_effect
 from dialog.vault_links import (
     WIKI_RE as _WIKI_RE,
     VaultIndex,
@@ -220,9 +221,22 @@ def _join_prose(lines: list[str]) -> str:
     return "\n\n".join(paragraphs)
 
 
-_REWARD_RE = re.compile(r"^(?P<category>[a-z_]+)\s*=\s*(?P<value>.+)$")
-# `sentiment=10 @BARMAN_ABSINTHRAYNER` — the NPC a sentiment reward applies to
-_REWARD_TARGET_RE = re.compile(r"\s*@(?P<target>[A-Z][A-Z0-9_]*)\s*$")
+# stary zapis nagrody (`money=50`, `sentiment=10 @BARMAN`) - już nieobsługiwany,
+# rozpoznawany po to, żeby import powiedział, na co go zamienić
+_LEGACY_REWARD_RE = re.compile(r"^(?P<category>[a-z_]+)\s*=\s*(?P<value>.+)$")
+
+# czasownik efektu -> kategoria `QuestRewardCategory`. Nagroda daje, a nie
+# zabiera, więc `remove_money` czy `lose_health` tu nie stoją - `dialog.effects`
+# odrzuca je zasięgiem, wskazując, co wolno napisać.
+_REWARD_CATEGORIES: dict[str, str] = {
+    "add_money": "money",
+    "add_n_items": "items",
+    "restore_health": "health",
+    "raise_max_health": "max_health",
+    "raise_damage": "damage",
+    "raise_max_items": "max_items",
+    "shift_sentiment_of": "sentiment",
+}
 
 
 @dataclass(slots=True)
@@ -532,39 +546,34 @@ def _parse_progress(value: str, path: Path, line_no: int) -> tuple[str, int]:
 
 
 def _parse_reward(value: str, path: Path, line_no: int) -> dict[str, Any]:
-    """``money=50``, ``items=MERMAIDS_TEAR, PHOENIX_FEATHER``, ``sentiment=10 @BARMAN``."""
-    match = _REWARD_RE.match(value)
-    if not match:
+    """``add_money(50)``, ``add_n_items(2,"MERMAIDS_TEAR")``, ``shift_sentiment_of("BARMAN",10)``.
+
+    Wchodzi wywołanie już po :func:`_expand_expression` (bez backquote'ów,
+    wikilinki zamienione na klucze) - ta sama gramatyka, którą pisze się efekt
+    węzła dialogu, bo to ta sama rzecz: zmiana stanu gracza (:mod:`dialog.effects`).
+    """
+    legacy = _LEGACY_REWARD_RE.match(value)
+    if legacy:
         raise QuestImportError(
-            f"reward must read '<category>=<value>', got {value!r}",
+            f"reward {value!r} uses the old grammar; rewards are calls now, "
+            f"e.g. `add_money(50)`, `raise_max_health(20)` or "
+            f"`add_n_items(1,`[[ITEM]]`)`",
             file=str(path),
             line=line_no,
         )
-    category = match.group("category")
-    raw_value = match.group("value").strip()
-
-    if category == "items":
-        return {"category": "items", "items": [i.strip() for i in raw_value.split(",") if i.strip()]}
-
-    # `sentiment=10 @BARMAN_ABSINTHRAYNER` — a quest has no current NPC, so a
-    # sentiment reward has to name the one it means (Q-05).
-    target: str | None = None
-    target_match = _REWARD_TARGET_RE.search(raw_value)
-    if target_match:
-        target = target_match.group("target")
-        raw_value = raw_value[: target_match.start()].strip()
 
     try:
-        reward: dict[str, Any] = {"category": category, "value": int(raw_value)}
-    except ValueError:
-        raise QuestImportError(
-            f"reward {category!r} needs a whole number, got {raw_value!r}",
-            file=str(path),
-            line=line_no,
-        ) from None
+        effect = parse_effect(value, EffectScope.quest)
+    except EffectError as error:
+        raise QuestImportError(str(error), file=str(path), line=line_no) from error
 
-    if target:
-        reward["target"] = target
+    category = _REWARD_CATEGORIES[effect.name]
+    if category == "items":
+        return {"category": category, "items": list(effect.items)}
+
+    reward: dict[str, Any] = {"category": category, "value": effect.value}
+    if effect.target:
+        reward["target"] = effect.target
     return reward
 
 

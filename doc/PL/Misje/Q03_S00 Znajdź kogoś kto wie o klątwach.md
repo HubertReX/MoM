@@ -9,7 +9,7 @@ W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]k
 **Requires**: [[Q01_S01 Dowiedz się więcej o klątwie]]
 **Completion**: `all_subquests`
 **Success**: Wiesz już, **kto** się na tym zna, **gdzie** mieszka i **jak** tam trafić. Trzy odpowiedzi bez ani grama magii. To się nawet może udać.
-**Reward**: `max_health=10`
+**Reward**: `raise_max_health(10)`
 
 ## Notatki
 

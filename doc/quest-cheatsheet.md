@@ -30,7 +30,7 @@ Opis, który gracz zobaczy w dzienniku. Obsługuje znaczniki: [char]Kowal[/].
 **Completion**: `test`
 **Test**: `visited(`[[Barman Absyntnent#012|Barman#012]]`)`
 **Sukces**: Barman gada. Barman zawsze gada.
-**Nagroda**: `health=20`
+**Nagroda**: `restore_health(20)`
 
 ## Notatki
 
@@ -166,21 +166,23 @@ Parasole (`all_subquests`) dostają pasek **za darmo**, liczony z kroków - nie 
 
 Jedna linia `Nagroda:` per bonus dla gracza - **wszystkie są aplikowane**, nie tylko pierwsza.
 
-| Kategoria                | Znaczenie                                        | Przykład                               |
-| ------------------------ | ------------------------------------------------ | -------------------------------------- |
-| `money=nn`               | złoto                                            | `money=50`                             |
-| `items=KEY_1,KEY_2`      | przedmioty (po przecinku)                        | `items=MERMAIDS_TEAR, PHOENIX_FEATHER` |
-| `health=nn`              | leczy bieżące HP                                 | `health=20`                            |
-| `max_health=nn`          | podnosi max HP **i bieżące o tyle samo**         | `max_health=20`                        |
-| `damage=nn`              | zwiększa obrażenia zadawane przez gracza         | `damage=5`                             |
-| `max_items=nn`           | sloty w pasku (limit `MAX_HOTBAR_ITEMS_LIMIT=8`) | `max_items=7`                          |
-| `sentiment=nn @CHAR_KEY` | sympatia NPC - **wymaga `@NPC_KEY`**             | `sentiment=10 @BARMAN_ABSINTHRAYNER`   |
+| Zapis                         | Znaczenie                                                            | Przykład                                               |
+| ----------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ |
+| `add_money(nn)`               | złoto                                                                | `add_money(50)`                                        |
+| `add_n_items(nn, ITEM, …)`    | przedmioty - pierwszy argument to **krotność każdego** z nich        | `add_n_items(2,`[[Łza Syrenki]]`,`[[Pióro Feniksa]]`)` |
+| `restore_health(nn)`          | leczy bieżące HP                                                     | `restore_health(20)`                                   |
+| `raise_max_health(nn)`        | podnosi max HP **i bieżące o tyle samo**                             | `raise_max_health(20)`                                 |
+| `raise_damage(nn)`            | zwiększa obrażenia zadawane przez gracza                             | `raise_damage(5)`                                      |
+| `raise_max_items(nn)`         | sloty w pasku (limit `MAX_HOTBAR_ITEMS_LIMIT=8`)                     | `raise_max_items(7)`                                   |
+| `shift_sentiment_of(NPC, nn)` | sympatia NPC - **wymaga adresata**, bo quest nie ma bieżącej postaci | `shift_sentiment_of(`[[Barman Absyntnent]]`,10)`       |
+
+Nagroda **daje**, a nie zabiera, więc czasowniki odbierające (`remove_money`, `lose_health`, `remove_n_items`) są tu błędem importu - te mieszkają w dialogu, gdzie NPC może coś graczowi wziąć. Ta sama gramatyka opisuje jedno i drugie: to ten sam mechanizm (`dialog/effects.py`), a nazwy czasowników są nazwami metod `ResultSink` w kodzie.
 
 Odrzucane przy imporcie:
 
-- nagroda o wartości `0` (albo `items=` bez przedmiotów) - to kształt, który nigdy nie jest zamierzony,
-- `sentiment` bez `@NPC_KEY` - quest nie ma bieżącej postaci, więc nie byłoby komu polubić gracza,
-- `@NPC_KEY` przy czymkolwiek poza `sentiment`.
+- nagroda o wartości `0` (albo `add_n_items` bez przedmiotu) - to kształt, który nigdy nie jest zamierzony,
+- liczba ujemna przy czasowniku, który już mówi, w którą stronę idzie (`add_money(-50)`),
+- `shift_sentiment(10)` bez adresata - quest nie ma bieżącej postaci, więc nie byłoby komu polubić gracza; adresata podaje `shift_sentiment_of`.
 
 Etykiety nagród składa silnik gry - nie pisz wartości liczbowej nagrody w `Sukces:`. Dzięki temu przeważenie nagrody nie dotyka tłumaczeń.
 

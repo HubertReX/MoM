@@ -254,15 +254,23 @@ Węzły mogą mieć efekt uboczny (`NodeVisitResult`).  `dialog.result_sink` def
 `ResultSink` (Protocol) i bezimportowo rozdziela 7 kategorii na metody sinku;
 `result_sink_adapter.GameResultSink` mapuje je na systemy MoM:
 
-| Kategoria           | Metoda sinku     | Efekt w grze                                      |
-| ------------------- | ---------------- | ------------------------------------------------- |
-| `money_received`    | `add_money()`    | `player.model.money += amount`                    |
-| `money_returned`    | `remove_money()` | `player.model.money` z clamp do 0                 |
-| `items_received`    | `add_items()`    | `scene.create_item()` + `player.pick_up()`        |
-| `items_returned`    | `remove_items()` | usuwa/zmniejsza stack z `player.items`            |
-| `health_restored`   | `restore_health()` | `player.model.health` z clamp do `max_health`   |
-| `health_lost`       | `lose_health()`  | `player.model.health` z clamp do 0                |
-| `sentiment_shift`   | `shift_sentiment()` | `npc.sentiment` z clamp do 0–100               |
+| Zapis w vaulcie                         | Kategoria         | Metoda sinku        | Efekt w grze                                    |
+| --------------------------------------- | ----------------- | ------------------- | ----------------------------------------------- |
+| ``[`add_money(50)`]``                    | `money_received`  | `add_money()`       | `player.model.money += amount`                  |
+| ``[`remove_money(50)`]``                 | `money_returned`  | `remove_money()`    | `player.model.money` z clamp do 0               |
+| ``[`add_n_items(1,`[[ITEM]]`)`]``        | `items_received`  | `add_items()`       | `scene.create_item()` + `player.pick_up()`      |
+| ``[`remove_n_items(1,`[[ITEM]]`)`]``     | `items_returned`  | `remove_items()`    | usuwa/zmniejsza stack z `player.items`          |
+| ``[`restore_health(20)`]``               | `health_restored` | `restore_health()`  | `player.model.health` z clamp do `max_health`   |
+| ``[`lose_health(20)`]``                  | `health_lost`     | `lose_health()`     | `player.model.health` z clamp do 0              |
+| ``[`shift_sentiment(-10)`]``             | `sentiment_shift` | `shift_sentiment()` | `npc.sentiment` z clamp do 0–100                |
+
+Efekt pisze się **wywołaniem o nazwie metody sinku**, na początku tekstu węzła -
+tą samą gramatyką, co warunki i nagrody questów: liczba, encje jako wikilinki,
+całość w backquote'ach (`dialog/effects.py`, `dialog/vault_links.py`). Pierwszy
+argument `add_n_items`/`remove_n_items` to **krotność każdego** z wymienionych
+przedmiotów: `remove_n_items(1, A, B, C)` bierze po jednej sztuce, a
+`remove_n_items(5, A)` pięć sztuk `A`. Stary zapis kategorii (`[ITEMS+KEY]`,
+`[SENTIMENT-10]`) jest **błędem importu**, który mówi, na co go zamienić.
 
 `visit_node(node, sink)` aplikuje efekt **dokładnie raz** — `DialogNode.visited`
 chroni przed dublem przy ponownym otwarciu dialogu lub cofnięciu się do węzła.

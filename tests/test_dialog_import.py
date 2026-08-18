@@ -22,6 +22,7 @@ from dialog import init_dialog
 from dialog.markdown_importer import (
     DialogImportError,
     _NODE_HEADING_RE,
+    _extract_result,
     _OPTION_RE,
     _RESUME_LINK_RE,
     _convert_text,
@@ -246,6 +247,81 @@ def test_result_parsing() -> None:
     ]
     assert_eq(result["category"], "sentiment_shift", "result category")
     assert_eq(result["value"], -10, "sentiment shift value")
+
+
+def test_item_effect_parsing() -> None:
+    """`add_n_items` / `remove_n_items` w vaulcie -> kategoria i lista kluczy."""
+    items = load_valid_items(ITEMS_CSV)
+    cfg = import_character_dialog(VAULT, "Madame Sarcasmia", valid_items=items)[1]
+    results = cfg["MADAME_SARCASMIA"]["NODE_RESULTS"]
+
+    taken = results["MADAME_SARCASMIA_NR_012"]
+    assert_eq(taken["category"], "items_returned", "taking items")
+    assert_eq(
+        taken["items"],
+        ["GNOMES_WHISKER", "MERMAIDS_TEAR", "PHOENIX_FEATHER"],
+        "one of each, in the order written",
+    )
+
+    given = results["MADAME_SARCASMIA_NR_020"]
+    assert_eq(given["category"], "items_received", "giving an item")
+    assert_eq(given["items"], ["POTION_CURSE_NO_MORE"], "the potion")
+
+
+def test_the_effect_never_reaches_the_player() -> None:
+    """Efekt jest instrukcją, nie kwestią - w tekście węzła nie może zostać."""
+    items = load_valid_items(ITEMS_CSV)
+    messages = import_character_dialog(VAULT, "Madame Sarcasmia", valid_items=items)[0]
+    for lang in ("PL", "EN"):
+        text = messages[lang]["M_MADAME_SARCASMIA_DN_020"]
+        assert_true(
+            "add_n_items" not in text and not text.startswith("["),
+            f"{lang} node text starts with prose, not the effect: {text[:40]!r}",
+        )
+
+
+def test_an_item_effect_expands_the_count() -> None:
+    """`add_n_items(3, ...)` to trzy klucze - tyle, ile sztuk dostaje gracz."""
+    _, result, text = _extract_result(
+        '[`add_n_items(3,"fish")`] Bierz i nie pytaj.',
+        "007",
+        "BARMAN_ABSINTHRAYNER",
+        {"fish"},
+        {},
+    )
+    assert_eq(result["items"], ["fish"] * 3, "three fish")
+    assert_eq(result["category"], "items_received", "category")
+    assert_eq(text, "Bierz i nie pytaj.", "prefix stripped from the player text")
+
+
+def test_the_old_result_grammar_is_refused() -> None:
+    """`[ITEMS+KEY]` / `[SENTIMENT-10]` już nie działa - i import mówi, na co zamienić."""
+    for prefix in ("[ITEMS+POTION_CURSE_NO_MORE] Masz.", "[SENTIMENT-10]Jak śmiesz!"):
+        try:
+            _extract_result(prefix, "012", "MADAME_SARCASMIA", None, {}, file="x.md", line=9)
+        except DialogImportError as error:
+            assert_true("old result grammar" in str(error), f"names the problem: {error}")
+            assert_true("add_n_items" in str(error), f"shows the new spelling: {error}")
+            continue
+        raise AssertionError(f"expected a DialogImportError for {prefix!r}")
+
+
+def test_an_effect_link_to_nothing_fails() -> None:
+    """Literówka w nazwie przedmiotu ginie przy imporcie, nie w rozmowie."""
+    try:
+        _extract_result(
+            "[`add_n_items(1,`[[Eliksir anty-zaklecia]]`)`] Masz.",
+            "020",
+            "MADAME_SARCASMIA",
+            None,
+            {"POTION_CURSE_NO_MORE": "POTION_CURSE_NO_MORE"},
+            file="x.md",
+            line=9,
+        )
+    except DialogImportError as error:
+        assert_true("Eliksir anty-zaklecia" in str(error), f"names the offender: {error}")
+        return
+    raise AssertionError("expected a DialogImportError for an unresolvable item link")
 
 
 def test_import_multiple_characters() -> None:
@@ -524,6 +600,9 @@ def main() -> None:
             ("test_condition_wikilinks_are_expanded", test_condition_wikilinks_are_expanded),
             ("test_a_condition_link_to_nothing_fails", test_a_condition_link_to_nothing_fails),
             ("test_result_parsing", test_result_parsing),
+            ("test_item_effect_parsing", test_item_effect_parsing),
+            ("test_the_effect_never_reaches_the_player",
+             test_the_effect_never_reaches_the_player),
             ("test_import_multiple_characters", test_import_multiple_characters),
             ("test_missing_file_raises", test_missing_file_raises),
         ]
@@ -531,6 +610,9 @@ def main() -> None:
         print("  SKIP  doc/ vault not found, skipping vault-dependent tests")
 
     self_contained_tests = [
+        ("test_an_item_effect_expands_the_count", test_an_item_effect_expands_the_count),
+        ("test_the_old_result_grammar_is_refused", test_the_old_result_grammar_is_refused),
+        ("test_an_effect_link_to_nothing_fails", test_an_effect_link_to_nothing_fails),
         ("test_parse_frontmatter", test_parse_frontmatter),
         ("test_make_name_resolver_pl", test_make_name_resolver_pl),
         ("test_make_name_resolver_en", test_make_name_resolver_en),

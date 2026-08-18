@@ -211,7 +211,7 @@ Importer automatycznie stripuje `-end` z targetu (`#005-end` → node key `005`)
 
 `has_item()` w `context_adapter.py` porównuje `item.name` (`ItemSprite.name` = config key, np. `"MERMAIDS_TEAR"`) z kluczem z warunku. **Nie** porównuje `item.model.name` (display name jak `"Mermaid's tear"`) — to był bug (fix 2026-07-08).
 
-Node #012 Madame Sarcasmii używa `[ITEMS-GNOMES_WHISKER,MERMAIDS_TEAR,PHOENIX_FEATHER]` → `_remove_one_item()` też używa `item.name`, więc poprawnie usuwa przedmioty z inventory po spełnieniu questu.
+Node #012 Madame Sarcasmii używa `[`remove_n_items(1,`[[GNOMES_WHISKER]]`,`[[MERMAIDS_TEAR]]`,`[[PHOENIX_FEATHER]]`)`]` → `_remove_one_item()` też używa `item.name`, więc poprawnie usuwa przedmioty z inventory po spełnieniu questu.
 
 ## Interaktywne grafy dialogów (diagnostyka)
 

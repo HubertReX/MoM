@@ -9,8 +9,8 @@ Klątwa nie zdejmie się sama. Ktoś pewnie wie jak to działa, ktoś pewnie umi
 **Requires**: [[Q00_S00 O co tu chodzi]]
 **Completion**: `all_subquests`
 **Success**: Klątwa złamana! [[Miecz Ciętej-riposty|Miecz]] oczywiście twierdzi, że to była głównie jego zasługa.
-**Reward**: `max_health=20`
-**Reward**: `damage=5`
+**Reward**: `raise_max_health(20)`
+**Reward**: `raise_damage(5)`
 
 ## Notatki
 

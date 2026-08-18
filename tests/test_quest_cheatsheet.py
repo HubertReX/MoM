@@ -24,7 +24,7 @@ os.environ["SDL_AUDIODRIVER"] = "dummy"
 from dialog.conditions import _QUEST_PREDICATES
 from gen_quest_cheatsheet import DEFAULT_OUT, render
 from quest.entities import CompletionMode, QuestRewardCategory
-from quest.markdown_importer import _FIELD_ALIASES, _MACHINE_FIELDS
+from quest.markdown_importer import _FIELD_ALIASES, _MACHINE_FIELDS, _REWARD_CATEGORIES
 from ui.text.markup import TAG_STYLES
 
 
@@ -47,11 +47,14 @@ def test_every_completion_mode_is_documented() -> None:
 def test_every_reward_category_is_documented() -> None:
     """A category nobody documents is a category nobody uses.
 
-    The reward table leads with the syntax (``money=nn``), not the bare name, so
-    the category value appears as the start of a code span rather than alone.
+    The reward table leads with the **call** an author writes
+    (``add_money(nn)``), not with the category name, so what has to reach the
+    page is the verb the importer maps onto that category.
     """
+    verb_of = {category: verb for verb, category in _REWARD_CATEGORIES.items()}
     for category in QuestRewardCategory:
-        assert_true(f"`{category.value}" in PAGE, f"reward {category.value} is on the page")
+        verb = verb_of[category.value]
+        assert_true(f"`{verb}(" in PAGE, f"reward {category.value} (`{verb}`) is on the page")
 
 
 def test_every_quest_predicate_is_documented() -> None:

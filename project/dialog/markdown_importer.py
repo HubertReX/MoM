@@ -25,6 +25,21 @@ file in ``PL/Postacie/`` is discovered and imported (see
 yet (work-in-progress) are skipped with a warning. A newly imported
 character with no ``characters.csv`` row yet is appended automatically.
 
+A node can carry an **effect**, written at the start of its text as a call named
+after the ``ResultSink`` method it ends up in (:mod:`dialog.effects`), in the same
+spelling conditions and quest rewards use - backticks off, entities as wikilinks
+(:mod:`dialog.vault_links`)::
+
+    ## 020
+
+    * [`add_n_items(1,`[[Eliksir anty-zaklęcia]]`)`] Weź tę miksturę…
+    * [`shift_sentiment(-10)`]Jak śmiesz!
+
+The first argument of ``add_n_items``/``remove_n_items`` is **how many of each**
+item listed, so ``remove_n_items(1, A, B, C)`` takes one of each and
+``remove_n_items(5, A)`` takes five of ``A``. The effect is stripped from the text
+the player reads and becomes a ``NODE_RESULTS`` entry.
+
 Output shape matches ``dialog.graph.init_dialog`` expectations:
 
 .. code-block:: python
@@ -66,6 +81,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
 from dialog.conditions import ConditionError, ConditionScope, validate_condition
+from dialog.effects import EffectError, EffectScope, parse_effect
 from dialog.vault_links import (
     VaultIndex,
     VaultLinkError,
@@ -169,9 +185,18 @@ _RESUME_LINK_RE = re.compile(
 # bullet that carries node text: "* Some text..."
 _NODE_TEXT_RE = re.compile(r"^\*\s+(?P<text>.+)$")
 
-# result prefix embedded at the start of node text: [SENTIMENT-10], [MONEY+5]
+# efekt węzła, wpisany na początku jego tekstu jako wywołanie w backquote'ach:
+# [`shift_sentiment(-10)`], [`add_n_items(1,`[[Eliksir anty-zaklęcia]]`)`].
+# Wywołanie kończy się na pierwszym `)`, więc `]]` zamykające wikilink nie ma
+# szans zostać wzięte za koniec efektu.
 _RESULT_RE = re.compile(
-    r"^\[(?P<category>[A-Z]+)(?P<sign>[+-])(?P<rest>.+?)\]"
+    r"^\[\s*`?\s*(?P<call>[a-z_][a-z_0-9]*\s*\([^)]*\))\s*`?\s*\]"
+)
+
+# stary zapis kategorii - już nieobsługiwany, rozpoznawany wyłącznie po to, żeby
+# import powiedział, na co go zamienić (zamiast wziąć go za zwykłą prozę)
+_LEGACY_RESULT_RE = re.compile(
+    r"^\[(?P<category>[A-Z]+)(?P<sign>[+-])(?P<rest>[^\]]+?)\]"
 )
 
 # condition conversion: character.sentiment -> sentiment
@@ -480,7 +505,8 @@ def import_character_dialog(
             (or legacy flat ``PL``/``EN``) subdirectories.
         character_name: canonical character name, e.g. ``"Hammer Hoaxheart"``.
         valid_items: optional set of item keys (from ``items.csv``) used to
-            validate item names referenced by ``[ITEMS+...]`` node results.
+            validate item names referenced by ``add_n_items`` / ``remove_n_items``
+            node effects.
         characters: optional dict of character config data (key -> props)
             used to resolve ``[[...]]`` wikilinks to entity names.
 
@@ -541,11 +567,13 @@ def import_character_dialog(
             start_node_set = True
 
         node_message_key = f"M_{character_key}_DN_{node_key}"
-        result_key, pl_text = _extract_result(
-            pl_node.text, node_key, character_key, valid_items
+        result_key, result, pl_text = _extract_result(
+            pl_node.text, node_key, character_key, valid_items, index,
+            file=str(pl_path), line=pl_node.line_no,
         )
-        _, en_text = _extract_result(
-            en_node.text, node_key, character_key, valid_items
+        *_, en_text = _extract_result(
+            en_node.text, node_key, character_key, valid_items, index,
+            file=str(en_path), line=en_node.line_no,
         )
 
         messages["PL"][node_message_key] = _convert_text(pl_text, resolve_pl)
@@ -560,16 +588,8 @@ def import_character_dialog(
             node_config["resume_node"] = pl_node.resume_node
         dialog_config[character_key]["DIALOG_NODES"][node_key] = node_config
 
-        if result_key:
-            dialog_config[character_key]["NODE_RESULTS"][result_key] = (
-                _build_result_dict(
-                    result_key,
-                    pl_node.text,
-                    node_key,
-                    character_key,
-                    valid_items,
-                )
-            )
+        if result_key and result is not None:
+            dialog_config[character_key]["NODE_RESULTS"][result_key] = result
 
         node_options: list[str] = []
         for pl_opt, en_opt in zip(pl_node.options, en_node.options):
@@ -1573,101 +1593,111 @@ def _extract_result(
     node_key: str,
     character_key: str,
     valid_items: set[str] | None,
-) -> tuple[str | None, str]:
-    """Return (result_key, remaining_text) for a node text.
+    index: dict[str, str] | None = None,
+    *,
+    file: str = "",
+    line: int = 0,
+) -> tuple[str | None, dict[str, Any] | None, str]:
+    """Zdejmij efekt z początku tekstu węzła.
 
-    If no result prefix is present, returns ``(None, text)``.
+    Zwraca ``(result_key, result_dict, reszta tekstu)``; bez efektu
+    ``(None, None, text)``. Wołane dla obu języków, ale liczy się tylko PL:
+    w EN efekt jest kopią, którą trzeba zdjąć z tekstu (D2 - logika mieszka w PL).
     """
+    legacy = _LEGACY_RESULT_RE.match(text)
+    if legacy:
+        raise DialogImportError(
+            f"node {node_key!r} uses the old result grammar "
+            f"[{legacy.group('category')}{legacy.group('sign')}"
+            f"{legacy.group('rest')}]; effects are calls now, e.g. "
+            f"[`add_money(50)`], [`shift_sentiment(-10)`] or "
+            f"[`add_n_items(1,`[[ITEM]]`)`]",
+            file=file,
+            line=line,
+        )
+
     match = _RESULT_RE.match(text)
     if not match:
-        return None, text
+        return None, None, text
 
     result_key = f"{character_key}_NR_{node_key}"
-    remaining = text[match.end() :].lstrip()
-    return result_key, remaining
+    remaining = text[match.end():].lstrip()
+    result = _build_result_dict(
+        match.group("call"), result_key, node_key, valid_items, index,
+        file=file, line=line,
+    )
+    return result_key, result, remaining
+
+
+# czasownik efektu -> kategoria `NodeVisitResultCategory` i pole, do którego
+# trafia liczba. Lista przedmiotów jedzie osobnym polem, więc kategorie
+# przedmiotowe liczby nie niosą.
+_NODE_RESULT_CATEGORIES: dict[str, tuple[str, str]] = {
+    "add_money": ("money_received", "money"),
+    "remove_money": ("money_returned", "money"),
+    "add_n_items": ("items_received", ""),
+    "remove_n_items": ("items_returned", ""),
+    "restore_health": ("health_restored", "health"),
+    "lose_health": ("health_lost", "health"),
+    "shift_sentiment": ("sentiment_shift", "value"),
+}
 
 
 def _build_result_dict(
+    call: str,
     result_key: str,
-    text: str,
     node_key: str,
-    character_key: str,
     valid_items: set[str] | None,
+    index: dict[str, str] | None = None,
+    *,
+    file: str = "",
+    line: int = 0,
 ) -> dict[str, Any]:
-    """Build the NODE_RESULTS entry from a node text result prefix."""
-    match = _RESULT_RE.match(text)
-    if not match:
-        raise DialogImportError(
-            f"internal error: no result prefix in node {node_key!r}"
-        )
+    """Wywołanie z tekstu węzła -> wpis ``NODE_RESULTS``."""
+    # bez `self_anchor`: efekt nazywa przedmiot albo postać, nigdy własnego węzła
+    try:
+        expression = expand_links(call, index or {}, label=f"effect of node {node_key!r}")
+    except VaultLinkError as error:
+        raise DialogImportError(str(error), file=file, line=line) from error
+    try:
+        effect = parse_effect(expression, EffectScope.dialog)
+    except EffectError as error:
+        raise DialogImportError(str(error), file=file, line=line) from error
 
-    category_text = match.group("category").upper()
-    sign = match.group("sign")
-    rest = match.group("rest")
-
+    category, number_field = _NODE_RESULT_CATEGORIES[effect.name]
+    # kolejność kluczy jak dotąd - `config.json` jest artefaktem, a artefakt bez
+    # potrzeby nie robi diffu
     base: dict[str, Any] = {"items": [], "money": 0, "health": 0, "value": 0}
-
-    if category_text == "MONEY":
-        base["category"] = (
-            "money_received" if sign == "+" else "money_returned"
-        )
-        base["money"] = _parse_result_number(rest, node_key, result_key)
-    elif category_text == "HEALTH":
-        base["category"] = (
-            "health_restored" if sign == "+" else "health_lost"
-        )
-        base["health"] = _parse_result_number(rest, node_key, result_key)
-    elif category_text == "SENTIMENT":
-        base["category"] = "sentiment_shift"
-        value = _parse_result_number(rest, node_key, result_key)
-        base["value"] = value if sign == "+" else -value
-    elif category_text == "ITEMS":
-        base["category"] = (
-            "items_received" if sign == "+" else "items_returned"
-        )
-        base["items"] = _parse_result_items(
-            rest, node_key, result_key, valid_items
-        )
+    if number_field:
+        base[number_field] = effect.value
     else:
-        raise DialogImportError(
-            f"unknown result category {category_text!r} in node {node_key!r}"
+        base["items"] = _validate_result_items(
+            effect.items, result_key, valid_items, file, line
         )
-
+    base["category"] = category
     return base
 
 
-def _parse_result_number(
-    rest: str, node_key: str, result_key: str
-) -> int:
-    number = rest.strip()
-    if not number.isdigit():
-        raise DialogImportError(
-            f"result {result_key!r} for node {node_key!r} expects a number, "
-            f"got {number!r}"
-        )
-    return int(number)
-
-
-def _parse_result_items(
-    rest: str,
-    node_key: str,
+def _validate_result_items(
+    items: list[str],
     result_key: str,
     valid_items: set[str] | None,
+    file: str,
+    line: int,
 ) -> list[str]:
-    # strip optional surrounding parentheses or quotes, then split
-    cleaned = rest.strip()
-    if cleaned.startswith("(") and cleaned.endswith(")"):
-        cleaned = cleaned[1:-1]
-    items = [
-        item.strip().strip('"').strip("'")
-        for item in cleaned.split(",")
-        if item.strip()
-    ]
+    """Klucze przedmiotów muszą stać w ``items.csv``.
+
+    Wikilink już się rozwinął, więc notatka istnieje - to sprawdza, czy encja
+    dojechała do configu gry (notatka bez wiersza w CSV jest przedmiotem,
+    którego gra nie umie stworzyć).
+    """
     if valid_items is not None:
         for item in items:
             if item not in valid_items:
                 raise DialogImportError(
-                    f"result {result_key!r} references unknown item {item!r}"
+                    f"result {result_key!r} references unknown item {item!r}",
+                    file=file,
+                    line=line,
                 )
     return items
 

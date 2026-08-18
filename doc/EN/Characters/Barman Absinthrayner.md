@@ -169,19 +169,19 @@ Sometimes folk get even worse after those [item]potions[/item]. If you are despe
 
 ## 014
 
-* [SENTIMENT-10]What:red_question: You want to seduce our village girls with **spells**?
+* [`shift_sentiment(-10)`]What:red_question: You want to seduce our village girls with **spells**?
 
 * [[#991-end]] 1😐: No, no, it is not like that...
 
 ## 015
 
-* [SENTIMENT-10]And what? You will want to cheat at cards? Or better yet, use **spells** to bewitch me during a trade! Oh you!:angry:
+* [`shift_sentiment(-10)`]And what? You will want to cheat at cards? Or better yet, use **spells** to bewitch me during a trade! Oh you!:angry:
 
 * [[#991-end]] 1😐: No, no, it is not like that...
 
 ## 016
 
-* [SENTIMENT-10]And what **disease** is it that you want to cure with **spells**? It must be some kind of **plague**! You have brought some filth into our village:red_exclamation:
+* [`shift_sentiment(-10)`]And what **disease** is it that you want to cure with **spells**? It must be some kind of **plague**! You have brought some filth into our village:red_exclamation:
 
 * [[#991-end]] 1😐: No, no, it is not like that...
 

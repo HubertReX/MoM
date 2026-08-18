@@ -37,7 +37,11 @@ from dialog.conditions import (  # noqa: E402
 from dialog.vault_links import KIND_BY_SUBDIR  # noqa: E402
 from md_tables import table  # noqa: E402
 from quest.entities import CompletionMode, QuestRewardCategory  # noqa: E402
-from quest.markdown_importer import _FIELD_ALIASES, _MACHINE_FIELDS  # noqa: E402
+from quest.markdown_importer import (  # noqa: E402
+    _FIELD_ALIASES,
+    _MACHINE_FIELDS,
+    _REWARD_CATEGORIES,
+)
 from settings import MAX_HOTBAR_ITEMS_LIMIT  # noqa: E402
 from ui.text.markup import TAG_STYLES  # noqa: E402
 
@@ -70,28 +74,36 @@ _PREDICATE_EXAMPLE: dict[str, str] = {
     "quest_done": 'quest_done("Q01_S01_LEARN_ABOUT_CURSE")',
 }
 
-# (składnia, znaczenie, przykład) - pierwsza kolumna pokazuje pełny kształt zapisu.
-_REWARD_DOC: dict[QuestRewardCategory, tuple[str, str, str]] = {
-    QuestRewardCategory.money: ("money=nn", "złoto", "money=50"),
+# (znaczenie, przykład). Sam zapis - czasownik i kształt argumentów - bierze się
+# z `_REWARD_CATEGORIES` importera, więc dopisanie kategorii bez opisu wywala
+# generator, a nie ściągawkę.
+_REWARD_DOC: dict[QuestRewardCategory, tuple[str, str]] = {
+    QuestRewardCategory.money: ("złoto", "`add_money(50)`"),
     QuestRewardCategory.items: (
-        "items=KEY_1,KEY_2", "przedmioty (po przecinku)", "items=MERMAIDS_TEAR, PHOENIX_FEATHER"
+        "przedmioty - pierwszy argument to **krotność każdego** z nich",
+        "`add_n_items(2,`[[Łza Syrenki]]`,`[[Pióro Feniksa]]`)`",
     ),
-    QuestRewardCategory.health: ("health=nn", "leczy bieżące HP", "health=20"),
+    QuestRewardCategory.health: ("leczy bieżące HP", "`restore_health(20)`"),
     QuestRewardCategory.max_health: (
-        "max_health=nn", "podnosi max HP **i bieżące o tyle samo**", "max_health=20"
+        "podnosi max HP **i bieżące o tyle samo**", "`raise_max_health(20)`"
     ),
     QuestRewardCategory.damage: (
-        "damage=nn", "zwiększa obrażenia zadawane przez gracza", "damage=5"
+        "zwiększa obrażenia zadawane przez gracza", "`raise_damage(5)`"
     ),
     QuestRewardCategory.max_items: (
-        "max_items=nn",
         f"sloty w pasku (limit `MAX_HOTBAR_ITEMS_LIMIT={MAX_HOTBAR_ITEMS_LIMIT}`)",
-        "max_items=7",
+        "`raise_max_items(7)`",
     ),
     QuestRewardCategory.sentiment: (
-        "sentiment=nn @CHAR_KEY", "sympatia NPC - **wymaga `@NPC_KEY`**",
-        "sentiment=10 @BARMAN_ABSINTHRAYNER",
+        "sympatia NPC - **wymaga adresata**, bo quest nie ma bieżącej postaci",
+        "`shift_sentiment_of(`[[Barman Absyntnent]]`,10)`",
     ),
+}
+
+# Kształt argumentów per czasownik - jedyne, czego nie widać w mapowaniu importera.
+_REWARD_SHAPE: dict[str, str] = {
+    "add_n_items": "add_n_items(nn, ITEM, …)",
+    "shift_sentiment_of": "shift_sentiment_of(NPC, nn)",
 }
 
 _COMPLETION_DOC: dict[CompletionMode, str] = {
@@ -147,11 +159,14 @@ def _predicates_table() -> str:
 
 
 def _rewards_table() -> str:
+    """Czasownik -> kategoria: prosto z mapowania, którym parsuje importer."""
+    verb_of = {category: verb for verb, category in _REWARD_CATEGORIES.items()}
     rows = []
     for category in QuestRewardCategory:
-        syntax, doc, example = _REWARD_DOC[category]
-        rows.append([f"`{syntax}`", doc, f"`{example}`"])
-    return table(["Kategoria", "Znaczenie", "Przykład"], rows)
+        verb = verb_of[category.value]
+        doc, example = _REWARD_DOC[category]
+        rows.append([f"`{_REWARD_SHAPE.get(verb, f'{verb}(nn)')}`", doc, example])
+    return table(["Zapis", "Znaczenie", "Przykład"], rows)
 
 
 def _tags_table() -> str:
@@ -268,7 +283,7 @@ Opis, który gracz zobaczy w dzienniku. Obsługuje znaczniki: [char]Kowal[/].
 **Completion**: `test`
 **Test**: `visited(`[[Barman Absyntnent#012|Barman#012]]`)`
 **Sukces**: Barman gada. Barman zawsze gada.
-**Nagroda**: `health=20`
+**Nagroda**: `restore_health(20)`
 
 ## Notatki
 
@@ -386,11 +401,13 @@ Jedna linia `Nagroda:` per bonus dla gracza - **wszystkie są aplikowane**, nie 
 
 {_rewards_table()}
 
+Nagroda **daje**, a nie zabiera, więc czasowniki odbierające (`remove_money`, `lose_health`, `remove_n_items`) są tu błędem importu - te mieszkają w dialogu, gdzie NPC może coś graczowi wziąć. Ta sama gramatyka opisuje jedno i drugie: to ten sam mechanizm (`dialog/effects.py`), a nazwy czasowników są nazwami metod `ResultSink` w kodzie.
+
 Odrzucane przy imporcie:
 
-- nagroda o wartości `0` (albo `items=` bez przedmiotów) - to kształt, który nigdy nie jest zamierzony,
-- `sentiment` bez `@NPC_KEY` - quest nie ma bieżącej postaci, więc nie byłoby komu polubić gracza,
-- `@NPC_KEY` przy czymkolwiek poza `sentiment`.
+- nagroda o wartości `0` (albo `add_n_items` bez przedmiotu) - to kształt, który nigdy nie jest zamierzony,
+- liczba ujemna przy czasowniku, który już mówi, w którą stronę idzie (`add_money(-50)`),
+- `shift_sentiment(10)` bez adresata - quest nie ma bieżącej postaci, więc nie byłoby komu polubić gracza; adresata podaje `shift_sentiment_of`.
 
 Etykiety nagród składa silnik gry - nie pisz wartości liczbowej nagrody w `Sukces:`. Dzięki temu przeważenie nagrody nie dotyka tłumaczeń.
 

@@ -194,19 +194,19 @@ Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś
 
 ## 014
 
-* [SENTIMENT-10]Co:red_question: Dziewki z naszej wsi **czarami** chcesz uwodzić?
+* [`shift_sentiment(-10)`]Co:red_question: Dziewki z naszej wsi **czarami** chcesz uwodzić?
 
 * [[#991-end]] 1😐: Nie, nie, to nie tak...
 
 ## 015
 
-* [SENTIMENT-10]I co? Będziesz chciał oszukiwać w kartach? Albo lepiej, **czarami** chcesz mnie omamić podczas handlu! O Ty!:angry:
+* [`shift_sentiment(-10)`]I co? Będziesz chciał oszukiwać w kartach? Albo lepiej, **czarami** chcesz mnie omamić podczas handlu! O Ty!:angry:
 
 * [[#991-end]] 1😐: Nie, nie, to nie tak...
 
 ## 016
 
-* [SENTIMENT-10]A co to za **choroba**, co ją chcesz leczyć **czarami**? To pewno jakaś **zaraza**! Świństwo jakieś przyniosłeś do naszej wioski:red_exclamation:
+* [`shift_sentiment(-10)`]A co to za **choroba**, co ją chcesz leczyć **czarami**? To pewno jakaś **zaraza**! Świństwo jakieś przyniosłeś do naszej wioski:red_exclamation:
 
 * [[#991-end]] 1😐: Nie, nie, to nie tak...
 
