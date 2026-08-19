@@ -20,7 +20,10 @@ Co jest potrzebne:
 
 ### Inne:
 - [ ] nauczyć gracza, że obniżanie sentymentu może mieć korzyści - szacunek postaci, "najlepszą obroną jest atak" w przypadku silnych charakterów
-- [ ] klawisze `+` i `-` źle powiększają ekrany gry, bo czasami doprowadzają do nierównomiernego skallowania (niektóre pixele sprite'ów są kopiowane 3 x a niektóre 2 x) 
+- [ ] misja jako `requires` powinny przyjmować również odwiedzenie danej opcji dialogowej
+- [ ] opcje widoczne w menu pomocy tylko w trybie debug, powinny również być możliwe do użycia w trybie debug - obecnie można je wywołać zawsze. Przykłady: 
+- [ ] niech okno gry pokazuje się na tym samym monitorze co terminal z którego została uruchomiona. Gra powinna pamiętać ostatnio używany monitor. Kombinajca klawiszy przesuwająca okno na inny monitor nie działa na MacOO.
+- [ ] klawisze `+` i `-` źle powiększają ekrany gry, bo czasami doprowadzają do nierównomiernego skalowania (niektóre pixele sprite'ów są kopiowane 3 x a niektóre 2 x) 
 - [ ] skała ma za mały collider i reaguje na trafienie jedynie u samej podstaw. W Tiled collision box został dodany, ale nie jest respektowany.
 - [ ] czasami po wyjściu z tawerny gracz pojawia się w lesie blisko lewego krańca mapy zamiast w miejscu obiektu VillageHouseDoor  (pozycja od góry mapy jest ok). Zdarza się to rzadziej niż raz na 3 próby.
 - [ ] toast'y chowają się pod etykietą nazwy mapy (lokalizacji) - niech pokazują się ponad etykietą mapy
