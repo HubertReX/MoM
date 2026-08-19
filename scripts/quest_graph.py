@@ -272,18 +272,80 @@ def visited_refs(expression: str | None) -> list[VisitedRef]:
     return found
 
 
+@dataclass(frozen=True, slots=True)
+class QuestDoneRef:
+    """One ``quest_done(KEY)`` inside a condition, with its polarity.
+
+    The other half of ``Test``. ``visited()`` sends the player to a conversation;
+    ``quest_done()`` makes a quest wait on a whole other thread finishing - and
+    that was the one gate the picture did not draw at all, so a step waiting on
+    three chapters of another chain looked like it closed on nothing.
+    """
+
+    key: str
+    negated: bool = False
+
+
+def quest_done_refs(expression: str | None) -> list[QuestDoneRef]:
+    """Every ``quest_done()`` in a condition, in source order, with polarity.
+
+    Deliberately a copy of :func:`visited_refs` rather than a shared walk
+    parameterised by function name: the two differ in arity (one string vs two)
+    and the shared version was all branches and no shared body.
+    """
+    if not expression:
+        return []
+    try:
+        tree = ast.parse(expression, mode="eval")
+    except SyntaxError:
+        return []
+
+    found: list[QuestDoneRef] = []
+
+    def walk(node: ast.AST, negated: bool) -> None:
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            walk(node.operand, not negated)
+        elif isinstance(node, ast.BoolOp):
+            for value in node.values:
+                walk(value, negated)
+        elif isinstance(node, ast.Compare):
+            walk(node.left, negated)
+            for comparator in node.comparators:
+                walk(comparator, negated)
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id != "quest_done":
+                return
+            args = [
+                a.value for a in node.args
+                if isinstance(a, ast.Constant) and isinstance(a.value, str)
+            ]
+            if len(args) == 1:
+                ref = QuestDoneRef(args[0], negated)
+                if ref not in found:
+                    found.append(ref)
+
+    walk(tree.body, False)
+    return found
+
+
 def alternatives(expression: str | None) -> bool:
-    """Are this condition's dialog nodes **alternatives** (``or``) rather than all required?
+    """Are this condition's gates **alternatives** (``or``) rather than all required?
 
     The only piece of boolean structure worth one word on an edge. "Talk to either
     of these two" and "talk to both of these two" draw identically otherwise, and
     the difference is exactly the kind of thing an author wants to catch by eye.
 
+    Counts **both** gate kinds: ``visited(X) or quest_done(Y)`` draws two edges
+    that are alternatives to each other, and counting only the conversations left
+    that at one reference - below the threshold - so the label silently vanished
+    from a condition that most needed it.
+
     Deliberately shallow: it asks what the *outermost* operator is, and says
     nothing about a nested mix. A condition that needs more than that needs
     reading, not a diagram - and the quest's tooltip carries it verbatim.
     """
-    if not expression or len(visited_refs(expression)) < 2:
+    gates = len(visited_refs(expression)) + len(quest_done_refs(expression))
+    if not expression or gates < 2:
         return False
     try:
         root = ast.parse(expression, mode="eval").body
@@ -332,7 +394,9 @@ def columns(defs: dict[str, QuestDef]) -> dict[str, int]:
 
     A thread that waits on another chain starts one column past that chain's
     rightmost extent, so ``requires`` still reads left to right and the two chains
-    cannot be mistaken for parallel.
+    cannot be mistaken for parallel. That extent **always** counts the dependency's
+    conversation column, even when the dependency names no conversation - see
+    :func:`extent`.
 
     Safe to recurse: ``init_quests`` has already proved the unlock graph acyclic.
     """
@@ -341,8 +405,17 @@ def columns(defs: dict[str, QuestDef]) -> dict[str, int]:
     column: dict[str, int] = {}
 
     def extent(key: str) -> int:
-        """The rightmost column ``key`` occupies, its own closing conversations included."""
-        return visit(key) + (1 if closes[key] else 0)
+        """The rightmost column ``key`` occupies, its own conversation column included.
+
+        Reserved unconditionally, and that is the whole point: a quest unlocked by
+        another quest is **always** two columns to its right, a conversation always
+        one. When the slot was only reserved for a quest that actually names a
+        conversation, a quest whose ``Test`` is ``quest_done()`` (no ``visited()``,
+        so nothing to reserve for) pushed its dependant into the *conversation*
+        column - and its steps then shared a column with another thread's steps.
+        One blank column costs a screen inch; a broken rhythm costs the reading.
+        """
+        return visit(key) + 1
 
     def visit(key: str) -> int:
         if key in column:
@@ -391,6 +464,126 @@ def _squeeze(nodes: list[dict[str, Any]]) -> None:
     renumbered = {old: new for new, old in enumerate(used)}
     for node in nodes:
         node["level"] = renumbered[node["level"]]
+
+
+def rows(
+    nodes: list[dict[str, Any]], edges: list[dict[str, Any]]
+) -> dict[str, float]:
+    """Which **row** each node sits in, top to bottom.
+
+    Computed here rather than left to vis-network, and that is the whole reason
+    this function exists. The hierarchical layout hands every node one equal slot
+    in the column, so a dialog hexagon reserves as much vertical space as a
+    subquest carrying a thread of its own - which crowded the small nodes, spread
+    the big ones and crossed the edges between them. No amount of ``nodeSpacing``
+    reaches that; the arithmetic has to know what hangs off what.
+
+    Three rules, all of them the author's, all of them about what the drawing
+    must never do:
+
+    1. **The first child opening to the right shares its parent's row** - and when
+       column packing pushes that child down, the *parent* follows it, not the
+       other way round. Otherwise the two sit a few rows apart and the edge
+       between them is a long diagonal across everything else.
+    2. **A dialog node sits at least one row below its parent.** Its arc returns
+       from below; drawn level, it lands exactly on the horizontal line running
+       from that parent to its own child.
+    3. **A chain step goes below the parent and the parent's conversations**, so a
+       thread still reads top to bottom in its own column.
+
+    Collisions are resolved by a free-row cursor **per column**, not by reserving
+    a band per subtree: two nodes in different columns cannot overlap, so they are
+    allowed to sit level. That is what keeps the picture short - a band-per-subtree
+    layout of the same graph is twice as tall for no gain in clarity.
+
+    The order of the walk is a forest built from one incoming edge per node (see
+    ``priority``), so it is fully determined by the config - the same config draws
+    the same picture on every machine.
+    """
+    if not nodes:
+        return {}
+
+    level = {n["id"]: n["level"] for n in nodes}
+    kind = {n["id"]: n["kind"] for n in nodes}
+    order = [n["id"] for n in nodes]
+
+    # Which edge decides what a node hangs under. `requires` before `parent`
+    # because the order of steps is the thing worth seeing; `closes` last because
+    # a conversation hangs off the quest that sends the player to it. A
+    # `closes_quest` edge is never an owner: it crosses threads, and following it
+    # would drag a whole chain in under a step of another one.
+    priority = {"requires": 0, "parent": 1, "unlocks": 2, "closes": 3}
+    candidates: dict[str, list[tuple[int, int, str]]] = {key: [] for key in order}
+    for edge in edges:
+        bucket = priority.get(edge["kind"])
+        if bucket is None or edge["to"] not in candidates:
+            continue
+        candidates[edge["to"]].append((bucket, level[edge["from"]], edge["from"]))
+
+    # rank, then column, then key - a conversation serving two quests has to land
+    # somewhere, and it has to land in the same place on the next run.
+    owner = {key: sorted(opts)[0][2] for key, opts in candidates.items() if opts}
+    for key in list(owner):  # cycle guard: `closes` points the other way round
+        seen, walker = {key}, owner.get(key)
+        while walker is not None:
+            if walker in seen:
+                del owner[key]
+                break
+            seen.add(walker)
+            walker = owner.get(walker)
+
+    children: dict[str, list[str]] = {key: [] for key in order}
+    for key, own in owner.items():
+        children[own].append(key)
+    roots = [key for key in order if key not in owner]
+
+    weight: dict[str, int] = {}
+
+    def weigh(key: str) -> int:
+        if key not in weight:
+            weight[key] = 1 + sum(weigh(child) for child in children[key])
+        return weight[key]
+
+    def by_rank(key: str) -> tuple[int, int, str]:
+        return (level[key], weigh(key), key)
+
+    row: dict[str, float] = {}
+    free: dict[int, float] = {}
+
+    def place(key: str, desired: float) -> float:
+        """Put ``key`` at or below ``desired``; return the lowest row it occupies."""
+        column = level[key]
+        start = max(desired, free.get(column, 0.0))
+        kids = sorted(children[key], key=by_rank)
+        opened = [k for k in kids if level[k] > column and kind[k] != "dialog"]
+        spoken = [k for k in kids if level[k] > column and kind[k] == "dialog"]
+        chain = [k for k in kids if level[k] <= column]
+
+        low = cursor = start
+        if opened:  # rule 1 - and the parent follows the child, not the reverse
+            low = place(opened[0], start)
+            start = max(start, row[opened[0]], free.get(column, 0.0))
+            cursor = low + 1
+        row[key] = start
+        free[column] = start + 1
+
+        for child in opened[1:]:
+            low = max(low, place(child, cursor))
+            cursor = low + 1
+        talk = start + 1  # rule 2 - never level with the parent
+        for child in spoken:
+            bottom = place(child, talk)
+            talk, low = bottom + 1, max(low, bottom)
+        below = max(start, talk - 1)
+        for child in chain:  # rule 3
+            below = place(child, below + 1)
+            low = max(low, below)
+        return low
+
+    next_row = 0.0
+    for root in sorted(roots, key=by_rank):
+        next_row = place(root, next_row) + 1
+    return row
 
 
 def uncloseable(defs: dict[str, QuestDef]) -> dict[str, str]:
@@ -528,11 +721,25 @@ def graph_to_dict(
             edges.append({"from": req, "to": key, "kind": "requires"})
         if quest.parent:
             edges.append({"from": quest.parent, "to": key, "kind": "parent"})
+        # `Test: quest_done(...)` - the same relation as a closing conversation,
+        # with a quest at the far end instead of a hexagon, so it is drawn the
+        # same way round: out of the quest that closes, into what closes it.
+        for ref in quest_done_refs(quest.test):
+            if ref.key not in defs:
+                continue  # validate_references() rejects these; do not crash on one
+            edges.append({
+                "from": key, "to": ref.key, "kind": "closes_quest",
+                "negated": ref.negated, "alt": alternatives(quest.test),
+            })
 
     dialog_nodes, dialog_edges = _dialog_nodes(defs, messages, dialogs or {}, column)
     nodes.extend(dialog_nodes)
     edges.extend(dialog_edges)
     _squeeze(nodes)
+
+    row = rows(nodes, edges)
+    for node in nodes:
+        node["row"] = row.get(node["id"], 0.0)
 
     return {
         "meta": {
@@ -542,6 +749,7 @@ def graph_to_dict(
                 "threads": sum(1 for n in nodes if n["is_thread"]),
                 "roots": sum(1 for n in nodes if n["is_root"]),
                 "dialogs": len(dialog_nodes),
+                "quest_gates": sum(1 for e in edges if e["kind"] == "closes_quest"),
             },
             "modes": {str(mode): MODE_COLOUR[mode] for mode in CompletionMode},
             "dialog_colour": DIALOG_COLOUR,
@@ -673,12 +881,13 @@ tags: [graf-questow]
 # Questy - graf
 
 > [!info] Wygenerowane przez `scripts/quest_graph.py` - nie edytuj ręcznie.
-> Czyta się **od lewej do prawej**, kolumnami: rozmowa otwierająca -> wątek -> jego rozmowy -> kroki wątku (jedna kolumna, jeden pod drugim) -> rozmowy kroków. Pustej kolumny nie ma - wątek bez rozmowy otwierającej zaczyna od lewej krawędzi.
+> **Grot zawsze pokazuje skutek** - to jedyna reguła, jakiej trzeba do przeczytania strzałek. Legenda pod paskiem rozpisuje ją na pola z notatki questa.
+> Czyta się **od lewej do prawej**, kolumnami: rozmowa otwierająca -> wątek -> jego rozmowy -> kroki wątku (jedna kolumna, jeden pod drugim) -> rozmowy kroków. Quest odblokowany przez quest stoi zawsze o **dwie** kolumny dalej, rozmowa o jedną.
+> Krawędzie **zamykające wracają łukiem w lewo** - quest otwiera się wcześniej, niż to, co go zamyka.
 > Klik w węzeł: podświetl sąsiadów. Podwójny klik: otwórz quest w źródłowym pliku.
 > Najedź na węzeł, żeby zobaczyć opis, warunek zamknięcia i nagrody.
 > Sześciokąt to **węzeł dialogu** - podwójny klik prowadzi do kwestii w notatce postaci.
-> Strzałka **w** quest (z lewej): ta rozmowa go odblokowuje (`Requires`). Strzałka **z** questa (w prawo): na tej rozmowie się zamyka (`Test`).
-> Poprzeczka zamiast grotu = warunek zanegowany (`not`), podpis `lub` = wystarczy jedna z rozmów. Pełne wyrażenie jest w dymku questa.
+> Przycisk **Zamknięcia** chowa rozmowy razem z łukami; zostaje sam szkielet odblokowań.
 
 ```dataviewjs
 const KEY = "__KEY__";
@@ -718,8 +927,25 @@ if (!document.getElementById("mom-graph-css")) {
     .mom-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
     .mom-bar button { font-size: 12px; padding: 3px 10px; cursor: pointer; }
     .mom-count { font-size: 12px; color: var(--text-muted); margin-left: auto; }
-    .mom-legend { display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
-        margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
+    /* Jedna reguła = jedna linia. Poprzednia legenda była jednym ciągiem znaków
+       ──/┄┄/╌╌/┈┈ w jednej linijce i nie dawała się przeczytać: cztery rodzaje
+       krawędzi różnią się kolorem, rytmem kreski i KOŃCEM, na którym siedzi grot,
+       a znak tekstowy nie oddaje żadnej z tych trzech rzeczy. */
+    .mom-legend { margin-bottom: 10px; padding: 10px 14px; border-radius: 8px;
+        font-size: 12px; color: var(--text-muted);
+        background: var(--background-secondary);
+        border: 1px solid var(--background-modifier-border); }
+    .mom-legend .rule { color: var(--text-normal); margin-bottom: 8px; font-size: 12.5px; }
+    .mom-legend dl { margin: 0; display: grid; grid-template-columns: auto auto 1fr;
+        gap: 6px 12px; align-items: center; }
+    .mom-legend .src { font-family: var(--font-monospace); font-size: 11px;
+        color: var(--text-accent); white-space: nowrap; }
+    .mom-legend .txt strong { color: var(--text-normal); font-weight: 600; }
+    .mom-legend .sep { grid-column: 1 / -1; height: 1px; margin: 2px 0;
+        background: var(--background-modifier-border); }
+    .mom-legend .mark { text-align: center; font-family: var(--font-monospace); }
+    .mom-legend .shp { display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+        margin-top: 9px; }
     .mom-legend span.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px;
         margin-right: 5px; vertical-align: -1px; border: 1px solid; }
     /* próbka w kształcie węzła, bo to kształt odróżnia dialog od questa, nie kolor */
@@ -792,9 +1018,18 @@ function dialogTip(n) {
     return t;
 }
 
+// Kolumnę i wiersz liczy Python (`columns()` i `rows()`), tu zamieniają się na
+// piksele. Układ hierarchiczny vis-a jest wyłączony, bo rozdawał każdemu węzłowi
+// jeden równy slot w pionie - sześciokąt dialogu rezerwował tyle samo miejsca, co
+// podquest z całym wątkiem pod sobą.
+const COLW = 290;
+const ROWH = 88;
+
 const visNodes = G.nodes.map((n) => ({
     id: n.id,
-    level: n.level,
+    kind: n.kind,
+    x: n.level * COLW,
+    y: n.row * ROWH,
     label: n.name,
     title: n.kind === "dialog" ? dialogTip(n) : nodeTip(n),
     color: { background: n.colour.bg, border: n.colour.border },
@@ -812,9 +1047,14 @@ const REQ = "#9aa0a8";
 const PAR = "#0dcaf0";
 const UNL = "#7048e8";
 const CLO = "#0ca678";
-const EDGE_COLOUR = { requires: REQ, parent: PAR, unlocks: UNL, closes: CLO };
-const EDGE_DASH = { requires: false, parent: [2, 4], unlocks: [7, 3], closes: [2, 3] };
-const EDGE_WIDTH = { requires: 1.6, parent: 1, unlocks: 1.8, closes: 1.6 };
+const EDGE_COLOUR = { requires: REQ, parent: PAR, unlocks: UNL, closes: CLO, closes_quest: CLO };
+const EDGE_DASH = { requires: false, parent: [2, 4], unlocks: [7, 3], closes: [2, 3],
+                    closes_quest: [12, 5] };
+const EDGE_WIDTH = { requires: 1.6, parent: 1, unlocks: 1.8, closes: 1.6, closes_quest: 2.6 };
+// Dwie krawędzie mówią "to ZAMYKA tamten quest" - jedna kończy się na rozmowie,
+// druga na innym queście. Obie rysują się tak samo: grot na końcu `from`, czyli
+// przy queście, i łuk powrotny.
+const CLOSING = new Set(["closes", "closes_quest"]);
 
 // Dwie rzeczy, których "bloczki i linie" nie oddadzą same z siebie, a które
 // zmieniają sens na przeciwny albo prawie:
@@ -826,26 +1066,44 @@ const EDGE_WIDTH = { requires: 1.6, parent: 1, unlocks: 1.8, closes: 1.6 };
 const edgeNote = (e) => [e.negated ? "nie" : null, e.alt ? "lub" : null]
     .filter(Boolean).join(" ");
 
-const visEdges = G.edges.map((e, i) => ({
-    id: i,
-    from: e.from,
-    to: e.to,
-    kind: e.kind,
-    color: { color: EDGE_COLOUR[e.kind], opacity: 0.85 },
-    dashes: EDGE_DASH[e.kind],
-    width: EDGE_WIDTH[e.kind],
-    label: edgeNote(e) || undefined,
-    // Bez obwódki: etykieta jedzie na canvas, a canvas nie rozwiązuje `var(--...)`,
-    // więc obwódka w kolorze motywu wychodziła czarną plamą zamiast tła. Sam
-    // kolor krawędzi wystarczy - podpis jest krótki i siedzi na swojej linii.
-    font: { size: 12, color: EDGE_COLOUR[e.kind], strokeWidth: 0, align: "middle" },
-    arrows: { to: { enabled: true, scaleFactor: 0.75, type: e.negated ? "bar" : "arrow" } },
-    smooth: { enabled: true, type: "cubicBezier", forceDirection: "horizontal", roundness: 0.5 },
-}));
+// Zwrot grotu, nie zwrot krawędzi: `from`/`to` zostają takie, jak liczy je
+// Python, a grot przenosi się na koniec `from`. Dzięki temu KAŻDA strzałka w
+// grafie znaczy to samo - grot pokazuje skutek - a `closes` przestaje być jedyną,
+// która biegnie od skutku do przyczyny. Łuk (`curvedCCW`) odsuwa te krawędzie od
+// szkieletu odblokowań, żeby powrót było widać kształtem, zanim się przeczyta kolor.
+const visEdges = G.edges.map((e, i) => {
+    const back = CLOSING.has(e.kind);
+    const head = {
+        enabled: true,
+        scaleFactor: e.kind === "closes_quest" ? 0.95 : 0.75,
+        type: e.negated ? "bar" : "arrow",
+    };
+    return {
+        id: i,
+        from: e.from,
+        to: e.to,
+        kind: e.kind,
+        color: { color: EDGE_COLOUR[e.kind], opacity: e.kind === "closes_quest" ? 1 : 0.85 },
+        dashes: EDGE_DASH[e.kind],
+        width: EDGE_WIDTH[e.kind],
+        label: edgeNote(e) || undefined,
+        // Bez obwódki: etykieta jedzie na canvas, a canvas nie rozwiązuje `var(--...)`,
+        // więc obwódka w kolorze motywu wychodziła czarną plamą zamiast tła. Sam
+        // kolor krawędzi wystarczy - podpis jest krótki i siedzi na swojej linii.
+        font: { size: 12, color: EDGE_COLOUR[e.kind], strokeWidth: 0, align: "middle" },
+        arrows: back ? { from: head, to: { enabled: false } } : { to: head },
+        smooth: back
+            ? { enabled: true, type: "curvedCCW", roundness: 0.35 }
+            : { enabled: true, type: "cubicBezier", forceDirection: "horizontal", roundness: 0.5 },
+    };
+});
 
 // -------------------------------------------------------------------- widok
 const bar = box.appendChild(el("div", "mom-bar"));
 const btnLay = bar.appendChild(el("button", null, "Układ: kolumny"));
+const btnDlg = G.meta.counts.dialogs
+    ? bar.appendChild(el("button", null, "Zamknięcia: widoczne"))
+    : null;
 const btnFit = bar.appendChild(el("button", null, "Dopasuj"));
 const btnReset = bar.appendChild(el("button", null, "Odznacz"));
 bar.appendChild(
@@ -855,50 +1113,106 @@ bar.appendChild(
        (G.meta.counts.dialogs ? `, ${G.meta.counts.dialogs} węzłów dialogu` : ""))
 );
 
+// Próbka linii rysowana tak, jak wygląda na grafie: ten sam kolor, ten sam wzór
+// kreski, grot na tym samym końcu, łuk tam gdzie jest łuk. Znaki ──/┄┄ nie
+// oddawały żadnej z tych trzech rzeczy, a to po nich się te krawędzie rozróżnia.
+function swatch(kind, back) {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("width", "74");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("viewBox", "0 0 74 18");
+    const line = document.createElementNS(NS, "path");
+    line.setAttribute("d", back ? "M14,13 Q37,2 62,11" : "M12,9 L62,9");
+    line.setAttribute("fill", "none");
+    line.setAttribute("stroke", EDGE_COLOUR[kind]);
+    line.setAttribute("stroke-width", String(EDGE_WIDTH[kind] + 0.4));
+    if (EDGE_DASH[kind]) line.setAttribute("stroke-dasharray", EDGE_DASH[kind].join(" "));
+    svg.appendChild(line);
+    const head = document.createElementNS(NS, "polygon");
+    head.setAttribute("fill", EDGE_COLOUR[kind]);
+    head.setAttribute("points", back ? "12,13 22,9 22,17" : "64,9 54,5 54,13");
+    svg.appendChild(head);
+    return svg;
+}
+
+// Pola tak, jak się je pisze w notatce questa - `parent` świadomie NIE jest
+// polem, bo w .md go nie ma: wynika z klucza `Qxx_Syy`.
+const RULES = [
+    ["requires", false, "**Requires**: [[quest]]",
+     "quest UKOŃCZONY -> ten quest ODBLOKOWANY"],
+    ["parent", false, "klucz Qxx_S00 (parasol)",
+     "wątek ODBLOKOWANY -> jego krok ODBLOKOWANY"],
+    ["unlocks", false, "**Requires**: `visited(...)`",
+     "rozmowa ODBYTA -> quest ODBLOKOWANY"],
+    ["closes", true, "**Test**: `visited(...)`",
+     "rozmowa ODBYTA -> quest ZAMKNIĘTY"],
+    ["closes_quest", true, "**Test**: `quest_done(...)`",
+     "quest UKOŃCZONY -> ten quest ZAMKNIĘTY"],
+];
+const RULE_COUNT = {
+    requires: 1, parent: 1,
+    unlocks: G.meta.counts.dialogs, closes: G.meta.counts.dialogs,
+    closes_quest: G.meta.counts.quest_gates,
+};
+
 const legend = box.appendChild(el("div", "mom-legend"));
-const LEG_TEXT = { test: "test (warunek)", all_subquests: "wątek (kroki)", manual: "manual (kod gry)" };
+legend.append(el("div", "rule",
+    "Grot zawsze pokazuje SKUTEK. Krawędzie zamykające wracają łukiem w lewo, " +
+    "bo quest otwiera się wcześniej, niż to, co go zamyka."));
+const dl = legend.appendChild(document.createElement("dl"));
+for (const [kind, back, src, txt] of RULES) {
+    if (!RULE_COUNT[kind]) continue;  // nie obiecuj krawędzi, której na obrazku nie ma
+    dl.appendChild(swatch(kind, back));
+    dl.appendChild(el("span", "src", src));
+    dl.appendChild(el("span", "txt", txt));
+}
+if (G.meta.counts.dialogs || G.meta.counts.quest_gates) {
+    dl.appendChild(el("div", "sep"));
+    dl.appendChild(el("span", "mark", "⊣"));
+    dl.appendChild(el("span", "src", "`not ...`"));
+    dl.appendChild(el("span", "txt", "poprzeczka zamiast grotu = warunek zanegowany"));
+    dl.appendChild(el("span", "mark", "lub"));
+    dl.appendChild(el("span", "src", "`... or ...`"));
+    dl.appendChild(el("span", "txt", "wystarczy jeden z tych warunków, nie wszystkie"));
+}
+
+const shapes = legend.appendChild(el("div", "shp"));
+const LEG_TEXT = {
+    test: "Completion: test - zamyka ją warunek",
+    all_subquests: "Completion: all_subquests - zamykają ją kroki",
+    manual: "Completion: manual - zamyka ją kod gry",
+};
 for (const [mode, col] of Object.entries(G.meta.modes)) {
-    const item = legend.appendChild(el("span", null, null));
+    const item = shapes.appendChild(el("span", null, null));
     const sw = item.appendChild(el("span", "sw"));
     sw.style.background = col.bg;
     sw.style.borderColor = col.border;
     item.append(document.createTextNode(LEG_TEXT[mode] ?? mode));
 }
 if (G.meta.counts.dialogs) {
-    const item = legend.appendChild(el("span", null, null));
+    const item = shapes.appendChild(el("span", null, null));
     const sw = item.appendChild(el("span", "sw hex"));
     sw.style.background = G.meta.dialog_colour.bg;
     sw.style.borderColor = G.meta.dialog_colour.border;
-    item.append(document.createTextNode("węzeł dialogu"));
+    item.append(document.createTextNode("węzeł dialogu (nie quest)"));
 }
-legend.append(el("span", null, "──  requires (musi być zrobione)"));
-legend.append(el("span", null, "┄┄  parent (wątek odblokowany)"));
-if (G.meta.counts.dialogs) {
-    legend.append(el("span", null, "╌╌  rozmowa ODBLOKOWUJE quest"));
-    legend.append(el("span", null, "┈┈  quest ZAMYKA się na rozmowie"));
-    legend.append(el("span", null, '⊣  poprzeczka zamiast grotu = "nie"'));
-}
+shapes.append(el("span", null, "prostokąt = wątek · owal = krok"));
 
 const broken = G.nodes.filter((n) => n.problem);
 
 const graphEl = el("div", "mom-net");
 graphEl.style.height = HEIGHT;
 
-// Hierarchia, nie fizyka - i to jest różnica względem grafu dialogów. Tam
-// sortMethod: "directed" gubił rangi, bo pętle resume tworzą cykle; tu graf jest
-// acyklyczny z walidacji (_validate_acyclic), więc rangi są uczciwe. Poziom liczy
-// Python (najdłuższa ścieżka odblokowań), vis tylko go rysuje.
-// Poziomo, nie pionowo. Kolumnę liczy Python i niesie ją `level` (patrz
-// `columns()`): rozmowa otwierająca, wątek, jego rozmowy, kroki, rozmowy kroków.
-// vis tylko układa - `sortMethod: "directed"` porządkowałby kolumny po swojemu i
-// rozjeżdżał kroki jednego wątku, więc zostaje "hubsize", które szanuje `level`.
-// `levelSeparation` to odstęp MIĘDZY kolumnami, `nodeSpacing` - w pionie, wewnątrz
-// kolumny; przy sześciokątach podpis jedzie pod kształtem, więc pionu trzeba więcej.
+// Współrzędne, nie hierarchia. Układ hierarchiczny vis-a rozdawał każdemu
+// węzłowi jeden równy slot w pionie, więc sześciokąt dialogu rezerwował tyle
+// samo miejsca, co podquest z całym wątkiem pod sobą - stąd ścisk przy małych
+// węzłach, rozstrzelone duże i przecięcia między nimi. Żaden `nodeSpacing` /
+// `sortMethod` / `shakeTowards` do tego nie sięga, bo arytmetyka musi wiedzieć,
+// co pod czym wisi. Kolumnę liczy `columns()`, wiersz `rows()`, a vis dostaje
+// gotowe `x`/`y` i tylko rysuje.
 const HIER = {
-    layout: { hierarchical: { enabled: true, direction: "LR", sortMethod: "hubsize",
-                              levelSeparation: 260, nodeSpacing: 120, treeSpacing: 170,
-                              blockShifting: true, edgeMinimization: true,
-                              parentCentralization: true } },
+    layout: { hierarchical: { enabled: false }, improvedLayout: false },
     physics: { enabled: false },
 };
 const FREE = {
@@ -937,10 +1251,15 @@ const nodesDS = new vis.DataSet(visNodes);
 const edgesDS = new vis.DataSet(visEdges);
 let network;
 let hier = true;
+let hidden = false;  // rozmowy schowane? trzyma się poza DataSetem, bo highlight() go przepisuje
 
 function buildNetwork() {
     if (network) network.destroy();
-    nodesDS.update(visNodes.map((n) => ({ id: n.id, x: undefined, y: undefined, fixed: false })));
+    // W trybie kolumn wracają policzone współrzędne; w swobodnym trzeba je zdjąć,
+    // inaczej fizyka startuje z węzłami przyklejonymi do siatki.
+    nodesDS.update(visNodes.map((n) => hier
+        ? { id: n.id, x: n.x, y: n.y, fixed: false }
+        : { id: n.id, x: undefined, y: undefined, fixed: false }));
     network = new vis.Network(graphEl, { nodes: nodesDS, edges: edgesDS },
                               { ...BASE, ...(hier ? HIER : FREE) });
     if (hier) {
@@ -983,8 +1302,10 @@ function highlight(id) {
 }
 
 function clearHighlight() {
-    nodesDS.update(visNodes);
-    edgesDS.update(visEdges);
+    // Tylko kolor i font, bez `x`/`y`: pełne `visNodes` przywracało policzone
+    // współrzędne i odrzucało z powrotem każdy węzeł, który autor przeciągnął.
+    nodesDS.update(visNodes.map((n) => ({ id: n.id, color: n.color, font: n.font })));
+    edgesDS.update(visEdges.map((e) => ({ id: e.id, color: e.color, width: e.width })));
 }
 
 // ------------------------------------------------------------------ toolbar
@@ -992,6 +1313,19 @@ btnLay.onclick = () => {
     hier = !hier;
     btnLay.textContent = `Układ: ${hier ? "kolumny" : "swobodny"}`;
     buildNetwork();
+};
+// Same łuki bez sześciokątów zostawiały wiszące węzły, więc rozmowy chowają się
+// razem z nimi - dopiero wtedy zostaje czysty szkielet odblokowań, a to jest
+// jedyny widok, w którym da się prześledzić kolejność rozgrywki bez omijania
+// wzrokiem połowy obrazka.
+if (btnDlg) btnDlg.onclick = () => {
+    hidden = !hidden;
+    btnDlg.textContent = `Zamknięcia: ${hidden ? "ukryte" : "widoczne"}`;
+    nodesDS.update(visNodes.filter((n) => n.kind === "dialog")
+                           .map((n) => ({ id: n.id, hidden })));
+    edgesDS.update(visEdges.filter((e) => CLOSING.has(e.kind))
+                           .map((e) => ({ id: e.id, hidden })));
+    network.fit({ ...FIT, animation: true });
 };
 btnFit.onclick = () => network.fit({ ...FIT, animation: true });
 btnReset.onclick = () => { network.unselectAll(); clearHighlight(); };

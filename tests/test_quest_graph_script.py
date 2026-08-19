@@ -11,25 +11,35 @@ because it lives in the gap between config and game code.
 """
 
 from __future__ import annotations
-from test_quest_entities import SAMPLE
-from quest_graph import (
+
+import os
+import sys
+
+# Before the imports, not after: `quest_graph` lives in `scripts/` and `quest` in
+# `project/`, so a path set up below them only works when something else already
+# put those directories on `sys.path`. Running this file through
+# `scripts/run_unit_tests.py` (which is what `just test-unit` does) does not, so
+# the whole file died on ModuleNotFoundError and every test in it was silently
+# skipped by the suite - it only ever passed when run by hand with PYTHONPATH.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+sys.path.insert(0, os.path.dirname(__file__))
+
+from test_quest_entities import SAMPLE  # noqa: E402
+from quest_graph import (  # noqa: E402
     DialogSource,
+    QuestDoneRef,
     VisitedRef,
     alternatives,
     columns,
     graph_to_dict,
     markup_runs,
+    quest_done_refs,
+    rows,
     uncloseable,
     visited_refs,
 )
-from quest.graph import init_quests
-
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
-sys.path.insert(0, os.path.dirname(__file__))
+from quest.graph import init_quests  # noqa: E402
 
 
 Q00 = "Q00_S00_WHAT_IS_GOING_ON"
@@ -213,10 +223,11 @@ def test_threads_and_roots_are_marked() -> None:
     assert_true(nodes[Q00]["is_root"], "no requires, no parent: available at start")
     assert_true(not nodes[Q01_S00]["is_root"], "it waits on Q00")
     # 7 dialog nodes: every `visited()` the eight sample quests name in their
-    # `test`, deduplicated - the conversations that close them.
+    # `test`, deduplicated - the conversations that close them. No `quest_done()`
+    # anywhere in the sample, so no quest-on-quest gate either.
     assert_eq(
         data["meta"]["counts"],
-        {"quests": 8, "threads": 2, "roots": 1, "dialogs": 7},
+        {"quests": 8, "threads": 2, "roots": 1, "dialogs": 7, "quest_gates": 0},
         "counts",
     )
 
@@ -458,6 +469,180 @@ def test_rewards_are_labelled_for_the_tooltip() -> None:
     )
 
 
+# --- the quest that waits on another quest ---------------------------------
+#
+# `Test: quest_done(...)` is the one gate the picture used to drop entirely: a
+# step waiting on three chapters of another chain looked like it closed on
+# nothing. Mirrors the real Q01_S02 -> Q03_S00 shape.
+
+
+def _quest_gated(key: str = Q03_S00) -> dict[str, object]:
+    """SAMPLE with ``Q01_S01`` closing on another quest instead of a conversation."""
+    sample = dict(SAMPLE)
+    sample[Q01_S01] = {
+        **SAMPLE[Q01_S01],  # type: ignore[dict-item]
+        "test": f'quest_done("{key}")',
+    }
+    return sample
+
+
+def test_quest_done_refs_reads_the_condition() -> None:
+    assert_eq(
+        quest_done_refs('quest_done("Q03_S00_LEARN_ABOUT_CURSE")'),
+        [QuestDoneRef("Q03_S00_LEARN_ABOUT_CURSE", False)],
+        "one reference",
+    )
+    assert_eq(quest_done_refs(None), [], "no condition, no references")
+    assert_eq(quest_done_refs('visited("N", "1")'), [], "a conversation is not a quest gate")
+    assert_eq(
+        quest_done_refs('not quest_done("A")'), [QuestDoneRef("A", True)],
+        "the `not` is half the meaning here too",
+    )
+    assert_eq(
+        quest_done_refs('quest_done("A") or quest_done("A")'), [QuestDoneRef("A")],
+        "named twice, drawn once",
+    )
+    assert_eq(quest_done_refs("quest_done("), [], "unparseable is empty, not fatal")
+
+
+def test_alternatives_counts_both_gate_kinds() -> None:
+    """The bug this pins: `visited(X) or quest_done(Y)` losing its `lub` label.
+
+    Counting only the conversations left that condition at one reference - below
+    the two-gate threshold - so the two edges drew as if BOTH were required, which
+    is the opposite of what the quest does.
+    """
+    assert_true(
+        alternatives('visited("A", "1") or quest_done("Q")'), "either one closes it"
+    )
+    assert_true(
+        not alternatives('visited("A", "1") and quest_done("Q")'), "both needed"
+    )
+    assert_true(alternatives('quest_done("Q") or quest_done("R")'), "two quests, either one")
+    assert_true(not alternatives('quest_done("Q")'), "a single gate has no alternative")
+
+
+def test_a_quest_done_test_draws_an_edge_to_that_quest() -> None:
+    """Drawn the same way round as a closing conversation: out of the quest that
+    closes, into what closes it. The other direction would put a green arrow
+    parallel to the grey `requires` ones, meaning the reverse."""
+    data = graph_to_dict(init_quests(_quest_gated()), {}, {})  # type: ignore[arg-type]
+    gates = [e for e in data["edges"] if e["kind"] == "closes_quest"]
+
+    assert_eq(len(gates), 1, f"one quest-on-quest gate: {gates}")
+    assert_eq(gates[0]["from"], Q01_S01, "out of the quest that closes")
+    assert_eq(gates[0]["to"], Q03_S00, "into the quest that closes it")
+    assert_true(not gates[0]["negated"], "a plain condition")
+    assert_eq(data["meta"]["counts"]["quest_gates"], 1, "and it is counted for the legend")
+
+
+def test_a_dangling_quest_done_is_skipped() -> None:
+    """`validate_references()` rejects these at import; the picture must not die
+    on a hand-edited config either."""
+    data = graph_to_dict(init_quests(_quest_gated("Q99_NO_SUCH_QUEST")), {}, {})  # type: ignore[arg-type]
+
+    assert_eq([e for e in data["edges"] if e["kind"] == "closes_quest"], [], "no edge")
+    assert_true(len(data["nodes"]) >= 8, "and the rest of the graph still draws")
+
+
+def test_a_dependency_always_reserves_its_conversation_column() -> None:
+    """The rhythm: a quest unlocked by a quest is always TWO columns to its right.
+
+    Reserved conditionally, it broke exactly where it hurt: a quest whose `Test`
+    is `quest_done()` names no conversation, so its dependant fell into the
+    *conversation* column - and that chain's steps then shared a column with
+    another thread's steps.
+    """
+    col = columns(init_quests(_quest_gated()))  # type: ignore[arg-type]
+
+    assert_eq(col[Q03_S00], col[Q01_S01] + 2, "two columns, conversation or not")
+
+
+# --- rows: the three rules the drawing must never break --------------------
+
+
+def _rowed() -> tuple[dict[str, dict[str, object]], dict[str, float]]:
+    data = graph_to_dict(_defs(), {}, {})
+    return {n["id"]: n for n in data["nodes"]}, rows(data["nodes"], data["edges"])
+
+
+def test_the_first_child_opening_right_shares_its_parents_row() -> None:
+    """Rule 1. Otherwise the two sit rows apart and the edge between them is a
+    long diagonal across everything else.
+
+    Stated as the invariant rather than as a pair of keys: *which* child comes
+    first is the layout's business (nearest column, then smallest subtree), and
+    pinning one name here would pin that ordering by accident.
+    """
+    nodes, row = _rowed()
+    edges = graph_to_dict(_defs(), {}, {})["edges"]
+
+    opened: dict[str, list[float]] = {}
+    for edge in edges:
+        if edge["kind"] not in ("requires", "parent"):
+            continue
+        if nodes[edge["to"]]["level"] <= nodes[edge["from"]]["level"]:
+            continue  # a step of the same thread - it goes below, not beside
+        opened.setdefault(edge["from"], []).append(row[edge["to"]])
+
+    assert_true(bool(opened), "the sample does open something to the right")
+    for key, child_rows in opened.items():
+        assert_eq(row[key], min(child_rows), f"{key} sits level with its topmost child")
+
+
+def test_a_dialog_node_never_sits_level_with_its_parent() -> None:
+    """Rule 2. Its arc returns from below; drawn level it lands exactly on the
+    horizontal line running from that parent to its own child."""
+    nodes, row = _rowed()
+    edges = graph_to_dict(_defs(), {}, {})["edges"]
+
+    for edge in edges:
+        if edge["kind"] != "closes":
+            continue
+        quest, dialog = edge["from"], edge["to"]
+        assert_true(
+            row[dialog] > row[quest],
+            f"{dialog} must sit below {quest}: {row[dialog]} vs {row[quest]}",
+        )
+
+
+def test_two_nodes_never_share_a_row_in_one_column() -> None:
+    """The packing invariant. Rows are per-column cursors, not per-subtree bands -
+    that is what lets two nodes in *different* columns sit level, and it is the
+    only reason the picture stays short.
+
+    Checked on `_gated()` too, and not for symmetry: the live config has no
+    `Requires: visited(...)` at all, so an *opening* conversation is a branch no
+    real data exercises. There the hexagon owns the quest instead of hanging off
+    it - the one case where a dialog node is a parent - and a collision would be
+    a real bug found by nobody.
+    """
+    for label, defs in (("SAMPLE", _defs()), ("gated", init_quests(_gated()))):  # type: ignore[arg-type]
+        data = graph_to_dict(defs, {}, {})
+        row = rows(data["nodes"], data["edges"])
+        seen: dict[tuple[int, float], str] = {}
+        for node in data["nodes"]:
+            slot = (node["level"], row[node["id"]])
+            assert_true(
+                slot not in seen,
+                f"[{label}] {node['id']} collides with {seen.get(slot)} at {slot}",
+            )
+            seen[slot] = node["id"]
+
+
+def test_rows_do_not_depend_on_the_order_of_the_input() -> None:
+    """The forest is built from one incoming edge per node, tie-broken by rank,
+    column and key - so the picture is a function of the config, not of whatever
+    order `dict` happened to hand over. Reversing both lists is what makes this
+    test able to fail; running it twice in one process never could.
+    """
+    data = graph_to_dict(_defs(), {}, {})
+    forward = rows(data["nodes"], data["edges"])
+    backward = rows(list(reversed(data["nodes"])), list(reversed(data["edges"])))
+
+    assert_eq(backward, forward, "same config, same rows, whatever the order")
+
+
 def main() -> None:
     tests = [
         test_a_thread_keeps_its_steps_in_one_column,
@@ -488,6 +673,15 @@ def main() -> None:
         test_the_graph_still_draws_without_the_vault,
         test_a_dialog_gated_quest_is_not_a_root,
         test_rewards_are_labelled_for_the_tooltip,
+        test_quest_done_refs_reads_the_condition,
+        test_alternatives_counts_both_gate_kinds,
+        test_a_quest_done_test_draws_an_edge_to_that_quest,
+        test_a_dangling_quest_done_is_skipped,
+        test_a_dependency_always_reserves_its_conversation_column,
+        test_the_first_child_opening_right_shares_its_parents_row,
+        test_a_dialog_node_never_sits_level_with_its_parent,
+        test_two_nodes_never_share_a_row_in_one_column,
+        test_rows_do_not_depend_on_the_order_of_the_input,
     ]
     for t in tests:
         t()

@@ -5,12 +5,13 @@ tags: [graf-questow]
 # Questy - graf
 
 > [!info] Wygenerowane przez `scripts/quest_graph.py` - nie edytuj ręcznie.
-> Czyta się **od lewej do prawej**, kolumnami: rozmowa otwierająca -> wątek -> jego rozmowy -> kroki wątku (jedna kolumna, jeden pod drugim) -> rozmowy kroków. Pustej kolumny nie ma - wątek bez rozmowy otwierającej zaczyna od lewej krawędzi.
+> **Grot zawsze pokazuje skutek** - to jedyna reguła, jakiej trzeba do przeczytania strzałek. Legenda pod paskiem rozpisuje ją na pola z notatki questa.
+> Czyta się **od lewej do prawej**, kolumnami: rozmowa otwierająca -> wątek -> jego rozmowy -> kroki wątku (jedna kolumna, jeden pod drugim) -> rozmowy kroków. Quest odblokowany przez quest stoi zawsze o **dwie** kolumny dalej, rozmowa o jedną.
+> Krawędzie **zamykające wracają łukiem w lewo** - quest otwiera się wcześniej, niż to, co go zamyka.
 > Klik w węzeł: podświetl sąsiadów. Podwójny klik: otwórz quest w źródłowym pliku.
 > Najedź na węzeł, żeby zobaczyć opis, warunek zamknięcia i nagrody.
 > Sześciokąt to **węzeł dialogu** - podwójny klik prowadzi do kwestii w notatce postaci.
-> Strzałka **w** quest (z lewej): ta rozmowa go odblokowuje (`Requires`). Strzałka **z** questa (w prawo): na tej rozmowie się zamyka (`Test`).
-> Poprzeczka zamiast grotu = warunek zanegowany (`not`), podpis `lub` = wystarczy jedna z rozmów. Pełne wyrażenie jest w dymku questa.
+> Przycisk **Zamknięcia** chowa rozmowy razem z łukami; zostaje sam szkielet odblokowań.
 
 ```dataviewjs
 const KEY = "QUESTS";
@@ -50,8 +51,25 @@ if (!document.getElementById("mom-graph-css")) {
     .mom-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
     .mom-bar button { font-size: 12px; padding: 3px 10px; cursor: pointer; }
     .mom-count { font-size: 12px; color: var(--text-muted); margin-left: auto; }
-    .mom-legend { display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
-        margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
+    /* Jedna reguła = jedna linia. Poprzednia legenda była jednym ciągiem znaków
+       ──/┄┄/╌╌/┈┈ w jednej linijce i nie dawała się przeczytać: cztery rodzaje
+       krawędzi różnią się kolorem, rytmem kreski i KOŃCEM, na którym siedzi grot,
+       a znak tekstowy nie oddaje żadnej z tych trzech rzeczy. */
+    .mom-legend { margin-bottom: 10px; padding: 10px 14px; border-radius: 8px;
+        font-size: 12px; color: var(--text-muted);
+        background: var(--background-secondary);
+        border: 1px solid var(--background-modifier-border); }
+    .mom-legend .rule { color: var(--text-normal); margin-bottom: 8px; font-size: 12.5px; }
+    .mom-legend dl { margin: 0; display: grid; grid-template-columns: auto auto 1fr;
+        gap: 6px 12px; align-items: center; }
+    .mom-legend .src { font-family: var(--font-monospace); font-size: 11px;
+        color: var(--text-accent); white-space: nowrap; }
+    .mom-legend .txt strong { color: var(--text-normal); font-weight: 600; }
+    .mom-legend .sep { grid-column: 1 / -1; height: 1px; margin: 2px 0;
+        background: var(--background-modifier-border); }
+    .mom-legend .mark { text-align: center; font-family: var(--font-monospace); }
+    .mom-legend .shp { display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+        margin-top: 9px; }
     .mom-legend span.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px;
         margin-right: 5px; vertical-align: -1px; border: 1px solid; }
     /* próbka w kształcie węzła, bo to kształt odróżnia dialog od questa, nie kolor */
@@ -124,9 +142,18 @@ function dialogTip(n) {
     return t;
 }
 
+// Kolumnę i wiersz liczy Python (`columns()` i `rows()`), tu zamieniają się na
+// piksele. Układ hierarchiczny vis-a jest wyłączony, bo rozdawał każdemu węzłowi
+// jeden równy slot w pionie - sześciokąt dialogu rezerwował tyle samo miejsca, co
+// podquest z całym wątkiem pod sobą.
+const COLW = 290;
+const ROWH = 88;
+
 const visNodes = G.nodes.map((n) => ({
     id: n.id,
-    level: n.level,
+    kind: n.kind,
+    x: n.level * COLW,
+    y: n.row * ROWH,
     label: n.name,
     title: n.kind === "dialog" ? dialogTip(n) : nodeTip(n),
     color: { background: n.colour.bg, border: n.colour.border },
@@ -144,9 +171,14 @@ const REQ = "#9aa0a8";
 const PAR = "#0dcaf0";
 const UNL = "#7048e8";
 const CLO = "#0ca678";
-const EDGE_COLOUR = { requires: REQ, parent: PAR, unlocks: UNL, closes: CLO };
-const EDGE_DASH = { requires: false, parent: [2, 4], unlocks: [7, 3], closes: [2, 3] };
-const EDGE_WIDTH = { requires: 1.6, parent: 1, unlocks: 1.8, closes: 1.6 };
+const EDGE_COLOUR = { requires: REQ, parent: PAR, unlocks: UNL, closes: CLO, closes_quest: CLO };
+const EDGE_DASH = { requires: false, parent: [2, 4], unlocks: [7, 3], closes: [2, 3],
+                    closes_quest: [12, 5] };
+const EDGE_WIDTH = { requires: 1.6, parent: 1, unlocks: 1.8, closes: 1.6, closes_quest: 2.6 };
+// Dwie krawędzie mówią "to ZAMYKA tamten quest" - jedna kończy się na rozmowie,
+// druga na innym queście. Obie rysują się tak samo: grot na końcu `from`, czyli
+// przy queście, i łuk powrotny.
+const CLOSING = new Set(["closes", "closes_quest"]);
 
 // Dwie rzeczy, których "bloczki i linie" nie oddadzą same z siebie, a które
 // zmieniają sens na przeciwny albo prawie:
@@ -158,26 +190,44 @@ const EDGE_WIDTH = { requires: 1.6, parent: 1, unlocks: 1.8, closes: 1.6 };
 const edgeNote = (e) => [e.negated ? "nie" : null, e.alt ? "lub" : null]
     .filter(Boolean).join(" ");
 
-const visEdges = G.edges.map((e, i) => ({
-    id: i,
-    from: e.from,
-    to: e.to,
-    kind: e.kind,
-    color: { color: EDGE_COLOUR[e.kind], opacity: 0.85 },
-    dashes: EDGE_DASH[e.kind],
-    width: EDGE_WIDTH[e.kind],
-    label: edgeNote(e) || undefined,
-    // Bez obwódki: etykieta jedzie na canvas, a canvas nie rozwiązuje `var(--...)`,
-    // więc obwódka w kolorze motywu wychodziła czarną plamą zamiast tła. Sam
-    // kolor krawędzi wystarczy - podpis jest krótki i siedzi na swojej linii.
-    font: { size: 12, color: EDGE_COLOUR[e.kind], strokeWidth: 0, align: "middle" },
-    arrows: { to: { enabled: true, scaleFactor: 0.75, type: e.negated ? "bar" : "arrow" } },
-    smooth: { enabled: true, type: "cubicBezier", forceDirection: "horizontal", roundness: 0.5 },
-}));
+// Zwrot grotu, nie zwrot krawędzi: `from`/`to` zostają takie, jak liczy je
+// Python, a grot przenosi się na koniec `from`. Dzięki temu KAŻDA strzałka w
+// grafie znaczy to samo - grot pokazuje skutek - a `closes` przestaje być jedyną,
+// która biegnie od skutku do przyczyny. Łuk (`curvedCCW`) odsuwa te krawędzie od
+// szkieletu odblokowań, żeby powrót było widać kształtem, zanim się przeczyta kolor.
+const visEdges = G.edges.map((e, i) => {
+    const back = CLOSING.has(e.kind);
+    const head = {
+        enabled: true,
+        scaleFactor: e.kind === "closes_quest" ? 0.95 : 0.75,
+        type: e.negated ? "bar" : "arrow",
+    };
+    return {
+        id: i,
+        from: e.from,
+        to: e.to,
+        kind: e.kind,
+        color: { color: EDGE_COLOUR[e.kind], opacity: e.kind === "closes_quest" ? 1 : 0.85 },
+        dashes: EDGE_DASH[e.kind],
+        width: EDGE_WIDTH[e.kind],
+        label: edgeNote(e) || undefined,
+        // Bez obwódki: etykieta jedzie na canvas, a canvas nie rozwiązuje `var(--...)`,
+        // więc obwódka w kolorze motywu wychodziła czarną plamą zamiast tła. Sam
+        // kolor krawędzi wystarczy - podpis jest krótki i siedzi na swojej linii.
+        font: { size: 12, color: EDGE_COLOUR[e.kind], strokeWidth: 0, align: "middle" },
+        arrows: back ? { from: head, to: { enabled: false } } : { to: head },
+        smooth: back
+            ? { enabled: true, type: "curvedCCW", roundness: 0.35 }
+            : { enabled: true, type: "cubicBezier", forceDirection: "horizontal", roundness: 0.5 },
+    };
+});
 
 // -------------------------------------------------------------------- widok
 const bar = box.appendChild(el("div", "mom-bar"));
 const btnLay = bar.appendChild(el("button", null, "Układ: kolumny"));
+const btnDlg = G.meta.counts.dialogs
+    ? bar.appendChild(el("button", null, "Zamknięcia: widoczne"))
+    : null;
 const btnFit = bar.appendChild(el("button", null, "Dopasuj"));
 const btnReset = bar.appendChild(el("button", null, "Odznacz"));
 bar.appendChild(
@@ -187,50 +237,106 @@ bar.appendChild(
        (G.meta.counts.dialogs ? `, ${G.meta.counts.dialogs} węzłów dialogu` : ""))
 );
 
+// Próbka linii rysowana tak, jak wygląda na grafie: ten sam kolor, ten sam wzór
+// kreski, grot na tym samym końcu, łuk tam gdzie jest łuk. Znaki ──/┄┄ nie
+// oddawały żadnej z tych trzech rzeczy, a to po nich się te krawędzie rozróżnia.
+function swatch(kind, back) {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("width", "74");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("viewBox", "0 0 74 18");
+    const line = document.createElementNS(NS, "path");
+    line.setAttribute("d", back ? "M14,13 Q37,2 62,11" : "M12,9 L62,9");
+    line.setAttribute("fill", "none");
+    line.setAttribute("stroke", EDGE_COLOUR[kind]);
+    line.setAttribute("stroke-width", String(EDGE_WIDTH[kind] + 0.4));
+    if (EDGE_DASH[kind]) line.setAttribute("stroke-dasharray", EDGE_DASH[kind].join(" "));
+    svg.appendChild(line);
+    const head = document.createElementNS(NS, "polygon");
+    head.setAttribute("fill", EDGE_COLOUR[kind]);
+    head.setAttribute("points", back ? "12,13 22,9 22,17" : "64,9 54,5 54,13");
+    svg.appendChild(head);
+    return svg;
+}
+
+// Pola tak, jak się je pisze w notatce questa - `parent` świadomie NIE jest
+// polem, bo w .md go nie ma: wynika z klucza `Qxx_Syy`.
+const RULES = [
+    ["requires", false, "**Requires**: [[quest]]",
+     "quest UKOŃCZONY -> ten quest ODBLOKOWANY"],
+    ["parent", false, "klucz Qxx_S00 (parasol)",
+     "wątek ODBLOKOWANY -> jego krok ODBLOKOWANY"],
+    ["unlocks", false, "**Requires**: `visited(...)`",
+     "rozmowa ODBYTA -> quest ODBLOKOWANY"],
+    ["closes", true, "**Test**: `visited(...)`",
+     "rozmowa ODBYTA -> quest ZAMKNIĘTY"],
+    ["closes_quest", true, "**Test**: `quest_done(...)`",
+     "quest UKOŃCZONY -> ten quest ZAMKNIĘTY"],
+];
+const RULE_COUNT = {
+    requires: 1, parent: 1,
+    unlocks: G.meta.counts.dialogs, closes: G.meta.counts.dialogs,
+    closes_quest: G.meta.counts.quest_gates,
+};
+
 const legend = box.appendChild(el("div", "mom-legend"));
-const LEG_TEXT = { test: "test (warunek)", all_subquests: "wątek (kroki)", manual: "manual (kod gry)" };
+legend.append(el("div", "rule",
+    "Grot zawsze pokazuje SKUTEK. Krawędzie zamykające wracają łukiem w lewo, " +
+    "bo quest otwiera się wcześniej, niż to, co go zamyka."));
+const dl = legend.appendChild(document.createElement("dl"));
+for (const [kind, back, src, txt] of RULES) {
+    if (!RULE_COUNT[kind]) continue;  // nie obiecuj krawędzi, której na obrazku nie ma
+    dl.appendChild(swatch(kind, back));
+    dl.appendChild(el("span", "src", src));
+    dl.appendChild(el("span", "txt", txt));
+}
+if (G.meta.counts.dialogs || G.meta.counts.quest_gates) {
+    dl.appendChild(el("div", "sep"));
+    dl.appendChild(el("span", "mark", "⊣"));
+    dl.appendChild(el("span", "src", "`not ...`"));
+    dl.appendChild(el("span", "txt", "poprzeczka zamiast grotu = warunek zanegowany"));
+    dl.appendChild(el("span", "mark", "lub"));
+    dl.appendChild(el("span", "src", "`... or ...`"));
+    dl.appendChild(el("span", "txt", "wystarczy jeden z tych warunków, nie wszystkie"));
+}
+
+const shapes = legend.appendChild(el("div", "shp"));
+const LEG_TEXT = {
+    test: "Completion: test - zamyka ją warunek",
+    all_subquests: "Completion: all_subquests - zamykają ją kroki",
+    manual: "Completion: manual - zamyka ją kod gry",
+};
 for (const [mode, col] of Object.entries(G.meta.modes)) {
-    const item = legend.appendChild(el("span", null, null));
+    const item = shapes.appendChild(el("span", null, null));
     const sw = item.appendChild(el("span", "sw"));
     sw.style.background = col.bg;
     sw.style.borderColor = col.border;
     item.append(document.createTextNode(LEG_TEXT[mode] ?? mode));
 }
 if (G.meta.counts.dialogs) {
-    const item = legend.appendChild(el("span", null, null));
+    const item = shapes.appendChild(el("span", null, null));
     const sw = item.appendChild(el("span", "sw hex"));
     sw.style.background = G.meta.dialog_colour.bg;
     sw.style.borderColor = G.meta.dialog_colour.border;
-    item.append(document.createTextNode("węzeł dialogu"));
+    item.append(document.createTextNode("węzeł dialogu (nie quest)"));
 }
-legend.append(el("span", null, "──  requires (musi być zrobione)"));
-legend.append(el("span", null, "┄┄  parent (wątek odblokowany)"));
-if (G.meta.counts.dialogs) {
-    legend.append(el("span", null, "╌╌  rozmowa ODBLOKOWUJE quest"));
-    legend.append(el("span", null, "┈┈  quest ZAMYKA się na rozmowie"));
-    legend.append(el("span", null, '⊣  poprzeczka zamiast grotu = "nie"'));
-}
+shapes.append(el("span", null, "prostokąt = wątek · owal = krok"));
 
 const broken = G.nodes.filter((n) => n.problem);
 
 const graphEl = el("div", "mom-net");
 graphEl.style.height = HEIGHT;
 
-// Hierarchia, nie fizyka - i to jest różnica względem grafu dialogów. Tam
-// sortMethod: "directed" gubił rangi, bo pętle resume tworzą cykle; tu graf jest
-// acyklyczny z walidacji (_validate_acyclic), więc rangi są uczciwe. Poziom liczy
-// Python (najdłuższa ścieżka odblokowań), vis tylko go rysuje.
-// Poziomo, nie pionowo. Kolumnę liczy Python i niesie ją `level` (patrz
-// `columns()`): rozmowa otwierająca, wątek, jego rozmowy, kroki, rozmowy kroków.
-// vis tylko układa - `sortMethod: "directed"` porządkowałby kolumny po swojemu i
-// rozjeżdżał kroki jednego wątku, więc zostaje "hubsize", które szanuje `level`.
-// `levelSeparation` to odstęp MIĘDZY kolumnami, `nodeSpacing` - w pionie, wewnątrz
-// kolumny; przy sześciokątach podpis jedzie pod kształtem, więc pionu trzeba więcej.
+// Współrzędne, nie hierarchia. Układ hierarchiczny vis-a rozdawał każdemu
+// węzłowi jeden równy slot w pionie, więc sześciokąt dialogu rezerwował tyle
+// samo miejsca, co podquest z całym wątkiem pod sobą - stąd ścisk przy małych
+// węzłach, rozstrzelone duże i przecięcia między nimi. Żaden `nodeSpacing` /
+// `sortMethod` / `shakeTowards` do tego nie sięga, bo arytmetyka musi wiedzieć,
+// co pod czym wisi. Kolumnę liczy `columns()`, wiersz `rows()`, a vis dostaje
+// gotowe `x`/`y` i tylko rysuje.
 const HIER = {
-    layout: { hierarchical: { enabled: true, direction: "LR", sortMethod: "hubsize",
-                              levelSeparation: 260, nodeSpacing: 120, treeSpacing: 170,
-                              blockShifting: true, edgeMinimization: true,
-                              parentCentralization: true } },
+    layout: { hierarchical: { enabled: false }, improvedLayout: false },
     physics: { enabled: false },
 };
 const FREE = {
@@ -269,10 +375,15 @@ const nodesDS = new vis.DataSet(visNodes);
 const edgesDS = new vis.DataSet(visEdges);
 let network;
 let hier = true;
+let hidden = false;  // rozmowy schowane? trzyma się poza DataSetem, bo highlight() go przepisuje
 
 function buildNetwork() {
     if (network) network.destroy();
-    nodesDS.update(visNodes.map((n) => ({ id: n.id, x: undefined, y: undefined, fixed: false })));
+    // W trybie kolumn wracają policzone współrzędne; w swobodnym trzeba je zdjąć,
+    // inaczej fizyka startuje z węzłami przyklejonymi do siatki.
+    nodesDS.update(visNodes.map((n) => hier
+        ? { id: n.id, x: n.x, y: n.y, fixed: false }
+        : { id: n.id, x: undefined, y: undefined, fixed: false }));
     network = new vis.Network(graphEl, { nodes: nodesDS, edges: edgesDS },
                               { ...BASE, ...(hier ? HIER : FREE) });
     if (hier) {
@@ -315,8 +426,10 @@ function highlight(id) {
 }
 
 function clearHighlight() {
-    nodesDS.update(visNodes);
-    edgesDS.update(visEdges);
+    // Tylko kolor i font, bez `x`/`y`: pełne `visNodes` przywracało policzone
+    // współrzędne i odrzucało z powrotem każdy węzeł, który autor przeciągnął.
+    nodesDS.update(visNodes.map((n) => ({ id: n.id, color: n.color, font: n.font })));
+    edgesDS.update(visEdges.map((e) => ({ id: e.id, color: e.color, width: e.width })));
 }
 
 // ------------------------------------------------------------------ toolbar
@@ -324,6 +437,19 @@ btnLay.onclick = () => {
     hier = !hier;
     btnLay.textContent = `Układ: ${hier ? "kolumny" : "swobodny"}`;
     buildNetwork();
+};
+// Same łuki bez sześciokątów zostawiały wiszące węzły, więc rozmowy chowają się
+// razem z nimi - dopiero wtedy zostaje czysty szkielet odblokowań, a to jest
+// jedyny widok, w którym da się prześledzić kolejność rozgrywki bez omijania
+// wzrokiem połowy obrazka.
+if (btnDlg) btnDlg.onclick = () => {
+    hidden = !hidden;
+    btnDlg.textContent = `Zamknięcia: ${hidden ? "ukryte" : "widoczne"}`;
+    nodesDS.update(visNodes.filter((n) => n.kind === "dialog")
+                           .map((n) => ({ id: n.id, hidden })));
+    edgesDS.update(visEdges.filter((e) => CLOSING.has(e.kind))
+                           .map((e) => ({ id: e.id, hidden })));
+    network.fit({ ...FIT, animation: true });
 };
 btnFit.onclick = () => network.fit({ ...FIT, animation: true });
 btnReset.onclick = () => { network.unselectAll(); clearHighlight(); };

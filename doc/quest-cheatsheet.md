@@ -265,17 +265,29 @@ Graf czyta się **od lewej do prawej**, kolumnami:
                                                          pod drugim
 ```
 
-Pustych kolumn nie ma: wątek bez rozmowy otwierającej zaczyna od lewej krawędzi, a parasol bez własnego `Test` (czyli zwykły `all_subquests`) ma kroki w następnej kolumnie. Wątek, który czeka na inny łańcuch, zaczyna się za jego prawym skrajem - dzięki temu `requires` zawsze biegnie w prawo.
+Rytm kolumn jest stały: **quest odblokowany przez quest stoi zawsze o dwie kolumny dalej, rozmowa o jedną**. Kolumna na rozmowy jest rezerwowana nawet wtedy, gdy quest żadnej nie nazywa - pusta kolumna kosztuje cal ekranu, złamany rytm kosztuje czytelność całego obrazka. Pustej kolumny globalnie nie ma: wątek bez rozmowy otwierającej zaczyna od lewej krawędzi.
 
 **Wszystkie kroki jednego wątku stoją w jednej kolumnie**, jeden pod drugim; ich kolejność niosą szare strzałki `requires` między nimi. To jest ta jedna rzecz, która pozwala prześledzić wątek wzrokiem.
 
-Sześciokąty pokazują obie strony rozmowy:
+### Jak czytać strzałki
 
-- strzałka **w** quest z lewej (fioletowa): ta rozmowa go **odblokowuje** (`Requires`),
-- strzałka **z** questa w prawo (zielona): na tej rozmowie quest **się zamyka** (`Test`),
+Jedna reguła na wszystkie cztery rodzaje: **grot pokazuje skutek**.
+
+| Zapis w notatce                    | Znaczy                                             |
+| ---------------------------------- | -------------------------------------------------- |
+| `**Requires**: [[quest]]`          | quest **ukończony** -> ten quest **odblokowany**   |
+| klucz `Qxx_S00` (parasol)          | wątek **odblokowany** -> jego krok **odblokowany** |
+| `` **Requires**: `visited(...)` `` | rozmowa **odbyta** -> quest **odblokowany**        |
+| `` **Test**: `visited(...)` ``     | rozmowa **odbyta** -> quest **zamknięty**          |
+| `` **Test**: `quest_done(...)` ``  | quest **ukończony** -> ten quest **zamknięty**     |
+
+Dwie ostatnie to **krawędzie zamykające** i one jedyne wracają **łukiem w lewo**: quest otwiera się wcześniej, niż to, co go zamyka, więc jego koniec leży dalej w prawo niż on sam. Łuk odsuwa je od szkieletu odblokowań, żeby powrót było widać kształtem, zanim się przeczyta kolor.
+
+Do tego dwa znaki na krawędzi:
+
 - **poprzeczka** zamiast grotu: warunek zanegowany (`not`),
-- podpis **`lub`**: wystarczy jedna z tych rozmów, nie wszystkie.
+- podpis **`lub`**: wystarczy jeden z tych warunków, nie wszystkie.
 
-W prawo znaczy później, więc cały obrazek skanuje się jak kolejność rozgrywki. Podwójny klik w sześciokąt otwiera kwestię w notatce postaci - to najszybszy sposób sprawdzenia, czy quest wisi na węźle, który faktycznie da się osiągnąć.
+W prawo znaczy później, więc cały obrazek skanuje się jak kolejność rozgrywki. Przycisk **Zamknięcia** w pasku chowa rozmowy razem z łukami - zostaje sam szkielet odblokowań, i to jest widok, w którym najłatwiej prześledzić kolejność. Podwójny klik w sześciokąt otwiera kwestię w notatce postaci - to najszybszy sposób sprawdzenia, czy quest wisi na węźle, który faktycznie da się osiągnąć.
 
 Pełnego wyrażenia graf nie oddaje (i nie próbuje): zagnieżdżone `and`/`or` zostają w dymku questa, w oryginalnym zapisie.
