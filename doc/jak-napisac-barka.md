@@ -168,7 +168,7 @@ opcję wybrałeś" nie ma tu znaczenia. Import odrzuci taki warunek.
 
 ### „Wieś wie o klątwie"
 
-To nie jest osobny przełącznik świata, tylko quest: `quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`.
+To nie jest osobny przełącznik świata, tylko quest: `quest_done(`[[Q01_S01 Kto wie więcej o klątwie]]`)`.
 Ten sam warunek działa w barku i w opcji dialogowej, więc cała wieś reaguje na
 jedną rzecz. Skasowanie albo przemianowanie tego questa wyłączy te reakcje -
 pilnuje tego reguła 20 walidatora (`just validate-world`), nie ten akapit.

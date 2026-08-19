@@ -12,11 +12,6 @@ The happy-path fixture is the real 8-quest graph from
 actually author.
 """
 
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
-
 from quest import (
     CompletionMode,
     QuestDef,
@@ -26,6 +21,10 @@ from quest import (
     children_of,
     init_quests,
 )
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
 
 
 def assert_eq(a: object, b: object, msg: str = "") -> None:
@@ -65,8 +64,8 @@ SAMPLE: dict[str, object] = {
         "test": 'visited("BARMAN_ABSINTHRAYNER", "012")',
         "parent": "Q01_S00_BREAK_THE_CURSE",
     },
-    "Q01_S02_MEET_MADAME_SARCASMIA": {
-        **_msgs("Q01_S02_MEET_MADAME_SARCASMIA"),
+    "Q01_S03_MEET_MADAME_SARCASMIA": {
+        **_msgs("Q01_S03_MEET_MADAME_SARCASMIA"),
         "completion": "test",
         "test": 'visited("MADAME_SARCASMIA", "SARCASMIA_AA_BACK_SO_SOON")',
         "parent": "Q01_S00_BREAK_THE_CURSE",
@@ -170,7 +169,7 @@ def test_children_and_links() -> None:
     )
     # Q01_S02 got the requires edge SSiS never gave it
     assert_eq(
-        defs["Q01_S02_MEET_MADAME_SARCASMIA"].requires,
+        defs["Q01_S03_MEET_MADAME_SARCASMIA"].requires,
         ["Q01_S01_LEARN_ABOUT_CURSE"],
         "Q01_S02 is reachable",
     )
@@ -335,15 +334,18 @@ def test_rejects_empty_rewards() -> None:
     base = {**_msgs("Q_X"), "completion": "manual"}
 
     _expect_value_error(
-        lambda: init_quests({"Q_X": {**base, "rewards": [{"category": "money", "value": 0}]}}),  # type: ignore[arg-type]
+        # type: ignore[arg-type]
+        lambda: init_quests({"Q_X": {**base, "rewards": [{"category": "money", "value": 0}]}}),
         "numeric reward with no value",
     )
     _expect_value_error(
-        lambda: init_quests({"Q_X": {**base, "rewards": [{"category": "items", "items": []}]}}),  # type: ignore[arg-type]
+        # type: ignore[arg-type]
+        lambda: init_quests({"Q_X": {**base, "rewards": [{"category": "items", "items": []}]}}),
         "items reward with no items",
     )
     _expect_value_error(
-        lambda: init_quests({"Q_X": {**base, "rewards": [{"category": "agility", "value": 1}]}}),  # type: ignore[arg-type]
+        # type: ignore[arg-type]
+        lambda: init_quests({"Q_X": {**base, "rewards": [{"category": "agility", "value": 1}]}}),
         "reward category dropped in D11 (agility)",
     )
     _expect_value_error(

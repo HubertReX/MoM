@@ -80,6 +80,7 @@ And **you** are new here, I have not seen **you** before. What is your sign?
 
 * Oh, my poppet, you must have offended them badly. That is a very old [quest]curse[/] and hardly anyone reaches for it. I have no remedy for it. All I can give you is a [item]Potion of Oblivion[/item], but that will hardly solve the problem.
 
+* [[#011]] 1😇:Jest tu w wiosce ktoś inny, kto się na tym zna?**TODO**
 * [[#001]] 9😐: A pity. Let us talk about something else, then.
 
 ## 003

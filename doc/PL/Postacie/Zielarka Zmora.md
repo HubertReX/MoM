@@ -98,8 +98,11 @@ A **Ty** to jesteś tutaj nowy, nie widziałam **Cię** wcześniej. Spod jakiego
 
 ## 009
 
-* O bratku, to musiałeś bardzo im się narazić. To bardzo stara [quest]klątwa[/] i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać [item]Miksturę Zapomnienia[/item], ale to raczej nie rozwiąże problemu.
+* O bratku, to musiałeś bardzo im się narazić. To bardzo stara [quest]klątwa[/] i rzadko kto po nią sięga. Nie znam na to lekarstwa. Jedynie mogę Ci dać [item]Miksturę Zapomnienia[/item], ale to raczej nie rozwiąże problemu. 
 
+Może ktoś inny, będzie wiedział więcej
+
+* [[#011]] 1😇:Jest tu w wiosce ktoś inny, kto się na tym zna?
 * [[#001]] 9😐: Szkoda. Porozmawiajmy w takim razie o czymś innym.
 
 ## 003
@@ -148,7 +151,7 @@ Tak jak ja.
 
 * Hmm, teraz jak o tym mówisz to przypomniało mi się, że miałam kiedyś taką [char]pomocnicę[/]. Miała się szkolić u mnie na **zielarkę**, ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce. 
 
-Ją też interesowały książki, szczególnie te o **magii**. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może **Tobie** mogła by pomóc.
+Ją interesowały książki, szczególnie te o **magii**. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może **Tobie** mogła by pomóc.
 
 * [[#012]] 1😐: To brzmi **interesująco**, powiedz mi o niej coś więcej.
 
@@ -160,7 +163,6 @@ Ją też interesowały książki, szczególnie te o **magii**. Szybką ją odpra
 * [[#014]] 2[`sentiment >= 42`]😐: Jak się **ona** nazywa?
 * [[#017]] 2[`sentiment < 42`]😐: Jak się **ona** nazywa?
 * [[#015]] 4😐: Gdzie mogę **ją** znaleźć?
-
 * [[#001]] 9😐: Dzięki, to mi wystarczy.
 
 ## 013

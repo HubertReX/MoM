@@ -6,7 +6,7 @@
   "start_node": "016",
   "counts": {
    "nodes": 21,
-   "options": 38
+   "options": 39
   },
   "global_problems": [],
   "palette": {
@@ -112,7 +112,7 @@
   {
    "id": "009",
    "level": 5,
-   "text": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa[/] i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać Miksturę Zapomnienia, ale to raczej nie rozwiąże problemu.",
+   "text": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara klątwa[/] i rzadko kto po nią sięga. Nie znam na to lekarstwa. Jedynie mogę Ci dać Miksturę Zapomnienia, ale to raczej nie rozwiąże problemu. Może ktoś inny, będzie wiedział więcej",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -178,7 +178,7 @@
   {
    "id": "011",
    "level": 4,
-   "text": "Hmm, teraz jak o tym mówisz to przypomniało mi się, że miałam kiedyś taką pomocnicę[/]. Miała się szkolić u mnie na zielarkę, ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce. Ją też interesowały książki, szczególnie te o magii. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może Tobie mogła by pomóc.",
+   "text": "Hmm, teraz jak o tym mówisz to przypomniało mi się, że miałam kiedyś taką pomocnicę[/]. Miała się szkolić u mnie na zielarkę, ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce. Ją interesowały książki, szczególnie te o magii. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może Tobie mogła by pomóc.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -454,6 +454,16 @@
    "order": 3,
    "sentiment": "smart",
    "text": "Z tego co udało mi się ustalić, jestem pod wpływem Odwiecznej klątwy nieszczęścia[/].",
+   "condition": null
+  },
+  {
+   "from": "009",
+   "to": "011",
+   "kind": "option",
+   "key": "009to011_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Jest tu w wiosce ktoś inny, kto się na tym zna?",
    "condition": null
   },
   {

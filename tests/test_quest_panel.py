@@ -10,6 +10,10 @@ mean, and that a locked step is not listed at all.
 """
 
 from __future__ import annotations
+from test_quest_entities import SAMPLE
+from quest.graph import init_quests
+from quest.entities import QuestState
+import pygame
 
 import os
 import sys
@@ -20,17 +24,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 os.environ["SDL_AUDIODRIVER"] = "dummy"
 
-import pygame
-
-from quest.entities import QuestState
-from quest.graph import init_quests
-from test_quest_entities import SAMPLE
 
 Q00 = "Q00_S00_WHAT_IS_GOING_ON"
 Q01_S00 = "Q01_S00_BREAK_THE_CURSE"
 Q03_S00 = "Q03_S00_LEARN_ABOUT_CURSE"
 Q01_S01 = "Q01_S01_LEARN_ABOUT_CURSE"
-Q01_S02 = "Q01_S02_MEET_MADAME_SARCASMIA"
+Q01_S02 = "Q01_S03_MEET_MADAME_SARCASMIA"
 Q03_S03 = "Q03_S03_HOW_TO_GET_THERE"
 
 

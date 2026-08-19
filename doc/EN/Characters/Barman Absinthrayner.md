@@ -192,9 +192,10 @@ Sometimes folk get even worse after those [item]potions[/item]. If you are despe
 * Now that **you** mention it, there might be something...
 
 * [[#022]] 1[`not visited(`[[Barman Absinthrayner#022]]`)`]😐: I hear the [char]cat[/] gobbled up all the [[Fresh fish|fish]]?
-* [[#001]] 2😐: **TODO** Q04_S02
+* [[#026]] 2😐: **TODO** Q04_S02
 * [[#001]] 3😐: **TODO** Q04_S03
 * [[#024]] 4[`item_count(`[[Fresh fish]]`) >= 5 and visited(`[[Barman Absinthrayner#022]]`)`]😐: I have got those [[Fresh fish|fish]] for **you**
+* [[#029]] 5[`item_count(`[[Zielony kryształ]]`) >= 1 and visited(`[[Barman Absyntnent#024]]`)`]😐: Mam dla **Ciebie** [[Zielony kryształ]]
 * [[#001]] 9😐: Bah, never mind
 
 ## 022
@@ -224,6 +225,42 @@ Only you will have to find a properly strong [item]weapon[/] to cut through bush
 * [`add_money(100)`] A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet :money:.**TODO**
 
 * [[#001]] 1😐: Cieszę się, że mogłem pomóc.**TODO**
+
+## 026
+
+* [`add_money(100)`] Masz tu [num]100[/] monet:$:.
+
+* [[#027]] 1😇: Masz coś konkretnego na myśli?
+* [[#027]] 2🧠: Hmm, nic nie rozumiem. Rób co chcesz - co mi do tego?
+* [[#027]] 3😉: [[Miecz Ciętej-riposty|Miecz]]: _Ty? Podróżowałeś?_:wondering:. Mów dalej...
+
+## 027
+
+* Bo tak sobie pomyślałem, że najprościej by było abyś **Ty** mi coś takiego przyniósł. A ja to tu sobie powieszę. Udowodniłeś już, że jesteś zaradny no i myślę, że mogę Ci zaufać. Wiesz, nie musimy nikomu mówić, czy to konkretne [item]trofeum[/] zdobyłem ja sam czy **Ty**. To mało znaczący szczegół. 
+
+Byłaby to nasza _mała_ tajemnica.
+
+* [[#028]] 1😢: No, ale ja nie wiem czy dam radę:evil:. Co to za [item]trofeum[/]?
+* [[#028]] 2😇: A co z tego będzie dla mnie?
+* [[#028]] 3😡: Ach, kręcisz i kręcisz:frounce:. Gadaj co mam zdobyć i ile konkretnie za to dostanę? 
+
+## 028
+
+* Spokojnie, to nie jest aż takie trudne a na pewno Ci się opłaci.
+
+Chcę abyś przyniósł mi [[Zielony kryształ]] widziałem takie w [[Jaskinie zagmatwania|Jaskiniach zagmatwania]], ale Ty znajdziesz je też w [[Labirynt|labiryncie]].
+
+Co do zapłaty, to myślę, że mogę Ci za to dać [num]30[/] monet:$: To więcej niż dostaniesz za niego u [[Jaś|Jasia]].
+
+* [[#001]] 1😐: Niech będzie. Wszystko jasne - biorę się do roboty.
+
+## 029
+
+* Och! Ależ się błyszczy:love_anim: Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!
+
+Oto **Twoja** nagroda :$:.
+
+* [[#001]] 1😐: Cieszę się, że mogłem pomóc.
 
 ## 990-end
 [[#001]]

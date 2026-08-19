@@ -2,11 +2,11 @@
 aliases:
   - Q03_S00_LEARN_ABOUT_CURSE
 ---
-# Znajdź kogoś kto wie o klątwach
+# Znajdź kogoś kto wie o magii
 
 W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]księdza[/], albo chociaż [char]starego dziada[/], który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o [quest]klątwach[/] więcej niż same plotki.
 
-**Requires**: [[Q01_S01 Dowiedz się więcej o klątwie]]
+**Requires**: [[Q01_S01 Kto wie więcej o klątwie]]
 **Completion**: `all_subquests`
 **Success**: Wiesz już, **kto** się na tym zna, **gdzie** mieszka i **jak** tam trafić. Trzy odpowiedzi bez ani grama magii. To się nawet może udać.
 **Reward**: `raise_max_health(10)`

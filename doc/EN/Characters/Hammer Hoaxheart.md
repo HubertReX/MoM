@@ -36,11 +36,12 @@ He is a blacksmith who claims that his swords can cut through shadows and that h
 
 * What do you want?
 
-* [[#002]] 1😐: Have you always been a blacksmith?
-* [[#003]] 2😐: How is business treating **you** in this village?
-* [[#004]] 3😐: Do you get customers from the surrounding [loc]villages[/]?
-* [[#005]] 4😐: Can you forge **magical** items?
-* [[#006]] 5😐: Who is the smartest person around here?
+* [[#trade-end]] 1😐: Can we trade?
+* [[#002]] 2😐: Have you always been a blacksmith?
+* [[#003]] 3😐: How is business treating **you** in this village?
+* [[#004]] 4😐: Do you get customers from the surrounding [loc]villages[/]?
+* [[#005]] 5😐: Can you forge **magical** items?
+* [[#006]] 6😐: Who is the smartest person around here?
 * [[#990-end]] 9😐: That is all, until next time.
 
 ## 002

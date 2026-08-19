@@ -5,8 +5,8 @@
   "source": "PL/Postacie/Barman Absyntnent.md",
   "start_node": "000",
   "counts": {
-   "nodes": 28,
-   "options": 57
+   "nodes": 32,
+   "options": 66
   },
   "global_problems": [],
   "palette": {
@@ -330,6 +330,50 @@
    "link": "Barman Absyntnent#025"
   },
   {
+   "id": "026",
+   "level": 3,
+   "text": "Ludzie we wsi to nawet nie wiedzą ile ja w życiu widziałem. Chciałbym aby każdy, kto przychodzi do mojej Tawerny od razu wiedział z kim ma do czynienia. Pomyślałem, że tu, nad barem, mógłbym powiesić sobie jedno z moich trofeów[/]. Świetny pomysł, prawda? Jedyny kłopot w tym, że kiedy podróżowałem to nigdy nie zawracałem sobie głowy zbieraniem jakiś bibelotów. Zresztą, w tych najbardziej niebezpiecznych miejscach jak Bagno niedogodności czy Jaskinie zagmatwania to raczej nie mają sklepu z pamiątkami",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#026"
+  },
+  {
+   "id": "027",
+   "level": 4,
+   "text": "Bo tak sobie pomyślałem, że najprościej by było abyś Ty mi coś takiego przyniósł. A ja to tu sobie powieszę. Udowodniłeś już, że jesteś zaradny no i myślę, że mogę Ci zaufać. Wiesz, nie musimy nikomu mówić, czy to konkretne trofeum[/] zdobyłem ja sam czy Ty. To mało znaczący szczegół. Byłaby to nasza mała tajemnica.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#027"
+  },
+  {
+   "id": "028",
+   "level": 5,
+   "text": "Spokojnie, to nie jest aż takie trudne a na pewno Ci się opłaci. Chcę abyś przyniósł mi Zielony kryształ widziałem takie w Jaskiniach zagmatwania, ale Ty znajdziesz je też w labiryncie. Co do zapłaty, to myślę, że mogę Ci za to dać 30[/] monet:$: To więcej niż dostaniesz za niego u Jasia.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#028"
+  },
+  {
+   "id": "029",
+   "level": 3,
+   "text": "Och! Ależ się błyszczy Coś pięknego To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę! Oto Twoja nagroda :$:.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#029"
+  },
+  {
    "id": "990",
    "level": 2,
    "text": "Do zobaczenia",
@@ -450,7 +494,7 @@
    "key": "001totrade_7",
    "order": 7,
    "sentiment": "neutral",
-   "text": "A co masz na sprzedaż",
+   "text": "A co masz na sprzedaż:$:",
    "condition": null
   },
   {
@@ -845,13 +889,13 @@
   },
   {
    "from": "021",
-   "to": "001",
+   "to": "026",
    "kind": "option",
-   "key": "021to001_2",
+   "key": "021to026_2",
    "order": 2,
    "sentiment": "neutral",
-   "text": "TODO Q04_S02",
-   "condition": null
+   "text": "Chciałbym sobie powiesić trofeum[/] nad barem",
+   "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"026\")"
   },
   {
    "from": "021",
@@ -872,6 +916,16 @@
    "sentiment": "neutral",
    "text": "Mam dla Ciebie te ryby",
    "condition": "item_count(\"fish\") >= 5 and visited(\"BARMAN_ABSINTHRAYNER\", \"022\")"
+  },
+  {
+   "from": "021",
+   "to": "029",
+   "kind": "option",
+   "key": "021to029_5",
+   "order": 5,
+   "sentiment": "neutral",
+   "text": "Mam dla Ciebie Zielony kryształ",
+   "condition": "item_count(\"gem_crystal_green\") >= 1 and visited(\"BARMAN_ABSINTHRAYNER\", \"026\")"
   },
   {
    "from": "021",
@@ -918,6 +972,86 @@
    "to": "001",
    "kind": "option",
    "key": "025to001_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Cieszę się, że mogłem pomóc.",
+   "condition": null
+  },
+  {
+   "from": "026",
+   "to": "027",
+   "kind": "option",
+   "key": "026to027_1",
+   "order": 1,
+   "sentiment": "kind",
+   "text": "Masz coś konkretnego na myśli?",
+   "condition": null
+  },
+  {
+   "from": "026",
+   "to": "027",
+   "kind": "option",
+   "key": "026to027_2",
+   "order": 2,
+   "sentiment": "smart",
+   "text": "Hmm, nic nie rozumiem. Rób co chcesz - co mi do tego?",
+   "condition": null
+  },
+  {
+   "from": "026",
+   "to": "027",
+   "kind": "option",
+   "key": "026to027_3",
+   "order": 3,
+   "sentiment": "funny",
+   "text": "Miecz: Ty? Podróżowałeś?. Mów dalej...",
+   "condition": null
+  },
+  {
+   "from": "027",
+   "to": "028",
+   "kind": "option",
+   "key": "027to028_1",
+   "order": 1,
+   "sentiment": "weak",
+   "text": "No, ale ja nie wiem czy dam radę. Co to za trofeum[/]?",
+   "condition": null
+  },
+  {
+   "from": "027",
+   "to": "028",
+   "kind": "option",
+   "key": "027to028_2",
+   "order": 2,
+   "sentiment": "kind",
+   "text": "A co z tego będzie dla mnie?",
+   "condition": null
+  },
+  {
+   "from": "027",
+   "to": "028",
+   "kind": "option",
+   "key": "027to028_3",
+   "order": 3,
+   "sentiment": "angry",
+   "text": "Ach, kręcisz i kręcisz. Gadaj co mam zdobyć i ile konkretnie za to dostanę?",
+   "condition": null
+  },
+  {
+   "from": "028",
+   "to": "001",
+   "kind": "option",
+   "key": "028to001_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Niech będzie. Wszystko jasne - biorę się do roboty.",
+   "condition": null
+  },
+  {
+   "from": "029",
+   "to": "001",
+   "kind": "option",
+   "key": "029to001_1",
    "order": 1,
    "sentiment": "neutral",
    "text": "Cieszę się, że mogłem pomóc.",

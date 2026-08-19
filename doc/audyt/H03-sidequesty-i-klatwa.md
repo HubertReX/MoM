@@ -61,7 +61,7 @@ Każda postać reaguje **zgodnie ze swoim charakterem z `doc/PL/Postacie/`**, ni
 | [[Marysia]]                         | statystka                       | szczere współczucie, niezręczne                        | „_Modliłam się za pana. Trochę. Miałam pranie do zrobienia._", "_Oby to nie było dziedziczne_"                          |
 | [[Miecz Ciętej-riposty]]            | złośliwy komentator             | jedyny, kto nie wierzy - i to on ma rację              | „_Zauważyłeś, że przestałeś dotykać klamek? Ja zauważyłem._"                                                            |
 
-Zasada z **W3** w praktyce: **na trzy reakcje jedna ma być bezpośrednia, dwie subtelne.** Subtelna reakcja to taka, w której o klątwie nie pada ani słowo, a i tak wiadomo - [[Kowal]] odsuwający kubek, [[Barman]] zmieniający ==Malachiemu== stolik.
+Zasada z **W3** w praktyce: **na trzy reakcje jedna ma być bezpośrednia, dwie subtelne.** Subtelna reakcja to taka, w której o klątwie nie pada ani słowo, a i tak wiadomo - [[Kowal Kłamca|Kowal]] odsuwający kubek, [[Barman Absyntnent|Barmana]] zmieniający ==Malachiemu== stolik.
 
 ## Siedem sidequestów
 
@@ -71,24 +71,24 @@ Kroki są **kolejnością zaufania**: pierwszy dostajesz od ręki, ostatni dopie
 
 | Klucz                                             | Postać       | Haczyk (hook)                               | Mechanika                      |
 | ------------------------------------------------- | ------------ | ------------------------------------------- | ------------------------------ |
-| [[#Q04_S01 - Ryby, które zjadł kot]]              | [[Barman]]   | kot zjadł zapas ryb                         | krzak + skrzynia + przekazanie |
-| [[#Q04_S02 - Trofeum z dalekiego świata]]         | [[Barman]]   | chce uchodzić za bywałego                   | klejnot + przekazanie          |
-| [[#Q04_S03 - Piwnica, do której się nie schodzi]] | [[Barman]]   | rodzinna tajemnica, taboo                   | klucz + drzwi + walka          |
-| [[#Q05_S01 - Ruda spod głazu]]                    | [[Kowal]]    | posłaniec z rudą przepadł                   | pożyczony topór + głaz         |
-| [[#Q05_S02 - Dotknij tej zbroi]]                  | [[Kowal]]    | ostateczny test pechowca                    | dialog + plotka                |
-| [[#Q06_S01 - Rupiecie Mariolki]]                  | [[Zielarka]] | zamknięta skrzynka po tajemniczej uczennicy | klucz + skrzynia               |
-| [[#Q06_S02 - Pierwsze testy na ludziach]]         | [[Zielarka]] | kury zdechły od mikstury, pora na pechowca  | dialog + zdrowie               |
+| [[#Q04_S01 - Ryby, które zjadł kot]]              | [[Barman Absyntnent\|Barmana]]   | kot zjadł zapas ryb                         | krzak + skrzynia + przekazanie |
+| [[#Q04_S02 - Trofeum z dalekiego świata]]         | [[Barman Absyntnent\|Barmana]]   | chce uchodzić za bywałego                   | klejnot + przekazanie          |
+| [[#Q04_S03 - Piwnica, do której się nie schodzi]] | [[Barman Absyntnent\|Barmana]]   | rodzinna tajemnica, taboo                   | klucz + drzwi + walka          |
+| [[#Q05_S01 - Ruda spod głazu]]                    | [[Kowal Kłamca\|Kowal]]    | posłaniec z rudą przepadł                   | pożyczony topór + głaz         |
+| [[#Q05_S02 - Dotknij tej zbroi]]                  | [[Kowal Kłamca\|Kowal]]    | ostateczny test pechowca                    | dialog + plotka                |
+| [[#Q06_S01 - Rupiecie Mariolki]]                  | [[Zielarka Zmora\|Zielarka]]  | zamknięta skrzynka po tajemniczej uczennicy | klucz + skrzynia               |
+| [[#Q06_S02 - Pierwsze testy na ludziach]]         | [[Zielarka Zmora\|Zielarka]]  | kury zdechły od mikstury, pora na pechowca  | dialog + zdrowie               |
 
 ---
 
-### Q04 - „Sprawy najwyższej wagi" 
+### Q04 - „Sprawy najwyższej wagi"
 
 **Postać:** [[Barman Absyntnent]]
 
 Tytuł parasola jest ironiczny bo ta cała wioska to jeden wielki żart: dla [[Barman Absyntnent|Barmana]] sprawy wsi mają rangę
-polityki międzynarodowej. 
+polityki międzynarodowej.
 
-**Nagroda parasola:** `max_items=+1` ([[Barman]] załatwia bohaterowi lepszy plecak „_od znajomego, nie pytaj_").
+**Nagroda parasola:** `max_items=+1` ([[Barman Absyntnent|Barmana]] załatwia bohaterowi lepszy plecak „_od znajomego, nie pytaj_").
 
 #### Q04_S01 - Ryby, które zjadł kot
 
@@ -98,7 +98,7 @@ polityki międzynarodowej.
 
 **Mechanika:** kot ma skrytkę za krzakiem; krzak trzeba rozwalić (`DESTRUCTIBLE_MIN_DAMAGE>10`), skrytka to mała skrzynia z kilkoma rybami (item `fish`), oddanie przez `items_returned` w dialogu.
 
-**Twist:** Ryby są nadgryzione, a kot patrzy na [[Malachiasz|Malachiego]] przez cały czas z jednego miejsca. [[Barman]] ogłasza, że kot jest opętany. Kot nie zaprzecza, czyli taka musi być prawda.
+**Twist:** Ryby są nadgryzione, a kot patrzy na [[Malachiasz|Malachiego]] przez cały czas z jednego miejsca. [[Barman Absyntnent|Barman]] ogłasza, że kot jest opętany. Kot nie zaprzecza, czyli taka musi być prawda.
 
 ```yaml
 Barman: "Sprawa jest poważna. Kot zjadł zapas ryb. Bez ryb nie ma zakąski. Bez zakąski chłopi piją na czczo. A chłopi pijący na czczo, młodzieńcze, to początek każdej wojny domowej w tej okolicy!"
@@ -106,18 +106,20 @@ Miecz: "Ile tych wojen tu było?"
 Barman: "Za mojej kandencji ani jednej! I wiesz dlaczego? Bo zawsze były ryby."
 ```
 
-**Nagroda:** `money=40`, `sentiment=+10 @BARMAN_ABSINTHRAYNER`
+**Nagroda:** `money=100`, `sentiment=+10 @BARMAN_ABSINTHRAYNER`
 **Test:** `item_count("fish") >= 5` po oddaniu, albo `visited("BARMAN_ABSINTHRAYNER", "<węzeł oddania>")`
 
-**Do rozstrzygnięcia:** czy ryby dają się też kupić (wtedy quest ma drugą drogę i handel ma dodatkowy sens), czy tylko skrytka kota.
+Nagroda pieniężna musi być większa niż sprzedanie ryb, bo inaczej misja się nie opłaca (`5 * 15 = 75`)
+
+**Do rozstrzygnięcia:** czy ryby dają się też kupić (wtedy quest ma drugą drogę i handel ma dodatkowy sens), czy tylko skrytka kota. **Decyzja:** tak, gra nie może sztucznie ograniczać, aby świat był wiarygodny.
 
 #### Q04_S02 - Trofeum z dalekiego świata
 
 **KEY:** `Q04_S02_TAVERN_TROPHY`
 
-**Haczyk:** [[Barman]] chce uchodzić za bywałego w świecie - to jego konflikt wewnętrzny wprost z `doc/PL/Postacie/Barman Absyntnent.md`. Prosi o „_coś egzotycznego_" do powieszenia nad barem.
+**Haczyk:** [[Barman Absyntnent#Konflikt wewnętrzny|Barman]] chce uchodzić za bywałego w świecie - to jego konflikt wewnętrzny. Prosi o „_coś egzotycznego_" do powieszenia nad barem.
 
-**Mechanika:** dowolny klejnot z labiryntu albo z piwnicy, oddany w dialogu.
+**Mechanika:** Kup [[Zielony kryształ]] lub znajdź ([[Labirynt|labirytnu]] albo [[piwnica]]) i  oddaj w dialogu.
 
 **Twist i klamra całego zadania:** [[Barman Absyntnent|Barman]] na oczach gracza wymyśla legendę o tym przedmiocie, a przez kolejne dni **inne postaci powtarzają ją (barki) coraz bardziej przekręconą**. To ten sam mechanizm, który produkuje klątwę [[Malachiasz|Malachiego]], tylko widziany z zewnątrz i śmieszny.
 
@@ -137,18 +139,20 @@ Barki po tym queście (przykłady do dopisania w `doc/PL/Barki.md`):
 - dzień 2, [[Marysia]]: „_Ten kamień jest od smoka, który bał się Barmana._"
 - dzień 3, [[Johny]]: „_Gdyby nie nasz Barman spłonęły by trzy wsie. I nasza Tawerna._"
 
-**Nagroda:** `money=80`, `sentiment=+15 @BARMAN_ABSINTHRAYNER`
+**Nagroda:** `add_money(30)`, `shift_sentiment_of(10, `[[BARMAN_ABSINTHRAYNER]]`)`
 **Requires:** `Q04_S01_CATS_FISH` ([[#Q04_S01 - Ryby, które zjadł kot]])
+
+Nagroda musi być większa niż wartość _rynkowa_ [[Zielony kryształ]] - `20`
 
 #### Q04_S03 - Piwnica, do której się nie schodzi
 
 **KEY:** `Q04_S03_TAVERN_CELLAR`
 
-**Haczyk:** Pod [[Tawerna Brakująca klepka|Tawerną]] jest piwnica. [[Barman]] tam nie schodzi, ojciec nie schodził, dziadek zszedł raz i przez dwa lata nie pił. Klucz jest gdzieś, ale nikt nie wie gdzie.
+**Haczyk:** Pod [[Tawerna Brakująca klepka|Tawerną]] jest piwnica. [[Barman Absyntnent|Barmana]] tam nie schodzi, ojciec nie schodził, dziadek zszedł raz i przez dwa lata nie pił. Klucz jest gdzieś, ale nikt nie wie gdzie.
 
 **Mechanika:** srebrny klucz (`silver_key`) → zamknięte drzwi (`requires_item`) → **nowa mała mapa piwnicy** → `RAT` (sprite `HamsterGray`, ~15 HP) do ubicia kijem (item `stick`). To pierwszy kontakt gracza z walką, celowo na przeciwniku, który nie wymaga dobrej broni.
 
-**Twist:** To są szczury. [[Miecz]] mówi, że to szczury. [[Barman]] ogłasza, że to znak. Wieś przyjmuje wersję [[Barmana]], bo jest ciekawsza - i to jest dokładnie ta sama operacja, którą wieś wykonała na [[Malachiasz|Malachim]].
+**Twist:** To są szczury. [[Miecz Ciętej-riposty|Miecz]] mówi, że to szczury. [[Barman Absyntnent|Barmana]] ogłasza, że to znak. Wieś przyjmuje wersję [[Barman Absyntnent|Barmana]], bo jest ciekawsza - i to jest dokładnie ta sama operacja, którą wieś wykonała na [[Malachiasz|Malachim]].
 
 ```yaml
 Miecz: "To były zwykłe szczury."
@@ -169,19 +173,19 @@ Barman: "ZNAK, młodzieńcze. Dziura też jest częścią znaku."
 
 **Postać:** [[Kowal Kłamca]]
 
-Tytuł to zdanie, które [[Kowal Kłamca|Kowal]] wypowiada w drugim kroku - i jedyne, jakie kiedykolwiek powiedział do [[Malachiasz|Malachiego]] dwa razy. 
+Tytuł to zdanie, które [[Kowal Kłamca|Kowal]] wypowiada w drugim kroku - i jedyne, jakie kiedykolwiek powiedział do [[Malachiasz|Malachiego]] dwa razy.
 
-**Nagroda parasola:** `damage=+5` ([[Kowal]] ostrzy stary sztylet i daje bohaterowi niechcąc za to pieniędzy, co u niego znaczy przyjaźń).
+**Nagroda parasola:** `damage=+5` ([[Kowal Kłamca|Kowal]] ostrzy stary sztylet i daje bohaterowi niechcąc za to pieniędzy, co u niego znaczy przyjaźń).
 
 #### Q05_S01 - Ruda spod głazu
 
 **KEY:** `Q05_S01_ORE_UNDER_BOULDER`
 
-**Haczyk:** Zamówienie z [[Porażkowo|Porażkowa]] czeka, posłaniec z rudą nie przyszedł trzeci dzień z rzędu. [[Kowal]] wie, gdzie leży złoże - za lasem, pod głazem, którego kijem nie ruszysz.
+**Haczyk:** Zamówienie z [[Porażkowo|Porażkowa]] czeka, posłaniec z rudą nie przyszedł trzeci dzień z rzędu. [[Kowal Kłamca|Kowal]] wie, gdzie leży złoże - za lasem, pod głazem, którego kijem nie ruszysz.
 
-**Mechanika:** [[Kowal]] **pożycza** topór wojenny (`axe` 35 dmg) przez `items_received`, gracz rozbija głazy (`DESTRUCTIBLE_MIN_DAMAGE>20`), wraca z rudą, **oddaje topór** przez `items_returned`. To jest naturalna lekcja mechaniki niszczenia - gracz uczy się jej z narzędziem w ręku, a nie z komunikatu „_broń za słaba_".
+**Mechanika:** [[Kowal Kłamca|Kowal]] **pożycza** topór wojenny (`axe` 35 dmg) przez `items_received`, gracz rozbija głazy (`DESTRUCTIBLE_MIN_DAMAGE>20`), wraca z rudą, **oddaje topór** przez `items_returned`. To jest naturalna lekcja mechaniki niszczenia - gracz uczy się jej z narzędziem w ręku, a nie z komunikatu „_broń za słaba_".
 
-**Twist:** [[Kowal]] odbiera topór i waży go w dłoni dłużej, niż to konieczne. Nic nie mówi tylko wzdycha pod nosem.
+**Twist:** [[Kowal Kłamca|Kowal]] odbiera topór i waży go w dłoni dłużej, niż to konieczne. Nic nie mówi tylko wzdycha pod nosem.
 To wystarczy - [[Malachiasz|Malachi]] (faza 1 lub 2) sam zaczyna się tłumaczyć, choć nikt go o nic nie oskarżył.
 
 ```yaml
@@ -199,7 +203,7 @@ przy udźwigu, to jedyna sensowna rola tej mechaniki w prologu).
 
 **KEY:** `Q05_S02_TOUCH_THE_ARMOUR`
 
-**Haczyk:** [[Kowal]] słyszał, że [[Malachiasz|Malachi]] psuje wszystko, czego dotknie. Chce to sprawdzić na swoim najlepszym wyrobie - bo od 30 lat nikt nie powiedział mu prawdy o jego pracy. (==ALT==: od 30 lat nikt niezdołał zniszczyć jego najtwadszego kowadła.)
+**Haczyk:** [[Kowal Kłamca|Kowal]] słyszał, że [[Malachiasz|Malachi]] psuje wszystko, czego dotknie. Chce to sprawdzić na swoim najlepszym wyrobie - bo od 30 lat nikt nie powiedział mu prawdy o jego pracy. (==ALT==: od 30 lat nikt niezdołał zniszczyć jego najtwadszego kowadła.)
 
 **Mechanika:** czysty dialog, bez przedmiotów. Dostępny **tylko** gdy `quest_done("Q01_S01_LEARN_ABOUT_CURSE")` - to jest quest, którego nie ma, dopóki plotka nie ruszy. (==ALT==: przedmiot leży gdzieś obok i trzeba go przynieść. To wymusza zakończenie dialogu i powrót, co lepiej zadziała z powiadomieniami o rozpoczęciu questu i zakończeniu - nie wszystko w trakcie jednej rozmowy.)
 
@@ -210,7 +214,7 @@ Klątwa nie karze mechanicznie (W1) - ale **plotka i tak idzie dalej**: wieczore
 ```yaml
 Kowal: "Podobno psujesz wszystko, czego dotkniesz. Dotknij tej zbroi. Chcę wiedzieć, czy jest tak dobra, jak mówię klientom."
 Malachi: "Nie sądzę, żeby to był dobry..."
-Kowal: "DOTKNIJ" 
+Kowal: "DOTKNIJ"
 [zbroja rozsypuje się]
 Kowal: "..."
 Kowal: "Nikomu ani słowa. Bierz pieniądze i wyjdź. W tej chwili"
@@ -218,7 +222,7 @@ Miecz: "Zapłacił Ci za milczenie. Zapamiętaj to - to jest pierwszy raz, kiedy
 ```
 
 **Nagroda:** `money=120`, `sentiment=+10 @HAMMER_HOAXHEART`
-**Requires:** `Q05_S01_ORE_UNDER_BOULDER` ([[#Q05_S01 - Ruda spod głazu]]) **i** `Q01_S01_LEARN_ABOUT_CURSE` ([[Q01_S01 Dowiedz się więcej o klątwie]])
+**Requires:** `Q05_S01_ORE_UNDER_BOULDER` ([[#Q05_S01 - Ruda spod głazu]]) **i** `Q01_S01_LEARN_ABOUT_CURSE` ([[Q01_S01 Kto wie więcej o klątwie]])
 
 ---
 
@@ -226,7 +230,7 @@ Miecz: "Zapłacił Ci za milczenie. Zapamiętaj to - to jest pierwszy raz, kiedy
 
 **Postać:** [[Zielarka Zmora]]
 
-[[Zielarka Zmora|Zielarka]] nazywa nauką wszystko, co robi, łącznie z rzeczami, za które w mieście byłaby sądzona. 
+[[Zielarka Zmora|Zielarka]] nazywa nauką wszystko, co robi, łącznie z rzeczami, za które w mieście byłaby sądzona.
 
 **Nagroda parasola:** `life_pot` x2 i wiedza, która ustawia Akt 2.
 
@@ -284,7 +288,7 @@ Barki odblokowane tym questem (do `doc/PL/Barki.md`):
 - [[Marysia]]: „_Mąż mówi, że jak pan przejdzie koło studni, to woda się dłużej trzyma._"
 
 **Nagroda:** `money=100`, `life_pot`, `sentiment=+10 @POTIONEER_PUZZLEMINT`.
-**Requires:** `Q01_S01_LEARN_ABOUT_CURSE` [[Q01_S01 Dowiedz się więcej o klątwie]] bez plotki ten quest nie ma prawa istnieć.
+**Requires:** `Q01_S01_LEARN_ABOUT_CURSE` [[Q01_S01 Kto wie więcej o klątwie]] bez plotki ten quest nie ma prawa istnieć.
 
 ---
 
@@ -356,7 +360,7 @@ Nowa mapa oznacza komplet: klucz `SCREAMING_SNAKE`, para plików `.md` PL i EN w
 - **Nagroda o wartości `0` jest odrzucana przy imporcie**, a `sentiment` bez `@NPC_KEY` też. **Do sprawdzenia przed pisaniem:** czy importer przyjmuje **ujemny** sentyment - jeśli nie, żaden quest nie może obniżyć sympatii i trzeba to obejść treścią.
 - **Klucz questa musi być globalnie unikalny** i jest dosłownie nagłówkiem sekcji.
 - **Nazwa obiektu Tiled ≠ klucz configu.** Dialogi i questy używają `config_key`, zapis używa `name` (C02). Zmiana nazwy skrzyni **kasuje jej stan ze starych zapisów**.
-- **Nie licz na to, że gracz przejdzie łańcuchy w kolejności.** `Q06_S01` potrzebuje klucza z `Q04_S03` - jeśli gracz zrobi tylko wątek [[Zielarki]], ma dostać czytelną wskazówkę, gdzie szukać, a nie ślepy zaułek.
+- **Nie licz na to, że gracz przejdzie łańcuchy w kolejności.** `Q06_S01` potrzebuje klucza z `Q04_S03` - jeśli gracz zrobi tylko wątek [[Zielarka Zmora|Zielarki]], ma dostać czytelną wskazówkę, gdzie szukać, a nie ślepy zaułek.
 - **Tłumaczenie EN jest ostatnim krokiem**, po wypolerowaniu polskiej wersji. PL jest jedynym źródłem prawdy dla struktury; EN daje samą prozę.
 
 ## Pytania otwarte do autora

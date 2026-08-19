@@ -2,7 +2,7 @@
 key: gem_crystal_green
 aliases:
   - gem_crystal_green
-PL: "[[Zielony krzyształ]]"
+PL: "[[Zielony kryształ]]"
 ---
 # Green crystal
 

@@ -52,11 +52,12 @@ Kowal, który twierdzi, że jego miecze mogą przeciąć cień i że jego zbroje
 
 * Czego chcesz?
 
-* [[#002]] 1😐: Od zawsze byłeś kowalem?
-* [[#003]] 2😐: Jak **Ci** idą interesy w tej wiosce?
-* [[#004]] 3😐: Masz trochę klientów z okolicznych [loc]wsi[/]?
-* [[#005]] 4😐: Potrafisz wykuwać **magiczne** przedmioty?
-* [[#006]] 5😐: Kto tu jest najmądrzejszy w okolicy?
+* [[#trade-end]] 1😐: Możemy pohandlować?
+* [[#002]] 2😐: Od zawsze byłeś kowalem?
+* [[#003]] 3😐: Jak **Ci** idą interesy w tej wiosce?
+* [[#004]] 4😐: Masz trochę klientów z okolicznych [loc]wsi[/]?
+* [[#005]] 5😐: Potrafisz wykuwać **magiczne** przedmioty?
+* [[#006]] 6😐: Kto tu jest najmądrzejszy w okolicy?
 * [[#990-end]] 9😐: To tyle, do następnego razu.
 
 ## 002

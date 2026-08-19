@@ -2,6 +2,7 @@
 aliases:
   - Q04_S01_FISH_EATEN_BY_CAT
 ---
+# Trofeum z dalekiego świata
 # The fish the cat ate
 
 The [char]cat[/] has eaten the [[Fresh fish|fish]] supply. To the [[Barman Absinthrayner|barman]] this is not a catering problem, it is an incoming **civil war**!

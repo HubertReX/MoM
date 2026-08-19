@@ -14,3 +14,5 @@ Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a **Tw�
 ## Notatki
 
 Łańcuch otwierający. Jedyny **quest** dostępny na starcie nowej gry, więc jest sam sobie parasolem - kroków nie ma.
+
+Nakrótsza droga do zamknięcia: [[Miecz Ciętej-riposty|Miecz]] 1 -> 9 (2)

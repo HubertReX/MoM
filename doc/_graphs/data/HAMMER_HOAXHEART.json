@@ -6,7 +6,7 @@
   "start_node": "000",
   "counts": {
    "nodes": 12,
-   "options": 26
+   "options": 27
   },
   "global_problems": [],
   "palette": {
@@ -207,10 +207,20 @@
   },
   {
    "from": "001",
+   "to": "001",
+   "kind": "option",
+   "key": "001totrade_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Możemy pohandlować?",
+   "condition": null
+  },
+  {
+   "from": "001",
    "to": "002",
    "kind": "option",
-   "key": "001to002_1",
-   "order": 1,
+   "key": "001to002_2",
+   "order": 2,
    "sentiment": "neutral",
    "text": "Od zawsze byłeś kowalem?",
    "condition": null
@@ -219,8 +229,8 @@
    "from": "001",
    "to": "003",
    "kind": "option",
-   "key": "001to003_2",
-   "order": 2,
+   "key": "001to003_3",
+   "order": 3,
    "sentiment": "neutral",
    "text": "Jak Ci idą interesy w tej wiosce?",
    "condition": null
@@ -229,8 +239,8 @@
    "from": "001",
    "to": "004",
    "kind": "option",
-   "key": "001to004_3",
-   "order": 3,
+   "key": "001to004_4",
+   "order": 4,
    "sentiment": "neutral",
    "text": "Masz trochę klientów z okolicznych wsi[/]?",
    "condition": null
@@ -239,8 +249,8 @@
    "from": "001",
    "to": "005",
    "kind": "option",
-   "key": "001to005_4",
-   "order": 4,
+   "key": "001to005_5",
+   "order": 5,
    "sentiment": "neutral",
    "text": "Potrafisz wykuwać magiczne przedmioty?",
    "condition": null
@@ -249,8 +259,8 @@
    "from": "001",
    "to": "006",
    "kind": "option",
-   "key": "001to006_5",
-   "order": 5,
+   "key": "001to006_6",
+   "order": 6,
    "sentiment": "neutral",
    "text": "Kto tu jest najmądrzejszy w okolicy?",
    "condition": null

@@ -21,6 +21,11 @@ Co jest potrzebne:
 ### Inne:
 - [ ] nauczyć gracza, że obniżanie sentymentu może mieć korzyści - szacunek postaci, "najlepszą obroną jest atak" w przypadku silnych charakterów
 - [ ] misja jako `requires` powinny przyjmować również odwiedzenie danej opcji dialogowej
+- [ ] decyzja projektowa: czy nagroda za misję ma być w dialogu postaci czy w definicji misji? Gracz musi wiedzieć co dostanie za wykonanie misji, inaczej spada motywacja to jej zrobienia, ergo - nagroda musi być w definicji misji.
+- [ ] brak _ściągawki_ (cheatsheet) dla pisania dialogów, takiej jaka jest dla [[quest-cheatsheet]]. Może być generowana automatycznie, choć to utrudnia jej ręczną aktua
+- [ ] jeżeli w trakcie dialogu dajemy postaci kilka przedmiotów tego samego typu, to dostajemy kilka osobnych powiadomień (toast), zamiast jednego z liczbą przedmiotów.
+- [ ] Dodać opcje w którejś misji, gdzie gracz celowo i świadomie podejmuje decyzję aby zrobić coś przeciwnego niż, chce postać. To ma obniżyć znacznie sentyment i zamknąć misję w dzienniku.
+- [ ] Pomysł z researchu: Misja powinna żyć razem ze światem gry. Przykład: wieśniak w czapce zleca zabicie wilka, następnego dnia mówi, że chyba sam to zrobi, trzeciego w miejscu wilka jest tylko jego czapka i ślady krwi. 
 - [ ] opcje widoczne w menu pomocy tylko w trybie debug, powinny również być możliwe do użycia w trybie debug - obecnie można je wywołać zawsze. Przykłady: 
 - [ ] niech okno gry pokazuje się na tym samym monitorze co terminal z którego została uruchomiona. Gra powinna pamiętać ostatnio używany monitor. Kombinajca klawiszy przesuwająca okno na inny monitor nie działa na MacOO.
 - [ ] klawisze `+` i `-` źle powiększają ekrany gry, bo czasami doprowadzają do nierównomiernego skalowania (niektóre pixele sprite'ów są kopiowane 3 x a niektóre 2 x) 

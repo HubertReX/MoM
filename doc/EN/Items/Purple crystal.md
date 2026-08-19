@@ -2,7 +2,7 @@
 key: gem_crystal_purple
 aliases:
   - gem_crystal_purple
-PL: "[[Purpurowy krzyształ]]"
+PL: "[[Purpurowy kryształ]"
 ---
 # Purple crystal
 

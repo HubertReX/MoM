@@ -17,7 +17,7 @@ FISH_RED;red fish;Czerwona rybka;FishRed;animal;friendly;;;;;false;;;;water;10;;
 FLAM;Flame;Płomień;Flam;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;;
 FRED;Fred;Franek;Villager2;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;;
 FROG;Frog;Żabcia;Frog;animal;afraid;;;;;false;;;;shore;10;;;;;;;;;;;;;;;;FARM_ANIMALS
-HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;;30;true;;;;;10;;;0.3;;;BLUNDERHAVEN:house_smith;BLUNDERHAVEN:smithy;LOST_CORK_TAVERN:tables;BLUNDERHAVEN:shrine;-1;1;2;-1;-2;townsfolk;VILLAGERS
+HAMMER_HOAXHEART;Hammer Hoaxheart;Kowal Kłamca;Villager2;humanoid;friendly;;;lance,stick;30;true;true;weapon;;;10;;;0.3;;;BLUNDERHAVEN:house_smith;BLUNDERHAVEN:smithy;LOST_CORK_TAVERN:tables;BLUNDERHAVEN:shrine;-1;1;2;-1;-2;townsfolk;VILLAGERS
 HORSE;Horse;Konik;Horse;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;;;FARM_ANIMALS
 JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;18;;;;;;BLUNDERHAVEN:house_johny;BLUNDERHAVEN:market_stall_1;LOST_CORK_TAVERN:tables;BLUNDERHAVEN:pier;;;;;;townsfolk;VILLAGERS
 LION_YELLOW;LionYellow;Żółty lew;LionYellow;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;;

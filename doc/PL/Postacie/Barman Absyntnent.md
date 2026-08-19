@@ -41,7 +41,7 @@ Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to
 - [`time_of_day("morning")`] O tej porze to tylko ja i myszy
 - [`time_of_day("evening")`] Ostatnia kolejka! Żartowałem
 - [`sentiment > 60`] O, mój ulubiony klient!
-- [`quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] Siadaj tam. Dalej. Jeszcze dalej.
+- [`quest_done(`[[Q01_S01 Kto wie więcej o klątwie]]`)`] Siadaj tam. Dalej. Jeszcze dalej.
 
 ## 000
 
@@ -61,7 +61,7 @@ Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to
 * [[#004]] 4😐: Jest tu coś ciekawego w [loc]okolicy[/]:red_question_anim:
 * [[#005]] 5😐: Znasz kogoś, kto zna się na [quest]zaklęciach[/]:question:
 * [[#006]] 6😐: Gdzie mógłbym zdobyć wiedzę o [quest]zaklęciach[/]:question:
-* [[#trade-end]] 7😐: A co masz na sprzedaż:question:
+* [[#trade-end]] 7😐: A co masz na sprzedaż:$:
 * [[#990-end]] 9😐: To tyle, do następnego razu
 
 ## 002
@@ -217,9 +217,10 @@ Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś
 * A już Ci, coś by się znalazło...
 
 * [[#022]] 1[`not visited(`[[Barman Absyntnent#022]]`)`]😐: Ponoć [char]kot[/] zżarł wszystkie [[Świeża ryba|ryby]]?
-* [[#001]] 2😐: **TODO** Q04_S02
+* [[#026]] 2[`not visited(`[[Barman Absyntnent#026]]`)`]😐: Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:
 * [[#001]] 3😐: **TODO** Q04_S03
 * [[#024]] 4[`item_count(`[[Świeża ryba]]`) >= 5 and visited(`[[Barman Absyntnent#022]]`)`]😐: Mam dla **Ciebie** te [[Świeża ryba|ryby]]
+* [[#029]] 5[`item_count(`[[Zielony kryształ]]`) >= 1 and visited(`[[Barman Absyntnent#026]]`)`]😐: Mam dla **Ciebie** [[Zielony kryształ]]
 * [[#001]] 9😐: Ech, nieważne
 
 ## 022
@@ -240,13 +241,51 @@ Tylko musisz znaleźć odpowiednią mocną [item]broń[/] aby móc wyciąć taki
 
 ## 024
 
-* [`remove_n_items(5,`[[Świeża ryba]]`)`] O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się [quest]Pokojowa nagroda Nobla[/]!
+* [`remove_n_items(5,`[[Świeża ryba]]`)`] O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się [quest]Pokojowa nagroda Nobla[/]! :star_anim:
 
 * [[#025]] 1😐: Nie dbam o żadnego [quest]Nobla[/], ale coś za tą fatygę by się przydało.
 
 ## 025
 
 * [`add_money(100)`] A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet:$:.
+
+* [[#001]] 1😐: Cieszę się, że mogłem pomóc.
+
+## 026
+
+* Ludzie we wsi to nawet nie wiedzą ile ja w życiu widziałem. Chciałbym aby każdy, kto przychodzi do mojej [[Tawerna Brakująca klepka|Tawerny]] od razu wiedział z kim ma do czynienia:happy:. Pomyślałem, że tu, nad barem, mógłbym powiesić sobie jedno z moich [item]trofeów[/]. Świetny pomysł, prawda?
+
+Jedyny kłopot w tym, że kiedy podróżowałem to nigdy nie zawracałem sobie głowy zbieraniem jakiś bibelotów. Zresztą, w tych najbardziej niebezpiecznych miejscach jak [[Bagno niedogodności]] czy [[Jaskinie zagmatwania]] to raczej nie mają _sklepu z pamiątkami_:blink:
+
+* [[#027]] 1😇: Masz coś konkretnego na myśli?
+* [[#027]] 2🧠: Hmm, nic nie rozumiem. Rób co chcesz - co mi do tego?
+* [[#027]] 3😉: [[Miecz Ciętej-riposty|Miecz]]: _Ty? Podróżowałeś?_:wondering:. Mów dalej...
+
+## 027
+
+* Bo tak sobie pomyślałem, że najprościej by było abyś **Ty** mi coś takiego przyniósł. A ja to tu sobie powieszę. Udowodniłeś już, że jesteś zaradny no i myślę, że mogę Ci zaufać. Wiesz, nie musimy nikomu mówić, czy to konkretne [item]trofeum[/] zdobyłem ja sam czy **Ty**. To mało znaczący szczegół. 
+
+Byłaby to nasza _mała_ tajemnica.
+
+* [[#028]] 1😢: No, ale ja nie wiem czy dam radę:evil:. Co to za [item]trofeum[/]?
+* [[#028]] 2😇: A co z tego będzie dla mnie?
+* [[#028]] 3😡: Ach, kręcisz i kręcisz:frounce:. Gadaj co mam zdobyć i ile konkretnie za to dostanę? 
+
+## 028
+
+* Spokojnie, to nie jest aż takie trudne a na pewno Ci się opłaci.
+
+Chcę abyś przyniósł mi [[Zielony kryształ]] widziałem takie w [[Jaskinie zagmatwania|Jaskiniach zagmatwania]], ale Ty znajdziesz je też w [[Labirynt|labiryncie]].
+
+Co do zapłaty, to myślę, że mogę Ci za to dać [num]30[/] monet:$: To więcej niż dostaniesz za niego u [[Jaś|Jasia]].
+
+* [[#001]] 1😐: Niech będzie. Wszystko jasne - biorę się do roboty.
+
+## 029
+
+* Och! Ależ się błyszczy:love_anim: Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!
+
+Oto **Twoja** nagroda :$:.
 
 * [[#001]] 1😐: Cieszę się, że mogłem pomóc.
 

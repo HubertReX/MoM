@@ -6,10 +6,10 @@ aliases:
 
 Jest kilka spraw, które [[Barman Absyntnent|Barman]] chciałby, abyś mu załatwił. To nie są _byle jakie_ sprawy - to są sprawy **najwyższej wagi**!
 
-**Requires**: `visited(`[[Barman Absyntnent#023]]`)`
+**Requires**: [[Q01_S02 Wypytaj Zielarkę o klątwę]]
 **Completion**: `all_subquests`
-**Success**: To czego dokonałeś sprawia, że [[Barman Absyntnent|Barman]] jest Ci dozgonnie wdzięczny. Przekłada się to niższe stawki w [[Tawerna Brakująca klepka|Tawernie]] i piwo podane czystszych kuflach. Co nie znaczy, że kufle są całkiem czyste...
-**Reward**: `shift_sentiment_of(`[[Barman Absyntnent]]`,15)`
+**Success**: To czego dokonałeś sprawia, że [[Barman Absyntnent|Barman]] jest Ci dozgonnie wdzięczny. Przekłada się to niższe stawki w [[Tawerna Brakująca klepka|Tawernie]] i piwo podane czystszych kuflach. Co nie znaczy, że kufle są całkiem czyste... No i dostałeś większy [item]plecak[/] na przedmioty.
+**Reward**: `raise_max_items(7)`
 
 ## Notatki
 

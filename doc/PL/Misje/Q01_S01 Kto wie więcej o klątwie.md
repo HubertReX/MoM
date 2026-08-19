@@ -2,9 +2,9 @@
 aliases:
   - Q01_S01_LEARN_ABOUT_CURSE
 ---
-# Dowiedz się więcej o klątwie
+# Kto wie więcej o klątwie?
 
-Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. 
+Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. Musimy znaleźć kogoś, kto wie więcej o [quest]klątwie[/].
 
 W [[Tawerna Brakująca klepka|Tawernie]] mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.
 
@@ -15,3 +15,4 @@ W [[Tawerna Brakująca klepka|Tawernie]] mówi się wszystkim i o wszystkich - t
 
 ## Notatki
 
+Nakrótsza droga do zamknięcia: [[Barman Absyntnent]] : 1 -> 4 -> 1

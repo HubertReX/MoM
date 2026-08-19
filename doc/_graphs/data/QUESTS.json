@@ -2,7 +2,7 @@
  "meta": {
   "source": "project/config_model/config.json",
   "counts": {
-   "quests": 10,
+   "quests": 12,
    "threads": 3,
    "roots": 1,
    "dialogs": 10
@@ -125,16 +125,24 @@
   {
    "id": "Q01_S01_LEARN_ABOUT_CURSE",
    "level": 3,
-   "name": "Dowiedz się więcej o klątwie",
+   "name": "Kto wie więcej o klątwie?",
    "name_runs": [
     {
-     "text": "Dowiedz się więcej o klątwie",
+     "text": "Kto wie więcej o klątwie?",
      "bold": false
     }
    ],
    "description_runs": [
     {
-     "text": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić.  W ",
+     "text": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. Musimy znaleźć kogoś, kto wie więcej o ",
+     "bold": false
+    },
+    {
+     "text": "klątwie",
+     "bold": true
+    },
+    {
+     "text": ".  W ",
      "bold": false
     },
     {
@@ -163,10 +171,73 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Q01_S01 Dowiedz się więcej o klątwie"
+   "link": "Q01_S01 Kto wie więcej o klątwie"
   },
   {
-   "id": "Q01_S02_MEET_MADAME_SARCASMIA",
+   "id": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
+   "level": 3,
+   "name": "Wypytaj Zielarkę o klątwę",
+   "name_runs": [
+    {
+     "text": "Wypytaj ",
+     "bold": false
+    },
+    {
+     "text": "Zielarkę",
+     "bold": true
+    },
+    {
+     "text": " o klątwę",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Barman",
+     "bold": true
+    },
+    {
+     "text": " podpowiedział, że ",
+     "bold": false
+    },
+    {
+     "text": "Zielarka Zmora",
+     "bold": true
+    },
+    {
+     "text": " może się znać na takich rzeczach jak ",
+     "bold": false
+    },
+    {
+     "text": "Odwieczna klątwa nieszczęścia",
+     "bold": true
+    },
+    {
+     "text": ". Co więcej, możemy się na niego powołać, bo inaczej może nie chcieć z nami rozmawiać.",
+     "bold": false
+    }
+   ],
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "quest_done(\"Q03_S00_LEARN_ABOUT_CURSE\")",
+   "requires_test": null,
+   "progress": null,
+   "progress_total": 0,
+   "kind": "quest",
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [
+    "+20 HP"
+   ],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Q01_S02 Wypytaj Zielarkę o klątwę"
+  },
+  {
+   "id": "Q01_S03_MEET_MADAME_SARCASMIA",
    "level": 3,
    "name": "Spotkaj się z Sarkażmijką",
    "name_runs": [
@@ -197,7 +268,15 @@
      "bold": true
     },
     {
-     "text": " wysokie mniemanie.",
+     "text": " wysokie mniemanie. To ",
+     "bold": false
+    },
+    {
+     "text": "Bibliofilistka des Informacja",
+     "bold": true
+    },
+    {
+     "text": ".",
      "bold": false
     }
    ],
@@ -218,15 +297,15 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Q01_S02 Spotkaj się z Sarkażmijką"
+   "link": "Q01_S03 Spotkaj się z Sarkażmijką"
   },
   {
    "id": "Q03_S00_LEARN_ABOUT_CURSE",
    "level": 5,
-   "name": "Znajdź kogoś kto wie o klątwach",
+   "name": "Znajdź kogoś kto wie o magii",
    "name_runs": [
     {
-     "text": "Znajdź kogoś kto wie o klątwach",
+     "text": "Znajdź kogoś kto wie o magii",
      "bold": false
     }
    ],
@@ -285,7 +364,7 @@
     "border": "#2f9e44"
    },
    "problem": null,
-   "link": "Q03_S00 Znajdź kogoś kto wie o klątwach"
+   "link": "Q03_S00 Znajdź kogoś kto wie o magii"
   },
   {
    "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
@@ -414,7 +493,7 @@
   },
   {
    "id": "Q04_S00_TOP_PRIORITY_MATTERS",
-   "level": 1,
+   "level": 4,
    "name": "Sprawy najwyższej wagi",
    "name_runs": [
     {
@@ -455,14 +534,14 @@
    "completion": "all_subquests",
    "completion_text": "zamyka się, gdy zamkną się jej kroki",
    "test": null,
-   "requires_test": "visited(\"BARMAN_ABSINTHRAYNER\", \"023\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
    "kind": "quest",
    "is_thread": true,
    "is_root": false,
    "rewards": [
-    "+15 sympatii @BARMAN_ABSINTHRAYNER"
+    "+7 slotów"
    ],
    "colour": {
     "bg": "#b2f2bb",
@@ -473,7 +552,7 @@
   },
   {
    "id": "Q04_S01_FISH_EATEN_BY_CAT",
-   "level": 2,
+   "level": 5,
    "name": "Ryby, które zjadł kot",
    "name_runs": [
     {
@@ -573,7 +652,7 @@
    "is_thread": false,
    "is_root": false,
    "rewards": [
-    "+7 slotów"
+    "+15 sympatii @BARMAN_ABSINTHRAYNER"
    ],
    "colour": {
     "bg": "#a5d8ff",
@@ -581,6 +660,117 @@
    },
    "problem": null,
    "link": "Q04_S01 Ryby, które zjadł kot"
+  },
+  {
+   "id": "Q04_S02_TAVERN_TROPHY",
+   "level": 5,
+   "name": "Trofeum z dalekiego świata",
+   "name_runs": [
+    {
+     "text": "Trofeum z dalekiego świata",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Barmanowi",
+     "bold": true
+    },
+    {
+     "text": " maży się, aby powiesić nad barem ",
+     "bold": false
+    },
+    {
+     "text": "Zielony kryształ",
+     "bold": true
+    },
+    {
+     "text": " jako trofeum z jego ",
+     "bold": false
+    },
+    {
+     "text": "słynnych",
+     "bold": true
+    },
+    {
+     "text": " wypraw. Ty mu to jego trofeum przyniesiesz. To znaczy zdobędziesz trofeum, tylko, że to nie będzie Twoje trofeum, tylko jego. Czegoś nie rozumiesz?  ",
+     "bold": false
+    },
+    {
+     "text": "Kryształ",
+     "bold": true
+    },
+    {
+     "text": " możesz zdobyć w ",
+     "bold": false
+    },
+    {
+     "text": "Labiryncie",
+     "bold": true
+    },
+    {
+     "text": ", ale to może być trudne bo tam jest niebezpiecznie i trzeba walczyć z ",
+     "bold": false
+    },
+    {
+     "text": "potworami",
+     "bold": true
+    },
+    {
+     "text": ". Ewentualnie możesz go kupić od ",
+     "bold": false
+    },
+    {
+     "text": "Jasia",
+     "bold": true
+    },
+    {
+     "text": ", tylko musisz najpierw uzbierać odpowiednio dużo . Na przykład zdobywając skarby w ",
+     "bold": false
+    },
+    {
+     "text": "Labiryncie",
+     "bold": true
+    },
+    {
+     "text": ", ale to może być trudne bo...  hmm, no cóż... Ten świat może jest i ",
+     "bold": false
+    },
+    {
+     "text": "prostacki",
+     "bold": true
+    },
+    {
+     "text": ", ale nie jest aż taki ",
+     "bold": false
+    },
+    {
+     "text": "prosty",
+     "bold": true
+    },
+    {
+     "text": " ",
+     "bold": false
+    }
+   ],
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"029\")",
+   "requires_test": null,
+   "progress": null,
+   "progress_total": 0,
+   "kind": "quest",
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [
+    "+15 sympatii @BARMAN_ABSINTHRAYNER"
+   ],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Q04_S02 Trofeum z dalekiego świata"
   },
   {
    "id": "dlg:CLAPBACK_SWORD#015",
@@ -701,7 +891,7 @@
    ],
    "unlocks": [],
    "closes": [
-    "Dowiedz się więcej o klątwie"
+    "Kto wie więcej o klątwie?"
    ],
    "is_thread": false,
    "is_root": false,
@@ -774,7 +964,7 @@
    ],
    "unlocks": [],
    "closes": [
-    "Dowiedz się więcej o klątwie"
+    "Kto wie więcej o klątwie?"
    ],
    "is_thread": false,
    "is_root": false,
@@ -1031,97 +1221,8 @@
    "link": "Barman Absyntnent#017"
   },
   {
-   "id": "dlg:BARMAN_ABSINTHRAYNER#023",
-   "level": 0,
-   "name": "Barman Absyntnent #023",
-   "name_runs": [
-    {
-     "text": "Barman Absyntnent #023",
-     "bold": true
-    }
-   ],
-   "kind": "dialog",
-   "npc": "BARMAN_ABSINTHRAYNER",
-   "npc_name": "Barman Absyntnent",
-   "node": "023",
-   "text_runs": [
-    {
-     "text": "Za mojej kadencji ",
-     "bold": false
-    },
-    {
-     "text": "ANI",
-     "bold": true
-    },
-    {
-     "text": " jednej! I wiesz dlaczego? Bo zawsze były ",
-     "bold": false
-    },
-    {
-     "text": "ryby",
-     "bold": true
-    },
-    {
-     "text": "!  ",
-     "bold": false
-    },
-    {
-     "text": "Kot",
-     "bold": true
-    },
-    {
-     "text": " ma gdzieś w krzakach ukrytą skrzynię w której chowa wykradzione ",
-     "bold": false
-    },
-    {
-     "text": "ryby",
-     "bold": true
-    },
-    {
-     "text": ". Wytnij te chaszcze i przynieś mi ",
-     "bold": false
-    },
-    {
-     "text": "5",
-     "bold": true
-    },
-    {
-     "text": " świeżych ",
-     "bold": false
-    },
-    {
-     "text": "ryb",
-     "bold": true
-    },
-    {
-     "text": ".  Tylko musisz znaleźć odpowiednią mocną ",
-     "bold": false
-    },
-    {
-     "text": "broń",
-     "bold": true
-    },
-    {
-     "text": " aby móc wyciąć takie gęste krzaki.",
-     "bold": false
-    }
-   ],
-   "unlocks": [
-    "Sprawy najwyższej wagi"
-   ],
-   "closes": [],
-   "is_thread": false,
-   "is_root": false,
-   "problem": null,
-   "colour": {
-    "bg": "#e5dbff",
-    "border": "#7048e8"
-   },
-   "link": "Barman Absyntnent#023"
-  },
-  {
    "id": "dlg:BARMAN_ABSINTHRAYNER#024",
-   "level": 3,
+   "level": 6,
    "name": "Barman Absyntnent #024",
    "name_runs": [
     {
@@ -1135,7 +1236,15 @@
    "node": "024",
    "text_runs": [
     {
-     "text": "O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się [qutest]Pokojowa nagroda Nobla!",
+     "text": "O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się ",
+     "bold": false
+    },
+    {
+     "text": "Pokojowa nagroda Nobla",
+     "bold": true
+    },
+    {
+     "text": "! ",
      "bold": false
     }
    ],
@@ -1151,6 +1260,47 @@
     "border": "#7048e8"
    },
    "link": "Barman Absyntnent#024"
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#029",
+   "level": 6,
+   "name": "Barman Absyntnent #029",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #029",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "029",
+   "text_runs": [
+    {
+     "text": "Och! Ależ się błyszczy Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!  Oto ",
+     "bold": false
+    },
+    {
+     "text": "Twoja",
+     "bold": true
+    },
+    {
+     "text": " nagroda .",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Trofeum z dalekiego świata"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#029"
   }
  ],
  "edges": [
@@ -1166,12 +1316,22 @@
   },
   {
    "from": "Q01_S01_LEARN_ABOUT_CURSE",
-   "to": "Q01_S02_MEET_MADAME_SARCASMIA",
+   "to": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
    "kind": "requires"
   },
   {
    "from": "Q01_S00_BREAK_THE_CURSE",
-   "to": "Q01_S02_MEET_MADAME_SARCASMIA",
+   "to": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
+   "kind": "parent"
+  },
+  {
+   "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
+   "to": "Q01_S03_MEET_MADAME_SARCASMIA",
+   "kind": "requires"
+  },
+  {
+   "from": "Q01_S00_BREAK_THE_CURSE",
+   "to": "Q01_S03_MEET_MADAME_SARCASMIA",
    "kind": "parent"
   },
   {
@@ -1205,8 +1365,23 @@
    "kind": "parent"
   },
   {
+   "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
+   "to": "Q04_S00_TOP_PRIORITY_MATTERS",
+   "kind": "requires"
+  },
+  {
    "from": "Q04_S00_TOP_PRIORITY_MATTERS",
    "to": "Q04_S01_FISH_EATEN_BY_CAT",
+   "kind": "parent"
+  },
+  {
+   "from": "Q04_S01_FISH_EATEN_BY_CAT",
+   "to": "Q04_S02_TAVERN_TROPHY",
+   "kind": "requires"
+  },
+  {
+   "from": "Q04_S00_TOP_PRIORITY_MATTERS",
+   "to": "Q04_S02_TAVERN_TROPHY",
    "kind": "parent"
   },
   {
@@ -1231,7 +1406,7 @@
    "alt": true
   },
   {
-   "from": "Q01_S02_MEET_MADAME_SARCASMIA",
+   "from": "Q01_S03_MEET_MADAME_SARCASMIA",
    "to": "dlg:MADAME_SARCASMIA#001",
    "kind": "closes",
    "negated": false,
@@ -1266,14 +1441,15 @@
    "alt": false
   },
   {
-   "from": "dlg:BARMAN_ABSINTHRAYNER#023",
-   "to": "Q04_S00_TOP_PRIORITY_MATTERS",
-   "kind": "unlocks",
-   "negated": false
-  },
-  {
    "from": "Q04_S01_FISH_EATEN_BY_CAT",
    "to": "dlg:BARMAN_ABSINTHRAYNER#024",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
+   "from": "Q04_S02_TAVERN_TROPHY",
+   "to": "dlg:BARMAN_ABSINTHRAYNER#029",
    "kind": "closes",
    "negated": false,
    "alt": false

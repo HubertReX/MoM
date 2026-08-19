@@ -22,7 +22,7 @@ Jeden plik = jeden quest, więc poniżej są same parasole wątków (krok `S00`)
 
 - [[Q00_S00 O co tu chodzi]]
 - [[Q01_S00 Przełamać klątwę]]
-- [[Q03_S00 Znajdź kogoś kto wie o klątwach]]
+- [[Q03_S00 Znajdź kogoś kto wie o magii]]
 
 ### **PL Finding the Amulet of Un-Cursing**
 

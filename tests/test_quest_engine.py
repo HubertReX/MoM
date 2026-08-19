@@ -10,13 +10,8 @@ fixture has one home) and the real stub context from
 ``test_quest_conditions.py``.
 """
 
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
-sys.path.insert(0, os.path.dirname(__file__))
-
-from quest import CompletionMode, QuestState, init_quests
+from test_quest_entities import SAMPLE, _msgs
+from test_quest_conditions import StubQuestContext
 from quest.engine import (
     QuestEngineError,
     check_quests,
@@ -25,13 +20,18 @@ from quest.engine import (
     quest_progress,
     unlocked_keys,
 )
-from test_quest_conditions import StubQuestContext
-from test_quest_entities import SAMPLE, _msgs
+from quest import CompletionMode, QuestState, init_quests
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
+sys.path.insert(0, os.path.dirname(__file__))
+
 
 Q00 = "Q00_S00_WHAT_IS_GOING_ON"
 Q01_S00 = "Q01_S00_BREAK_THE_CURSE"
 Q01_S01 = "Q01_S01_LEARN_ABOUT_CURSE"
-Q01_S02 = "Q01_S02_MEET_MADAME_SARCASMIA"
+Q01_S02 = "Q01_S03_MEET_MADAME_SARCASMIA"
 Q03_S00 = "Q03_S00_LEARN_ABOUT_CURSE"
 Q03_S01 = "Q03_S01_WHO_HAS_MORE_KNOWLEDGE"
 Q03_S02 = "Q03_S02_WHERE_TO_FIND_THIS_PERSON"

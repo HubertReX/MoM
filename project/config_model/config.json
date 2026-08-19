@@ -397,7 +397,15 @@
             "hobby": "BLUNDERHAVEN:shrine",
             "routine": "townsfolk",
             "barks": "VILLAGERS",
-            "speed_walk": 10
+            "speed_walk": 10,
+            "items": [
+                "lance",
+                "stick"
+            ],
+            "is_merchant": true,
+            "tradeable_items_types": [
+                "weapon"
+            ]
         },
         "BARMAN_ABSINTHRAYNER": {
             "sprite": "Hunter",
@@ -760,7 +768,7 @@
             "value": 20,
             "weight": 2.0,
             "name_EN": "Green crystal",
-            "name_PL": "Zielony krzyształ"
+            "name_PL": "Zielony kryształ"
         },
         "gem_big_green": {
             "type": "gem",
@@ -780,7 +788,7 @@
             "value": 40,
             "weight": 2.0,
             "name_EN": "Purple crystal",
-            "name_PL": "Purpurowy krzyształ"
+            "name_PL": "Purpurowy kryształ"
         },
         "gem_big_purple": {
             "type": "gem",
@@ -800,7 +808,7 @@
             "value": 60,
             "weight": 2.0,
             "name_EN": "Blue crystal",
-            "name_PL": "Niebieski krzyształ"
+            "name_PL": "Niebieski kryształ"
         },
         "gem_big_blue": {
             "type": "gem",
@@ -820,7 +828,7 @@
             "value": 80,
             "weight": 2.0,
             "name_EN": "Orange crystal",
-            "name_PL": "Pomarańczowy krzyształ"
+            "name_PL": "Pomarańczowy kryształ"
         },
         "gem_big_orange": {
             "type": "gem",
@@ -1085,40 +1093,48 @@
                     "order": 3,
                     "text": "M_HAMMER_HOAXHEART_DO_000to001_3"
                 },
-                "001to002_1": {
-                    "next_node": "002",
+                "001totrade_1": {
+                    "next_node": "001",
                     "condition": "True",
                     "sentiment": "neutral",
                     "order": 1,
-                    "text": "M_HAMMER_HOAXHEART_DO_001to002_1"
+                    "text": "M_HAMMER_HOAXHEART_DO_001totrade_1",
+                    "opens_trade": true
                 },
-                "001to003_2": {
-                    "next_node": "003",
+                "001to002_2": {
+                    "next_node": "002",
                     "condition": "True",
                     "sentiment": "neutral",
                     "order": 2,
-                    "text": "M_HAMMER_HOAXHEART_DO_001to003_2"
+                    "text": "M_HAMMER_HOAXHEART_DO_001to002_2"
                 },
-                "001to004_3": {
-                    "next_node": "004",
+                "001to003_3": {
+                    "next_node": "003",
                     "condition": "True",
                     "sentiment": "neutral",
                     "order": 3,
-                    "text": "M_HAMMER_HOAXHEART_DO_001to004_3"
+                    "text": "M_HAMMER_HOAXHEART_DO_001to003_3"
                 },
-                "001to005_4": {
-                    "next_node": "005",
+                "001to004_4": {
+                    "next_node": "004",
                     "condition": "True",
                     "sentiment": "neutral",
                     "order": 4,
-                    "text": "M_HAMMER_HOAXHEART_DO_001to005_4"
+                    "text": "M_HAMMER_HOAXHEART_DO_001to004_4"
                 },
-                "001to006_5": {
-                    "next_node": "006",
+                "001to005_5": {
+                    "next_node": "005",
                     "condition": "True",
                     "sentiment": "neutral",
                     "order": 5,
-                    "text": "M_HAMMER_HOAXHEART_DO_001to006_5"
+                    "text": "M_HAMMER_HOAXHEART_DO_001to005_5"
+                },
+                "001to006_6": {
+                    "next_node": "006",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 6,
+                    "text": "M_HAMMER_HOAXHEART_DO_001to006_6"
                 },
                 "001to990_9": {
                     "next_node": "990",
@@ -1254,11 +1270,12 @@
                     "000to001_3"
                 ],
                 "001": [
-                    "001to002_1",
-                    "001to003_2",
-                    "001to004_3",
-                    "001to005_4",
-                    "001to006_5",
+                    "001totrade_1",
+                    "001to002_2",
+                    "001to003_3",
+                    "001to004_4",
+                    "001to005_5",
+                    "001to006_6",
                     "001to990_9"
                 ],
                 "002": [
@@ -1432,6 +1449,26 @@
                     "is_final": false,
                     "result": "BARMAN_ABSINTHRAYNER_NR_025",
                     "text": "M_BARMAN_ABSINTHRAYNER_DN_025"
+                },
+                "026": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DN_026"
+                },
+                "027": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DN_027"
+                },
+                "028": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DN_028"
+                },
+                "029": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DN_029"
                 },
                 "990": {
                     "is_final": true,
@@ -1791,12 +1828,12 @@
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_021to022_1"
                 },
-                "021to001_2": {
-                    "next_node": "001",
-                    "condition": "True",
+                "021to026_2": {
+                    "next_node": "026",
+                    "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"026\")",
                     "sentiment": "neutral",
                     "order": 2,
-                    "text": "M_BARMAN_ABSINTHRAYNER_DO_021to001_2"
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_021to026_2"
                 },
                 "021to001_3": {
                     "next_node": "001",
@@ -1811,6 +1848,13 @@
                     "sentiment": "neutral",
                     "order": 4,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_021to024_4"
+                },
+                "021to029_5": {
+                    "next_node": "029",
+                    "condition": "item_count(\"gem_crystal_green\") >= 1 and visited(\"BARMAN_ABSINTHRAYNER\", \"026\")",
+                    "sentiment": "neutral",
+                    "order": 5,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_021to029_5"
                 },
                 "021to001_9": {
                     "next_node": "001",
@@ -1846,6 +1890,62 @@
                     "sentiment": "neutral",
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_025to001_1"
+                },
+                "026to027_1": {
+                    "next_node": "027",
+                    "condition": "True",
+                    "sentiment": "kind",
+                    "order": 1,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_026to027_1"
+                },
+                "026to027_2": {
+                    "next_node": "027",
+                    "condition": "True",
+                    "sentiment": "smart",
+                    "order": 2,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_026to027_2"
+                },
+                "026to027_3": {
+                    "next_node": "027",
+                    "condition": "True",
+                    "sentiment": "funny",
+                    "order": 3,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_026to027_3"
+                },
+                "027to028_1": {
+                    "next_node": "028",
+                    "condition": "True",
+                    "sentiment": "weak",
+                    "order": 1,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_027to028_1"
+                },
+                "027to028_2": {
+                    "next_node": "028",
+                    "condition": "True",
+                    "sentiment": "kind",
+                    "order": 2,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_027to028_2"
+                },
+                "027to028_3": {
+                    "next_node": "028",
+                    "condition": "True",
+                    "sentiment": "angry",
+                    "order": 3,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_027to028_3"
+                },
+                "028to001_1": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 1,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_028to001_1"
+                },
+                "029to001_1": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 1,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_029to001_1"
                 }
             },
             "NODES_OPTIONS": {
@@ -1941,9 +2041,10 @@
                 ],
                 "021": [
                     "021to022_1",
-                    "021to001_2",
+                    "021to026_2",
                     "021to001_3",
                     "021to024_4",
+                    "021to029_5",
                     "021to001_9"
                 ],
                 "022": [
@@ -1957,6 +2058,22 @@
                 ],
                 "025": [
                     "025to001_1"
+                ],
+                "026": [
+                    "026to027_1",
+                    "026to027_2",
+                    "026to027_3"
+                ],
+                "027": [
+                    "027to028_1",
+                    "027to028_2",
+                    "027to028_3"
+                ],
+                "028": [
+                    "028to001_1"
+                ],
+                "029": [
+                    "029to001_1"
                 ],
                 "990": [],
                 "991": []
@@ -2752,6 +2869,13 @@
                     "order": 3,
                     "text": "M_POTIONEER_PUZZLEMINT_DO_008to009_3"
                 },
+                "009to011_1": {
+                    "next_node": "011",
+                    "condition": "True",
+                    "sentiment": "kind",
+                    "order": 1,
+                    "text": "M_POTIONEER_PUZZLEMINT_DO_009to011_1"
+                },
                 "009to001_9": {
                     "next_node": "001",
                     "condition": "True",
@@ -2925,6 +3049,7 @@
                     "008to009_3"
                 ],
                 "009": [
+                    "009to011_1",
                     "009to001_9"
                 ],
                 "003": [
@@ -3762,11 +3887,6 @@
             "M_HAMMER_HOAXHEART_DO_000to001_2": "Show some manners, man, or I will have the [char]mayor[/] revoke your [italic]blacksmithing licence[/italic]!",
             "M_HAMMER_HOAXHEART_DO_000to001_3": "Depends on what you have to offer - play this right and you will earn.",
             "M_HAMMER_HOAXHEART_DN_001": "What do you want?",
-            "M_HAMMER_HOAXHEART_DO_001to002_1": "Have you always been a blacksmith?",
-            "M_HAMMER_HOAXHEART_DO_001to003_2": "How is business treating [shadow]you[/shadow] in this village?",
-            "M_HAMMER_HOAXHEART_DO_001to004_3": "Do you get customers from the surrounding [loc]villages[/]?",
-            "M_HAMMER_HOAXHEART_DO_001to005_4": "Can you forge [shadow]magical[/shadow] items?",
-            "M_HAMMER_HOAXHEART_DO_001to006_5": "Who is the smartest person around here?",
             "M_HAMMER_HOAXHEART_DO_001to990_9": "That is all, until next time.",
             "M_HAMMER_HOAXHEART_DN_002": "For as long as I can remember.",
             "M_HAMMER_HOAXHEART_DO_002to007_1": "And before that?",
@@ -3868,58 +3988,6 @@
             "M_MISS_INFORMATION_DN_000": "Hello :exclamation:",
             "M_MISS_INFORMATION_DO_000to099_1": "Actually, I have no questions",
             "M_MISS_INFORMATION_DN_099": "See you around :exclamation:",
-            "bark.VILLAGERS.001": "Good morning",
-            "bark.VILLAGERS.002": "Good evening",
-            "bark.VILLAGERS.003": "Top of the morning to ya",
-            "bark.VILLAGERS.004": "Howdy-do",
-            "bark.VILLAGERS.005": "Sure stinks in here",
-            "bark.VILLAGERS.006": "Lovely weather we're having",
-            "bark.VILLAGERS.007": "Nights are chilly again",
-            "bark.VILLAGERS.008": "Work won't do itself",
-            "bark.VILLAGERS.009": "Sure is boring around here",
-            "bark.VILLAGERS.010": "Could go for a bite",
-            "bark.VILLAGERS.011": "Some rest at last",
-            "bark.VILLAGERS.012": "Oh, look, here comes our walking disaster",
-            "bark.VILLAGERS.013": "Hmm, who's this fresh meat",
-            "bark.FARM_ANIMALS.001": "Moo",
-            "bark.FARM_ANIMALS.002": "Moo?",
-            "bark.FARM_ANIMALS.003": "Awoooo",
-            "bark.FARM_ANIMALS.004": "woof, woof",
-            "bark.FARM_ANIMALS.005": "meow",
-            "bark.FARM_ANIMALS.006": "mEOw",
-            "M_MARRY_DN_000": "Hello :exclamation:",
-            "M_MARRY_DO_000to099_1": "Actually, I have no questions",
-            "M_MARRY_DN_099": "See you around :exclamation:",
-            "M_ROB_DN_000": "Hello :exclamation:",
-            "M_ROB_DO_000to099_1": "Actually, I have no questions",
-            "M_ROB_DN_099": "See you around :exclamation:",
-            "bark.BARMAN_ABSINTHRAYNER.001": "The mugs will not wash themselves.",
-            "bark.BARMAN_ABSINTHRAYNER.002": "At this hour, it is just me and the mice.",
-            "bark.BARMAN_ABSINTHRAYNER.003": "Last call! Just kidding.",
-            "bark.BARMAN_ABSINTHRAYNER.004": "Oh, my favourite customer!",
-            "bark.BARMAN_ABSINTHRAYNER.005": "Sit over there. Further. Even further.",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to021_1": "Can I help [shadow]you[/shadow] with anything:question:",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to002_2": "What brought [shadow]you[/shadow] here:question:",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to003_3": "How do [shadow]you[/shadow] like this place:red_question:",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to004_4": "Anything interesting in the [loc]area[/]:red_question_anim:",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to005_5": "Do you know anyone who knows about [quest]spells[/]:question:",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to006_6": "Where could I learn about [quest]spells[/]:question:",
-            "M_BARMAN_ABSINTHRAYNER_DN_021": "Now that [shadow]you[/shadow] mention it, there might be something...",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to022_1": "I hear the [char]cat[/] gobbled up all the [item]fish[/item]?",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to001_2": "[shadow]TODO[/shadow] Q04_S02",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to001_3": "[shadow]TODO[/shadow] Q04_S03",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to024_4": "I have got those [item]fish[/item] for [shadow]you[/shadow]",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to001_9": "Bah, never mind",
-            "M_BARMAN_ABSINTHRAYNER_DN_022": "This is a serious matter. The [char]cat[/] ate the [item]fish[/item] supply. No [item]fish[/item], no snacks. No snacks and the [char]peasants[/] drink on an empty stomach. And [char]peasants[/] drinking on an empty stomach, young man, are the beginning of every [shadow]civil war[/shadow] around here!",
-            "M_BARMAN_ABSINTHRAYNER_DO_022to023_1": "And how many of those [shadow]wars[/shadow] have there been?",
-            "M_BARMAN_ABSINTHRAYNER_DN_023": "[shadow]NOT[/shadow] a single one on my watch! And you know why? Because there was always [item]fish[/item]!\n\nThe [char]cat[/] has a chest hidden somewhere in the bushes where it stashes the stolen [item]fish[/item]. Cut down that thicket and bring me [num]5[/] fresh [item]fish[/item].\n\nOnly you will have to find a properly strong [item]weapon[/] to cut through bushes that dense.",
-            "M_BARMAN_ABSINTHRAYNER_DO_023to001_1": "Does not sound all that complicated - I will do it",
-            "M_BARMAN_ABSINTHRAYNER_DN_024": "Oh, my benefactor! You really pulled it off! You have saved us - you deserve the [qutest]Nobel Peace Prize[/]!",
-            "M_BARMAN_ABSINTHRAYNER_DO_024to025_1": "Nie dbam o żadnego [qutest]Nobla[/], ale coś za tą fatygę by się przydało [shadow]TODO[/shadow].",
-            "M_BARMAN_ABSINTHRAYNER_DN_025": "A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet :money:.[shadow]TODO[/shadow]",
-            "M_BARMAN_ABSINTHRAYNER_DO_025to001_1": "Cieszę się, że mogłem pomóc.[shadow]TODO[/shadow]",
-            "M_CLAPBACK_SWORD_DO_000to015_9": "[shadow]DEBUG[/shadow] end of dialog",
-            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_7": "And what do you have for sale:question:",
             "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME": "What is going on?",
             "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION": "You woke up in a stable, in a village whose name you would rather not know, and [shadow]your[/shadow] sword will not stop talking to [shadow]you[/shadow]. Apparently that is not normal...",
             "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS": "The [char]Sword[/char] walked [shadow]you[/shadow] back through the last day: landing here was not [shadow]plain[/shadow] bad luck, it was a [quest]curse[/]! The details are with the locals, and at this hour the locals are in the [loc]Tavern[/loc].",
@@ -3941,15 +4009,93 @@
             "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME": "How to get there?",
             "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION": "The city is somewhere to the north. \"[italic]Somewhere[/italic]\" is decidedly not enough to set off on.",
             "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Two days north, past the [loc]Tangled Forest of Irritation[/loc], then turn east. The [char]barman[/char] has never been to the city, but he knows the route by heart.",
-            "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_NAME": "Meet [char]Sarcasmia[/char]",
-            "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_DESCRIPTION": "Knowing about a [quest]curse[/] is one thing, lifting it is an entirely different kettle of fish.\n\nApparently there is someone who dabbles in exactly that and who, apparently, thinks [shadow]very[/shadow] highly of herself.",
-            "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarcasmia[/char] listened, sighed theatrically, and concluded it is probably just bad luck. She will try to help, though - for a [italic]small[/italic] favour.",
+            "bark.VILLAGERS.001": "Good morning",
+            "bark.VILLAGERS.002": "Good evening",
+            "bark.VILLAGERS.003": "Top of the morning to ya",
+            "bark.VILLAGERS.004": "Howdy-do",
+            "bark.VILLAGERS.005": "Sure stinks in here",
+            "bark.VILLAGERS.006": "Lovely weather we're having",
+            "bark.VILLAGERS.007": "Nights are chilly again",
+            "bark.VILLAGERS.008": "Work won't do itself",
+            "bark.VILLAGERS.009": "Sure is boring around here",
+            "bark.VILLAGERS.010": "Could go for a bite",
+            "bark.VILLAGERS.011": "Some rest at last",
+            "bark.VILLAGERS.012": "Oh, look, here comes our walking disaster",
+            "bark.VILLAGERS.013": "Hmm, who's this fresh meat",
+            "bark.FARM_ANIMALS.001": "Moo",
+            "bark.FARM_ANIMALS.002": "Moo?",
+            "bark.FARM_ANIMALS.003": "Awoooo",
+            "bark.FARM_ANIMALS.004": "woof, woof",
+            "bark.FARM_ANIMALS.005": "meow",
+            "bark.FARM_ANIMALS.006": "mEOw",
+            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_NAME": "Meet [char]Sarcasmia[/char]",
+            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_DESCRIPTION": "Knowing about a [quest]curse[/] is one thing, lifting it is an entirely different kettle of fish.\n\nApparently there is someone who dabbles in exactly that and who, apparently, thinks [shadow]very[/shadow] highly of herself.",
+            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarcasmia[/char] listened, sighed theatrically, and concluded it is probably just bad luck. She will try to help, though - for a [italic]small[/italic] favour.",
+            "M_MARRY_DN_000": "Hello :exclamation:",
+            "M_MARRY_DO_000to099_1": "Actually, I have no questions",
+            "M_MARRY_DN_099": "See you around :exclamation:",
+            "M_ROB_DN_000": "Hello :exclamation:",
+            "M_ROB_DO_000to099_1": "Actually, I have no questions",
+            "M_ROB_DN_099": "See you around :exclamation:",
+            "bark.BARMAN_ABSINTHRAYNER.001": "The mugs will not wash themselves.",
+            "bark.BARMAN_ABSINTHRAYNER.002": "At this hour, it is just me and the mice.",
+            "bark.BARMAN_ABSINTHRAYNER.003": "Last call! Just kidding.",
+            "bark.BARMAN_ABSINTHRAYNER.004": "Oh, my favourite customer!",
+            "bark.BARMAN_ABSINTHRAYNER.005": "Sit over there. Further. Even further.",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to021_1": "Can I help [shadow]you[/shadow] with anything:question:",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to002_2": "What brought [shadow]you[/shadow] here:question:",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to003_3": "How do [shadow]you[/shadow] like this place:red_question:",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to004_4": "Anything interesting in the [loc]area[/]:red_question_anim:",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to005_5": "Do you know anyone who knows about [quest]spells[/]:question:",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to006_6": "Where could I learn about [quest]spells[/]:question:",
+            "M_BARMAN_ABSINTHRAYNER_DN_021": "Now that [shadow]you[/shadow] mention it, there might be something...",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to022_1": "I hear the [char]cat[/] gobbled up all the [item]fish[/item]?",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to001_3": "[shadow]TODO[/shadow] Q04_S03",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to024_4": "I have got those [item]fish[/item] for [shadow]you[/shadow]",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to001_9": "Bah, never mind",
+            "M_BARMAN_ABSINTHRAYNER_DN_022": "This is a serious matter. The [char]cat[/] ate the [item]fish[/item] supply. No [item]fish[/item], no snacks. No snacks and the [char]peasants[/] drink on an empty stomach. And [char]peasants[/] drinking on an empty stomach, young man, are the beginning of every [shadow]civil war[/shadow] around here!",
+            "M_BARMAN_ABSINTHRAYNER_DO_022to023_1": "And how many of those [shadow]wars[/shadow] have there been?",
+            "M_BARMAN_ABSINTHRAYNER_DN_023": "[shadow]NOT[/shadow] a single one on my watch! And you know why? Because there was always [item]fish[/item]!\n\nThe [char]cat[/] has a chest hidden somewhere in the bushes where it stashes the stolen [item]fish[/item]. Cut down that thicket and bring me [num]5[/] fresh [item]fish[/item].\n\nOnly you will have to find a properly strong [item]weapon[/] to cut through bushes that dense.",
+            "M_BARMAN_ABSINTHRAYNER_DO_023to001_1": "Does not sound all that complicated - I will do it",
+            "M_BARMAN_ABSINTHRAYNER_DN_024": "Oh, my benefactor! You really pulled it off! You have saved us - you deserve the [quest]Nobel Peace Prize[/]!",
             "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_NAME": "Matters of the utmost importance",
             "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_DESCRIPTION": "There are a few matters the [char]barman[/char] would like you to sort out for him. These are not [italic]run-of-the-mill[/italic] matters - these are matters of the [shadow]utmost importance[/shadow]!",
             "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_SUCCESS": "What you pulled off leaves the [char]barman[/char] eternally grateful. It translates into lower prices at [loc]the tavern[/loc] and beer served in cleaner tankards. Which is not to say the tankards are entirely clean...",
-            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_NAME": "The fish the cat ate",
-            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_DESCRIPTION": "The [char]cat[/] has eaten the [item]fish[/item] supply. To the [char]barman[/char] this is not a catering problem, it is an incoming [shadow]civil war[/shadow]!\n\nThe [char]cat[/] keeps the [item]fish[/item] in a [item]chest[/] hidden somewhere behind the bushes. You just need a weapon strong enough to cut those bushes down. Unless there is some other way to get hold of the [item]fish[/item].\n\nAfter that all it takes is carrying the [item]fish[/item] back to the [char]barman[/char].",
-            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_SUCCESS": "There is fish, there are snacks, the patrons are content - another [shadow]crisis[/shadow] averted."
+            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_NAME": "Trofeum z dalekiego świata",
+            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_DESCRIPTION": "# The fish the cat ate\n\nThe [char]cat[/] has eaten the [item]fish[/item] supply. To the [char]barman[/char] this is not a catering problem, it is an incoming [shadow]civil war[/shadow]!\n\nThe [char]cat[/] keeps the [item]fish[/item] in a [item]chest[/] hidden somewhere behind the bushes. You just need a weapon strong enough to cut those bushes down. Unless there is some other way to get hold of the [item]fish[/item].\n\nAfter that all it takes is carrying the [item]fish[/item] back to the [char]barman[/char].",
+            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_SUCCESS": "There is fish, there are snacks, the patrons are content - another [shadow]crisis[/shadow] averted.",
+            "M_BARMAN_ABSINTHRAYNER_DO_024to025_1": "Nie dbam o żadnego [quest]Nobla[/], ale coś za tą fatygę by się przydało [shadow]TODO[/shadow].",
+            "M_BARMAN_ABSINTHRAYNER_DN_025": "A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet :money:.[shadow]TODO[/shadow]",
+            "M_BARMAN_ABSINTHRAYNER_DO_025to001_1": "Cieszę się, że mogłem pomóc.[shadow]TODO[/shadow]",
+            "M_CLAPBACK_SWORD_DO_000to015_9": "[shadow]DEBUG[/shadow] end of dialog",
+            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_7": "And what do you have for sale:question:",
+            "M_HAMMER_HOAXHEART_DO_001totrade_1": "Can we trade?",
+            "M_HAMMER_HOAXHEART_DO_001to002_2": "Have you always been a blacksmith?",
+            "M_HAMMER_HOAXHEART_DO_001to003_3": "How is business treating [shadow]you[/shadow] in this village?",
+            "M_HAMMER_HOAXHEART_DO_001to004_4": "Do you get customers from the surrounding [loc]villages[/]?",
+            "M_HAMMER_HOAXHEART_DO_001to005_5": "Can you forge [shadow]magical[/shadow] items?",
+            "M_HAMMER_HOAXHEART_DO_001to006_6": "Who is the smartest person around here?",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to026_2": "[shadow]TODO[/shadow] Q04_S02",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to029_5": "Mam dla [shadow]Ciebie[/shadow] [item]Green crystal[/item]",
+            "M_BARMAN_ABSINTHRAYNER_DN_026": "Masz tu [num]100[/] monet:$:.",
+            "M_BARMAN_ABSINTHRAYNER_DO_026to027_1": "Masz coś konkretnego na myśli?",
+            "M_BARMAN_ABSINTHRAYNER_DO_026to027_2": "Hmm, nic nie rozumiem. Rób co chcesz - co mi do tego?",
+            "M_BARMAN_ABSINTHRAYNER_DO_026to027_3": "[char]Miecz[/char]: [italic]Ty? Podróżowałeś?[/italic]:wondering:. Mów dalej...",
+            "M_BARMAN_ABSINTHRAYNER_DN_027": "Bo tak sobie pomyślałem, że najprościej by było abyś [shadow]Ty[/shadow] mi coś takiego przyniósł. A ja to tu sobie powieszę. Udowodniłeś już, że jesteś zaradny no i myślę, że mogę Ci zaufać. Wiesz, nie musimy nikomu mówić, czy to konkretne [item]trofeum[/] zdobyłem ja sam czy [shadow]Ty[/shadow]. To mało znaczący szczegół.\n\nByłaby to nasza [italic]mała[/italic] tajemnica.",
+            "M_BARMAN_ABSINTHRAYNER_DO_027to028_1": "No, ale ja nie wiem czy dam radę:evil:. Co to za [item]trofeum[/]?",
+            "M_BARMAN_ABSINTHRAYNER_DO_027to028_2": "A co z tego będzie dla mnie?",
+            "M_BARMAN_ABSINTHRAYNER_DO_027to028_3": "Ach, kręcisz i kręcisz:frounce:. Gadaj co mam zdobyć i ile konkretnie za to dostanę?",
+            "M_BARMAN_ABSINTHRAYNER_DN_028": "Spokojnie, to nie jest aż takie trudne a na pewno Ci się opłaci.\n\nChcę abyś przyniósł mi [item]Green crystal[/item] widziałem takie w [loc]Jaskiniach zagmatwania[/loc], ale Ty znajdziesz je też w [loc]labiryncie[/loc].\n\nCo do zapłaty, to myślę, że mogę Ci za to dać [num]30[/] monet:$: To więcej niż dostaniesz za niego u [char]Jasia[/char].",
+            "M_BARMAN_ABSINTHRAYNER_DO_028to001_1": "Niech będzie. Wszystko jasne - biorę się do roboty.",
+            "M_BARMAN_ABSINTHRAYNER_DN_029": "Och! Ależ się błyszczy:love_anim: Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!\n\nOto [shadow]Twoja[/shadow] nagroda :$:.",
+            "M_BARMAN_ABSINTHRAYNER_DO_029to001_1": "Cieszę się, że mogłem pomóc.",
+            "M_QUEST_Q04_S02_TAVERN_TROPHY_NAME": "Trofeum z dalekiego świata",
+            "M_QUEST_Q04_S02_TAVERN_TROPHY_DESCRIPTION": "[char]Barmanowi[/char] maży się, aby powiesić nad barem [item]Green crystal[/item] jako trofeum z jego [italic]słynnych[/italic] wypraw. Ty mu to jego trofeum przyniesiesz. To znaczy zdobędziesz trofeum, tylko, że to nie będzie Twoje trofeum, tylko jego. Czegoś nie rozumiesz?\n\n[item]Krzyształ[/item] możesz zdobyć w [loc]Labiryncie[/loc], ale to może być trudne bo tam jest niebezpiecznie i trzeba walczyć z [char]potworami[/]. Ewentualnie możesz go kupić od  [char]John[/], tylko musisz najpierw uzbierać odpowiednio dużo :$_anim:. Na przykład zdobywając skarby w [loc]Labiryncie[/loc], ale to może być trudne bo...\n\nhmm, no cóż... Ten świat może jest i [italic]prostacki[/italic], ale nie jest aż taki [shadow]prosty[/shadow] :doubt:",
+            "M_QUEST_Q04_S02_TAVERN_TROPHY_SUCCESS": "Trofeum zdobyte i przekazane, nagroda zainkasowana, a [char]Barman[/char] jest teraz z siebie dumny. A Ty?",
+            "M_POTIONEER_PUZZLEMINT_DO_009to011_1": "Jest tu w wiosce ktoś inny, kto się na tym zna?[shadow]TODO[/shadow]",
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_NAME": "Question Potioneer about the curse",
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_DESCRIPTION": "[char]Barman[/char] podpowiedział, że [char]Potioneer Puzzlemint[/char] może się znać na takich rzeczach jak [quest]Odwieczna klątwa nieszczęścia[/]. Co więcej, możemy się na niego powołać, bo inaczej może nie chcieć z nami rozmawiać.",
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS": "Wiemy już, że [char]Zielarka[/char] nic konkretnego nie wie, ale dała nowy trop: trzeba poszukać [char]Bibliofilistki des Inforamacji[/char]"
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Tawernie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
@@ -4095,7 +4241,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_008to009_1": "Aż wstyd mówić. Nabroiłem i [char]czarodzieje[/] rzucili na mnie [quest]Odwieczną klątwę nieszczęścia[/].",
             "M_POTIONEER_PUZZLEMINT_DO_008to009_2": "Jacyś podli [char]czarodzieje[/] zakleli mnie i ciągle prześladuje mnie [shadow]pech[/shadow].",
             "M_POTIONEER_PUZZLEMINT_DO_008to009_3": "Z tego co udało mi się ustalić, jestem pod wpływem [quest]Odwiecznej klątwy nieszczęścia[/].",
-            "M_POTIONEER_PUZZLEMINT_DN_009": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara [quest]klątwa[/] i rzadko kto po nią sięga. Ja nie mam na to lekarstwa. Jedynie mogę Ci dać [item]Miksturę Zapomnienia[/item], ale to raczej nie rozwiąże problemu.",
+            "M_POTIONEER_PUZZLEMINT_DN_009": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara [quest]klątwa[/] i rzadko kto po nią sięga. Nie znam na to lekarstwa. Jedynie mogę Ci dać [item]Miksturę Zapomnienia[/item], ale to raczej nie rozwiąże problemu.\n\nMoże ktoś inny, będzie wiedział więcej",
             "M_POTIONEER_PUZZLEMINT_DO_009to001_9": "Szkoda. Porozmawiajmy w takim razie o czymś innym.",
             "M_POTIONEER_PUZZLEMINT_DN_003": "Czy ja wiem? Wioska jak wioska, wszystkie w okolicy wyglądają podobnie. Ludzie nauczyli się, że są zdani sami na siebie.\n\nCo prawda nie mamy [shadow]młynarza[/shadow] ani [shadow]drwala[/shadow], ale za to nasz [shadow]kowal[/shadow] jest lepszy niż w niejednym mieście. [char]Kowal Kłamca[/char] nie jest może duszą towarzystwa, ale twierdzi, że rynsztunek robi wyśmienity.",
             "M_POTIONEER_PUZZLEMINT_DO_003to001_9": "Dzięki, to mi wystarczy.",
@@ -4111,7 +4257,7 @@
             "M_POTIONEER_PUZZLEMINT_DO_006to011_1": "Tak, tak, naturalnie. Może jednak słyszała [shadow]Pani[/shadow] o takich księgach?",
             "M_POTIONEER_PUZZLEMINT_DO_006to991_2": "To znaczy, że eksperymentowała [shadow]Pani[/shadow] na ludzi, biorąc od nich zapłatę, choć czasami kończyło się to tragicznie?",
             "M_POTIONEER_PUZZLEMINT_DO_006to011_3": "Szkoda, bardzo potrzebuję dowiedzieć się czegoś więcej o [quest]zaklęciach[/].",
-            "M_POTIONEER_PUZZLEMINT_DN_011": "Hmm, teraz jak o tym mówisz to przypomniało mi się, że miałam kiedyś taką [char]pomocnicę[/]. Miała się szkolić u mnie na [shadow]zielarkę[/shadow], ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce.\n\nJą też interesowały książki, szczególnie te o [shadow]magii[/shadow]. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może [shadow]Tobie[/shadow] mogła by pomóc.",
+            "M_POTIONEER_PUZZLEMINT_DN_011": "Hmm, teraz jak o tym mówisz to przypomniało mi się, że miałam kiedyś taką [char]pomocnicę[/]. Miała się szkolić u mnie na [shadow]zielarkę[/shadow], ale zupełnie nie miała do tego drygu. Tzn. notowała wszystko co jej mówiłam i potrafiła wyrecytować każdą recepturę, ale sama nie potrafiła nic zrobić. Miała chyba dwie lewe ręce.\n\nJą interesowały książki, szczególnie te o [shadow]magii[/shadow]. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może [shadow]Tobie[/shadow] mogła by pomóc.",
             "M_POTIONEER_PUZZLEMINT_DO_011to012_1": "To brzmi [shadow]interesująco[/shadow], powiedz mi o niej coś więcej.",
             "M_POTIONEER_PUZZLEMINT_DN_012": "Co chciałbyś wiedzieć?",
             "M_POTIONEER_PUZZLEMINT_DO_012to013_1": "Co się z [shadow]nią[/shadow] później stało?",
@@ -4135,11 +4281,6 @@
             "M_HAMMER_HOAXHEART_DO_000to001_2": "Trochę kultury człowieku bo każę [char]wójtowi[/] odebrać Ci [italic]licencję kowalską[/italic]!",
             "M_HAMMER_HOAXHEART_DO_000to001_3": "To zależy co masz do zaoferowania - rozegraj to dobrze, a zarobisz.",
             "M_HAMMER_HOAXHEART_DN_001": "Czego chcesz?",
-            "M_HAMMER_HOAXHEART_DO_001to002_1": "Od zawsze byłeś kowalem?",
-            "M_HAMMER_HOAXHEART_DO_001to003_2": "Jak [shadow]Ci[/shadow] idą interesy w tej wiosce?",
-            "M_HAMMER_HOAXHEART_DO_001to004_3": "Masz trochę klientów z okolicznych [loc]wsi[/]?",
-            "M_HAMMER_HOAXHEART_DO_001to005_4": "Potrafisz wykuwać [shadow]magiczne[/shadow] przedmioty?",
-            "M_HAMMER_HOAXHEART_DO_001to006_5": "Kto tu jest najmądrzejszy w okolicy?",
             "M_HAMMER_HOAXHEART_DO_001to990_9": "To tyle, do następnego razu.",
             "M_HAMMER_HOAXHEART_DN_002": "Od kiedy pamiętam.",
             "M_HAMMER_HOAXHEART_DO_002to007_1": "A wcześniej?",
@@ -4241,6 +4382,27 @@
             "M_MISS_INFORMATION_DN_000": "Witaj :exclamation:",
             "M_MISS_INFORMATION_DO_000to099_1": "W sumie to nie mam pytań",
             "M_MISS_INFORMATION_DN_099": "Do zobaczenia :exclamation:",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME": "O co tu chodzi?",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a [shadow]Twój[/shadow] miecz nie przestaje do [shadow]Ciebie[/shadow] gadać. To chyba nie jest normalne...",
+            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS": "[char]Miecz[/char] przypomniał [shadow]Ci[/shadow] wydarzenia ostatniego dnia: to jak tu trafiliśmy to nie [shadow]zwykły[/shadow] pech, to [quest]klątwa[/]! Konkretów trzeba poszukać u ludzi, a ludzie o tej porze są w [loc]Tawernie[/loc].",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME": "Przełamać klątwę",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_DESCRIPTION": "Klątwa nie zdejmie się sama. Ktoś pewnie wie jak to działa, ktoś pewnie umie ją zdjąć, a ktoś - czyli [char]Ty[/char] - musi pozbierać jedno z drugim do kupy.",
+            "M_QUEST_Q01_S00_BREAK_THE_CURSE_SUCCESS": "Klątwa złamana! [char]Miecz[/char] oczywiście twierdzi, że to była głównie jego zasługa.",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_NAME": "Kto wie więcej o klątwie?",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić. Musimy znaleźć kogoś, kto wie więcej o [quest]klątwie[/].\n\nW [loc]Tawernie[/loc] mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.",
+            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS": "[char]Barman[/char] zna kogoś od mikstur: jest stara, ślepa, mieszka koło lasu i czasem, po jej miksturach, ludziom robi się gorzej. Czy może być lepsza rekomendacja?",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_NAME": "Znajdź kogoś kto wie o magii",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION": "W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]księdza[/], albo chociaż [char]starego dziada[/], który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o [quest]klątwach[/] więcej niż same plotki.",
+            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS": "Wiesz już, [shadow]kto[/shadow] się na tym zna, [shadow]gdzie[/shadow] mieszka i [shadow]jak[/shadow] tam trafić. Trzy odpowiedzi bez ani grama magii. To się nawet może udać.",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME": "Kto ma wiedzę o magii?",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION": "[char]Zielarka[/char] warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może zna też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS": "Kiedyś wołali na nią [char]Mariolka[/char]. Teraz mówią na nią [char]Bibliofilistka des Informacja[/char] i podobno pilnuje zakazanych ksiąg w [loc]tajnej bibliotece[/loc].",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME": "Gdzie znaleźć tę osobę?",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION": "Imię już jest. Zostaje drobiazg: adres. [char]Kowal[/char] bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
+            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS": "[char]Kowal[/char] do miasta nie jeździ i nie zamierza zacząć. Wie za to dokładnie, kto w tej wiosce gada ze wszystkimi przybyszami.",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME": "Jak tam dotrzeć?",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION": "Miasto jest gdzieś na północy. \"[italic]Gdzieś[/italic]\" to stanowczo za mało, żeby ruszać w drogę.",
+            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Dwa dni na północ, za [loc]Splątanym lasem irytacji[/loc] skręcić na wschód. [char]Barman[/char] w mieście nie był, ale trasę zna na pamięć.",
             "bark.VILLAGERS.001": "Dzień dobry",
             "bark.VILLAGERS.002": "Dobry wieczór",
             "bark.VILLAGERS.003": "Uszanowanko",
@@ -4260,6 +4422,9 @@
             "bark.FARM_ANIMALS.004": "hał, hał",
             "bark.FARM_ANIMALS.005": "miau",
             "bark.FARM_ANIMALS.006": "mIAu",
+            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_NAME": "Spotkaj się z [char]Sarkażmijką[/char]",
+            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_DESCRIPTION": "Wiedzieć o [quest]klątwie[/] to jedno, a zdjąć ją to zupełnie inna para kaloszy.\n\nPodobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie [shadow]bardzo[/shadow] wysokie mniemanie. To [char]Bibliofilistka des Informacja[/char].",
+            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarkażmijka[/char] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za [italic]drobną[/italic] przysługę.",
             "M_MARRY_DN_000": "Witaj :exclamation:",
             "M_MARRY_DO_000to099_1": "W sumie to nie mam pytań",
             "M_MARRY_DN_099": "Do zobaczenia :exclamation:",
@@ -4279,7 +4444,6 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to006_6": "Gdzie mógłbym zdobyć wiedzę o [quest]zaklęciach[/]:question:",
             "M_BARMAN_ABSINTHRAYNER_DN_021": "A już Ci, coś by się znalazło...",
             "M_BARMAN_ABSINTHRAYNER_DO_021to022_1": "Ponoć [char]kot[/] zżarł wszystkie [item]ryby[/item]?",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to001_2": "[shadow]TODO[/shadow] Q04_S02",
             "M_BARMAN_ABSINTHRAYNER_DO_021to001_3": "[shadow]TODO[/shadow] Q04_S03",
             "M_BARMAN_ABSINTHRAYNER_DO_021to024_4": "Mam dla [shadow]Ciebie[/shadow] te [item]ryby[/item]",
             "M_BARMAN_ABSINTHRAYNER_DO_021to001_9": "Ech, nieważne",
@@ -4287,42 +4451,45 @@
             "M_BARMAN_ABSINTHRAYNER_DO_022to023_1": "A ile tych [shadow]wojen[/shadow] tutaj było?",
             "M_BARMAN_ABSINTHRAYNER_DN_023": "Za mojej kadencji [shadow]ANI[/shadow] jednej! I wiesz dlaczego? Bo zawsze były [item]ryby[/item]!\n\n[char]Kot[/] ma gdzieś w krzakach ukrytą skrzynię w której chowa wykradzione [item]ryby[/item]. Wytnij te chaszcze i przynieś mi [num]5[/] świeżych [item]ryb[/item].\n\nTylko musisz znaleźć odpowiednią mocną [item]broń[/] aby móc wyciąć takie gęste krzaki.",
             "M_BARMAN_ABSINTHRAYNER_DO_023to001_1": "Nie brzmi to jakoś zbyt skomplikowanie - zrobię to",
-            "M_BARMAN_ABSINTHRAYNER_DN_024": "O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się [qutest]Pokojowa nagroda Nobla[/]!",
-            "M_BARMAN_ABSINTHRAYNER_DO_024to025_1": "Nie dbam o żadnego [qutest]Nobla[/], ale coś za tą fatygę by się przydało.",
-            "M_BARMAN_ABSINTHRAYNER_DN_025": "A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet :money:.",
-            "M_BARMAN_ABSINTHRAYNER_DO_025to001_1": "Cieszę się, że mogłem pomóc.",
-            "M_CLAPBACK_SWORD_DO_000to015_9": "[shadow]DEBUG[/shadow] end of dialog",
-            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_7": "A co masz na sprzedaż:question:",
-            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_NAME": "O co tu chodzi?",
-            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_DESCRIPTION": "Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a [shadow]Twój[/shadow] miecz nie przestaje do [shadow]Ciebie[/shadow] gadać. To chyba nie jest normalne...",
-            "M_QUEST_Q00_S00_WHAT_IS_GOING_ON_SUCCESS": "[char]Miecz[/char] przypomniał [shadow]Ci[/shadow] wydarzenia ostatniego dnia: to jak tu trafiliśmy to nie [shadow]zwykły[/shadow] pech, to [quest]klątwa[/]! Konkretów trzeba poszukać u ludzi, a ludzie o tej porze są w [loc]Tawernie[/loc].",
-            "M_QUEST_Q01_S00_BREAK_THE_CURSE_NAME": "Przełamać klątwę",
-            "M_QUEST_Q01_S00_BREAK_THE_CURSE_DESCRIPTION": "Klątwa nie zdejmie się sama. Ktoś pewnie wie jak to działa, ktoś pewnie umie ją zdjąć, a ktoś - czyli [char]Ty[/char] - musi pozbierać jedno z drugim do kupy.",
-            "M_QUEST_Q01_S00_BREAK_THE_CURSE_SUCCESS": "Klątwa złamana! [char]Miecz[/char] oczywiście twierdzi, że to była głównie jego zasługa.",
-            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_NAME": "Dowiedz się więcej o klątwie",
-            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_DESCRIPTION": "Bajki dla dzieci i bajania bardów to za mało, żeby cokolwiek z tym zrobić.\n\nW [loc]Tawernie[/loc] mówi się wszystkim i o wszystkich - trzeba tylko zapytać właściwej osoby o właściwą rzecz.",
-            "M_QUEST_Q01_S01_LEARN_ABOUT_CURSE_SUCCESS": "[char]Barman[/char] zna kogoś od mikstur: jest stara, ślepa, mieszka koło lasu i czasem, po jej miksturach, ludziom robi się gorzej. Czy może być lepsza rekomendacja?",
-            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_NAME": "Znajdź kogoś kto wie o klątwach",
-            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION": "W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]księdza[/], albo chociaż [char]starego dziada[/], który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o [quest]klątwach[/] więcej niż same plotki.",
-            "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS": "Wiesz już, [shadow]kto[/shadow] się na tym zna, [shadow]gdzie[/shadow] mieszka i [shadow]jak[/shadow] tam trafić. Trzy odpowiedzi bez ani grama magii. To się nawet może udać.",
-            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME": "Kto ma wiedzę o magii?",
-            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION": "[char]Zielarka[/char] warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może zna też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
-            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS": "Kiedyś wołali na nią [char]Mariolka[/char]. Teraz mówią na nią [char]Bibliofilistka des Informacja[/char] i podobno pilnuje zakazanych ksiąg w [loc]tajnej bibliotece[/loc].",
-            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME": "Gdzie znaleźć tę osobę?",
-            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION": "Imię już jest. Zostaje drobiazg: adres. [char]Kowal[/char] bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
-            "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_SUCCESS": "[char]Kowal[/char] do miasta nie jeździ i nie zamierza zacząć. Wie za to dokładnie, kto w tej wiosce gada ze wszystkimi przybyszami.",
-            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_NAME": "Jak tam dotrzeć?",
-            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_DESCRIPTION": "Miasto jest gdzieś na północy. \"[italic]Gdzieś[/italic]\" to stanowczo za mało, żeby ruszać w drogę.",
-            "M_QUEST_Q03_S03_HOW_TO_GET_THERE_SUCCESS": "Dwa dni na północ, za [loc]Splątanym lasem irytacji[/loc] skręcić na wschód. [char]Barman[/char] w mieście nie był, ale trasę zna na pamięć.",
-            "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_NAME": "Spotkaj się z [char]Sarkażmijką[/char]",
-            "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_DESCRIPTION": "Wiedzieć o [quest]klątwie[/] to jedno, a zdjąć ją to zupełnie inna para kaloszy.\n\nPodobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie [shadow]bardzo[/shadow] wysokie mniemanie.",
-            "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarkażmijka[/char] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za [italic]drobną[/italic] przysługę.",
+            "M_BARMAN_ABSINTHRAYNER_DN_024": "O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się [quest]Pokojowa nagroda Nobla[/]! :star_anim:",
             "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_NAME": "Sprawy najwyższej wagi",
             "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_DESCRIPTION": "Jest kilka spraw, które [char]Barman[/char] chciałby, abyś mu załatwił. To nie są [italic]byle jakie[/italic] sprawy - to są sprawy [shadow]najwyższej wagi[/shadow]!",
-            "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_SUCCESS": "To czego dokonałeś sprawia, że [char]Barman[/char] jest Ci dozgonnie wdzięczny. Przekłada się to niższe stawki w [loc]Tawernie[/loc] i piwo podane czystszych kuflach. Co nie znaczy, że kufle są całkiem czyste...",
+            "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_SUCCESS": "To czego dokonałeś sprawia, że [char]Barman[/char] jest Ci dozgonnie wdzięczny. Przekłada się to niższe stawki w [loc]Tawernie[/loc] i piwo podane czystszych kuflach. Co nie znaczy, że kufle są całkiem czyste... No i dostałeś większy [item]plecak[/] na przedmioty.",
             "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_NAME": "Ryby, które zjadł kot",
             "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_DESCRIPTION": "[char]Kot[/] zjadł zapas [item]ryb[/item]. Dla [char]Barmana[/char] to nie jest problem gastronomiczny, tylko nadchodząca [shadow]wojna domowa[/shadow]!\n\n[char]Kot[/] trzyma [item]ryby[/item] w [item]skrzyni[/] ukrytej gdzieś za krzakami. Tylko trzeba odpowiednio mocnej broni, aby zniszczyć te krzaki. Chyba, że dałoby się inaczej zdobyć te [item]ryby[/].\n\nPotem wystarczy odnieść [item]ryby[/] do [char]Barmana[/char].",
-            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_SUCCESS": "Są ryby, jest zakąska, klienci zadowoleni - kolejny [shadow]kryzys[/shadow] zarzegnany."
+            "M_QUEST_Q04_S01_FISH_EATEN_BY_CAT_SUCCESS": "Są ryby, jest zakąska, klienci zadowoleni - kolejny [shadow]kryzys[/shadow] zarzegnany.",
+            "M_BARMAN_ABSINTHRAYNER_DO_024to025_1": "Nie dbam o żadnego [quest]Nobla[/], ale coś za tą fatygę by się przydało.",
+            "M_BARMAN_ABSINTHRAYNER_DN_025": "A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet:$:.",
+            "M_BARMAN_ABSINTHRAYNER_DO_025to001_1": "Cieszę się, że mogłem pomóc.",
+            "M_CLAPBACK_SWORD_DO_000to015_9": "[shadow]DEBUG[/shadow] end of dialog",
+            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_7": "A co masz na sprzedaż:$:",
+            "M_HAMMER_HOAXHEART_DO_001totrade_1": "Możemy pohandlować?",
+            "M_HAMMER_HOAXHEART_DO_001to002_2": "Od zawsze byłeś kowalem?",
+            "M_HAMMER_HOAXHEART_DO_001to003_3": "Jak [shadow]Ci[/shadow] idą interesy w tej wiosce?",
+            "M_HAMMER_HOAXHEART_DO_001to004_4": "Masz trochę klientów z okolicznych [loc]wsi[/]?",
+            "M_HAMMER_HOAXHEART_DO_001to005_5": "Potrafisz wykuwać [shadow]magiczne[/shadow] przedmioty?",
+            "M_HAMMER_HOAXHEART_DO_001to006_6": "Kto tu jest najmądrzejszy w okolicy?",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to026_2": "Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to029_5": "Mam dla [shadow]Ciebie[/shadow] [item]Zielony kryształ[/item]",
+            "M_BARMAN_ABSINTHRAYNER_DN_026": "Ludzie we wsi to nawet nie wiedzą ile ja w życiu widziałem. Chciałbym aby każdy, kto przychodzi do mojej [loc]Tawerny[/loc] od razu wiedział z kim ma do czynienia:happy:. Pomyślałem, że tu, nad barem, mógłbym powiesić sobie jedno z moich [item]trofeów[/]. Świetny pomysł, prawda?\n\nJedyny kłopot w tym, że kiedy podróżowałem to nigdy nie zawracałem sobie głowy zbieraniem jakiś bibelotów. Zresztą, w tych najbardziej niebezpiecznych miejscach jak [loc]Bagno niedogodności[/loc] czy [loc]Jaskinie zagmatwania[/loc] to raczej nie mają [italic]sklepu z pamiątkami[/italic]:blink:",
+            "M_BARMAN_ABSINTHRAYNER_DO_026to027_1": "Masz coś konkretnego na myśli?",
+            "M_BARMAN_ABSINTHRAYNER_DO_026to027_2": "Hmm, nic nie rozumiem. Rób co chcesz - co mi do tego?",
+            "M_BARMAN_ABSINTHRAYNER_DO_026to027_3": "[char]Miecz[/char]: [italic]Ty? Podróżowałeś?[/italic]:wondering:. Mów dalej...",
+            "M_BARMAN_ABSINTHRAYNER_DN_027": "Bo tak sobie pomyślałem, że najprościej by było abyś [shadow]Ty[/shadow] mi coś takiego przyniósł. A ja to tu sobie powieszę. Udowodniłeś już, że jesteś zaradny no i myślę, że mogę Ci zaufać. Wiesz, nie musimy nikomu mówić, czy to konkretne [item]trofeum[/] zdobyłem ja sam czy [shadow]Ty[/shadow]. To mało znaczący szczegół.\n\nByłaby to nasza [italic]mała[/italic] tajemnica.",
+            "M_BARMAN_ABSINTHRAYNER_DO_027to028_1": "No, ale ja nie wiem czy dam radę:evil:. Co to za [item]trofeum[/]?",
+            "M_BARMAN_ABSINTHRAYNER_DO_027to028_2": "A co z tego będzie dla mnie?",
+            "M_BARMAN_ABSINTHRAYNER_DO_027to028_3": "Ach, kręcisz i kręcisz:frounce:. Gadaj co mam zdobyć i ile konkretnie za to dostanę?",
+            "M_BARMAN_ABSINTHRAYNER_DN_028": "Spokojnie, to nie jest aż takie trudne a na pewno Ci się opłaci.\n\nChcę abyś przyniósł mi [item]Zielony kryształ[/item] widziałem takie w [loc]Jaskiniach zagmatwania[/loc], ale Ty znajdziesz je też w [loc]labiryncie[/loc].\n\nCo do zapłaty, to myślę, że mogę Ci za to dać [num]30[/] monet:$: To więcej niż dostaniesz za niego u [char]Jasia[/char].",
+            "M_BARMAN_ABSINTHRAYNER_DO_028to001_1": "Niech będzie. Wszystko jasne - biorę się do roboty.",
+            "M_BARMAN_ABSINTHRAYNER_DN_029": "Och! Ależ się błyszczy:love_anim: Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!\n\nOto [shadow]Twoja[/shadow] nagroda :$:.",
+            "M_BARMAN_ABSINTHRAYNER_DO_029to001_1": "Cieszę się, że mogłem pomóc.",
+            "M_QUEST_Q04_S02_TAVERN_TROPHY_NAME": "Trofeum z dalekiego świata",
+            "M_QUEST_Q04_S02_TAVERN_TROPHY_DESCRIPTION": "[char]Barmanowi[/char] maży się, aby powiesić nad barem [item]Zielony kryształ[/item] jako trofeum z jego [italic]słynnych[/italic] wypraw. Ty mu to jego trofeum przyniesiesz. To znaczy zdobędziesz trofeum, tylko, że to nie będzie Twoje trofeum, tylko jego. Czegoś nie rozumiesz?\n\n[item]Kryształ[/item] możesz zdobyć w [loc]Labiryncie[/loc], ale to może być trudne bo tam jest niebezpiecznie i trzeba walczyć z [char]potworami[/]. Ewentualnie możesz go kupić od [char]Jasia[/], tylko musisz najpierw uzbierać odpowiednio dużo :$_anim:. Na przykład zdobywając skarby w [loc]Labiryncie[/loc], ale to może być trudne bo...\n\nhmm, no cóż... Ten świat może jest i [italic]prostacki[/italic], ale nie jest aż taki [shadow]prosty[/shadow] :doubt:",
+            "M_QUEST_Q04_S02_TAVERN_TROPHY_SUCCESS": "Trofeum zdobyte i przekazane, nagroda zainkasowana, a [char]Barman[/char] jest teraz z siebie dumny. A Ty?",
+            "M_POTIONEER_PUZZLEMINT_DO_009to011_1": "Jest tu w wiosce ktoś inny, kto się na tym zna?",
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_NAME": "Wypytaj [char]Zielarkę[/char] o klątwę",
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_DESCRIPTION": "[char]Barman[/char] podpowiedział, że [char]Zielarka Zmora[/char] może się znać na takich rzeczach jak [quest]Odwieczna klątwa nieszczęścia[/]. Co więcej, możemy się na niego powołać, bo inaczej może nie chcieć z nami rozmawiać.",
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS": "Wiemy już, że [char]Zielarka[/char] nic konkretnego nie wie, ale dała nowy trop: trzeba poszukać [char]Bibliofilistki des Inforamacji[/char]"
         }
     },
     "quests": {
@@ -4372,14 +4539,31 @@
             ],
             "parent": "Q01_S00_BREAK_THE_CURSE"
         },
-        "Q01_S02_MEET_MADAME_SARCASMIA": {
-            "name": "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_NAME",
-            "description": "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_DESCRIPTION",
-            "success": "M_QUEST_Q01_S02_MEET_MADAME_SARCASMIA_SUCCESS",
+        "Q01_S02_ASK_POTIONEER_ABOUT_CURSE": {
+            "name": "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_NAME",
+            "description": "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_DESCRIPTION",
+            "success": "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS",
+            "completion": "test",
+            "test": "quest_done(\"Q03_S00_LEARN_ABOUT_CURSE\")",
+            "requires": [
+                "Q01_S01_LEARN_ABOUT_CURSE"
+            ],
+            "rewards": [
+                {
+                    "category": "health",
+                    "value": 20
+                }
+            ],
+            "parent": "Q01_S00_BREAK_THE_CURSE"
+        },
+        "Q01_S03_MEET_MADAME_SARCASMIA": {
+            "name": "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_NAME",
+            "description": "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_DESCRIPTION",
+            "success": "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_SUCCESS",
             "completion": "test",
             "test": "visited(\"MADAME_SARCASMIA\", \"001\")",
             "requires": [
-                "Q01_S01_LEARN_ABOUT_CURSE"
+                "Q01_S02_ASK_POTIONEER_ABOUT_CURSE"
             ],
             "rewards": [
                 {
@@ -4457,12 +4641,13 @@
             "description": "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_DESCRIPTION",
             "success": "M_QUEST_Q04_S00_TOP_PRIORITY_MATTERS_SUCCESS",
             "completion": "all_subquests",
-            "requires_test": "visited(\"BARMAN_ABSINTHRAYNER\", \"023\")",
+            "requires": [
+                "Q01_S02_ASK_POTIONEER_ABOUT_CURSE"
+            ],
             "rewards": [
                 {
-                    "category": "sentiment",
-                    "value": 15,
-                    "target": "BARMAN_ABSINTHRAYNER"
+                    "category": "max_items",
+                    "value": 7
                 }
             ]
         },
@@ -4474,8 +4659,27 @@
             "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"024\")",
             "rewards": [
                 {
-                    "category": "max_items",
-                    "value": 7
+                    "category": "sentiment",
+                    "value": 15,
+                    "target": "BARMAN_ABSINTHRAYNER"
+                }
+            ],
+            "parent": "Q04_S00_TOP_PRIORITY_MATTERS"
+        },
+        "Q04_S02_TAVERN_TROPHY": {
+            "name": "M_QUEST_Q04_S02_TAVERN_TROPHY_NAME",
+            "description": "M_QUEST_Q04_S02_TAVERN_TROPHY_DESCRIPTION",
+            "success": "M_QUEST_Q04_S02_TAVERN_TROPHY_SUCCESS",
+            "completion": "test",
+            "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"029\")",
+            "requires": [
+                "Q04_S01_FISH_EATEN_BY_CAT"
+            ],
+            "rewards": [
+                {
+                    "category": "sentiment",
+                    "value": 15,
+                    "target": "BARMAN_ABSINTHRAYNER"
                 }
             ],
             "parent": "Q04_S00_TOP_PRIORITY_MATTERS"

@@ -10,10 +10,11 @@ aliases:
 
 Potem wystarczy odnieść [item]ryby[/] do [[Barman Absyntnent|Barmana]].
 
+
 **Completion**: `test`
 **Test**: `visited(`[[Barman Absyntnent#024]]`)`
 **Success**: Są ryby, jest zakąska, klienci zadowoleni - kolejny **kryzys** zarzegnany.
-**Reward**: `raise_max_items(7)`
+**Reward**: `shift_sentiment_of(`[[Barman Absyntnent]]`,15)`
 
 ## Notatki
 

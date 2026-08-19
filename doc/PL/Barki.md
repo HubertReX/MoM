@@ -23,8 +23,8 @@ Pula dla mieszkańców wsi:
 - [`activity("idle")`] Nudno tu
 - [`activity("wander")`] Zjadłbym coś
 - [`activity("wander")`] W końcu chwila przerwy
-- [`quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] O, idzie nasz pechowiec
-- [`not quest_done(`[[Q01_S01 Dowiedz się więcej o klątwie]]`)`] Hmm, kim jest ten nowy
+- [`quest_done(`[[Q01_S01 Kto wie więcej o klątwie]]`)`] O, idzie nasz pechowiec
+- [`not quest_done(`[[Q01_S01 Kto wie więcej o klątwie]]`)`] Hmm, kim jest ten nowy
 
 ## FARM_ANIMALS
 
