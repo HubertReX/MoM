@@ -9,5 +9,6 @@ aliases:
 **Completion**: `test`
 **Test**: `visited(`[[Zielarka Zmora#014]]`) or visited(`[[Zielarka Zmora#017]]`)`
 **Success**: Kiedyś wołali na nią [[Bibliofilistka des Informacja|Mariolka]]. Teraz mówią na nią [[Bibliofilistka des Informacja]] i podobno pilnuje zakazanych ksiąg w [[Tajna biblioteka|tajnej bibliotece]].
+**Reward**: `raise_max_health(25)`
 
 ## Notatki

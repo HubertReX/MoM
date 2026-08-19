@@ -30,11 +30,13 @@ funny: 2
 
 * So how can I help **you**:red_question:
 
-* [[#002]] 1😐: What brought **you** here:question:
-* [[#003]] 2😐: How do **you** like this place:red_question:
-* [[#004]] 3😐: Anything interesting in the [loc]area[/]:red_question_anim:
-* [[#005]] 4😐: Do you know anyone who knows about [quest]spells[/]:question:
-* [[#006]] 5😐: Where could I learn about [quest]spells[/]:question:
+* [[#021]] 1[`visited(`[[Potioneer Puzzlemint#009]]`)`]😐: Can I help **you** with anything:question:
+* [[#002]] 2😐: What brought **you** here:question:
+* [[#003]] 3😐: How do **you** like this place:red_question:
+* [[#004]] 4😐: Anything interesting in the [loc]area[/]:red_question_anim:
+* [[#005]] 5😐: Do you know anyone who knows about [quest]spells[/]:question:
+* [[#006]] 6😐: Where could I learn about [quest]spells[/]:question:
+* [[#trade-end]] 7😐: And what do you have for sale:question:
 * [[#990-end]] 9😐: That is all, until next time
 
 ## 002
@@ -184,6 +186,44 @@ Sometimes folk get even worse after those [item]potions[/item]. If you are despe
 * [`shift_sentiment(-10)`]And what **disease** is it that you want to cure with **spells**? It must be some kind of **plague**! You have brought some filth into our village:red_exclamation:
 
 * [[#991-end]] 1😐: No, no, it is not like that...
+
+## 021
+
+* Now that **you** mention it, there might be something...
+
+* [[#022]] 1[`not visited(`[[Barman Absinthrayner#022]]`)`]😐: I hear the [char]cat[/] gobbled up all the [[Fresh fish|fish]]?
+* [[#001]] 2😐: **TODO** Q04_S02
+* [[#001]] 3😐: **TODO** Q04_S03
+* [[#024]] 4[`item_count(`[[Fresh fish]]`) >= 5 and visited(`[[Barman Absinthrayner#022]]`)`]😐: I have got those [[Fresh fish|fish]] for **you**
+* [[#001]] 9😐: Bah, never mind
+
+## 022
+
+* This is a serious matter. The [char]cat[/] ate the [[Fresh fish|fish]] supply. No [[Fresh fish|fish]], no snacks. No snacks and the [char]peasants[/] drink on an empty stomach. And [char]peasants[/] drinking on an empty stomach, young man, are the beginning of every **civil war** around here!
+
+* [[#023]] 1😐: And how many of those **wars** have there been?
+
+## 023
+
+* **NOT** a single one on my watch! And you know why? Because there was always [[Fresh fish|fish]]!
+
+The [char]cat[/] has a chest hidden somewhere in the bushes where it stashes the stolen [[Fresh fish|fish]]. Cut down that thicket and bring me [num]5[/] fresh [[Fresh fish|fish]].
+
+Only you will have to find a properly strong [item]weapon[/] to cut through bushes that dense.
+
+* [[#001]] 1😐: Does not sound all that complicated - I will do it
+
+## 024
+
+* [`remove_n_items(5,`[[Fresh fish]]`)`] Oh, my benefactor! You really pulled it off! You have saved us - you deserve the [quest]Nobel Peace Prize[/]!
+
+* [[#025]] 1😐: Nie dbam o żadnego [quest]Nobla[/], ale coś za tą fatygę by się przydało **TODO**.
+
+## 025
+
+* [`add_money(100)`] A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet :money:.**TODO**
+
+* [[#001]] 1😐: Cieszę się, że mogłem pomóc.**TODO**
 
 ## 990-end
 [[#001]]

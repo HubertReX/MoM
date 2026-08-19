@@ -364,6 +364,41 @@ class GameUI:
         for panel in self._open:
             panel.update(time_elapsed)
 
+        self._drain_trade_request()
+
+    def _drain_trade_request(self) -> None:
+        """Swap the dialog for the shop when a `[[#trade-end]]` option was picked.
+
+        Drained here, at the end of `update`, for two reasons: it is *after* both
+        activation surfaces (the `accept` edge above and the raw-event route, which
+        also covers digits, Enter and mouse), so every path lands in the same frame;
+        and it is *outside* the loop over `self._open`, which `close`/`open` mutate.
+
+        `is_talking` deliberately stays `True` on both sides - clearing it here
+        would let the next SPACE open a dialog on top of the shop. The trade-close
+        path (`end_trade`, above) clears it for both panels.
+        """
+        dialog_panel = self._panels.get(DialogPanel)
+        if dialog_panel is None or not getattr(dialog_panel, "trade_requested", False):
+            return
+        dialog_panel.trade_requested = False  # type: ignore[attr-defined]
+
+        player = self.scene.player
+        npc = player.npc_met
+        # An author can write the option for a character that is not a merchant;
+        # `validate-world` calls that out, but at runtime refusing beats opening a
+        # panel that `TradePanel.draw` bails out of, leaving a blank window.
+        if npc is None or not npc.model.is_merchant:
+            return
+
+        self.close(DialogPanel)
+        # the conversation is over, so the next SPACE starts a fresh one - this is
+        # what the dialog-close path does too, and it keeps a save made mid-trade
+        # from resuming half-way through a dialog
+        npc.reset_dialog()
+        player.normalise_trade_selection()
+        self.open(TradePanel)
+
     #############################################################################################################
     # MARK: draw
 

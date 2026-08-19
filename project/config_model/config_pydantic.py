@@ -177,12 +177,28 @@ class QuestReward(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     category: Annotated[QuestRewardCategory, Field(description="Which stat/resource the reward grants")]
-    value:    Annotated[int,       Field(0, ge=0, repr=False,
-                                         description="Amount granted; unused by the 'items' category")]
+    value:    Annotated[int,       Field(0, repr=False,
+                                         description="Amount granted; may be negative for 'sentiment' only; unused by the 'items' category")]  # noqa E501
     items:    Annotated[list[str], Field(default_factory=list, repr=False,
                                          description="Item keys granted; 'items' category only")]
     target:   Annotated[str | None, Field(None, repr=False,
                                           description="NPC config key a 'sentiment' reward applies to; a quest has no current character")]  # noqa E501
+
+    @model_validator(mode="after")
+    def _sign_matches_category(self) -> "QuestReward":
+        """Only ``sentiment`` may go down; every other reward gives, never takes.
+
+        The rule cannot be a ``ge=0`` on the field: a field constraint raises
+        before any model validator runs, so the category would never get a say.
+        Sentiment is the one category the story reads both ways - a quest can
+        end with an NPC liking the hero *less* - and the sink clamps it to 0.
+        """
+        if self.value < 0 and self.category is not QuestRewardCategory.sentiment:
+            raise ValueError(
+                f"a {self.category.value!r} reward cannot be negative ({self.value}); "
+                f"a reward gives rather than takes - only 'sentiment' may go down"
+            )
+        return self
 
 
 class Quest(BaseModel):

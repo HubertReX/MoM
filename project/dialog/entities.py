@@ -64,3 +64,7 @@ class DialogOption:
     condition: str = field(default="True", repr=False)
     sentiment: str = field(default="neutral", repr=False)
     selected: bool = field(default=False, repr=False)
+    # `[[#trade-end]]` in the vault: choosing this option closes the dialog and
+    # opens the shop instead of walking to `next_node` (which is the node the
+    # option sits on, so a refused handoff leaves the player where they were).
+    opens_trade: bool = field(default=False, repr=False)

@@ -207,6 +207,55 @@ Importer automatycznie stripuje `-end` z targetu (`#005-end` → node key `005`)
 
 **Backward compat:** stary format z opcją `* [001](#001) 1😐: technical loop back` jest nadal wspierany — importer rozpoznaje tekst "technical loop back" i traktuje go jako dyrektywę resume (nie dodaje jako realnej opcji). Nowy format (link w nagłówku) ma pierwszeństwo.
 
+### `[[#trade-end]]` — opcja, która oddaje gracza do sklepu
+
+Postać może być **jednocześnie rozmówcą i handlarzem** (`has_dialog` i `is_merchant`
+naraz). Spacja zawsze otwiera dialog; do handlu wchodzi się **wybraną opcją**:
+
+```md
+## 001
+
+* To jak mogę **Ci** pomóc:red_question:
+
+* [[#002]] 1😐: Co **Cię** tu sprowadziło:question:
+* [[#trade-end]] 7😐: A co masz na sprzedaż:question:
+* [[#990-end]] 9😐: To tyle, do następnego razu
+```
+
+Wybranie takiej opcji zamyka okno dialogu i otwiera panel handlu; wyjście z handlu
+(Esc/Q) wraca **do gry**, nie do rozmowy, a następna spacja zaczyna świeżą rozmowę
+od węzła startowego.
+
+- `trade` to **zarezerwowany cel opcji** — klucze węzłów są cyframi, więc żaden
+  prawdziwy węzeł się z nim nie zderzy. Sufiks `-end` czyta się tak samo, jak
+  w nagłówku węzła: „to kończy rozmowę" — tu przez oddanie gracza, nie pożegnanie.
+- Zapis **bez** sufiksu (`[[#trade]]`) jest twardym błędem importu z podpowiedzią —
+  jedna gramatyka, nie dwie.
+- Opcja na węźle `-end` jest błędem: węzeł końcowy nigdy nie pokazuje opcji.
+- Importer podmienia cel i kotwicę na **węzeł, na którym opcja stoi** (pętla własna).
+  Dzięki temu `_validate_graph` przechodzi bez zmian, a `DialogOption.next_node`
+  zostaje nie-opcjonalne — gdy runtime odmówi przejścia, gracz zostaje na węźle
+  zamiast dostać `None`. W `config.json` opcja ma `"opens_trade": true`, a jej klucz
+  to `001totrade_7` (nie `001to001_7`) — widać ją w save'ach i w `selected(...)`.
+- Sentyment i `selected(...)` działają normalnie — opcja jest zapisywana jako wybrana
+  **zanim** panel się przełączy. To ma znaczenie, bo sentyment ustala ceny
+  (`settings.get_buy_price_multiplier`), które gracz zaraz zobaczy.
+- Runtime: `DialogPanel.activate_selected()` podnosi `trade_requested`, a
+  `GameUI._drain_trade_request()` (na końcu `update`, poza pętlą po `_open`) robi
+  `close(DialogPanel)` → `npc.reset_dialog()` → `open(TradePanel)`. Flaga jest
+  odbierana w jednym miejscu, więc wszystkie cztery drogi wyboru opcji (Accept,
+  cyfry, Enter, klik) działają tak samo.
+- **Poręcz:** `just validate-world` (reguła 23) zgłasza ERROR, gdy opcja handlu
+  trafi do postaci bez `is_merchant`. Importer tego nie złapie — nie czyta
+  `characters.csv`.
+
+### Spacja: rozmowa/handel wygrywa z atakiem
+
+SPACJA podnosi naraz `talk`, `open` **i** `attack` (`settings.ACTIONS`). Gdy obok
+stoi ktoś, z kim da się rozmawiać lub handlować (`Player.can_interact_with_npc()`),
+atak jest pomijany — bez tego bohater z dobytą bronią otwierał sklep i w tej samej
+klatce brał zamach na sprzedawcę.
+
 ### `has_item()` — porównanie po config key
 
 `has_item()` w `context_adapter.py` porównuje `item.name` (`ItemSprite.name` = config key, np. `"MERMAIDS_TEAR"`) z kluczem z warunku. **Nie** porównuje `item.model.name` (display name jak `"Mermaid's tear"`) — to był bug (fix 2026-07-08).

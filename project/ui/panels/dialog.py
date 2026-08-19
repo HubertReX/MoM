@@ -103,6 +103,7 @@ class DialogPanel(Widget):
         self._visible_count = 0                          # how many options fit in the area
         self._on_final_node = False                      # a final node was reached; wait for Accept to close
         self._accept_consumed = False                    # guard against double-handling Enter in the same frame
+        self.trade_requested = False                     # `[[#trade-end]]` picked; GameUI swaps us for the shop
 
         self.name_bg = theme.nine_patch("nine_patch_13.png", 8 * TILE_SIZE, _NAME_PLATE_H)
         self.name_label = Label("", size=FONT_SIZE_LARGE, font_path=str(MAIN_FONT),
@@ -184,6 +185,9 @@ class DialogPanel(Widget):
         self.tooltip.update(None, (0, 0))
         self._sentiment_flash_timer = 0.0
         self._on_final_node = False
+        # a handoff belongs to the conversation that asked for it; without this a
+        # second conversation would open the shop on its first frame
+        self.trade_requested = False
         self._visit_current_node()
         self._refresh_options()
         if self.npc and self.npc.dialog and self.npc.dialog.is_final:
@@ -406,6 +410,15 @@ class DialogPanel(Widget):
                 emote_key=sentiment_emote,
             )
             self._sentiment_flash_timer = 0.5
+        # `[[#trade-end]]`: hand over to the shop. Raised *after* the selection
+        # and sentiment bookkeeping (a quest may key on `selected(...)`, and
+        # sentiment sets the prices the player is about to see), but *before*
+        # walking the graph — the option self-loops, so there is nowhere to walk.
+        # `GameUI.update` drains this flag; doing the panel swap here would
+        # mutate `_open` while it is being iterated.
+        if opt.opens_trade:
+            self.trade_requested = True
+            return True
         self.npc.dialog = opt.next_node
         self._visit_current_node(emote_key=sentiment_emote)
         if self.npc.dialog.is_final:

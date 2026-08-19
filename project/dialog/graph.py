@@ -128,6 +128,7 @@ def _build_options(
             data.get("order", 0),
             condition,
             sentiment,
+            opens_trade=bool(data.get("opens_trade", False)),
         )
     return options
 

@@ -165,12 +165,47 @@ def test_validation_errors() -> None:
     _expect_value_error(lambda: init_dialog(bad_result), "unknown result")  # type: ignore[arg-type]
 
 
+def test_trade_option_flag_survives_the_build() -> None:
+    """`opens_trade` reaches the runtime option, and its target stays a real node.
+
+    The importer self-loops a trade option, so the flag is the only thing that
+    distinguishes it - if it were dropped here the option would silently become an
+    ordinary "stay where you are" choice.
+    """
+    config: dict[str, object] = {
+        "START_NODE": "N0",
+        "NODE_RESULTS": {},
+        "DIALOG_NODES": {"N0": {"text": "M_N0", "is_final": False}},
+        "DIALOG_OPTIONS": {
+            "N0totrade_7": {
+                "next_node": "N0",
+                "text": "M_OPT_TRADE",
+                "order": 7,
+                "opens_trade": True,
+            },
+            "N0toN0_9": {"next_node": "N0", "text": "M_OPT_PLAIN", "order": 9},
+        },
+        "NODES_OPTIONS": {"N0": ["N0totrade_7", "N0toN0_9"]},
+    }
+    nodes = init_dialog(config)  # type: ignore[arg-type]
+    start = get_start_node(config, nodes)  # type: ignore[arg-type]
+    by_key = {opt.key: opt for opt in start.options}
+
+    assert_eq(by_key["N0totrade_7"].opens_trade, True, "the flag survives the build")
+    assert_true(
+        by_key["N0totrade_7"].next_node is start,
+        "a trade option points back at its own node, never at None",
+    )
+    assert_eq(by_key["N0toN0_9"].opens_trade, False, "an ordinary option defaults to False")
+
+
 def main() -> None:
     tests = [
         test_build_shapes,
         test_walk_path_to_final,
         test_debug_options,
         test_validation_errors,
+        test_trade_option_flag_survives_the_build,
     ]
     for t in tests:
         t()

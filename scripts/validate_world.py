@@ -30,6 +30,7 @@ import re
 import sys
 import tomllib
 import xml.etree.ElementTree as ET
+from functools import lru_cache
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -175,6 +176,44 @@ def _tileset_model_names(tsx_path: Path) -> dict[int, str]:
     return result
 
 
+@lru_cache(maxsize=None)
+def _tileset_tile_props(tsx_path: Path) -> dict[int, dict[str, str]]:
+    """local tile id -> every property declared on that tile in the tileset.
+
+    Tiled puts a property that is true of the *thing* on the tile, not on each
+    object placed from it: `obj_type=chest` lives once in `items.tsx` and every
+    chest object inherits it through its `gid`. `pytmx` merges those into the
+    object, so the game sees them - this is the validator learning the same trick
+    instead of demanding the author write them out a second time per map.
+    """
+    try:
+        root = ET.parse(tsx_path).getroot()
+    except (OSError, ET.ParseError):
+        return {}
+    result: dict[int, dict[str, str]] = {}
+    for tile in root.iter("tile"):
+        tile_id = tile.get("id")
+        if tile_id is None:
+            continue
+        props = {p.get("name", ""): p.get("value", "") for p in tile.iter("property")}
+        if props:
+            result[int(tile_id)] = props
+    return result
+
+
+def _tile_props_for(obj: ET.Element, tile_props: list[tuple[int, dict[int, dict[str, str]]]]) -> dict[str, str]:
+    """Properties an object inherits from the tile its ``gid`` points at."""
+    raw_gid = obj.get("gid")
+    if raw_gid is None:
+        return {}
+    gid = int(raw_gid) & _GID_MASK
+    # highest firstgid not above this gid wins (tilesets are ordered by firstgid)
+    for firstgid, per_tile in sorted(tile_props, key=lambda t: t[0], reverse=True):
+        if gid >= firstgid:
+            return dict(per_tile.get(gid - firstgid, {}))
+    return {}
+
+
 def _resolve_model_name(obj: ET.Element, tile_models: list[tuple[int, dict[int, str]]]) -> str:
     """The character key a spawn object stands for.
 
@@ -210,24 +249,32 @@ def load_map(path: Path) -> GameMap:
 
     # external tilesets, so a gid can be traced back to the tile that names the model
     tile_models: list[tuple[int, dict[int, str]]] = []
+    tile_props: list[tuple[int, dict[int, dict[str, str]]]] = []
     for tileset in root.findall("tileset"):
         first = tileset.get("firstgid")
         source = tileset.get("source")
         if first is None:
             continue
         if source:
-            models = _tileset_model_names((path.parent / source).resolve())
+            resolved = (path.parent / source).resolve()
+            models = _tileset_model_names(resolved)
+            per_tile = _tileset_tile_props(resolved)
         else:  # tileset embedded straight in the map
             models = {}
+            per_tile = {}
             for tile in tileset.iter("tile"):
                 tile_id = tile.get("id")
                 if tile_id is None:
                     continue
-                for prop in tile.iter("property"):
-                    if prop.get("name") == "model_name" and prop.get("value"):
-                        models[int(tile_id)] = prop.get("value", "")
+                props = {p.get("name", ""): p.get("value", "") for p in tile.iter("property")}
+                if props:
+                    per_tile[int(tile_id)] = props
+                if props.get("model_name"):
+                    models[int(tile_id)] = props["model_name"]
         if models:
             tile_models.append((int(first), models))
+        if per_tile:
+            tile_props.append((int(first), per_tile))
 
     game_map = GameMap(name=path.stem, path=path)
     for group in root.iter("objectgroup"):
@@ -239,7 +286,11 @@ def load_map(path: Path) -> GameMap:
         for obj in group.iter("object"):
             name = obj.get("name") or ""
             names.append(name)
-            props.append({p.get("name", ""): p.get("value", "") for p in obj.iter("property")})
+            # tile first, object second: a property written on the object wins,
+            # exactly as `pytmx` resolves it for the running game
+            merged = _tile_props_for(obj, tile_props)
+            merged.update({p.get("name", ""): p.get("value", "") for p in obj.iter("property")})
+            props.append(merged)
             if layer == SPAWN_LAYER:
                 game_map.spawns[name] = _resolve_model_name(obj, tile_models)
         game_map.objects[layer] = names
@@ -1397,6 +1448,43 @@ def check_unresolved_wikilinks(world: World) -> list[Violation]:
     return out
 
 
+def check_trade_options(world: World) -> list[Violation]:
+    """Rule 23: a `[[#trade-end]]` dialog option needs a character who can trade.
+
+    The dialog importer cannot catch this - it never reads characters.csv, and its
+    fixtures build a vault with no CSV at all. Here both halves of the world are
+    already loaded, so the two flags can finally be held against each other.
+    """
+    characters = world.config.get("characters") or {}
+    # dialog section key -> the character keys that use it
+    owners: dict[str, list[str]] = {}
+    for key, character in characters.items():
+        if isinstance(character, dict):
+            owners.setdefault(character.get("dialog_key") or key, []).append(key)
+
+    out = []
+    for dialog_key, section in (world.config.get("dialogs") or {}).items():
+        if not isinstance(section, dict):
+            continue
+        trade_options = sorted(
+            option_key
+            for option_key, option in (section.get("DIALOG_OPTIONS") or {}).items()
+            if isinstance(option, dict) and option.get("opens_trade")
+        )
+        if not trade_options:
+            continue
+        for character_key in owners.get(dialog_key, [dialog_key]):
+            if not (characters.get(character_key) or {}).get("is_merchant"):
+                out.append(Violation(
+                    ERROR, f"config.json:dialogs:{dialog_key}",
+                    f"option(s) {', '.join(trade_options)} open the shop, but "
+                    f"'{character_key}' is not is_merchant - the option would do "
+                    f"nothing; set is_merchant in characters.csv or drop the "
+                    f"[[#trade-end]] option",
+                ))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -1420,6 +1508,7 @@ CHECKS = (
     check_condition_entities,
     check_bark_pools,
     check_unresolved_wikilinks,
+    check_trade_options,
 )
 
 

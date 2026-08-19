@@ -168,6 +168,13 @@ _OPTION_RE = re.compile(
     r"(?P<text>.*)$"
 )
 
+# reserved option target: `* [[#trade-end]] 7😐: A co masz na sprzedaż?` closes
+# the dialog and opens the shop. Node keys are digits, so no real node can ever
+# collide with it. The `-end` suffix reads the same way as on a node heading:
+# "this ends the conversation" — here by handing over, not by saying goodbye.
+_TRADE_TARGET = "trade"
+_TRADE_TARGET_ANCHOR = f"{_TRADE_TARGET}-end"
+
 # heading that starts a node: "## 000", "## 990-end" (preferred) or the
 # legacy "### 000" / "### 990-end [011](#011)".  Node keys are digits only,
 # so prose headings inside the "# Info" section never collide.
@@ -231,6 +238,10 @@ class _ParsedOption:
     sentiment: str
     text: str
     line_no: int
+    # `[[#trade-end]]`: the option leaves the conversation for the shop. `target`
+    # is rewritten to the node the option sits on, so the graph validators (and
+    # the runtime) still see a real node - see `_TRADE_TARGET` below.
+    opens_trade: bool = False
 
 
 @dataclass
@@ -593,8 +604,12 @@ def import_character_dialog(
 
         node_options: list[str] = []
         for pl_opt, en_opt in zip(pl_node.options, en_node.options):
+            # a trade option self-loops, so name it after what it does rather
+            # than after its (rewritten) target: the key shows up in saves and in
+            # `selected(...)` quest conditions, where `001to001_7` says nothing.
+            target_label = _TRADE_TARGET if pl_opt.opens_trade else pl_opt.target
             option_key = (
-                f"{node_key}to{pl_opt.target}_{pl_opt.order}"
+                f"{node_key}to{target_label}_{pl_opt.order}"
             )
             option_message_key = (
                 f"M_{character_key}_DO_{option_key}"
@@ -611,13 +626,18 @@ def import_character_dialog(
             messages["PL"][option_message_key] = _convert_text(pl_opt.text, resolve_pl)
             messages["EN"][option_message_key] = _convert_text(en_opt.text, resolve_en)
 
-            dialog_config[character_key]["DIALOG_OPTIONS"][option_key] = {
+            option_config: dict[str, Any] = {
                 "next_node": pl_opt.target,
                 "condition": condition,
                 "sentiment": _convert_sentiment(pl_opt.sentiment),
                 "order": int(pl_opt.order) if pl_opt.order.isdigit() else 0,
                 "text": option_message_key,
             }
+            # written only when true: `config.json` is an artifact, and an
+            # artifact does not grow a false-y key on every option for nothing
+            if pl_opt.opens_trade:
+                option_config["opens_trade"] = True
+            dialog_config[character_key]["DIALOG_OPTIONS"][option_key] = option_config
             node_options.append(option_key)
 
         dialog_config[character_key]["NODES_OPTIONS"][node_key] = node_options
@@ -1348,6 +1368,31 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
                 if current_node.resume_node is None:
                     current_node.resume_node = opt_target.replace("-end", "")
                 continue
+
+            # `[[#trade-end]]` — the option hands the player over to the shop
+            # instead of walking the graph. Target and anchor become the node the
+            # option sits on: a self-loop satisfies `_validate_graph` unchanged
+            # and keeps `DialogOption.next_node` non-optional, so a handoff the
+            # runtime refuses leaves the player on a valid node instead of None.
+            opens_trade = opt_target.replace("-end", "") == _TRADE_TARGET
+            if opens_trade:
+                if opt_target != _TRADE_TARGET_ANCHOR:
+                    raise DialogImportError(
+                        f"write [[#{_TRADE_TARGET_ANCHOR}]] rather than [[#{opt_target}]] — "
+                        f"the '-end' suffix says the option closes the conversation",
+                        file=str(path),
+                        line=line_no,
+                    )
+                if current_node.is_final:
+                    raise DialogImportError(
+                        f"node {current_node.key!r} is final, so the player never picks "
+                        f"its options — a [[#{_TRADE_TARGET_ANCHOR}]] option here could "
+                        f"never open the shop",
+                        file=str(path),
+                        line=line_no,
+                    )
+                opt_target = opt_anchor = current_node.key
+
             current_node.options.append(
                 _ParsedOption(
                     anchor=opt_anchor,
@@ -1357,6 +1402,7 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
                     sentiment=option_match.group("sentiment"),
                     text=opt_text,
                     line_no=line_no,
+                    opens_trade=opens_trade,
                 )
             )
             continue

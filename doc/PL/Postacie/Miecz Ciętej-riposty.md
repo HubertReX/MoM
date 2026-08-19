@@ -43,6 +43,7 @@ Pierwszy i stały towarzysz **Malachiego** to rozmawiający miecz. Bardziej inte
 * O:red_exclamation: Jesteś!
 
 * [[#017]] 1🧠: _<mrugnij powoli na potwierdzenie, aby oszczędzać siły>_
+* [[#015-end]] 9😐: **DEBUG** end of dialog
 
 ## 017
 

@@ -5,8 +5,8 @@
   "source": "PL/Postacie/Barman Absyntnent.md",
   "start_node": "000",
   "counts": {
-   "nodes": 23,
-   "options": 46
+   "nodes": 28,
+   "options": 57
   },
   "global_problems": [],
   "palette": {
@@ -275,6 +275,61 @@
    "link": "Barman Absyntnent#016"
   },
   {
+   "id": "021",
+   "level": 2,
+   "text": "A już Ci, coś by się znalazło...",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#021"
+  },
+  {
+   "id": "022",
+   "level": 3,
+   "text": "Sprawa jest poważna. Kot[/] zjadł zapas ryb. Bez ryb nie ma zakąski. Bez zakąski chłopi[/] piją na czczo. A chłopi[/] pijący na czczo, młodzieńcze, to początek każdej wojny domowej w tej okolicy!",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#022"
+  },
+  {
+   "id": "023",
+   "level": 4,
+   "text": "Za mojej kadencji ANI jednej! I wiesz dlaczego? Bo zawsze były ryby! Kot[/] ma gdzieś w krzakach ukrytą skrzynię w której chowa wykradzione ryby. Wytnij te chaszcze i przynieś mi 5[/] świeżych ryb. Tylko musisz znaleźć odpowiednią mocną broń[/] aby móc wyciąć takie gęste krzaki.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#023"
+  },
+  {
+   "id": "024",
+   "level": 3,
+   "text": "O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się Pokojowa nagroda Nobla[/]!",
+   "is_start": false,
+   "is_final": false,
+   "result": "[ ITEMS_RETURNED  5x fish ]",
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#024"
+  },
+  {
+   "id": "025",
+   "level": 4,
+   "text": "A już Ci, pewnie, pewnie. Masz tu 100[/] monet:$:.",
+   "is_start": false,
+   "is_final": false,
+   "result": "[ MONEY_RECEIVED  money +100 ]",
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#025"
+  },
+  {
    "id": "990",
    "level": 2,
    "text": "Do zobaczenia",
@@ -330,10 +385,20 @@
   },
   {
    "from": "001",
+   "to": "021",
+   "kind": "option",
+   "key": "001to021_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Mogę Ci jakoś pomóc",
+   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")"
+  },
+  {
+   "from": "001",
    "to": "002",
    "kind": "option",
-   "key": "001to002_1",
-   "order": 1,
+   "key": "001to002_2",
+   "order": 2,
    "sentiment": "neutral",
    "text": "Co Cię tu sprowadziło",
    "condition": null
@@ -342,8 +407,8 @@
    "from": "001",
    "to": "003",
    "kind": "option",
-   "key": "001to003_2",
-   "order": 2,
+   "key": "001to003_3",
+   "order": 3,
    "sentiment": "neutral",
    "text": "Jak Ci się podoba to miejsce",
    "condition": null
@@ -352,8 +417,8 @@
    "from": "001",
    "to": "004",
    "kind": "option",
-   "key": "001to004_3",
-   "order": 3,
+   "key": "001to004_4",
+   "order": 4,
    "sentiment": "neutral",
    "text": "Jest tu coś ciekawego w okolicy[/]",
    "condition": null
@@ -362,8 +427,8 @@
    "from": "001",
    "to": "005",
    "kind": "option",
-   "key": "001to005_4",
-   "order": 4,
+   "key": "001to005_5",
+   "order": 5,
    "sentiment": "neutral",
    "text": "Znasz kogoś, kto zna się na zaklęciach[/]",
    "condition": null
@@ -372,10 +437,20 @@
    "from": "001",
    "to": "006",
    "kind": "option",
-   "key": "001to006_5",
-   "order": 5,
+   "key": "001to006_6",
+   "order": 6,
    "sentiment": "neutral",
    "text": "Gdzie mógłbym zdobyć wiedzę o zaklęciach[/]",
+   "condition": null
+  },
+  {
+   "from": "001",
+   "to": "001",
+   "kind": "option",
+   "key": "001totrade_7",
+   "order": 7,
+   "sentiment": "neutral",
+   "text": "A co masz na sprzedaż",
    "condition": null
   },
   {
@@ -756,6 +831,96 @@
    "order": 1,
    "sentiment": "neutral",
    "text": "Nie, nie, to nie tak...",
+   "condition": null
+  },
+  {
+   "from": "021",
+   "to": "022",
+   "kind": "option",
+   "key": "021to022_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Ponoć kot[/] zżarł wszystkie ryby?",
+   "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"022\")"
+  },
+  {
+   "from": "021",
+   "to": "001",
+   "kind": "option",
+   "key": "021to001_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "TODO Q04_S02",
+   "condition": null
+  },
+  {
+   "from": "021",
+   "to": "001",
+   "kind": "option",
+   "key": "021to001_3",
+   "order": 3,
+   "sentiment": "neutral",
+   "text": "TODO Q04_S03",
+   "condition": null
+  },
+  {
+   "from": "021",
+   "to": "024",
+   "kind": "option",
+   "key": "021to024_4",
+   "order": 4,
+   "sentiment": "neutral",
+   "text": "Mam dla Ciebie te ryby",
+   "condition": "item_count(\"fish\") >= 5 and visited(\"BARMAN_ABSINTHRAYNER\", \"022\")"
+  },
+  {
+   "from": "021",
+   "to": "001",
+   "kind": "option",
+   "key": "021to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Ech, nieważne",
+   "condition": null
+  },
+  {
+   "from": "022",
+   "to": "023",
+   "kind": "option",
+   "key": "022to023_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "A ile tych wojen tutaj było?",
+   "condition": null
+  },
+  {
+   "from": "023",
+   "to": "001",
+   "kind": "option",
+   "key": "023to001_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Nie brzmi to jakoś zbyt skomplikowanie - zrobię to",
+   "condition": null
+  },
+  {
+   "from": "024",
+   "to": "025",
+   "kind": "option",
+   "key": "024to025_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Nie dbam o żadnego Nobla[/], ale coś za tą fatygę by się przydało.",
+   "condition": null
+  },
+  {
+   "from": "025",
+   "to": "001",
+   "kind": "option",
+   "key": "025to001_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Cieszę się, że mogłem pomóc.",
    "condition": null
   },
   {

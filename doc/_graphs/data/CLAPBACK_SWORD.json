@@ -6,7 +6,7 @@
   "start_node": "000",
   "counts": {
    "nodes": 21,
-   "options": 43
+   "options": 44
   },
   "global_problems": [],
   "palette": {
@@ -256,7 +256,7 @@
   },
   {
    "id": "015",
-   "level": 12,
+   "level": 1,
    "text": "No, dobra, pomyślmy. To co wiemy do tej pory o tej klątwie[/] to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów. Jedno jest pewne - jeżeli od zawsze myślałeś w duchu, że jesteś wyjątkowy, to teraz masz potwierdzenie. Jesteś wyjątkowy - masz wyjątkowego pecha! A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od Tawerny, bo tam spotkamy najwięcej mieszkańców wsi.",
    "is_start": false,
    "is_final": true,
@@ -267,7 +267,7 @@
   },
   {
    "id": "100",
-   "level": 13,
+   "level": 12,
    "text": "Na razie nie mam Ci nic nowego do powiedzenia.",
    "is_start": false,
    "is_final": false,
@@ -288,6 +288,16 @@
    "order": 1,
    "sentiment": "smart",
    "text": "<mrugnij powoli na potwierdzenie, aby oszczędzać siły>",
+   "condition": null
+  },
+  {
+   "from": "000",
+   "to": "015",
+   "kind": "option",
+   "key": "000to015_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "DEBUG end of dialog",
    "condition": null
   },
   {

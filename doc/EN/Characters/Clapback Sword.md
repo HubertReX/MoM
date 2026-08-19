@@ -15,6 +15,7 @@ funny: 2
 * Oh:red_exclamation: There you are!
 
 * [[#017]] 1🧠: _<slowly blinks in acknowledgement, conserving energy>_
+* [[#015-end]] 9😐: **DEBUG** end of dialog
 
 ## 017
 

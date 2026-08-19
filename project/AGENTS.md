@@ -248,6 +248,24 @@ Gdy po przejściu do nowego węzła lista widocznych opcji jest pusta (wszystkie
 odfiltrowane przez warunki), ``DialogPanel`` automatycznie ustawia stan ``on_final_node``.
 Gracz widzi tekst NPC i może zamknąć panel klawiszem Accept — rozmowa nie zawisa.
 
+### Rozmówca i handlarz w jednej postaci (`[[#trade-end]]`)
+
+`has_dialog` i `is_merchant` mogą być ustawione naraz (tak ma Barman). Spacja
+**zawsze** otwiera dialog - do handlu wchodzi się opcją o zarezerwowanym celu:
+
+```md
+* [[#trade-end]] 7😐: A co masz na sprzedaż:question:
+```
+
+Opcja zamyka okno dialogu i otwiera panel handlu; wyjście z handlu wraca do gry.
+Pełny opis gramatyki i mechaniki: `project/dialog/AGENTS.md`. Poręcz przy imporcie:
+`just validate-world` (reguła 23) nie przepuści takiej opcji u postaci bez
+`is_merchant`.
+
+Powiązane: SPACJA podnosi `talk`, `open` i `attack` jednocześnie, więc przy postaci,
+z którą da się rozmawiać lub handlować, atak jest pomijany
+(`Player.can_interact_with_npc()`).
+
 ### Efekty węzłów (ResultSink, T-034)
 
 Węzły mogą mieć efekt uboczny (`NodeVisitResult`).  `dialog.result_sink` definiuje

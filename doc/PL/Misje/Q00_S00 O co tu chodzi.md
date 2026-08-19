@@ -9,6 +9,7 @@ Obudziłeś się w stajni, w wiosce, której nazwy wolałbyś nie znać, a **Tw�
 **Completion**: `test`
 **Test**: `visited(`[[Miecz Ciętej-riposty#015-end]]`)`
 **Success**: [[Miecz Ciętej-riposty|Miecz]] przypomniał **Ci** wydarzenia ostatniego dnia: to jak tu trafiliśmy to nie **zwykły** pech, to [quest]klątwa[/]! Konkretów trzeba poszukać u ludzi, a ludzie o tej porze są w [[Tawerna Brakująca klepka|Tawernie]].
+**Reward**: `raise_max_health(10)`
 
 ## Notatki
 

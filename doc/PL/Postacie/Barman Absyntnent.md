@@ -55,11 +55,13 @@ Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to
 
 * To jak mogę **Ci** pomóc:red_question:
 
-* [[#002]] 1😐: Co **Cię** tu sprowadziło:question:
-* [[#003]] 2😐: Jak **Ci** się podoba to miejsce:red_question:
-* [[#004]] 3😐: Jest tu coś ciekawego w [loc]okolicy[/]:red_question_anim:
-* [[#005]] 4😐: Znasz kogoś, kto zna się na [quest]zaklęciach[/]:question:
-* [[#006]] 5😐: Gdzie mógłbym zdobyć wiedzę o [quest]zaklęciach[/]:question:
+* [[#021]] 1[`visited(`[[Zielarka Zmora#009]]`)`]😐: Mogę **Ci** jakoś pomóc:question:
+* [[#002]] 2😐: Co **Cię** tu sprowadziło:question:
+* [[#003]] 3😐: Jak **Ci** się podoba to miejsce:red_question:
+* [[#004]] 4😐: Jest tu coś ciekawego w [loc]okolicy[/]:red_question_anim:
+* [[#005]] 5😐: Znasz kogoś, kto zna się na [quest]zaklęciach[/]:question:
+* [[#006]] 6😐: Gdzie mógłbym zdobyć wiedzę o [quest]zaklęciach[/]:question:
+* [[#trade-end]] 7😐: A co masz na sprzedaż:question:
 * [[#990-end]] 9😐: To tyle, do następnego razu
 
 ## 002
@@ -209,6 +211,44 @@ Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś
 * [`shift_sentiment(-10)`]A co to za **choroba**, co ją chcesz leczyć **czarami**? To pewno jakaś **zaraza**! Świństwo jakieś przyniosłeś do naszej wioski:red_exclamation:
 
 * [[#991-end]] 1😐: Nie, nie, to nie tak...
+
+## 021
+
+* A już Ci, coś by się znalazło...
+
+* [[#022]] 1[`not visited(`[[Barman Absyntnent#022]]`)`]😐: Ponoć [char]kot[/] zżarł wszystkie [[Świeża ryba|ryby]]?
+* [[#001]] 2😐: **TODO** Q04_S02
+* [[#001]] 3😐: **TODO** Q04_S03
+* [[#024]] 4[`item_count(`[[Świeża ryba]]`) >= 5 and visited(`[[Barman Absyntnent#022]]`)`]😐: Mam dla **Ciebie** te [[Świeża ryba|ryby]]
+* [[#001]] 9😐: Ech, nieważne
+
+## 022
+
+* Sprawa jest poważna. [char]Kot[/] zjadł zapas [[Świeża ryba|ryb]]. Bez [[Świeża ryba|ryb]] nie ma zakąski. Bez zakąski [char]chłopi[/] piją na czczo. A [char]chłopi[/] pijący na czczo, młodzieńcze, to początek każdej **wojny domowej** w tej okolicy!
+
+* [[#023]] 1😐: A ile tych **wojen** tutaj było?
+
+## 023
+
+* Za mojej kadencji **ANI** jednej! I wiesz dlaczego? Bo zawsze były [[Świeża ryba|ryby]]!
+
+[char]Kot[/] ma gdzieś w krzakach ukrytą skrzynię w której chowa wykradzione [[Świeża ryba|ryby]]. Wytnij te chaszcze i przynieś mi [num]5[/] świeżych [[Świeża ryba|ryb]].
+
+Tylko musisz znaleźć odpowiednią mocną [item]broń[/] aby móc wyciąć takie gęste krzaki.
+
+* [[#001]] 1😐: Nie brzmi to jakoś zbyt skomplikowanie - zrobię to
+
+## 024
+
+* [`remove_n_items(5,`[[Świeża ryba]]`)`] O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się [quest]Pokojowa nagroda Nobla[/]!
+
+* [[#025]] 1😐: Nie dbam o żadnego [quest]Nobla[/], ale coś za tą fatygę by się przydało.
+
+## 025
+
+* [`add_money(100)`] A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet:$:.
+
+* [[#001]] 1😐: Cieszę się, że mogłem pomóc.
 
 ## 990-end
 [[#001]]

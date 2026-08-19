@@ -2,8 +2,8 @@
  "meta": {
   "source": "project/config_model/config.json",
   "counts": {
-   "quests": 8,
-   "threads": 2,
+   "quests": 10,
+   "threads": 3,
    "roots": 1
   },
   "modes": {
@@ -61,7 +61,9 @@
    "progress_total": 0,
    "is_thread": false,
    "is_root": true,
-   "rewards": [],
+   "rewards": [
+    "+10 max HP"
+   ],
    "colour": {
     "bg": "#a5d8ff",
     "border": "#1971c2"
@@ -217,7 +219,39 @@
    ],
    "description_runs": [
     {
-     "text": "W tej okolicy nikt do książek nie zagląda, brak tu sołtysa, księdza, albo chociaż starego dziada, który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o klątwach więcej niż same plotki.",
+     "text": "W tej okolicy nikt do książek nie zagląda, brak tu ",
+     "bold": false
+    },
+    {
+     "text": "sołtysa",
+     "bold": true
+    },
+    {
+     "text": ", ",
+     "bold": false
+    },
+    {
+     "text": "księdza",
+     "bold": true
+    },
+    {
+     "text": ", albo chociaż ",
+     "bold": false
+    },
+    {
+     "text": "starego dziada",
+     "bold": true
+    },
+    {
+     "text": ", który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o ",
+     "bold": false
+    },
+    {
+     "text": "klątwach",
+     "bold": true
+    },
+    {
+     "text": " więcej niż same plotki.",
      "bold": false
     }
    ],
@@ -254,7 +288,7 @@
      "bold": true
     },
     {
-     "text": " warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może pamięta też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
+     "text": " warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może zna też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
      "bold": false
     }
    ],
@@ -265,7 +299,9 @@
    "progress_total": 0,
    "is_thread": false,
    "is_root": false,
-   "rewards": [],
+   "rewards": [
+    "+25 max HP"
+   ],
    "colour": {
     "bg": "#a5d8ff",
     "border": "#1971c2"
@@ -304,7 +340,9 @@
    "progress_total": 0,
    "is_thread": false,
    "is_root": false,
-   "rewards": [],
+   "rewards": [
+    "+30 HP"
+   ],
    "colour": {
     "bg": "#a5d8ff",
     "border": "#1971c2"
@@ -343,13 +381,181 @@
    "progress_total": 0,
    "is_thread": false,
    "is_root": false,
-   "rewards": [],
+   "rewards": [
+    "+30 max HP"
+   ],
    "colour": {
     "bg": "#a5d8ff",
     "border": "#1971c2"
    },
    "problem": null,
    "link": "Q03_S03 Jak tam dotrzeć"
+  },
+  {
+   "id": "Q04_S00_TOP_PRIORITY_MATTERS",
+   "level": 2,
+   "name": "Sprawy najwyższej wagi",
+   "name_runs": [
+    {
+     "text": "Sprawy najwyższej wagi",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Jest kilka spraw, które ",
+     "bold": false
+    },
+    {
+     "text": "Barman",
+     "bold": true
+    },
+    {
+     "text": " chciałby, abyś mu załatwił. To nie są ",
+     "bold": false
+    },
+    {
+     "text": "bylejakie",
+     "bold": true
+    },
+    {
+     "text": " sprawy - to są sprawy ",
+     "bold": false
+    },
+    {
+     "text": "najwyższej wagi",
+     "bold": true
+    },
+    {
+     "text": "!",
+     "bold": false
+    }
+   ],
+   "completion": "all_subquests",
+   "completion_text": "zamyka się, gdy zamkną się jej kroki",
+   "test": null,
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": true,
+   "is_root": false,
+   "rewards": [
+    "+20 sympatii @BARMAN_ABSINTHRAYNER"
+   ],
+   "colour": {
+    "bg": "#b2f2bb",
+    "border": "#2f9e44"
+   },
+   "problem": null,
+   "link": "Q04_S00 Sprawy najwyższej wagi"
+  },
+  {
+   "id": "Q04_S01_FISH_EATEN_BY_CAT",
+   "level": 3,
+   "name": "Ryby, które zjadł kot",
+   "name_runs": [
+    {
+     "text": "Ryby, które zjadł kot",
+     "bold": false
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Kot",
+     "bold": true
+    },
+    {
+     "text": " zjadł zapas ",
+     "bold": false
+    },
+    {
+     "text": "ryb",
+     "bold": true
+    },
+    {
+     "text": ". Dla ",
+     "bold": false
+    },
+    {
+     "text": "Barmana",
+     "bold": true
+    },
+    {
+     "text": " to nie jest problem gastronomiczny, tylko nadchodząca ",
+     "bold": false
+    },
+    {
+     "text": "wojna domowa",
+     "bold": true
+    },
+    {
+     "text": "!  ",
+     "bold": false
+    },
+    {
+     "text": "Kot",
+     "bold": true
+    },
+    {
+     "text": " trzyma ",
+     "bold": false
+    },
+    {
+     "text": "ryby",
+     "bold": true
+    },
+    {
+     "text": " w ",
+     "bold": false
+    },
+    {
+     "text": "skrzyni",
+     "bold": true
+    },
+    {
+     "text": " ukrytej gdzieś za krzakami. Tylko trzeba odpowiednio mocnej broni, aby zniszczyć te krzaki. Chyba, że dałoby się inaczej zdobyć te ",
+     "bold": false
+    },
+    {
+     "text": "ryby",
+     "bold": true
+    },
+    {
+     "text": ".  Potem wystarczy odnieść ",
+     "bold": false
+    },
+    {
+     "text": "ryby",
+     "bold": true
+    },
+    {
+     "text": " do ",
+     "bold": false
+    },
+    {
+     "text": "Barmana",
+     "bold": true
+    },
+    {
+     "text": ".",
+     "bold": false
+    }
+   ],
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"024\")",
+   "progress": null,
+   "progress_total": 0,
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [
+    "+20 sympatii @BARMAN_ABSINTHRAYNER"
+   ],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Q04_S01 Ryby, które zjadł kot"
   }
  ],
  "edges": [
@@ -401,6 +607,21 @@
   {
    "from": "Q03_S00_LEARN_ABOUT_CURSE",
    "to": "Q03_S03_HOW_TO_GET_THERE",
+   "kind": "parent"
+  },
+  {
+   "from": "Q01_S00_BREAK_THE_CURSE",
+   "to": "Q04_S00_TOP_PRIORITY_MATTERS",
+   "kind": "requires"
+  },
+  {
+   "from": "Q01_S00_BREAK_THE_CURSE",
+   "to": "Q04_S01_FISH_EATEN_BY_CAT",
+   "kind": "requires"
+  },
+  {
+   "from": "Q04_S00_TOP_PRIORITY_MATTERS",
+   "to": "Q04_S01_FISH_EATEN_BY_CAT",
    "kind": "parent"
   }
  ]

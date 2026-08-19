@@ -20,11 +20,24 @@ from settings import CONF_ENTITIES_TO_STORE, DEFAULT_DISPOSITION_WEIGHTS  # noqa
 # `neutral` and `technical` always weigh 0 and have no CSV columns.
 SENTIMENT_COLUMNS = ("kind", "weak", "angry", "smart", "funny")
 
-# Minimal columns that must be present (non-empty) in a characters.csv row
-# before a brand-new character entity may be created from it. These are the
-# only fields of the character model without a default (see config_pydantic);
-# every other field falls back to its model default.
-REQUIRED_CHARACTER_FIELDS = ("name_EN", "name_PL", "sprite", "race", "attitude")
+# Minimal columns that must be present (non-empty) in a row before a brand-new
+# entity may be created from it: the fields of that model which have NO default
+# (see config_pydantic), so everything else can fall back to the model.
+#
+# The point of the check is to tell "a new entity" apart from "a typo in an
+# existing key" - a misspelled key would otherwise quietly create a second,
+# half-empty entity. It is per entity type because the models differ; using the
+# character list for every type meant a new chest could never be created and the
+# refusal named character columns a chests.csv row has never heard of.
+REQUIRED_FIELDS_BY_ENTITY: dict[str, tuple[str, ...]] = {
+    "characters": ("name_EN", "name_PL", "sprite", "race", "attitude"),
+    "chests": ("name",),
+    "items": ("name_EN", "name_PL", "type"),
+    "maze_configs": ("boss_monster", "small_chest_template", "big_chest_template"),
+}
+
+# kept for callers that imported it by name before the map above existed
+REQUIRED_CHARACTER_FIELDS = REQUIRED_FIELDS_BY_ENTITY["characters"]
 
 # Columns pinned to the front on export. Everything else keeps the order it has in
 # config.json, which is insertion order and therefore arbitrary - it once put
@@ -133,18 +146,18 @@ def import_csv(entity_name: str, data: dict) -> dict:
         values = parts[1:]
 
         if key not in section:
-            # A new character discovered by `just import-dialogs` (its row was
-            # auto-appended to characters.csv) is created here from the row, so
-            # long as it carries the model's required fields. For any other
-            # entity type - or a row missing required fields (likely a typo in
-            # an existing key) - keep the safe warn-and-skip.
+            # A row for a key config.json has never seen is a new entity - the CSV
+            # is an authoring surface, so `just import-entities` has to be able to
+            # create one. It is only refused when the row cannot stand on its own,
+            # which is what a typo in an existing key looks like.
             row = dict(zip(fields, values))
-            can_create = entity_name == "characters" and all(
-                row.get(f, "").strip() for f in REQUIRED_CHARACTER_FIELDS
-            )
-            if not can_create:
-                missing = [f for f in REQUIRED_CHARACTER_FIELDS if not row.get(f, "").strip()]
-                print(f"  [WARN] '{key}' not in config.json, skipping (missing required: {', '.join(missing)})")
+            required = REQUIRED_FIELDS_BY_ENTITY.get(entity_name, ())
+            missing = [f for f in required if not row.get(f, "").strip()]
+            if missing:
+                print(
+                    f"  [WARN] '{key}' not in config.json and cannot be created from "
+                    f"this row, skipping ({entity_name} needs: {', '.join(missing)})"
+                )
                 continue
             section[key] = {}
             created += 1

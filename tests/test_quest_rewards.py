@@ -202,6 +202,53 @@ def test_only_sentiment_takes_a_target() -> None:
     _expect_value_error(lambda: init_quests(quests), "money reward with a target")  # type: ignore[arg-type]
 
 
+def test_only_sentiment_may_be_negative() -> None:
+    """`shift_sentiment_of(NPC, -20)` is a legal reward; every other verb only gives.
+
+    The rule lives in a `model_validator`, not in a `ge=0` on the field: a field
+    constraint raises before any model validator runs, so the category would
+    never get a say and a negative sentiment would be rejected at config load.
+    """
+    from config_model.config_pydantic import QuestReward as PydanticReward
+
+    reward = PydanticReward(category="sentiment", value=-20, target="BARMAN_ABSINTHRAYNER")
+    assert_eq(reward.value, -20, "a sentiment reward may go down")
+
+    for category in ("money", "health", "max_health", "damage", "max_items"):
+        _expect_value_error(
+            lambda c=category: PydanticReward(category=c, value=-20),  # type: ignore[misc]
+            f"negative {category} reward",
+        )
+
+
+def test_negative_sentiment_reads_as_a_minus() -> None:
+    """The label carries the sign, so a penalty does not render as `+-20`."""
+    label = format_reward_label([
+        QuestReward(QuestRewardCategory.sentiment, -20, target="BARMAN_ABSINTHRAYNER")
+    ])
+    assert_true("+-" not in label, "the sign comes from the value, not from the template")
+    assert_true("[num]-20[/num]" in label, f"negative sentiment reads as -20, got {label!r}")
+
+    plus = format_reward_label([
+        QuestReward(QuestRewardCategory.sentiment, 20, target="BARMAN_ABSINTHRAYNER")
+    ])
+    assert_true("[num]+20[/num]" in plus, f"a positive one still shows its +, got {plus!r}")
+
+
+def test_negative_sentiment_reaches_the_sink_unchanged() -> None:
+    """The clamp to 0 belongs to the sink; the reward passes the raw amount."""
+    sink = SpySink()
+    apply_quest_rewards(
+        _quest(QuestReward(QuestRewardCategory.sentiment, -20, target="BARMAN_ABSINTHRAYNER")),
+        sink,
+    )
+    assert_eq(
+        sink.calls,
+        [("shift_sentiment_of", ("BARMAN_ABSINTHRAYNER", -20))],
+        "the sink is handed -20, and clamps to 0 itself",
+    )
+
+
 def main() -> None:
     tests = [
         test_every_reward_is_applied,
@@ -212,6 +259,9 @@ def main() -> None:
         test_success_text_appends_the_label,
         test_sentiment_reward_must_name_an_npc,
         test_only_sentiment_takes_a_target,
+        test_only_sentiment_may_be_negative,
+        test_negative_sentiment_reads_as_a_minus,
+        test_negative_sentiment_reaches_the_sink_unchanged,
     ]
     for t in tests:
         t()

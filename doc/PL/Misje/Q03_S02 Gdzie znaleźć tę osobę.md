@@ -10,6 +10,7 @@ Imię już jest. Zostaje drobiazg: adres. [[Kowal Kłamca|Kowal]] bywa w świeci
 **Completion**: `test`
 **Test**: `visited(`[[Kowal Kłamca#009]]`)`
 **Success**: [[Kowal Kłamca|Kowal]] do miasta nie jeździ i nie zamierza zacząć. Wie za to dokładnie, kto w tej wiosce gada ze wszystkimi przybyszami.
+**Reward**: `restore_health(30)`
 
 ## Notatki
 

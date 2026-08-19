@@ -578,6 +578,91 @@ def test_no_entity_richtext_is_left_in_the_vault_prose() -> None:
     assert_eq(offenders, [], "encja z notatką ma być linkiem, nie znacznikiem")
 
 
+def _trade_vault(root: Path, option_line: str, extra_node: str = "") -> None:
+    """A throwaway two-node vault whose node 000 carries ``option_line``."""
+    speaker = (
+        "---\naliases:\n  - POTIONEER_PUZZLEMINT\n---\n"
+        "# Zielarka Zmora\n\n## 000\n\n* Czego?\n\n"
+        f"{option_line}\n"
+        "* [[#001]] 9\U0001F610: Nic, dzięki.\n\n"
+        "## 001\n\n* Aha.\n" + extra_node
+    )
+    for sub in ("PL/Postacie", "EN/Characters"):
+        (root / sub).mkdir(parents=True)
+    (root / "PL/Postacie/Zielarka Zmora.md").write_text(speaker, encoding="utf-8")
+    (root / "EN/Characters/Zielarka Zmora.md").write_text(speaker, encoding="utf-8")
+
+
+def test_a_trade_option_self_loops_and_is_flagged() -> None:
+    """`[[#trade-end]]` -> an option that stays on its node and carries the flag.
+
+    The self-loop is the load-bearing part: `_validate_graph` rejects a target that
+    is not a node, and keeping a real one lets `DialogOption.next_node` stay
+    non-optional, so a handoff the runtime refuses leaves the player somewhere.
+    """
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        _trade_vault(root, "* [[#trade-end]] 7\U0001F610: A co masz na sprzedaż?")
+        _, cfg, _ = import_character_dialog(root, "POTIONEER_PUZZLEMINT")
+
+    options = cfg["POTIONEER_PUZZLEMINT"]["DIALOG_OPTIONS"]
+    assert_true("000totrade_7" in options, f"key names the action, got {sorted(options)}")
+    option = options["000totrade_7"]
+    assert_eq(option["opens_trade"], True, "the flag reaches config.json")
+    assert_eq(option["next_node"], "000", "the option self-loops onto its own node")
+    assert_true(
+        "000totrade_7" in cfg["POTIONEER_PUZZLEMINT"]["NODES_OPTIONS"]["000"],
+        "the option is attached to the node it was written on",
+    )
+    # every other option stays untouched - the key is written only when true
+    assert_true(
+        "opens_trade" not in options["000to001_9"],
+        "an ordinary option carries no flag, so config.json does not grow one",
+    )
+
+
+def test_trade_without_the_end_suffix_is_refused() -> None:
+    """One spelling, not two - the error says which one."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        _trade_vault(root, "* [[#trade]] 7\U0001F610: A co masz na sprzedaż?")
+        try:
+            import_character_dialog(root, "POTIONEER_PUZZLEMINT")
+        except DialogImportError as error:
+            assert_true("trade-end" in str(error), f"names the spelling to use: {error}")
+            return
+    raise AssertionError("expected a DialogImportError for [[#trade]] without -end")
+
+
+def test_a_trade_option_on_a_final_node_is_refused() -> None:
+    """A farewell node never shows its options, so a shop door there is dead."""
+    import tempfile
+
+    speaker = (
+        "---\naliases:\n  - POTIONEER_PUZZLEMINT\n---\n"
+        "# Zielarka Zmora\n\n## 000\n\n* Czego?\n\n"
+        "* [[#001-end]] 1\U0001F610: Nic.\n\n"
+        "## 001-end\n\n* No to pa.\n\n"
+        "* [[#trade-end]] 7\U0001F610: A co masz na sprzedaż?\n"
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        for sub in ("PL/Postacie", "EN/Characters"):
+            (root / sub).mkdir(parents=True)
+        (root / "PL/Postacie/Zielarka Zmora.md").write_text(speaker, encoding="utf-8")
+        (root / "EN/Characters/Zielarka Zmora.md").write_text(speaker, encoding="utf-8")
+        try:
+            import_character_dialog(root, "POTIONEER_PUZZLEMINT")
+        except DialogImportError as error:
+            assert_true("final" in str(error), f"says why it cannot work: {error}")
+            return
+    raise AssertionError("expected a DialogImportError for a trade option on a final node")
+
+
 def main() -> None:
     tests = []
 
@@ -610,6 +695,9 @@ def main() -> None:
         print("  SKIP  doc/ vault not found, skipping vault-dependent tests")
 
     self_contained_tests = [
+        ("a_trade_option_self_loops_and_is_flagged", test_a_trade_option_self_loops_and_is_flagged),
+        ("trade_without_the_end_suffix_is_refused", test_trade_without_the_end_suffix_is_refused),
+        ("a_trade_option_on_a_final_node_is_refused", test_a_trade_option_on_a_final_node_is_refused),
         ("test_an_item_effect_expands_the_count", test_an_item_effect_expands_the_count),
         ("test_the_old_result_grammar_is_refused", test_the_old_result_grammar_is_refused),
         ("test_an_effect_link_to_nothing_fails", test_an_effect_link_to_nothing_fails),

@@ -190,6 +190,12 @@
                     "description": "key of the daily routine from routines.toml",
                     "title": "Routine",
                     "type": "string"
+                },
+                "barks": {
+                    "default": "",
+                    "description": "key of the shared bark pool from doc/PL/Barki.md",
+                    "title": "Barks",
+                    "type": "string"
                 }
             },
             "required": [
@@ -244,6 +250,18 @@
                     },
                     "title": "Random Items",
                     "type": "array"
+                },
+                "requires_item": {
+                    "default": "",
+                    "description": "item key needed to open this chest; empty = unlocked",
+                    "title": "Requires Item",
+                    "type": "string"
+                },
+                "consumes_key": {
+                    "default": false,
+                    "description": "whether opening uses the key up",
+                    "title": "Consumes Key",
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -521,8 +539,7 @@
                 },
                 "value": {
                     "default": 0,
-                    "description": "Amount granted; unused by the 'items' category",
-                    "minimum": 0,
+                    "description": "Amount granted; may be negative for 'sentiment' only; unused by the 'items' category",
                     "title": "Value",
                     "type": "integer"
                 },
@@ -630,6 +647,20 @@
             },
             "description": "Localized UI strings keyed by language",
             "title": "Messages",
+            "type": "object"
+        },
+        "barks": {
+            "additionalProperties": {
+                "items": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                },
+                "type": "array"
+            },
+            "description": "Ambient one-liners keyed by owner - a character key OR a shared pool key; each entry is {msg, condition}",
+            "title": "Barks",
             "type": "object"
         },
         "$schema": "./config_schema.json"

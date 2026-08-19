@@ -31,6 +31,7 @@ from validate_world import (                                     # noqa: E402
     GameMap,
     World,
     check_bark_pools,
+    check_trade_options,
     check_unresolved_wikilinks,
     check_condition_entities,
     check_interaction_targets,
@@ -569,7 +570,45 @@ def test_the_real_world_has_no_unresolved_wikilinks() -> None:
     assert_eq(check_unresolved_wikilinks(WORLD), [], "prawdziwy config jest czysty")
 
 
-###############################################################################################################
+##########################################################################################################################
+# MARK: reguła 23 - opcja `[[#trade-end]]` u postaci, która nie handluje
+def _trade_world(is_merchant: bool) -> World:
+    """Barman z jedną opcją otwierającą sklep; `is_merchant` do przestawiania."""
+    world = _conditions_world()
+    world.config["characters"] = {"BARMAN": {"is_merchant": is_merchant}}
+    world.config["dialogs"]["BARMAN"]["DIALOG_OPTIONS"] = {
+        "001totrade_7": {"next_node": "001", "opens_trade": True},
+        "001to012_1": {"next_node": "012"},
+    }
+    return world
+
+
+def test_a_trade_option_on_a_merchant_reports_nothing() -> None:
+    assert_eq(check_trade_options(_trade_world(is_merchant=True)), [],
+              "handlarz z opcją do sklepu jest w porządku")
+
+
+def test_a_trade_option_on_a_non_merchant_is_an_error() -> None:
+    """Importer tego nie złapie - nie czyta characters.csv. Tutaj widać obie połowy."""
+    messages = _errors(check_trade_options(_trade_world(is_merchant=False)))
+    assert_eq(len(messages), 1, f"{messages}")
+    assert_true("001totrade_7" in messages[0], f"nazywa opcję: {messages[0]}")
+    assert_true("is_merchant" in messages[0], f"mówi, czego brakuje: {messages[0]}")
+
+
+def test_a_dialog_without_trade_options_reports_nothing() -> None:
+    """Zdecydowana większość postaci - reguła ma ich nie dotykać."""
+    world = _conditions_world()
+    world.config["characters"] = {"BARMAN": {}}
+    world.config["dialogs"]["BARMAN"]["DIALOG_OPTIONS"] = {"001to012_1": {"next_node": "012"}}
+    assert_eq(check_trade_options(world), [], "brak opcji handlu = brak reguły")
+
+
+def test_the_real_world_trade_options_belong_to_merchants() -> None:
+    assert_eq(check_trade_options(WORLD), [], "prawdziwy config jest czysty")
+
+
+####################################################################################################
 def main() -> None:
     tests = [
         test_an_instance_named_after_its_model_passes,
@@ -623,6 +662,10 @@ def main() -> None:
         test_a_message_without_wikilinks_passes,
         test_a_wikilink_left_in_a_message_is_an_error,
         test_the_real_world_has_no_unresolved_wikilinks,
+        test_a_trade_option_on_a_merchant_reports_nothing,
+        test_a_trade_option_on_a_non_merchant_is_an_error,
+        test_a_dialog_without_trade_options_reports_nothing,
+        test_the_real_world_trade_options_belong_to_merchants,
     ]
     for t in tests:
         t()

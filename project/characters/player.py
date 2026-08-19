@@ -85,6 +85,36 @@ class Player(NPC):
         return HealthBarUI(self.model, label_group, pos, scale)
 
     #############################################################################################################
+
+    def can_interact_with_npc(self) -> bool:
+        """Is someone within reach that the hero can talk to or trade with?
+
+        `collisions.resolve` already pins such a character to `npc_met`; this is
+        the same test it used to decide, asked from the other side.
+        """
+        npc = self.npc_met
+        return bool(npc and (npc.has_dialog or npc.model.is_merchant))
+
+    def normalise_trade_selection(self) -> None:
+        """Point `selected_item_idx` at something the merchant will actually take.
+
+        A trader may accept only some item types, so the hotbar cursor has to be
+        re-seated before the shop opens. An empty inventory (or nothing tradable)
+        is fine and leaves the cursor at 0 - the player came to buy.
+        """
+        filtered_items = self.get_tradable_items()
+        if not filtered_items or not self.items:
+            self.selected_item_idx = 0
+            return
+        if self.selected_item_idx >= len(self.items):
+            self.selected_item_idx = 0
+        selected_item = self.items[self.selected_item_idx]
+        if selected_item not in filtered_items:
+            self.selected_item_idx = 0
+        else:
+            self.selected_item_idx = filtered_items.index(selected_item)
+
+    #############################################################################################################
     def movement(self) -> None:
         global INPUTS
         if self.is_stunned or self.is_attacking:
@@ -124,29 +154,22 @@ class Player(NPC):
                     f"has_dialog={getattr(self.npc_met, 'has_dialog', None) if self.npc_met else None}, "
                     f"is_talking={self.is_talking}, "
                     f"dialog={getattr(self.npc_met, 'dialog', None) is not None if self.npc_met else None}")
-            if self.npc_met and (self.npc_met.has_dialog or self.npc_met.model.is_merchant) and not self.is_talking:
+            npc = self.npc_met
+            if npc is not None and self.can_interact_with_npc() and not self.is_talking:
                 # dialog or trading?
-                if self.npc_met.has_dialog and self.npc_met.dialog is not None:
-                    text = get_msg(self.game.conf.messages, self.npc_met.dialog.text)
-                    self.scene.ui.open(DialogPanel, npc=self.npc_met, text=text)
+                if npc.has_dialog and npc.dialog is not None:
+                    text = get_msg(self.game.conf.messages, npc.dialog.text)
+                    self.scene.ui.open(DialogPanel, npc=npc, text=text)
                     if MOM_DEBUG_TALK:
-                        self.game.log(f"[DEBUG talk] opened DialogPanel for {self.npc_met.name} "
-                                      f"at node {self.npc_met.dialog.key}")
+                        self.game.log(f"[DEBUG talk] opened DialogPanel for {npc.name} "
+                                      f"at node {npc.dialog.key}")
                 else:
-                    # since trader might accept only selected types of items
-                    # selected item index needs to be initiated again
-                    filtered_items = self.get_tradable_items()
-                    if len(filtered_items) > 0:
-
-                        selected_item = self.items[self.selected_item_idx]
-                        if selected_item not in filtered_items:
-                            self.selected_item_idx = 0
-                        else:
-                            self.selected_item_idx = filtered_items.index(selected_item)
-
-                        self.scene.ui.open(TradePanel)
+                    self.normalise_trade_selection()
+                    # having nothing to sell is not a reason to refuse the shop -
+                    # the player may well have come to buy
+                    self.scene.ui.open(TradePanel)
                 self.is_talking = True
-                self.npc_met.is_talking = True
+                npc.is_talking = True
             INPUTS["talk"] = False
 
         if INPUTS["end_trade"]:
@@ -257,7 +280,14 @@ class Player(NPC):
             INPUTS["right_click"] = False
 
         if INPUTS["attack"]:
-            if not self.is_attacking and self.selected_weapon:
+            # SPACE raises `talk`, `open` and `attack` together (settings.ACTIONS),
+            # and the talk branch above clears only its own flag - so a hero with a
+            # weapon drawn used to swing at the merchant he was opening the shop
+            # with. Standing at someone who can be talked or traded with, the
+            # peaceful action wins and the swing is dropped.
+            if self.can_interact_with_npc():
+                pass
+            elif not self.is_attacking and self.selected_weapon:
 
                 self.is_attacking = True
                 self.attack_time = self.game.time_elapsed
