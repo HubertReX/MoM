@@ -55,13 +55,13 @@ Barman, który zamiast podawać drinki, serwuje opowieści. Każdy kufel piwa to
 
 * To jak mogę **Ci** pomóc:red_question:
 
-* [[#021]] 1[`visited(`[[Zielarka Zmora#009]]`)`]😐: Mogę **Ci** jakoś pomóc:question:
+* [[#trade-end]] 1😐: Masz coś na sprzedaż:$:
 * [[#002]] 2😐: Co **Cię** tu sprowadziło:question:
 * [[#003]] 3😐: Jak **Ci** się podoba to miejsce:red_question:
 * [[#004]] 4😐: Jest tu coś ciekawego w [loc]okolicy[/]:red_question_anim:
 * [[#005]] 5😐: Znasz kogoś, kto zna się na [quest]zaklęciach[/]:question:
 * [[#006]] 6😐: Gdzie mógłbym zdobyć wiedzę o [quest]zaklęciach[/]:question:
-* [[#trade-end]] 7😐: A co masz na sprzedaż:$:
+* [[#021]] 7[`visited(`[[Zielarka Zmora#009]]`)`]😐: A może ja mogę coś dla **Ciebie** zrobić:question:
 * [[#990-end]] 9😐: To tyle, do następnego razu
 
 ## 002

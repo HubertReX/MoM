@@ -5,14 +5,26 @@ Reads characters.csv, items.csv, chests.csv and maze_configs.csv,
 merges values into config.json, preserving dialogs and messages.
 """
 
-import json, sys
+import json, os, sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 CONFIG_FILE = HERE / "config.json"
 
 sys.path.insert(0, str(HERE.parent))
+
+# `settings` pulls in pygame, whose support banner is noise in a CSV importer
+# that never opens a window. Must precede the first pygame import.
+os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
+
+from cli_report import WARN, Diagnostic, rel, report_table  # noqa: E402
 from settings import CONF_ENTITIES_TO_STORE, DEFAULT_DISPOSITION_WEIGHTS  # noqa: E402
+
+# Filled while importing/exporting, drawn once by `main`. `just import-dialogs`
+# cascades three programs into one screen of output, so this one reports the
+# same way the others do: a table of problems, then a single summary line.
+_diagnostics: list[Diagnostic] = []
+_counts: dict[str, str] = {}
 
 # characters.csv keeps per-sentiment weight columns (author-facing names,
 # filled from Markdown frontmatter by `just import-dialogs`); they are
@@ -116,12 +128,12 @@ def import_csv(entity_name: str, data: dict) -> dict:
     """Read <entity_name>.csv and merge fields into data's entity section."""
     csv_file = HERE / f"{entity_name}.csv"
     if not csv_file.exists():
-        print(f"  [SKIP] {csv_file} not found")
+        _diagnostics.append(Diagnostic(WARN, rel(csv_file), "file not found; section left untouched"))
         return data
 
     lines = csv_file.read_text().strip().splitlines()
     if len(lines) < 2:
-        print(f"  [SKIP] {csv_file} empty")
+        _diagnostics.append(Diagnostic(WARN, rel(csv_file), "no data rows; section left untouched"))
         return data
 
     header = lines[0].split(";")
@@ -154,10 +166,12 @@ def import_csv(entity_name: str, data: dict) -> dict:
             required = REQUIRED_FIELDS_BY_ENTITY.get(entity_name, ())
             missing = [f for f in required if not row.get(f, "").strip()]
             if missing:
-                print(
-                    f"  [WARN] '{key}' not in config.json and cannot be created from "
-                    f"this row, skipping ({entity_name} needs: {', '.join(missing)})"
-                )
+                _diagnostics.append(Diagnostic(
+                    WARN,
+                    f"{entity_name}.csv:{key}",
+                    f"unknown key that cannot be created from this row either, skipping "
+                    f"(a new {entity_name[:-1]} needs: {', '.join(missing)})",
+                ))
                 continue
             section[key] = {}
             created += 1
@@ -186,8 +200,7 @@ def import_csv(entity_name: str, data: dict) -> dict:
         updated += 1
 
     data[entity_name] = section
-    created_note = f" ({created} created)" if created else ""
-    print(f"  {entity_name}: {updated} rows imported{created_note}")
+    _counts[entity_name] = f"{updated}" + (f" (+{created} new)" if created else "")
     return data
 
 
@@ -207,7 +220,9 @@ def _character_model_fields() -> list[str]:
     try:
         from config_model.config_pydantic import Character
     except Exception as exc:  # pragma: no cover - depends on the install
-        print(f"  [WARN] character model unavailable ({exc}); exporting known columns only")
+        _diagnostics.append(Diagnostic(
+            WARN, "characters.csv", f"character model unavailable ({exc}); exporting known columns only"
+        ))
         return []
     return list(Character.model_fields)
 
@@ -267,7 +282,7 @@ def _export_csv(entity_name: str, data: dict) -> None:
                 row.append(str(v))
         w.writerow(row)
     csv_path.write_text(buf.getvalue())
-    print(f"  {entity_name}: {len(section)} rows exported")
+    _counts[entity_name] = str(len(section))
 
 
 def export_csvs() -> None:
@@ -278,7 +293,15 @@ def export_csvs() -> None:
     data = json.loads(CONFIG_FILE.read_text())
     for entity_name in CONF_ENTITIES_TO_STORE:
         _export_csv(entity_name, data)
-    print(f"\n[OK] CSV files saved to {HERE}")
+    _report("Entity export", "Exported")
+    print(f"Written: {rel(HERE)}/*.csv")
+
+
+def _report(title: str, verb: str) -> None:
+    """Problems as a table, the counts as one line - the shape every `just import-*` uses."""
+    report_table(title, _diagnostics)
+    if _counts:
+        print(f"{verb} rows: " + ", ".join(f"{name} {count}" for name, count in _counts.items()))
 
 
 def main() -> None:
@@ -287,11 +310,15 @@ def main() -> None:
         sys.exit(1)
 
     if "--export" in sys.argv:
+        _diagnostics.clear()
+        _counts.clear()
         export_csvs()
         return
 
     data = json.loads(CONFIG_FILE.read_text())
 
+    _diagnostics.clear()
+    _counts.clear()
     for entity_name in CONF_ENTITIES_TO_STORE:
         data = import_csv(entity_name, data)
 
@@ -300,7 +327,8 @@ def main() -> None:
             data[entity_name] = _strip_nulls(data[entity_name])
 
     CONFIG_FILE.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n")
-    print(f"\n[OK] Config saved to {CONFIG_FILE}")
+    _report("Entity import", "Imported")
+    print(f"Written: {rel(CONFIG_FILE)}")
 
 
 if __name__ == "__main__":

@@ -70,6 +70,7 @@ Output shape matches ``dialog.graph.init_dialog`` expectations:
 from __future__ import annotations
 
 import csv
+import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -80,6 +81,12 @@ from typing import Any, Callable
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
+# Anything under `dialog.` pulls in `settings`, which pulls in pygame, whose
+# support banner is noise in an importer that never opens a window. Has to be
+# set before the first pygame import, hence up here with the path setup.
+os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
+
+from cli_report import ERROR, WARN, Diagnostic, rel, report_table
 from dialog.conditions import ConditionError, ConditionScope, validate_condition
 from dialog.effects import EffectError, EffectScope, parse_effect
 from dialog.vault_links import (
@@ -99,6 +106,9 @@ class DialogImportError(ValueError):
     def __init__(self, message: str, *, file: str = "", line: int = 0) -> None:
         self.file = file
         self.line = line
+        # kept apart from `str(self)`: the report puts the path in the Source
+        # column, so repeating it inside the message would rebuild the wall
+        self.message = message
         if file and line:
             super().__init__(f"{file}:{line}: {message}")
         elif file:
@@ -378,8 +388,13 @@ def _find_markdown_file(src_dir: Path, lang: str, character_name: str) -> Path:
         fm = _parse_frontmatter(p.read_text(encoding="utf-8"), path=str(p))
         if character_key in fm.aliases:
             return p
+    try:
+        shown = lang_dir.relative_to(src_dir)
+    except ValueError:
+        shown = lang_dir
     raise DialogImportError(
-        f"no Markdown file with alias {character_key!r} in {lang_dir}",
+        f"no Markdown file with alias {character_key!r} in {shown} "
+        f"(add it to the note's frontmatter `aliases:`)",
         file=str(lang_dir),
     )
 
@@ -1064,7 +1079,7 @@ def _update_characters_csv(csv_path: Path, character_meta: dict[str, Any]) -> bo
     writer = csv.writer(buf, delimiter=";", lineterminator="\n")
     writer.writerows(rows)
     csv_path.write_text(buf.getvalue(), encoding="utf-8")
-    print(f"Updated {updated}, appended {appended} character row(s) in {csv_path}")
+    print(f"Updated {updated}, appended {appended} character row(s) in {rel(csv_path)}")
     return True
 
 
@@ -1110,6 +1125,28 @@ def _collect_quest_text_references(quests: dict[str, Any]) -> set[str]:
             if quest.get(name):
                 refs.add(quest[name])
     return refs
+
+
+def _diagnose(name: str, exc: Exception, src_dir: Path, severity: str) -> Diagnostic:
+    """Turn a failed character import into one row of the report.
+
+    The *Source* column is where the author has to go: the note and line when
+    the failure knows one, the character key otherwise (a whole-character
+    problem - a missing file, a PL/EN mismatch - has no single line to blame).
+    The path prefix stays out of the message: it is the column next to it.
+    """
+    file = getattr(exc, "file", "")
+    line = getattr(exc, "line", 0)
+    path = Path(file) if file else None
+    if path is not None and path.suffix == ".md":
+        try:
+            shown: Path | str = path.resolve().relative_to(src_dir.resolve())
+        except ValueError:
+            shown = rel(path)
+        source = f"{shown}:{line}" if line else str(shown)
+    else:
+        source = name
+    return Diagnostic(severity, source, getattr(exc, "message", None) or str(exc))
 
 
 def build_dialog_config(
@@ -1177,7 +1214,10 @@ def build_dialog_config(
     new_meta: dict[str, Any] = {}
     new_barks: dict[str, list[dict[str, str]]] = {}
     imported: list[str] = []
-    errors: list[str] = []
+    # Auto discovery tolerates work-in-progress notes (warn + skip); an
+    # explicitly named character that fails is an error and fails the run.
+    severity = WARN if auto_discovered else ERROR
+    diagnostics: list[Diagnostic] = []
     # Character keys whose import blew up - their previous config entries are
     # preserved rather than wiped (a WIP file must not delete yesterday's work).
     failed_keys: set[str] = set()
@@ -1201,10 +1241,13 @@ def build_dialog_config(
                 new_barks[_character_name_to_key(name)] = bark_entries
             imported.append(name)
         except DialogImportError as exc:
-            errors.append(f"  {exc}")
+            diagnostics.append(_diagnose(name, exc, src_dir, severity))
             failed_keys.add(_character_name_to_key(name))
         except Exception as exc:
-            errors.append(f"  {name}: {exc}")
+            # Not a content problem - a bug in here. It must not hide behind the
+            # WARN that auto discovery gives work-in-progress notes, or a crash
+            # would leave yesterday's config in place and still exit 0.
+            diagnostics.append(_diagnose(name, exc, src_dir, ERROR))
             failed_keys.add(_character_name_to_key(name))
 
     # Shared pools (doc/PL/Barki.md). A broken pool file must not take the whole
@@ -1215,25 +1258,21 @@ def build_dialog_config(
             new_messages[lang].update(pool_messages[lang])
         new_barks.update(pools)
     except DialogImportError as exc:
-        errors.append(f"  {exc}")
+        diagnostics.append(_diagnose("barks", exc, src_dir, severity))
         # keep whatever pools were in the config before
         for key, entries in config.get("barks", {}).items():
             new_barks.setdefault(key, entries)
 
+    # One table, drawn once, in the shape `just validate-world` uses - the
+    # cascade prints three reports in a row and they have to read as one.
+    report_table("Dialog import", diagnostics)
+
     if imported:
         print(f"Imported {len(imported)} character(s): {', '.join(imported)}")
-
-    if errors:
-        if auto_discovered:
-            # Expected for WIP/incomplete files - skip loudly, don't fail.
-            print(
-                f"Skipped {len(errors)} incomplete/unimportable file(s):",
-                file=sys.stderr,
-            )
-        for err in errors:
-            print(err, file=sys.stderr)
+    if diagnostics:
+        # Expected for WIP/incomplete notes - skip loudly, don't fail.
         print(
-            "Preserving existing config entries for failed characters.",
+            f"Skipped {len(diagnostics)} file(s); their existing config entries are preserved.",
             file=sys.stderr,
         )
 
@@ -1273,7 +1312,7 @@ def build_dialog_config(
         json.dump(config, f, ensure_ascii=False, indent=4)
         f.write("\n")
 
-    print(f"Written: {config_path}")
+    print(f"Written: {rel(config_path)}")
 
     # MD -> CSV: surface frontmatter metadata (sprite/friendly/weights) in
     # characters.csv; `just import-dialogs` then cascades import-entities
@@ -1281,11 +1320,9 @@ def build_dialog_config(
     if new_meta:
         _update_characters_csv(config_path.parent / "characters.csv", new_meta)
 
-    # Auto-discovery tolerates WIP files: skipped imports are warnings, not
-    # failures, so the just cascade to import-entities still runs.
-    if auto_discovered:
-        return 0
-    return 0 if not errors else 1
+    # A skipped WIP note is tolerated (that is what auto discovery is for);
+    # anything reported as an ERROR fails the run, and with it the cascade.
+    return 1 if any(d.severity == ERROR for d in diagnostics) else 0
 
 
 # ---------------------------------------------------------------------------

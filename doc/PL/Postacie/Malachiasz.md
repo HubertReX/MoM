@@ -1,12 +1,13 @@
 ---
 aliases:
+  - MALACHI
   - Malachi
 alternative:
 EN: "[[Malachi]]"
 inspirations:
   - 
 location:
-sprite: Ninja
+sprite: GreenNinja
 friendly: 0.5
 kind: 1
 weak: 1

@@ -75,6 +75,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -85,6 +86,12 @@ from typing import Any
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
+# Anything under `dialog.` pulls in `settings`, which pulls in pygame, whose
+# support banner is noise in an importer that never opens a window. Has to be
+# set before the first pygame import, hence up here with the path setup.
+os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
+
+from cli_report import Diagnostic, rel, report_table
 from dialog.conditions import (
     ConditionError,
     ConditionScope,
@@ -244,24 +251,11 @@ _REWARD_CATEGORIES: dict[str, str] = {
 }
 
 
+# The row type lives in `cli_report` - see the note on `report_diagnostics`.
+# The severity strings stay lowercase here (they read as prose in the parser);
+# the table prints them uppercase like every other report.
 ERROR = "error"
 WARNING = "warning"
-
-
-@dataclass(slots=True)
-class Diagnostic:
-    """One thing the import wants to say, with somewhere to go and fix it.
-
-    Collected rather than printed the moment it is found. Warnings used to go
-    straight to ``stderr`` from inside the parser, interleaved with whatever else
-    was writing there, each one carrying an absolute path - a wall the author had
-    to read line by line. A list can be sorted, counted and drawn as a table, and
-    the parser stops caring what the output looks like.
-    """
-
-    severity: str
-    source: str  # `PL/Misje/Nazwa.md:16` - vault-relative, which is where the author lives
-    message: str
 
 
 def _source(path: Path, src_dir: Path, line: int = 0) -> str:
@@ -280,37 +274,11 @@ def _source(path: Path, src_dir: Path, line: int = 0) -> str:
 def report_diagnostics(diagnostics: list[Diagnostic]) -> None:
     """Draw the collected diagnostics as one table (same shape as ``just validate-world``).
 
-    Falls back to plain lines when ``rich`` is missing, so the importer still
-    works in a bare environment - the information is the point, the colour is not.
+    The drawing lives in ``cli_report`` because `import-quests`, `import-dialogs`,
+    `import-entities` and `validate-world` run one after another in the same
+    cascade: one table shape, defined once, is what makes that readable.
     """
-    if not diagnostics:
-        return
-
-    # errors first, then by file, so the fix list reads top to bottom
-    rows = sorted(diagnostics, key=lambda d: (d.severity != ERROR, d.source, d.message))
-
-    try:
-        from rich.console import Console
-        from rich.table import Table
-    except ImportError:
-        for diagnostic in rows:
-            print(
-                f"{diagnostic.severity:7} {diagnostic.source}  {diagnostic.message}",
-                file=sys.stderr,
-            )
-        return
-
-    console = Console(stderr=True)
-    table = Table(title="Quest import", header_style="bold", show_lines=False)
-    table.add_column("Severity", no_wrap=True)
-    table.add_column("Source", style="cyan")
-    table.add_column("Problem")
-    for diagnostic in rows:
-        colour = "red" if diagnostic.severity == ERROR else "yellow"
-        table.add_row(
-            f"[{colour}]{diagnostic.severity}[/{colour}]", diagnostic.source, diagnostic.message
-        )
-    console.print(table)
+    report_table("Quest import", diagnostics)
 
 
 @dataclass(slots=True)
@@ -1158,7 +1126,7 @@ def build_quest_config(
     # the write rather than instead of it.
     report_diagnostics(diagnostics)
     print(f"Imported {len(quests)} quest(s): {', '.join(quests)}")
-    print(f"Written: {config_path}")
+    print(f"Written: {rel(config_path)}")
     return 0
 
 

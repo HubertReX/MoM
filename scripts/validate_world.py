@@ -822,7 +822,10 @@ def check_unspawned_characters(world: World) -> list[Violation]:
     maze_only = _maze_monsters(world)
     out = []
     for key in sorted(world.config.get("characters", {})):
-        if key == "Player" or key in spawned or key in maze_only:
+        # the player is placed by an entry point, not a spawn point; the key is
+        # `settings.PLAYER_CONFIG_KEY`, spelled out here because this script stays
+        # free of game imports (see the module docstring)
+        if key == "MALACHI" or key in spawned or key in maze_only:
             continue
         out.append(Violation(
             WARN, f"config.json:characters:{key}",

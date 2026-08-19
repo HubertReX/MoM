@@ -1,6 +1,6 @@
 # Barki - wspólne pule
 
-Bark to jednolinijkowa **zaczepka**, którą postać rzuca, gdy [[Malachi]] przechodzi obok. Nie jest dialogiem: gracz nie odpowiada, nie ma opcji, nie ma panelu.
+Bark to jednolinijkowa **zaczepka**, którą postać rzuca, gdy [[Malachiasz]] przechodzi obok. Nie jest dialogiem: gracz nie odpowiada, nie ma opcji, nie ma panelu.
 
 Ten plik trzyma pule **wspólne** - dla statystów i zwierząt, które nie mają własnego pliku w `Postacie/`. Postać z własnym plikiem pisze swoje barki w sekcji `## Barki` u siebie, a pula i tak jej przysługuje: sekcja własna i pula **sumują się**. Kto bierze z której puli, mówi kolumna `barks` w `characters.csv`, a jej wartością jest nagłówek sekcji z tego pliku, dosłownie.
 

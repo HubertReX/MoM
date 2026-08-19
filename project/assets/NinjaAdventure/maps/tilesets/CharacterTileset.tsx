@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.12.1" name="CharacterTileset" tilewidth="23" tileheight="16" tilecount="34" columns="0" tilerendersize="grid" fillmode="preserve-aspect-fit">
  <grid orientation="orthogonal" width="16" height="16"/>
- <tile id="0" x="0" y="0" width="16" height="16" type="Player">
+ <tile id="0" x="0" y="0" width="16" height="16" type="MALACHI">
   <properties>
-   <property name="model_name" value="Player"/>
+   <property name="model_name" value="MALACHI"/>
   </properties>
   <image source="../../characters/GreenNinja/SpriteSheet.png" width="80" height="112"/>
  </tile>

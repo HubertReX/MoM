@@ -154,12 +154,12 @@ update-config-schema:
 # Import entity data from CSV files into `config.json` (overwrites character, item, chest, and maze sections)
 [unix]
 import-entities *ARGS:
-    # Pass `--export` to go the other way: `config.json` -> CSV files (regenerates all columns).
-    .venv/bin/python project/config_model/import_entities.py {{ARGS}}
-    # A consistency error should surface while the author is editing content, not in
-    # runtime as a silent print or a missing NPC. `import-dialogs` inherits this
-    # through its cascade into this recipe, so it is not repeated there.
-    just validate-world
+    @# Pass `--export` to go the other way: `config.json` -> CSV files (regenerates all columns).
+    @.venv/bin/python project/config_model/import_entities.py {{ARGS}}
+    @# A consistency error should surface while the author is editing content, not in
+    @# runtime as a silent print or a missing NPC. `import-dialogs` inherits this
+    @# through its cascade into this recipe, so it is not repeated there.
+    @just validate-world
 
 # Import dialog Markdown sources from the `doc/` vault into `config.json`.
 [unix]
@@ -362,8 +362,8 @@ validate-locale:
 # Validate world entity consistency across maps, CSVs, config and routines
 [unix]
 validate-world *ARGS:
-    # `--strict` makes warnings fail too; `--json` emits machine-readable output.
-    .venv/bin/python scripts/validate_world.py {{ARGS}}
+    @# `--strict` makes warnings fail too; `--json` emits machine-readable output.
+    @.venv/bin/python scripts/validate_world.py {{ARGS}}
 
 # Validate world entity consistency across maps, CSVs, config and routines
 [windows]

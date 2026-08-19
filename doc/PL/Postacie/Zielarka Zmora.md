@@ -55,8 +55,8 @@ Szkoliła kiedyś [[Bibliofilistka des Informacja|Bibliofilistkę des Informacj�
 
 * Ach, tak, tak. Proszę, wejdź chłopcze to domu najlepszej zielarki w okolicy.
 
-* [[#001]] 1😢: Dzień dobry, jestem [[Malachi]], straszny pechowiec. Potrzebuję pomocy.
-* [[#001]] 2😡: Nie jestem chłopcem, tylko dorosłym facetem - mów do mnie [[Malachi]]!
+* [[#001]] 1😢: Dzień dobry, jestem [[Malachiasz]], straszny pechowiec. Potrzebuję pomocy.
+* [[#001]] 2😡: Nie jestem chłopcem, tylko dorosłym facetem - mów do mnie [[Malachiasz]]!
 * [[#001]] 3😉: To **Pani** hoduje tu jakieś _ziółka_?
 
 ## 001

@@ -26,7 +26,7 @@ MARRY;Marry;Marysia;Woman;humanoid;friendly;120;120;;25;false;;;;;;;;;;;;;;;;;;;
 MISS_INFORMATION;Miss Information;Bibliofilistka des Informacja;SorcererOrange;humanoid;friendly;;;;;true;;;;;;;;0.5;;;;;;;1;1;1;1;1;;
 PIG;Pig;Świnka;Pig;animal;friendly;;;;;false;;;;plains;20;;;;;;;;;;;;;;;;FARM_ANIMALS
 POTIONEER_PUZZLEMINT;Potioneer Puzzlemint;Zielarka Zmora;EggGirl;humanoid;friendly;;;;100;true;;;;;;;;0.4;;;;;;;1;2;-2;-1;-1;;
-Player;Player;Player;GreenNinja;humanoid;friendly;80;80;lance,stick,gem_small_green,shashlik,shashlik,gem_crystal_blue,gem_big_orange;20;false;;;;;;;;;;;;;;;;;;;;;
+MALACHI;Malachi;Malachiasz;GreenNinja;humanoid;friendly;80;80;lance,stick,gem_small_green,shashlik,shashlik,gem_crystal_blue,gem_big_orange;20;true;;;;;;;;0.5;;;;;;;1;1;1;1;1;;
 RACOON;Racoon;Szop;Racoon;animal;afraid;;;;;false;;;;;10;;;;;;;;;;;;;;;;
 ROB;Rob;Kuba;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;townsfolk;VILLAGERS
 ROBIN;Robin;Robin;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;townsfolk;VILLAGERS

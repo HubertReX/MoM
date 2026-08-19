@@ -246,7 +246,7 @@ def normalise_sentiment(sentiment: str) -> str:
 # tę samą warstwę, którą W2 każe tłumaczyć. Wpisanie "Gracz" w kolumnę `name_PL`
 # po cichu wyłączyłoby walkę, śmierć i dźwięki bohatera. Porównujemy po kluczu,
 # a napis niech sobie żyje w locale.
-PLAYER_CONFIG_KEY = "Player"
+PLAYER_CONFIG_KEY = "MALACHI"
 
 # Mapa, na której zaczyna się nowa gra (C02, D5). Klucz mapy siedzi w danych -
 # w nazwie pliku `.tmx`, w `to_map` sąsiedniej mapy, w `audio.toml`, w sekcji `[map]`

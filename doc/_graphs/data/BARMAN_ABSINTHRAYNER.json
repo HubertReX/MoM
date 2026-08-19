@@ -429,13 +429,13 @@
   },
   {
    "from": "001",
-   "to": "021",
+   "to": "001",
    "kind": "option",
-   "key": "001to021_1",
+   "key": "001totrade_1",
    "order": 1,
    "sentiment": "neutral",
-   "text": "Mogę Ci jakoś pomóc",
-   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")"
+   "text": "Masz coś na sprzedaż:$:",
+   "condition": null
   },
   {
    "from": "001",
@@ -489,13 +489,13 @@
   },
   {
    "from": "001",
-   "to": "001",
+   "to": "021",
    "kind": "option",
-   "key": "001totrade_7",
+   "key": "001to021_7",
    "order": 7,
    "sentiment": "neutral",
-   "text": "A co masz na sprzedaż:$:",
-   "condition": null
+   "text": "A może ja mogę coś dla Ciebie zrobić",
+   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")"
   },
   {
    "from": "001",

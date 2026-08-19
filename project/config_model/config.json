@@ -1,7 +1,7 @@
 {
     "$schema": "./config_schema.json",
     "characters": {
-        "Player": {
+        "MALACHI": {
             "sprite": "GreenNinja",
             "race": "humanoid",
             "attitude": "friendly",
@@ -17,9 +17,19 @@
                 "gem_big_orange"
             ],
             "money": 20,
-            "name_EN": "Player",
-            "name_PL": "Player",
-            "has_dialog": false
+            "name_EN": "Malachi",
+            "name_PL": "Malachiasz",
+            "has_dialog": true,
+            "friendly": 0.5,
+            "disposition": {
+                "kind": 1,
+                "funny": 1,
+                "smart": 1,
+                "neutral": 0,
+                "technical": 0,
+                "weak": 1,
+                "angry": 1
+            }
         },
         "JOHNY": {
             "sprite": "Villager1",
@@ -1505,12 +1515,13 @@
                     "order": 3,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_000to001_3"
                 },
-                "001to021_1": {
-                    "next_node": "021",
-                    "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")",
+                "001totrade_1": {
+                    "next_node": "001",
+                    "condition": "True",
                     "sentiment": "neutral",
                     "order": 1,
-                    "text": "M_BARMAN_ABSINTHRAYNER_DO_001to021_1"
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_001totrade_1",
+                    "opens_trade": true
                 },
                 "001to002_2": {
                     "next_node": "002",
@@ -1547,13 +1558,12 @@
                     "order": 6,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_001to006_6"
                 },
-                "001totrade_7": {
-                    "next_node": "001",
-                    "condition": "True",
+                "001to021_7": {
+                    "next_node": "021",
+                    "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")",
                     "sentiment": "neutral",
                     "order": 7,
-                    "text": "M_BARMAN_ABSINTHRAYNER_DO_001totrade_7",
-                    "opens_trade": true
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_001to021_7"
                 },
                 "001to990_9": {
                     "next_node": "990",
@@ -1955,13 +1965,13 @@
                     "000to001_3"
                 ],
                 "001": [
-                    "001to021_1",
+                    "001totrade_1",
                     "001to002_2",
                     "001to003_3",
                     "001to004_4",
                     "001to005_5",
                     "001to006_6",
-                    "001totrade_7",
+                    "001to021_7",
                     "001to990_9"
                 ],
                 "002": [
@@ -3700,6 +3710,38 @@
             },
             "NODE_RESULTS": {},
             "START_NODE": "000"
+        },
+        "MALACHI": {
+            "DIALOG_NODES": {
+                "000": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_MALACHI_DN_000"
+                },
+                "099": {
+                    "is_final": true,
+                    "result": null,
+                    "text": "M_MALACHI_DN_099",
+                    "resume_node": "000"
+                }
+            },
+            "DIALOG_OPTIONS": {
+                "000to099_1": {
+                    "next_node": "099",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 1,
+                    "text": "M_MALACHI_DO_000to099_1"
+                }
+            },
+            "NODES_OPTIONS": {
+                "000": [
+                    "000to099_1"
+                ],
+                "099": []
+            },
+            "NODE_RESULTS": {},
+            "START_NODE": "000"
         }
     },
     "messages": {
@@ -4042,7 +4084,6 @@
             "bark.BARMAN_ABSINTHRAYNER.003": "Last call! Just kidding.",
             "bark.BARMAN_ABSINTHRAYNER.004": "Oh, my favourite customer!",
             "bark.BARMAN_ABSINTHRAYNER.005": "Sit over there. Further. Even further.",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to021_1": "Can I help [shadow]you[/shadow] with anything:question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to002_2": "What brought [shadow]you[/shadow] here:question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to003_3": "How do [shadow]you[/shadow] like this place:red_question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to004_4": "Anything interesting in the [loc]area[/]:red_question_anim:",
@@ -4068,7 +4109,6 @@
             "M_BARMAN_ABSINTHRAYNER_DN_025": "A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet :money:.[shadow]TODO[/shadow]",
             "M_BARMAN_ABSINTHRAYNER_DO_025to001_1": "Cieszę się, że mogłem pomóc.[shadow]TODO[/shadow]",
             "M_CLAPBACK_SWORD_DO_000to015_9": "[shadow]DEBUG[/shadow] end of dialog",
-            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_7": "And what do you have for sale:question:",
             "M_HAMMER_HOAXHEART_DO_001totrade_1": "Can we trade?",
             "M_HAMMER_HOAXHEART_DO_001to002_2": "Have you always been a blacksmith?",
             "M_HAMMER_HOAXHEART_DO_001to003_3": "How is business treating [shadow]you[/shadow] in this village?",
@@ -4090,12 +4130,17 @@
             "M_BARMAN_ABSINTHRAYNER_DN_029": "Och! Ależ się błyszczy:love_anim: Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!\n\nOto [shadow]Twoja[/shadow] nagroda :$:.",
             "M_BARMAN_ABSINTHRAYNER_DO_029to001_1": "Cieszę się, że mogłem pomóc.",
             "M_QUEST_Q04_S02_TAVERN_TROPHY_NAME": "Trofeum z dalekiego świata",
-            "M_QUEST_Q04_S02_TAVERN_TROPHY_DESCRIPTION": "[char]Barmanowi[/char] maży się, aby powiesić nad barem [item]Green crystal[/item] jako trofeum z jego [italic]słynnych[/italic] wypraw. Ty mu to jego trofeum przyniesiesz. To znaczy zdobędziesz trofeum, tylko, że to nie będzie Twoje trofeum, tylko jego. Czegoś nie rozumiesz?\n\n[item]Krzyształ[/item] możesz zdobyć w [loc]Labiryncie[/loc], ale to może być trudne bo tam jest niebezpiecznie i trzeba walczyć z [char]potworami[/]. Ewentualnie możesz go kupić od  [char]John[/], tylko musisz najpierw uzbierać odpowiednio dużo :$_anim:. Na przykład zdobywając skarby w [loc]Labiryncie[/loc], ale to może być trudne bo...\n\nhmm, no cóż... Ten świat może jest i [italic]prostacki[/italic], ale nie jest aż taki [shadow]prosty[/shadow] :doubt:",
+            "M_QUEST_Q04_S02_TAVERN_TROPHY_DESCRIPTION": "[char]Barmanowi[/char] maży się, aby powiesić nad barem [item]Green crystal[/item] jako trofeum z jego [italic]słynnych[/italic] wypraw. Ty mu to jego trofeum przyniesiesz. To znaczy zdobędziesz trofeum, tylko, że to nie będzie Twoje trofeum, tylko jego. Czegoś nie rozumiesz?\n\n[item]kryształ[/item] możesz zdobyć w [loc]Labiryncie[/loc], ale to może być trudne bo tam jest niebezpiecznie i trzeba walczyć z [char]potworami[/]. Ewentualnie możesz go kupić od  [char]John[/], tylko musisz najpierw uzbierać odpowiednio dużo :$_anim:. Na przykład zdobywając skarby w [loc]Labiryncie[/loc], ale to może być trudne bo...\n\nhmm, no cóż... Ten świat może jest i [italic]prostacki[/italic], ale nie jest aż taki [shadow]prosty[/shadow] :doubt:",
             "M_QUEST_Q04_S02_TAVERN_TROPHY_SUCCESS": "Trofeum zdobyte i przekazane, nagroda zainkasowana, a [char]Barman[/char] jest teraz z siebie dumny. A Ty?",
             "M_POTIONEER_PUZZLEMINT_DO_009to011_1": "Jest tu w wiosce ktoś inny, kto się na tym zna?[shadow]TODO[/shadow]",
             "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_NAME": "Question Potioneer about the curse",
             "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_DESCRIPTION": "[char]Barman[/char] podpowiedział, że [char]Potioneer Puzzlemint[/char] może się znać na takich rzeczach jak [quest]Odwieczna klątwa nieszczęścia[/]. Co więcej, możemy się na niego powołać, bo inaczej może nie chcieć z nami rozmawiać.",
-            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS": "Wiemy już, że [char]Zielarka[/char] nic konkretnego nie wie, ale dała nowy trop: trzeba poszukać [char]Bibliofilistki des Inforamacji[/char]"
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS": "Wiemy już, że [char]Zielarka[/char] nic konkretnego nie wie, ale dała nowy trop: trzeba poszukać [char]Bibliofilistki des Inforamacji[/char]",
+            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_1": "Can I help [shadow]you[/shadow] with anything:question:",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to021_7": "And what do you have for sale:question:",
+            "M_MALACHI_DN_000": "Hi :exclamation:",
+            "M_MALACHI_DO_000to099_1": "Actually I have nothing to say",
+            "M_MALACHI_DN_099": "See ya :exclamation:"
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Tawernie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
@@ -4395,7 +4440,7 @@
             "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_DESCRIPTION": "W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]księdza[/], albo chociaż [char]starego dziada[/], który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o [quest]klątwach[/] więcej niż same plotki.",
             "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS": "Wiesz już, [shadow]kto[/shadow] się na tym zna, [shadow]gdzie[/shadow] mieszka i [shadow]jak[/shadow] tam trafić. Trzy odpowiedzi bez ani grama magii. To się nawet może udać.",
             "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_NAME": "Kto ma wiedzę o magii?",
-            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION": "[char]Zielarka[/char] warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może zna też kogoś, kto zna się na rzeczach oficjalnie zakazanych.",
+            "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_DESCRIPTION": "[char]Zielarka[/char] warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może zna też kogoś, kto zna się na rzeczach oficjalnie zakazanych.\n\nSiedzi w chałupie na końcu wioski, koło lasu.",
             "M_QUEST_Q03_S01_WHO_HAS_MORE_KNOWLEDGE_SUCCESS": "Kiedyś wołali na nią [char]Mariolka[/char]. Teraz mówią na nią [char]Bibliofilistka des Informacja[/char] i podobno pilnuje zakazanych ksiąg w [loc]tajnej bibliotece[/loc].",
             "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_NAME": "Gdzie znaleźć tę osobę?",
             "M_QUEST_Q03_S02_WHERE_TO_FIND_THIS_PERSON_DESCRIPTION": "Imię już jest. Zostaje drobiazg: adres. [char]Kowal[/char] bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
@@ -4436,7 +4481,6 @@
             "bark.BARMAN_ABSINTHRAYNER.003": "Ostatnia kolejka! Żartowałem",
             "bark.BARMAN_ABSINTHRAYNER.004": "O, mój ulubiony klient!",
             "bark.BARMAN_ABSINTHRAYNER.005": "Siadaj tam. Dalej. Jeszcze dalej.",
-            "M_BARMAN_ABSINTHRAYNER_DO_001to021_1": "Mogę [shadow]Ci[/shadow] jakoś pomóc:question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to002_2": "Co [shadow]Cię[/shadow] tu sprowadziło:question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to003_3": "Jak [shadow]Ci[/shadow] się podoba to miejsce:red_question:",
             "M_BARMAN_ABSINTHRAYNER_DO_001to004_4": "Jest tu coś ciekawego w [loc]okolicy[/]:red_question_anim:",
@@ -4462,7 +4506,6 @@
             "M_BARMAN_ABSINTHRAYNER_DN_025": "A już Ci, pewnie, pewnie. Masz tu [num]100[/] monet:$:.",
             "M_BARMAN_ABSINTHRAYNER_DO_025to001_1": "Cieszę się, że mogłem pomóc.",
             "M_CLAPBACK_SWORD_DO_000to015_9": "[shadow]DEBUG[/shadow] end of dialog",
-            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_7": "A co masz na sprzedaż:$:",
             "M_HAMMER_HOAXHEART_DO_001totrade_1": "Możemy pohandlować?",
             "M_HAMMER_HOAXHEART_DO_001to002_2": "Od zawsze byłeś kowalem?",
             "M_HAMMER_HOAXHEART_DO_001to003_3": "Jak [shadow]Ci[/shadow] idą interesy w tej wiosce?",
@@ -4489,7 +4532,12 @@
             "M_POTIONEER_PUZZLEMINT_DO_009to011_1": "Jest tu w wiosce ktoś inny, kto się na tym zna?",
             "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_NAME": "Wypytaj [char]Zielarkę[/char] o klątwę",
             "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_DESCRIPTION": "[char]Barman[/char] podpowiedział, że [char]Zielarka Zmora[/char] może się znać na takich rzeczach jak [quest]Odwieczna klątwa nieszczęścia[/]. Co więcej, możemy się na niego powołać, bo inaczej może nie chcieć z nami rozmawiać.",
-            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS": "Wiemy już, że [char]Zielarka[/char] nic konkretnego nie wie, ale dała nowy trop: trzeba poszukać [char]Bibliofilistki des Inforamacji[/char]"
+            "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS": "Wiemy już, że [char]Zielarka[/char] nic konkretnego nie wie, ale dała nowy trop: trzeba poszukać [char]Bibliofilistki des Inforamacji[/char]",
+            "M_BARMAN_ABSINTHRAYNER_DO_001totrade_1": "Masz coś na sprzedaż:$:",
+            "M_BARMAN_ABSINTHRAYNER_DO_001to021_7": "A może ja mogę coś dla [shadow]Ciebie[/shadow] zrobić:question:",
+            "M_MALACHI_DN_000": "Witaj :exclamation:",
+            "M_MALACHI_DO_000to099_1": "W sumie to nie mam pytań",
+            "M_MALACHI_DN_099": "Do zobaczenia :exclamation:"
         }
     },
     "quests": {

@@ -1,7 +1,7 @@
 ---
 key: gem_crystal_blue
 name_EN: Blue crystal
-name_PL: Niebieski krzyształ
+name_PL: Niebieski kryształ
 type: gem
 value: 60
 weight: 2.0
@@ -12,6 +12,6 @@ aliases:
   - gem_crystal_blue
 EN: "[[Blue crystal]]"
 ---
-# Niebieski krzyształ
+# Niebieski kryształ
 
 `= "![[item_" + this.key + ".png|64]]"`

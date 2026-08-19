@@ -1,7 +1,7 @@
 ---
 key: gem_crystal_orange
 name_EN: Orange crystal
-name_PL: Pomarańczowy krzyształ
+name_PL: Pomarańczowy kryształ
 type: gem
 value: 80
 weight: 2.0
@@ -12,6 +12,6 @@ aliases:
   - gem_crystal_orange
 EN: "[[Orange crystal]]"
 ---
-# Pomarańczowy krzyształ
+# Pomarańczowy kryształ
 
 `= "![[item_" + this.key + ".png|64]]"`
