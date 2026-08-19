@@ -11,7 +11,7 @@ Handoff do implementacji. Dokument samowystarczalny: nie trzeba czytać źróde�
 Wszystkie **15 decyzji zamkniętych**. Kod: **Q-01 … Q-12 zrobione**, Q-10 naszkicowane
 (2026-07-16/17). **Epic domknięty - system questów działa end-to-end w grze.**
 
-Ściągawka autorska: [[quest-cheatsheet.md]] (generowana z kodu, `just quest-cheatsheet`).
+Ściągawka autorska: [[quest-cheatsheet.md]] (generowana z kodu, `just gen-quest-cheatsheet`).
 
 Do przejrzenia przez autora:
 
@@ -65,7 +65,7 @@ Doprecyzowania podjęte przy Q-01 (plan zostawiał je otwarte):
 | D3  | Teksty            | A       | `messages` w `config.json` jak dialogi; `success` bez dziur + auto-etykieta      |
 | D4  | Typy              | A       | Pydantic przy imporcie (desktop), goły dict w runtime (web)                      |
 | D5  | Agregacja         | A       | enum `completion: all_subquests \| test \| manual`                               |
-| D6  | DAG               | B       | `requires: [klucze]` + osobny `parent`; `is_unlocked` znika ze stanu             |
+| D6  | DAG               | B       | `requires: [klucze]` + `requires_test` (warunek o świecie) + osobny `parent`; `is_unlocked` znika ze stanu |
 | D7  | Predykaty DSL     | A       | wąskie, na żądanie; start: `quest_done()`                                        |
 | D8  | `dialog.key`      | A       | `visited(npc, node)` zamiast wyścigu z kursorem                                  |
 | D9  | Postęp            | A       | `eval_number(expr, ctx) -> int`                                                  |
@@ -753,16 +753,16 @@ Q-04 działa na żywym materiale). `config.json` waliduje się Pydantikiem z 8 q
 ### Q-11 · Graf questów w Obsidianie `#S` ✅
 
 **Zrobione 2026-07-17.** Pliki: `scripts/quest_graph.py`, notatka `doc/_graphs/Questy - graf.md`
-+ dane `doc/_graphs/data/QUESTS.json`, task `just quest-graph`, testy
++ dane `doc/_graphs/data/QUESTS.json`, task `just gen-quest-graph`, testy
 `tests/test_quest_graph_script.py` (8, zielone). Graf zweryfikowany renderem w Chromium
 (kod notatki wykonany 1:1, podstawione tylko API Obsidiana) - nie tylko testami.
 
 **Goal:** wizualizacja DAG w vaultcie - narzędzie autorskie i wykrywacz kolejnego `Q01_S07`.
 
-**Plan:** reuse `scripts/dialog_graph.py` (DataviewJS + vis-network, `just dialog-graph`).
+**Plan:** reuse `scripts/dialog_graph.py` (DataviewJS + vis-network, `just gen-dialog-graph`).
 Quest-DAG to ten sam kształt: węzły + krawędzie. Węzły = questy, krawędzie = `requires` + `parent`.
 
-**DoD:** `just quest-graph` generuje graf do `doc/_graphs/`.
+**DoD:** `just gen-quest-graph` generuje graf do `doc/_graphs/`.
 
 **Co faktycznie zostało reużyte:** zwendorowana `_graphs/lib/vis-network.min.js` (ładowana,
 nie kopiowana), konwencja `_graphs/data/`, wzorzec notatki DataviewJS (bootstrap biblioteki,
@@ -813,6 +813,31 @@ plus trzy bugi znalezione po drodze. Commity: `960f048`, `54d1748`, `25fa466`, `
 przeżywa zmianę zlokalizowanej nazwy pliku. `**Requires**:` przyjmuje cztery zapisy, wszystkie
 dają ten sam klucz (tekst po ostatnim `#`, albo cały target gdy `#` nie ma) - szczegóły
 w [[quest-cheatsheet.md]]. **Migracja bezstratna**: `config.json` wyszedł bit w bit identyczny.
+
+**Odblokowanie węzłem dialogu (2026-08-19).** `**Requires**:` przyjmuje też **warunek**
+(rozpoznawany po nawiasach), np. `` `visited(`[[Barman Absyntnent#023]]`)` `` - quest otwiera
+się, kiedy gracz o nim usłyszy. W configu ląduje w osobnym polu `requires_test`, nie na liście
+`requires`: lista jest krawędzią w DAG-u (chodzi po niej kontrola cykli, rysuje ją graf, filtruje
+po niej dziennik), a warunek jest faktem o świecie i żadną krawędzią nie jest. Dlatego
+`quest_done()` w warunku jest **odrzucane** - byłoby krawędzią, której kontrola cykli nie widzi.
+Na grafie (`just gen-quest-graph`) każdy węzeł dialogu wymieniony przez questa - w `Requires`
+**i** w `Test` - dostaje własny sześciokąt: strzałka w quest = rozmowa go odblokowuje, strzałka
+z questa = na tej rozmowie się zamyka, poprzeczka zamiast grotu = `not`, podpis `lub` = alternatywa.
+Struktury boolowskiej graf nie odwzorowuje i nie udaje, że odwzorowuje - pełne wyrażenie zostaje w dymku.
+
+**Układ kolumnowy (2026-08-19).** Graf poszedł z pionu w poziom, a `level` przestał być rangą
+(„najdłuższa ścieżka odblokowań") i stał się **kolumną wyliczaną z roli**:
+`[rozmowa otwierająca] [WĄTEK] [rozmowy z Test wątku] [kroki] [rozmowy z Test kroków]`.
+Powód: ranga rozrzucała kroki jednego wątku po różnych kolumnach (krok czekający na rodzeństwo
+rangował głębiej), więc wątek czytał się jak schody i nie dało się go prześledzić - a wątek
+i jego kroki w jednej kolumnie nakładały krawędzie na siebie. Teraz **wszystkie kroki wątku
+dzielą jedną kolumnę**, a ich kolejność niosą strzałki `requires` między nimi. Pustych slotów
+się nie rezerwuje, a globalnie puste kolumny znikają (`_squeeze`), więc niezależne łańcuchy
+stoją obok siebie zamiast spychać się w prawo.
+Skutki: `is_unlocked()` bierze teraz `ctx` (wymagany, nie domyślny - domyślny znaczyłby „zamknięty"
+albo „otwarty", gdy ktoś zapomni, czyli dokładnie cichy błąd, który D6 usuwa), a `check_quests()`
+przyjmuje `known_unlocked` z poprzedniego przebiegu, bo bramka czytająca świat nie zmienia niczego
+w obrębie jednego przebiegu i quest otworzyłby się bez powiadomienia i bez przeskoku wskaźnika.
 
 **Toasty kolejkują się** zamiast kumulować (`NOTIFICATION_STAGGER`). Kluczowe: życie i animacja
 liczą się od `show_time`, nie `create_time`, więc czekanie nic toasta nie kosztuje. Trzy toasty

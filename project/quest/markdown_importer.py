@@ -115,6 +115,11 @@ class QuestImportError(ValueError):
     def __init__(self, message: str, *, file: str = "", line: int = 0) -> None:
         self.file = file
         self.line = line
+        # The bare message, without the `file:line:` prefix baked into `str(self)`.
+        # The report table wants the location in its own column, and re-splitting
+        # a formatted string to get it back is how a colon in a quest title turns
+        # into a wrong row.
+        self.message = message
         if file and line:
             super().__init__(f"{file}:{line}: {message}")
         elif file:
@@ -239,6 +244,75 @@ _REWARD_CATEGORIES: dict[str, str] = {
 }
 
 
+ERROR = "error"
+WARNING = "warning"
+
+
+@dataclass(slots=True)
+class Diagnostic:
+    """One thing the import wants to say, with somewhere to go and fix it.
+
+    Collected rather than printed the moment it is found. Warnings used to go
+    straight to ``stderr`` from inside the parser, interleaved with whatever else
+    was writing there, each one carrying an absolute path - a wall the author had
+    to read line by line. A list can be sorted, counted and drawn as a table, and
+    the parser stops caring what the output looks like.
+    """
+
+    severity: str
+    source: str  # `PL/Misje/Nazwa.md:16` - vault-relative, which is where the author lives
+    message: str
+
+
+def _source(path: Path, src_dir: Path, line: int = 0) -> str:
+    """``PL/Misje/Q03_S00 ....md:16`` - the path as the author knows it.
+
+    The absolute prefix is the same for every row and says nothing; what
+    identifies the file is the language and the note name.
+    """
+    try:
+        shown = path.resolve().relative_to(src_dir.resolve())
+    except ValueError:
+        shown = path
+    return f"{shown}:{line}" if line else str(shown)
+
+
+def report_diagnostics(diagnostics: list[Diagnostic]) -> None:
+    """Draw the collected diagnostics as one table (same shape as ``just validate-world``).
+
+    Falls back to plain lines when ``rich`` is missing, so the importer still
+    works in a bare environment - the information is the point, the colour is not.
+    """
+    if not diagnostics:
+        return
+
+    # errors first, then by file, so the fix list reads top to bottom
+    rows = sorted(diagnostics, key=lambda d: (d.severity != ERROR, d.source, d.message))
+
+    try:
+        from rich.console import Console
+        from rich.table import Table
+    except ImportError:
+        for diagnostic in rows:
+            print(
+                f"{diagnostic.severity:7} {diagnostic.source}  {diagnostic.message}",
+                file=sys.stderr,
+            )
+        return
+
+    console = Console(stderr=True)
+    table = Table(title="Quest import", header_style="bold", show_lines=False)
+    table.add_column("Severity", no_wrap=True)
+    table.add_column("Source", style="cyan")
+    table.add_column("Problem")
+    for diagnostic in rows:
+        colour = "red" if diagnostic.severity == ERROR else "yellow"
+        table.add_row(
+            f"[{colour}]{diagnostic.severity}[/{colour}]", diagnostic.source, diagnostic.message
+        )
+    console.print(table)
+
+
 @dataclass(slots=True)
 class _ParsedQuest:
     """One quest file, before it becomes config."""
@@ -251,6 +325,7 @@ class _ParsedQuest:
     completion: str = ""
     test: str | None = None
     requires: list[str] = field(default_factory=list)
+    requires_test: str | None = None
     progress: str | None = None
     progress_total: int = 0
     rewards: list[dict[str, Any]] = field(default_factory=list)
@@ -369,7 +444,14 @@ def _expand_expression(
         raise QuestImportError(str(error), file=str(path), line=line_no) from error
 
 
-def _parse_file(path: Path, index: dict[str, str], *, machine_fields: bool) -> _ParsedQuest:
+def _parse_file(
+    path: Path,
+    index: dict[str, str],
+    *,
+    machine_fields: bool,
+    diagnostics: list[Diagnostic],
+    src_dir: Path,
+) -> _ParsedQuest:
     """Parse one quest file.
 
     ``machine_fields`` is False for EN: those fields are read from PL only (D2),
@@ -392,12 +474,21 @@ def _parse_file(path: Path, index: dict[str, str], *, machine_fields: bool) -> _
             continue
 
         if in_notes:
-            if _FIELD_RE.match(line):
-                print(
-                    f"{path}:{line_no}: warning: '{line.split(':', 1)[0]}' sits below a "
-                    f"'##' heading, where the importer stops reading — move it above",
-                    file=sys.stderr,
-                )
+            # Only a name the importer would actually have obeyed is a misplaced
+            # field. `**Wątek śledczy**: ...` matches the field *shape* - bold run,
+            # colon - but so does any sentence an author opens with a bold lead-in,
+            # and `## Notatki` is exactly where those belong. Warning on the shape
+            # meant every notes section that read like prose got scolded, which is
+            # how a warning teaches people to ignore warnings.
+            notes_field = _FIELD_RE.match(line)
+            if notes_field:
+                raw_name = notes_field.group("name").strip()
+                if _FIELD_ALIASES.get(raw_name.casefold()) is not None:
+                    diagnostics.append(Diagnostic(
+                        WARNING, _source(path, src_dir, line_no),
+                        f"'{raw_name}' sits below a '##' heading, where the importer "
+                        f"stops reading - move it above",
+                    ))
             continue
 
         title = _TITLE_RE.match(line)
@@ -411,7 +502,10 @@ def _parse_file(path: Path, index: dict[str, str], *, machine_fields: bool) -> _
 
         field_match = _FIELD_RE.match(line)
         if field_match:
-            _apply_field(quest, field_match, path, line_no, index, machine_fields=machine_fields)
+            _apply_field(
+                quest, field_match, path, line_no, index,
+                machine_fields=machine_fields, diagnostics=diagnostics, src_dir=src_dir,
+            )
             continue
 
         # A blank line is data: it is the author's paragraph break (see
@@ -435,6 +529,8 @@ def _apply_field(
     index: dict[str, str],
     *,
     machine_fields: bool,
+    diagnostics: list[Diagnostic],
+    src_dir: Path,
 ) -> None:
     raw_name = match.group("name").strip()
     value = match.group("value").strip()
@@ -449,11 +545,11 @@ def _apply_field(
         )
 
     if name in _MACHINE_FIELDS and not machine_fields:
-        print(
-            f"{path}:{line_no}: warning: '{raw_name}' is read from the PL file only "
-            f"and is ignored here; quest logic lives in PL (D2)",
-            file=sys.stderr,
-        )
+        diagnostics.append(Diagnostic(
+            WARNING, _source(path, src_dir, line_no),
+            f"'{raw_name}' is read from the PL file only and is ignored here; "
+            f"quest logic lives in PL (D2)",
+        ))
         return
 
     if not value and name != "test":
@@ -469,20 +565,54 @@ def _apply_field(
     elif name == "test":
         quest.test = value or None
     elif name == "requires":
-        quest.requires = _parse_requires(value, index, path, line_no)
+        quest.requires, quest.requires_test = _parse_requires(value, index, path, line_no)
     elif name == "progress":
         quest.progress, quest.progress_total = _parse_progress(value, path, line_no)
     elif name == "reward":
         quest.rewards.append(_parse_reward(value, path, line_no))
 
 
+def _split_top_level(value: str) -> list[str]:
+    """Split on commas that separate items, not on commas *inside* one.
+
+    ``visited(`[[Barman#023]]`)`` holds no comma, but the legacy spelling
+    ``visited("BARMAN", "023")`` holds one, and a plain ``value.split(",")``
+    shatters it into two nonsense halves. Only a comma at bracket depth zero
+    separates - inside ``(...)`` or ``[[...]]`` it belongs to the item.
+
+    The counter does not pair openers with closers - ``)`` closes a ``[`` just as
+    happily. That is deliberate: this only has to find the separators, and every
+    balanced item returns to zero either way. An *unbalanced* item (an author's
+    unclosed paren) swallows the rest of the line into one item, which then fails
+    validation - the right outcome, reached by a slightly confusing route.
+    """
+    items: list[str] = []
+    current: list[str] = []
+    depth = 0
+    for char in value:
+        if char in "([":
+            depth += 1
+        elif char in ")]":
+            depth = max(0, depth - 1)
+        if char == "," and depth == 0:
+            items.append("".join(current))
+            current = []
+            continue
+        current.append(char)
+    items.append("".join(current))
+    return items
+
+
 def _parse_requires(
     value: str, index: dict[str, str], path: Path, line_no: int
-) -> list[str]:
-    """Every spelling of a quest reference -> the bare key.
+) -> tuple[list[str], str | None]:
+    """``Requires`` -> ``(quest keys, unlock condition)``.
 
-    Which spelling an author reaches for is an Obsidian concern, not ours — all
-    of these are the same edge in the graph:
+    One authoring field, two very different things, and the split happens here
+    rather than in the vault because the author should not have to care:
+
+    **A quest reference** is an edge in the DAG. Which spelling they reach for is
+    an Obsidian concern, not ours - all of these are the same edge:
 
     - ``[[Q01_S01 Dowiedz się więcej o klątwie]]`` — by note name, which is what
       Obsidian's autocomplete offers and what the graph view draws.
@@ -494,34 +624,87 @@ def _parse_requires(
     ``init_quests`` as a dangling ``requires`` — which names the offender, and is
     exactly what should happen.
 
-    Several are separated by commas.
+    **A condition** is a fact about the world, recognised by being a call:
+    ``visited(`[[Barman Absyntnent#023]]`)`` opens the quest once the player has
+    heard about it. It is validated here, in the quest scope, so a typo names its
+    line instead of sitting at ``False`` for the whole game. Several conditions
+    on one line are ``and``-ed, each parenthesised - without the brackets a
+    trailing ``or`` would quietly rebind across the join.
+
+    ``quest_done()`` is **refused**: written here it would be a real unlock edge
+    that :func:`quest.graph._validate_acyclic` cannot see, so a dependency cycle
+    would ship silently. The list form is the same statement, and visible.
+
+    Several items are separated by commas - at bracket depth zero, so a comma
+    inside a call stays inside it.
     """
     keys: list[str] = []
-    for raw in value.split(","):
-        item = raw.strip().strip("`").strip()
+    conditions: list[str] = []
+
+    for raw in _split_top_level(value):
+        item = raw.strip()
         if not item:
             continue
 
-        wiki = _WIKI_RE.fullmatch(item)
+        wiki = _WIKI_RE.fullmatch(item.strip("`").strip())
         if wiki:
             target = wiki.group("target").strip()
             anchor = (wiki.group("anchor") or "").strip()
             # A `#`-anchored link named a section back when a file held a whole
             # chain; the anchor is the key, and it still is.
             candidate = anchor or target
-            item = _resolve_entity(candidate, index) or candidate
-        elif "[[" in item or "]]" in item:
+            resolved = _resolve_entity(candidate, index) or candidate
+            if resolved:
+                keys.append(resolved)
+            continue
+
+        if "(" in item:
+            # A call - the only shape a condition can take in the quest scope,
+            # which has no bare value names at all. Checked before the broken
+            # wikilink guard below, because a condition is *full* of `[[`.
+            conditions.append(_parse_requires_condition(item, index, path, line_no))
+            continue
+
+        item = item.strip("`").strip()
+        if "[[" in item or "]]" in item:
             raise QuestImportError(
                 f"requires {item!r} looks like a broken wikilink",
                 file=str(path),
                 line=line_no,
             )
-        else:
-            item = _resolve_entity(item, index) or item
-
         if item:
-            keys.append(item)
-    return keys
+            keys.append(_resolve_entity(item, index) or item)
+
+    if not conditions:
+        return keys, None
+    if len(conditions) == 1:
+        return keys, conditions[0]
+    return keys, " and ".join(f"({condition})" for condition in conditions)
+
+
+def _parse_requires_condition(
+    item: str, index: dict[str, str], path: Path, line_no: int
+) -> str:
+    """One ``Requires`` item that is a condition: expand, validate, refuse edges."""
+    expression = _expand_expression(item, index, path, line_no, label="field 'Requires'")
+    try:
+        validate_condition(expression, ConditionScope.quest)
+    except ConditionError as error:
+        raise QuestImportError(
+            f"Requires condition {expression!r} is invalid: {error}",
+            file=str(path),
+            line=line_no,
+        ) from error
+
+    if _predicate_args(expression, "quest_done"):
+        raise QuestImportError(
+            f"Requires condition {expression!r} uses quest_done(); a dependency "
+            f"between quests belongs in the list form (`**Requires**: "
+            f"[[Q01_S01 ...]]`), where the cycle check can see it",
+            file=str(path),
+            line=line_no,
+        )
+    return expression
 
 
 def _parse_progress(value: str, path: Path, line_no: int) -> tuple[str, int]:
@@ -583,16 +766,31 @@ def _parse_reward(value: str, path: Path, line_no: int) -> dict[str, Any]:
 
 
 def import_quest(
-    src_dir: Path, key: str, vault: VaultIndex | None = None
+    src_dir: Path,
+    key: str,
+    vault: VaultIndex | None = None,
+    diagnostics: list[Diagnostic] | None = None,
 ) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
-    """Import one quest file (PL + EN) into ``(messages, {key: entry})``."""
+    """Import one quest file (PL + EN) into ``(messages, {key: entry})``.
+
+    ``diagnostics`` collects warnings instead of printing them; omit it and they
+    go to ``stderr`` as they always did, which keeps a direct caller (a test, a
+    REPL) from having to care about the report table.
+    """
     vault = build_vault_index(src_dir) if vault is None else vault
+    collected = [] if diagnostics is None else diagnostics
 
     pl_path = _find_quest_file(src_dir, "PL", key)
     en_path = _find_quest_file(src_dir, "EN", key)
 
-    pl_quest = _parse_file(pl_path, vault.keys, machine_fields=True)
-    en_quest = _parse_file(en_path, vault.keys, machine_fields=False)
+    pl_quest = _parse_file(
+        pl_path, vault.keys, machine_fields=True, diagnostics=collected, src_dir=src_dir
+    )
+    en_quest = _parse_file(
+        en_path, vault.keys, machine_fields=False, diagnostics=collected, src_dir=src_dir
+    )
+    if diagnostics is None:
+        _print_diagnostics(collected)
     _validate_parsed(pl_quest, key, pl_path)
     _validate_translation(en_quest, key, en_path)
 
@@ -626,6 +824,8 @@ def import_quest(
         entry["test"] = pl_quest.test
     if pl_quest.requires:
         entry["requires"] = pl_quest.requires
+    if pl_quest.requires_test:
+        entry["requires_test"] = pl_quest.requires_test
     if pl_quest.progress:
         entry["progress"] = pl_quest.progress
         entry["progress_total"] = pl_quest.progress_total
@@ -714,7 +914,7 @@ def _validate_translation(quest: _ParsedQuest, key: str, path: Path) -> None:
 
 
 def import_quests(
-    src_dir: Path, keys: list[str]
+    src_dir: Path, keys: list[str], diagnostics: list[Diagnostic] | None = None
 ) -> tuple[dict[str, dict[str, str]], dict[str, Any]]:
     """Import several quests and merge them, then validate the whole graph.
 
@@ -725,9 +925,10 @@ def import_quests(
     quests: dict[str, Any] = {}
     paths: dict[str, Path] = {}
     vault = build_vault_index(src_dir)
+    collected = [] if diagnostics is None else diagnostics
 
     for key in keys:
-        quest_messages, quest_entry = import_quest(src_dir, key, vault)
+        quest_messages, quest_entry = import_quest(src_dir, key, vault, collected)
         for lang in ("PL", "EN"):
             messages[lang].update(quest_messages[lang])
         if key in quests:
@@ -743,7 +944,19 @@ def import_quests(
     except ValueError as error:
         raise QuestImportError(str(error)) from error
 
+    if diagnostics is None:
+        _print_diagnostics(collected)
     return messages, quests
+
+
+def _print_diagnostics(diagnostics: list[Diagnostic]) -> None:
+    """Plain ``stderr`` lines, for a caller that did not ask to collect them."""
+    for diagnostic in diagnostics:
+        print(
+            f"{diagnostic.source}: {diagnostic.severity}: {diagnostic.message}",
+            file=sys.stderr,
+        )
+    diagnostics.clear()
 
 
 def _predicate_args(expression: str, name: str) -> list[list[str]]:
@@ -781,7 +994,14 @@ def validate_references(
     problems: list[str] = []
 
     for key, quest in quests.items():
-        for label, expression in (("test", quest.get("test")), ("progress", quest.get("progress"))):
+        expressions = (
+            ("test", quest.get("test")),
+            ("progress", quest.get("progress")),
+            # Same reason as `test`: a Requires that names a node nobody defines
+            # is a quest that never unlocks, in silence, forever.
+            ("requires", quest.get("requires_test")),
+        )
+        for label, expression in expressions:
             if not expression:
                 continue
 
@@ -795,9 +1015,14 @@ def validate_references(
                         f"(known: {', '.join(sorted(dialogs)) or 'none'})"
                     )
                 elif node not in dialogs[npc].get("DIALOG_NODES", {}):
+                    # Which way it fails depends on which field named the node: a
+                    # dead `test` is a quest that never closes, a dead `requires`
+                    # is one that never opens. Saying "never complete" for both
+                    # sends the author looking at the wrong half of the file.
+                    doomed = "unlock" if label == "requires" else "complete"
                     problems.append(
                         f"{key}: {label} names node {node!r} of {npc!r}, which does not exist "
-                        f"— the quest could never complete"
+                        f"- the quest could never {doomed}"
                     )
 
             for args in _predicate_args(expression, "quest_done"):
@@ -852,6 +1077,16 @@ def build_quest_config(
     """
     src_dir = src_dir or _DEFAULT_QUEST_SRC
     config_path = config_path or _DEFAULT_CONFIG_PATH
+    # Every warning and the fatal error land in one list and are drawn once, at
+    # the end, as a table. Printing as we go put an absolute path in front of each
+    # line and left the author to spot the one row that actually stopped the build.
+    diagnostics: list[Diagnostic] = []
+
+    def fail(message: str, source: str = "") -> int:
+        diagnostics.append(Diagnostic(ERROR, source, message))
+        report_diagnostics(diagnostics)
+        print("config.json left untouched.", file=sys.stderr)
+        return 1
 
     try:
         if chains is None:
@@ -859,8 +1094,7 @@ def build_quest_config(
         else:
             keys = sorted({k for c in chains for k in _resolve_chain(src_dir, c)})
     except QuestImportError as error:
-        print(f"Quest import failed: {error}", file=sys.stderr)
-        return 1
+        return fail(error.message, _source(Path(error.file), src_dir, error.line) if error.file else "")
 
     if not keys:
         print(f"No quests found under {src_dir} — nothing to import.")
@@ -874,19 +1108,23 @@ def build_quest_config(
         config = json.load(f)
 
     try:
-        messages, quests = import_quests(src_dir, keys)
+        messages, quests = import_quests(src_dir, keys, diagnostics)
     except QuestImportError as error:
-        print(f"Quest import failed: {error}", file=sys.stderr)
-        print("config.json left untouched.", file=sys.stderr)
-        return 1
+        return fail(
+            error.message,
+            _source(Path(error.file), src_dir, error.line) if error.file else "",
+        )
 
     # Cross-section checks: only here is the whole config visible, so only here
     # can we tell that a quest points at a dialog node or item nobody defines.
     problems = validate_references(quests, config.get("dialogs", {}), config.get("items", {}))
     if problems:
-        print(f"Quest import failed: {len(problems)} broken reference(s):", file=sys.stderr)
         for problem in problems:
-            print(f"  {problem}", file=sys.stderr)
+            # `validate_references` speaks in quest keys (it never sees a file);
+            # the key is the note's alias, so it is still the thing to search for.
+            quest_key, _, detail = problem.partition(": ")
+            diagnostics.append(Diagnostic(ERROR, quest_key, detail or problem))
+        report_diagnostics(diagnostics)
         print("config.json left untouched.", file=sys.stderr)
         return 1
 
@@ -916,6 +1154,9 @@ def build_quest_config(
         json.dump(config, f, ensure_ascii=False, indent=4)
         f.write("\n")
 
+    # Warnings only at this point - the import succeeded, so they are drawn after
+    # the write rather than instead of it.
+    report_diagnostics(diagnostics)
     print(f"Imported {len(quests)} quest(s): {', '.join(quests)}")
     print(f"Written: {config_path}")
     return 0
@@ -932,6 +1173,7 @@ if __name__ == "__main__":
 
 __all__ = [
     "MESSAGE_PREFIX",
+    "Diagnostic",
     "QuestImportError",
     "build_vault_index",
     "build_quest_config",
@@ -939,5 +1181,6 @@ __all__ = [
     "discover_quest_keys",
     "import_quest",
     "import_quests",
+    "report_diagnostics",
     "validate_references",
 ]

@@ -87,9 +87,10 @@ Wzorzec `validate-locale` (justfile:274). Dodatkowo:
 2. **Kaskada (decyzja autora):** na KOŃCU recept `import-entities`, `import-dialogs`
    i `import-quests` dopisz wywołanie `just validate-world` - błąd spójności ma
    wychodzić w momencie autorskiej edycji treści, nie w runtime. Walidator jest
-   szybki (< 5 s), więc nie spowalnia pętli pracy. Recept `gen-*` / `dialog-graph` /
-   `quest-graph` NIE ruszaj - to generatory diagnostyczne, czytają config, niczego
-   nie psują.
+   szybki (< 5 s), więc nie spowalnia pętli pracy. Recept `gen-*` NIE ruszaj - to
+   generatory diagnostyczne, czytają config, niczego nie psują. (Od 2026-08-19
+   grafy i ściągawka też są `gen-*`: `gen-dialog-graph`, `gen-quest-graph`,
+   `gen-quest-cheatsheet` - reguła „nie ruszaj `gen-*`" pokrywa je z nazwy.)
 3. Git pre-commit hooka NIE dodajemy (świadoma decyzja: na tym repo pracuje
    równolegle wielu agentów + rtk przechwytuje komendy - hook w tym środowisku
    generuje więcej tarcia niż wartości). Zamiast tego walidacja żyje w `just check`,

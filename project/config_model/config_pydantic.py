@@ -217,6 +217,8 @@ class Quest(BaseModel):
                                          description="Denominator of the progress bar; 0 means no explicit progress")]
     requires:    Annotated[list[str], Field(default_factory=list, repr=False,
                                             description="Quest keys that must be done before this one unlocks (DAG edges)")]  # noqa E501
+    requires_test: Annotated[str | None, Field(None, repr=False,
+                                               description="Mini-DSL condition that must hold before this one unlocks; a fact about the world (`visited(...)`), not a DAG edge")]  # noqa E501
     parent:      Annotated[str | None, Field(None, repr=False,
                                              description="Umbrella quest this one is a subquest of")]
     rewards:     Annotated[list[QuestReward], Field(default_factory=list, repr=False,

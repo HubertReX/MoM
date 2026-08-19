@@ -290,8 +290,8 @@ warstwy `layout`/`render` skryptu są tu pomijane. Reużywane są tylko `read`
 Regeneracja — **po każdej edycji dialogów**, już po `just import-dialogs`:
 
 ```bash
-just dialog-graph            # wszystkie postacie
-just dialog-graph BARMAN_ABSINTHRAYNER   # jedna (dialog_key)
+just gen-dialog-graph            # wszystkie postacie
+just gen-dialog-graph BARMAN_ABSINTHRAYNER   # jedna (dialog_key)
 ```
 
 Pełna instrukcja krok-po-kroku dla autora: `doc/Aktualizacja dialogów - checklist.md`.

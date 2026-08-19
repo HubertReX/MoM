@@ -5,8 +5,12 @@ tags: [graf-questow]
 # Questy - graf
 
 > [!info] Wygenerowane przez `scripts/quest_graph.py` - nie edytuj ręcznie.
+> Czyta się **od lewej do prawej**, kolumnami: rozmowa otwierająca -> wątek -> jego rozmowy -> kroki wątku (jedna kolumna, jeden pod drugim) -> rozmowy kroków. Pustej kolumny nie ma - wątek bez rozmowy otwierającej zaczyna od lewej krawędzi.
 > Klik w węzeł: podświetl sąsiadów. Podwójny klik: otwórz quest w źródłowym pliku.
 > Najedź na węzeł, żeby zobaczyć opis, warunek zamknięcia i nagrody.
+> Sześciokąt to **węzeł dialogu** - podwójny klik prowadzi do kwestii w notatce postaci.
+> Strzałka **w** quest (z lewej): ta rozmowa go odblokowuje (`Requires`). Strzałka **z** questa (w prawo): na tej rozmowie się zamyka (`Test`).
+> Poprzeczka zamiast grotu = warunek zanegowany (`not`), podpis `lub` = wystarczy jedna z rozmów. Pełne wyrażenie jest w dymku questa.
 
 ```dataviewjs
 const KEY = "QUESTS";
@@ -50,6 +54,9 @@ if (!document.getElementById("mom-graph-css")) {
         margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
     .mom-legend span.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px;
         margin-right: 5px; vertical-align: -1px; border: 1px solid; }
+    /* próbka w kształcie węzła, bo to kształt odróżnia dialog od questa, nie kolor */
+    .mom-legend span.sw.hex { border-radius: 0;
+        clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
     .mom-probs { margin-bottom: 8px; padding: 8px 12px; border-radius: 6px; font-size: 12px;
         background: var(--background-modifier-error-hover); border: 1px solid var(--text-error); }
     .mom-probs b { color: var(--text-error); }
@@ -95,6 +102,7 @@ function nodeTip(n) {
     t.append(el("div", "mom-tip-k", n.id));
     t.append(runs("mom-tip-q", n.description_runs, "(brak opisu)"));
     t.append(el("div", "mom-tip-r", `${n.completion}: ${n.completion_text}`));
+    if (n.requires_test) t.append(el("div", "mom-tip-c", `odblokowuje: ${n.requires_test}`));
     if (n.test) t.append(el("div", "mom-tip-c", `test: ${n.test}`));
     if (n.progress) t.append(el("div", "mom-tip-c", `postęp: ${n.progress} / ${n.progress_total}`));
     if (n.rewards.length) t.append(el("div", "mom-tip-r", `nagroda: ${n.rewards.join(" · ")}`));
@@ -103,15 +111,30 @@ function nodeTip(n) {
     return t;
 }
 
+// Węzeł dialogu nie jest questem i nie ma czego zamykać - stąd inny dymek:
+// kto to mówi, co mówi i który wątek się przez to otwiera.
+function dialogTip(n) {
+    const t = el("div", "mom-tip");
+    t.append(el("div", "mom-tip-h", `${n.npc_name} - węzeł ${n.node}`));
+    t.append(el("div", "mom-tip-k", `${n.npc}#${n.node}`));
+    t.append(runs("mom-tip-q", n.text_runs, "(brak kwestii w tym języku)"));
+    if (n.unlocks.length) t.append(el("div", "mom-tip-r", `odblokowuje: ${n.unlocks.join(" · ")}`));
+    if (n.closes.length) t.append(el("div", "mom-tip-r", `zamyka: ${n.closes.join(" · ")}`));
+    if (n.link) t.append(el("div", "mom-tip-hint", "podwójny klik - otwórz dialog w źródle"));
+    return t;
+}
+
 const visNodes = G.nodes.map((n) => ({
     id: n.id,
     level: n.level,
     label: n.name,
-    title: nodeTip(n),
+    title: n.kind === "dialog" ? dialogTip(n) : nodeTip(n),
     color: { background: n.colour.bg, border: n.colour.border },
     borderWidth: n.problem ? 4 : 2,
     shapeProperties: { borderDashes: n.problem ? [6, 4] : false },
-    shape: n.is_thread ? "box" : "ellipse",
+    // Trzy kształty, trzy różne rzeczy: prostokąt = wątek, elipsa = krok,
+    // sześciokąt = węzeł dialogu (w ogóle nie quest).
+    shape: n.kind === "dialog" ? "hexagon" : n.is_thread ? "box" : "ellipse",
     font: { size: 14, face: "var(--font-interface)", color: "#1e1e1e" },
 }));
 
@@ -119,27 +142,49 @@ const visNodes = G.nodes.map((n) => ({
 // Dwie różne bramki, więc dwa różne style - inaczej graf kłamie o tym, co gate'uje co.
 const REQ = "#9aa0a8";
 const PAR = "#0dcaf0";
+const UNL = "#7048e8";
+const CLO = "#0ca678";
+const EDGE_COLOUR = { requires: REQ, parent: PAR, unlocks: UNL, closes: CLO };
+const EDGE_DASH = { requires: false, parent: [2, 4], unlocks: [7, 3], closes: [2, 3] };
+const EDGE_WIDTH = { requires: 1.6, parent: 1, unlocks: 1.8, closes: 1.6 };
+
+// Dwie rzeczy, których "bloczki i linie" nie oddadzą same z siebie, a które
+// zmieniają sens na przeciwny albo prawie:
+//   not  -> grot zmienia się w poprzeczkę (notacja "hamuje", czytelna bez legendy),
+//   or   -> podpis "lub" na krawędzi: wystarczy JEDNA z tych rozmów.
+// Reszta struktury boolowskiej zostaje w dymku questa, w oryginalnym zapisie -
+// diagram, który udaje, że oddaje całe wyrażenie, kłamie dokładnie wtedy, gdy
+// wyrażenie robi się na tyle zawiłe, że warto na nie spojrzeć.
+const edgeNote = (e) => [e.negated ? "nie" : null, e.alt ? "lub" : null]
+    .filter(Boolean).join(" ");
+
 const visEdges = G.edges.map((e, i) => ({
     id: i,
     from: e.from,
     to: e.to,
     kind: e.kind,
-    color: { color: e.kind === "parent" ? PAR : REQ, opacity: 0.85 },
-    dashes: e.kind === "parent" ? [2, 4] : false,
-    width: e.kind === "parent" ? 1 : 1.6,
-    arrows: { to: { enabled: true, scaleFactor: 0.75 } },
-    smooth: { enabled: true, type: "cubicBezier", forceDirection: "vertical", roundness: 0.5 },
+    color: { color: EDGE_COLOUR[e.kind], opacity: 0.85 },
+    dashes: EDGE_DASH[e.kind],
+    width: EDGE_WIDTH[e.kind],
+    label: edgeNote(e) || undefined,
+    // Bez obwódki: etykieta jedzie na canvas, a canvas nie rozwiązuje `var(--...)`,
+    // więc obwódka w kolorze motywu wychodziła czarną plamą zamiast tła. Sam
+    // kolor krawędzi wystarczy - podpis jest krótki i siedzi na swojej linii.
+    font: { size: 12, color: EDGE_COLOUR[e.kind], strokeWidth: 0, align: "middle" },
+    arrows: { to: { enabled: true, scaleFactor: 0.75, type: e.negated ? "bar" : "arrow" } },
+    smooth: { enabled: true, type: "cubicBezier", forceDirection: "horizontal", roundness: 0.5 },
 }));
 
 // -------------------------------------------------------------------- widok
 const bar = box.appendChild(el("div", "mom-bar"));
-const btnLay = bar.appendChild(el("button", null, "Układ: hierarchia"));
+const btnLay = bar.appendChild(el("button", null, "Układ: kolumny"));
 const btnFit = bar.appendChild(el("button", null, "Dopasuj"));
 const btnReset = bar.appendChild(el("button", null, "Odznacz"));
 bar.appendChild(
     el("span", "mom-count",
        `${G.meta.counts.quests} questów, ${G.meta.counts.threads} wątków, ` +
-       `${G.meta.counts.roots} na starcie`)
+       `${G.meta.counts.roots} na starcie` +
+       (G.meta.counts.dialogs ? `, ${G.meta.counts.dialogs} węzłów dialogu` : ""))
 );
 
 const legend = box.appendChild(el("div", "mom-legend"));
@@ -151,8 +196,20 @@ for (const [mode, col] of Object.entries(G.meta.modes)) {
     sw.style.borderColor = col.border;
     item.append(document.createTextNode(LEG_TEXT[mode] ?? mode));
 }
+if (G.meta.counts.dialogs) {
+    const item = legend.appendChild(el("span", null, null));
+    const sw = item.appendChild(el("span", "sw hex"));
+    sw.style.background = G.meta.dialog_colour.bg;
+    sw.style.borderColor = G.meta.dialog_colour.border;
+    item.append(document.createTextNode("węzeł dialogu"));
+}
 legend.append(el("span", null, "──  requires (musi być zrobione)"));
 legend.append(el("span", null, "┄┄  parent (wątek odblokowany)"));
+if (G.meta.counts.dialogs) {
+    legend.append(el("span", null, "╌╌  rozmowa ODBLOKOWUJE quest"));
+    legend.append(el("span", null, "┈┈  quest ZAMYKA się na rozmowie"));
+    legend.append(el("span", null, '⊣  poprzeczka zamiast grotu = "nie"'));
+}
 
 const broken = G.nodes.filter((n) => n.problem);
 
@@ -163,9 +220,17 @@ graphEl.style.height = HEIGHT;
 // sortMethod: "directed" gubił rangi, bo pętle resume tworzą cykle; tu graf jest
 // acyklyczny z walidacji (_validate_acyclic), więc rangi są uczciwe. Poziom liczy
 // Python (najdłuższa ścieżka odblokowań), vis tylko go rysuje.
+// Poziomo, nie pionowo. Kolumnę liczy Python i niesie ją `level` (patrz
+// `columns()`): rozmowa otwierająca, wątek, jego rozmowy, kroki, rozmowy kroków.
+// vis tylko układa - `sortMethod: "directed"` porządkowałby kolumny po swojemu i
+// rozjeżdżał kroki jednego wątku, więc zostaje "hubsize", które szanuje `level`.
+// `levelSeparation` to odstęp MIĘDZY kolumnami, `nodeSpacing` - w pionie, wewnątrz
+// kolumny; przy sześciokątach podpis jedzie pod kształtem, więc pionu trzeba więcej.
 const HIER = {
-    layout: { hierarchical: { enabled: true, direction: "UD", sortMethod: "directed",
-                              levelSeparation: 130, nodeSpacing: 190, treeSpacing: 220 } },
+    layout: { hierarchical: { enabled: true, direction: "LR", sortMethod: "hubsize",
+                              levelSeparation: 260, nodeSpacing: 120, treeSpacing: 170,
+                              blockShifting: true, edgeMinimization: true,
+                              parentCentralization: true } },
     physics: { enabled: false },
 };
 const FREE = {
@@ -211,7 +276,7 @@ function buildNetwork() {
     network = new vis.Network(graphEl, { nodes: nodesDS, edges: edgesDS },
                               { ...BASE, ...(hier ? HIER : FREE) });
     if (hier) {
-        // Hierarchia układa się synchronicznie - nie ma stabilizacji, na którą
+        // Układ kolumnowy powstaje synchronicznie - nie ma stabilizacji, na którą
         // można poczekać, więc stabilizationIterationsDone NIE padnie. Czekanie
         // na nie zostawiało graf niedopasowany, w rogu pustego płótna.
         network.fit(FIT);
@@ -245,7 +310,7 @@ function highlight(id) {
         ? { id: n.id, color: n.color, font: { ...n.font, color: "#1e1e1e" } }
         : { id: n.id, color: DIM_N, font: { ...n.font, color: "#ced4da" } }));
     edgesDS.update(visEdges.map((e) => (e.from === id || e.to === id)
-        ? { id: e.id, color: { color: e.kind === "parent" ? PAR : REQ, opacity: 1 }, width: e.width + 1 }
+        ? { id: e.id, color: { color: EDGE_COLOUR[e.kind], opacity: 1 }, width: e.width + 1 }
         : { id: e.id, color: { color: "#e9ecef", opacity: 0.15 }, width: e.width }));
 }
 
@@ -257,7 +322,7 @@ function clearHighlight() {
 // ------------------------------------------------------------------ toolbar
 btnLay.onclick = () => {
     hier = !hier;
-    btnLay.textContent = `Układ: ${hier ? "hierarchia" : "swobodny"}`;
+    btnLay.textContent = `Układ: ${hier ? "kolumny" : "swobodny"}`;
     buildNetwork();
 };
 btnFit.onclick = () => network.fit({ ...FIT, animation: true });

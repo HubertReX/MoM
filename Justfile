@@ -261,10 +261,10 @@ gen-item-icons *ARGS:
 
 # Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
 [unix]
-dialog-graph *key:
+gen-dialog-graph *key:
     #!/usr/bin/env bash
     # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
-    # (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
+    # (e.g. `just gen-dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
     set -e
     if [ -z "{{key}}" ]; then
         .venv/bin/python scripts/dialog_graph.py --all --format json
@@ -274,10 +274,10 @@ dialog-graph *key:
 
 # Regenerate interactive dialog graphs (DataviewJS + vis-network) in `doc/_graphs/`.
 [windows]
-dialog-graph *key:
+gen-dialog-graph *key:
     #!powershell
     # Run AFTER `just import-dialogs`. No arg = all characters; pass a dialog_key for one
-    # (e.g. `just dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
+    # (e.g. `just gen-dialog-graph BARMAN_ABSINTHRAYNER`). Needs Dataview "Enable JavaScript Queries" in Obsidian.
     if ("{{key}}" -eq "") {
         .venv\Scripts\python.exe scripts\dialog_graph.py --all --format json
     } else {
@@ -286,7 +286,7 @@ dialog-graph *key:
 
 # Regenerate the interactive quest DAG (DataviewJS + vis-network) in `doc/_graphs/`.
 [unix]
-quest-graph:
+gen-quest-graph:
     # Run AFTER `just import-quests`: the graph is built from config.json, so it shows
     # what the game sees. One note for every chain - the edges that matter cross them.
     # Needs Dataview "Enable JavaScript Queries" in Obsidian.
@@ -294,7 +294,7 @@ quest-graph:
 
 # Regenerate the interactive quest DAG (DataviewJS + vis-network) in `doc/_graphs/`.
 [windows]
-quest-graph:
+gen-quest-graph:
     # Run AFTER `just import-quests`: the graph is built from config.json, so it shows
     # what the game sees. One note for every chain - the edges that matter cross them.
     # Needs Dataview "Enable JavaScript Queries" in Obsidian.
@@ -303,14 +303,14 @@ quest-graph:
 
 # Regenerate the quest authoring cheat sheet at `doc/quest-cheatsheet.md`.
 [unix]
-quest-cheatsheet:
+gen-quest-cheatsheet:
     # Everything in it is derived from the code (enums, condition whitelist, validators),
     # so run it after changing any of them - a hand-kept cheat sheet lies with authority.
     .venv/bin/python scripts/gen_quest_cheatsheet.py
 
 # Regenerate the quest authoring cheat sheet at `doc/quest-cheatsheet.md`.
 [windows]
-quest-cheatsheet:
+gen-quest-cheatsheet:
     #!powershell
     .venv\Scripts\python.exe scripts\gen_quest_cheatsheet.py
 

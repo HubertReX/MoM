@@ -76,12 +76,12 @@ def test_only_the_opening_quest_is_unlocked_at_start() -> None:
     """A fresh game exposes exactly one thread head, not eight tasks."""
     defs, state = _defs(), QuestState()
 
-    assert_eq(unlocked_keys(defs, state), {Q00}, "only Q00 is open at the start")
+    assert_eq(unlocked_keys(defs, state, _ctx()), {Q00}, "only Q00 is open at the start")
 
     # Q01_S01 has no `requires` of its own — it is gated purely by its parent
     # thread, which is gated by Q00. Without the parent gate it would be live now.
-    assert_true(not is_unlocked(defs, state, Q01_S01), "curse step gated by its thread")
-    assert_true(not is_unlocked(defs, state, Q03_S01), "Q03 step gated by its thread")
+    assert_true(not is_unlocked(defs, state, _ctx(), Q01_S01), "curse step gated by its thread")
+    assert_true(not is_unlocked(defs, state, _ctx(), Q03_S01), "Q03 step gated by its thread")
 
 
 def test_finishing_the_opening_quest_opens_the_curse_thread() -> None:
@@ -93,13 +93,13 @@ def test_finishing_the_opening_quest_opens_the_curse_thread() -> None:
     assert_eq(result.newly_done, [Q00], "Q00 completed")
     assert_true(state.is_done(Q00), "state updated")
     # the umbrella and its first step are now reachable
-    assert_true(is_unlocked(defs, state, Q01_S00), "curse umbrella unlocked")
-    assert_true(is_unlocked(defs, state, Q01_S01), "first curse step unlocked")
+    assert_true(is_unlocked(defs, state, _ctx(), Q01_S00), "curse umbrella unlocked")
+    assert_true(is_unlocked(defs, state, _ctx(), Q01_S01), "first curse step unlocked")
     assert_true(Q01_S00 in result.newly_unlocked, "umbrella reported as newly unlocked")
     assert_true(Q01_S01 in result.newly_unlocked, "step reported as newly unlocked")
     # ...but Q01_S02 waits on S01, and the Q03 thread waits on S01 too
-    assert_true(not is_unlocked(defs, state, Q01_S02), "Sarcasmia still gated")
-    assert_true(not is_unlocked(defs, state, Q03_S00), "Q03 thread still gated")
+    assert_true(not is_unlocked(defs, state, _ctx(), Q01_S02), "Sarcasmia still gated")
+    assert_true(not is_unlocked(defs, state, _ctx(), Q03_S00), "Q03 thread still gated")
 
 
 def test_cascade_completes_a_chain_in_one_sweep() -> None:
@@ -119,8 +119,8 @@ def test_cascade_completes_a_chain_in_one_sweep() -> None:
     # Q01_S01 unlocked and completed within the sweep -> reported as done, not as unlocked
     assert_true(Q01_S01 not in result.newly_unlocked, "no 'you may now start' for a finished quest")
     # and its completion opened the next two things
-    assert_true(is_unlocked(defs, state, Q03_S00), "Q03 thread opened by the cascade")
-    assert_true(is_unlocked(defs, state, Q01_S02), "Sarcasmia opened by the cascade")
+    assert_true(is_unlocked(defs, state, _ctx(), Q03_S00), "Q03 thread opened by the cascade")
+    assert_true(is_unlocked(defs, state, _ctx(), Q01_S02), "Sarcasmia opened by the cascade")
     assert_true(Q03_S00 in result.newly_unlocked, "reported as newly unlocked")
 
     # a second sweep with nothing new is quiet
@@ -253,6 +253,77 @@ def _expect_value_error(fn, msg: str) -> None:  # type: ignore[no-untyped-def]
     raise AssertionError(f"expected ValueError: {msg}")
 
 
+def test_a_requires_test_gates_the_unlock() -> None:
+    """A quest can be gated on the *world*: opened by a conversation, not by
+    another quest closing."""
+    heard = {
+        "Q_TOLD": {
+            **_msgs("Q_TOLD"), "completion": "manual",
+            "requires_test": 'visited("CLAPBACK_SWORD", "015")',
+        },
+    }
+    defs, state = init_quests(heard), QuestState()  # type: ignore[arg-type]
+
+    assert_true(
+        not is_unlocked(defs, state, _ctx(), "Q_TOLD"),
+        "shut while the player has not heard about it",
+    )
+    assert_true(
+        is_unlocked(defs, state, _ctx(CLAPBACK), "Q_TOLD"),
+        "open the moment they have",
+    )
+
+
+def test_both_requires_gates_must_pass() -> None:
+    """The list and the condition are `and`, not `or` - either one can hold it shut."""
+    both = {
+        "Q_FIRST": {**_msgs("Q_FIRST"), "completion": "manual"},
+        "Q_SECOND": {
+            **_msgs("Q_SECOND"), "completion": "manual",
+            "requires": ["Q_FIRST"],
+            "requires_test": 'visited("CLAPBACK_SWORD", "015")',
+        },
+    }
+    defs = init_quests(both)  # type: ignore[arg-type]
+
+    told = _ctx(CLAPBACK)
+    assert_true(
+        not is_unlocked(defs, QuestState(), told, "Q_SECOND"),
+        "heard about it, but the prerequisite quest is not done",
+    )
+
+    done = QuestState()
+    done.mark_done("Q_FIRST")
+    assert_true(
+        not is_unlocked(defs, done, _ctx(), "Q_SECOND"),
+        "prerequisite done, but nobody has mentioned it",
+    )
+    assert_true(is_unlocked(defs, done, told, "Q_SECOND"), "both gates open")
+
+
+def test_a_world_driven_unlock_is_reported_once() -> None:
+    """The gate reads the world, so a baseline taken inside the same sweep would
+    equal the one at its end and the quest would open in silence - and the HUD,
+    which only recomputes on a truthy result, would keep pointing elsewhere."""
+    heard = {
+        "Q_TOLD": {
+            **_msgs("Q_TOLD"), "completion": "manual",
+            "requires_test": 'visited("CLAPBACK_SWORD", "015")',
+        },
+    }
+    defs, state = init_quests(heard), QuestState()  # type: ignore[arg-type]
+
+    quiet = check_quests(defs, state, _ctx())
+    assert_eq(quiet.newly_unlocked, [], "nothing opens before the conversation")
+    assert_eq(quiet.unlocked, set(), "and nothing is open")
+
+    opened = check_quests(defs, state, _ctx(CLAPBACK), quiet.unlocked)
+    assert_eq(opened.newly_unlocked, ["Q_TOLD"], "the conversation opened it")
+
+    again = check_quests(defs, state, _ctx(CLAPBACK), opened.unlocked)
+    assert_true(not again, "and it is announced once, not every sweep")
+
+
 def test_dependency_cycles_fail_loudly() -> None:
     """A cycle is a deadlock in play and infinite recursion in is_unlocked."""
     two = {
@@ -314,6 +385,9 @@ def main() -> None:
         test_locked_quests_are_not_even_evaluated,
         test_progress_counts_umbrella_children,
         test_progress_from_an_explicit_expression,
+        test_a_requires_test_gates_the_unlock,
+        test_both_requires_gates_must_pass,
+        test_a_world_driven_unlock_is_reported_once,
         test_dependency_cycles_fail_loudly,
         test_umbrella_and_children_are_not_a_cycle,
         test_engine_rejects_hand_built_nonsense,

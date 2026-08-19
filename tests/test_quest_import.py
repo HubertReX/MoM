@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
 
 from quest.markdown_importer import (
     MESSAGE_PREFIX,
+    Diagnostic,
     QuestImportError,
     build_quest_config,
     import_quests,
@@ -701,6 +702,179 @@ def test_every_requires_spelling_means_the_same_edge() -> None:
             assert_eq(quests[Q03_S00]["requires"], [Q00], f"same edge: {spelling}")
 
 
+def test_requires_accepts_a_dialog_node_condition() -> None:
+    """A quest can open because the player *heard* about it, not only because
+    another quest closed. The condition goes in the same `Requires` field."""
+    source = Q03_S00_PL.replace(
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]",
+        "**Requires**: `visited(`[[Miecz Cietej-riposty#015-end|Miecz#015-end]]`)`",
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _character_vault(
+            Path(tmp), **{"PL/Misje/Q03_S00 Znajdz kogos kto wie o klatwach.md": source}
+        )
+        _, quests = import_quests(vault, ALL_KEYS)
+
+    assert_eq(
+        quests[Q03_S00]["requires_test"],
+        'visited("CLAPBACK_SWORD", "015")',
+        "the wikilink became the character key and the node",
+    )
+    assert_true(
+        "requires" not in quests[Q03_S00],
+        "a condition is not a quest edge and must not land in the list",
+    )
+
+
+def test_requires_mixes_a_link_and_a_condition() -> None:
+    """Both halves of one line, each into the field that can carry it."""
+    source = Q03_S00_PL.replace(
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]",
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]], "
+        "`visited(`[[Miecz Cietej-riposty#015-end|Miecz#015-end]]`)`",
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _character_vault(
+            Path(tmp), **{"PL/Misje/Q03_S00 Znajdz kogos kto wie o klatwach.md": source}
+        )
+        _, quests = import_quests(vault, ALL_KEYS)
+
+    assert_eq(quests[Q03_S00]["requires"], [Q00], "the link stayed a DAG edge")
+    assert_eq(
+        quests[Q03_S00]["requires_test"],
+        'visited("CLAPBACK_SWORD", "015")',
+        "and the condition stayed a condition",
+    )
+
+
+def test_two_requires_conditions_are_anded_with_brackets() -> None:
+    """Without the brackets a trailing `or` would rebind across the join."""
+    source = Q03_S00_PL.replace(
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]",
+        "**Requires**: `visited(`[[Miecz Cietej-riposty#015-end]]`)`, "
+        "`visited(`[[Zielarka Zmora#014]]`) or has_item(\"MERMAIDS_TEAR\")`",
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _character_vault(
+            Path(tmp), **{"PL/Misje/Q03_S00 Znajdz kogos kto wie o klatwach.md": source}
+        )
+        _, quests = import_quests(vault, ALL_KEYS)
+
+    assert_eq(
+        quests[Q03_S00]["requires_test"],
+        '(visited("CLAPBACK_SWORD", "015")) and '
+        '(visited("POTIONEER_PUZZLEMINT", "014") or has_item("MERMAIDS_TEAR"))',
+        "both conditions survive, each in its own bracket",
+    )
+
+
+def test_a_legacy_bare_condition_in_requires_is_not_split_on_its_comma() -> None:
+    """`visited("NPC", "015")` holds a comma that separates *arguments*, not items."""
+    source = Q03_S00_PL.replace(
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]",
+        '**Requires**: `visited("CLAPBACK_SWORD", "015")`',
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _character_vault(
+            Path(tmp), **{"PL/Misje/Q03_S00 Znajdz kogos kto wie o klatwach.md": source}
+        )
+        _, quests = import_quests(vault, ALL_KEYS)
+
+    assert_eq(
+        quests[Q03_S00]["requires_test"],
+        'visited("CLAPBACK_SWORD", "015")',
+        "the call stayed one item",
+    )
+
+
+def test_an_invalid_requires_condition_fails_the_import() -> None:
+    """Quest scope: `visited` must name a character, so the 1-arg form is refused."""
+    source = Q03_S00_PL.replace(
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]",
+        '**Requires**: `visited("015")`',
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _character_vault(
+            Path(tmp), **{"PL/Misje/Q03_S00 Znajdz kogos kto wie o klatwach.md": source}
+        )
+        _expect_import_error(
+            lambda: import_quests(vault, ALL_KEYS),
+            "Requires condition",
+            "a condition the quest scope rejects",
+        )
+
+
+def test_quest_done_in_requires_is_refused() -> None:
+    """It would be an unlock edge the cycle check cannot see - use the list."""
+    source = Q03_S00_PL.replace(
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]",
+        '**Requires**: `quest_done("Q00_S00_WHAT_IS_GOING_ON")`',
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _character_vault(
+            Path(tmp), **{"PL/Misje/Q03_S00 Znajdz kogos kto wie o klatwach.md": source}
+        )
+        _expect_import_error(
+            lambda: import_quests(vault, ALL_KEYS),
+            "quest_done()",
+            "a quest dependency hidden in a condition",
+        )
+
+
+def test_a_requires_condition_naming_a_dead_node_fails_the_build() -> None:
+    """The `SARCASMIA_AA_BACK_SO_SOON` failure mode, on the unlock side: a quest
+    that could never *open*, silently, for the whole game."""
+    source = Q03_S00_PL.replace(
+        "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]",
+        '**Requires**: `visited("CLAPBACK_SWORD", "999")`',
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _character_vault(
+            Path(tmp), **{"PL/Misje/Q03_S00 Znajdz kogos kto wie o klatwach.md": source}
+        )
+        config_path = vault / "config.json"
+        config_path.write_text(json.dumps(_fixture_config()), encoding="utf-8")
+        before = config_path.read_text(encoding="utf-8")
+
+        rc = build_quest_config(src_dir=vault, config_path=config_path)
+
+        assert_eq(rc, 1, "the build refused")
+        assert_eq(config_path.read_text(encoding="utf-8"), before, "config.json untouched")
+
+
+def test_bold_prose_under_the_notes_heading_is_not_a_misplaced_field() -> None:
+    """`**Wątek śledczy**: ...` is a sentence, not a field.
+
+    The warning used to fire on the *shape* (bold run, colon), so every notes
+    section written in prose got scolded - which is how a warning teaches its
+    reader to skip warnings. Only a name the importer would have obeyed counts.
+    """
+    prose = Q00_PL + "\n## Notatki\n\n**Watek sledczy**: kto sie zna, gdzie jej szukac.\n"
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _full_vault(Path(tmp), **{"PL/Misje/Q00_S00 O co tu chodzi.md": prose})
+        diagnostics: list[Diagnostic] = []
+        import_quests(vault, ALL_KEYS, diagnostics)
+
+    assert_eq(diagnostics, [], "prose in the notes says nothing")
+
+
+def test_a_real_field_under_the_notes_heading_still_warns() -> None:
+    """The other half of the same rule: a name that *is* a field is a mistake."""
+    late = Q00_PL + "\n## Notatki\n\n**Nagroda**: `add_money(999)`\n"
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = _full_vault(Path(tmp), **{"PL/Misje/Q00_S00 O co tu chodzi.md": late})
+        diagnostics: list[Diagnostic] = []
+        import_quests(vault, ALL_KEYS, diagnostics)
+
+    assert_eq(len(diagnostics), 1, "exactly one warning")
+    assert_eq(diagnostics[0].severity, "warning", "it is a warning, not a failure")
+    assert_true("Nagroda" in diagnostics[0].message, "it names the field")
+    assert_true(
+        diagnostics[0].source.startswith("PL/Misje/"),
+        f"the source is vault-relative, got {diagnostics[0].source!r}",
+    )
+
+
 def test_a_broken_wikilink_in_requires_fails() -> None:
     source = Q03_S00_PL.replace(
         "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON]]", "**Requires**: [[Q00_S00_WHAT_IS_GOING_ON"
@@ -943,6 +1117,15 @@ def main() -> None:
         test_a_file_without_a_key_is_not_a_quest,
         test_every_requires_spelling_means_the_same_edge,
         test_a_broken_wikilink_in_requires_fails,
+        test_requires_accepts_a_dialog_node_condition,
+        test_requires_mixes_a_link_and_a_condition,
+        test_two_requires_conditions_are_anded_with_brackets,
+        test_a_legacy_bare_condition_in_requires_is_not_split_on_its_comma,
+        test_an_invalid_requires_condition_fails_the_import,
+        test_quest_done_in_requires_is_refused,
+        test_a_requires_condition_naming_a_dead_node_fails_the_build,
+        test_bold_prose_under_the_notes_heading_is_not_a_misplaced_field,
+        test_a_real_field_under_the_notes_heading_still_warns,
         test_the_qxx_shorthand_resolves_at_the_cli,
         test_build_writes_config_and_leaves_dialogs_alone,
         test_failed_import_leaves_config_untouched,

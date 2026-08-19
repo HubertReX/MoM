@@ -28,11 +28,11 @@ z nazwą - jedną (`just import-dialogs "Barman Absyntnent"`).
 ## 4. Przegeneruj grafy
 
 ```bash
-just dialog-graph
+just gen-dialog-graph
 ```
 
 Bez argumentu - wszystkie postacie; z `dialog_key` - jedna
-(`just dialog-graph BARMAN_ABSINTHRAYNER`). Zapisuje notatki do `doc/_graphs/`.
+(`just gen-dialog-graph BARMAN_ABSINTHRAYNER`). Zapisuje notatki do `doc/_graphs/`.
 
 ## 5. Sprawdź graf w Obsidianie
 

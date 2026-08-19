@@ -43,18 +43,29 @@ class QuestCheckResult:
 
     newly_done: list[str] = field(default_factory=list)
     newly_unlocked: list[str] = field(default_factory=list)
+    unlocked: set[str] = field(default_factory=set, repr=False)
+    """Everything open at the end of the sweep - feed it back in as
+    ``known_unlocked`` next time so a world-driven unlock is not missed."""
 
     def __bool__(self) -> bool:
         """True when the sweep changed anything worth reacting to."""
         return bool(self.newly_done or self.newly_unlocked)
 
 
-def is_unlocked(defs: dict[str, QuestDef], state: QuestState, key: str) -> bool:
+def is_unlocked(
+    defs: dict[str, QuestDef],
+    state: QuestState,
+    ctx: ConditionContext,
+    key: str,
+) -> bool:
     """Can the player work on ``key`` right now?
 
-    Two gates, both derived (D6):
+    Three gates, all derived (D6):
 
     - every quest in ``requires`` is done;
+    - ``requires_test``, if any, is true of the world right now - this is how a
+      quest opens because the player *heard about it*
+      (``visited(BARMAN, "023")``) rather than because another quest closed;
     - the parent thread, if any, is itself unlocked.
 
     The parent gate is what makes a subquest part of a *thread* rather than a
@@ -67,19 +78,30 @@ def is_unlocked(defs: dict[str, QuestDef], state: QuestState, key: str) -> bool:
     an ``all_subquests`` umbrella is only done once its children are, so gating
     children on a done parent would deadlock the pair.
 
+    ``ctx`` is required rather than defaulting to ``None``. A default would have
+    to mean either "locked" or "unlocked" whenever a caller forgot to pass one,
+    and both readings are a quest that is silently wrong for the rest of the
+    game - the exact failure mode D6 exists to remove.
+
     Safe to recurse: ``init_quests`` rejects cycles in the requires/parent graph.
     """
     quest = defs[key]
     if not all(state.is_done(required) for required in quest.requires):
         return False
-    if quest.parent is not None and not is_unlocked(defs, state, quest.parent):
+    if quest.requires_test and not check_condition(
+        quest.requires_test, ctx, ConditionScope.quest
+    ):
+        return False
+    if quest.parent is not None and not is_unlocked(defs, state, ctx, quest.parent):
         return False
     return True
 
 
-def unlocked_keys(defs: dict[str, QuestDef], state: QuestState) -> set[str]:
+def unlocked_keys(
+    defs: dict[str, QuestDef], state: QuestState, ctx: ConditionContext
+) -> set[str]:
     """Every quest currently unlocked, done or not."""
-    return {key for key in defs if is_unlocked(defs, state, key)}
+    return {key for key in defs if is_unlocked(defs, state, ctx, key)}
 
 
 def is_complete(
@@ -120,6 +142,7 @@ def check_quests(
     defs: dict[str, QuestDef],
     state: QuestState,
     ctx: ConditionContext,
+    known_unlocked: set[str] | None = None,
 ) -> QuestCheckResult:
     """Complete every quest that has become completable; mutate ``state``.
 
@@ -129,10 +152,22 @@ def check_quests(
     nothing, rather than settling for one pass and leaving B to be caught a
     second later by the sweep.
 
+    ``known_unlocked`` is what the caller believes was already open - the set
+    this function returned through :attr:`QuestCheckResult.unlocked` last time.
+    Passing it is what makes a ``requires_test`` unlock visible at all: that gate
+    reads the *world*, so a quest opened by a conversation changes nothing inside
+    this call, and a baseline measured at the top of the same sweep would equal
+    the one measured at the bottom - the quest would open in total silence, and
+    the HUD (which only recomputes when this result is truthy) would keep
+    pointing at the previous step. Omit it and the baseline is this sweep's own
+    start, i.e. only quest-completion unlocks are reported.
+
     Returns what changed, so the caller can raise toasts (Q-09) without
     diffing state itself.
     """
-    unlocked_before = unlocked_keys(defs, state)
+    unlocked_before = (
+        unlocked_keys(defs, state, ctx) if known_unlocked is None else known_unlocked
+    )
     newly_done: list[str] = []
 
     # Every pass either marks at least one quest done or breaks, and a done quest
@@ -144,7 +179,7 @@ def check_quests(
         for key in defs:
             if state.is_done(key):
                 continue
-            if not is_unlocked(defs, state, key):
+            if not is_unlocked(defs, state, ctx, key):
                 continue
             if is_complete(defs, state, ctx, key):
                 state.mark_done(key)
@@ -157,7 +192,7 @@ def check_quests(
             f"quest cascade did not stabilise after {len(defs) + 1} passes"
         )
 
-    unlocked_after = unlocked_keys(defs, state)
+    unlocked_after = unlocked_keys(defs, state, ctx)
     # A quest that unlocked and completed in the same sweep is reported as done
     # only: telling the player they can now start something they just finished is
     # noise.
@@ -167,7 +202,7 @@ def check_quests(
         if key in unlocked_after and key not in unlocked_before and not state.is_done(key)
     ]
 
-    return QuestCheckResult(newly_done, newly_unlocked)
+    return QuestCheckResult(newly_done, newly_unlocked, unlocked_after)
 
 
 def quest_progress(

@@ -13,7 +13,7 @@ a szablon z aliasem zostałby wzięty za prawdziwy łańcuch.
 
 Użycie::
 
-    just quest-cheatsheet
+    just gen-quest-cheatsheet
     .venv/bin/python scripts/gen_quest_cheatsheet.py --out /tmp/sciagawka.md
 """
 
@@ -250,6 +250,17 @@ def render(out_path: Path) -> str:
             ["`Q01_S01_LEARN_ABOUT_CURSE`", "goły klucz, dalej działa"],
         ],
     )
+    requires_condition_table = table(
+        ["Zapis", "Znaczy"],
+        [
+            ["`` `visited(`[[Barman Absyntnent#023]]`)` ``",
+             "quest otwiera się, gdy gracz **odwiedził węzeł 023** w dialogu Barmana"],
+            ["`` `has_item(`[[Łza Syrenki]]`)` ``",
+             "gdy gracz ma przedmiot - dowolny warunek z whitelisty zasięgu `quest`"],
+            ["`` `not visited(`[[Barman Absyntnent#023]]`)` ``",
+             "operatory (`not`, `and`, `or`, porównania) działają tak samo, jak w `Test`"],
+        ],
+    )
 
     return f"""---
 tags: [sciagawka, questy]
@@ -257,7 +268,7 @@ tags: [sciagawka, questy]
 
 # Questy - ściągawka
 
-> [!warning] Wygenerowane przez `scripts/gen_quest_cheatsheet.py` (`just quest-cheatsheet`).
+> [!warning] Wygenerowane przez `scripts/gen_quest_cheatsheet.py` (`just gen-quest-cheatsheet`).
 > Nie edytuj ręcznie - wszystko poniżej jest wyprowadzone z kodu (enumy, whitelista warunków, walidatory), więc nie może rozjechać się z tym, co robi import i silnik.
 
 > [!important] Kolejność kluczy jest kolejnością podpowiadaną graczowi
@@ -344,6 +355,25 @@ Można wymienić kilka naraz, **po przecinku**.
 
 `Requires` to jedyne miejsce, w którym zapisuje się **kolejność kroków w wątku**: parasol bierze się z klucza, ale to, czy kroki idą po kolei, czy równolegle, wynika wyłącznie stąd.
 
+### Odblokowanie węzłem dialogu
+
+W tym samym polu można napisać **warunek** zamiast (albo obok) linku do questa. Rozpoznaje się go po tym, że jest **wywołaniem** - ma nawiasy:
+
+{requires_condition_table}
+
+Tak zapisuje się „quest pojawia się, kiedy gracz o nim usłyszy": dopóki rozmowa się nie odbyła, questa nie ma nawet w dzienniku.
+
+Warunek jest sprawdzany **na żywo**, przy każdym pytaniu „czy odblokowany?", i sprawdza go ta sama whitelista, co `Test` (zasięg `quest`, więc `visited` **musi** wskazywać postać - a wskazuje ją wikilink). Literówka w nazwie węzła to błąd importu, nie cichy `False` do końca gry.
+
+Kilka pozycji nadal rozdziela się przecinkiem i można je mieszać - warunki łączą się przez `and`, a linki do questów zostają osobną listą:
+
+```markdown
+**Requires**: [[Q01_S01 Dowiedz się więcej o klątwie]], `visited(`[[Barman Absyntnent#023]]`)`
+```
+
+> [!warning] `quest_done()` w `Requires` jest odrzucane
+> Zależność od innego questa **musi** być linkiem na liście. Schowana w warunku byłaby krawędzią odblokowania, której nie widzi kontrola cykli przy imporcie - i zakleszczenie dwóch questów weszłoby do gry po cichu. Ten sam sens, widoczny zapis.
+
 ## Completion - kiedy quest się zamyka
 
 {_completion_table()}
@@ -355,7 +385,7 @@ Odrzucane przy imporcie (`just import-quests`):
 - `manual` **z** `Test:` - test nigdy by nie wystartował.
 
 > [!tip] `manual` to obietnica do dotrzymania w kodzie
-> Nic w configu nie zamknie questa `manual`. Jeśli nikt nie woła `mark_done`, wątek zostaje otwarty na zawsze. `just quest-graph` wypisuje takie questy wprost.
+> Nic w configu nie zamknie questa `manual`. Jeśli nikt nie woła `mark_done`, wątek zostaje otwarty na zawsze. `just gen-quest-graph` wypisuje takie questy wprost.
 
 ## Test - kiedy quest jest ukończony
 
@@ -440,10 +470,35 @@ Emotki wstawia się jako `:nazwa:` - pełen arkusz z kluczami:
 
 ```bash
 just import-quests  # importuje wszystkie łańcuchy do config.json; Qxx albo pełny klucz = tylko ten jeden
-just quest-graph    # generuje graf w doc/_graphs/
+just gen-quest-graph    # generuje graf w doc/_graphs/
 ```
 
 Import działa na zasadzie **wszystko albo nic**: quest, który się nie zaimportuje, to quest, którego nie ma w grze - więc `config.json` zostaje nietknięty, a błąd wskazuje plik i linię.
+
+### Czego szukać na grafie
+
+Graf czyta się **od lewej do prawej**, kolumnami:
+
+```text
+[rozmowa otwierająca]  [WĄTEK]  [rozmowy z Test wątku]  [kroki wątku]  [rozmowy z Test kroków]
+     sześciokąt        prostokąt      sześciokąty       owale, jeden      sześciokąty
+                                                         pod drugim
+```
+
+Pustych kolumn nie ma: wątek bez rozmowy otwierającej zaczyna od lewej krawędzi, a parasol bez własnego `Test` (czyli zwykły `all_subquests`) ma kroki w następnej kolumnie. Wątek, który czeka na inny łańcuch, zaczyna się za jego prawym skrajem - dzięki temu `requires` zawsze biegnie w prawo.
+
+**Wszystkie kroki jednego wątku stoją w jednej kolumnie**, jeden pod drugim; ich kolejność niosą szare strzałki `requires` między nimi. To jest ta jedna rzecz, która pozwala prześledzić wątek wzrokiem.
+
+Sześciokąty pokazują obie strony rozmowy:
+
+- strzałka **w** quest z lewej (fioletowa): ta rozmowa go **odblokowuje** (`Requires`),
+- strzałka **z** questa w prawo (zielona): na tej rozmowie quest **się zamyka** (`Test`),
+- **poprzeczka** zamiast grotu: warunek zanegowany (`not`),
+- podpis **`lub`**: wystarczy jedna z tych rozmów, nie wszystkie.
+
+W prawo znaczy później, więc cały obrazek skanuje się jak kolejność rozgrywki. Podwójny klik w sześciokąt otwiera kwestię w notatce postaci - to najszybszy sposób sprawdzenia, czy quest wisi na węźle, który faktycznie da się osiągnąć.
+
+Pełnego wyrażenia graf nie oddaje (i nie próbuje): zagnieżdżone `and`/`or` zostają w dymku questa, w oryginalnym zapisie.
 """
 
 

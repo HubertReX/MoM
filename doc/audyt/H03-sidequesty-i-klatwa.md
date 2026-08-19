@@ -341,8 +341,8 @@ Nowa mapa oznacza komplet: klucz `SCREAMING_SNAKE`, para plików `.md` PL i EN w
 ## Kryteria akceptacji
 
 - `just import-dialogs`, `just import-quests`, `just import-entities` przechodzą bez błędów; `just validate-world` - 0 błędów
-- `just quest-graph` nie pokazuje questa `manual` bez kodu, który go domyka, ani parasola bez kroków (obie klasy błędów walidator odrzuca przy imporcie)
-- `just dialog-graph` po imporcie - graf bez wiszących referencji i bez sierot
+- `just gen-quest-graph` nie pokazuje questa `manual` bez kodu, który go domyka, ani parasola bez kroków (obie klasy błędów walidator odrzuca przy imporcie)
+- `just gen-dialog-graph` po imporcie - graf bez wiszących referencji i bez sierot
 - każdy z siedmiu questów **da się ukończyć headless** przez `agent_ctrl` (skrypt przechodzący dialogi i sprawdzający `quest_state`) - bez tego łańcuch może być nieprzechodni i nikt się nie dowie
 - wskaźnik questa na HUD (H01) pokazuje sensowny krok na każdym etapie każdego łańcucha
 - **weryfikacja u autora**: czy to jest śmieszne. Tego nie da się zautomatyzować i nie ma sensu udawać, że się da

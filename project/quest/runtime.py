@@ -63,7 +63,7 @@ class QuestRuntime:
     Scene is.
     """
 
-    __slots__ = ("scene", "defs", "ctx", "_sweep_timer", "_sink_factory")
+    __slots__ = ("scene", "defs", "ctx", "_sweep_timer", "_sink_factory", "_unlocked")
 
     def __init__(self, scene: "Scene", sink_factory: Callable[[], ResultSink] | None = None) -> None:
         self.scene = scene
@@ -72,6 +72,13 @@ class QuestRuntime:
         self.defs: dict[str, QuestDef] = init_quests(quest_config(scene.game.conf))
         self.ctx = QuestConditionContext(scene)
         self._sweep_timer: float = 0.0
+        # Co gra już uznaje za otwarte. NIE jest to stan zapisu (D6 - „odblokowany"
+        # nadal się wylicza), tylko pamięć o tym, co graczowi już powiedziano: bez
+        # niej quest otwarty przez `requires_test` nie zgłosiłby się nigdy, bo jego
+        # bramka czyta świat, a nie questy, więc pomiar przed i po tym samym
+        # przebiegiem dałby ten sam zbiór. `None` = pierwszy przebieg liczy bazę
+        # sam, żeby wczytany zapis nie wysypał tuzina powiadomień na dzień dobry.
+        self._unlocked: set[str] | None = None
         # Injectable so tests can watch what the rewards do without building the
         # whole character/UI stack; the game leaves it at the default.
         self._sink_factory: Callable[[], ResultSink] = sink_factory or self._game_sink
@@ -93,6 +100,7 @@ class QuestRuntime:
         key, pinned = tracker.next_tracked(
             self.defs,
             self.scene.quest_state,
+            self.ctx,
             getattr(self.scene, "tracked_quest_key", None),
             bool(getattr(self.scene, "tracked_quest_pinned", False)),
             list(result.newly_done) if result else [],
@@ -118,7 +126,7 @@ class QuestRuntime:
     def track(self, key: str | None) -> str:
         """Przypnij/odepnij ``key`` (klawisz ``T``); zwraca klucz komunikatu."""
         new_key, pinned, message = tracker.toggle_pin(
-            self.defs, self.scene.quest_state,
+            self.defs, self.scene.quest_state, self.ctx,
             getattr(self.scene, "tracked_quest_key", None), key,
             bool(getattr(self.scene, "tracked_quest_pinned", False)),
         )
@@ -159,7 +167,8 @@ class QuestRuntime:
         if not self.defs:
             return QuestCheckResult()
 
-        result = check_quests(self.defs, self.scene.quest_state, self.ctx)
+        result = check_quests(self.defs, self.scene.quest_state, self.ctx, self._unlocked)
+        self._unlocked = result.unlocked
 
         if result.newly_done:
             sink = self._sink_factory()

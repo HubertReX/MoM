@@ -836,7 +836,7 @@ skrzyni z kluczem i bez klucza.
   warunków, cykl życia sprite'a) + dopisek o sprzężeniu z D3 **z zaznaczeniem, że
   pilnuje go reguła 20 walidatora, a nie ten akapit**
 - aktualizacja `doc/quest-cheatsheet.md` o wskaźnik na HUD (generowana:
-  `just quest-cheatsheet`), z **jawnym ostrzeżeniem dla autora**: kolejność sekcji
+  `just gen-quest-cheatsheet`), z **jawnym ostrzeżeniem dla autora**: kolejność sekcji
   w pliku questa jest kolejnością, w której gra podpowie graczowi kolejny krok (D7)
 - nowa ściąga dla autora w `doc/` albo rozszerzenie istniejącej: „jak napisać barka"
   (`just gen-dialog-docs` jeśli generowane)

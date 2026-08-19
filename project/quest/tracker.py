@@ -15,9 +15,11 @@ Trzy pytania, które łatwo pomylić, i ich odpowiedzi:
   dałby się cofnąć inaczej niż przez dziennik.
 - **co gdy nie ma czego śledzić** - wskaźnik znika. Bez pustej ramki.
 
-Moduł jest **czysty**: same funkcje na ``defs``/``state``, zero pygame, zero
-sceny. Dzięki temu każdy z pięciu kroków kaskady da się przetestować osobno,
-bez ekranu.
+Moduł jest **czysty**: same funkcje na ``defs``/``state``/``ctx``, zero pygame,
+zero sceny. Dzięki temu każdy z pięciu kroków kaskady da się przetestować osobno,
+bez ekranu. ``ctx`` wchodzi tylko dlatego, że „odblokowany" umie dziś zależeć
+od świata (``requires_test``), a nie wyłącznie od innych questów - i przechodzi
+przez te funkcje na wylot, do :func:`quest.engine.is_unlocked`.
 
 **Automat odrzuca parasole.** Parasol mówi „przełam klątwę" - to tytuł rozdziału,
 nie instrukcja. Gracz potrzebuje „idź pogadać z Zielarką". Ręczne przypięcie
@@ -30,6 +32,7 @@ questa staje się kolejnością podpowiadaną graczowi*.
 """
 from __future__ import annotations
 
+from dialog.conditions import ConditionContext
 from quest.engine import is_unlocked
 from quest.entities import QuestDef, QuestState
 from quest.graph import children_of
@@ -40,26 +43,34 @@ def is_umbrella(defs: dict[str, QuestDef], key: str) -> bool:
     return bool(children_of(defs, key))
 
 
-def is_trackable(defs: dict[str, QuestDef], state: QuestState, key: str) -> bool:
+def is_trackable(
+    defs: dict[str, QuestDef], state: QuestState, ctx: ConditionContext, key: str
+) -> bool:
     """Czy automat ma prawo wskazać ten quest: odblokowany, nieukończony, nie parasol."""
     quest = defs.get(key)
     if quest is None or state.is_done(key):
         return False
-    return not is_umbrella(defs, key) and is_unlocked(defs, state, key)
+    return not is_umbrella(defs, key) and is_unlocked(defs, state, ctx, key)
 
 
-def open_steps(defs: dict[str, QuestDef], state: QuestState) -> list[str]:
+def open_steps(
+    defs: dict[str, QuestDef], state: QuestState, ctx: ConditionContext
+) -> list[str]:
     """Wszystkie kroki, które automat może dziś wskazać - w kolejności definicji."""
-    return [key for key in defs if is_trackable(defs, state, key)]
+    return [key for key in defs if is_trackable(defs, state, ctx, key)]
 
 
-def auto_pick(defs: dict[str, QuestDef], state: QuestState) -> str | None:
+def auto_pick(
+    defs: dict[str, QuestDef], state: QuestState, ctx: ConditionContext
+) -> str | None:
     """Domyślny wybór automatu: pierwszy otwarty krok w kolejności definicji."""
-    steps = open_steps(defs, state)
+    steps = open_steps(defs, state, ctx)
     return steps[0] if steps else None
 
 
-def is_still_valid(defs: dict[str, QuestDef], state: QuestState, key: str | None) -> bool:
+def is_still_valid(
+    defs: dict[str, QuestDef], state: QuestState, ctx: ConditionContext, key: str | None
+) -> bool:
     """Czy śledzony quest nadal ma sens.
 
     Osobno od :func:`is_trackable`, bo **przypięty parasol jest legalny**: gracz,
@@ -72,12 +83,13 @@ def is_still_valid(defs: dict[str, QuestDef], state: QuestState, key: str | None
     quest = defs.get(key)
     if quest is None or state.is_done(key):
         return False
-    return is_unlocked(defs, state, key)
+    return is_unlocked(defs, state, ctx, key)
 
 
 def cascade(
     defs: dict[str, QuestDef],
     state: QuestState,
+    ctx: ConditionContext,
     closed_key: str,
     newly_unlocked: list[str],
 ) -> str | None:
@@ -97,7 +109,7 @@ def cascade(
     """
     # 1. co ten krok właśnie otworzył
     for key in newly_unlocked:
-        if is_trackable(defs, state, key):
+        if is_trackable(defs, state, ctx, key):
             return key
 
     closed = defs.get(closed_key)
@@ -106,7 +118,7 @@ def cascade(
     # 2. rodzeństwo - reszta tego samego wątku
     if parent is not None:
         for key in children_of(defs, parent):
-            if is_trackable(defs, state, key):
+            if is_trackable(defs, state, ctx, key):
                 return key
 
         # 3. parasol też się domknął -> wątek piętro wyżej
@@ -114,7 +126,7 @@ def cascade(
             grandparent = defs[parent].parent if parent in defs else None
             if grandparent is not None:
                 for key in children_of(defs, grandparent):
-                    if is_trackable(defs, state, key):
+                    if is_trackable(defs, state, ctx, key):
                         return key
 
     # 4. cokolwiek sensownego. Dokument mówi „najpóźniej odblokowany", ale stan
@@ -122,13 +134,14 @@ def cascade(
     #    decyzja D13) i dokładanie znacznika czasu tylko dla tego fallbacku byłoby
     #    nowym polem w zapisie. Ostatni w kolejności definicji to najbliższy
     #    deterministyczny odpowiednik: dalej w pliku = dalej w opowieści.
-    steps = open_steps(defs, state)
+    steps = open_steps(defs, state, ctx)
     return steps[-1] if steps else None
 
 
 def next_tracked(
     defs: dict[str, QuestDef],
     state: QuestState,
+    ctx: ConditionContext,
     current: str | None,
     pinned: bool,
     newly_done: list[str],
@@ -147,9 +160,9 @@ def next_tracked(
     - brak śledzonego -> automat wybiera.
     """
     if current and current in newly_done:
-        return cascade(defs, state, current, newly_unlocked), False
-    if not is_still_valid(defs, state, current):
-        return auto_pick(defs, state), False
+        return cascade(defs, state, ctx, current, newly_unlocked), False
+    if not is_still_valid(defs, state, ctx, current):
+        return auto_pick(defs, state, ctx), False
     if pinned:
         return current, True
     # automat może przemyśleć swój własny wybór, ale tylko jeśli ten przestał być
@@ -160,6 +173,7 @@ def next_tracked(
 def toggle_pin(
     defs: dict[str, QuestDef],
     state: QuestState,
+    ctx: ConditionContext,
     current: str | None,
     key: str | None,
     pinned: bool = False,
@@ -187,11 +201,11 @@ def toggle_pin(
         return current, False, "quest.track_refused"
     if state.is_done(key):
         return current, False, "quest.track_refused_done"
-    if not is_unlocked(defs, state, key):
+    if not is_unlocked(defs, state, ctx, key):
         return current, False, "quest.track_refused_locked"
     if key == current and pinned:
         # odpięcie: wskaźnik wraca do trybu automatycznego
-        return auto_pick(defs, state), False, "quest.track_off"
+        return auto_pick(defs, state, ctx), False, "quest.track_off"
     return key, True, "quest.track_on"
 
 

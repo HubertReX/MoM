@@ -4,7 +4,8 @@
   "counts": {
    "quests": 10,
    "threads": 3,
-   "roots": 1
+   "roots": 1,
+   "dialogs": 10
   },
   "modes": {
    "all_subquests": {
@@ -19,6 +20,10 @@
     "bg": "#ffd8a8",
     "border": "#f08c00"
    }
+  },
+  "dialog_colour": {
+   "bg": "#e5dbff",
+   "border": "#7048e8"
   }
  },
  "nodes": [
@@ -57,8 +62,10 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"CLAPBACK_SWORD\", \"015\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": false,
    "is_root": true,
    "rewards": [
@@ -73,7 +80,7 @@
   },
   {
    "id": "Q01_S00_BREAK_THE_CURSE",
-   "level": 1,
+   "level": 2,
    "name": "Przełamać klątwę",
    "name_runs": [
     {
@@ -98,8 +105,10 @@
    "completion": "all_subquests",
    "completion_text": "zamyka się, gdy zamkną się jej kroki",
    "test": null,
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": true,
    "is_root": false,
    "rewards": [
@@ -115,7 +124,7 @@
   },
   {
    "id": "Q01_S01_LEARN_ABOUT_CURSE",
-   "level": 2,
+   "level": 3,
    "name": "Dowiedz się więcej o klątwie",
    "name_runs": [
     {
@@ -140,8 +149,10 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"012\") or visited(\"BARMAN_ABSINTHRAYNER\", \"009\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": false,
    "is_root": false,
    "rewards": [
@@ -193,8 +204,10 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"MADAME_SARCASMIA\", \"001\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": false,
    "is_root": false,
    "rewards": [
@@ -209,7 +222,7 @@
   },
   {
    "id": "Q03_S00_LEARN_ABOUT_CURSE",
-   "level": 3,
+   "level": 5,
    "name": "Znajdź kogoś kto wie o klątwach",
    "name_runs": [
     {
@@ -258,8 +271,10 @@
    "completion": "all_subquests",
    "completion_text": "zamyka się, gdy zamkną się jej kroki",
    "test": null,
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": true,
    "is_root": false,
    "rewards": [
@@ -274,7 +289,7 @@
   },
   {
    "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
-   "level": 4,
+   "level": 6,
    "name": "Kto ma wiedzę o magii?",
    "name_runs": [
     {
@@ -295,8 +310,10 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"POTIONEER_PUZZLEMINT\", \"014\") or visited(\"POTIONEER_PUZZLEMINT\", \"017\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": false,
    "is_root": false,
    "rewards": [
@@ -311,7 +328,7 @@
   },
   {
    "id": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
-   "level": 5,
+   "level": 6,
    "name": "Gdzie znaleźć tę osobę?",
    "name_runs": [
     {
@@ -336,8 +353,10 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"HAMMER_HOAXHEART\", \"009\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": false,
    "is_root": false,
    "rewards": [
@@ -377,8 +396,10 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"017\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": false,
    "is_root": false,
    "rewards": [
@@ -393,7 +414,7 @@
   },
   {
    "id": "Q04_S00_TOP_PRIORITY_MATTERS",
-   "level": 2,
+   "level": 1,
    "name": "Sprawy najwyższej wagi",
    "name_runs": [
     {
@@ -415,7 +436,7 @@
      "bold": false
     },
     {
-     "text": "bylejakie",
+     "text": "byle jakie",
      "bold": true
     },
     {
@@ -434,12 +455,14 @@
    "completion": "all_subquests",
    "completion_text": "zamyka się, gdy zamkną się jej kroki",
    "test": null,
+   "requires_test": "visited(\"BARMAN_ABSINTHRAYNER\", \"023\")",
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": true,
    "is_root": false,
    "rewards": [
-    "+20 sympatii @BARMAN_ABSINTHRAYNER"
+    "+15 sympatii @BARMAN_ABSINTHRAYNER"
    ],
    "colour": {
     "bg": "#b2f2bb",
@@ -450,7 +473,7 @@
   },
   {
    "id": "Q04_S01_FISH_EATEN_BY_CAT",
-   "level": 3,
+   "level": 2,
    "name": "Ryby, które zjadł kot",
    "name_runs": [
     {
@@ -543,12 +566,14 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"024\")",
+   "requires_test": null,
    "progress": null,
    "progress_total": 0,
+   "kind": "quest",
    "is_thread": false,
    "is_root": false,
    "rewards": [
-    "+20 sympatii @BARMAN_ABSINTHRAYNER"
+    "+7 slotów"
    ],
    "colour": {
     "bg": "#a5d8ff",
@@ -556,6 +581,576 @@
    },
    "problem": null,
    "link": "Q04_S01 Ryby, które zjadł kot"
+  },
+  {
+   "id": "dlg:CLAPBACK_SWORD#015",
+   "level": 1,
+   "name": "Miecz Ciętej-riposty #015",
+   "name_runs": [
+    {
+     "text": "Miecz Ciętej-riposty #015",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "CLAPBACK_SWORD",
+   "npc_name": "Miecz Ciętej-riposty",
+   "node": "015",
+   "text_runs": [
+    {
+     "text": "No, dobra, pomyślmy. To co wiemy do tej pory o tej ",
+     "bold": false
+    },
+    {
+     "text": "klątwie",
+     "bold": true
+    },
+    {
+     "text": " to mieszanina bajek dla dzieci i bajania bardów. Musimy dowiedzieć się więcej konkretów.  Jedno jest pewne  - jeżeli od zawsze myślałeś w duchu, że jesteś ",
+     "bold": false
+    },
+    {
+     "text": "wyjątkowy",
+     "bold": true
+    },
+    {
+     "text": ", to teraz masz potwierdzenie. Jesteś wyjątkowy - masz ",
+     "bold": false
+    },
+    {
+     "text": "wyjątkowego",
+     "bold": true
+    },
+    {
+     "text": " pecha!  A teraz ruszajmy w drogę! Trzeba rozpytać ludzi w okolicy. Ja bym zaczął od ",
+     "bold": false
+    },
+    {
+     "text": "Tawerny",
+     "bold": true
+    },
+    {
+     "text": ", bo tam spotkamy najwięcej mieszkańców wsi.",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "O co tu chodzi?"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Miecz Ciętej-riposty#015-end"
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#012",
+   "level": 4,
+   "name": "Barman Absyntnent #012",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #012",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "012",
+   "text_runs": [
+    {
+     "text": "Ach, rozumiem. Hmmm, no to może jedynie stara ",
+     "bold": false
+    },
+    {
+     "text": "Zielarka Zmora",
+     "bold": true
+    },
+    {
+     "text": " mogła by co pomóc. Ona potrafi przygotować taką ",
+     "bold": false
+    },
+    {
+     "text": "miksturę",
+     "bold": true
+    },
+    {
+     "text": ", że od razu na nogi człowieka postawi. No chyba, że jej się co pomyli, bo stara i ślepa.  Czasami to ludziskom gorzej się robi po tych ",
+     "bold": false
+    },
+    {
+     "text": "miksturach",
+     "bold": true
+    },
+    {
+     "text": ". Jak ktoś jest zdesperowany to można spróbować. Siedzi w chałupie na końcu wioski, koło lasu. Powiedz ",
+     "bold": false
+    },
+    {
+     "text": "ja",
+     "bold": true
+    },
+    {
+     "text": " Cię przysłałem.",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Dowiedz się więcej o klątwie"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#012"
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#009",
+   "level": 4,
+   "name": "Barman Absyntnent #009",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #009",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "009",
+   "text_runs": [
+    {
+     "text": "Ach! ",
+     "bold": false
+    },
+    {
+     "text": "Odwieczna klątwą nieszczęścia",
+     "bold": true
+    },
+    {
+     "text": "? Poważnie? Myślałem, że to tylko gadanie mojej matki...  No cóż. Ciężka sprawa. Tutaj raczej nikt ",
+     "bold": false
+    },
+    {
+     "text": "Ci",
+     "bold": true
+    },
+    {
+     "text": " nie pomoże. U nas nie ma ",
+     "bold": false
+    },
+    {
+     "text": "magii",
+     "bold": true
+    },
+    {
+     "text": ". Popytaj ",
+     "bold": false
+    },
+    {
+     "text": "Zielarkę Zmorę",
+     "bold": true
+    },
+    {
+     "text": ", ona sama pewnie nic nie zdziała, ale być może coś będzie wiedziała. Jest nieufna wobec przyjezdnych, więc powiedz, że ",
+     "bold": false
+    },
+    {
+     "text": "ja",
+     "bold": true
+    },
+    {
+     "text": " Cię przysłałem.",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Dowiedz się więcej o klątwie"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#009"
+  },
+  {
+   "id": "dlg:MADAME_SARCASMIA#001",
+   "level": 4,
+   "name": "Madame Sarkażmijka #001",
+   "name_runs": [
+    {
+     "text": "Madame Sarkażmijka #001",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "MADAME_SARCASMIA",
+   "npc_name": "Madame Sarkażmijka",
+   "node": "001",
+   "text_runs": [
+    {
+     "text": "Wzdycha dramatycznie: Ach, ",
+     "bold": false
+    },
+    {
+     "text": "Odwieczna klątwa nieszczęścia",
+     "bold": true
+    },
+    {
+     "text": ". Ta jasne, właśnie Tobie przytrafiła się legendarna kłatwa  . To prawdopodobnie zwykły pech. No ale dobra, pewnie mogłabym ci jakoś pomóc, ale wiedz, że magia nie jest tania.",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Spotkaj się z Sarkażmijką"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Madame Sarkażmijka#001"
+  },
+  {
+   "id": "dlg:POTIONEER_PUZZLEMINT#014",
+   "level": 7,
+   "name": "Zielarka Zmora #014",
+   "name_runs": [
+    {
+     "text": "Zielarka Zmora #014",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "POTIONEER_PUZZLEMINT",
+   "npc_name": "Zielarka Zmora",
+   "node": "014",
+   "text_runs": [
+    {
+     "text": "Kiedy była u mnie wołali na nią ",
+     "bold": false
+    },
+    {
+     "text": "Mariolka",
+     "bold": true
+    },
+    {
+     "text": ", ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec.  Tak czy siak, ludzie zaczęli na nią wołać ",
+     "bold": false
+    },
+    {
+     "text": "Bibliofilistka des Informacja",
+     "bold": true
+    },
+    {
+     "text": ".",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Kto ma wiedzę o magii?"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Zielarka Zmora#014"
+  },
+  {
+   "id": "dlg:POTIONEER_PUZZLEMINT#017",
+   "level": 7,
+   "name": "Zielarka Zmora #017",
+   "name_runs": [
+    {
+     "text": "Zielarka Zmora #017",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "POTIONEER_PUZZLEMINT",
+   "npc_name": "Zielarka Zmora",
+   "node": "017",
+   "text_runs": [
+    {
+     "text": "Po odejściu ode mnie ludzie zaczęli na nią wołać ",
+     "bold": false
+    },
+    {
+     "text": "Bibliofilistka des Informacja",
+     "bold": true
+    },
+    {
+     "text": ".",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Kto ma wiedzę o magii?"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Zielarka Zmora#017"
+  },
+  {
+   "id": "dlg:HAMMER_HOAXHEART#009",
+   "level": 7,
+   "name": "Kowal Kłamca #009",
+   "name_runs": [
+    {
+     "text": "Kowal Kłamca #009",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "HAMMER_HOAXHEART",
+   "npc_name": "Kowal Kłamca",
+   "node": "009",
+   "text_runs": [
+    {
+     "text": "Nie lubię ",
+     "bold": false
+    },
+    {
+     "text": "miasta",
+     "bold": true
+    },
+    {
+     "text": ", nie jeżdżę tam. Pytaj ",
+     "bold": false
+    },
+    {
+     "text": "Barmana Absyntnenta",
+     "bold": true
+    },
+    {
+     "text": " - on gada ze wszystkimi przybyszami.",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Gdzie znaleźć tę osobę?"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Kowal Kłamca#009"
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#017",
+   "level": 7,
+   "name": "Barman Absyntnent #017",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #017",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "017",
+   "text_runs": [
+    {
+     "text": "To ze ",
+     "bold": false
+    },
+    {
+     "text": "2",
+     "bold": true
+    },
+    {
+     "text": " dni drogi na ",
+     "bold": false
+    },
+    {
+     "text": "północ",
+     "bold": true
+    },
+    {
+     "text": ". Za ",
+     "bold": false
+    },
+    {
+     "text": "Splątanym lasem irytacji",
+     "bold": true
+    },
+    {
+     "text": " trzeba skręcić na ",
+     "bold": false
+    },
+    {
+     "text": "wschód",
+     "bold": true
+    },
+    {
+     "text": ".",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Jak tam dotrzeć?"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#017"
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#023",
+   "level": 0,
+   "name": "Barman Absyntnent #023",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #023",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "023",
+   "text_runs": [
+    {
+     "text": "Za mojej kadencji ",
+     "bold": false
+    },
+    {
+     "text": "ANI",
+     "bold": true
+    },
+    {
+     "text": " jednej! I wiesz dlaczego? Bo zawsze były ",
+     "bold": false
+    },
+    {
+     "text": "ryby",
+     "bold": true
+    },
+    {
+     "text": "!  ",
+     "bold": false
+    },
+    {
+     "text": "Kot",
+     "bold": true
+    },
+    {
+     "text": " ma gdzieś w krzakach ukrytą skrzynię w której chowa wykradzione ",
+     "bold": false
+    },
+    {
+     "text": "ryby",
+     "bold": true
+    },
+    {
+     "text": ". Wytnij te chaszcze i przynieś mi ",
+     "bold": false
+    },
+    {
+     "text": "5",
+     "bold": true
+    },
+    {
+     "text": " świeżych ",
+     "bold": false
+    },
+    {
+     "text": "ryb",
+     "bold": true
+    },
+    {
+     "text": ".  Tylko musisz znaleźć odpowiednią mocną ",
+     "bold": false
+    },
+    {
+     "text": "broń",
+     "bold": true
+    },
+    {
+     "text": " aby móc wyciąć takie gęste krzaki.",
+     "bold": false
+    }
+   ],
+   "unlocks": [
+    "Sprawy najwyższej wagi"
+   ],
+   "closes": [],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#023"
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#024",
+   "level": 3,
+   "name": "Barman Absyntnent #024",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #024",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "024",
+   "text_runs": [
+    {
+     "text": "O mój dobrodzieju! Na prawdę tego dokonałeś! Zbawiłeś nas - należy Ci się [qutest]Pokojowa nagroda Nobla!",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Ryby, które zjadł kot"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#024"
   }
  ],
  "edges": [
@@ -610,19 +1205,78 @@
    "kind": "parent"
   },
   {
-   "from": "Q01_S00_BREAK_THE_CURSE",
-   "to": "Q04_S00_TOP_PRIORITY_MATTERS",
-   "kind": "requires"
-  },
-  {
-   "from": "Q01_S00_BREAK_THE_CURSE",
-   "to": "Q04_S01_FISH_EATEN_BY_CAT",
-   "kind": "requires"
-  },
-  {
    "from": "Q04_S00_TOP_PRIORITY_MATTERS",
    "to": "Q04_S01_FISH_EATEN_BY_CAT",
    "kind": "parent"
+  },
+  {
+   "from": "Q00_S00_WHAT_IS_GOING_ON",
+   "to": "dlg:CLAPBACK_SWORD#015",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
+   "from": "Q01_S01_LEARN_ABOUT_CURSE",
+   "to": "dlg:BARMAN_ABSINTHRAYNER#012",
+   "kind": "closes",
+   "negated": false,
+   "alt": true
+  },
+  {
+   "from": "Q01_S01_LEARN_ABOUT_CURSE",
+   "to": "dlg:BARMAN_ABSINTHRAYNER#009",
+   "kind": "closes",
+   "negated": false,
+   "alt": true
+  },
+  {
+   "from": "Q01_S02_MEET_MADAME_SARCASMIA",
+   "to": "dlg:MADAME_SARCASMIA#001",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
+   "from": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "to": "dlg:POTIONEER_PUZZLEMINT#014",
+   "kind": "closes",
+   "negated": false,
+   "alt": true
+  },
+  {
+   "from": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "to": "dlg:POTIONEER_PUZZLEMINT#017",
+   "kind": "closes",
+   "negated": false,
+   "alt": true
+  },
+  {
+   "from": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
+   "to": "dlg:HAMMER_HOAXHEART#009",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
+   "from": "Q03_S03_HOW_TO_GET_THERE",
+   "to": "dlg:BARMAN_ABSINTHRAYNER#017",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
+   "from": "dlg:BARMAN_ABSINTHRAYNER#023",
+   "to": "Q04_S00_TOP_PRIORITY_MATTERS",
+   "kind": "unlocks",
+   "negated": false
+  },
+  {
+   "from": "Q04_S01_FISH_EATEN_BY_CAT",
+   "to": "dlg:BARMAN_ABSINTHRAYNER#024",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
   }
  ]
 }

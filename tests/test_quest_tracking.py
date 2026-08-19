@@ -23,11 +23,23 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "project"))
+sys.path.insert(0, os.path.dirname(__file__))
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 os.environ["SDL_AUDIODRIVER"] = "dummy"
 
 from quest import tracker
 from quest.entities import CompletionMode, QuestDef, QuestState
+from test_quest_conditions import StubQuestContext
+
+
+def _ctx() -> StubQuestContext:
+    """Pusty świat.
+
+    Śledzenie zależy od świata tylko przez `requires_test`, a żaden quest z tych
+    fixture'ów go nie ma - kontekst jest tu wyłącznie po to, żeby `is_unlocked`
+    miało czym odpowiedzieć, gdyby ktoś taki quest dopisał.
+    """
+    return StubQuestContext()
 
 
 def assert_eq(a: object, b: object, msg: str = "") -> None:
@@ -76,28 +88,28 @@ def _tree() -> dict[str, QuestDef]:
 
 def test_the_automat_picks_the_first_open_step() -> None:
     """Kolejność definicji to kolejność sekcji w pliku questa - sterowalna treścią."""
-    assert_eq(tracker.auto_pick(_tree(), _state()), "T1_A")
+    assert_eq(tracker.auto_pick(_tree(), _state(), _ctx()), "T1_A")
 
 
 def test_the_automat_never_picks_an_umbrella() -> None:
     """Parasol mówi „przełam klątwę" - to tytuł rozdziału, nie instrukcja."""
-    steps = tracker.open_steps(_tree(), _state())
+    steps = tracker.open_steps(_tree(), _state(), _ctx())
 
     assert_true("T1" not in steps and "T2" not in steps, f"parasol w kandydatach: {steps}")
 
 
 def test_the_automat_never_picks_a_locked_step() -> None:
     """T2_A czeka na swój parasol, a ten na T1 - nie ma czego tam podpowiadać."""
-    assert_true("T2_A" not in tracker.open_steps(_tree(), _state()))
+    assert_true("T2_A" not in tracker.open_steps(_tree(), _state(), _ctx()))
 
 
 def test_a_finished_step_is_not_a_candidate() -> None:
-    assert_eq(tracker.auto_pick(_tree(), _state("T1_A")), "T1_B")
+    assert_eq(tracker.auto_pick(_tree(), _state("T1_A"), _ctx()), "T1_B")
 
 
 def test_nothing_to_track_yields_none() -> None:
     """Gdy wszystko zrobione, wskaźnik ma zniknąć - bez pustej ramki."""
-    assert_eq(tracker.auto_pick(_tree(), _state("T1_A", "T1_B", "T1", "T2_A", "T2")), None)
+    assert_eq(tracker.auto_pick(_tree(), _state("T1_A", "T1_B", "T1", "T2_A", "T2"), _ctx()), None)
 
 
 # ---------------------------------------------------------------------------
@@ -113,7 +125,7 @@ def test_cascade_1_follows_what_the_step_just_unlocked() -> None:
     )
     state = _state("A")
 
-    assert_eq(tracker.cascade(defs, state, "A", ["B"]), "B")
+    assert_eq(tracker.cascade(defs, state, _ctx(), "A", ["B"]), "B")
 
 
 def test_cascade_1_skips_an_umbrella_it_unlocked() -> None:
@@ -125,7 +137,7 @@ def test_cascade_1_skips_an_umbrella_it_unlocked() -> None:
     )
     state = _state("A")
 
-    assert_eq(tracker.cascade(defs, state, "A", ["T", "T_A"]), "T_A")
+    assert_eq(tracker.cascade(defs, state, _ctx(), "A", ["T", "T_A"]), "T_A")
 
 
 def test_cascade_2_falls_back_to_a_sibling() -> None:
@@ -133,7 +145,7 @@ def test_cascade_2_falls_back_to_a_sibling() -> None:
     defs = _tree()
     state = _state("T1_A")
 
-    assert_eq(tracker.cascade(defs, state, "T1_A", []), "T1_B")
+    assert_eq(tracker.cascade(defs, state, _ctx(), "T1_A", []), "T1_B")
 
 
 def test_cascade_3_climbs_to_the_thread_above() -> None:
@@ -147,7 +159,7 @@ def test_cascade_3_climbs_to_the_thread_above() -> None:
     )
     state = _state("BRANCH_A", "BRANCH")
 
-    assert_eq(tracker.cascade(defs, state, "BRANCH_A", []), "ROOT_B")
+    assert_eq(tracker.cascade(defs, state, _ctx(), "BRANCH_A", []), "ROOT_B")
 
 
 def test_cascade_4_falls_back_globally() -> None:
@@ -160,7 +172,7 @@ def test_cascade_4_falls_back_globally() -> None:
     )
     state = _state("T_A", "T")
 
-    picked = tracker.cascade(defs, state, "T_A", [])
+    picked = tracker.cascade(defs, state, _ctx(), "T_A", [])
 
     assert_true(picked in ("LONE_1", "LONE_2"), f"globalny fallback nie zadziałał: {picked}")
     assert_eq(picked, "LONE_2", "fallback ma być ostatni w kolejności definicji")
@@ -170,7 +182,7 @@ def test_cascade_5_gives_up_cleanly() -> None:
     """Ostatni quest w grze zamknięty: wskaźnik znika, nie zostaje pusta ramka."""
     defs = _defs(_quest("ONLY"))
 
-    assert_eq(tracker.cascade(defs, _state("ONLY"), "ONLY", []), None)
+    assert_eq(tracker.cascade(defs, _state("ONLY"), _ctx(), "ONLY", []), None)
 
 
 def test_the_cascade_prefers_the_unlocked_over_the_sibling() -> None:
@@ -183,7 +195,7 @@ def test_the_cascade_prefers_the_unlocked_over_the_sibling() -> None:
     )
     state = _state("T_A")
 
-    assert_eq(tracker.cascade(defs, state, "T_A", ["NEW"]), "NEW",
+    assert_eq(tracker.cascade(defs, state, _ctx(), "T_A", ["NEW"]), "NEW",
               "rodzeństwo wygrało z tym, co krok właśnie odblokował")
 
 
@@ -194,7 +206,7 @@ def test_the_cascade_prefers_the_unlocked_over_the_sibling() -> None:
 def test_t_pins_the_selected_quest() -> None:
     defs, state = _tree(), _state()
 
-    key, pinned, message = tracker.toggle_pin(defs, state, "T1_A", "T1_B")
+    key, pinned, message = tracker.toggle_pin(defs, state, _ctx(), "T1_A", "T1_B")
 
     assert_eq((key, pinned), ("T1_B", True))
     assert_eq(message, "quest.track_on")
@@ -204,10 +216,10 @@ def test_t_on_a_pinned_quest_unpins_it() -> None:
     """Jeden klawisz robi obie rzeczy - drugi skrót nikt by nigdy nie użył."""
     defs, state = _tree(), _state()
 
-    key, pinned, message = tracker.toggle_pin(defs, state, "T1_B", "T1_B", pinned=True)
+    key, pinned, message = tracker.toggle_pin(defs, state, _ctx(), "T1_B", "T1_B", pinned=True)
 
     assert_eq(pinned, False, "odpięcie nie zdjęło pinu")
-    assert_eq(key, tracker.auto_pick(defs, state), "po odpięciu wraca wybór automatu")
+    assert_eq(key, tracker.auto_pick(defs, state, _ctx()), "po odpięciu wraca wybór automatu")
     assert_eq(message, "quest.track_off")
 
 
@@ -222,7 +234,7 @@ def test_t_pins_the_quest_the_automat_had_chosen() -> None:
     """
     defs, state = _tree(), _state()
 
-    key, pinned, message = tracker.toggle_pin(defs, state, "T1_A", "T1_A", pinned=False)
+    key, pinned, message = tracker.toggle_pin(defs, state, _ctx(), "T1_A", "T1_A", pinned=False)
 
     assert_eq((key, pinned), ("T1_A", True))
     assert_eq(message, "quest.track_on")
@@ -232,7 +244,7 @@ def test_an_umbrella_may_be_pinned_by_hand() -> None:
     """Automat parasole odrzuca, ale jawny wybór gracza bije heurystykę."""
     defs, state = _tree(), _state()
 
-    key, pinned, _message = tracker.toggle_pin(defs, state, None, "T1")
+    key, pinned, _message = tracker.toggle_pin(defs, state, _ctx(), None, "T1")
 
     assert_eq((key, pinned), ("T1", True))
 
@@ -241,7 +253,7 @@ def test_a_finished_quest_is_refused_with_a_message() -> None:
     """Odmowa NIE jest ciszą: bez komunikatu gracz nie wie, czy gra go usłyszała."""
     defs, state = _tree(), _state("T1_A")
 
-    key, pinned, message = tracker.toggle_pin(defs, state, "T1_B", "T1_A")
+    key, pinned, message = tracker.toggle_pin(defs, state, _ctx(), "T1_B", "T1_A")
 
     assert_eq((key, pinned), ("T1_B", False), "odmowa nie może ruszyć wskaźnika")
     assert_eq(message, "quest.track_refused_done")
@@ -250,13 +262,13 @@ def test_a_finished_quest_is_refused_with_a_message() -> None:
 def test_a_locked_quest_is_refused_with_a_message() -> None:
     defs, state = _tree(), _state()
 
-    _key, _pinned, message = tracker.toggle_pin(defs, state, "T1_A", "T2_A")
+    _key, _pinned, message = tracker.toggle_pin(defs, state, _ctx(), "T1_A", "T2_A")
 
     assert_eq(message, "quest.track_refused_locked")
 
 
 def test_an_unknown_key_is_refused() -> None:
-    _key, _pinned, message = tracker.toggle_pin(_tree(), _state(), "T1_A", "NIE_MA")
+    _key, _pinned, message = tracker.toggle_pin(_tree(), _state(), _ctx(), "T1_A", "NIE_MA")
 
     assert_eq(message, "quest.track_refused")
 
@@ -270,7 +282,7 @@ def test_a_pin_survives_an_unrelated_quest_event() -> None:
     defs = _tree()
     state = _state()
 
-    key, pinned = tracker.next_tracked(defs, state, "T1_B", True, [], ["T1_A"])
+    key, pinned = tracker.next_tracked(defs, state, _ctx(), "T1_B", True, [], ["T1_A"])
 
     assert_eq((key, pinned), ("T1_B", True))
 
@@ -284,7 +296,7 @@ def test_the_pin_does_not_survive_the_cascade() -> None:
     defs = _tree()
     state = _state("T1_A")
 
-    key, pinned = tracker.next_tracked(defs, state, "T1_A", True, ["T1_A"], [])
+    key, pinned = tracker.next_tracked(defs, state, _ctx(), "T1_A", True, ["T1_A"], [])
 
     assert_eq(key, "T1_B")
     assert_eq(pinned, False, "pin przeżył kaskadę")
@@ -294,18 +306,18 @@ def test_an_automatic_choice_is_replaced_when_it_closes() -> None:
     defs = _tree()
     state = _state("T1_A")
 
-    assert_eq(tracker.next_tracked(defs, state, "T1_A", False, ["T1_A"], []), ("T1_B", False))
+    assert_eq(tracker.next_tracked(defs, state, _ctx(), "T1_A", False, ["T1_A"], []), ("T1_B", False))
 
 
 def test_no_tracked_quest_lets_the_automat_pick() -> None:
-    assert_eq(tracker.next_tracked(_tree(), _state(), None, False, [], []), ("T1_A", False))
+    assert_eq(tracker.next_tracked(_tree(), _state(), _ctx(), None, False, [], []), ("T1_A", False))
 
 
 def test_a_key_the_content_no_longer_defines_falls_back_to_the_automat() -> None:
     """Zapis sprzed przemianowania questa: cichy powrót do automatu, nie wyjątek."""
     defs = _tree()
 
-    key, pinned = tracker.next_tracked(defs, _state(), "SKASOWANY_QUEST", True, [], [])
+    key, pinned = tracker.next_tracked(defs, _state(), _ctx(), "SKASOWANY_QUEST", True, [], [])
 
     assert_eq(key, "T1_A")
     assert_eq(pinned, False, "pin na nieistniejącym queście przetrwał")
@@ -315,7 +327,7 @@ def test_a_pinned_quest_that_got_locked_falls_back() -> None:
     """Teoretyczny, ale tani: quest, który przestał być odblokowany, nie może wisieć."""
     defs = _defs(_quest("A"), _quest("B", requires=["A"]))
 
-    key, pinned = tracker.next_tracked(defs, _state(), "B", True, [], [])
+    key, pinned = tracker.next_tracked(defs, _state(), _ctx(), "B", True, [], [])
 
     assert_eq((key, pinned), ("A", False))
 
@@ -324,8 +336,8 @@ def test_is_still_valid_accepts_a_pinned_umbrella() -> None:
     """Parasol jest legalnym CELEM śledzenia, choć automat go nie wybierze."""
     defs, state = _tree(), _state()
 
-    assert_true(tracker.is_still_valid(defs, state, "T1"))
-    assert_true(not tracker.is_trackable(defs, state, "T1"))
+    assert_true(tracker.is_still_valid(defs, state, _ctx(), "T1"))
+    assert_true(not tracker.is_trackable(defs, state, _ctx(), "T1"))
 
 
 # ---------------------------------------------------------------------------

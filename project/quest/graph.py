@@ -13,6 +13,7 @@ The input section is ``{quest_key: {...}}``::
             "success": "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS",
             "completion": "all_subquests",
             "requires": ["Q01_S01_LEARN_ABOUT_CURSE"],
+            "requires_test": "visited(\"BARMAN_ABSINTHRAYNER\", \"023\")",
             "rewards": [{"category": "money", "value": 50}]
         }
     }
@@ -88,6 +89,7 @@ def _build_quest(key: str, data: dict[str, Any]) -> QuestDef:
         progress=data.get("progress"),
         progress_total=data.get("progress_total", 0),
         requires=list(data.get("requires", [])),
+        requires_test=data.get("requires_test"),
         parent=data.get("parent"),
         rewards=[_build_reward(key, r) for r in data.get("rewards", [])],
     )
@@ -206,6 +208,12 @@ def _validate_acyclic(defs: dict[str, QuestDef]) -> None:
     Only unlock edges count. ``all_subquests`` points the other way (an umbrella
     waits on its children while its children wait on the umbrella being
     *unlocked*, not done), so that pairing is not a cycle and must not be flagged.
+
+    ``requires_test`` is deliberately **not** walked: it is a fact about the
+    world, not an edge to another quest. That is exactly why the importer refuses
+    ``quest_done()`` inside a ``Requires`` condition - written there it would be a
+    real unlock edge that this walk cannot see, and a cycle through it would ship
+    silently. Quest dependencies belong in the list, where they are visible.
 
     Runs after :func:`_validate_references`, so every edge is known to resolve.
     """

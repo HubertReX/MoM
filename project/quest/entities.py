@@ -92,6 +92,16 @@ class QuestDef:
     ``name`` / ``description`` / ``success`` are ``messages`` keys, not text.
     ``success`` is plain prose with no ``{value}`` placeholder: the reward label
     is appended by the engine (decision D3, Q-05).
+
+    Unlocking has **two** gates, deliberately kept in separate fields.
+    ``requires`` lists quest keys and is a graph edge: it is what
+    :func:`quest.graph._validate_acyclic` walks and what the DAG note draws.
+    ``requires_test`` is a mini-DSL condition about the *world* - almost always
+    ``visited(NPC, NODE)``, i.e. "the player has been told about this" - and is
+    not an edge between quests at all. Merging the two into one list would make
+    every consumer of ``requires`` (the cycle check, the journal's step filter,
+    ``quest_graph.py``) silently wrong, so they stay apart even though the author
+    writes both on one ``**Requires**:`` line.
     """
 
     key: str
@@ -103,6 +113,7 @@ class QuestDef:
     progress: str | None = field(default=None, repr=False)
     progress_total: int = field(default=0, repr=False)
     requires: list[str] = field(default_factory=list, repr=False)
+    requires_test: str | None = field(default=None, repr=False)
     parent: str | None = field(default=None, repr=False)
     rewards: list[QuestReward] = field(default_factory=list, repr=False)
 

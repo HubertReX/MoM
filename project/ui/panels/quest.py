@@ -24,6 +24,7 @@ import pygame
 
 import settings
 from enums import NotificationTypeEnum
+from dialog.conditions import ConditionScope, check_condition
 from quest.engine import is_unlocked, quest_progress
 from quest.entities import CompletionMode, QuestDef
 from quest.graph import children_of
@@ -198,7 +199,7 @@ class QuestPanel(Widget):
         return self.scene.quest_state.is_done(key)
 
     def _unlocked(self, key: str) -> bool:
-        return is_unlocked(self._defs, self.scene.quest_state, key)
+        return is_unlocked(self._defs, self.scene.quest_state, self.scene.quests.ctx, key)
 
     def _thread_matches_filter(self, key: str) -> bool:
         mode = _FILTERS[self.filter_idx]
@@ -223,10 +224,20 @@ class QuestPanel(Widget):
 
         Ukończony krok zostaje widoczny bezwarunkowo: dziennik jest zapisem tego,
         co się stało, a znikający ukończony krok czyta się jak utrata postępu.
+
+        `requires_test` liczy się tu tak samo jak lista: krok, o którym gracz
+        jeszcze nie usłyszał, ma nie stać w dzienniku i zdradzać, co go czeka.
         """
         if self._done(key):
             return True
-        return all(self._done(required) for required in self._defs[key].requires)
+        quest = self._defs[key]
+        if not all(self._done(required) for required in quest.requires):
+            return False
+        if quest.requires_test and not check_condition(
+            quest.requires_test, self.scene.quests.ctx, ConditionScope.quest
+        ):
+            return False
+        return True
 
     def _rebuild(self) -> None:
         """Flatten the quest graph into the visible list of rows."""
