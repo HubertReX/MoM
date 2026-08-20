@@ -16,10 +16,7 @@ from settings import (
     MOM_DEBUG_TALK,
     TILE_SIZE,
     _,
-    entity_name,
-    get_buy_price_multiplier,
     get_msg,
-    get_sell_price_multiplier,
     Point,
 )
 from enums import ItemTypeEnum, NPCEventActionEnum
@@ -172,55 +169,12 @@ class Player(NPC):
                 npc.is_talking = True
             INPUTS["talk"] = False
 
-        if INPUTS["end_trade"]:
-            if self.scene.ui.is_open(TradePanel):
-                self.scene.ui.close(TradePanel)
-                # since trader might might accepted only selected types of items
-                # selected item index needs to be initiated again
-                filtered_items = self.get_tradable_items()
-                selected_item = filtered_items[self.selected_item_idx]
-                self.selected_item_idx = self.items.index(selected_item)
-
-                self.is_talking = False
-                if self.npc_met:
-                    self.npc_met.is_talking = False
-                INPUTS["quit"] = False
-            INPUTS["end_trade"] = False
-
-        if INPUTS["toggle"]:
-            if self.scene.ui.is_open(TradePanel):
-                self.scene.ui.toggle_trade_side()
-            INPUTS["toggle"] = False
-
-        if INPUTS["buy"]:
-            if self.scene.ui.is_open(TradePanel) and self.npc_met and self.scene.ui.is_buying:
-                if self.can_buy():
-                    item_to_buy = self.npc_met.drop_item(show=False)
-                    if item_to_buy:
-                        price = int(round(item_to_buy.model.value * get_buy_price_multiplier(self.npc_met.sentiment)))
-                        self.model.money -= price
-                        self.npc_met.model.money += price
-                        self.pick_up(item_to_buy)
-                        audio.play_sfx("coins")
-                        self.scene.add_notification(
-                            _("notify.bought", name=entity_name(item_to_buy.model), price=price),
-                            NotificationTypeEnum.info)
-            INPUTS["buy"] = False
-
-        if INPUTS["sell"]:
-            if self.scene.ui.is_open(TradePanel) and self.npc_met and not self.scene.ui.is_buying:
-                if self.can_sell():
-                    item_to_sell = self.drop_item(show=False)
-                    if item_to_sell:
-                        price = int(round(item_to_sell.model.value * get_sell_price_multiplier(self.npc_met.sentiment)))
-                        self.model.money += price
-                        self.npc_met.model.money -= price
-                        self.npc_met.pick_up(item_to_sell)
-                        audio.play_sfx("coins")
-                        self.scene.add_notification(
-                            _("notify.sold", name=entity_name(item_to_sell.model), price=price),
-                            NotificationTypeEnum.info)
-            INPUTS["sell"] = False
+        # Wejścia sklepu (buy/sell/toggle/end_trade) obsługuje wyłącznie
+        # `GameUI.update`: przy otwartym panelu `Scene.update` zamraża świat i wraca
+        # przed `group.update`, więc `Player.movement` w ogóle wtedy nie leci. Druga
+        # kopia tej obsługi siedziała tutaj i zdążyła się rozjechać z żywą (wydawała
+        # przedmiot spod indeksu z listy filtrowanej i sięgała po `filtered_items[i]`
+        # bez zabezpieczenia) - usunięta, testy w `tests/test_trade_rules.py`.
 
         # prevent player from moving and attacking while talking
         if self.is_talking:

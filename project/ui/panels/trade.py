@@ -44,6 +44,33 @@ _DIVIDER = theme.DIVIDER
 _TRADER_HDIV_Y = 330      # horizontal divider: hotbar (above) | item details (below)
 _TRADER_DETAILS_Y = 320   # item-details anchor (relative to panel top), just under it
 
+# Górna sekcja panelu handlarza (wszystko względem lewego-górnego rogu `trader_bg`):
+#
+#   28 ────── awatar 144x144 (nine-patch ma ramkę 6*4 = 24 px, więc niżej niż 10 px,
+#             bo awatar wchodził na ramkę)
+#  178 ────── imię, W CAŁOŚCI pod awatarem
+#  236 ────── pasek ekwipunku handlarza (slot 80 px + ikony klawiszy 22 px nad nim)
+#  330 ────── pozioma kreska (_TRADER_HDIV_Y) - pasek kończy się 14 px nad nią
+#
+# Zdjęcie i imię mają OSOBNE osie, i żadna z nich to nie `self._cx`. Imię bywa
+# szerokie („Barman Absinthrayner" to 480 px przy 144 px awatara), więc gdyby oba
+# wisiały na jednej osi, to albo napis wchodziłby na kolumnę statystyk, albo
+# awatar musiałby stać na środku panelu. Napis dostaje więc własne `_NAME_CX`
+# (dobrane tak, żeby najdłuższe imię mieściło się między ramkami), a zdjęcie stoi
+# pośrodku lewej strefy: między wewnętrzną krawędzią ramki a ikonami statystyk.
+# Paski ekwipunku dalej jadą po `self._cx`, żeby sloty handlarza i gracza stały
+# w jednej kolumnie.
+_PANEL_FRAME = 24         # wewnętrzna krawędź ramki (nine_patch: border 6 * scale 4)
+_STATS_X = 380            # kotwica kolumny statystyk (`hud.draw_icon_value` top_left)
+_STATS_ICON_DX = 30       # `left_margin` w draw_icon_value: ikona zaczyna się tyle dalej
+_NAME_CX = 280            # oś imienia
+# środek lewej strefy: równe luki do ramki po lewej i do ikon statystyk po prawej
+_AVATAR_CX = (_PANEL_FRAME + _STATS_X + _STATS_ICON_DX) // 2
+_AVATAR_TOP = 28          # góra awatara, poniżej ramki nine-patcha
+_NAME_GAP = 6             # odstęp między dołem awatara a górą imienia
+_STATS_TOP = 6            # kotwica kolumny statystyk (4 wiersze, koniec ~167)
+_TRADER_HOTBAR_Y = 236    # góra slotów paska handlarza
+
 
 class TradePanel(Widget):
     def __init__(self, scene: "Scene", hud: "HUD") -> None:
@@ -58,7 +85,9 @@ class TradePanel(Widget):
         w, h = self.trader_bg.get_size()
         pygame.draw.line(self.trader_bg, _DIVIDER, (w // 2, h - 140), (w // 2, h - 40), 4)
         pygame.draw.line(self.trader_bg, _DIVIDER, (40, _TRADER_HDIV_Y), (w - 40, _TRADER_HDIV_Y), 4)
-        self.trader_small_bg = theme.nine_patch("nine_patch_04.png", 800, 340).copy()
+        # wariant bez sekcji szczegółów (widok „moje"): musi zmieścić pasek przesunięty
+        # w dół do _TRADER_HOTBAR_Y + 80 px slota + margines na ramkę
+        self.trader_small_bg = theme.nine_patch("nine_patch_04.png", 800, 364).copy()
         self._reposition()
 
     def _reposition(self) -> None:
@@ -157,16 +186,21 @@ class TradePanel(Widget):
         self._draw_inventory(surface, npc)
 
         cx = self._cx
+        panel_top = self.trader_bg_rect.top
         avatar = pygame.transform.scale_by(merchant.avatar, 0.5)
         ar = avatar.get_rect()
-        surface.blit(avatar, (cx - ar.width // 2, self.trader_bg_rect.top + 10))
+        avatar_top = panel_top + _AVATAR_TOP
+        surface.blit(avatar, (self.trader_bg_rect.left + _AVATAR_CX - ar.width // 2, avatar_top))
+        name_font = self.game.fonts[FONT_SIZE_LARGE]
         self.hud.draw_text(
             surface, entity_name(merchant.model),
-            (cx, self.trader_bg_rect.top + 10 + ar.height - 16),
-            font=self.game.fonts[FONT_SIZE_LARGE], color=CHAR_NAME_COLOR,
+            (self.trader_bg_rect.left + _NAME_CX,
+             avatar_top + ar.height + _NAME_GAP + name_font.get_height() // 2),
+            font=name_font, color=CHAR_NAME_COLOR,
             border=(84, 135, 137), shadow=False, align="centred",
         )
-        self._draw_merchant_stats(surface, merchant, (cx + ar.width // 2, self.trader_bg_rect.top + 10))
+        self._draw_merchant_stats(
+            surface, merchant, (self.trader_bg_rect.left + _STATS_X, panel_top + _STATS_TOP))
 
         # both hotbars ride the same center -> the merchant's slots and "moje" stay in
         # one vertical line; only the y differs (merchant inside the panel, player at
@@ -176,7 +210,7 @@ class TradePanel(Widget):
 
         self.hud.draw_hotbar(
             surface, merchant,
-            (hb_x(merchant.max_items), self.trader_bg_rect.top + 10 + ar.height + 24),
+            (hb_x(merchant.max_items), panel_top + _TRADER_HOTBAR_Y),
             show_shortcuts=self.is_buying,
         )
         self.hud.draw_hotbar(
