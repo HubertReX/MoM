@@ -28,10 +28,22 @@ if (!globalThis.vis?.Network) {
 }
 const vis = globalThis.vis;
 
-if (!document.getElementById("mom-graph-css")) {
-    const st = document.createElement("style");
-    st.id = "mom-graph-css";
-    st.textContent = `
+// Arkusz ma WŁASNE id i jest ZAWSZE nadpisywany. Wspólne id z grafem dialogów
+// sprawiało, że pierwsza wyrenderowana w sesji Obsidiana notatka narzucała swój
+// CSS wszystkim kolejnym - legenda questów leciała wtedy bez stylu (grid dl,
+// rozmiary, próbki), bo arkusz dialogowy tych reguł nie ma. Nadpisywanie zamiast
+// pominięcia sprawia też, że po regeneracji notatki nowy CSS działa od razu,
+// bez restartu Obsidiana.
+// arkusz ze starym, współdzielonym id zostaje w <head> do końca sesji - usuń go
+document.getElementById("mom-graph-css")?.remove();
+const CSS_ID = "mom-quest-graph-css";
+let st = document.getElementById(CSS_ID);
+if (!st) {
+    st = document.createElement("style");
+    st.id = CSS_ID;
+    document.head.appendChild(st);
+}
+st.textContent = `
     .vis-tooltip { position: absolute; visibility: hidden; padding: 0 !important;
         border: none !important; background: transparent !important; box-shadow: none !important;
         z-index: 100; pointer-events: none; }
@@ -82,9 +94,7 @@ if (!document.getElementById("mom-graph-css")) {
     .mom-probs li:hover { text-decoration: underline; }
     .mom-probs .why { color: var(--text-muted); font-style: italic; margin-top: 4px; }
     .mom-net { border: 1px solid var(--background-modifier-border); border-radius: 8px; }
-    `;
-    document.head.appendChild(st);
-}
+`;
 
 // ---------------------------------------------------------------------- dane
 const G = JSON.parse(await app.vault.adapter.read(DATA));

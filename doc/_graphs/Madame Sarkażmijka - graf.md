@@ -23,10 +23,20 @@ if (!globalThis.vis?.Network) {
 }
 const vis = globalThis.vis;
 
-if (!document.getElementById("mom-graph-css")) {
-    const st = document.createElement("style");
-    st.id = "mom-graph-css";
-    st.textContent = `
+// Własne id arkusza (patrz quest_graph.py): wspólne "mom-graph-css" powodowało,
+// że ten CSS - bez reguł legendy - wygrywał z arkuszem grafu questów, jeśli
+// notatka dialogu renderowała się pierwsza. Zawsze nadpisujemy treść, żeby po
+// regeneracji nie trzeba było restartować Obsidiana.
+// arkusz ze starym, współdzielonym id zostaje w <head> do końca sesji - usuń go
+document.getElementById("mom-graph-css")?.remove();
+const CSS_ID = "mom-dialog-graph-css";
+let st = document.getElementById(CSS_ID);
+if (!st) {
+    st = document.createElement("style");
+    st.id = CSS_ID;
+    document.head.appendChild(st);
+}
+st.textContent = `
     .vis-tooltip { position: absolute; visibility: hidden; padding: 0 !important;
         border: none !important; background: transparent !important; box-shadow: none !important;
         z-index: 100; pointer-events: none; }
@@ -50,9 +60,7 @@ if (!document.getElementById("mom-graph-css")) {
     .mom-probs li { cursor: pointer; }
     .mom-probs li:hover { text-decoration: underline; }
     .mom-net { border: 1px solid var(--background-modifier-border); border-radius: 8px; }
-    `;
-    document.head.appendChild(st);
-}
+`;
 
 // ---------------------------------------------------------------------- dane
 const G = JSON.parse(await app.vault.adapter.read(DATA));
