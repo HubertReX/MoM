@@ -8,7 +8,7 @@ aliases:
 
 **Requires**: [[Q01_S01 Kto wie więcej o klątwie]]
 **Completion**: `test`
-**Test**: `quest_done(`[[Q03_S00 Znajdź kogoś kto wie o magii]]`)`
+**Test**: `visited(`[[Zielarka Zmora#009]]`)`
 **Success**: Wiemy już, że [[Zielarka Zmora|Zielarka]] nic konkretnego nie wie, ale dała nowy trop: trzeba poszukać [[Bibliofilistka des Informacja|Bibliofilistki des Inforamacji]]
 **Reward**: `restore_health(20)`
 

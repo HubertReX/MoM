@@ -2,10 +2,10 @@
  "meta": {
   "source": "project/config_model/config.json",
   "counts": {
-   "quests": 12,
+   "quests": 13,
    "threads": 3,
    "roots": 1,
-   "dialogs": 10,
+   "dialogs": 11,
    "quest_gates": 1
   },
   "modes": {
@@ -223,7 +223,7 @@
    ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
-   "test": "quest_done(\"Q03_S00_LEARN_ABOUT_CURSE\")",
+   "test": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")",
    "requires_test": null,
    "progress": null,
    "progress_total": 0,
@@ -239,10 +239,66 @@
    },
    "problem": null,
    "link": "Q01_S02 Wypytaj Zielarkę o klątwę",
-   "row": 6.0
+   "row": 3.0
   },
   {
-   "id": "Q01_S03_MEET_MADAME_SARCASMIA",
+   "id": "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION",
+   "level": 3,
+   "name": "Zbierz informacje o Bibliofilistce des Informacji",
+   "name_runs": [
+    {
+     "text": "Zbierz informacje o ",
+     "bold": false
+    },
+    {
+     "text": "Bibliofilistce des Informacji",
+     "bold": true
+    }
+   ],
+   "description_runs": [
+    {
+     "text": "Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie ",
+     "bold": false
+    },
+    {
+     "text": "bardzo",
+     "bold": true
+    },
+    {
+     "text": " wysokie mniemanie. Ta osoba to ",
+     "bold": false
+    },
+    {
+     "text": "Bibliofilistka des Informacja",
+     "bold": true
+    },
+    {
+     "text": ".",
+     "bold": false
+    }
+   ],
+   "completion": "test",
+   "completion_text": "warunek zamyka ją sam",
+   "test": "quest_done(\"Q03_S00_LEARN_ABOUT_CURSE\")",
+   "requires_test": null,
+   "progress": null,
+   "progress_total": 0,
+   "kind": "quest",
+   "is_thread": false,
+   "is_root": false,
+   "rewards": [
+    "+50 złota"
+   ],
+   "colour": {
+    "bg": "#a5d8ff",
+    "border": "#1971c2"
+   },
+   "problem": null,
+   "link": "Q01_S03 Zbierz informacje o Bibliofilistce",
+   "row": 5.0
+  },
+  {
+   "id": "Q01_S04_MEET_MADAME_SARCASMIA",
    "level": 3,
    "name": "Spotkaj się z Sarkażmijką",
    "name_runs": [
@@ -257,27 +313,11 @@
    ],
    "description_runs": [
     {
-     "text": "Wiedzieć o ",
+     "text": "Pora spotkać się z ",
      "bold": false
     },
     {
-     "text": "klątwie",
-     "bold": true
-    },
-    {
-     "text": " to jedno, a zdjąć ją to zupełnie inna para kaloszy.  Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie ",
-     "bold": false
-    },
-    {
-     "text": "bardzo",
-     "bold": true
-    },
-    {
-     "text": " wysokie mniemanie. To ",
-     "bold": false
-    },
-    {
-     "text": "Bibliofilistka des Informacja",
+     "text": "Madame Sarkażmijką",
      "bold": true
     },
     {
@@ -302,8 +342,8 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Q01_S03 Spotkaj się z Sarkażmijką",
-   "row": 7.0
+   "link": "Q01_S04 Spotkaj się z Sarkażmijką",
+   "row": 6.0
   },
   {
    "id": "Q03_S00_LEARN_ABOUT_CURSE",
@@ -371,7 +411,7 @@
    },
    "problem": null,
    "link": "Q03_S00 Znajdź kogoś kto wie o magii",
-   "row": 0.0
+   "row": 7.0
   },
   {
    "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
@@ -411,7 +451,7 @@
    },
    "problem": null,
    "link": "Q03_S01 Kto ma wiedzę o magii",
-   "row": 0.0
+   "row": 7.0
   },
   {
    "id": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
@@ -455,7 +495,7 @@
    },
    "problem": null,
    "link": "Q03_S02 Gdzie znaleźć tę osobę",
-   "row": 3.0
+   "row": 10.0
   },
   {
    "id": "Q03_S03_HOW_TO_GET_THERE",
@@ -499,7 +539,7 @@
    },
    "problem": null,
    "link": "Q03_S03 Jak tam dotrzeć",
-   "row": 5.0
+   "row": 12.0
   },
   {
    "id": "Q04_S00_TOP_PRIORITY_MATTERS",
@@ -559,7 +599,7 @@
    },
    "problem": null,
    "link": "Q04_S00 Sprawy najwyższej wagi",
-   "row": 6.0
+   "row": 3.0
   },
   {
    "id": "Q04_S01_FISH_EATEN_BY_CAT",
@@ -671,7 +711,7 @@
    },
    "problem": null,
    "link": "Q04_S01 Ryby, które zjadł kot",
-   "row": 6.0
+   "row": 3.0
   },
   {
    "id": "Q04_S02_TAVERN_TROPHY",
@@ -783,7 +823,7 @@
    },
    "problem": null,
    "link": "Q04_S02 Trofeum z dalekiego świata",
-   "row": 8.0
+   "row": 5.0
   },
   {
    "id": "dlg:CLAPBACK_SWORD#015",
@@ -992,6 +1032,56 @@
    "row": 1.0
   },
   {
+   "id": "dlg:POTIONEER_PUZZLEMINT#009",
+   "level": 4,
+   "name": "Zielarka Zmora #009",
+   "name_runs": [
+    {
+     "text": "Zielarka Zmora #009",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "POTIONEER_PUZZLEMINT",
+   "npc_name": "Zielarka Zmora",
+   "node": "009",
+   "text_runs": [
+    {
+     "text": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara ",
+     "bold": false
+    },
+    {
+     "text": "klątwa",
+     "bold": true
+    },
+    {
+     "text": " i rzadko kto po nią sięga. Nie znam na to lekarstwa. Jedynie mogę Ci dać ",
+     "bold": false
+    },
+    {
+     "text": "Miksturę Zapomnienia",
+     "bold": true
+    },
+    {
+     "text": ", ale to raczej nie rozwiąże problemu.  Może ktoś inny, będzie wiedział więcej",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Wypytaj Zielarkę o klątwę"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Zielarka Zmora#009",
+   "row": 4.0
+  },
+  {
    "id": "dlg:MADAME_SARCASMIA#001",
    "level": 4,
    "name": "Madame Sarkażmijka #001",
@@ -1031,7 +1121,7 @@
     "border": "#7048e8"
    },
    "link": "Madame Sarkażmijka#001",
-   "row": 8.0
+   "row": 7.0
   },
   {
    "id": "dlg:POTIONEER_PUZZLEMINT#014",
@@ -1081,7 +1171,7 @@
     "border": "#7048e8"
    },
    "link": "Zielarka Zmora#014",
-   "row": 1.0
+   "row": 8.0
   },
   {
    "id": "dlg:POTIONEER_PUZZLEMINT#017",
@@ -1123,7 +1213,7 @@
     "border": "#7048e8"
    },
    "link": "Zielarka Zmora#017",
-   "row": 2.0
+   "row": 9.0
   },
   {
    "id": "dlg:HAMMER_HOAXHEART#009",
@@ -1173,7 +1263,7 @@
     "border": "#7048e8"
    },
    "link": "Kowal Kłamca#009",
-   "row": 4.0
+   "row": 11.0
   },
   {
    "id": "dlg:BARMAN_ABSINTHRAYNER#017",
@@ -1239,7 +1329,7 @@
     "border": "#7048e8"
    },
    "link": "Barman Absyntnent#017",
-   "row": 6.0
+   "row": 13.0
   },
   {
    "id": "dlg:BARMAN_ABSINTHRAYNER#024",
@@ -1281,7 +1371,7 @@
     "border": "#7048e8"
    },
    "link": "Barman Absyntnent#024",
-   "row": 7.0
+   "row": 4.0
   },
   {
    "id": "dlg:BARMAN_ABSINTHRAYNER#029",
@@ -1323,7 +1413,7 @@
     "border": "#7048e8"
    },
    "link": "Barman Absyntnent#029",
-   "row": 9.0
+   "row": 6.0
   }
  ],
  "edges": [
@@ -1349,23 +1439,33 @@
   },
   {
    "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
+   "to": "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION",
+   "kind": "requires"
+  },
+  {
+   "from": "Q01_S00_BREAK_THE_CURSE",
+   "to": "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION",
+   "kind": "parent"
+  },
+  {
+   "from": "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION",
    "to": "Q03_S00_LEARN_ABOUT_CURSE",
    "kind": "closes_quest",
    "negated": false,
    "alt": false
   },
   {
-   "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
-   "to": "Q01_S03_MEET_MADAME_SARCASMIA",
+   "from": "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION",
+   "to": "Q01_S04_MEET_MADAME_SARCASMIA",
    "kind": "requires"
   },
   {
    "from": "Q01_S00_BREAK_THE_CURSE",
-   "to": "Q01_S03_MEET_MADAME_SARCASMIA",
+   "to": "Q01_S04_MEET_MADAME_SARCASMIA",
    "kind": "parent"
   },
   {
-   "from": "Q01_S01_LEARN_ABOUT_CURSE",
+   "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
    "to": "Q03_S00_LEARN_ABOUT_CURSE",
    "kind": "requires"
   },
@@ -1436,7 +1536,14 @@
    "alt": true
   },
   {
-   "from": "Q01_S03_MEET_MADAME_SARCASMIA",
+   "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
+   "to": "dlg:POTIONEER_PUZZLEMINT#009",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
+   "from": "Q01_S04_MEET_MADAME_SARCASMIA",
    "to": "dlg:MADAME_SARCASMIA#001",
    "kind": "closes",
    "negated": false,

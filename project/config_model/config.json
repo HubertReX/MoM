@@ -4070,9 +4070,9 @@
             "bark.FARM_ANIMALS.004": "woof, woof",
             "bark.FARM_ANIMALS.005": "meow",
             "bark.FARM_ANIMALS.006": "mEOw",
-            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_NAME": "Meet [char]Sarcasmia[/char]",
-            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_DESCRIPTION": "Knowing about a [quest]curse[/] is one thing, lifting it is an entirely different kettle of fish.\n\nApparently there is someone who dabbles in exactly that and who, apparently, thinks [shadow]very[/shadow] highly of herself.",
-            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarcasmia[/char] listened, sighed theatrically, and concluded it is probably just bad luck. She will try to help, though - for a [italic]small[/italic] favour.",
+            "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_NAME": "Meet [char]Sarcasmia[/char]",
+            "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_DESCRIPTION": "Knowing about a [quest]curse[/] is one thing, lifting it is an entirely different kettle of fish.\n\nApparently there is someone who dabbles in exactly that and who, apparently, thinks [shadow]very[/shadow] highly of herself.",
+            "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarcasmia[/char] listened, sighed theatrically, and concluded it is probably just bad luck. She will try to help, though - for a [italic]small[/italic] favour.",
             "M_MARRY_DN_000": "Hello :exclamation:",
             "M_MARRY_DO_000to099_1": "Actually, I have no questions",
             "M_MARRY_DN_099": "See you around :exclamation:",
@@ -4140,7 +4140,10 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to021_7": "And what do you have for sale:question:",
             "M_MALACHI_DN_000": "Hi :exclamation:",
             "M_MALACHI_DO_000to099_1": "Actually I have nothing to say",
-            "M_MALACHI_DN_099": "See ya :exclamation:"
+            "M_MALACHI_DN_099": "See ya :exclamation:",
+            "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_NAME": "Collect info about [char]Miss Information[/char]",
+            "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_DESCRIPTION": "Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie [shadow]bardzo[/shadow] wysokie mniemanie. Ta osoba to [char]Miss Information[/char].",
+            "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_SUCCESS": "[char]Miss Information[/char] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za [italic]drobną[/italic] przysługę."
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Tawernie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
@@ -4467,9 +4470,9 @@
             "bark.FARM_ANIMALS.004": "hał, hał",
             "bark.FARM_ANIMALS.005": "miau",
             "bark.FARM_ANIMALS.006": "mIAu",
-            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_NAME": "Spotkaj się z [char]Sarkażmijką[/char]",
-            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_DESCRIPTION": "Wiedzieć o [quest]klątwie[/] to jedno, a zdjąć ją to zupełnie inna para kaloszy.\n\nPodobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie [shadow]bardzo[/shadow] wysokie mniemanie. To [char]Bibliofilistka des Informacja[/char].",
-            "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarkażmijka[/char] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za [italic]drobną[/italic] przysługę.",
+            "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_NAME": "Spotkaj się z [char]Sarkażmijką[/char]",
+            "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_DESCRIPTION": "Pora spotkać się z [char]Madame Sarkażmijką[/char].",
+            "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_SUCCESS": "[char]Sarkażmijka[/char] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za [italic]drobną[/italic] przysługę.",
             "M_MARRY_DN_000": "Witaj :exclamation:",
             "M_MARRY_DO_000to099_1": "W sumie to nie mam pytań",
             "M_MARRY_DN_099": "Do zobaczenia :exclamation:",
@@ -4537,7 +4540,10 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to021_7": "A może ja mogę coś dla [shadow]Ciebie[/shadow] zrobić:question:",
             "M_MALACHI_DN_000": "Witaj :exclamation:",
             "M_MALACHI_DO_000to099_1": "W sumie to nie mam pytań",
-            "M_MALACHI_DN_099": "Do zobaczenia :exclamation:"
+            "M_MALACHI_DN_099": "Do zobaczenia :exclamation:",
+            "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_NAME": "Zbierz informacje o [char]Bibliofilistce des Informacji[/char]",
+            "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_DESCRIPTION": "Podobno jest ktoś, kto się takimi rzeczami para i podobno, ma o sobie [shadow]bardzo[/shadow] wysokie mniemanie. Ta osoba to [char]Bibliofilistka des Informacja[/char].",
+            "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_SUCCESS": "[char]Bibliofilistka des Informacja[/char] wysłuchała, westchnęła dramatycznie i uznała, że to pewnie zwykły pech. Pomóc jednak spróbuje, ale za [italic]drobną[/italic] przysługę."
         }
     },
     "quests": {
@@ -4592,7 +4598,7 @@
             "description": "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_DESCRIPTION",
             "success": "M_QUEST_Q01_S02_ASK_POTIONEER_ABOUT_CURSE_SUCCESS",
             "completion": "test",
-            "test": "quest_done(\"Q03_S00_LEARN_ABOUT_CURSE\")",
+            "test": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")",
             "requires": [
                 "Q01_S01_LEARN_ABOUT_CURSE"
             ],
@@ -4604,14 +4610,31 @@
             ],
             "parent": "Q01_S00_BREAK_THE_CURSE"
         },
-        "Q01_S03_MEET_MADAME_SARCASMIA": {
-            "name": "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_NAME",
-            "description": "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_DESCRIPTION",
-            "success": "M_QUEST_Q01_S03_MEET_MADAME_SARCASMIA_SUCCESS",
+        "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION": {
+            "name": "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_NAME",
+            "description": "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_DESCRIPTION",
+            "success": "M_QUEST_Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION_SUCCESS",
+            "completion": "test",
+            "test": "quest_done(\"Q03_S00_LEARN_ABOUT_CURSE\")",
+            "requires": [
+                "Q01_S02_ASK_POTIONEER_ABOUT_CURSE"
+            ],
+            "rewards": [
+                {
+                    "category": "money",
+                    "value": 50
+                }
+            ],
+            "parent": "Q01_S00_BREAK_THE_CURSE"
+        },
+        "Q01_S04_MEET_MADAME_SARCASMIA": {
+            "name": "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_NAME",
+            "description": "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_DESCRIPTION",
+            "success": "M_QUEST_Q01_S04_MEET_MADAME_SARCASMIA_SUCCESS",
             "completion": "test",
             "test": "visited(\"MADAME_SARCASMIA\", \"001\")",
             "requires": [
-                "Q01_S02_ASK_POTIONEER_ABOUT_CURSE"
+                "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION"
             ],
             "rewards": [
                 {
@@ -4627,7 +4650,7 @@
             "success": "M_QUEST_Q03_S00_LEARN_ABOUT_CURSE_SUCCESS",
             "completion": "all_subquests",
             "requires": [
-                "Q01_S01_LEARN_ABOUT_CURSE"
+                "Q01_S02_ASK_POTIONEER_ABOUT_CURSE"
             ],
             "rewards": [
                 {

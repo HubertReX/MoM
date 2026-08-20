@@ -1,6 +1,6 @@
 ---
 aliases:
-  - Q01_S03_MEET_MADAME_SARCASMIA
+  - Q01_S04_MEET_MADAME_SARCASMIA
 ---
 # Meet [[Madame Sarcasmia|Sarcasmia]]
 
