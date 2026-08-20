@@ -10,9 +10,9 @@ W [[Tawerna Brakująca klepka|Tawernie]] mówi się wszystkim i o wszystkich - t
 
 **Completion**: `test`
 **Test**: `visited(`[[Barman Absyntnent#012]]`) or visited(`[[Barman Absyntnent#009]]`)`
-**Success**: [[Barman Absyntnent|Barman]] zna kogoś od mikstur: jest stara, ślepa, mieszka koło lasu i czasem, po jej miksturach, ludziom robi się gorzej. Czy może być lepsza rekomendacja?
+**Success**: [[Barman Absyntnent|Barman]] zna _specjalistkę_ od mikstur: jest stara, prawie ślepa, mieszka koło lasu i czasem, po jej miksturach, ludziom robi się gorzej. Czy może być lepsza rekomendacja?
 **Reward**: `restore_health(20)`
 
 ## Notatki
 
-Nakrótsza droga do zamknięcia: [[Barman Absyntnent]] : 1 -> 4 -> 1
+Nakrótsza droga do zamknięcia: [[Barman Absyntnent]] : 1 -> 5 -> 1 -> 7

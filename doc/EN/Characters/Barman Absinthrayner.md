@@ -192,8 +192,8 @@ Sometimes folk get even worse after those [item]potions[/item]. If you are despe
 * Now that **you** mention it, there might be something...
 
 * [[#022]] 1[`not visited(`[[Barman Absinthrayner#022]]`)`]😐: I hear the [char]cat[/] gobbled up all the [[Fresh fish|fish]]?
-* [[#026]] 2😐: **TODO** Q04_S02
-* [[#001]] 3😐: **TODO** Q04_S03
+* [[#026]] 2[`not visited(`[[Barman Absyntnent#026]]`) and quest_done(`[[Q04_S01 Ryby, które zjadł kot]]`)]`😐: Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:
+* [[#030]] 3[`not visited(`[[Barman Absyntnent#030]]`) and quest_done(`[[Q04_S02 Trofeum z dalekiego świata]]`)]`😐: **TODO** Q04_S03
 * [[#024]] 4[`item_count(`[[Fresh fish]]`) >= 5 and visited(`[[Barman Absinthrayner#022]]`)`]😐: I have got those [[Fresh fish|fish]] for **you**
 * [[#029]] 5[`item_count(`[[Zielony kryształ]]`) >= 1 and visited(`[[Barman Absyntnent#024]]`)`]😐: Mam dla **Ciebie** [[Zielony kryształ]]
 * [[#001]] 9😐: Bah, never mind
@@ -259,6 +259,12 @@ Co do zapłaty, to myślę, że mogę Ci za to dać [num]30[/] monet:$: To więc
 * Och! Ależ się błyszczy:love_anim: Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!
 
 Oto **Twoja** nagroda :$:.
+
+* [[#001]] 1😐: Cieszę się, że mogłem pomóc.
+
+## 030
+
+* **TODO** Q04_S03
 
 * [[#001]] 1😐: Cieszę się, że mogłem pomóc.
 

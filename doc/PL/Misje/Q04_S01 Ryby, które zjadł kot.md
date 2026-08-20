@@ -6,11 +6,11 @@ aliases:
 
 [char]Kot[/] zjadł zapas [[Świeża ryba|ryb]]. Dla [[Barman Absyntnent|Barmana]] to nie jest problem gastronomiczny, tylko nadchodząca **wojna domowa**!
 
-[char]Kot[/] trzyma [[Świeża ryba|ryby]] w [item]skrzyni[/] ukrytej gdzieś za krzakami. Tylko trzeba odpowiednio mocnej broni, aby zniszczyć te krzaki. Chyba, że dałoby się inaczej zdobyć te [item]ryby[/].
+[char]Kot[/] trzyma [[Świeża ryba|ryby]] w skrzyni ukrytej gdzieś za krzakami. Tylko trzeba odpowiednio mocnej broni, aby zniszczyć te krzaki. Chyba, że dałoby się inaczej zdobyć te [item]ryby[/].
 
-Potem wystarczy odnieść [item]ryby[/] do [[Barman Absyntnent|Barmana]].
+Potem wystarczy odnieść je do [[Barman Absyntnent|Barmana]].
 
-
+**Requires**: `visited(`[[Barman Absyntnent#023]]`)`
 **Completion**: `test`
 **Test**: `visited(`[[Barman Absyntnent#024]]`)`
 **Success**: Są ryby, jest zakąska, klienci zadowoleni - kolejny **kryzys** zarzegnany.

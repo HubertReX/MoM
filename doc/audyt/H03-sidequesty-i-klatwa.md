@@ -258,7 +258,7 @@ Miecz: "Bo przeczytałeś ją głośno, a ja mam bardzo dobrą pamięć."
 To zdanie **zapala Akt 2** i jest najważniejszą linijką w całym Prologu: od tej chwili klątwa nie jest chorobą do wyleczenia, tylko rzeczą do przekazania - a [[Malachiasz|Malachi]] zna już całkiem sporo osób.
 
 **Nagroda:** `max_health=+10`, `sentiment=+15 @POTIONEER_PUZZLEMINT`
-**Requires:** `Q03_S01_WHO_HAS_MORE_KNOWLEDGE` ([[Q03_S01 Kto ma wiedzę o magii]]) bo musi wiedzieć, kim była [[Bibliofilistka des Informacja|Mariolka]].
+**Requires:** `Q03_S01_WHO_HAS_MORE_KNOWLEDGE` ([[Q03_S01 Co się stało z Mariolką]]) bo musi wiedzieć, kim była [[Bibliofilistka des Informacja|Mariolka]].
 
 **Do rozstrzygnięcia u autora:** czy ta kartka ma być tu, czy dopiero u [[Bibliofilistka des Informacja|Bibliofilistki]] w Akcie 2. Tu jest wcześniej i mocniej, ale zjada część niespodzianki Aktu 2.
 

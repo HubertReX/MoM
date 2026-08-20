@@ -153,23 +153,22 @@ Tak jak ja.
 
 Ją interesowały książki, szczególnie te o **magii**. Szybką ją odprawiłam, bo nie miałam z niej pożytku, ale może **Tobie** mogła by pomóc.
 
-* [[#012]] 1😐: To brzmi **interesująco**, powiedz mi o niej coś więcej.
+* [[#014]] 1[`sentiment >= 42`]😐: Jak się **ona** nazywa?
+* [[#017]] 2[`sentiment < 42`]😐: Jak się **ona** nazywa?
 
 ## 012
 
 * Co chciałbyś wiedzieć?
 
 * [[#013]] 1😐: Co się z **nią** później stało?
-* [[#014]] 2[`sentiment >= 42`]😐: Jak się **ona** nazywa?
-* [[#017]] 2[`sentiment < 42`]😐: Jak się **ona** nazywa?
-* [[#015]] 4😐: Gdzie mogę **ją** znaleźć?
+* [[#015]] 2😐: Gdzie mogę **ją** znaleźć?
 * [[#001]] 9😐: Dzięki, to mi wystarczy.
 
 ## 013
 
 * Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. 
 
-Mówią, że została specjalistką od zakazanych **magicznych** ksiąg w [[Tajna biblioteka|Tajnej bibliotece]].
+Mówią, że została specjalistką od zakazanych **magicznych** ksiąg.
 
 * [[#012]] 1😐: O! Dzięki!
 
@@ -185,13 +184,13 @@ Mówią, że została specjalistką od zakazanych **magicznych** ksiąg w [[Tajn
 
 Tak czy siak, ludzie zaczęli na nią wołać [[Bibliofilistka des Informacja]].
 
-* [[#012]] 1😐: ok, dzięki.
+* [[#012]] 1😐: To brzmi **interesująco**, powiedz mi o niej coś więcej.
 
 ## 017
 
 * Po odejściu ode mnie ludzie zaczęli na nią wołać [[Bibliofilistka des Informacja]].
 
-* [[#012]] 1😐: ok, dzięki.
+* [[#012]] 1😐: To brzmi **interesująco**, powiedz mi o niej coś więcej.
 
 ## 990-end
 [[#001]]

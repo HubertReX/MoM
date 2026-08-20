@@ -131,17 +131,15 @@ The way I do.
 
 She was interested in books too, especially those about **magic**. I sent her away quickly, since she was of no use to me, but she might be of use to **you**.
 
-* [[#012]] 1😐: That sounds **interesting**, tell me more about her.
+* [[#014]] 2[`sentiment >= 42`]😐: What is **her** name?
+* [[#017]] 2[`sentiment < 42`]😐: What is **her** name?
 
 ## 012
 
 * What would you like to know?
 
 * [[#013]] 1😐: What became of **her** afterwards?
-* [[#014]] 2[`sentiment >= 42`]😐: What is **her** name?
-* [[#017]] 2[`sentiment < 42`]😐: What is **her** name?
-* [[#015]] 4😐: Where can I find **her**?
-
+* [[#015]] 2😐: Where can I find **her**?
 * [[#001]] 9😐: Thanks, that is enough for me.
 
 ## 013
@@ -150,13 +148,13 @@ She was interested in books too, especially those about **magic**. I sent her aw
 
 They say she became a specialist in forbidden **magical** tomes in the [[Secret Library]].
 
-* [[#012]] 1😐: Oh! Thank you!
+* [[#012]] 1😐: That sounds **interesting**, tell me more about her.
 
 ## 015
 
 * She works now in the [[Secret Library]], somewhere under a larger city. I have heard nothing more. But you know, [[Hammer Hoaxheart]] gets customers from far-off parts. Maybe **you** can squeeze something out of that _grouch_.
 
-* [[#012]] 1😐: Thank you, that is valuable information.
+* [[#012]] 1😐: That sounds **interesting**, tell me more about her.
 
 ## 014
 

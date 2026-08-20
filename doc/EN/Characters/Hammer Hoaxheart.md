@@ -76,9 +76,16 @@ He is a blacksmith who claims that his swords can cut through shadows and that h
 
 * The other [loc]villages[/] are just as poor. [item]Weapons[/] and [item]armour[/] are bought only by the conceited young gentlemen from the city of [[Quirkshire]].
 
-* [[#009]] 1😇: Then they must be good customers? Do you know anyone there?
-* [[#009]] 2😢: Those _grand gentlemen_ probably look down on **you**. Do you deal with them often?
-* [[#009]] 3😉: And what would those _French poodles_ need good [item]weapons[/] for? Hunting the [char]tavern keeper's[/] chickens with [item]crossbows[/]?
+* [[#011]] 1[`visited(`[[Zielarka Zmora#015]]`)`]😐: A wiesz może, gdzie jest [[Tajna biblioteka]]?
+* [[#009]] 2😇: Then they must be good customers? Do you know anyone there?
+* [[#009]] 3😢: Those _grand gentlemen_ probably look down on **you**. Do you deal with them often?
+* [[#009]] 4😉: And what would those _French poodles_ need good [item]weapons[/] for? Hunting the [char]tavern keeper's[/] chickens with [item]crossbows[/]?
+
+## 011
+
+* Bardo możliwe, że tak nazywa się biblioteka w miejscowości [[Porażkowo]]. Pytaj [[Barman Absyntnent|Barmana Absyntnenta]] - on gada ze wszystkimi przybyszami.
+
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ## 009
 

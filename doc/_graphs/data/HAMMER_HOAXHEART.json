@@ -5,8 +5,8 @@
   "source": "PL/Postacie/Kowal Kłamca.md",
   "start_node": "000",
   "counts": {
-   "nodes": 12,
-   "options": 27
+   "nodes": 13,
+   "options": 29
   },
   "global_problems": [],
   "palette": {
@@ -110,7 +110,7 @@
   {
    "id": "004",
    "level": 2,
-   "text": "Pozostałe wsie[/] są tak samo biedne. Broń[/] i zbroje[/] kupują jedynie zarozumiali panicze z miasta Porażkowo.",
+   "text": "Pozostałe wsie[/] są tak samo biedne. Broń[/] i zbroje[/] kupują jedynie zarozumiali panicze.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -119,9 +119,20 @@
    "link": "Kowal Kłamca#004"
   },
   {
+   "id": "011",
+   "level": 3,
+   "text": "Bardo możliwe, że tak nazywa się biblioteka w miejscowości Porażkowo. Pytaj Barmana Absyntnenta - on gada ze wszystkimi przybyszami.",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Kowal Kłamca#011"
+  },
+  {
    "id": "009",
    "level": 3,
-   "text": "Nie lubię miasta[/], nie jeżdżę tam. Pytaj Barmana Absyntnenta - on gada ze wszystkimi przybyszami.",
+   "text": "Nie lubię miasta[/], nie jeżdżę tam.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -357,10 +368,20 @@
   },
   {
    "from": "004",
+   "to": "011",
+   "kind": "option",
+   "key": "004to011_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "A wiesz może, gdzie jest Tajna biblioteka?",
+   "condition": "visited(\"POTIONEER_PUZZLEMINT\", \"015\")"
+  },
+  {
+   "from": "004",
    "to": "009",
    "kind": "option",
-   "key": "004to009_1",
-   "order": 1,
+   "key": "004to009_2",
+   "order": 2,
    "sentiment": "kind",
    "text": "No to oni pewnie dadzą zarobić? Znasz tam kogoś?",
    "condition": null
@@ -369,8 +390,8 @@
    "from": "004",
    "to": "009",
    "kind": "option",
-   "key": "004to009_2",
-   "order": 2,
+   "key": "004to009_3",
+   "order": 3,
    "sentiment": "weak",
    "text": "Pewnie Cię poniżają ci wielcy panicze. Często masz z nimi do czynienia?",
    "condition": null
@@ -379,10 +400,20 @@
    "from": "004",
    "to": "009",
    "kind": "option",
-   "key": "004to009_3",
-   "order": 3,
+   "key": "004to009_4",
+   "order": 4,
    "sentiment": "funny",
    "text": "A po co tym francuskim pieskom dobra broń[/]? Polują kuszami[/] na kury karczmarza[/]?",
+   "condition": null
+  },
+  {
+   "from": "011",
+   "to": "001",
+   "kind": "option",
+   "key": "011to001_9",
+   "order": 9,
+   "sentiment": "neutral",
+   "text": "Dzięki, to mi wystarczy",
    "condition": null
   },
   {

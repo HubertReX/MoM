@@ -5,7 +5,7 @@
    "quests": 13,
    "threads": 3,
    "roots": 1,
-   "dialogs": 11,
+   "dialogs": 13,
    "quest_gates": 1
   },
   "modes": {
@@ -217,13 +217,13 @@
      "bold": true
     },
     {
-     "text": ". Co więcej, możemy się na niego powołać, bo inaczej może nie chcieć z nami rozmawiać.",
+     "text": ". Co więcej, możemy się na niego powołać, bo inaczej może nie chcieć z nami rozmawiać.  Można ją znaleźć w chałupie na końcu wioski, koło lasu.",
      "bold": false
     }
    ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
-   "test": "visited(\"POTIONEER_PUZZLEMINT\", \"009\")",
+   "test": "visited(\"POTIONEER_PUZZLEMINT\", \"014\") or visited(\"POTIONEER_PUZZLEMINT\", \"017\")",
    "requires_test": null,
    "progress": null,
    "progress_total": 0,
@@ -244,14 +244,14 @@
   {
    "id": "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION",
    "level": 3,
-   "name": "Zbierz informacje o Bibliofilistce des Informacji",
+   "name": "Zbierz informacje o Mariolce",
    "name_runs": [
     {
      "text": "Zbierz informacje o ",
      "bold": false
     },
     {
-     "text": "Bibliofilistce des Informacji",
+     "text": "Mariolce",
      "bold": true
     }
    ],
@@ -269,11 +269,11 @@
      "bold": false
     },
     {
-     "text": "Bibliofilistka des Informacja",
+     "text": "Mariolka",
      "bold": true
     },
     {
-     "text": ".",
+     "text": ".  Musimy dowiedzieć się co się z nią stało, gdzie teraz przebywa i jak tam trafić.",
      "bold": false
     }
    ],
@@ -294,20 +294,20 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Q01_S03 Zbierz informacje o Bibliofilistce",
-   "row": 5.0
+   "link": "Q01_S03 Zbierz informacje o Mariolce",
+   "row": 6.0
   },
   {
-   "id": "Q01_S04_MEET_MADAME_SARCASMIA",
+   "id": "Q01_S04_MEET_MISS_INFORMATION",
    "level": 3,
-   "name": "Spotkaj się z Sarkażmijką",
+   "name": "Spotkaj się z Bibliofilistką des Informacją",
    "name_runs": [
     {
      "text": "Spotkaj się z ",
      "bold": false
     },
     {
-     "text": "Sarkażmijką",
+     "text": "Bibliofilistką des Informacją",
      "bold": true
     }
    ],
@@ -317,17 +317,49 @@
      "bold": false
     },
     {
-     "text": "Madame Sarkażmijką",
+     "text": "Bibliofilistką des Informacją",
      "bold": true
     },
     {
-     "text": ".",
+     "text": ". Wiemy już, pracuje ona w ",
+     "bold": false
+    },
+    {
+     "text": "Tajnej bibliotece",
+     "bold": true
+    },
+    {
+     "text": " pod miastem ",
+     "bold": false
+    },
+    {
+     "text": "Porażkowo",
+     "bold": true
+    },
+    {
+     "text": ". To dwa dni drogi na północ od ",
+     "bold": false
+    },
+    {
+     "text": "Gafowo Kolonia",
+     "bold": true
+    },
+    {
+     "text": ", za ",
+     "bold": false
+    },
+    {
+     "text": "Splątanym lasem irytacji",
+     "bold": true
+    },
+    {
+     "text": " trzeba skręcić na wschód.",
      "bold": false
     }
    ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
-   "test": "visited(\"MADAME_SARCASMIA\", \"001\")",
+   "test": "visited(\"MISS_INFORMATION\", \"000\")",
    "requires_test": null,
    "progress": null,
    "progress_total": 0,
@@ -342,17 +374,21 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Q01_S04 Spotkaj się z Sarkażmijką",
-   "row": 6.0
+   "link": "Q01_S04 Spotkaj się z Bibliofilistką des Informacją",
+   "row": 7.0
   },
   {
    "id": "Q03_S00_LEARN_ABOUT_CURSE",
    "level": 5,
-   "name": "Znajdź kogoś kto wie o magii",
+   "name": "Zbieranie informacji o Mariolce",
    "name_runs": [
     {
-     "text": "Znajdź kogoś kto wie o magii",
+     "text": "Zbieranie informacji o ",
      "bold": false
+    },
+    {
+     "text": "Mariolce",
+     "bold": true
     }
    ],
    "description_runs": [
@@ -381,7 +417,7 @@
      "bold": true
     },
     {
-     "text": ", który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o ",
+     "text": ", który wie wszystko. Tak czy owak, ktoś, gdzieś, musi wiedzieć o ",
      "bold": false
     },
     {
@@ -389,7 +425,39 @@
      "bold": true
     },
     {
-     "text": " więcej niż same plotki.",
+     "text": " więcej niż same plotki. Być może tą osobą jest ",
+     "bold": false
+    },
+    {
+     "text": "Mariolka",
+     "bold": true
+    },
+    {
+     "text": ".  Musimy dowiedzieć się ",
+     "bold": false
+    },
+    {
+     "text": "co",
+     "bold": true
+    },
+    {
+     "text": " się z nią stało, ",
+     "bold": false
+    },
+    {
+     "text": "gdzie",
+     "bold": true
+    },
+    {
+     "text": " teraz przebywa i ",
+     "bold": false
+    },
+    {
+     "text": "jak",
+     "bold": true
+    },
+    {
+     "text": " tam trafić.",
      "bold": false
     }
    ],
@@ -410,32 +478,60 @@
     "border": "#2f9e44"
    },
    "problem": null,
-   "link": "Q03_S00 Znajdź kogoś kto wie o magii",
+   "link": "Q03_S00 Zbieranie informacji o Mariolce",
    "row": 7.0
   },
   {
    "id": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
    "level": 6,
-   "name": "Kto ma wiedzę o magii?",
+   "name": "Co się stało z Mariolką?",
    "name_runs": [
     {
-     "text": "Kto ma wiedzę o magii?",
+     "text": "Co się stało z ",
+     "bold": false
+    },
+    {
+     "text": "Mariolką",
+     "bold": true
+    },
+    {
+     "text": "?",
      "bold": false
     }
    ],
    "description_runs": [
     {
+     "text": "Kiedyś ",
+     "bold": false
+    },
+    {
+     "text": "Mariolka",
+     "bold": true
+    },
+    {
+     "text": " szkoliła się u ",
+     "bold": false
+    },
+    {
+     "text": "Zielarki",
+     "bold": true
+    },
+    {
+     "text": " jak warzyć mikstury. Pytanie jak dalej potoczyły się jej losy.  Tu głównym źródłem informacji jest ",
+     "bold": false
+    },
+    {
      "text": "Zielarka",
      "bold": true
     },
     {
-     "text": " warzy mikstury i pamięta wyraźnie więcej, niż mówi. Może zna też kogoś, kto zna się na rzeczach oficjalnie zakazanych.  Siedzi w chałupie na końcu wioski, koło lasu.",
+     "text": ".",
      "bold": false
     }
    ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
-   "test": "visited(\"POTIONEER_PUZZLEMINT\", \"014\") or visited(\"POTIONEER_PUZZLEMINT\", \"017\")",
+   "test": "visited(\"POTIONEER_PUZZLEMINT\", \"013\")",
    "requires_test": null,
    "progress": null,
    "progress_total": 0,
@@ -450,22 +546,54 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Q03_S01 Kto ma wiedzę o magii",
+   "link": "Q03_S01 Co się stało z Mariolką",
    "row": 7.0
   },
   {
    "id": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
    "level": 6,
-   "name": "Gdzie znaleźć tę osobę?",
+   "name": "Gdzie znaleźć tę Bibliofilistkę?",
    "name_runs": [
     {
-     "text": "Gdzie znaleźć tę osobę?",
+     "text": "Gdzie znaleźć tę ",
+     "bold": false
+    },
+    {
+     "text": "Bibliofilistkę",
+     "bold": true
+    },
+    {
+     "text": "?",
      "bold": false
     }
    ],
    "description_runs": [
     {
-     "text": "Imię już jest. Zostaje drobiazg: adres. ",
+     "text": "Znamy już jej nowe imię: ",
+     "bold": false
+    },
+    {
+     "text": "Bibliofilistka des Informacja",
+     "bold": true
+    },
+    {
+     "text": ". Zostaje drobiazg: ",
+     "bold": false
+    },
+    {
+     "text": "adres",
+     "bold": true
+    },
+    {
+     "text": ". Nazwę miejsca może znać ",
+     "bold": false
+    },
+    {
+     "text": "Zielarka",
+     "bold": true
+    },
+    {
+     "text": ". ",
      "bold": false
     },
     {
@@ -473,13 +601,13 @@
      "bold": true
     },
     {
-     "text": " bywa w świecie częściej niż reszta wioski, więc może akurat coś wie.",
+     "text": " bywa w świecie częściej niż reszta wioski, więc może wie coś więcej.",
      "bold": false
     }
    ],
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
-   "test": "visited(\"HAMMER_HOAXHEART\", \"009\")",
+   "test": "visited(\"HAMMER_HOAXHEART\", \"011\")",
    "requires_test": null,
    "progress": null,
    "progress_total": 0,
@@ -494,8 +622,8 @@
     "border": "#1971c2"
    },
    "problem": null,
-   "link": "Q03_S02 Gdzie znaleźć tę osobę",
-   "row": 10.0
+   "link": "Q03_S02 Gdzie znaleźć  Bibliofilistkę",
+   "row": 9.0
   },
   {
    "id": "Q03_S03_HOW_TO_GET_THERE",
@@ -509,7 +637,35 @@
    ],
    "description_runs": [
     {
-     "text": "Miasto jest gdzieś na północy. \"",
+     "text": "Porażkowo",
+     "bold": true
+    },
+    {
+     "text": " jest ",
+     "bold": false
+    },
+    {
+     "text": "gdzieś",
+     "bold": true
+    },
+    {
+     "text": " na północy. ",
+     "bold": false
+    },
+    {
+     "text": "Ponoć",
+     "bold": true
+    },
+    {
+     "text": " jest tam ",
+     "bold": false
+    },
+    {
+     "text": "Tajna biblioteka",
+     "bold": true
+    },
+    {
+     "text": ". \"",
      "bold": false
     },
     {
@@ -517,7 +673,23 @@
      "bold": true
     },
     {
-     "text": "\" to stanowczo za mało, żeby ruszać w drogę.",
+     "text": "\" i \"",
+     "bold": false
+    },
+    {
+     "text": "ponoć",
+     "bold": true
+    },
+    {
+     "text": "\" to stanowczo za mało, żeby ruszać w drogę. Bierzemy ",
+     "bold": false
+    },
+    {
+     "text": "Barmana",
+     "bold": true
+    },
+    {
+     "text": " na spytki.",
      "bold": false
     }
    ],
@@ -539,7 +711,7 @@
    },
    "problem": null,
    "link": "Q03_S03 Jak tam dotrzeć",
-   "row": 12.0
+   "row": 11.0
   },
   {
    "id": "Q04_S00_TOP_PRIORITY_MATTERS",
@@ -657,15 +829,7 @@
      "bold": true
     },
     {
-     "text": " w ",
-     "bold": false
-    },
-    {
-     "text": "skrzyni",
-     "bold": true
-    },
-    {
-     "text": " ukrytej gdzieś za krzakami. Tylko trzeba odpowiednio mocnej broni, aby zniszczyć te krzaki. Chyba, że dałoby się inaczej zdobyć te ",
+     "text": " w skrzyni ukrytej gdzieś za krzakami. Tylko trzeba odpowiednio mocnej broni, aby zniszczyć te krzaki. Chyba, że dałoby się inaczej zdobyć te ",
      "bold": false
     },
     {
@@ -673,15 +837,7 @@
      "bold": true
     },
     {
-     "text": ".  Potem wystarczy odnieść ",
-     "bold": false
-    },
-    {
-     "text": "ryby",
-     "bold": true
-    },
-    {
-     "text": " do ",
+     "text": ".  Potem wystarczy odnieść je do ",
      "bold": false
     },
     {
@@ -696,7 +852,7 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"024\")",
-   "requires_test": null,
+   "requires_test": "visited(\"BARMAN_ABSINTHRAYNER\", \"023\")",
    "progress": null,
    "progress_total": 0,
    "kind": "quest",
@@ -808,7 +964,7 @@
    "completion": "test",
    "completion_text": "warunek zamyka ją sam",
    "test": "visited(\"BARMAN_ABSINTHRAYNER\", \"029\")",
-   "requires_test": null,
+   "requires_test": "visited(\"BARMAN_ABSINTHRAYNER\", \"028\")",
    "progress": null,
    "progress_total": 0,
    "kind": "quest",
@@ -1032,100 +1188,8 @@
    "row": 1.0
   },
   {
-   "id": "dlg:POTIONEER_PUZZLEMINT#009",
-   "level": 4,
-   "name": "Zielarka Zmora #009",
-   "name_runs": [
-    {
-     "text": "Zielarka Zmora #009",
-     "bold": true
-    }
-   ],
-   "kind": "dialog",
-   "npc": "POTIONEER_PUZZLEMINT",
-   "npc_name": "Zielarka Zmora",
-   "node": "009",
-   "text_runs": [
-    {
-     "text": "O bratku, to musiałeś bardzo im się narazić. To bardzo stara ",
-     "bold": false
-    },
-    {
-     "text": "klątwa",
-     "bold": true
-    },
-    {
-     "text": " i rzadko kto po nią sięga. Nie znam na to lekarstwa. Jedynie mogę Ci dać ",
-     "bold": false
-    },
-    {
-     "text": "Miksturę Zapomnienia",
-     "bold": true
-    },
-    {
-     "text": ", ale to raczej nie rozwiąże problemu.  Może ktoś inny, będzie wiedział więcej",
-     "bold": false
-    }
-   ],
-   "unlocks": [],
-   "closes": [
-    "Wypytaj Zielarkę o klątwę"
-   ],
-   "is_thread": false,
-   "is_root": false,
-   "problem": null,
-   "colour": {
-    "bg": "#e5dbff",
-    "border": "#7048e8"
-   },
-   "link": "Zielarka Zmora#009",
-   "row": 4.0
-  },
-  {
-   "id": "dlg:MADAME_SARCASMIA#001",
-   "level": 4,
-   "name": "Madame Sarkażmijka #001",
-   "name_runs": [
-    {
-     "text": "Madame Sarkażmijka #001",
-     "bold": true
-    }
-   ],
-   "kind": "dialog",
-   "npc": "MADAME_SARCASMIA",
-   "npc_name": "Madame Sarkażmijka",
-   "node": "001",
-   "text_runs": [
-    {
-     "text": "Wzdycha dramatycznie: Ach, ",
-     "bold": false
-    },
-    {
-     "text": "Odwieczna klątwa nieszczęścia",
-     "bold": true
-    },
-    {
-     "text": ". Ta jasne, właśnie Tobie przytrafiła się legendarna kłatwa  . To prawdopodobnie zwykły pech. No ale dobra, pewnie mogłabym ci jakoś pomóc, ale wiedz, że magia nie jest tania.",
-     "bold": false
-    }
-   ],
-   "unlocks": [],
-   "closes": [
-    "Spotkaj się z Sarkażmijką"
-   ],
-   "is_thread": false,
-   "is_root": false,
-   "problem": null,
-   "colour": {
-    "bg": "#e5dbff",
-    "border": "#7048e8"
-   },
-   "link": "Madame Sarkażmijka#001",
-   "row": 7.0
-  },
-  {
    "id": "dlg:POTIONEER_PUZZLEMINT#014",
-   "level": 7,
+   "level": 4,
    "name": "Zielarka Zmora #014",
    "name_runs": [
     {
@@ -1161,7 +1225,7 @@
    ],
    "unlocks": [],
    "closes": [
-    "Kto ma wiedzę o magii?"
+    "Wypytaj Zielarkę o klątwę"
    ],
    "is_thread": false,
    "is_root": false,
@@ -1171,11 +1235,11 @@
     "border": "#7048e8"
    },
    "link": "Zielarka Zmora#014",
-   "row": 8.0
+   "row": 4.0
   },
   {
    "id": "dlg:POTIONEER_PUZZLEMINT#017",
-   "level": 7,
+   "level": 4,
    "name": "Zielarka Zmora #017",
    "name_runs": [
     {
@@ -1203,7 +1267,7 @@
    ],
    "unlocks": [],
    "closes": [
-    "Kto ma wiedzę o magii?"
+    "Wypytaj Zielarkę o klątwę"
    ],
    "is_thread": false,
    "is_root": false,
@@ -1213,33 +1277,109 @@
     "border": "#7048e8"
    },
    "link": "Zielarka Zmora#017",
-   "row": 9.0
+   "row": 5.0
   },
   {
-   "id": "dlg:HAMMER_HOAXHEART#009",
-   "level": 7,
-   "name": "Kowal Kłamca #009",
+   "id": "dlg:MISS_INFORMATION#000",
+   "level": 4,
+   "name": "Bibliofilistka des Informacja #000",
    "name_runs": [
     {
-     "text": "Kowal Kłamca #009",
+     "text": "Bibliofilistka des Informacja #000",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "MISS_INFORMATION",
+   "npc_name": "Bibliofilistka des Informacja",
+   "node": "000",
+   "text_runs": [
+    {
+     "text": "Witaj ",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Spotkaj się z Bibliofilistką des Informacją"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Bibliofilistka des Informacja#000",
+   "row": 8.0
+  },
+  {
+   "id": "dlg:POTIONEER_PUZZLEMINT#013",
+   "level": 7,
+   "name": "Zielarka Zmora #013",
+   "name_runs": [
+    {
+     "text": "Zielarka Zmora #013",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "POTIONEER_PUZZLEMINT",
+   "npc_name": "Zielarka Zmora",
+   "node": "013",
+   "text_runs": [
+    {
+     "text": "Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami.  Mówią, że została specjalistką od zakazanych ",
+     "bold": false
+    },
+    {
+     "text": "magicznych",
+     "bold": true
+    },
+    {
+     "text": " ksiąg.",
+     "bold": false
+    }
+   ],
+   "unlocks": [],
+   "closes": [
+    "Co się stało z Mariolką?"
+   ],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Zielarka Zmora#013",
+   "row": 8.0
+  },
+  {
+   "id": "dlg:HAMMER_HOAXHEART#011",
+   "level": 7,
+   "name": "Kowal Kłamca #011",
+   "name_runs": [
+    {
+     "text": "Kowal Kłamca #011",
      "bold": true
     }
    ],
    "kind": "dialog",
    "npc": "HAMMER_HOAXHEART",
    "npc_name": "Kowal Kłamca",
-   "node": "009",
+   "node": "011",
    "text_runs": [
     {
-     "text": "Nie lubię ",
+     "text": "Bardo możliwe, że tak nazywa się biblioteka w miejscowości ",
      "bold": false
     },
     {
-     "text": "miasta",
+     "text": "Porażkowo",
      "bold": true
     },
     {
-     "text": ", nie jeżdżę tam. Pytaj ",
+     "text": ". Pytaj ",
      "bold": false
     },
     {
@@ -1253,7 +1393,7 @@
    ],
    "unlocks": [],
    "closes": [
-    "Gdzie znaleźć tę osobę?"
+    "Gdzie znaleźć tę Bibliofilistkę?"
    ],
    "is_thread": false,
    "is_root": false,
@@ -1262,8 +1402,8 @@
     "bg": "#e5dbff",
     "border": "#7048e8"
    },
-   "link": "Kowal Kłamca#009",
-   "row": 11.0
+   "link": "Kowal Kłamca#011",
+   "row": 10.0
   },
   {
    "id": "dlg:BARMAN_ABSINTHRAYNER#017",
@@ -1329,6 +1469,96 @@
     "border": "#7048e8"
    },
    "link": "Barman Absyntnent#017",
+   "row": 12.0
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#023",
+   "level": 5,
+   "name": "Barman Absyntnent #023",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #023",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "023",
+   "text_runs": [
+    {
+     "text": "Za mojej kadencji ",
+     "bold": false
+    },
+    {
+     "text": "ANI",
+     "bold": true
+    },
+    {
+     "text": " jednej! I wiesz dlaczego? Bo zawsze były ",
+     "bold": false
+    },
+    {
+     "text": "ryby",
+     "bold": true
+    },
+    {
+     "text": "!  ",
+     "bold": false
+    },
+    {
+     "text": "Kot",
+     "bold": true
+    },
+    {
+     "text": " ma gdzieś w krzakach ukrytą skrzynię w której chowa wykradzione ",
+     "bold": false
+    },
+    {
+     "text": "ryby",
+     "bold": true
+    },
+    {
+     "text": ". Wytnij te chaszcze i przynieś mi ",
+     "bold": false
+    },
+    {
+     "text": "5",
+     "bold": true
+    },
+    {
+     "text": " świeżych ",
+     "bold": false
+    },
+    {
+     "text": "ryb",
+     "bold": true
+    },
+    {
+     "text": ".  Tylko musisz znaleźć odpowiednią mocną ",
+     "bold": false
+    },
+    {
+     "text": "broń",
+     "bold": true
+    },
+    {
+     "text": " aby móc wyciąć takie gęste krzaki.",
+     "bold": false
+    }
+   ],
+   "unlocks": [
+    "Ryby, które zjadł kot"
+   ],
+   "closes": [],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#023",
    "row": 13.0
   },
   {
@@ -1372,6 +1602,80 @@
    },
    "link": "Barman Absyntnent#024",
    "row": 4.0
+  },
+  {
+   "id": "dlg:BARMAN_ABSINTHRAYNER#028",
+   "level": 5,
+   "name": "Barman Absyntnent #028",
+   "name_runs": [
+    {
+     "text": "Barman Absyntnent #028",
+     "bold": true
+    }
+   ],
+   "kind": "dialog",
+   "npc": "BARMAN_ABSINTHRAYNER",
+   "npc_name": "Barman Absyntnent",
+   "node": "028",
+   "text_runs": [
+    {
+     "text": "Spokojnie, to nie jest aż takie trudne a na pewno Ci się opłaci.  Chcę abyś przyniósł mi ",
+     "bold": false
+    },
+    {
+     "text": "Zielony kryształ",
+     "bold": true
+    },
+    {
+     "text": " widziałem takie w ",
+     "bold": false
+    },
+    {
+     "text": "Jaskiniach zagmatwania",
+     "bold": true
+    },
+    {
+     "text": ", ale Ty znajdziesz je też w ",
+     "bold": false
+    },
+    {
+     "text": "labiryncie",
+     "bold": true
+    },
+    {
+     "text": ".  Co do zapłaty, to myślę, że mogę Ci za to dać ",
+     "bold": false
+    },
+    {
+     "text": "30",
+     "bold": true
+    },
+    {
+     "text": " monet To więcej niż dostaniesz za niego u ",
+     "bold": false
+    },
+    {
+     "text": "Jasia",
+     "bold": true
+    },
+    {
+     "text": ".",
+     "bold": false
+    }
+   ],
+   "unlocks": [
+    "Trofeum z dalekiego świata"
+   ],
+   "closes": [],
+   "is_thread": false,
+   "is_root": false,
+   "problem": null,
+   "colour": {
+    "bg": "#e5dbff",
+    "border": "#7048e8"
+   },
+   "link": "Barman Absyntnent#028",
+   "row": 14.0
   },
   {
    "id": "dlg:BARMAN_ABSINTHRAYNER#029",
@@ -1456,12 +1760,12 @@
   },
   {
    "from": "Q01_S03_COLLECT_INFO_ABOUT_MISS_INFORMATION",
-   "to": "Q01_S04_MEET_MADAME_SARCASMIA",
+   "to": "Q01_S04_MEET_MISS_INFORMATION",
    "kind": "requires"
   },
   {
    "from": "Q01_S00_BREAK_THE_CURSE",
-   "to": "Q01_S04_MEET_MADAME_SARCASMIA",
+   "to": "Q01_S04_MEET_MISS_INFORMATION",
    "kind": "parent"
   },
   {
@@ -1505,11 +1809,6 @@
    "kind": "parent"
   },
   {
-   "from": "Q04_S01_FISH_EATEN_BY_CAT",
-   "to": "Q04_S02_TAVERN_TROPHY",
-   "kind": "requires"
-  },
-  {
    "from": "Q04_S00_TOP_PRIORITY_MATTERS",
    "to": "Q04_S02_TAVERN_TROPHY",
    "kind": "parent"
@@ -1537,35 +1836,35 @@
   },
   {
    "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
-   "to": "dlg:POTIONEER_PUZZLEMINT#009",
-   "kind": "closes",
-   "negated": false,
-   "alt": false
-  },
-  {
-   "from": "Q01_S04_MEET_MADAME_SARCASMIA",
-   "to": "dlg:MADAME_SARCASMIA#001",
-   "kind": "closes",
-   "negated": false,
-   "alt": false
-  },
-  {
-   "from": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
    "to": "dlg:POTIONEER_PUZZLEMINT#014",
    "kind": "closes",
    "negated": false,
    "alt": true
   },
   {
-   "from": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "from": "Q01_S02_ASK_POTIONEER_ABOUT_CURSE",
    "to": "dlg:POTIONEER_PUZZLEMINT#017",
    "kind": "closes",
    "negated": false,
    "alt": true
   },
   {
+   "from": "Q01_S04_MEET_MISS_INFORMATION",
+   "to": "dlg:MISS_INFORMATION#000",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
+   "from": "Q03_S01_WHO_HAS_MORE_KNOWLEDGE",
+   "to": "dlg:POTIONEER_PUZZLEMINT#013",
+   "kind": "closes",
+   "negated": false,
+   "alt": false
+  },
+  {
    "from": "Q03_S02_WHERE_TO_FIND_THIS_PERSON",
-   "to": "dlg:HAMMER_HOAXHEART#009",
+   "to": "dlg:HAMMER_HOAXHEART#011",
    "kind": "closes",
    "negated": false,
    "alt": false
@@ -1578,11 +1877,23 @@
    "alt": false
   },
   {
+   "from": "dlg:BARMAN_ABSINTHRAYNER#023",
+   "to": "Q04_S01_FISH_EATEN_BY_CAT",
+   "kind": "unlocks",
+   "negated": false
+  },
+  {
    "from": "Q04_S01_FISH_EATEN_BY_CAT",
    "to": "dlg:BARMAN_ABSINTHRAYNER#024",
    "kind": "closes",
    "negated": false,
    "alt": false
+  },
+  {
+   "from": "dlg:BARMAN_ABSINTHRAYNER#028",
+   "to": "Q04_S02_TAVERN_TROPHY",
+   "kind": "unlocks",
+   "negated": false
   },
   {
    "from": "Q04_S02_TAVERN_TROPHY",

@@ -2,9 +2,11 @@
 aliases:
   - Q03_S00_LEARN_ABOUT_CURSE
 ---
-# Znajdź kogoś kto wie o magii
+# Zbieranie informacji o [[Bibliofilistka des Informacja|Mariolce]]
 
-W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]księdza[/], albo chociaż [char]starego dziada[/], który wie wszystko. Tak czy owa, ktoś, gdzieś, musi wiedzieć o [quest]klątwach[/] więcej niż same plotki.
+W tej okolicy nikt do książek nie zagląda, brak tu [char]sołtysa[/], [char]księdza[/], albo chociaż [char]starego dziada[/], który wie wszystko. Tak czy owak, ktoś, gdzieś, musi wiedzieć o [quest]klątwach[/] więcej niż same plotki. Być może tą osobą jest [[Bibliofilistka des Informacja|Mariolka]].
+
+Musimy dowiedzieć się **co** się z nią stało, **gdzie** teraz przebywa i **jak** tam trafić.
 
 **Requires**: [[Q01_S02 Wypytaj Zielarkę o klątwę]]
 **Completion**: `all_subquests`

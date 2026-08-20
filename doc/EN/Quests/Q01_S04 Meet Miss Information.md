@@ -1,8 +1,8 @@
 ---
 aliases:
-  - Q01_S04_MEET_MADAME_SARCASMIA
+  - Q01_S04_MEET_MISS_INFORMATION
 ---
-# Meet [[Madame Sarcasmia|Sarcasmia]]
+# Meet [[Miss Information]]
 
 Knowing about a [quest]curse[/] is one thing, lifting it is an entirely different kettle of fish.
 

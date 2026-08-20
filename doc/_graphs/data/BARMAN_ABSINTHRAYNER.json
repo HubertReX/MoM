@@ -178,7 +178,7 @@
   {
    "id": "011",
    "level": 3,
-   "text": "A tak, no to jest jak by nie było miasto. Nie powiem, mają ze 3 karczmy[/] i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej. To pewno przez te książki, bo oni tam nawet bibliotekę mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o czarach i innych głupotach. Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!",
+   "text": "A tak, no to jest jak by nie było miasto. Nie powiem, mają ze 3 karczmy[/] i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej. To pewno przez te książki, bo oni tam nawet Tajną bibliotekę mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o czarach i innych głupotach. Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest życie!",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -625,7 +625,7 @@
    "order": 2,
    "sentiment": "neutral",
    "text": "Co wiesza na temat miasta Porażkowo?",
-   "condition": "visited(\"HAMMER_HOAXHEART\", \"004\")"
+   "condition": "visited(\"HAMMER_HOAXHEART\", \"011\")"
   },
   {
    "from": "004",

@@ -112,7 +112,7 @@ No cóż. Ciężka sprawa. Tutaj raczej nikt **Ci** nie pomoże. U nas nie ma **
 * No jest tu trochę [loc]wiosek[/] w okolicy, ale nasza jest największa, reszta to dziadostwo. Interesuje Cię jakieś konkretne miejsce?
 
 * [[#010]] 1[`not visited(`[[Zielarka Zmora#004]]`) and not visited(`[[Kowal Kłamca#004|Kowal#004]]`)`]😐: Nie znam tu żadnych konkretnych miejsc. Możesz powiedzieć tak ogólnie?
-* [[#011]] 2[`visited(`[[Kowal Kłamca#004]]`)`]😐: Co wiesza na temat miasta [[Porażkowo]]?
+* [[#011]] 2[`visited(`[[Kowal Kłamca#011]]`)`]😐: Co wiesza na temat miasta [[Porażkowo]]?
 * [[#018]] 3[`visited(`[[Zielarka Zmora#004]]`)`]😐: Co wiesza na temat [[Bagno niedogodności|Bagna niedogodności]]?
 * [[#019]] 4[`visited(`[[Zielarka Zmora#004]]`)`]😐: Co wiesza na temat [[Splątany las irytacji|Splątanego lasu irytacji]]?
 * [[#020]] 5[`visited(`[[Zielarka Zmora#004]]`)`]😐: Co wiesza na temat [[Jaskinie zagmatwania|Jaskini zagmatwania]]?
@@ -148,7 +148,7 @@ Wróć jak będziesz chciał zapytać o jakieś konkretne [loc]miejsce[/].
 
 * A tak, no to jest jak by nie było miasto. Nie powiem, mają ze [num]3[/num] [loc]karczmy[/] i to większe niż nasza. No i łajno nie leży na drogach. Ludzie chodzą w takich śmiesznych kolorowych kubraczkach, gadają też jakoś tak inaczej.
 
-To pewno przez te **książki**, bo oni tam nawet [[Tajna biblioteka|bibliotekę]] mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o **czarach** i innych głupotach.
+To pewno przez te **książki**, bo oni tam nawet [[Tajna biblioteka|Tajną bibliotekę]] mają. Ponoć z książek można się dużo dowiedzieć. Tylko tam pewnie same zakazane rzeczy piszą o **czarach** i innych głupotach.
 
 Kto by miał czas książki czytać? Lepiej przy piwku na świeżym powietrzu posiedzieć. To jest **życie**!
 
@@ -217,8 +217,8 @@ Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś
 * A już Ci, coś by się znalazło...
 
 * [[#022]] 1[`not visited(`[[Barman Absyntnent#022]]`)`]😐: Ponoć [char]kot[/] zżarł wszystkie [[Świeża ryba|ryby]]?
-* [[#026]] 2[`not visited(`[[Barman Absyntnent#026]]`)`]😐: Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:
-* [[#001]] 3😐: **TODO** Q04_S03
+* [[#026]] 2[`not visited(`[[Barman Absyntnent#026]]`) and quest_done(`[[Q04_S01 Ryby, które zjadł kot]]`)]`😐: Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:
+* [[#030]] 3[`not visited(`[[Barman Absyntnent#030]]`) and quest_done(`[[Q04_S02 Trofeum z dalekiego świata]]`)]`😐: **TODO** Q04_S03
 * [[#024]] 4[`item_count(`[[Świeża ryba]]`) >= 5 and visited(`[[Barman Absyntnent#022]]`)`]😐: Mam dla **Ciebie** te [[Świeża ryba|ryby]]
 * [[#029]] 5[`item_count(`[[Zielony kryształ]]`) >= 1 and visited(`[[Barman Absyntnent#026]]`)`]😐: Mam dla **Ciebie** [[Zielony kryształ]]
 * [[#001]] 9😐: Ech, nieważne
@@ -286,6 +286,12 @@ Co do zapłaty, to myślę, że mogę Ci za to dać [num]30[/] monet:$: To więc
 * Och! Ależ się błyszczy:love_anim: Coś pięknego:peaveful: To będzie wspaniała ozdoba nad moim barem a zarazem moja wizytówka. Tak się cieszę!
 
 Oto **Twoja** nagroda :$:.
+
+* [[#001]] 1😐: Cieszę się, że mogłem pomóc.
+
+## 030
+
+* **TODO** Q04_S03
 
 * [[#001]] 1😐: Cieszę się, że mogłem pomóc.
 

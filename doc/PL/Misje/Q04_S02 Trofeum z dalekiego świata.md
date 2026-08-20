@@ -10,7 +10,7 @@ aliases:
 
 hmm, no cóż... Ten świat może jest i _prostacki_, ale nie jest aż taki **prosty** :doubt:
 
-**Requires**:  [[Q04_S01 Ryby, które zjadł kot]]
+**Requires**: `visited(`[[Barman Absyntnent#028]]`)`
 **Completion**: `test`
 **Test**: `visited(`[[Barman Absyntnent#029]]`)`
 **Success**: Trofeum zdobyte i przekazane, nagroda zainkasowana, a [[Barman Absyntnent|Barman]] jest teraz z siebie dumny. A Ty?

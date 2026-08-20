@@ -90,15 +90,22 @@ Kowal, który twierdzi, że jego miecze mogą przeciąć cień i że jego zbroje
 
 ## 004
 
-* Pozostałe [loc]wsie[/] są tak samo biedne. [item]Broń[/] i [item]zbroje[/] kupują jedynie zarozumiali panicze z miasta [[Porażkowo]].
+* Pozostałe [loc]wsie[/] są tak samo biedne. [item]Broń[/] i [item]zbroje[/] kupują jedynie zarozumiali panicze.
 
-* [[#009]] 1😇: No to oni pewnie dadzą zarobić? Znasz tam kogoś?
-* [[#009]] 2😢: Pewnie **Cię** poniżają ci _wielcy panicze_. Często masz z nimi do czynienia?
-* [[#009]] 3😉: A po co tym _francuskim pieskom_ dobra [item]broń[/]? Polują [item]kuszami[/] na kury [char]karczmarza[/]?
+* [[#011]] 1[`visited(`[[Zielarka Zmora#015]]`)`]😐: A wiesz może, gdzie jest [[Tajna biblioteka]]?
+* [[#009]] 2😇: No to oni pewnie dadzą zarobić? Znasz tam kogoś?
+* [[#009]] 3😢: Pewnie **Cię** poniżają ci _wielcy panicze_. Często masz z nimi do czynienia?
+* [[#009]] 4😉: A po co tym _francuskim pieskom_ dobra [item]broń[/]? Polują [item]kuszami[/] na kury [char]karczmarza[/]?
+
+## 011
+
+* Bardo możliwe, że tak nazywa się biblioteka w miejscowości [[Porażkowo]]. Pytaj [[Barman Absyntnent|Barmana Absyntnenta]] - on gada ze wszystkimi przybyszami.
+
+* [[#001]] 9😐: Dzięki, to mi wystarczy
 
 ## 009
 
-* Nie lubię [loc]miasta[/], nie jeżdżę tam. Pytaj [[Barman Absyntnent|Barmana Absyntnenta]] - on gada ze wszystkimi przybyszami.
+* Nie lubię [loc]miasta[/], nie jeżdżę tam. 
 
 * [[#001]] 9😐: Dzięki, to mi wystarczy
 

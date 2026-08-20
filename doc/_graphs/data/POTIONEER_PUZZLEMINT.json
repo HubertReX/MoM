@@ -6,7 +6,7 @@
   "start_node": "016",
   "counts": {
    "nodes": 21,
-   "options": 39
+   "options": 38
   },
   "global_problems": [],
   "palette": {
@@ -183,12 +183,14 @@
    "is_final": false,
    "result": null,
    "resume": null,
-   "problems": [],
+   "problems": [
+    "wszystkie opcje warunkowe (możliwy dead-end)"
+   ],
    "link": "Zielarka Zmora#011"
   },
   {
    "id": "012",
-   "level": 5,
+   "level": 6,
    "text": "Co chciałbyś wiedzieć?",
    "is_start": false,
    "is_final": false,
@@ -199,8 +201,8 @@
   },
   {
    "id": "013",
-   "level": 6,
-   "text": "Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg w Tajnej bibliotece.",
+   "level": 7,
+   "text": "Nie wiem dokładnie, nigdy więcej się nie spotkałyśmy. Słyszałam coś, że skupiła się na pracy z książkami. Mówią, że została specjalistką od zakazanych magicznych ksiąg.",
    "is_start": false,
    "is_final": false,
    "result": null,
@@ -210,7 +212,7 @@
   },
   {
    "id": "015",
-   "level": 6,
+   "level": 7,
    "text": "Ona pracuje teraz w Tajnej bibliotece, pod jakimś większym miastem. Nie słyszałam nic więcej. Ale wiesz, Kowal Kłamca miewa klientów z dalekich stron. Może uda Ci się wydusić coś z tego mruka.",
    "is_start": false,
    "is_final": false,
@@ -221,7 +223,7 @@
   },
   {
    "id": "014",
-   "level": 6,
+   "level": 5,
    "text": "Kiedy była u mnie wołali na nią Mariolka, ale potem coś się jej pokręciło w głowie. Zaczęła mówić jak pomylona, jakby każde zdanie było zagadką. A może to tylko sposób aby ukryć tajemnice, których ma strzec. Tak czy siak, ludzie zaczęli na nią wołać Bibliofilistka des Informacja.",
    "is_start": false,
    "is_final": false,
@@ -232,7 +234,7 @@
   },
   {
    "id": "017",
-   "level": 6,
+   "level": 5,
    "text": "Po odejściu ode mnie ludzie zaczęli na nią wołać Bibliofilistka des Informacja.",
    "is_start": false,
    "is_final": false,
@@ -568,13 +570,23 @@
   },
   {
    "from": "011",
-   "to": "012",
+   "to": "014",
    "kind": "option",
-   "key": "011to012_1",
+   "key": "011to014_1",
    "order": 1,
    "sentiment": "neutral",
-   "text": "To brzmi interesująco, powiedz mi o niej coś więcej.",
-   "condition": null
+   "text": "Jak się ona nazywa?",
+   "condition": "sentiment >= 42"
+  },
+  {
+   "from": "011",
+   "to": "017",
+   "kind": "option",
+   "key": "011to017_2",
+   "order": 2,
+   "sentiment": "neutral",
+   "text": "Jak się ona nazywa?",
+   "condition": "sentiment < 42"
   },
   {
    "from": "012",
@@ -588,30 +600,10 @@
   },
   {
    "from": "012",
-   "to": "014",
-   "kind": "option",
-   "key": "012to014_2",
-   "order": 2,
-   "sentiment": "neutral",
-   "text": "Jak się ona nazywa?",
-   "condition": "sentiment >= 42"
-  },
-  {
-   "from": "012",
-   "to": "017",
-   "kind": "option",
-   "key": "012to017_2",
-   "order": 2,
-   "sentiment": "neutral",
-   "text": "Jak się ona nazywa?",
-   "condition": "sentiment < 42"
-  },
-  {
-   "from": "012",
    "to": "015",
    "kind": "option",
-   "key": "012to015_4",
-   "order": 4,
+   "key": "012to015_2",
+   "order": 2,
    "sentiment": "neutral",
    "text": "Gdzie mogę ją znaleźć?",
    "condition": null
@@ -653,7 +645,7 @@
    "key": "014to012_1",
    "order": 1,
    "sentiment": "neutral",
-   "text": "ok, dzięki.",
+   "text": "To brzmi interesująco, powiedz mi o niej coś więcej.",
    "condition": null
   },
   {
@@ -663,7 +655,7 @@
    "key": "017to012_1",
    "order": 1,
    "sentiment": "neutral",
-   "text": "ok, dzięki.",
+   "text": "To brzmi interesująco, powiedz mi o niej coś więcej.",
    "condition": null
   },
   {
