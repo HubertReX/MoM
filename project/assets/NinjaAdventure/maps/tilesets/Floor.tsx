@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.2" name="NA_Floor" tilewidth="16" tileheight="16" tilecount="572" columns="22">
+<tileset version="1.10" tiledversion="1.12.2" name="NA_Floor" tilewidth="16" tileheight="16" tilecount="572" columns="22">
  <image source="images/TilesetFloor.png" width="352" height="417"/>
  <tile id="0">
   <properties>
@@ -773,57 +773,57 @@
  </tile>
  <tile id="154">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="155">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="156">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="157">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="158">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="159">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="160">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="161">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="162">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="163">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="164">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="165">
@@ -883,57 +883,57 @@
  </tile>
  <tile id="176">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="177">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="178">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="179">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="180">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="181">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="182">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="183">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="184">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="185">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="186">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="187">
@@ -993,57 +993,57 @@
  </tile>
  <tile id="198">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="199">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="200">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="201">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="202">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="203">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="204">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="205">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="206">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="207">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="208">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="209">
@@ -1103,57 +1103,57 @@
  </tile>
  <tile id="220">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="221">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="222">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="223">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="224">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="225">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="226">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="227">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="228">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="229">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="230">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="231">
@@ -1213,12 +1213,12 @@
  </tile>
  <tile id="242">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="243">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="244">
@@ -1233,27 +1233,27 @@
  </tile>
  <tile id="246">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="247">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="248">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="249">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="250">
   <properties>
-   <property name="step_cost" type="int" value="150"/>
+   <property name="step_cost" type="int" value="100"/>
   </properties>
  </tile>
  <tile id="251">
@@ -2836,4 +2836,34 @@
    <property name="step_cost" type="int" value="200"/>
   </properties>
  </tile>
+ <wangsets>
+  <wangset name="grass-dirt Set" type="corner" tile="-1">
+   <wangcolor name="dirt" color="#ff0000" tile="-1" probability="1"/>
+   <wangcolor name="grass" color="#00ff00" tile="-1" probability="1"/>
+   <wangtile tileid="154" wangid="0,2,0,1,0,2,0,2"/>
+   <wangtile tileid="155" wangid="0,2,0,1,0,1,0,2"/>
+   <wangtile tileid="156" wangid="0,2,0,2,0,1,0,2"/>
+   <wangtile tileid="163" wangid="0,2,0,1,0,2,0,1"/>
+   <wangtile tileid="176" wangid="0,1,0,1,0,2,0,2"/>
+   <wangtile tileid="177" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="178" wangid="0,2,0,2,0,1,0,1"/>
+   <wangtile tileid="181" wangid="0,1,0,2,0,1,0,1"/>
+   <wangtile tileid="182" wangid="0,1,0,1,0,2,0,1"/>
+   <wangtile tileid="185" wangid="0,1,0,2,0,1,0,2"/>
+   <wangtile tileid="198" wangid="0,1,0,2,0,2,0,2"/>
+   <wangtile tileid="199" wangid="0,1,0,2,0,2,0,1"/>
+   <wangtile tileid="200" wangid="0,2,0,2,0,2,0,1"/>
+   <wangtile tileid="203" wangid="0,2,0,1,0,1,0,1"/>
+   <wangtile tileid="204" wangid="0,1,0,1,0,1,0,2"/>
+   <wangtile tileid="242" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="243" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="244" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="245" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="264" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="265" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="266" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="267" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="268" wangid="0,2,0,2,0,2,0,2"/>
+  </wangset>
+ </wangsets>
 </tileset>
