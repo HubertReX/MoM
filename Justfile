@@ -385,6 +385,32 @@ rename-entity *ARGS:
     #!powershell
     .venv\Scripts\python.exe scripts\rename_entity.py {{ARGS}}
 
+# Render a .tmx map to PNG. e.g: `just map-render BLUNDERHAVEN --overview --coords`
+[unix]
+map-render *ARGS:
+    @# `--overview` cała mapa + siatka, `--crop X,Y,W,H` wycinek 1:1 (w kaflach),
+    @# `--overlay reach|cost|detail` nakładki diagnostyczne, `--objects --labels` markery.
+    @.venv/bin/python scripts/mapgen/render_map.py {{ARGS}}
+
+# Render a .tmx map to PNG. e.g: `just map-render BLUNDERHAVEN --overview --coords`
+[windows]
+map-render *ARGS:
+    #!powershell
+    .venv\Scripts\python.exe scripts\mapgen\render_map.py {{ARGS}}
+
+# Stamp catalogue read from the `stamps` layer of the prototype map
+[unix]
+map-palette *ARGS:
+    @# `list` tabela klocków, `sheet` arkusz kontaktowy, `show <nazwa>` jeden klocek,
+    @# `doors` podpowiedź kafla drzwi, `bootstrap` założenie warstwy (jednorazowo).
+    @.venv/bin/python scripts/mapgen/palette.py {{ARGS}}
+
+# Stamp catalogue read from the `stamps` layer of the prototype map
+[windows]
+map-palette *ARGS:
+    #!powershell
+    .venv\Scripts\python.exe scripts\mapgen\palette.py {{ARGS}}
+
 # Run all static analysis and code checks (Sourcery + mypy + locale + world)
 check: sourcery mypy validate-locale validate-world
 

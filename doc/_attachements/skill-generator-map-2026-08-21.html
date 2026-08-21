@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoM - skill do generowania map Tiled (dokument decyzyjny)</title>
+<style>
+  /* ---------- Design tokens (wspólne z dokumentami E03, B01 i audytu 2026-07-25) ---------- */
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f4f4f2;
+    --text: #1c1c1a; --muted: #6b6b66; --border: #e6e6e2;
+    --accent: #3b5bdb; --accent-soft: #e7ecff;
+    --ok: #2f9e44; --warn: #e8920c; --err: #e03131; --info: #1c7ed6;
+    --ok-soft:#ebfbee; --warn-soft:#fff4e6; --err-soft:#fff0f0; --info-soft:#e7f5ff;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  }
+  :root[data-theme="dark"] {
+    --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+    --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+    --accent:#748ffc; --accent-soft:#26304d;
+    --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#16161a; --surface:#1e1e24; --surface-2:#26262e;
+      --text:#e8e8e6; --muted:#9a9a96; --border:#33333c;
+      --accent:#748ffc; --accent-soft:#26304d;
+      --ok-soft:#143a1d; --warn-soft:#3d2c0a; --err-soft:#3d1414; --info-soft:#10283f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.6; font-size: 16px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: var(--s6) var(--s5) var(--s7); }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 var(--s3); letter-spacing: -.02em; }
+  h2 { font-size: 1.45rem; line-height: 1.25; margin: var(--s7) 0 var(--s3);
+       padding-top: var(--s3); border-top: 2px solid var(--border); }
+  h3 { font-size: 1.1rem; margin: var(--s5) 0 var(--s2); }
+  h4 { font-size: .95rem; margin: var(--s4) 0 var(--s2); color: var(--muted);
+       text-transform: uppercase; letter-spacing: .05em; }
+  p { margin: 0 0 var(--s4); max-width: 82ch; }
+  ul, ol { max-width: 82ch; }
+  li { margin-bottom: var(--s2); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem;
+    font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+  .lead { font-size: 1.08rem; color: var(--muted); max-width: 82ch; }
+  .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s3); }
+  .theme-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .85rem; }
+  code, pre { font-family: var(--mono); font-size: .86em; }
+  code { background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 5px; white-space: nowrap; }
+  pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--s4); overflow-x: auto; line-height: 1.5; }
+  pre code { background: none; border: none; padding: 0; white-space: pre; }
+  table { border-collapse: collapse; width: 100%; margin: var(--s4) 0 var(--s5);
+    font-size: .92rem; background: var(--surface); border-radius: var(--radius-sm);
+    overflow: hidden; box-shadow: var(--shadow); }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  tr:last-child td { border-bottom: none; }
+  .tablewrap { overflow-x: auto; }
+  .badge { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: .75rem;
+    font-weight: 600; white-space: nowrap; }
+  .b-ok { background: var(--ok-soft); color: var(--ok); }
+  .b-warn { background: var(--warn-soft); color: var(--warn); }
+  .b-err { background: var(--err-soft); color: var(--err); }
+  .b-info { background: var(--info-soft); color: var(--info); }
+  .b-acc { background: var(--accent-soft); color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: var(--s5); margin: var(--s4) 0; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft);
+    border-radius: var(--radius-sm); padding: var(--s4) var(--s5); margin: var(--s4) 0; max-width: 88ch; }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .callout.err { border-color: var(--err); background: var(--err-soft); }
+  .callout.ok { border-color: var(--ok); background: var(--ok-soft); }
+  .callout p:last-child { margin-bottom: 0; }
+  details { border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); margin: var(--s3) 0; }
+  details summary { cursor: pointer; padding: var(--s3) var(--s4); font-weight: 600; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  details .inner { padding: var(--s4); }
+  .rec td { background: var(--ok-soft); }
+  .fixed td { background: var(--info-soft); }
+  .toc { columns: 2; gap: var(--s6); font-size: .92rem; }
+  .toc a { display: block; padding: 2px 0; }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px;
+    padding: 0 6px; font-family: var(--mono); font-size: .82em; background: var(--surface); }
+  .num { font-variant-numeric: tabular-nums; text-align: right; }
+  .backlink { display:inline-block; margin-top: var(--s5); color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+  .layerstack { font-family: var(--mono); font-size: .85rem; line-height: 1.9; }
+  .layerstack .lname { display:inline-block; width: 8.5em; font-weight:600; }
+  @media (max-width: 720px) { .toc { columns: 1; } .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <div>
+    <p class="eyebrow">MoM - skill lokalny - etap 0 (do akceptacji autora)</p>
+    <h1>Generator map Tiled<br><span style="font-size:1.2rem;font-weight:600;color:var(--muted)">stemplowanie z prototypu, biomy o nieregularnym kształcie, weryfikacja przez render i linter</span></h1>
+    <p class="lead">Dokument decyzyjny przed kodem: kontrakt mapy wyczytany z kodu gry, katalog klocków
+    w warstwie <code>stamps</code> prototypu, potok generowania w ośmiu przebiegach, dwupoziomowy podgląd
+    dla modelu, linter błędów logicznych i metryki monotonii, operacje na istniejącej mapie.
+    Sesja Opus, 2026-08-21. Kontekst: <code>project/assets/NinjaAdventure/maps/_wip/BLUNDERHAVEN_base.tmx</code>,
+    <code>project/scene/map_loader.py</code>, <code>scripts/validate_world.py</code>.</p>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">◐ motyw</button>
+</div>
+
+<div class="callout">
+  <p><strong>Bramka akceptacji.</strong> Etap 1 (kod skilla i skryptów) NIE rusza bez wyraźnego "akceptuję".
+  Decyzje <strong>D1-D16</strong> mają rekomendację (zielony wiersz) - każdą można odwrócić teraz, taniej
+  niż po napisaniu kodu. Wiersze <span class="badge b-info">niebieskie</span> to <em>ustalenia z tej sesji</em>
+  (Twoje odpowiedzi na cztery pytania startowe oraz reguły z <code>CLAUDE.md</code>): nie są przedmiotem
+  wyboru, są tu wpisane, żeby dokument był kompletny.</p>
+</div>
+
+<h2 id="toc">Spis treści</h2>
+<nav class="toc">
+  <a href="#kontrakt">1. Kontrakt mapy wyczytany z kodu</a>
+  <a href="#fabula">2. Co fabuła narzuca mapie wioski</a>
+  <a href="#wymagania">3. Wymagania autora (wiążące)</a>
+  <a href="#decyzje">4. Decyzje D1-D16</a>
+  <a href="#stamps">5. Katalog klocków: warstwa <code>stamps</code></a>
+  <a href="#potok">6. Potok generowania (8 przebiegów)</a>
+  <a href="#weryfikacja">7. Weryfikacja: linter + render</a>
+  <a href="#edycja">8. Korekty istniejącej mapy</a>
+  <a href="#raport">9. Raport braków (czego skill nie dopisuje)</a>
+  <a href="#pliki">10. Pliki, które powstaną</a>
+  <a href="#plan">11. Plan wykonania (7 kroków)</a>
+  <a href="#ryzyka">12. Ryzyka i pułapki</a>
+  <a href="#akceptacja">13. Kryteria akceptacji</a>
+</nav>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="kontrakt">1. Kontrakt mapy wyczytany z kodu</h2>
+
+<p>Wszystko poniżej jest <strong>faktem z kodu</strong>, nie propozycją. To jest to, czego skill musi
+przestrzegać, żeby mapa w ogóle wczytała się poprawnie.</p>
+
+<h3>1.1 Warstwy i ich kolejność</h3>
+
+<p><code>map_loader.load_step_cost</code> czyta <strong>warstwę o indeksie 0 i 1</strong> (nie po nazwie!),
+a <code>scene.sprites_layer = scene.layers.index("sprites")</code> ustala, gdzie pyscroll wstawia sprite'y.
+Kolejność nie jest więc kosmetyką - jest kontraktem.</p>
+
+<div class="card layerstack">
+  <div><span class="lname">0 ground</span> <span class="badge b-acc">kafle</span> Floor.tsx, Water.tsx - trawa, ziemia, woda. <em>Czytane po step_cost.</em></div>
+  <div><span class="lname">1 foliage</span> <span class="badge b-acc">kafle</span> FloorDetail.tsx, Nature.tsx - niska roślinność, ścieżki. <em>Czytane po step_cost, nadpisuje ground.</em></div>
+  <div><span class="lname">2 items</span> <span class="badge b-acc">kafle</span> items.tsx - każdy kafel MUSI mieć <code>item_name</code> z <code>config.items</code>. Warstwa jest gaszona po wczytaniu.</div>
+  <div><span class="lname">3 walls</span> <span class="badge b-acc">kafle</span> House.tsx, Nature.tsx, Element.tsx - <strong>każdy niepusty kafel = kolizja</strong>, koszt kroku 100. <code>destructible=true</code> robi z niego <code>DestructibleSprite</code>.</div>
+  <div><span class="lname">4 sprites</span> <span class="badge b-acc">kafle</span> pusta - tu pyscroll rysuje postacie.</div>
+  <div><span class="lname">5 over</span> <span class="badge b-acc">kafle</span> <code>opacity="0.99"</code> - dachy, korony drzew: chodzi się pod spodem.</div>
+  <div><span class="lname">6 interactions</span> <span class="badge b-info">obiekty</span> <code>obj_type=exit</code> (+<code>to_map</code>, <code>destination_entry_point</code>, opcjonalnie <code>requires_item</code>, <code>consumes_key</code>, <code>return_entry_point</code>) oraz <code>obj_type=chest</code> (z gidem z items.tsx).</div>
+  <div><span class="lname">7 entry_points</span> <span class="badge b-info">obiekty</span> punkty; <code>start</code> jest awaryjną pozycją gracza dla całej mapy.</div>
+  <div><span class="lname">8 waypoints</span> <span class="badge b-info">obiekty</span> polilinie/wielokąty; nazwa = nazwa instancji NPC; <code>enabled=false</code> wyłącza bez kasowania.</div>
+  <div><span class="lname">9 places</span> <span class="badge b-info">obiekty</span> nazwane punkty celu rutyn; kod bierze <code>rect.midbottom</code>, więc punkt i prostokąt działają oba.</div>
+  <div><span class="lname">10 spawn_points</span> <span class="badge b-info">obiekty</span> gid z CharacterTileset.tsx niesie <code>model_name</code>; nazwa obiektu = nazwa instancji NPC (klucz spina waypoint i zapis gry).</div>
+  <div><span class="lname">11 zones</span> <span class="badge b-info">obiekty</span> prostokąty (kod czyta <code>obj.x/y/width/height</code>, więc <strong>wielokąt zostaje sprowadzony do bounding boxa</strong>); wiele obiektów o tej samej nazwie tworzy listę.</div>
+</div>
+
+<div class="callout warn">
+  <p><strong>Pułapka znaleziona przy okazji.</strong> <code>load_zones</code> buduje <code>pygame.Rect(obj.x, obj.y, obj.width, obj.height)</code>.
+  Wielokątna strefa (a takie są w <code>BLUNDERHAVEN.tmx</code>, np. <code>wilderness</code>) ma w Tiled
+  <code>width=0 height=0</code>, więc w grze staje się prostokątem o zerowej powierzchni. Skill będzie
+  rysował strefy <strong>prostokątami</strong>, a linter zgłosi każdą strefę-wielokąt jako ERROR.
+  To jest istniejący błąd na dzisiejszej mapie, nie coś, co wprowadzamy.</p>
+</div>
+
+<h3>1.2 Koszt kroku (A*)</h3>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Wartość <code>step_cost</code></th><th>Znaczenie</th><th>Gdzie w tilesetach</th></tr></thead>
+<tbody>
+<tr><td class="num">100</td><td>droga, bruk - tanio</td><td>Floor.tsx (51 kafli), Water.tsx (56), Nature.tsx (4)</td></tr>
+<tr><td class="num">150</td><td>trawa, ziemia - normalnie</td><td>Floor.tsx (274), Water.tsx (129)</td></tr>
+<tr><td class="num">200</td><td>wysoka trawa, zboże - drogo</td><td>Floor.tsx (242), Field.tsx (45)</td></tr>
+<tr><td class="num">300 / 500</td><td>woda - bardzo drogo</td><td>Water.tsx (5 / 2)</td></tr>
+<tr><td class="num">-</td><td>brak własności = <code>STEP_COST_GROUND</code> (100)</td><td>domyślne</td></tr>
+</tbody>
+</table></div>
+
+<p>Zasada z kodu: <strong>wygrywa górna z dwóch dolnych warstw</strong>. Kafel <code>foliage</code>
+z <code>step_cost</code> nadpisuje to, co mówi <code>ground</code>. Ścieżka położona na <code>foliage</code>
+faktycznie przyspiesza chodzenie tylko wtedy, gdy ma własny <code>step_cost=100</code> - linter to sprawdzi.</p>
+
+<h3>1.3 Tilesety: tablica <code>firstgid</code> jest zamrożona</h3>
+
+<p>To najważniejsze pojedyncze odkrycie dla wykonalności stemplowania. <code>BLUNDERHAVEN.tmx</code>
+i prototyp <code>BLUNDERHAVEN_base.tmx</code> mają <strong>identyczną</strong> listę tilesetów w identycznej
+kolejności (różnią się tylko przedrostkiem <code>../</code> ze względu na podkatalog <code>_wip/</code>):</p>
+
+<pre><code>1     Water.tsx          477   Floor.tsx      1049  Field.tsx
+1124  Nature.tsx         1628  House.tsx      2387  Element.tsx
+2627  FloorDetail.tsx    2707  items.tsx      2817  CharacterTileset.tsx</code></pre>
+
+<p>Wniosek: <strong>gid skopiowany z prototypu do nowej mapy zewnętrznej znaczy dokładnie to samo</strong>,
+bez żadnego przeliczania. Generator zawsze wypisuje ten sam blok dziewięciu tilesetów, a linter pilnuje,
+żeby nikt go nie przestawił. Mapy wnętrz (<code>LOST_CORK_TAVERN</code>, <code>JACOBS_CHAMBER</code>)
+mają inną tablicę - skill ich nie dotyka.</p>
+
+<h3>1.4 Co jeszcze musi powstać poza plikiem .tmx</h3>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Plik</th><th>Co dopisać dla nowej mapy</th><th>Skutek braku</th></tr></thead>
+<tbody>
+<tr><td><code>assets/locale/PL.toml</code> + <code>EN.toml</code>, sekcja <code>[map]</code></td><td><code>KLUCZ = "Nazwa dla gracza"</code></td><td>gracz widzi surowy klucz</td></tr>
+<tr><td><code>config_model/audio.toml</code>, <code>[music]</code></td><td><code>KLUCZ = "utwor.ogg"</code></td><td>cisza (nie błąd)</td></tr>
+<tr><td><code>config_model/characters.csv</code></td><td><code>home/work/social/hobby</code> = <code>MAPA:place</code></td><td>rutyna degraduje się do "stój"</td></tr>
+<tr><td><code>config_model/routines.toml</code></td><td>kroki <code>type:</code> / <code>location:</code> / <code>route:</code></td><td><code>validate-world</code> ERROR</td></tr>
+<tr><td>mapa sąsiednia</td><td><code>exit</code> tam + <code>entry_point</code> tutaj, parami</td><td>gracz ląduje w środku mapy</td></tr>
+</tbody>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="fabula">2. Co fabuła narzuca mapie wioski</h2>
+
+<p>Przeczytałem <code>doc/PL/fabuła.md</code>, <code>doc/PL/Lokalizacje/</code>, wszystkie karty postaci
+i questy Q00-Q04. Wioska <strong>Gafowo Kolonia (BLUNDERHAVEN)</strong> to "mała, zacofana wieś na południu
+Królestwa Pomylenia". Z treści wynikają twarde wymagania przestrzenne - to nie jest dekoracja, to jest
+lista rzeczy, bez których questy się nie domykają:</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Źródło</th><th>Wymóg wobec mapy</th></tr></thead>
+<tbody>
+<tr><td>Q00_S00 "Obudziłeś się w <strong>stajni</strong>"</td><td><code>start</code> musi stać w stajni, a nie na łące. Stajnia = budynek obok Tawerny (zgadza się z Twoim promptem przykładowym).</td></tr>
+<tr><td>Q01_S01 "w Tawernie mówi się o wszystkich"</td><td>Tawerna blisko <code>start</code>, wejście widoczne z placu. To ten duży pionowy budynek z prototypu.</td></tr>
+<tr><td>Zielarka Zmora: "chałupa <strong>na końcu wioski, koło lasu</strong>"</td><td>Dom <code>POTIONEER_PUZZLEMINT</code> na skraju zabudowy, stykający się z biomem lasu. Sprawdzalne: odległość do najbliższego kafla lasu.</td></tr>
+<tr><td>Q04_S01 "kot trzyma ryby w skrzyni ukrytej <strong>za krzakami</strong>, trzeba mocnej broni"</td><td>Skrzynia <code>BLUNDERHAVEN_CATS_CHEST</code> <strong>otoczona kafelkami <code>destructible=true</code></strong> (Nature.tsx, <code>destruct_type=foliage</code>), niedostępna bez zniszczenia krzaków. To jest checkowalne w linterze.</td></tr>
+<tr><td>Q04_S02 "kryształ z Labiryntu"</td><td>Wejście <code>MAZE_01</code> z <code>return_entry_point=NextToMaze</code>.</td></tr>
+<tr><td>Q01_S03 "dwa dni drogi <strong>na północ</strong>, za Splątanym lasem skręcić na wschód"</td><td>Wyjazd na Porażkowo prowadzi na północ, w las.</td></tr>
+<tr><td><code>characters.csv</code>: Barman <code>social=BLUNDERHAVEN:well</code></td><td>Studnia jako miejsce spotkań - centralny plac. Pokrywa się z Twoim promptem.</td></tr>
+<tr><td>Kowal: <code>work=smithy</code>, <code>home=house_smith</code></td><td>Kuźnia osobno od domu kowala. Kowal "gardzi wsią" - jego chałupa na uboczu czyta się z układu.</td></tr>
+</tbody>
+</table></div>
+
+<p>Istniejące <code>places</code>, których skill musi używać zamiast wymyślać nowe:
+<code>well</code>, <code>shrine</code>, <code>smithy</code>, <code>pier</code>, <code>market_stall_1</code>,
+<code>market_stall_2</code>, <code>house_bart</code>, <code>house_johny</code>, <code>house_smith</code>,
+<code>house_barman</code>. Istniejące strefy: <code>water</code>, <code>shore</code>, <code>plains</code>,
+<code>backyard</code>, <code>wilderness</code> - i tylko te, bo <code>allowed_zones</code> w CSV nie zna innych.</p>
+
+<div class="callout">
+  <p><strong>Ton miejsca.</strong> Wieś jest "jednym wielkim żartem" (notatka z Q04_S00): Barman traktuje
+  brak ryb jak wojnę domową. To znaczy, że mapa ma być <em>zaniedbana i przaśna</em>, nie malownicza -
+  krzywe płoty, błotniste ścieżki rozjeżdżone w koleiny, kupki siana i beczek gdzie popadnie, jedna
+  kapliczka (<code>shrine</code>) traktowana serio przez mieszkańców. Skill dostanie to w
+  <code>reference/lore.md</code> jako wytyczną kompozycyjną, nie jako ozdobnik.</p>
+</div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="wymagania">3. Wymagania autora (wiążące)</h2>
+
+<ol>
+<li>Każda mapa terenu zewnętrznego ma <strong>wszystkie 12 warstw w tej samej kolejności co prototyp</strong>.</li>
+<li>Kafle na dwóch najniższych warstwach mogą nieść <code>step_cost</code>.</li>
+<li>Prototyp to <strong>luźna propozycja</strong> klocków, nie zamknięty zestaw - wolno wychodzić poza niego.</li>
+<li>Biomy mają wyglądać <strong>naturalnie i nieregularnie</strong>; detale ozdobne; warianty tego samego
+kafla (trawa, chodnik) dla urozmaicenia.</li>
+<li>Skill sam <strong>widzi</strong> mapę i sam naprawia błędy <em>wizualne</em> (monotonia, szablonowość)
+oraz <em>logiczne</em> (brak dojścia do stodoły, obiekt wejścia nie leży na drzwiach).</li>
+<li>Dwa tryby pracy: <strong>generowanie z promptu</strong> i <strong>korekta istniejącej mapy</strong>
+(przesunięcie zachowuje wszystkie warstwy; nieinteraktywne elementy w miejscu docelowym giną,
+interaktywne są przestawiane w sensowne miejsce).</li>
+</ol>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="decyzje">4. Decyzje D1-D16</h2>
+
+<h3>D1. Nazwa i miejsce skilla</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td><code>.claude/skills/tiled-map/</code></td><td>Nazwa neutralna wobec typu terenu - ten sam skill zrobi wioskę, miasto, bagno i las. <code>SKILL.md</code> + katalog <code>reference/</code> (kontrakt mapy, lore, checklisty).</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td><code>.claude/skills/village-map/</code></td><td>Czytelniejsza nazwa dla dzisiejszego zastosowania, ale za wąska - za pół roku bagno nie będzie pasować do nazwy.</td><td><span class="badge b-warn">za wąskie</span></td></tr>
+<tr><td>+ dowiązanie w <code>.opencode/skills/</code></td><td>Ten sam skill dostępny też dla OpenCode (jest już tam precedens: <code>dialog-en-sync</code>). Kosztuje jeden symlink.</td><td><span class="badge b-info">opcja dodatkowa</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D2. Gdzie mieszkają skrypty</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="fixed"><td><code>scripts/mapgen/</code></td><td>Reguła z <code>CLAUDE.md</code>: w repo projektu skrypty pomocnicze idą do centralnego <code>scripts/</code>, nie obok danych ani do katalogu skilla. Podkatalog, bo to sześć plików tworzących pakiet. Cele w <code>Justfile</code> jak dla <code>validate-world</code>.</td><td><span class="badge b-info">ustalone regułą</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D3. Skąd katalog klocków</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="fixed"><td>warstwa <code>stamps</code> w prototypie</td><td>Nazwany prostokąt w <code>BLUNDERHAVEN_base.tmx</code> = jeden klocek; właściwości obiektu opisują rodzaj, kotwicę i drzwi. Zaznaczasz je myszą w Tiled, skrypt wylicza katalog z pliku. Żadnego nowego formatu danych.</td><td><span class="badge b-info">Twój wybór</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D4. Warianty terenu i przejścia między terenami</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>też przez warstwę <code>stamps</code></td><td>Obiekt <code>kind=terrain</code> obejmujący łatę trawy: skrypt czyta z niej <strong>zbiór wariantów i ich wagi</strong> (częstość gidów w prostokącie). Obiekt <code>kind=edge</code> na styku dwóch terenów daje próbkę przejścia. Jedno miejsce dla wszystkiego, edycja myszą.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>analiza częstości z istniejących map</td><td>Bez żadnej adnotacji: policz gidy na <code>ground</code> w <code>BLUNDERHAVEN.tmx</code>. Działa dla trawy, ale nie odróżni "wariantu trawy" od "kafla pod domem".</td><td><span class="badge b-warn">nieprecyzyjne</span></td></tr>
+<tr><td>osobny TOML</td><td>Jawne listy gidów. Precyzyjne, ale to plik, którego nie widać w Tiled - i kolejny do utrzymania.</td><td><span class="badge b-warn">ogon utrzymania</span></td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Fakt pomocniczy:</strong> <code>Floor.tsx</code> ma już gotowy wangset <em>"grass-dirt Set"</em>
+(typ <code>corner</code>, 24 kafle). Dla styku trawa/ziemia używamy jego - to autotiling za darmo.
+Dla pozostałych styków (trawa/ścieżka, ziemia/woda) bierzemy próbki <code>kind=edge</code>.</p>
+
+<h3>D5. Renderer mapy do PNG</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>własny parser TMX + Pillow</td><td>Bez SDL, bez pygame, bez display - jak <code>validate_world.py</code>. Chodzi w CI, w <code>just</code>, przez ssh. Pillow 10.3 jest już w <code>.venv</code>. Trzeba obsłużyć flagi obrotu w górnych trzech bitach gidu.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>pygame + pytmx (SDL dummy)</td><td>Mniej kodu (pytmx już tnie tilesety), ale ciągnie SDL i pamięć o tym, że <em>zrzuty z dummy nie są wierne</em>. Tu akurat renderujemy kafle, nie klatkę gry, więc ryzyko małe - ale zależność duża.</td><td><span class="badge b-warn">zbędna zależność</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D6. Jak model ogląda mapę 256x256 <span class="badge b-acc">kluczowa</span></h3>
+
+<div class="callout warn">
+  <p><strong>Problem, który trzeba rozwiązać, zanim napiszemy linijkę kodu.</strong> Mapa 256x256 kafli
+  po 16 px to obraz <strong>4096x4096 px</strong>. Obraz podany modelowi jest skalowany do ok. 1568 px
+  na dłuższym boku - kafel schodzi wtedy do <strong>~6 px</strong>. Na takim obrazie nie da się ocenić
+  ani wariantów trawy, ani tego, czy drzwi mają dojście. Renderowanie "całej mapy w jednym PNG" jest
+  wizualną weryfikacją tylko z nazwy.</p>
+</div>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>dwupoziomowo</td><td><strong>(a) Overview</strong>: cała mapa w skali 1/2 lub 1/4, z siatką co 16 kafli i etykietami współrzędnych, obrysami stampów i markerami obiektów - do oceny <em>kompozycji</em> (czy droga się wije, czy plac jest owalny, czy pola nie są w idealnej kratce). <strong>(b) Crop 1:1</strong>: wycinek 64x64 kafle = 1024x1024 px, czyli kafel ma pełne 16 px - do oceny <em>detalu</em>. Crop wołany tylko tam, gdzie linter coś zgłosił albo overview budzi wątpliwość. Linter zawęża, gdzie patrzeć, więc nie oglądamy 16 wycinków na ślepo.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>zawsze cała mapa</td><td>Jeden obraz na iterację, tanio. Ale przy 256x256 model ocenia mgłę pikseli i nie wyłapie ani monotonii, ani niedopasowanych drzwi.</td><td><span class="badge b-err">nie działa dla dużych map</span></td></tr>
+<tr><td>tylko wycinki</td><td>Pełen detal, ale bez widoku całości nie da się ocenić kompozycji - a to główny zarzut "szablonowości".</td><td><span class="badge b-warn">gubi całość</span></td></tr>
+</tbody>
+</table></div>
+
+<p>Dodatkowo renderer daje <strong>nakładki diagnostyczne</strong> (osobne PNG, na żądanie):
+mapa chodliwości (ściany czarne, koszt kroku w skali szarości), mapa dostępności (flood fill ze
+<code>start</code> - wszystko nieosiągalne na czerwono), mapa gęstości detali (do wychwycenia
+martwych, pustych połaci). Te trzy obrazy odpowiadają na "czy da się dojść do stodoły" szybciej
+i pewniej niż oglądanie kafelków.</p>
+
+<h3>D7. Tablica tilesetów</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>zamrożona kanoniczna lista</td><td>Generator zawsze wypisuje te same 9 tilesetów w tej samej kolejności (patrz 1.3). Gidy ze stampów przenoszą się 1:1, bez remapowania. Linter zgłasza ERROR przy jakimkolwiek odstępstwie.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>dynamiczne przeliczanie gidów</td><td>Ogólniejsze (pozwoliłoby dorzucić tileset w środku), ale wprowadza całą klasę błędów "kafel zamienił się w inny kafel" - najdroższą w debugowaniu.</td><td><span class="badge b-err">niepotrzebne ryzyko</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D8. Nieregularne biomy</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>value noise + próg + morfologia</td><td>Własna implementacja szumu wartościowego (ok. 40 linii, bez zależności, seedowana), próg daje plamę, otwarcie/domknięcie morfologiczne wygładza brzeg zostawiając go postrzępionym. Sterowanie: <code>scale</code> (wielkość plam), <code>threshold</code> (pokrycie), <code>roughness</code>.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>błądzenie losowe / rozrost plamy</td><td>Prostsze, ale trudniej sterować pokryciem i łatwo o kształty "amebowate", które wyglądają na losowe, a nie na naturalne.</td><td><span class="badge b-warn">gorsza kontrola</span></td></tr>
+<tr><td>Perlin z biblioteki</td><td>Nowa zależność w <code>requirements-dev</code> dla czterdziestu linii kodu.</td><td><span class="badge b-err">odpada</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D9. Drogi i ścieżki</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>krzywa Catmull-Rom + odnogi A*</td><td>Punkty kontrolne z promptu ("ze wschodu na zachód szerokimi łukami") dają krzywą, rasteryzowaną pędzlem o zadanej szerokości ze zmiennym jitterem brzegu. Do każdych drzwi dochodzi <strong>odnoga wyznaczona A* po koszcie kroku</strong> - czyli tym samym algorytmem, którym potem chodzą NPC. Jeśli A* nie znajdzie drogi, to jest właśnie ten błąd "brak dojścia do stodoły", tyle że złapany w chwili tworzenia, a nie po zrzucie ekranu.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>odcinki proste + skrzyżowania</td><td>Łatwe w autotilingu, ale to jest dokładnie ta "szablonowość", którą chcesz wyeliminować.</td><td><span class="badge b-err">sprzeczne z wymogiem</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D10. Anty-szablonowość: reguły i metryki</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Warstwa obrony</th><th>Co robi</th><th style="width:18%">Gdzie</th></tr></thead>
+<tbody>
+<tr class="rec"><td>reguły w generatorze</td><td>Jitter pozycji stampów (±1-2 kafle), zakaz wyrównania więcej niż 3 budynków w rzędzie lub kolumnie, warianty terenu losowane z wagami, gęstość detali malejąca od drogi, celowe "wady" (jeden krzywy płot, jedna zarośnięta ścieżka).</td><td><code>generate.py</code></td></tr>
+<tr class="rec"><td>metryki w linterze</td><td>Entropia wariantów w oknie 16x16, najdłuższy ciąg jednego gidu, histogram wyrównania budynków, udział terenu bez żadnego detalu, procent kafli lasu bez wariantu.</td><td><code>lint_map.py</code></td></tr>
+<tr class="rec"><td>ocena obrazu</td><td>To, czego metryka nie złapie: rytm, czytelność, "czy to wygląda jak wieś, w której ktoś mieszka".</td><td>sesja główna</td></tr>
+</tbody>
+</table></div>
+
+<h3>D11. Reguły dla warstw obiektowych</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:20%">Warstwa</th><th>Reguła, którą generator stosuje i linter sprawdza</th></tr></thead>
+<tbody>
+<tr><td><code>spawn_points</code></td><td>Nazwa = klucz modelu, a przy wielu sztukach <code>KLUCZ_NN</code> (konwencja z <code>validate_world.py</code>). <strong>Unikalność wymuszona</strong> - w prototypie nazw brak, w <code>BLUNDERHAVEN.tmx</code> już są i muszą być, bo to klucz zapisu gry i wiązania waypointu.</td></tr>
+<tr><td><code>interactions</code></td><td><code>exit</code> leży na kaflu drzwi (środek obiektu w obrysie drzwi stampu); do każdego <code>exit</code> istnieje <code>entry_point</code> po drugiej stronie; skrzynia ma gid z <code>items.tsx</code> i <code>obj_type=chest</code>.</td></tr>
+<tr><td><code>entry_points</code></td><td>Zawsze jest <code>start</code>, na kaflu chodliwym. Nazwy bez spacji na końcu (w prototypie jest <code>"JACOBS_CHAMBER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_FRONT"</code> - literówka, linter to złapie).</td></tr>
+<tr><td><code>places</code></td><td>Tylko nazwy obecne w <code>characters.csv</code>; nowe trafiają do raportu braków. Punkt musi być chodliwy i osiągalny ze <code>start</code>.</td></tr>
+<tr><td><code>zones</code></td><td>Wyłącznie prostokąty (patrz pułapka w 1.1). Każda strefa użyta w <code>allowed_zones</code> istnieje na mapie i pokrywa spawn odpowiednich zwierząt.</td></tr>
+<tr><td><code>waypoints</code></td><td>Nazwa = nazwa instancji NPC; żaden wierzchołek nie leży w ścianie; trasa jest zamknięta lub wraca po sobie.</td></tr>
+</tbody>
+</table></div>
+
+<h3>D12. Encje spoza <code>characters.csv</code></h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="fixed"><td>tylko istniejące + raport</td><td>Skill stawia spawny wyłącznie dla kluczy z CSV, nowe <code>places</code>/<code>zones</code> nazywa i wypisuje listę wpisów do dopisania. Zawartość CSV i TOML zostaje Twoją domeną.</td><td><span class="badge b-info">Twój wybór</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D13. Gdzie ląduje wynik</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="fixed"><td><code>maps/_wip/</code>, promocja ręczna</td><td>Skill kończy dopiero, gdy linter jest czysty i render wygląda dobrze, potem pokazuje Ci obraz. Przeniesienie do <code>maps/</code> to Twoja komenda.</td><td><span class="badge b-info">Twój wybór</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D14. Pętla samonaprawy</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>3 iteracje, potem pytanie</td><td>Cykl <em>lint → render → ocena → poprawka</em> maksymalnie trzy razy. Jeśli po trzeciej ten sam błąd wraca, skill przestaje zgadywać, pokazuje render i pyta. Bez limitu agent potrafi się zapętlić na jednym niedopasowanym kafelku i przepalić sesję.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>bez limitu, aż czysto</td><td>Kusi, ale ryzyko zapętlenia jest realne, a diagnoza "dlaczego to się nie zbiega" i tak wymaga Ciebie.</td><td><span class="badge b-warn">ryzyko pętli</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D15. Powtarzalność wyniku</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td><code>gen_seed</code> + <code>gen_brief</code> w properties mapy</td><td>Ziarno i skrót promptu zapisane we właściwościach <code>&lt;map&gt;</code>. Gra czyta stamtąd wyłącznie <code>outdoor</code> i <code>particles</code> (sprawdzone w <code>map_loader</code>), więc dodatkowe pola są dla niej niewidzialne. Zysk: ta sama komenda odtwarza tę samą mapę, a Ty widzisz w Tiled, z czego powstała.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>ziarno tylko w logu</td><td>Nic nie dodaje do pliku, ale ginie po zamknięciu sesji.</td><td><span class="badge b-warn">gubi się</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>D16. Rozmiar mapy i budżet</h3>
+
+<p>Zmierzyłem, zamiast zgadywać. Parsowanie <code>BLUNDERHAVEN.tmx</code> (70x70, 12 warstw) przez pytmx:
+<strong>14 ms</strong>. Ekstrapolacja liniowa na 256x256: <strong>~190 ms</strong> na desktopie, plik ok.
+<strong>1,2 MB</strong>. Do przyjęcia, ale na web (WASM) trzeba liczyć się z kilkukrotnością tego czasu
+i z wagą paczki.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
+<tbody>
+<tr class="rec"><td>domyślnie 128x128, 256x256 po pomiarze</td><td>Skill przyjmuje dowolny rozmiar z promptu, ale przy pierwszej mapie powyżej 128x128 <strong>uruchamia <code>scripts/bench_scene.py</code></strong> i raportuje medianę <code>update</code>/<code>draw</code> oraz czas wczytania. Jeśli któraś przekracza budżet z audytu (update 0,41 ms, draw 1,31 ms + 20%), mówi o tym wprost zamiast oddać mapę, która zwalnia grę.</td><td><span class="badge b-ok">rekomendacja</span></td></tr>
+<tr><td>bez limitu, bez pomiaru</td><td>Najprostsze, ale pierwsza mapa 256x256 może okazać się nie do użycia na web dopiero po zbudowaniu paczki.</td><td><span class="badge b-warn">odkłada problem</span></td></tr>
+</tbody>
+</table></div>
+
+<div class="callout warn">
+  <p><strong>Osobne ryzyko, którego nie zmierzyłem:</strong> A* na siatce 65 536 komórek przy trasie przez
+  całą mapę. NPC z rutyną chodzą między <code>places</code>, a przy mapie 256 kafli szerokiej trasa ma
+  ~300 kroków zamiast ~70. Sprawdzimy to pomiarem w kroku 6 planu, zanim uznamy 256x256 za bezpieczne.</p>
+</div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="stamps">5. Katalog klocków: warstwa <code>stamps</code></h2>
+
+<p>Dodajemy do <code>_wip/BLUNDERHAVEN_base.tmx</code> jedną warstwę obiektów <code>stamps</code>
+(<strong>na samym końcu, po <code>zones</code></strong> - prototyp nie jest mapą gry, ale trzymamy porządek).
+Nazwany prostokąt = jeden klocek. Skrypt <code>palette.py</code> wycina z niego wszystkie sześć warstw
+kafelkowych naraz.</p>
+
+<pre><code>&lt;objectgroup id="15" name="stamps"&gt;
+  &lt;object id="200" name="house_orange_big" x="736" y="96" width="96" height="96"&gt;
+   &lt;properties&gt;
+    &lt;property name="kind"    value="building"/&gt;   &lt;!-- building | fence | field | nature | prop | terrain | edge --&gt;
+    &lt;property name="door"    value="3,5"/&gt;        &lt;!-- kafel drzwi wzgledem lewego gornego rogu --&gt;
+    &lt;property name="anchor"  value="bottom"/&gt;     &lt;!-- jak sadzic: bottom (budynki) | center (drzewa) --&gt;
+    &lt;property name="tags"    value="dom,wies,duzy"/&gt;
+    &lt;property name="tile"    value="false"/&gt;      &lt;!-- czy wolno kafelkowac w obie strony (plot, pole) --&gt;
+   &lt;/properties&gt;
+  &lt;/object&gt;
+  &lt;object id="201" name="grass_plain"  kind="terrain" .../&gt;   &lt;!-- zbior wariantow trawy + wagi --&gt;
+  &lt;object id="202" name="grass__dirt"  kind="edge"    .../&gt;   &lt;!-- probka styku dwoch terenow --&gt;
+&lt;/objectgroup&gt;</code></pre>
+
+<h4>Bootstrap katalogu (jednorazowo, krok 3 planu)</h4>
+<ol>
+<li><code>render_map.py _wip/BLUNDERHAVEN_base.tmx --overview --grid 8 --coords</code> - render z siatką
+i podpisanymi współrzędnymi kafelkowymi.</li>
+<li>Oglądam render i wypisuję kandydatów: 12 budynków w górnym rzędzie, 5 zagród/płotów, studnia,
+las, sad, 4 pola, dwie kompletne zagrody wiejskie ze zwierzętami.</li>
+<li>Wpisuję prostokąty do warstwy <code>stamps</code> wprost w XML-u, z wyliczonymi właściwościami.</li>
+<li><code>palette.py show &lt;nazwa&gt;</code> renderuje pojedynczy klocek na przezroczystym tle - sprawdzam
+kafel po kafelku, czy obrys jest dokładny (nie ucina dachu, nie łapie sąsiada).</li>
+<li>Pokazuję Ci arkusz kontaktowy wszystkich klocków - poprawiasz w Tiled, co Ci nie pasuje.</li>
+</ol>
+
+<div class="callout ok">
+  <p><strong>Dlaczego to jest właściwa granica podziału pracy.</strong> Obrys klocka to decyzja
+  <em>graficzna</em> - Ty ją podejmujesz najlepiej i najszybciej, myszą. Kompozycja mapy z klocków to
+  decyzja <em>algorytmiczna</em> - tę bierze skill. Nic nie zmusza żadnej ze stron do robienia rzeczy,
+  w której jest gorsza.</p>
+</div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="potok">6. Potok generowania (8 przebiegów)</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:5%">#</th><th style="width:20%">Przebieg</th><th>Co robi</th><th style="width:18%">Warstwy</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td>Brief</td><td>Prompt → struktura: rozmiar, ziarno, lista biomów z pokryciem, topologia dróg (punkty kontrolne), dzielnice, lista budynków, wejścia/wyjścia, obsada NPC. To jest jedyny krok, w którym pracuje model - reszta jest deterministyczna.</td><td>-</td></tr>
+<tr><td class="num">2</td><td>Teren</td><td>Wypełnienie bazowe wariantami z wagami; plamy biomów z szumu (D8); przejścia wangsetem lub próbką <code>edge</code>.</td><td><code>ground</code></td></tr>
+<tr><td class="num">3</td><td>Drogi</td><td>Krzywe Catmull-Rom przez punkty kontrolne, rasteryzacja pędzlem, autotile brzegów z maski 8 sąsiadów, plac jako elipsa z jitterem.</td><td><code>foliage</code> (+<code>ground</code> pod spodem)</td></tr>
+<tr><td class="num">4</td><td>Zabudowa</td><td>Stemplowanie budynków, płotów, pól i zagród; jitter pozycji; drzwi zawsze zwrócone do najbliższej drogi; odnoga A* od drzwi do drogi.</td><td><code>walls</code>, <code>over</code>, <code>foliage</code></td></tr>
+<tr><td class="num">5</td><td>Natura</td><td>Las obrzeżny jako plama z szumu, gęstość malejąca ku środkowi; pojedyncze drzewa i kępy; krzaki <code>destructible</code> tam, gdzie fabuła chce ukrytej skrzyni.</td><td><code>walls</code>, <code>over</code></td></tr>
+<tr><td class="num">6</td><td>Detale</td><td>Niska roślinność, kamyki, koleiny, kupki siana; gęstość malejąca od drogi; przedmioty do podniesienia.</td><td><code>foliage</code>, <code>items</code></td></tr>
+<tr><td class="num">7</td><td>Obiekty</td><td>Wszystkie sześć warstw obiektowych wg reguł D11; <code>sprites</code> zostaje pusta.</td><td>6 warstw obiektowych</td></tr>
+<tr><td class="num">8</td><td>Zapis + weryfikacja</td><td>Zapis TMX z kanoniczną tablicą tilesetów, <code>gen_seed</code>/<code>gen_brief</code> w properties; linter; render; ocena; poprawki (max 3 iteracje).</td><td>-</td></tr>
+</tbody>
+</table></div>
+
+<p>Przebiegi 2-7 są <strong>czystymi funkcjami ziarna i briefu</strong> - to samo ziarno daje ten sam plik.
+Poprawki z przebiegu 8 są nakładane jako operacje na gotowej mapie (te same, których używa tryb korekty,
+patrz rozdział 8), a nie przez ponowne generowanie z innym ziarnem. Dzięki temu naprawienie jednego
+niedopasowanego kafelka nie przemebluje całej wsi.</p>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="weryfikacja">7. Weryfikacja: linter + render</h2>
+
+<h3>7.1 <code>lint_map.py</code> - to, co da się policzyć</h3>
+
+<p>Wzorowany na <code>validate_world.py</code>: tylko diagnozuje, nigdy nie edytuje, bez pygame,
+wyjście tabelaryczne + <code>--json</code>, kod wyjścia 1 przy ERROR.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:12%">Kategoria</th><th>Sprawdzenie</th><th style="width:10%">Waga</th></tr></thead>
+<tbody>
+<tr><td rowspan="4">Kontrakt</td><td>12 warstw, dokładnie te nazwy, dokładnie ta kolejność</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td>kanoniczna tablica tilesetów (9 pozycji, te <code>firstgid</code>)</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td><code>sprites</code> jest pusta; <code>over</code> ma <code>opacity=0.99</code></td><td><span class="badge b-warn">WARN</span></td></tr>
+<tr><td>każdy kafel na <code>items</code> ma <code>item_name</code> obecny w <code>config.items</code></td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td rowspan="5">Dostępność</td><td><code>start</code> istnieje, leży na kaflu chodliwym</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td>flood fill ze <code>start</code>: każdy <code>place</code>, <code>entry_point</code>, <code>exit</code>, skrzynia i spawn NPC osiągalny</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td>wyjątek dla skrzyni celowo zamkniętej krzakami - osiągalna <em>po</em> usunięciu <code>destructible</code> (Q04_S01)</td><td><span class="badge b-info">reguła</span></td></tr>
+<tr><td>brzeg mapy szczelny (gracz nie wychodzi poza kadr inaczej niż przez <code>exit</code>)</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td>brak zamkniętych kieszeni chodliwego terenu bez wejścia</td><td><span class="badge b-warn">WARN</span></td></tr>
+<tr><td rowspan="4">Obiekty</td><td>środek każdego <code>exit</code> leży na kaflu drzwi budynku</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td>do każdego <code>exit</code> jest <code>entry_point</code> po drugiej stronie (przez <code>to_map</code>)</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td>nazwy <code>spawn_points</code> unikalne; <code>model_name</code> istnieje w <code>characters.csv</code></td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td><code>zones</code> to prostokąty (nie wielokąty - patrz pułapka 1.1); strefy z <code>allowed_zones</code> istnieją</td><td><span class="badge b-err">ERROR</span></td></tr>
+<tr><td rowspan="2">Koszt kroku</td><td>kafle drogi mają <code>step_cost=100</code> (inaczej droga nie przyspiesza)</td><td><span class="badge b-warn">WARN</span></td></tr>
+<tr><td>brak kafla bez <code>step_cost</code> na <code>ground</code> tam, gdzie <code>foliage</code> jest pusty</td><td><span class="badge b-warn">WARN</span></td></tr>
+<tr><td rowspan="4">Monotonia</td><td>entropia wariantów w oknie 16x16 poniżej progu</td><td><span class="badge b-warn">WARN</span></td></tr>
+<tr><td>najdłuższy ciąg jednego gidu w wierszu/kolumnie</td><td><span class="badge b-warn">WARN</span></td></tr>
+<tr><td>histogram wyrównania budynków (więcej niż 3 w linii)</td><td><span class="badge b-warn">WARN</span></td></tr>
+<tr><td>połacie bez detalu większe niż N kafli</td><td><span class="badge b-warn">WARN</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>7.2 <code>render_map.py</code> - to, co trzeba zobaczyć</h3>
+
+<pre><code>just map-render BLUNDERHAVEN_v2 --overview            # cala mapa, 1/2, siatka co 16, etykiety
+just map-render BLUNDERHAVEN_v2 --crop 64,96,64,64    # wycinek 1:1 (1024x1024 px)
+just map-render BLUNDERHAVEN_v2 --overlay reach       # mapa dostepnosci ze `start`
+just map-render BLUNDERHAVEN_v2 --overlay cost        # koszt kroku w skali szarosci
+just map-render BLUNDERHAVEN_v2 --layers ground,foliage   # tylko wybrane warstwy</code></pre>
+
+<p>Rytm jednej iteracji: <code>lint</code> zawęża podejrzane miejsca → <code>--overview</code> na kompozycję
+→ <code>--crop</code> tylko tam, gdzie coś zgłoszono → poprawka operacjami z rozdziału 8 → od nowa.
+Bez zawężania przez linter oglądanie 16 wycinków mapy 256x256 byłoby nieopłacalne, i to jest właśnie
+powód, dla którego linter powstaje przed pętlą wizualną, a nie po niej.</p>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="edycja">8. Korekty istniejącej mapy</h2>
+
+<p>Drugi tryb pracy: <em>"przesuń dom Jakuba z zagrodą o 4 kafle na wschód"</em>. Realizowany zestawem
+operacji w <code>map_edit.py</code>, nie ręcznym grzebaniem w XML-u - bo ręczna edycja sześciu warstw
+kafelkowych i sześciu obiektowych naraz to gwarantowany błąd.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:26%">Operacja</th><th>Zachowanie</th></tr></thead>
+<tbody>
+<tr><td><code>move --rect x,y,w,h --by dx,dy</code></td><td>Przenosi kafle na <strong>wszystkich sześciu</strong> warstwach kafelkowych i obiekty, których kotwica wpada w prostokąt, na <strong>wszystkich sześciu</strong> obiektowych (razem z wierzchołkami wielokątów).</td></tr>
+<tr><td>-- cel: elementy nieinteraktywne</td><td>Nadpisywane bez pytania (trawa, drzewa, płoty).</td></tr>
+<tr><td>-- cel: elementy interaktywne</td><td><code>exit</code>, skrzynia, <code>place</code>, <code>spawn_point</code>, <code>entry_point</code> - <strong>przestawiane w najbliższe sensowne miejsce</strong> (chodliwe, osiągalne, dla <code>exit</code> na kaflu drzwi) i <strong>wypisywane w raporcie</strong>. Nigdy nie kasowane po cichu.</td></tr>
+<tr><td>-- źródło po przeniesieniu</td><td>Zasypywane terenem próbkowanym z pierścienia otaczającego, z wariantami - żeby nie została prostokątna łata.</td></tr>
+<tr><td><code>stamp --name X --at x,y</code></td><td>Postawienie klocka z katalogu, z odnogą A* do drogi.</td></tr>
+<tr><td><code>erase --rect / --stamp</code></td><td>Usunięcie z zasypaniem terenem jak wyżej.</td></tr>
+<tr><td><code>revar --rect --terrain grass</code></td><td>Przelosowanie wariantów w obszarze - lek na monotonię bez ruszania kompozycji.</td></tr>
+<tr><td><code>scatter --rect --kind prop --density</code></td><td>Dosypanie detali - lek na martwe połacie.</td></tr>
+</tbody>
+</table></div>
+
+<p>Każda operacja kończy się automatycznym <code>lint_map.py</code>. Przesunięcie, które odcięło dojście
+do stodoły, jest wykryte natychmiast, a nie przy najbliższym uruchomieniu gry.</p>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="raport">9. Raport braków (czego skill nie dopisuje)</h2>
+
+<p>Zgodnie z D12 skill kończy pracę raportem, nie edycją źródeł prawdy. Raport idzie na terminal
+jako <strong><code>rich.Table</code> z kolorami</strong> - dokładnie tym samym wzorcem, co
+<code>validate_world.report_table</code>: czerwony <code>ERROR</code>, żółty <code>WARN</code>,
+cyjanowa kolumna źródła, tytuł nad tabelą, podsumowanie pod nią. Gdy <code>rich</code> jest
+niedostępny, funkcja degraduje się do zwykłego <code>print</code> wiersz po wierszu (ten sam
+<code>try/except ImportError</code>, co w walidatorze), więc raport nigdy nie wywala skryptu w CI.</p>
+
+<div class="card" style="padding:0;overflow:hidden">
+<div style="padding:var(--s3) var(--s5);border-bottom:1px solid var(--border);background:var(--surface-2);
+     font-family:var(--mono);font-size:.82rem;color:var(--muted)">
+  Raport braków - BLUNDERHAVEN_v2 &nbsp;·&nbsp; 128x128 &nbsp;·&nbsp; ziarno <code>8f31c2a4</code> &nbsp;·&nbsp; lint: 0 ERROR, 3 WARN
+</div>
+<div class="tablewrap"><table style="margin:0;box-shadow:none;border-radius:0">
+<thead><tr>
+  <th style="width:10%">Waga</th><th style="width:20%">Źródło</th><th style="width:22%">Klucz</th><th>Co dopisać / skutek braku</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td><span class="badge b-err">ERROR</span></td>
+  <td><code>characters.csv</code></td><td><code>WHEELWRIGHT</code></td>
+  <td>brak wiersza - <strong>spawn nie został postawiony</strong></td></tr>
+<tr>
+  <td><span class="badge b-err">ERROR</span></td>
+  <td><code>routines.toml</code></td><td><code>townsfolk</code> krok 4</td>
+  <td><code>type:hobby</code> celuje w <code>shrine</code>, którego nie ma na mapie</td></tr>
+<tr>
+  <td><span class="badge b-warn">WARN</span></td>
+  <td><code>locale/PL.toml</code> <code>[map]</code></td><td><code>BLUNDERHAVEN_V2</code></td>
+  <td>brak nazwy dla gracza - widzi surowy klucz (to samo w <code>EN.toml</code>)</td></tr>
+<tr>
+  <td><span class="badge b-warn">WARN</span></td>
+  <td><code>audio.toml</code> <code>[music]</code></td><td><code>BLUNDERHAVEN_V2</code></td>
+  <td>brak wpisu - cisza na mapie (nie jest błędem)</td></tr>
+<tr>
+  <td><span class="badge b-warn">WARN</span></td>
+  <td>warstwa <code>places</code></td><td><code>mill</code>, <code>granary</code></td>
+  <td>miejsce bez właściciela - żaden wiersz CSV do niego nie celuje</td></tr>
+<tr>
+  <td><span class="badge b-info">INFO</span></td>
+  <td><code>characters.csv</code></td><td><code>HAMMER_HOAXHEART</code></td>
+  <td><code>hobby=shrine</code> - miejsce postawione, nic do zrobienia</td></tr>
+<tr>
+  <td><span class="badge b-warn">WARN</span></td>
+  <td>lint: monotonia</td><td>(16,80)-(32,96)</td>
+  <td>entropia wariantów trawy 0,31 przy progu 0,55</td></tr>
+<tr>
+  <td><span class="badge b-warn">WARN</span></td>
+  <td>lint: szablonowość</td><td>kolumna <code>x=48</code></td>
+  <td>4 budynki wyrównane w jednej linii</td></tr>
+<tr>
+  <td><span class="badge b-warn">WARN</span></td>
+  <td>lint: pustka</td><td>(96,16)</td>
+  <td>połać 22x18 kafli bez żadnego detalu</td></tr>
+</tbody>
+</table></div>
+<div style="padding:var(--s3) var(--s5);border-top:1px solid var(--border);background:var(--surface-2);
+     font-family:var(--mono);font-size:.82rem;color:var(--muted)">
+  2 errors, 6 warnings, 1 info &nbsp;·&nbsp; mapa zapisana w <code>maps/_wip/</code>, promocja Twoją komendą
+</div>
+</div>
+
+<p>Kolumna <strong>Waga</strong> mówi o skutku dla gry, nie o trudności poprawki:
+<span class="badge b-err">ERROR</span> to rzecz, przez którą <code>just validate-world</code> nie przejdzie
+albo NPC nie powstanie; <span class="badge b-warn">WARN</span> to działa-ale-gorzej (cisza zamiast muzyki,
+surowy klucz zamiast nazwy, monotonia); <span class="badge b-info">INFO</span> to potwierdzenie, że coś
+zostało obsłużone - żebyś nie musiał tego sprawdzać ręcznie.</p>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="pliki">10. Pliki, które powstaną</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:34%">Ścieżka</th><th>Rola</th><th style="width:10%">~linii</th></tr></thead>
+<tbody>
+<tr><td><code>.claude/skills/tiled-map/SKILL.md</code></td><td>Procedura: kiedy użyć, jak czytać brief, kolejność przebiegów, rytm pętli weryfikacji, kiedy przestać i zapytać.</td><td class="num">200</td></tr>
+<tr><td><code>.claude/skills/tiled-map/reference/map-contract.md</code></td><td>Rozdział 1 tego dokumentu jako materiał źródłowy dla skilla.</td><td class="num">120</td></tr>
+<tr><td><code>.claude/skills/tiled-map/reference/lore.md</code></td><td>Rozdział 2: kto mieszka w wiosce, czego wymaga fabuła, jaki jest ton miejsca.</td><td class="num">90</td></tr>
+<tr><td><code>scripts/mapgen/tmx.py</code></td><td>Czytanie i zapis TMX: warstwy jako tablice 2D, grupy obiektów, kanoniczna tablica tilesetów, flagi obrotu w gidzie.</td><td class="num">300</td></tr>
+<tr><td><code>scripts/mapgen/palette.py</code></td><td>Katalog klocków z warstwy <code>stamps</code>; wycinanie, stemplowanie, zbiory wariantów terenu.</td><td class="num">250</td></tr>
+<tr><td><code>scripts/mapgen/generate.py</code></td><td>Osiem przebiegów: szum, krzywe, stemplowanie, obiekty.</td><td class="num">600</td></tr>
+<tr><td><code>scripts/mapgen/lint_map.py</code></td><td>Sprawdzenia z 7.1, wyjście tabela + <code>--json</code>.</td><td class="num">450</td></tr>
+<tr><td><code>scripts/mapgen/render_map.py</code></td><td>TMX → PNG, Pillow, overview/crop/nakładki.</td><td class="num">300</td></tr>
+<tr><td><code>scripts/mapgen/map_edit.py</code></td><td>Operacje z rozdziału 8.</td><td class="num">350</td></tr>
+<tr><td><code>tests/test_mapgen.py</code></td><td>Zgodnie z konwencją repo: samodzielny skrypt z listą <code>tests=[...]</code>, bez pytesta.</td><td class="num">250</td></tr>
+<tr><td><code>Justfile</code></td><td>Cele <code>map-render</code>, <code>map-lint</code>, <code>map-palette</code>, <code>map-new</code>, <code>map-edit</code> (wariant unix + powershell, jak reszta).</td><td class="num">30</td></tr>
+<tr><td><code>_wip/BLUNDERHAVEN_base.tmx</code></td><td><strong>Modyfikacja:</strong> dopisana warstwa <code>stamps</code>. Kafle bez zmian.</td><td class="num">+60</td></tr>
+</tbody>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="plan">11. Plan wykonania (7 kroków)</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:5%">#</th><th style="width:26%">Krok</th><th>Zawartość i bramka wyjścia</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td>Fundament: <code>tmx.py</code></td><td>Czytanie i zapis TMX z zachowaniem struktury. <strong>Bramka:</strong> round-trip <code>BLUNDERHAVEN.tmx</code> → zapis → <code>diff</code> pusty (poza formatowaniem), gra wczytuje wynik.</td></tr>
+<tr><td class="num">2</td><td><code>render_map.py</code></td><td>Overview, crop, nakładki. <strong>Bramka:</strong> render <code>BLUNDERHAVEN.tmx</code> wygląda tak, jak mapa w Tiled - porównujesz ze zrzutem, który mi przysłałeś.</td></tr>
+<tr><td class="num">3</td><td>Warstwa <code>stamps</code> w prototypie</td><td>Bootstrap katalogu wg 5.1. <strong>Bramka:</strong> arkusz kontaktowy klocków zaakceptowany przez Ciebie.</td></tr>
+<tr><td class="num">4</td><td><code>lint_map.py</code></td><td>Wszystkie sprawdzenia z 7.1. <strong>Bramka:</strong> uruchomiony na <code>BLUNDERHAVEN.tmx</code> - musi znaleźć znane usterki (strefy-wielokąty, spacje w nazwie <code>JACOBS_CHAMBER_FRONT</code>) i nie zgłosić fałszywek.</td></tr>
+<tr><td class="num">5</td><td><code>generate.py</code> + <code>map_edit.py</code></td><td>Osiem przebiegów i operacje edycji. <strong>Bramka:</strong> wygenerowana wioska 128x128 przechodzi lint bez ERROR.</td></tr>
+<tr><td class="num">6</td><td>Pomiar wydajności</td><td><code>bench_scene.py</code> na wygenerowanej mapie 128x128 i 256x256 + pomiar A* na długiej trasie. <strong>Bramka:</strong> raport z liczbami i rekomendacją maksymalnego rozmiaru.</td></tr>
+<tr><td class="num">7</td><td><code>SKILL.md</code> + <code>reference/</code></td><td>Procedura spinająca całość. <strong>Bramka:</strong> ślepy test - odpalam skill na Twoim przykładowym promptcie o wiosce 256x256 i oddaję render bez ręcznych poprawek po drodze.</td></tr>
+</tbody>
+</table></div>
+
+<p>Kroki 1-2 i 3-4 można wykonać w dowolnej kolejności wewnątrz pary, ale <strong>krok 5 nie rusza przed
+4</strong>: generator bez lintera to generator, którego nie da się ocenić inaczej niż okiem, a to jest
+dokładnie ta pętla, której chcemy uniknąć.</p>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="ryzyka">12. Ryzyka i pułapki</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:26%">Ryzyko</th><th>Dlaczego realne</th><th style="width:30%">Mitygacja</th></tr></thead>
+<tbody>
+<tr><td>Mapa 256x256 za ciężka dla web</td><td>Plik ~1,2 MB, parsowanie ~190 ms na desktopie, na WASM kilkukrotnie więcej. Paczka pygbag rośnie.</td><td>Krok 6: pomiar przed rekomendacją. Domyślnie 128x128.</td></tr>
+<tr><td>A* na długich trasach</td><td>Rutyny NPC chodzą przez całą mapę; 65 536 komórek i trasa ~300 kroków to inna klasa niż dzisiejsze ~70.</td><td>Pomiar w kroku 6; ewentualnie punkty pośrednie na trasach rutyn.</td></tr>
+<tr><td>Klocek wycięty nieprecyzyjnie</td><td>Obrys o jeden kafel za mały ucina dach; o jeden za duży wnosi kawałek sąsiada.</td><td><code>palette.py show</code> renderuje każdy klocek osobno; arkusz kontaktowy do Twojej akceptacji (krok 3).</td></tr>
+<tr><td>Autotiling brzegów poza wangsetem</td><td>Gotowy wangset jest tylko dla trawa/ziemia. Styk ze ścieżką trzeba złożyć z próbek.</td><td>Obiekty <code>kind=edge</code>; przy braku próbki generator kładzie twardy styk i <strong>zgłasza to</strong>, zamiast wstawiać losowy kafel.</td></tr>
+<tr><td>Ocena estetyki się nie zbiega</td><td>"Za mało urozmaicone" to sąd bez progu; agent może krążyć.</td><td>D14: trzy iteracje, potem render i pytanie do Ciebie.</td></tr>
+<tr><td>Nazwy stref jako wielokąty</td><td>Istniejąca <code>BLUNDERHAVEN.tmx</code> ma strefy-wielokąty, które w grze są puste. Skill mógłby to skopiować jako "wzorzec".</td><td>Linter zgłasza ERROR; skill rysuje wyłącznie prostokąty. <strong>Warto naprawić też istniejącą mapę</strong> - osobne zadanie.</td></tr>
+<tr><td>Sesje równoległe na tym repo</td><td>Kilka agentów dzieli jeden worktree; generator pisze do <code>_wip/</code>, ale <code>Justfile</code> i prototyp są wspólne.</td><td>Zapis wyłącznie do <code>_wip/</code> (D13); commit dopiero na Twoją komendę.</td></tr>
+</tbody>
+</table></div>
+
+<!-- ------------------------------------------------------------------ -->
+<h2 id="akceptacja">13. Kryteria akceptacji</h2>
+
+<ol>
+<li><code>just map-render BLUNDERHAVEN</code> daje obraz zgodny z tym, co widać w Tiled.</li>
+<li><code>just map-lint BLUNDERHAVEN</code> znajduje znane usterki istniejącej mapy i żadnej fałszywki.</li>
+<li>Katalog klocków z prototypu zaakceptowany przez Ciebie na arkuszu kontaktowym.</li>
+<li>Prompt <em>"wioska 256x256, droga ze wschodu na zachód szerokimi łukami, owalny plac ze studnią,
+Tawerna na północnym krańcu placu, stajnia obok, pola na północ, las dookoła, wejścia tylko na obu
+końcach drogi"</em> daje mapę, która: przechodzi lint bez ERROR, ma wszystkie 12 warstw w kolejności,
+wczytuje się w grze, a jej render nie wygląda na wygenerowany kratą.</li>
+<li><em>"przesuń dom Jakuba z zagrodą o 4 kafle na wschód"</em> przenosi kafle i obiekty na wszystkich
+warstwach, przestawia to, co interaktywne, zasypuje źródło i raportuje, co przestawił.</li>
+<li>Raport braków wymienia wszystkie wpisy do dopisania w CSV/TOML/locale i niczego tam sam nie zmienia.</li>
+<li><code>just check</code> przechodzi (nowe skrypty nie psują mypy ani sourcery).</li>
+</ol>
+
+<div class="callout">
+  <p><strong>Czekam na "akceptuję"</strong> albo na wskazanie decyzji do odwrócenia. Największa
+  z nich to <strong>D6</strong> (dwupoziomowy podgląd) - bez niej weryfikacja wizualna dużych map
+  jest pozorna, a to był Twój główny wymóg. Druga w kolejności: <strong>D16</strong>, czyli czy
+  zgadzasz się, żeby skill przy pierwszej mapie powyżej 128x128 zatrzymał się na pomiarze
+  wydajności zamiast oddać mapę na wiarę.</p>
+</div>
+
+<a class="backlink" href="../README.html">← doc/</a>
+
+</div>
+<script>
+function toggleTheme() {
+  const r = document.documentElement;
+  const cur = r.getAttribute('data-theme');
+  const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const next = cur ? (cur === 'dark' ? 'light' : 'dark') : (sysDark ? 'light' : 'dark');
+  r.setAttribute('data-theme', next);
+}
+</script>
+</body>
+</html>

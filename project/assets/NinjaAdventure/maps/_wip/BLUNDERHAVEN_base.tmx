@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="15" nextobjectid="173">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="209">
  <properties>
   <property name="outdoor" type="bool" value="true"/>
   <property name="particles" value="leafs,rain"/>
@@ -488,5 +488,246 @@
   <object id="142" name="cattle" x="96" y="208" width="64" height="96"/>
   <object id="152" name="hencoop" x="16" y="208" width="64" height="96"/>
   <object id="153" name="cattle" x="288" y="208" width="80" height="112"/>
+ </objectgroup>
+ <objectgroup id="15" name="stamps" visible="0">
+  <object id="173" name="hut_awning" x="0" y="0" width="48" height="48">
+   <properties>
+    <property name="kind" value="prop"/>
+    <property name="tags" value="wiata,zadaszenie"/>
+   </properties>
+  </object>
+  <object id="174" name="hut_brown" x="0" y="48" width="48" height="48">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="door" value="1,2"/>
+   </properties>
+  </object>
+  <object id="175" name="hut_round_straw" x="64" y="0" width="48" height="32">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="door" value="1,1"/>
+   </properties>
+  </object>
+  <object id="176" name="haystack" x="144" y="0" width="32" height="32">
+   <properties>
+    <property name="kind" value="prop"/>
+    <property name="tags" value="siano,zagroda"/>
+   </properties>
+  </object>
+  <object id="177" name="house_cottage" x="64" y="48" width="64" height="48">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="dom,wies"/>
+    <property name="door" value="1,2"/>
+   </properties>
+  </object>
+  <object id="178" name="house_cream" x="144" y="48" width="64" height="48">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="dom,sklep"/>
+    <property name="door" value="1,2"/>
+   </properties>
+  </object>
+  <object id="179" name="house_ornate" x="224" y="48" width="48" height="48">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="dom,bogaty"/>
+    <property name="door" value="1,2"/>
+   </properties>
+  </object>
+  <object id="180" name="house_red" x="288" y="48" width="48" height="48">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="dom,wies"/>
+    <property name="door" value="1,2"/>
+   </properties>
+  </object>
+  <object id="181" name="hut_kiln" x="352" y="32" width="48" height="64">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="piec,warsztat"/>
+    <property name="door" value="1,3"/>
+   </properties>
+  </object>
+  <object id="182" name="farmhouse_big_1" x="416" y="16" width="64" height="80">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="dom,duzy"/>
+    <property name="door" value="1,4"/>
+   </properties>
+  </object>
+  <object id="183" name="farmhouse_big_2" x="496" y="16" width="64" height="80">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="dom,duzy"/>
+    <property name="door" value="1,4"/>
+   </properties>
+  </object>
+  <object id="184" name="tavern_tall" x="576" y="16" width="64" height="80">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="tawerna,duzy,pietrowy"/>
+    <property name="door" value="1,4"/>
+   </properties>
+  </object>
+  <object id="185" name="barn_wood" x="672" y="48" width="48" height="48">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="tags" value="stodola,stajnia"/>
+    <property name="door" value="1,2"/>
+   </properties>
+  </object>
+  <object id="186" name="house_farmstead" x="528" y="288" width="64" height="48">
+   <properties>
+    <property name="kind" value="building"/>
+    <property name="door" value="1,2"/>
+    <property name="tags" value="dom,wies"/>
+   </properties>
+  </object>
+  <object id="187" name="haystack_small" x="400" y="256" width="32" height="32">
+   <properties>
+    <property name="kind" value="prop"/>
+    <property name="tags" value="siano,zagroda"/>
+   </properties>
+  </object>
+  <object id="188" name="fence_blue_gate" x="128" y="112" width="80" height="48">
+   <properties>
+    <property name="kind" value="fence"/>
+    <property name="tile" type="bool" value="true"/>
+    <property name="tags" value="brama"/>
+   </properties>
+  </object>
+  <object id="189" name="fence_wood" x="224" y="112" width="112" height="48">
+   <properties>
+    <property name="kind" value="fence"/>
+    <property name="tile" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="190" name="wall_stone" x="352" y="112" width="112" height="48">
+   <properties>
+    <property name="kind" value="wall"/>
+    <property name="tile" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="191" name="fence_rail_dark" x="480" y="112" width="96" height="48">
+   <properties>
+    <property name="kind" value="fence"/>
+    <property name="tile" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="192" name="well" x="624" y="112" width="16" height="32">
+   <properties>
+    <property name="kind" value="prop"/>
+    <property name="tags" value="studnia,spotkania"/>
+   </properties>
+  </object>
+  <object id="193" name="sunflowers" x="464" y="224" width="48" height="48">
+   <properties>
+    <property name="kind" value="prop"/>
+    <property name="tile" type="bool" value="true"/>
+    <property name="tags" value="uprawa"/>
+   </properties>
+  </object>
+  <object id="194" name="farmyard_small" x="0" y="192" width="176" height="176">
+   <properties>
+    <property name="kind" value="farmyard"/>
+    <property name="tags" value="zagroda,kurnik,obora"/>
+   </properties>
+  </object>
+  <object id="195" name="farmyard_big" x="208" y="192" width="416" height="192">
+   <properties>
+    <property name="kind" value="farmyard"/>
+    <property name="tags" value="zagroda,pelna"/>
+   </properties>
+  </object>
+  <object id="196" name="tree_round" x="848" y="16" width="32" height="32">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,las"/>
+   </properties>
+  </object>
+  <object id="197" name="tree_bushy" x="880" y="16" width="32" height="32">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,las"/>
+   </properties>
+  </object>
+  <object id="198" name="tree_fir" x="912" y="16" width="32" height="32">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,las,iglaste"/>
+   </properties>
+  </object>
+  <object id="199" name="tree_dead" x="944" y="16" width="32" height="32">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,suche"/>
+   </properties>
+  </object>
+  <object id="200" name="tree_stump" x="976" y="16" width="32" height="32">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,powalone"/>
+   </properties>
+  </object>
+  <object id="201" name="tree_fir_big" x="880" y="48" width="64" height="48">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,las,duze"/>
+   </properties>
+  </object>
+  <object id="202" name="tree_oak_big" x="944" y="48" width="64" height="48">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,las,duze"/>
+   </properties>
+  </object>
+  <object id="203" name="tree_blossom_pink" x="832" y="96" width="48" height="48">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,sad"/>
+   </properties>
+  </object>
+  <object id="204" name="tree_orchard_green" x="880" y="96" width="48" height="48">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,sad"/>
+   </properties>
+  </object>
+  <object id="205" name="tree_blossom_white" x="928" y="96" width="48" height="48">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,sad"/>
+   </properties>
+  </object>
+  <object id="206" name="tree_blossom_orange" x="976" y="96" width="48" height="48">
+   <properties>
+    <property name="kind" value="nature"/>
+    <property name="anchor" value="center"/>
+    <property name="tags" value="drzewo,sad"/>
+   </properties>
+  </object>
+  <object id="207" name="grass" x="0" y="480" width="512" height="256">
+   <properties>
+    <property name="kind" value="terrain"/>
+    <property name="tags" value="trawa,baza"/>
+   </properties>
+  </object>
+  <object id="208" name="field_crop" x="768" y="192" width="96" height="128">
+   <properties>
+    <property name="kind" value="terrain"/>
+    <property name="tags" value="pole,uprawa"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
