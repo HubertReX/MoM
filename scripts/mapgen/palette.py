@@ -15,7 +15,8 @@ byłaby najdroższym w debugowaniu rodzajem błędu.
 
 Właściwości obiektu w warstwie `stamps`:
 
-    kind    building | fence | wall | prop | nature | farmyard | terrain | edge
+    kind    building | fence | wall | prop | nature | undergrowth
+            | farmyard | terrain | edge
     door    "dx,dy" - kafel drzwi względem lewego górnego rogu (budynki)
     anchor  bottom (domyślnie; budynki sadzi się dolną krawędzią) | center
     tags    lista po przecinku, do wyszukiwania
@@ -42,7 +43,8 @@ from tmx import EMPTY, TILE_LAYERS, MapObject, TiledMap, maps_dir
 STAMPS_LAYER = "stamps"
 PROTOTYPE = maps_dir() / "_wip" / "BLUNDERHAVEN_base.tmx"
 
-KINDS = ("building", "fence", "wall", "prop", "nature", "farmyard", "terrain", "edge")
+KINDS = ("building", "fence", "wall", "prop", "nature", "undergrowth",
+         "farmyard", "terrain", "edge")
 
 
 @dataclass

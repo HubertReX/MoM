@@ -59,6 +59,7 @@ rect = [42, 38, 176, 92]
 stamp = "field_crop"
 plot = [4, 3]     # zagon = 4x3 klocki, czyli 24x24 kafle
 gap = 3           # szerokość miedzy między zagonami
+zone = "farmer_field"   # strefa dla rutyny farmera (waypointy tylko na życzenie)
 
 # === LAS =====================================================================
 [[biome]]
@@ -74,40 +75,65 @@ margin = 3
 [[building]]
 stamp = "tavern_tall"       # Tawerna Brakująca klepka, północny kraniec placu
 at = [118, 149]
+owner = "LOST_CORK_TAVERN"
+exit_to = "LOST_CORK_TAVERN"
 
 [[building]]
 stamp = "barn_wood"         # mała stajnia obok - tu budzi się gracz (Q00_S00)
 at = [131, 151]
+owner = "STABLE"
+exit_to = "JACOBS_CHAMBER"  # tymczasowo, do czasu wnętrza stajni
 
 [[building]]
 stamp = "hut_kiln"          # kuźnia, na wschód od placu
 at = [152, 152]
+owner = "SMITHY"
+exit_to = "JACOBS_CHAMBER"  # tymczasowo, do czasu narysowania wnętrza kuźni
 yard = [2, 3]
 fences = ["fence_rail_dark"]
 
 [[building]]
 stamp = "house_red"         # dom kowala, na uboczu (gardzi wsią)
 at = [170, 186]
+owner = "HAMMER_HOAXHEART"
+exit_to = "JACOBS_CHAMBER"
 yard = [2, 4]
 fences = ["wall_stone"]
 
 [[building]]
 stamp = "hut_brown"         # chałupa Zielarki: koniec wioski, przy lesie (Q01_S02)
 at = [36, 178]
+owner = "POTIONEER_PUZZLEMINT"
+exit_to = "JACOBS_CHAMBER"
 yard = [2, 3]
 fences = ["fence_wood"]
 
 [[building]]
 stamp = "house_cottage"     # dom Bartusia
 at = [96, 184]
+owner = "BART"
+exit_to = "JACOBS_CHAMBER"
 yard = [2, 3]
 fences = ["fence_wood"]
 
 [[building]]
 stamp = "house_cream"       # dom Johnego
 at = [150, 190]
+owner = "JOHNY"
+exit_to = "JACOBS_CHAMBER"
 yard = [2, 3]
 fences = ["fence_rail_dark"]
+
+# punkt 6: gotowe zagrody z prototypu - przychodzą z własnym płotem i inwentarzem
+[[building]]
+stamp = "farmyard_big"      # duża zagroda gospodarska na zachodzie wsi
+at = [52, 176]
+owner = "FARMSTEAD_BIG"
+
+[[building]]
+stamp = "farmyard_small"    # mniejsza zagroda na wschodzie
+at = [196, 180]
+owner = "FARMSTEAD_SMALL"
 
 # === ZABUDOWA WZDŁUŻ TRAKTU ==================================================
 [[district]]
@@ -119,6 +145,7 @@ spacing = [8, 13]
 setback = [3, 6]
 fences = ["fence_wood", "fence_rail_dark", "wall_stone"]
 yard = [2, 4]
+exit_to = "JACOBS_CHAMBER"   # tymczasowo wszystkie domy do jednego wnętrza
 
 [[district]]
 name = "wies_poludnie"
@@ -129,6 +156,7 @@ spacing = [9, 15]
 setback = [3, 7]
 fences = ["wall_stone", "fence_wood"]
 yard = [2, 4]
+exit_to = "JACOBS_CHAMBER"
 
 # === REKWIZYTY ===============================================================
 [[prop]]
@@ -195,13 +223,11 @@ at = [151, 193]
 name = "house_barman"
 at = [119, 155]
 
+# `plains` to otwarta łąka na południu, a NIE centrum wsi. Strefy `backyard_*`
+# powstają automatycznie, po jednej na każde ogrodzone podwórze.
 [[zone]]
 name = "plains"
-rect = [84, 150, 92, 44]
-
-[[zone]]
-name = "backyard"
-rect = [148, 148, 32, 24]
+rect = [40, 206, 176, 32]
 
 [[spawn]]
 name = "BARMAN_ABSINTHRAYNER"

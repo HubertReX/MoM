@@ -82,6 +82,7 @@ class District:
     setback: tuple[int, int] = (2, 5)
     count: int = 0                     # 0 = ile się zmieści
     fences: list[str] = field(default_factory=list)   # zestawy płotów do losowania
+    exit_to: str = ""                  # mapa wnętrza, pod którą podpiąć drzwi
     yard: tuple[int, int] = (0, 0)     # margines zagrody wokół budynku, w kaflach
 
 
@@ -147,6 +148,7 @@ class Brief:
                 setback=tuple(item.get("setback", (2, 5))),       # type: ignore[arg-type]
                 count=int(item.get("count", 0)),
                 fences=[str(f) for f in item.get("fences", [])],
+                exit_to=str(item.get("exit_to", "")),
                 yard=tuple(item.get("yard", (0, 0))),          # type: ignore[arg-type]
             ))
         for item in raw.get("biome", []):
@@ -284,6 +286,9 @@ class Generator:
         self.road_paths: dict[str, list[tuple[float, float]]] = {}
         self.fence_kits: dict[str, FenceKit] = kits_from_palette(palette)
         self._char_gids: dict[str, int] | None = None
+        self._undergrowth: list[int] | None = None
+        self.yards: list[tuple[int, int, int, int]] = []
+        self._door_seq = 0
         self.notes: list[str] = []
 
     def _load_terrain_samples(self) -> None:
@@ -298,8 +303,9 @@ class Generator:
     def run(self) -> TiledMap:
         self.pass_terrain()
         self.pass_roads()
+        self.pass_seal_stamps()
         self.pass_nature()
-        self.pass_seal_border()
+        self.pass_seal_gaps()
         self.pass_fields()
         self.pass_landmarks()
         self.pass_districts()
@@ -385,39 +391,100 @@ class Generator:
                     placed += 1
         return placed
 
-    def pass_seal_border(self) -> None:
-        """Domknij skraj mapy kaflami nieprzechodnimi.
+    def pass_seal_stamps(self) -> None:
+        """Domknij skraj mapy - CAŁYMI klockami, nigdy ich fragmentami.
 
-        Samo rozsypanie drzew w pasie brzegowym NIE wystarcza: klocek 2x2 albo
-        3x3 nie wchodzi w każdą lukę, więc po przebiegu natury zostają dziury,
-        którymi gracz wychodzi na granicę świata (linter mówi wtedy "N osiągalnych
-        kafli na krawędzi"). Tu dokładamy pojedyncze kafle blokujące, losowane
-        z tych, które wnoszą klocki natury - żeby ściana lasu nie była jednolita.
+        Pierwsza wersja dosypywała w luki pojedyncze kafle wzięte z warstwy
+        `walls` klocków natury. Kafel drzewa wyrwany z kontekstu to kawałek pnia
+        albo pół korony, więc pas trzech kafli przy krawędzi zamieniał się
+        w sieczkę - i było to widać tylko tam, bo tylko tam dosypywaliśmy.
+
+        Teraz idą dwa etapy: najpierw wciskamy w pas całe klocki natury (od
+        największych, żeby zamknąć jak najwięcej), a dopiero luki 1x1, których
+        żaden klocek nie zapełni, dostają kompletny kafel podszytu z Nature.tsx
+        (krzak, kępa trawy, kamień) - te są samodzielnymi obrazkami, więc
+        wyglądają jak zarośla, a nie jak błąd.
         """
-        margin = max((b.margin for b in self.brief.biomes), default=0)
+        margin = self._seal_margin()
         if margin <= 0:
             return
-        walls = self.tmap.tile_layer("walls")
-        fill = sorted({
-            walls_gid
-            for stamp in self.palette.of_kind("nature")
-            for row in stamp.gids("walls") for walls_gid in row if walls_gid
-        })
-        if not fill:
+        stamps = sorted(self.palette.of_kind("nature"), key=lambda st: -(st.w * st.h))
+        if not stamps:
             return
+        stamped = 0
+        for y in range(self.tmap.height):
+            for x in range(self.tmap.width):
+                if not self._in_band(x, y, margin) or self.road_mask[y][x]:
+                    continue
+                for stamp in stamps:
+                    # klocek wolno wpuścić w głąb mapy, byle zaczynał się w pasie
+                    if self._place(stamp, x, y, avoid_roads=True):
+                        stamped += 1
+                        break
+        self.notes.append(f"brzeg: {stamped} całych klocków natury (pas {margin} kafli)")
+
+    def pass_seal_gaps(self) -> None:
+        """Domknij to, czego całe klocki nie zapełniły - kompletnymi kaflami podszytu."""
+        margin = self._seal_margin()
+        if margin <= 0:
+            return
+        undergrowth = self._undergrowth_gids()
+        if not undergrowth:
+            self.notes.append("brzeg: brak kafli podszytu, skraj mapy może być dziurawy")
+            return
+        walls = self.tmap.tile_layer("walls")
         sealed = 0
         for y in range(self.tmap.height):
             for x in range(self.tmap.width):
-                edge = min(x, y, self.tmap.width - 1 - x, self.tmap.height - 1 - y)
-                if edge >= margin or walls.get(x, y):
+                if not self._in_band(x, y, margin) or walls.get(x, y):
                     continue
                 if self.road_mask[y][x]:
                     continue          # trakt wychodzący poza mapę to zamierzone wyjście
-                walls.set(x, y, self.rng.choice(fill))
+                walls.set(x, y, self.rng.choice(undergrowth))
                 self.taken[y][x] = True
                 sealed += 1
         if sealed:
-            self.notes.append(f"brzeg domknięty {sealed} kaflami (pas {margin} kafli)")
+            self.notes.append(f"brzeg: {sealed} luk zasypanych podszytem")
+
+    def _seal_margin(self) -> int:
+        return max((b.margin for b in self.brief.biomes), default=0)
+
+    def _in_band(self, x: int, y: int, margin: int) -> bool:
+        return min(x, y, self.tmap.width - 1 - x, self.tmap.height - 1 - y) < margin
+
+    # Awaryjny podszyt, gdy katalog nie ma klocków `kind=undergrowth`: ciągły blok
+    # zwykłych krzaków i kęp traw z Nature.tsx. Celowo NIE bierzemy wszystkiego, co
+    # zniszczalne - dalej w tym tilesecie siedzą słoneczniki, stokrotki i maki, a
+    # kwiatki rozsypane po skraju lasu wyglądają jak pomyłka, nie jak zarośla.
+    UNDERGROWTH_FALLBACK = range(240, 251)
+
+    def _undergrowth_gids(self) -> list[int]:
+        """Kompletne kafle 1x1 do zasypywania luk w ścianie lasu.
+
+        Pierwszeństwo mają klocki `kind=undergrowth` z katalogu - to autor
+        decyduje, jak wygląda podszyt. Dopiero gdy ich nie ma, sięgamy po
+        awaryjny zestaw i mówimy o tym, bo to sytuacja do naprawienia w Tiled,
+        a nie stan docelowy.
+        """
+        if self._undergrowth is not None:
+            return self._undergrowth
+        from_palette = [
+            stamp.gids("walls")[0][0]
+            for stamp in self.palette.of_kind("undergrowth")
+            if stamp.w == 1 and stamp.h == 1 and stamp.gids("walls")[0][0]
+        ]
+        if from_palette:
+            self._undergrowth = sorted(set(from_palette))
+            return self._undergrowth
+        tileset = Tileset.load(maps_dir() / "tilesets" / "Nature.tsx")
+        firstgid = dict(OUTDOOR_TILESETS_BY_KEY)["Nature"]
+        self._undergrowth = [firstgid + local_id
+                             for local_id in self.UNDERGROWTH_FALLBACK
+                             if local_id in tileset.tiles]
+        self.notes.append(
+            "katalog nie ma klocków `kind=undergrowth` (1x1) - luki w ścianie lasu "
+            "zasypuję awaryjnym zestawem krzaków. Dodaj własne w warstwie `stamps`.")
+        return self._undergrowth
 
     def pass_fields(self) -> None:
         """Symetryczne zagony przecinane drogami - kratka JEST tu zamierzona.
@@ -460,7 +527,18 @@ class Generator:
                     in_plot_y = (oy - ry) % step_y < plot_h
                     if not (in_plot_x and in_plot_y) and not self.taken[oy][ox]:
                         self.road_mask[oy][ox] = True
-            self.notes.append(f"pola: {plots} zagonów w prostokącie {rx},{ry} {rw}x{rh}")
+            # Pole domyślnie dostaje strefę - to po niej rutyna farmera wie, gdzie
+            # go zagonić. Krzywa `waypoints` powstaje tylko na wyraźne życzenie
+            # w briefie, bo trasa to decyzja o konkretnej postaci, a nie o terenie.
+            zone = str(spec.get("zone", "field"))
+            if zone:
+                self.tmap.add_object("zones", MapObject(
+                    name=zone,
+                    x=float(rx) * self.tmap.tilewidth, y=float(ry) * self.tmap.tileheight,
+                    width=float(rw) * self.tmap.tilewidth,
+                    height=float(rh) * self.tmap.tileheight))
+            self.notes.append(f"pola: {plots} zagonów w prostokącie {rx},{ry} {rw}x{rh}"
+                              f"{f', strefa `{zone}`' if zone else ''}")
 
     def pass_landmarks(self) -> None:
         """Budynki stawiane WPROST - tam, gdzie prompt mówi "tu i tu"."""
@@ -471,6 +549,7 @@ class Generator:
             if not self._place(stamp, x, y, avoid_roads=False):
                 self.notes.append(f"budynek '{stamp.name}' w ({x},{y}): miejsce zajęte")
                 continue
+            owner = str(spec.get("owner", ""))
             yard = spec.get("yard")
             if yard:
                 district = District(
@@ -479,8 +558,48 @@ class Generator:
                 )
                 toward = spec.get("gate_toward", (x + stamp.w // 2, y + stamp.h + 3))
                 self._fence_yard(district, stamp, (x, y),
-                                 (float(toward[0]), float(toward[1])))  # type: ignore[index]
+                                 (float(toward[0]), float(toward[1])),  # type: ignore[index]
+                                 label=owner)
             self._connect_to_road(stamp, (x, y))
+            self._wire_door(stamp, (x, y), str(spec.get("exit_to", "")), owner)
+
+    def _wire_door(self, stamp: Stamp, at: tuple[int, int], to_map: str,
+                   owner: str) -> None:
+        """Podepnij drzwi budynku pod mapę wnętrza: wyjście + punkt powrotu.
+
+        Dom z obiektem na `places`, ale bez `exit`-u, wygląda w grze jak dom bez
+        drzwi: rutyna prowadzi tam NPC-a, gracz podchodzi i nic. Dlatego brak
+        `exit_to` jest zgłaszany, a nie przemilczany - a na czas testów wolno
+        podpiąć wszystko pod jedną istniejącą mapę wnętrza.
+        """
+        if stamp.door is None:
+            return
+        label = owner or stamp.name.upper()
+        if not to_map:
+            self.notes.append(f"budynek '{label}': drzwi bez `exit_to` - nikt tam "
+                              f"nie wejdzie. Podaj mapę wnętrza w briefie")
+            return
+        tile = self.tmap.tilewidth
+        dx, dy = stamp.door
+        door_x, door_y = at[0] + dx, at[1] + dy
+
+        exit_obj = MapObject(name=f"{label}_DOOR",
+                             x=float(door_x) * tile, y=float(door_y) * tile,
+                             width=float(tile), height=float(tile))
+        exit_obj.props.set("obj_type", "exit")
+        exit_obj.props.set("to_map", to_map)
+        exit_obj.props.set("destination_entry_point", "Door")
+        self.tmap.add_object("interactions", exit_obj)
+
+        # Wnętrze wraca do punktu o nazwie, którą zna JEGO wyjście. Dopóki
+        # wszystkie domy dzielą jedną mapę wnętrza, taki punkt może być tylko
+        # jeden - reszta dostaje własną nazwę i czeka na swoje wnętrze.
+        entries = self.tmap.object_group("entry_points")
+        canonical = f"{to_map}_DOOR"
+        name = canonical if not entries.first(canonical) else f"{label}_FRONT"
+        self.tmap.add_object("entry_points", MapObject(
+            name=name, shape="point",
+            x=(float(door_x) + 0.5) * tile, y=(float(door_y) + 1.5) * tile))
 
     # 5. zabudowa
     def pass_districts(self) -> None:
@@ -533,6 +652,8 @@ class Generator:
                     # przeciśnie ścieżkę przez bramę - a brama celuje w drogę.
                     self._fence_yard(district, stamp, spot, path[cursor])
                     self._connect_to_road(stamp, spot)
+                    self._wire_door(stamp, spot, district.exit_to,
+                                    f"{district.name or 'HOUSE'}_{self._yard_seq():02}")
                     # jitter odstępu: równe odstępy czytają się jak kratka, nie jak wieś
                     sides_cursor[side] = arc[cursor] + self.rng.randint(*district.spacing)
                 else:
@@ -565,7 +686,7 @@ class Generator:
         return ox, oy
 
     def _fence_yard(self, district: District, stamp: Stamp, at: tuple[int, int],
-                    toward: tuple[float, float]) -> None:
+                    toward: tuple[float, float], label: str = "") -> None:
         """Ogrodź budynek zagrodą o marginesie z briefu, z bramą od strony drogi."""
         pad_lo, pad_hi = district.yard
         if pad_hi <= 0:
@@ -579,6 +700,13 @@ class Generator:
         x0, y0 = at[0] - pad, at[1] - max(1, pad - 1)
         w = stamp.w + pad * 2
         h = stamp.h + max(1, pad - 1) + pad + 1
+        # Dwie zagrody NIGDY nie mogą na siebie wejść: nakładające się obwody
+        # dają poszarpane płoty z uskokami, bo drugi rysuje się po pierwszym
+        # i maska sąsiedztwa liczy się już na pomieszanych kaflach. Taniej
+        # odpuścić zagrodę niż potem prostować takie przypadki brzegowe.
+        if any(x0 < yx + yw and x0 + w > yx and y0 < yy + yh and y0 + h > yy
+               for yx, yy, yw, yh in self.yards):
+            return
         if x0 < 1 or y0 < 1 or x0 + w >= self.tmap.width or y0 + h >= self.tmap.height:
             return
         # Zagroda PRZYCINA się do traktu zamiast być odrzucana: przy cofnięciu
@@ -611,7 +739,18 @@ class Generator:
         if not placed:
             self.notes.append(f"zagroda przy '{stamp.name}' w {at}: płot nie wszedł")
             return
+        self.yards.append((x0, y0, w, h))
         self._open_yard(walls, cells, placed, stamp.name)
+        # Każde podwórze dostaje WŁASNĄ strefę z sufiksem właściciela. Jedna
+        # wspólna `backyard` sklejałaby podwórka kilku domów w jeden obszar,
+        # po którym pies Bartusia biegałby do sąsiada.
+        owner = label or f"{self._yard_seq():02}"
+        self.tmap.add_object("zones", MapObject(
+            name=f"backyard_{owner}",
+            x=float(x0 + 1) * self.tmap.tilewidth,
+            y=float(y0 + 1) * self.tmap.tileheight,
+            width=float(w - 2) * self.tmap.tilewidth,
+            height=float(h - 2) * self.tmap.tileheight))
 
     def _open_yard(self, walls: "TileLayer", cells: set[tuple[int, int]],
                    fence: set[tuple[int, int]], label: str) -> None:
@@ -736,6 +875,10 @@ class Generator:
         self.notes.append(f"przebita brama w płocie przy {gx},{gy}")
         return True
 
+    def _yard_seq(self) -> int:
+        self._door_seq += 1
+        return self._door_seq
+
     def _road_tiles(self) -> set[tuple[int, int]]:
         return {(x, y)
                 for y in range(self.tmap.height) for x in range(self.tmap.width)
@@ -815,8 +958,8 @@ class Generator:
             return
         walls = self.tmap.tile_layer("walls")
         opened = 0
-        for _round in range(3):
-            reachable = self._reachable_from_roads(walls)
+        for _round in range(6):
+            reachable = self._reachable_from_entries(walls)
             stuck = [
                 (x, y + 1)
                 for y in range(self.tmap.height - 1) for x in range(self.tmap.width)
@@ -830,11 +973,24 @@ class Generator:
             self.notes.append(f"przebieg końcowy: {opened} kafli wyciętych, żeby "
                               f"progi budynków miały dojście")
 
-    def _reachable_from_roads(self, walls: "TileLayer") -> set[tuple[int, int]]:
-        """Teren osiągalny z traktu - trakt zawsze dochodzi do wyjść z mapy."""
+    def _reachable_from_entries(self, walls: "TileLayer") -> set[tuple[int, int]]:
+        """Teren osiągalny z PUNKTÓW WEJŚCIA - dokładnie tak, jak liczy to gra.
+
+        Kuszące jest zalanie mapy od wszystkich kafli traktu, ale to daje fałszywy
+        wynik: klocek postawiony na drodze (zagroda, która przyszła z własnym
+        płotem) zamyka w sobie kawałek traktu, a wtedy "od traktu" wychodzi, że
+        jego wnętrze jest osiągalne - mimo że z zewnątrz nie ma tam wejścia.
+        """
+        seeds = [(int(spec["at"][0]), int(spec["at"][1]))     # type: ignore[index]
+                 for spec in self.brief.entries]
+        if not seeds:
+            # brak wejść w briefie: bierzemy trakt dotykający krawędzi mapy
+            seeds = [(x, y) for y in range(self.tmap.height) for x in range(self.tmap.width)
+                     if self.road_mask[y][x]
+                     and (x in (0, self.tmap.width - 1) or y in (0, self.tmap.height - 1))]
         seen: set[tuple[int, int]] = set()
-        queue = [(x, y) for y in range(self.tmap.height) for x in range(self.tmap.width)
-                 if self.road_mask[y][x] and not walls.get(x, y)]
+        queue = [(x, y) for x, y in seeds
+                 if self.tmap.in_bounds(x, y) and not walls.get(x, y)]
         seen.update(queue)
         while queue:
             x, y = queue.pop()

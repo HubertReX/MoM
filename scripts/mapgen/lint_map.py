@@ -431,6 +431,32 @@ def check_doors_reachable(ctx: Ctx) -> list[Row]:
     return rows
 
 
+def check_doors_wired(ctx: Ctx) -> list[Row]:
+    """Drzwi bez `exit`-u to dom, do którego nie da się wejść.
+
+    Rutyna doprowadzi tam NPC-a, `places` będzie wskazywać ten dom, a gracz
+    podejdzie i nic się nie stanie - bez żadnego komunikatu, bo z punktu widzenia
+    gry po prostu nie ma tam wyjścia. Dopóki każde wnętrze nie ma swojej mapy,
+    da się je tymczasowo podpiąć pod istniejącą (np. JACOBS_CHAMBER), żeby dało
+    się to przetestować.
+    """
+    if not ctx.door_gids:
+        return []
+    walls = ctx.tmap.tile_layer("walls")
+    wired = {ctx.tile_of(obj) for obj in ctx.objects("interactions")
+             if obj.props.get("obj_type", "") == "exit"}
+    rows: list[Row] = []
+    for y in range(ctx.h):
+        for x in range(ctx.w):
+            if walls.data[y][x] not in ctx.door_gids or (x, y) in wired:
+                continue
+            rows.append(Row(WARN, "drzwi", f"kafel {walls.data[y][x]}",
+                            "drzwi bez `exit`-u - nie prowadzą do żadnej mapy wnętrza. "
+                            "Na czas testów podepnij je pod istniejące wnętrze",
+                            (x, y)))
+    return rows
+
+
 def check_exit_targets(ctx: Ctx) -> list[Row]:
     """Do każdego `exit` musi istnieć `entry_point` po drugiej stronie."""
     rows: list[Row] = []
@@ -801,7 +827,8 @@ def check_routine_routes(ctx: Ctx) -> list[Row]:
 
 CHECKS = (
     check_layers, check_tilesets, check_sprites_layer, check_over_opacity, check_items_layer,
-    check_start, check_reachability, check_doors_reachable, check_exit_on_door,
+    check_start, check_reachability, check_doors_reachable, check_doors_wired,
+    check_exit_on_door,
     check_exit_targets, check_chests,
     check_spawn_points, check_zones, check_places, check_waypoints, check_object_names,
     check_border, check_step_cost, check_routine_routes, check_world_wiring,

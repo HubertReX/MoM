@@ -106,6 +106,29 @@ def kits_from_palette(palette: Palette) -> dict[str, FenceKit]:
 # MARK: rysowanie
 
 
+def _drop_short_runs(ring: set[tuple[int, int]], min_run: int) -> set[tuple[int, int]]:
+    """Zostaw tylko spójne odcinki płotu o długości co najmniej `min_run`."""
+    if min_run <= 1:
+        return ring
+    remaining = set(ring)
+    kept: set[tuple[int, int]] = set()
+    while remaining:
+        seed = remaining.pop()
+        run = {seed}
+        queue = [seed]
+        while queue:
+            x, y = queue.pop()
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nxt = (x + dx, y + dy)
+                if nxt in remaining:
+                    remaining.discard(nxt)
+                    run.add(nxt)
+                    queue.append(nxt)
+        if len(run) >= min_run:
+            kept |= run
+    return kept
+
+
 def outline(cells: Iterable[tuple[int, int]]) -> set[tuple[int, int]]:
     """Kafle obwodu obszaru: te, którym brakuje choć jednego sąsiada z czwórki."""
     inside = set(cells)
@@ -124,7 +147,7 @@ def draw_fence(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: FenceKit
                gates: int = 1, rng: random.Random | None = None,
                skip: Iterable[tuple[int, int]] = (),
                gate_toward: tuple[int, int] | None = None,
-               gate_width: int = 2) -> set[tuple[int, int]]:
+               gate_width: int = 2, min_run: int = 4) -> set[tuple[int, int]]:
     """Postaw ogrodzenie na obwodzie obszaru. Zwraca kafle, na których stanął płot.
 
     `gates` to liczba przerw na wejście - bez nich zagroda jest pułapką, do której
@@ -133,9 +156,13 @@ def draw_fence(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: FenceKit
     podanego punktu (zwykle drogi) - brama od tyłu, przez las, wygląda jak błąd,
     nawet gdy A* sobie z nią radzi.
     `skip` wyłącza kafle, na których już coś stoi (np. ściana domu).
+    `min_run` wyrzuca odcinki krótsze niż tyle kafli: gdy zagroda zostanie
+    przycięta drogą, w obwodzie zostają pojedyncze ogryzki płotu, które czytają
+    się jak śmieć, a nie jak ogrodzenie.
     """
     rng = rng or random.Random(0)
     ring = outline(cells) - set(skip)
+    ring = _drop_short_runs(ring, min_run)
     if not ring:
         return set()
 

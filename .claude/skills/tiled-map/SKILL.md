@@ -16,7 +16,8 @@ zachód, po obu stronach zagrody, dookoła las"). Nie wypisujesz w nim współrz
 domu - od tego jest generator, który widzi teren, drogę i to, co już stoi.
 
 Odwrotnie jest z obrysami klocków: to decyzja graficzna i podejmuje ją **autor**, myszą, w Tiled.
-Twoją rolą jest zgłosić brak ("katalog nie ma płotu w wersji narożnej"), a nie dorysowywać.
+Twoją rolą jest zgłosić brak ("katalog nie ma klocków `kind=undergrowth`"), a nie dorysowywać.
+Instrukcja dla autora: [`reference/stamps-tiled.md`](reference/stamps-tiled.md).
 
 ## Narzędzia
 
@@ -34,7 +35,9 @@ just map-edit MAPA move --rect X,Y,W,H --by DX,DY
 ## Workflow A: nowa mapa z opisu
 
 1. **Przeczytaj katalog klocków** (`just map-palette list`). Nie planuj budynku, którego
-   nie ma - albo zgłoś autorowi, że trzeba go dorysować w prototypie.
+   nie ma - zgłoś autorowi, że trzeba go dorysować, i wskaż mu
+   [`reference/stamps-tiled.md`](reference/stamps-tiled.md): tam jest procedura
+   dodawania klocka w Tiled i pełna tabela właściwości.
 2. **Sprawdź, czego wymaga fabuła** - [`reference/lore.md`](reference/lore.md). Dla wioski
    Gafowo Kolonia to twarde wymagania (gracz budzi się w stajni, chałupa Zielarki na skraju
    przy lesie, skrzynia kota za zniszczalnymi krzakami), a nie klimat.

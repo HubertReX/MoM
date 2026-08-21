@@ -517,19 +517,39 @@ wokół centrum, a nie po przeciwnych rogach.</p>
 Nazwany prostokąt = jeden klocek. Skrypt <code>palette.py</code> wycina z niego wszystkie sześć warstw
 kafelkowych naraz.</p>
 
-<pre><code>&lt;objectgroup id="15" name="stamps"&gt;
-  &lt;object id="200" name="house_orange_big" x="736" y="96" width="96" height="96"&gt;
-   &lt;properties&gt;
-    &lt;property name="kind"    value="building"/&gt;   &lt;!-- building | fence | field | nature | prop | terrain | edge --&gt;
-    &lt;property name="door"    value="3,5"/&gt;        &lt;!-- kafel drzwi wzgledem lewego gornego rogu --&gt;
-    &lt;property name="anchor"  value="bottom"/&gt;     &lt;!-- jak sadzic: bottom (budynki) | center (drzewa) --&gt;
-    &lt;property name="tags"    value="dom,wies,duzy"/&gt;
-    &lt;property name="tile"    value="false"/&gt;      &lt;!-- czy wolno kafelkowac w obie strony (plot, pole) --&gt;
-   &lt;/properties&gt;
-  &lt;/object&gt;
-  &lt;object id="201" name="grass_plain"  kind="terrain" .../&gt;   &lt;!-- zbior wariantow trawy + wagi --&gt;
-  &lt;object id="202" name="grass__dirt"  kind="edge"    .../&gt;   &lt;!-- probka styku dwoch terenow --&gt;
-&lt;/objectgroup&gt;</code></pre>
+<div class="callout ok">
+  <p><strong>Instrukcja dla autora żyje w skillu.</strong> Pełna procedura dodawania klocka
+  <em>w interfejsie Tiled</em> (Insert Rectangle, panel Properties, Custom Properties) wraz
+  z tabelą wszystkich właściwości i układem segmentów płotu:
+  <code>.claude/skills/tiled-map/reference/stamps-tiled.md</code>. Poniżej tylko streszczenie -
+  XML-a nie trzeba pisać ręcznie ani razu.</p>
+</div>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:16%">Właściwość</th><th style="width:10%">Typ</th><th>Znaczenie</th></tr></thead>
+<tbody>
+<tr><td><strong>(Name)</strong></td><td>pole nazwy</td><td>Nazwa klocka, <code>snake_case</code>, unikalna. Po niej odwołujesz się w briefie.</td></tr>
+<tr class="rec"><td><code>kind</code></td><td>string</td><td><strong>Wymagane.</strong> Decyduje, co generator z klockiem robi - patrz tabela rodzajów niżej.</td></tr>
+<tr><td><code>door</code></td><td><code>"dx,dy"</code></td><td>Kafel drzwi liczony od lewego górnego rogu klocka, od zera. Tam trafia ścieżka i obiekt <code>exit</code>. Brak = budynek bez wejścia.</td></tr>
+<tr><td><code>anchor</code></td><td>string</td><td><code>bottom</code> (domyślnie) sadzi dolną krawędzią - budynki. <code>center</code> sadzi środkiem - drzewa.</td></tr>
+<tr><td><code>tags</code></td><td>string</td><td>Lista po przecinku, po angielsku: <code>house,village</code>, <code>tree,forest</code>. Do grupowania.</td></tr>
+<tr><td><code>tile</code></td><td><strong>bool</strong></td><td><code>true</code> = klocek wolno powtarzać obok siebie (płot, grządka).</td></tr>
+</tbody>
+</table></div>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:16%"><code>kind</code></th><th style="width:16%">Rozmiar</th><th>Co generator z tym robi</th></tr></thead>
+<tbody>
+<tr><td><code>building</code></td><td>dowolny</td><td>Stawia wzdłuż dróg albo wprost; z <code>door</code> dostaje ścieżkę i wyjście do wnętrza.</td></tr>
+<tr><td><code>fence</code> / <code>wall</code></td><td>min. 6x3</td><td>Czyta <strong>zestaw segmentów</strong> i buduje ogrodzenie dowolnego kształtu.</td></tr>
+<tr><td><code>nature</code></td><td>2x2 - 4x4</td><td>Rozsypuje w biomach i wciska w pas lasu przy krawędzi mapy.</td></tr>
+<tr><td><code>undergrowth</code></td><td><strong>1x1</strong></td><td>Zasypuje luki w ścianie lasu, których nie zapełni całe drzewo.</td></tr>
+<tr><td><code>prop</code></td><td>dowolny</td><td>Rekwizyty: studnia, stóg, grządka - w miejscu, w liczbie albo dywanem.</td></tr>
+<tr><td><code>farmyard</code></td><td>duży</td><td>Gotowa zagroda z własnym płotem i inwentarzem.</td></tr>
+<tr><td><code>terrain</code></td><td>duży</td><td>Próbka terenu: wagi wariantów biorą się z częstości gidów w prostokącie.</td></tr>
+<tr><td><code>edge</code></td><td>mały</td><td>Próbka styku terenów. Dla trawy i ziemi zbędna - <code>Floor.tsx</code> ma wangset.</td></tr>
+</tbody>
+</table></div>
 
 <h4>Bootstrap katalogu (jednorazowo, krok 3 planu)</h4>
 <ol>
