@@ -51,6 +51,8 @@ from tmx import (
 
 REPO = Path(__file__).resolve().parent.parent.parent
 CONFIG_JSON = REPO / "project" / "config_model" / "config.json"
+AUDIO_TOML = REPO / "project" / "config_model" / "audio.toml"
+LOCALE_DIR = REPO / "project" / "assets" / "locale"
 CHARACTERS_CSV = REPO / "project" / "config_model" / "characters.csv"
 
 # ---- progi metryk wyglądu (do strojenia w jednym miejscu) ----
@@ -614,6 +616,33 @@ def check_step_cost(ctx: Ctx) -> list[Row]:
 # MARK: sprawdzenia wyglądu
 
 
+def check_world_wiring(ctx: Ctx) -> list[Row]:
+    """Czego brakuje POZA plikiem .tmx, żeby mapa była pełnoprawną lokacją.
+
+    Skill nie dopisuje tych wpisów sam (decyzja D12: `characters.csv`, `locale`
+    i `audio.toml` są domeną autora), więc jedyne, co może zrobić, to wypisać
+    listę - i zrobić to tak, żeby dało się ją przepisać bez zgadywania.
+    """
+    import tomllib
+
+    key = ctx.path.stem
+    rows: list[Row] = []
+    for lang in ("PL", "EN"):
+        path = LOCALE_DIR / f"{lang}.toml"
+        if not path.exists():
+            continue
+        names = tomllib.loads(path.read_text(encoding="utf-8")).get("map", {})
+        if key not in names:
+            rows.append(Row(WARN, f"locale/{lang}.toml [map]", key,
+                            "brak nazwy dla gracza - w HUD i dzienniku widać surowy klucz"))
+    if AUDIO_TOML.exists():
+        music = tomllib.loads(AUDIO_TOML.read_text(encoding="utf-8")).get("music", {})
+        if key not in music:
+            rows.append(Row(INFO, "audio.toml [music]", key,
+                            "brak wpisu - na tej mapie będzie cisza (to nie jest błąd)"))
+    return rows
+
+
 def check_monotony(ctx: Ctx) -> list[Row]:
     ground = ctx.tmap.tile_layer("ground")
     rows: list[Row] = []
@@ -775,7 +804,7 @@ CHECKS = (
     check_start, check_reachability, check_doors_reachable, check_exit_on_door,
     check_exit_targets, check_chests,
     check_spawn_points, check_zones, check_places, check_waypoints, check_object_names,
-    check_border, check_step_cost, check_routine_routes,
+    check_border, check_step_cost, check_routine_routes, check_world_wiring,
     check_monotony, check_runs, check_alignment, check_empty_patches,
 )
 
