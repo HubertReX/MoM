@@ -119,8 +119,17 @@
   <button class="theme-btn" onclick="toggleTheme()">◐ motyw</button>
 </div>
 
+<div class="callout ok">
+  <p><strong>Status: wykonane.</strong> Wszystkie siedem kroków planu zamknięte
+  (commity <code>4570e3d</code>, <code>8486a30</code>, <code>b124c2d</code>). Skill żyje w
+  <code>.claude/skills/tiled-map/</code>, narzędzia w <code>scripts/mapgen/</code>, dwanaście
+  testów w <code>tests/test_mapgen.py</code>. Pomiary z kroku 6 <strong>zmieniły rekomendację
+  D16</strong> - szczegóły w tej sekcji poniżej. Dokument zostaje jako zapis decyzji i jako
+  materiał źródłowy dla skilla.</p>
+</div>
+
 <div class="callout">
-  <p><strong>Bramka akceptacji.</strong> Etap 1 (kod skilla i skryptów) NIE rusza bez wyraźnego "akceptuję".
+  <p><strong>Bramka akceptacji (historycznie).</strong> Etap 1 (kod skilla i skryptów) NIE rusza bez wyraźnego "akceptuję".
   Decyzje <strong>D1-D16</strong> mają rekomendację (zielony wiersz) - każdą można odwrócić teraz, taniej
   niż po napisaniu kodu. Wiersze <span class="badge b-info">niebieskie</span> to <em>ustalenia z tej sesji</em>
   (Twoje odpowiedzi na cztery pytania startowe oraz reguły z <code>CLAUDE.md</code>): nie są przedmiotem
@@ -445,6 +454,47 @@ i pewniej niż oglądanie kafelków.</p>
 <strong>1,2 MB</strong>. Do przyjęcia, ale na web (WASM) trzeba liczyć się z kilkukrotnością tego czasu
 i z wagą paczki.</p>
 
+<div class="callout ok">
+  <p><strong>Wynik pomiaru (krok 6) - rekomendacja się zmieniła.</strong> Rozmiar mapy okazał się
+  <em>prawie darmowy</em> na klatkę, a wąskim gardłem jest coś innego: <strong>długość trasy A*</strong>.
+  Ograniczeniem nie jest więc rozmiar mapy, tylko <strong>rozrzut miejsc z warstwy <code>places</code></strong>.</p>
+</div>
+
+<div class="grid2">
+<div class="tablewrap"><table>
+<thead><tr><th>Mapa</th><th class="num">update</th><th class="num">draw</th><th class="num">klatka</th></tr></thead>
+<tbody>
+<tr><td>BLUNDERHAVEN 70x70, 32 NPC</td><td class="num">0,648</td><td class="num">1,058</td><td class="num">1,706 ms</td></tr>
+<tr><td>wygenerowana 128x128, 3 NPC</td><td class="num">0,072</td><td class="num">0,576</td><td class="num">0,647 ms</td></tr>
+<tr><td>wygenerowana 256x256, 3 NPC</td><td class="num">0,116</td><td class="num">0,577</td><td class="num">0,693 ms</td></tr>
+</tbody>
+</table></div>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Trasa A* (siatka 256x256)</th><th class="num">mediana</th><th class="num">max</th></tr></thead>
+<tbody>
+<tr><td>20-40 kafli</td><td class="num">0,7</td><td class="num">1,7 ms</td></tr>
+<tr><td>40-70 kafli</td><td class="num">3,8</td><td class="num">6,4 ms</td></tr>
+<tr><td>70-110 kafli</td><td class="num">7,9</td><td class="num">12,0 ms</td></tr>
+<tr class="rec"><td><strong>110-160 kafli</strong></td><td class="num"><strong>20,0</strong></td><td class="num">34,4 ms</td></tr>
+<tr><td>160-260 kafli</td><td class="num">44,3</td><td class="num">103,7 ms</td></tr>
+<tr><td>260-400 kafli</td><td class="num">105,4</td><td class="num">157,4 ms</td></tr>
+</tbody>
+</table></div>
+</div>
+
+<p>Czterokrotny wzrost liczby kafli (128x128 → 256x256) kosztuje <strong>0,046 ms na klatkę</strong> -
+pyscroll buforuje tylko widok, więc rozmiar mapy jest praktycznie za darmo. Dominuje liczba NPC-ów
+(0,648 ms na 32 postaciach wobec 0,116 ms na trzech). Za to A* przekracza budżet klatki
+(16,7 ms przy 60 FPS) w okolicach <strong>110 kafli trasy</strong> - i to na dowolnie dużej siatce.
+Rutyna łącząca dwa odleglejsze miejsca zawiesza grę na kilka klatek przy każdym przekroczeniu
+slotu, a te lecą co kilka sekund realnego czasu.</p>
+
+<p><strong>Wniosek wdrożony w kodzie:</strong> linter dostał sprawdzenie
+<code>check_routine_routes</code> - ostrzega, gdy dwa miejsca, które łączy jedna rutyna,
+dzieli więcej niż 110 kafli. Mapa 256x256 jest w porządku, o ile miejsca są rozrzucone
+wokół centrum, a nie po przeciwnych rogach.</p>
+
 <div class="tablewrap"><table>
 <thead><tr><th style="width:22%">Wariant</th><th>Opis</th><th style="width:18%">Ocena</th></tr></thead>
 <tbody>
@@ -709,8 +759,8 @@ dokładnie ta pętla, której chcemy uniknąć.</p>
 <div class="tablewrap"><table>
 <thead><tr><th style="width:26%">Ryzyko</th><th>Dlaczego realne</th><th style="width:30%">Mitygacja</th></tr></thead>
 <tbody>
-<tr><td>Mapa 256x256 za ciężka dla web</td><td>Plik ~1,2 MB, parsowanie ~190 ms na desktopie, na WASM kilkukrotnie więcej. Paczka pygbag rośnie.</td><td>Krok 6: pomiar przed rekomendacją. Domyślnie 128x128.</td></tr>
-<tr><td>A* na długich trasach</td><td>Rutyny NPC chodzą przez całą mapę; 65 536 komórek i trasa ~300 kroków to inna klasa niż dzisiejsze ~70.</td><td>Pomiar w kroku 6; ewentualnie punkty pośrednie na trasach rutyn.</td></tr>
+<tr><td><s>Mapa 256x256 za ciężka dla web</s> <span class="badge b-ok">zmierzone</span></td><td>Klatka rośnie o 0,046 ms przy czterokrotnej liczbie kafli - pyscroll buforuje tylko widok. Zostaje waga pliku (~1,2 MB w paczce web).</td><td>Nieaktualne jako ryzyko wydajności. Waga paczki do obserwacji.</td></tr>
+<tr><td>A* na długich trasach <span class="badge b-err">potwierdzone</span></td><td>Zmierzone: 134 kafle trasy = 20 ms, czyli więcej niż cała klatka. 238 kafli = 44 ms.</td><td>Wdrożone: <code>check_routine_routes</code> w linterze, próg 110 kafli. Miejsca rozrzucać wokół centrum.</td></tr>
 <tr><td>Klocek wycięty nieprecyzyjnie</td><td>Obrys o jeden kafel za mały ucina dach; o jeden za duży wnosi kawałek sąsiada.</td><td><code>palette.py show</code> renderuje każdy klocek osobno; arkusz kontaktowy do Twojej akceptacji (krok 3).</td></tr>
 <tr><td>Autotiling brzegów poza wangsetem</td><td>Gotowy wangset jest tylko dla trawa/ziemia. Styk ze ścieżką trzeba złożyć z próbek.</td><td>Obiekty <code>kind=edge</code>; przy braku próbki generator kładzie twardy styk i <strong>zgłasza to</strong>, zamiast wstawiać losowy kafel.</td></tr>
 <tr><td>Ocena estetyki się nie zbiega</td><td>"Za mało urozmaicone" to sąd bez progu; agent może krążyć.</td><td>D14: trzy iteracje, potem render i pytanie do Ciebie.</td></tr>
