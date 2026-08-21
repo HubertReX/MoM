@@ -20,6 +20,7 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass, field
+from typing import Iterable
 from pathlib import Path
 
 from tileset import Tileset, WangSet
@@ -221,4 +222,112 @@ def ring_sample(layer: TileLayer, rect: tuple[int, int, int, int],
             if gid:
                 found.append(gid)
     rng.shuffle(found)
+    return found
+
+
+# --------------------------------------------------------------------------
+# MARK: wąskie ścieżki
+
+
+N, E, S, W = 1, 2, 4, 8
+
+
+@dataclass
+class PathKit:
+    """Kafle ścieżki szerokiej na jeden kafel, wyuczone z próbki narysowanej w Tiled.
+
+    W odróżnieniu od płotu nie ma tu żadnego ustalonego układu: autor rysuje
+    dowolny spójny kształt ścieżki, a my dla KAŻDEGO kafla próbki liczymy maskę
+    sąsiedztwa (które z czterech sąsiadów też należą do ścieżki) i zapamiętujemy
+    "przy takim układzie wygląda tak". Kilka kafli o tej samej masce zostaje
+    wariantami - i dobrze, bo dzięki temu trakt nie powtarza się co kafel.
+    """
+
+    name: str = ""
+    pieces: dict[int, list[int]] = field(default_factory=dict)
+
+    @classmethod
+    def from_grid(cls, name: str, rows: list[list[int]],
+                  background: set[int] | None = None) -> "PathKit | None":
+        """`background` to kafle terenu, na którym narysowano próbkę.
+
+        Bez tego dekoder bierze trawę tła za ścieżkę: w prostokącie próbki
+        wszystkie kafle są niepuste, więc "należy do ścieżki" nie może znaczyć
+        po prostu "niezerowy gid".
+        """
+        skip = background or set()
+        height = len(rows)
+        width = len(rows[0]) if height else 0
+        if not width:
+            return None
+
+        def is_path(px: int, py: int) -> bool:
+            return (0 <= px < width and 0 <= py < height
+                    and bool(rows[py][px]) and rows[py][px] not in skip)
+
+        kit = cls(name=name)
+        for y in range(height):
+            for x in range(width):
+                gid = rows[y][x]
+                if not is_path(x, y):
+                    continue
+                mask = 0
+                if is_path(x, y - 1):
+                    mask |= N
+                if is_path(x + 1, y):
+                    mask |= E
+                if is_path(x, y + 1):
+                    mask |= S
+                if is_path(x - 1, y):
+                    mask |= W
+                kit.pieces.setdefault(mask, [])
+                if gid not in kit.pieces[mask]:
+                    kit.pieces[mask].append(gid)
+        return kit if kit.pieces else None
+
+    def piece(self, mask: int, rng: random.Random) -> int:
+        """Kafel dla danego układu sąsiadów, z wariantami.
+
+        Gdy próbka nie zna dokładnie tego układu (np. skrzyżowanie, którego autor
+        nie narysował), schodzimy do najbliższego podzbioru - lepiej położyć
+        prostą ścieżkę niż zostawić dziurę w trakcie.
+        """
+        for candidate in (mask, mask & (N | S), mask & (E | W), N | S, E | W):
+            options = self.pieces.get(candidate)
+            if options:
+                return rng.choice(options)
+        any_piece = next(iter(self.pieces.values()), [0])
+        return rng.choice(any_piece) if any_piece else 0
+
+
+def draw_path(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: PathKit,
+              rng: random.Random) -> int:
+    """Połóż ścieżkę na podanych kaflach, dobierając kafle po sąsiedztwie."""
+    path = set(cells)
+    laid = 0
+    for x, y in sorted(path):
+        mask = 0
+        if (x, y - 1) in path:
+            mask |= N
+        if (x + 1, y) in path:
+            mask |= E
+        if (x, y + 1) in path:
+            mask |= S
+        if (x - 1, y) in path:
+            mask |= W
+        gid = kit.piece(mask, rng)
+        if gid:
+            layer.set(x, y, gid)
+            laid += 1
+    return laid
+
+
+def pathkits_from_palette(palette: "object",
+                          background: set[int] | None = None) -> dict[str, PathKit]:
+    """Wszystkie zestawy ścieżek z katalogu (`kind=pathkit`)."""
+    found: dict[str, PathKit] = {}
+    for stamp in palette.of_kind("pathkit"):          # type: ignore[attr-defined]
+        kit = PathKit.from_grid(stamp.name, stamp.gids("ground"), background)
+        if kit is not None:
+            found[stamp.name] = kit
     return found

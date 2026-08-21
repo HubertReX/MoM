@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="209">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="210">
  <properties>
   <property name="outdoor" type="bool" value="true"/>
   <property name="particles" value="leafs,rain"/>
@@ -631,12 +631,14 @@
    <properties>
     <property name="kind" value="farmyard"/>
     <property name="tags" value="farmyard,hencoop,cowshed"/>
+    <property name="door" value="3,10"/>
    </properties>
   </object>
   <object id="195" name="farmyard_big" x="208" y="192" width="416" height="192">
    <properties>
     <property name="kind" value="farmyard"/>
     <property name="tags" value="farmyard,full"/>
+    <property name="door" value="21,10"/>
    </properties>
   </object>
   <object id="196" name="tree_round" x="848" y="16" width="32" height="32">
@@ -726,6 +728,12 @@
    <properties>
     <property name="kind" value="terrain"/>
     <property name="tags" value="field,crop"/>
+   </properties>
+  </object>
+  <object id="209" name="path_narrow" x="752" y="16" width="128" height="80">
+   <properties>
+    <property name="kind" value="pathkit"/>
+    <property name="tags" value="path,trail,narrow"/>
    </properties>
   </object>
  </objectgroup>

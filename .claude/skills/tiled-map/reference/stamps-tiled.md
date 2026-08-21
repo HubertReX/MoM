@@ -30,7 +30,7 @@ w ogóle o niej nie wie, bo prototyp nigdy nie jest ładowany.
 |---|---|---|---|
 | **(Name)** | pole nazwy | wszyscy | Nazwa klocka, po niej odwołujesz się w briefie. `snake_case`, bez spacji. Musi być unikalna. |
 | `kind` | string | wszyscy | Rodzaj - decyduje, co generator z tym klockiem robi. Wartości w tabeli niżej. **Wymagane.** |
-| `door` | string `"dx,dy"` | `building` | Kafel drzwi, liczony **od lewego górnego rogu klocka**, od zera. Generator kieruje tu ścieżkę i sadzi na tym kaflu obiekt `exit`. Brak = budynek bez wejścia (stodoła, stóg). |
+| `door` | string `"dx,dy"` | `building`, `farmyard` | Kafel drzwi (albo bramy zagrody), liczony **od lewego górnego rogu klocka**, od zera. Generator kieruje tu ścieżkę i sadzi na tym kaflu obiekt `exit`. W zagrodzie kafel bramy jest dodatkowo przenoszony z `walls` na `foliage`, żeby dało się przez nią przejść. Brak = element bez wejścia (stóg, stodoła bez drzwi). |
 | `anchor` | string | `nature`, `prop` | `bottom` (domyślnie) sadzi klocek dolną krawędzią - tak stawia się budynki. `center` sadzi środkiem - tak rozsypuje się drzewa. |
 | `tags` | string | wyszukiwanie | Lista po przecinku, **po angielsku**: `house,village`, `tree,forest`. Służy do grupowania („weź wszystkie `tree`"). |
 | `tile` | **bool** | `fence`, `prop` | `true` = klocek wolno powtarzać obok siebie w obie strony (płot, grządka). Domyślnie `false`. |
@@ -46,6 +46,7 @@ w ogóle o niej nie wie, bo prototyp nigdy nie jest ładowany.
 | `undergrowth` | **dokładnie 1x1** | Zasypuje luki w ścianie lasu, których nie zapełni całe drzewo. Bez tego generator sięga po awaryjny zestaw krzaków i mówi o tym w raporcie. |
 | `prop` | dowolny | Rekwizyty: studnia, stóg, grządka. Stawiane przez `[[prop]]` - w konkretnym miejscu, w zadanej liczbie albo dywanem o zadanej gęstości. |
 | `farmyard` | duży | Gotowa zagroda z własnym płotem i inwentarzem. Stawiana wprost przez `[[building]]`, bez dokładania jej zagrody. |
+| `pathkit` | dowolny | **Próbka ścieżki** szerokiej na jeden kafel. Narysuj dowolny spójny kształt (proste, zakręty, trójniki, skrzyżowanie) - generator sam policzy, który kafel pasuje do jakiego układu sąsiadów. Z tego robi dojścia do drzwi i bram. |
 | `terrain` | duży | **Próbka terenu**, nie klocek. Generator liczy w niej częstość gidów i z tego robi wagi wariantów - malujesz gęściej, częściej wypada. |
 | `edge` | mały | Próbka styku dwóch terenów. Dla trawy i ziemi niepotrzebna: `Floor.tsx` ma gotowy wangset. |
 
@@ -91,3 +92,19 @@ Najczęstsze pomyłki, które widać na arkuszu:
 - **`door` wskazujący ciemny róg bryły zamiast wejścia** - `just map-palette doors`
   pokazuje różnicę między tym, co jest w pliku, a swoją podpowiedzią,
 - **brak `kind`** - klocek wpada do worka `prop` i nigdy nie trafi tam, gdzie miał.
+
+## Dlaczego niektóre reguły są takie, a nie inne
+
+- **Ścieżka do każdego wejścia.** Klocek z `door` zawsze dostaje dojście - A* prowadzi
+  je od progu do najbliższego traktu albo do już położonej ścieżki. Zagroda bez dojścia
+  to makieta, więc `door` na zagrodzie jest równie ważny jak na domu.
+- **Ogrodzenie to jeden zamknięty obrys albo nic.** Gdy droga rozetnie zagrodę na
+  kilka kawałków, generator nie stawia płotu wcale - człowiek nie otacza domu trzema
+  niezależnymi odcinkami sztachet.
+- **Dwie zagrody nigdy na siebie nie wchodzą.** Nakładające się obwody dają uskoki,
+  bo maska sąsiedztwa liczy się już na pomieszanych kaflach.
+- **Duży klocek ustępuje drodze.** `farmyard_big` postawiona na trakcie przecina wieś
+  na pół. Wyjątek trzeba wpisać jawnie (`on_road = true` w briefie).
+- **Kolejność prób w lesie jest losowa.** Branie zawsze największego klocka, który się
+  mieści, dawało to samo drzewo wzdłuż całego boku mapy - a taki rytm czyta się jak sad
+  posadzony przez ludzi, nie jak dziki las.

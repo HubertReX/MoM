@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fence import FenceKit, draw_fence, kits_from_palette, rect_cells
 from palette import Palette, Stamp
-from terrain import TerrainLib, blob_mask
+from terrain import PathKit, TerrainLib, blob_mask, draw_path, pathkits_from_palette
 from tileset import Tileset
 from tmx import (
     EMPTY,
@@ -68,6 +68,7 @@ class Road:
     width: int = 3
     points: list[tuple[float, float]] = field(default_factory=list)
     terrain: str = "dirt"
+    kind: str = "road"                 # road = szeroki trakt | trail = ścieżka 1 kafel
 
 
 @dataclass
@@ -137,6 +138,7 @@ class Brief:
                 width=int(item.get("width", 3)),
                 points=[(float(p[0]), float(p[1])) for p in item.get("points", [])],
                 terrain=str(item.get("terrain", "dirt")),
+                kind=str(item.get("kind", "road")),
             ))
         for item in raw.get("district", []):
             brief.districts.append(District(
@@ -285,8 +287,12 @@ class Generator:
         self.taken = [[False] * brief.width for _ in range(brief.height)]
         self.road_paths: dict[str, list[tuple[float, float]]] = {}
         self.fence_kits: dict[str, FenceKit] = kits_from_palette(palette)
+        self.path_kits: dict[str, PathKit] = pathkits_from_palette(
+            palette, set(self.terrain.get(brief.base).variants))
+        self.trail_mask: set[tuple[int, int]] = set()
         self._char_gids: dict[str, int] | None = None
         self._undergrowth: list[int] | None = None
+        self._warned: set[str] = set()
         self.yards: list[tuple[int, int, int, int]] = []
         self._door_seq = 0
         self.notes: list[str] = []
@@ -327,9 +333,14 @@ class Generator:
     def pass_roads(self) -> None:
         if not self.brief.roads:
             return
+        trails: list[tuple[int, int]] = []
         for road in self.brief.roads:
             path = catmull_rom(road.points)
             self.road_paths[road.name] = path
+            if road.kind == "trail":
+                # ścieżka dla ludzi: jeden kafel szerokości, własne kafle
+                trails.extend(dict.fromkeys((int(px), int(py)) for px, py in path))
+                continue
             stroke(self.road_mask, path, road.width, self.rng)
         if self.brief.plaza:
             at = self.brief.plaza.get("at", [self.tmap.width // 2, self.tmap.height // 2])
@@ -337,12 +348,28 @@ class Generator:
             ellipse(self.road_mask, (int(at[0]), int(at[1])),      # type: ignore[index]
                     (int(radii[0]), int(radii[1])), self.rng)      # type: ignore[index]
         self._paint_mask(self.road_mask, self.brief.roads[0].terrain)
+        if trails:
+            self._lay_trail(trails)
 
     def _paint_mask(self, mask: list[list[bool]], inner: str) -> None:
+        """Przemaluj teren wg maski traktu.
+
+        UWAGA: `paint` przechodzi po CAŁEJ warstwie `ground` i ustawia każdy
+        kafel, więc kasuje wąskie ścieżki położone wcześniej. Dlatego zaraz po
+        przemalowaniu kładziemy je ponownie - inaczej dojścia do bram znikają
+        po pierwszej lepszej odnodze, i to bez śladu w raporcie.
+        """
         ground = self.tmap.tile_layer("ground")
         corners = self.terrain.corners_from_mask(
             mask, inner, self.brief.base, self.tmap.width, self.tmap.height)
         self.terrain.paint(ground, corners, self.rng)
+        self._redraw_trails()
+
+    def _redraw_trails(self) -> None:
+        if not self.trail_mask or not self.path_kits:
+            return
+        kit = self.path_kits[sorted(self.path_kits)[0]]
+        draw_path(self.tmap.tile_layer("ground"), self.trail_mask, kit, self.rng)
 
     # 4. natura
     def pass_nature(self) -> None:
@@ -389,6 +416,14 @@ class Generator:
                 if self._place(stamp, x - stamp.w // 2, y - stamp.h // 2,
                                avoid_roads=avoid_roads):
                     placed += 1
+                    continue
+                # Nie udało się w tym miejscu - spróbuj mniejszym. Bez tego w
+                # gęstym lesie wypadają tylko duże drzewa tam, gdzie akurat było
+                # miejsce, a reszta zostaje pusta.
+                for other in self.rng.sample(stamps, len(stamps)):
+                    if self._place(other, x, y, avoid_roads=avoid_roads):
+                        placed += 1
+                        break
         return placed
 
     def pass_seal_stamps(self) -> None:
@@ -408,7 +443,7 @@ class Generator:
         margin = self._seal_margin()
         if margin <= 0:
             return
-        stamps = sorted(self.palette.of_kind("nature"), key=lambda st: -(st.w * st.h))
+        stamps = self.palette.of_kind("nature")
         if not stamps:
             return
         stamped = 0
@@ -416,7 +451,10 @@ class Generator:
             for x in range(self.tmap.width):
                 if not self._in_band(x, y, margin) or self.road_mask[y][x]:
                     continue
-                for stamp in stamps:
+                # Kolejność prób LOSOWA na każdej pozycji. Sortowanie po wielkości
+                # dawało to samo drzewo wzdłuż całego boku mapy - a taki rytm
+                # czyta się jak sad posadzony przez ludzi, nie jak dziki las.
+                for stamp in self.rng.sample(stamps, len(stamps)):
                     # klocek wolno wpuścić w głąb mapy, byle zaczynał się w pasie
                     if self._place(stamp, x, y, avoid_roads=True):
                         stamped += 1
@@ -537,6 +575,10 @@ class Generator:
                     x=float(rx) * self.tmap.tilewidth, y=float(ry) * self.tmap.tileheight,
                     width=float(rw) * self.tmap.tilewidth,
                     height=float(rh) * self.tmap.tileheight))
+            target = spec.get("connect_to")
+            if target:
+                self._trail_between((rx + rw // 2, ry + rh),
+                                    (int(target[0]), int(target[1])))   # type: ignore[index]
             self.notes.append(f"pola: {plots} zagonów w prostokącie {rx},{ry} {rw}x{rh}"
                               f"{f', strefa `{zone}`' if zone else ''}")
 
@@ -546,8 +588,14 @@ class Generator:
             stamp = self.palette.get(str(spec["stamp"]))
             at = spec["at"]
             x, y = int(at[0]), int(at[1])                      # type: ignore[index]
-            if not self._place(stamp, x, y, avoid_roads=False):
-                self.notes.append(f"budynek '{stamp.name}' w ({x},{y}): miejsce zajęte")
+            # Domyślnie budynek USTĘPUJE drodze - zagroda 26x12 postawiona na
+            # trakcie przecina wieś na pół i zamyka w sobie kawałek drogi.
+            # `on_road = true` to świadomy wyjątek (np. brama nad traktem).
+            on_road = bool(spec.get("on_road", False))
+            if not self._place(stamp, x, y, avoid_roads=not on_road):
+                self.notes.append(
+                    f"budynek '{stamp.name}' w ({x},{y}): nie zmieścił się "
+                    f"(zajęte albo wchodzi na trakt) - przesuń go w briefie")
                 continue
             owner = str(spec.get("owner", ""))
             yard = spec.get("yard")
@@ -560,8 +608,68 @@ class Generator:
                 self._fence_yard(district, stamp, (x, y),
                                  (float(toward[0]), float(toward[1])),  # type: ignore[index]
                                  label=owner)
+            if stamp.kind == "farmyard":
+                self._open_gate(stamp, (x, y))
+            self._stock_yard(stamp, (x, y), spec.get("animals", []),   # type: ignore[arg-type]
+                             owner)
             self._connect_to_road(stamp, (x, y))
             self._wire_door(stamp, (x, y), str(spec.get("exit_to", "")), owner)
+
+    def _stock_yard(self, stamp: Stamp, at: tuple[int, int],
+                    animals: "list[object]", owner: str) -> None:
+        """Wpuść inwentarz do zagrody.
+
+        Zwierzęta to obiekty na `spawn_points`, więc nie przychodzą z klockiem -
+        klocek niesie tylko kafle. Pusta zagroda wygląda jak makieta, dlatego
+        brief wymienia zwierzęta, a generator sadza je na wolnych kaflach W ŚRODKU.
+        """
+        if not animals:
+            return
+        walls = self.tmap.tile_layer("walls")
+        free = [(x, y)
+                for y in range(at[1] + 1, at[1] + stamp.h - 1)
+                for x in range(at[0] + 1, at[0] + stamp.w - 1)
+                if self.tmap.in_bounds(x, y) and not walls.get(x, y)]
+        if not free:
+            self.notes.append(f"zagroda '{owner or stamp.name}': nie ma gdzie postawić zwierząt")
+            return
+        self.rng.shuffle(free)
+        tile = self.tmap.tilewidth
+        placed = 0
+        for index, model in enumerate(str(m) for m in animals):
+            gid = self._character_gid(model)
+            if not gid:
+                self.notes.append(f"zwierzę '{model}': brak kafla w CharacterTileset.tsx")
+                continue
+            if index >= len(free):
+                break
+            spot = free[index]
+            self.tmap.add_object("spawn_points", MapObject(
+                name=f"{model}_{owner or stamp.name}_{index + 1:02}".upper(), gid=gid,
+                x=float(spot[0]) * tile, y=float(spot[1]) * tile,
+                width=float(tile), height=float(tile)))
+            placed += 1
+        if placed:
+            self.notes.append(f"zagroda '{owner or stamp.name}': {placed} zwierząt")
+
+    def _open_gate(self, stamp: Stamp, at: tuple[int, int]) -> None:
+        """Brama zagrody ma być przechodnia, a nie tylko wyglądać na bramę.
+
+        Kafel bramy jest w prototypie narysowany na `walls`, czyli blokuje - a
+        wtedy zagroda jest ozdobnym pudełkiem, do którego nikt nie wejdzie.
+        Przenosimy go na `foliage`: obrazek zostaje, kolizja znika.
+        """
+        if stamp.door is None:
+            return
+        gx, gy = at[0] + stamp.door[0], at[1] + stamp.door[1]
+        walls = self.tmap.tile_layer("walls")
+        gid = walls.get(gx, gy)
+        if not gid:
+            return
+        walls.set(gx, gy, EMPTY)
+        foliage = self.tmap.tile_layer("foliage")
+        if not foliage.get(gx, gy):
+            foliage.set(gx, gy, gid)
 
     def _wire_door(self, stamp: Stamp, at: tuple[int, int], to_map: str,
                    owner: str) -> None:
@@ -846,8 +954,7 @@ class Generator:
             self.notes.append(f"klocek '{stamp.name}' w {at}: A* nie znalazł drogi "
                               f"od drzwi do traktu - sprawdź ten budynek")
             return
-        for x, y in path:
-            self.road_mask[y][x] = True
+        self._lay_trail(path)
 
     def _punch_gate(self, walls: "TileLayer", walk: list[list[bool]],
                     door: tuple[int, int]) -> bool:
@@ -879,10 +986,58 @@ class Generator:
         self._door_seq += 1
         return self._door_seq
 
+    def _trail_between(self, start: tuple[int, int], goal: tuple[int, int]) -> None:
+        """Nieregularna ścieżka między dwoma punktami - A* po koszcie kroku.
+
+        Nie linia prosta: A* omija to, co stoi na drodze, a losowy narzut kosztu
+        sprawia, że ścieżka faluje zamiast ciąć na skos jak pod linijkę.
+        """
+        walls = self.tmap.tile_layer("walls")
+        walk = [[walls.get(x, y) == EMPTY for x in range(self.tmap.width)]
+                for y in range(self.tmap.height)]
+        for point in (start, goal):
+            if self.tmap.in_bounds(*point):
+                walk[point[1]][point[0]] = True
+        cost = [[1 if (x, y) in self.trail_mask or self.road_mask[y][x]
+                 else self.rng.randint(3, 7)
+                 for x in range(self.tmap.width)] for y in range(self.tmap.height)]
+        path = astar(walk, cost, start, {goal})
+        if path:
+            self._lay_trail(path)
+        else:
+            self.notes.append(f"ścieżka {start} -> {goal}: A* nie znalazł przejścia")
+
+    def _lay_trail(self, path: list[tuple[int, int]]) -> None:
+        """Odnoga do drzwi jako ścieżka SZEROKA NA KAFEL, a nie kawałek traktu.
+
+        Doklejanie odnóg do maski traktu robiło z nich pełnoprawną drogę: po
+        autotilingu wychodziły trzy kafle ziemi, a wieś zamieniała się w jeden
+        placek. Wąska ścieżka ma własne kafle (klocek `kind=pathkit`) i własną
+        maskę, więc nie rozdyma traktu, a mimo to prowadzi do bramy.
+        """
+        if not path:
+            return
+        if not self.path_kits:
+            # brak zestawu w katalogu: awaryjnie dokładamy do traktu, jak dawniej
+            for x, y in path:
+                self.road_mask[y][x] = True
+            if "trail" not in self._warned:
+                self._warned.add("trail")
+                self.notes.append("katalog nie ma klocka `kind=pathkit` - odnogi do "
+                                  "drzwi rysuję jako trakt, więc będą szerokie")
+            return
+        # Kafle, które i tak są traktem, zostawiamy traktowi - ścieżka ma
+        # DOCHODZIĆ do drogi, a nie kłaść się na niej wąskim paskiem.
+        self.trail_mask.update(
+            (x, y) for x, y in path if not self.road_mask[y][x])
+        self._redraw_trails()
+
     def _road_tiles(self) -> set[tuple[int, int]]:
+        """Cele dla odnóg: trakt ORAZ już położone ścieżki - żeby domy stojące
+        dalej od drogi podłączały się do sąsiada, a nie ciągnęły własnej nitki."""
         return {(x, y)
                 for y in range(self.tmap.height) for x in range(self.tmap.width)
-                if self.road_mask[y][x]}
+                if self.road_mask[y][x]} | self.trail_mask
 
     def _place(self, stamp: Stamp, x: int, y: int, avoid_roads: bool = True) -> bool:
         """Postaw klocek, jeśli miejsce jest wolne. Zwraca, czy się udało."""

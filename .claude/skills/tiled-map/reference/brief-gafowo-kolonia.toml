@@ -1,100 +1,117 @@
-# Gafowo Kolonia 256x256 - brief odwzorowujący prompt autora:
+# Gafowo Kolonia - brief odwzorowujący prompt autora, po korektach z przeglądu.
 #
-#   "wioska 256x256, ze wschodu na zachód wije się szerokimi łukami droga.
-#    Po obu stronach drogi wiejskie domy z zagrodami. W centralnym miejscu
-#    owalny plac. Na północnym krańcu placu Tawerna, obok mała stajnia.
-#    Na środku placu studnia (miejsce spotkań) ze ścieżkami w 4 strony świata.
-#    Na północ od zabudowań połacie symetrycznych pól przecinanych drogami.
-#    Mapę dookoła ogranicza gęsty las. Jedynymi wejściami są oba końce drogi."
-#
-# Do tego wymagania fabuły (reference/lore.md): gracz budzi się w stajni (Q00),
-# chałupa Zielarki na końcu wioski przy lesie (Q01_S02).
+# Skala dróg (ustalenie autora, przy kaflu 16 px):
+#   trakt główny            3-4 kafle
+#   drogi między polami     2 kafle
+#   ścieżki dla ludzi       1 kafel  -> `kind = "trail"`, kafle z klocka `path_narrow`
 
 name = "BLUNDERHAVEN_V2"
-size = [256, 256]
+size = [256, 128]
 seed = 20260821
 base = "grass"
 particles = "leafs,rain"
 
 # === DROGI ===================================================================
-# Trakt główny: szerokie łuki ze wschodu na zachód, w południowej połowie mapy,
-# żeby na północy zmieściły się pola.
 [[road]]
 name = "main"
 width = 4
 terrain = "dirt"
-points = [[0, 166], [38, 152], [76, 182], [114, 158], [152, 186], [192, 158], [230, 174], [255, 164]]
+points = [[0, 84], [38, 74], [76, 96], [114, 78], [152, 98], [192, 76], [230, 90], [255, 82]]
 
-# Cztery ścieżki od studni w strony świata. Północna dobija do siatki pól,
-# więc pola są połączone z wioską, a nie odcięte.
+# Cztery ścieżki od studni w strony świata - dla ludzi, więc szerokość kafla.
 [[road]]
 name = "well_n"
-width = 2
-points = [[128, 168], [128, 148], [128, 128]]
+kind = "trail"
+points = [[128, 86], [128, 74], [128, 62]]
 
 [[road]]
 name = "well_s"
-width = 2
-points = [[128, 168], [128, 190], [128, 208]]
+kind = "trail"
+points = [[128, 86], [128, 100], [128, 112]]
 
 [[road]]
 name = "well_e"
-width = 2
-points = [[128, 168], [152, 168], [176, 170]]
+kind = "trail"
+points = [[128, 86], [146, 86], [164, 88]]
 
 [[road]]
 name = "well_w"
-width = 2
-points = [[128, 168], [104, 168], [80, 166]]
+kind = "trail"
+points = [[128, 86], [110, 86], [92, 84]]
 
 [plaza]
-at = [128, 168]
-radius = [12, 9]
+at = [128, 86]
+radius = [9, 6]
 
 # === POLA ====================================================================
-# Regularna kratka JEST tu zamierzona: pole uprawne to jedyne miejsce, gdzie
-# symetria czyta się jako praca ludzi, a nie jako lenistwo generatora.
+# Kilka osobnych stref 2x2 zagony, każda z drogą 2 kafle w środku i nieregularną
+# ścieżką do innego gospodarstwa - tak jak w prototypie, a nie jeden wielki blok.
 [[fields]]
-rect = [42, 38, 176, 92]
+rect = [46, 34, 14, 18]
 stamp = "field_crop"
-plot = [4, 3]     # zagon = 4x3 klocki, czyli 24x24 kafle
-gap = 3           # szerokość miedzy między zagonami
-zone = "farmer_field"   # strefa dla rutyny farmera (waypointy tylko na życzenie)
+plot = [1, 1]
+gap = 2
+zone = "field_west"
+connect_to = [52, 72]
+
+[[fields]]
+rect = [96, 30, 14, 18]
+stamp = "field_crop"
+plot = [1, 1]
+gap = 2
+zone = "field_north"
+connect_to = [116, 74]
+
+[[fields]]
+rect = [146, 32, 14, 18]
+stamp = "field_crop"
+plot = [1, 1]
+gap = 2
+zone = "field_east"
+connect_to = [154, 74]
+
+[[fields]]
+rect = [196, 38, 14, 18]
+stamp = "field_crop"
+plot = [1, 1]
+gap = 2
+zone = "field_far_east"
+connect_to = [200, 78]
 
 # === LAS =====================================================================
 [[biome]]
 kind = "forest"
 shape = "border"
 stamps = ["tree_round", "tree_bushy", "tree_fir", "tree_fir_big", "tree_oak_big", "tree_dead"]
-coverage = 0.15
-scale = 11
-density = 0.92
+coverage = 0.30
+scale = 12
+density = 0.85
 margin = 3
 
 # === BUDYNKI STAWIANE WPROST =================================================
 [[building]]
-stamp = "tavern_tall"       # Tawerna Brakująca klepka, północny kraniec placu
-at = [118, 149]
+stamp = "tavern_tall"       # Tawerna, północny kraniec placu
+at = [120, 72]
 owner = "LOST_CORK_TAVERN"
 exit_to = "LOST_CORK_TAVERN"
 
 [[building]]
 stamp = "barn_wood"         # mała stajnia obok - tu budzi się gracz (Q00_S00)
-at = [131, 151]
+at = [132, 74]
 owner = "STABLE"
-exit_to = "JACOBS_CHAMBER"  # tymczasowo, do czasu wnętrza stajni
+exit_to = "JACOBS_CHAMBER"
 
 [[building]]
 stamp = "hut_kiln"          # kuźnia, na wschód od placu
-at = [152, 152]
+at = [150, 76]
 owner = "SMITHY"
-exit_to = "JACOBS_CHAMBER"  # tymczasowo, do czasu narysowania wnętrza kuźni
+exit_to = "JACOBS_CHAMBER"
 yard = [2, 3]
 fences = ["fence_rail_dark"]
 
 [[building]]
 stamp = "house_red"         # dom kowala, na uboczu (gardzi wsią)
-at = [170, 186]
+at = [176, 96]
 owner = "HAMMER_HOAXHEART"
 exit_to = "JACOBS_CHAMBER"
 yard = [2, 4]
@@ -102,7 +119,7 @@ fences = ["wall_stone"]
 
 [[building]]
 stamp = "hut_brown"         # chałupa Zielarki: koniec wioski, przy lesie (Q01_S02)
-at = [36, 178]
+at = [34, 96]
 owner = "POTIONEER_PUZZLEMINT"
 exit_to = "JACOBS_CHAMBER"
 yard = [2, 3]
@@ -110,7 +127,7 @@ fences = ["fence_wood"]
 
 [[building]]
 stamp = "house_cottage"     # dom Bartusia
-at = [96, 184]
+at = [96, 100]
 owner = "BART"
 exit_to = "JACOBS_CHAMBER"
 yard = [2, 3]
@@ -118,22 +135,26 @@ fences = ["fence_wood"]
 
 [[building]]
 stamp = "house_cream"       # dom Johnego
-at = [150, 190]
+at = [154, 104]
 owner = "JOHNY"
 exit_to = "JACOBS_CHAMBER"
 yard = [2, 3]
 fences = ["fence_rail_dark"]
 
-# punkt 6: gotowe zagrody z prototypu - przychodzą z własnym płotem i inwentarzem
+# Gotowe zagrody z prototypu: przychodzą z własnym płotem, bramą i pomieszczeniami.
+# Zwierzęta to obiekty, więc nie ma ich w kaflach - wymieniamy je tutaj.
 [[building]]
-stamp = "farmyard_big"      # duża zagroda gospodarska na zachodzie wsi
-at = [52, 176]
+stamp = "farmyard_big"
+at = [56, 62]
 owner = "FARMSTEAD_BIG"
+animals = ["COW", "COW", "PIG", "CHICKEN_WHITE", "CHICKEN_BROWN", "CHICKEN_BLACK",
+           "CHICKEN_CUTE", "HORSE", "DOG_ORANGE"]
 
 [[building]]
-stamp = "farmyard_small"    # mniejsza zagroda na wschodzie
-at = [196, 180]
+stamp = "farmyard_small"
+at = [204, 62]
 owner = "FARMSTEAD_SMALL"
+animals = ["CHICKEN_WHITE", "CHICKEN_BROWN", "CHICKEN_CUTE", "PIG", "COW", "DOG_PURPLE"]
 
 # === ZABUDOWA WZDŁUŻ TRAKTU ==================================================
 [[district]]
@@ -141,18 +162,18 @@ name = "wies_polnoc"
 along = "main"
 side = "north"
 stamps = ["house_cottage", "house_red", "house_ornate", "farmhouse_big_1", "farmhouse_big_2", "barn_wood"]
-spacing = [8, 13]
+spacing = [12, 19]
 setback = [3, 6]
 fences = ["fence_wood", "fence_rail_dark", "wall_stone"]
 yard = [2, 4]
-exit_to = "JACOBS_CHAMBER"   # tymczasowo wszystkie domy do jednego wnętrza
+exit_to = "JACOBS_CHAMBER"
 
 [[district]]
 name = "wies_poludnie"
 along = "main"
 side = "south"
 stamps = ["house_cottage", "hut_brown", "house_cream", "barn_wood", "house_ornate"]
-spacing = [9, 15]
+spacing = [13, 21]
 setback = [3, 7]
 fences = ["wall_stone", "fence_wood"]
 yard = [2, 4]
@@ -160,146 +181,104 @@ exit_to = "JACOBS_CHAMBER"
 
 # === REKWIZYTY ===============================================================
 [[prop]]
-stamp = "well"              # studnia na środku placu - miejsce spotkań
-at = [128, 167]
+stamp = "well"
+at = [128, 85]
 
 [[prop]]
 stamp = "sunflowers"
-count = 8
+count = 6
 
 [[prop]]
 stamps = ["haystack", "haystack_small"]
-count = 24
+count = 18
 
 [[prop]]
 stamps = ["tree_round", "tree_bushy", "haystack"]
-rect = [26, 26, 204, 204]
-density = 0.014
+rect = [24, 24, 208, 84]
+density = 0.012
 
 # === OBIEKTY =================================================================
 [[entry]]
-name = "start"              # przy drzwiach stajni (Q00: "obudziłeś się w stajni")
-at = [132, 154]
+name = "start"
+at = [133, 78]
 
 [[entry]]
 name = "DrogaZachod"
-at = [2, 166]
+at = [2, 84]
 
 [[entry]]
 name = "DrogaWschod"
-at = [253, 164]
-
-[[entry]]
-name = "LOST_CORK_TAVERN_DOOR"
-at = [119, 154]
-
-[[exit]]
-name = "LOST_CORK_TAVERN"
-at = [119, 153]
-to_map = "LOST_CORK_TAVERN"
-destination_entry_point = "Door"
+at = [253, 82]
 
 [[place]]
 name = "well"
-at = [128, 170]
+at = [128, 88]
 
 [[place]]
 name = "smithy"
-at = [153, 156]
+at = [151, 80]
 
 [[place]]
 name = "house_smith"
-at = [171, 189]
+at = [177, 99]
 
 [[place]]
 name = "house_bart"
-at = [97, 187]
+at = [97, 103]
 
 [[place]]
 name = "house_johny"
-at = [151, 193]
+at = [155, 107]
 
 [[place]]
 name = "house_barman"
-at = [119, 155]
+at = [121, 77]
 
-# `plains` to otwarta łąka na południu, a NIE centrum wsi. Strefy `backyard_*`
-# powstają automatycznie, po jednej na każde ogrodzone podwórze.
 [[zone]]
 name = "plains"
-rect = [40, 206, 176, 32]
+rect = [40, 106, 176, 16]
 
 [[spawn]]
 name = "BARMAN_ABSINTHRAYNER"
 model = "BARMAN_ABSINTHRAYNER"
-at = [121, 156]
+at = [123, 79]
 
 [[spawn]]
 name = "HAMMER_HOAXHEART"
 model = "HAMMER_HOAXHEART"
-at = [154, 157]
+at = [152, 81]
 
 [[spawn]]
 name = "POTIONEER_PUZZLEMINT"
 model = "POTIONEER_PUZZLEMINT"
-at = [38, 182]
+at = [36, 100]
 
 [[spawn]]
 name = "MARRY"
 model = "MARRY"
-at = [124, 172]
+at = [124, 90]
 
 [[spawn]]
 name = "BART"
 model = "BART"
-at = [98, 188]
+at = [98, 104]
 
 [[spawn]]
 name = "JOHNY"
 model = "JOHNY"
-at = [152, 194]
+at = [156, 108]
 
 [[spawn]]
 name = "ROB"
 model = "ROB"
-at = [133, 174]
+at = [133, 92]
 
 [[spawn]]
 name = "CLAPBACK_SWORD"
 model = "CLAPBACK_SWORD"
-at = [133, 155]
+at = [134, 78]
 
 [[spawn]]
 name = "CAT_01"
 model = "CAT"
-at = [126, 176]
-
-[[spawn]]
-name = "DOG_ORANGE"
-model = "DOG_ORANGE"
-at = [99, 190]
-
-[[spawn]]
-name = "CHICKEN_WHITE"
-model = "CHICKEN_WHITE"
-at = [155, 160]
-
-[[spawn]]
-name = "CHICKEN_BROWN"
-model = "CHICKEN_BROWN"
-at = [157, 162]
-
-[[spawn]]
-name = "CHICKEN_BLACK"
-model = "CHICKEN_BLACK"
-at = [153, 163]
-
-[[spawn]]
-name = "COW"
-model = "COW"
-at = [160, 166]
-
-[[spawn]]
-name = "PIG"
-model = "PIG"
-at = [163, 164]
+at = [126, 94]

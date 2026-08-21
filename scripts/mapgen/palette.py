@@ -44,7 +44,7 @@ STAMPS_LAYER = "stamps"
 PROTOTYPE = maps_dir() / "_wip" / "BLUNDERHAVEN_base.tmx"
 
 KINDS = ("building", "fence", "wall", "prop", "nature", "undergrowth",
-         "farmyard", "terrain", "edge")
+         "farmyard", "terrain", "edge", "pathkit")
 
 
 @dataclass

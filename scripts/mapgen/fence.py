@@ -106,6 +106,23 @@ def kits_from_palette(palette: Palette) -> dict[str, FenceKit]:
 # MARK: rysowanie
 
 
+def _components(ring: set[tuple[int, int]]) -> int:
+    """Ile rozłącznych kawałków tworzy obwód."""
+    remaining = set(ring)
+    count = 0
+    while remaining:
+        count += 1
+        queue = [remaining.pop()]
+        while queue:
+            x, y = queue.pop()
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nxt = (x + dx, y + dy)
+                if nxt in remaining:
+                    remaining.discard(nxt)
+                    queue.append(nxt)
+    return count
+
+
 def _drop_short_runs(ring: set[tuple[int, int]], min_run: int) -> set[tuple[int, int]]:
     """Zostaw tylko spójne odcinki płotu o długości co najmniej `min_run`."""
     if min_run <= 1:
@@ -164,6 +181,12 @@ def draw_fence(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: FenceKit
     ring = outline(cells) - set(skip)
     ring = _drop_short_runs(ring, min_run)
     if not ring:
+        return set()
+    # Ogrodzenie ma być JEDNYM zamkniętym obrysem albo nie powstać wcale.
+    # Człowiek nie stawia wokół domu trzech niezależnych kawałków płotu - a
+    # dokładnie to wychodziło, gdy droga rozcięła zagrodę na kilka części
+    # i każda z osobna przechodziła próg `min_run`.
+    if _components(ring) > 1:
         return set()
 
     # Bramy wycinamy PRZED policzeniem masek, żeby po obu stronach przerwy
