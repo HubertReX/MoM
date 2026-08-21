@@ -398,6 +398,19 @@ map-render *ARGS:
     #!powershell
     .venv\Scripts\python.exe scripts\mapgen\render_map.py {{ARGS}}
 
+# Lint a .tmx map: contract, reachability, objects, monotony metrics. e.g: `just map-lint BLUNDERHAVEN`
+[unix]
+map-lint *ARGS:
+    @# `--strict` ostrzeżenia też failują, `--json` wynik maszynowo,
+    @# `--only <tekst>` tylko wybrane sprawdzenia. Linter TYLKO diagnozuje.
+    @.venv/bin/python scripts/mapgen/lint_map.py {{ARGS}}
+
+# Lint a .tmx map: contract, reachability, objects, monotony metrics. e.g: `just map-lint BLUNDERHAVEN`
+[windows]
+map-lint *ARGS:
+    #!powershell
+    .venv\Scripts\python.exe scripts\mapgen\lint_map.py {{ARGS}}
+
 # Stamp catalogue read from the `stamps` layer of the prototype map
 [unix]
 map-palette *ARGS:

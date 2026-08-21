@@ -217,8 +217,8 @@ Czasami to ludziskom gorzej się robi po tych [item]miksturach[/item]. Jak ktoś
 * A już Ci, coś by się znalazło...
 
 * [[#022]] 1[`not visited(`[[Barman Absyntnent#022]]`)`]😐: Ponoć [char]kot[/] zżarł wszystkie [[Świeża ryba|ryby]]?
-* [[#026]] 2[`not visited(`[[Barman Absyntnent#026]]`) and quest_done(`[[Q04_S01 Ryby, które zjadł kot]]`)]`😐: Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:
-* [[#030]] 3[`not visited(`[[Barman Absyntnent#030]]`) and quest_done(`[[Q04_S02 Trofeum z dalekiego świata]]`)]`😐: **TODO** Q04_S03
+* [[#026]] 2[`not visited(`[[Barman Absyntnent#026]]`) and quest_done(`[[Q04_S01 Ryby, które zjadł kot]]`)`]😐: Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:
+* [[#030]] 3[`not visited(`[[Barman Absyntnent#030]]`) and quest_done(`[[Q04_S02 Trofeum z dalekiego świata]]`)`]😐: **TODO** Q04_S03
 * [[#024]] 4[`item_count(`[[Świeża ryba]]`) >= 5 and visited(`[[Barman Absyntnent#022]]`)`]😐: Mam dla **Ciebie** te [[Świeża ryba|ryby]]
 * [[#029]] 5[`item_count(`[[Zielony kryształ]]`) >= 1 and visited(`[[Barman Absyntnent#026]]`)`]😐: Mam dla **Ciebie** [[Zielony kryształ]]
 * [[#001]] 9😐: Ech, nieważne

@@ -553,7 +553,6 @@
    <properties>
     <property name="kind" value="building"/>
     <property name="tags" value="dom,duzy"/>
-    <property name="door" value="1,4"/>
    </properties>
   </object>
   <object id="183" name="farmhouse_big_2" x="496" y="16" width="64" height="80">

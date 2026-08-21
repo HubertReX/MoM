@@ -1503,6 +1503,11 @@
                     "result": null,
                     "text": "M_BARMAN_ABSINTHRAYNER_DN_029"
                 },
+                "030": {
+                    "is_final": false,
+                    "result": null,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DN_030"
+                },
                 "990": {
                     "is_final": true,
                     "result": null,
@@ -1863,17 +1868,17 @@
                 },
                 "021to026_2": {
                     "next_node": "026",
-                    "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"026\")",
+                    "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"026\") and quest_done(\"Q04_S01_FISH_EATEN_BY_CAT\")",
                     "sentiment": "neutral",
                     "order": 2,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_021to026_2"
                 },
-                "021to001_3": {
-                    "next_node": "001",
-                    "condition": "True",
+                "021to030_3": {
+                    "next_node": "030",
+                    "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"030\") and quest_done(\"Q04_S02_TAVERN_TROPHY\")",
                     "sentiment": "neutral",
                     "order": 3,
-                    "text": "M_BARMAN_ABSINTHRAYNER_DO_021to001_3"
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_021to030_3"
                 },
                 "021to024_4": {
                     "next_node": "024",
@@ -1979,6 +1984,13 @@
                     "sentiment": "neutral",
                     "order": 1,
                     "text": "M_BARMAN_ABSINTHRAYNER_DO_029to001_1"
+                },
+                "030to001_1": {
+                    "next_node": "001",
+                    "condition": "True",
+                    "sentiment": "neutral",
+                    "order": 1,
+                    "text": "M_BARMAN_ABSINTHRAYNER_DO_030to001_1"
                 }
             },
             "NODES_OPTIONS": {
@@ -2075,7 +2087,7 @@
                 "021": [
                     "021to022_1",
                     "021to026_2",
-                    "021to001_3",
+                    "021to030_3",
                     "021to024_4",
                     "021to029_5",
                     "021to001_9"
@@ -2107,6 +2119,9 @@
                 ],
                 "029": [
                     "029to001_1"
+                ],
+                "030": [
+                    "030to001_1"
                 ],
                 "990": [],
                 "991": []
@@ -4098,7 +4113,6 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to006_6": "Where could I learn about [quest]spells[/]:question:",
             "M_BARMAN_ABSINTHRAYNER_DN_021": "Now that [shadow]you[/shadow] mention it, there might be something...",
             "M_BARMAN_ABSINTHRAYNER_DO_021to022_1": "I hear the [char]cat[/] gobbled up all the [item]fish[/item]?",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to001_3": "[shadow]TODO[/shadow] Q04_S03",
             "M_BARMAN_ABSINTHRAYNER_DO_021to024_4": "I have got those [item]fish[/item] for [shadow]you[/shadow]",
             "M_BARMAN_ABSINTHRAYNER_DO_021to001_9": "Bah, never mind",
             "M_BARMAN_ABSINTHRAYNER_DN_022": "This is a serious matter. The [char]cat[/] ate the [item]fish[/item] supply. No [item]fish[/item], no snacks. No snacks and the [char]peasants[/] drink on an empty stomach. And [char]peasants[/] drinking on an empty stomach, young man, are the beginning of every [shadow]civil war[/shadow] around here!",
@@ -4122,7 +4136,7 @@
             "M_HAMMER_HOAXHEART_DO_001to004_4": "Do you get customers from the surrounding [loc]villages[/]?",
             "M_HAMMER_HOAXHEART_DO_001to005_5": "Can you forge [shadow]magical[/shadow] items?",
             "M_HAMMER_HOAXHEART_DO_001to006_6": "Who is the smartest person around here?",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to026_2": "[shadow]TODO[/shadow] Q04_S02",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to026_2": "Chciałbym sobie powiesić [item]trofeum[/] nad barem:dreaming:",
             "M_BARMAN_ABSINTHRAYNER_DO_021to029_5": "Mam dla [shadow]Ciebie[/shadow] [item]Green crystal[/item]",
             "M_BARMAN_ABSINTHRAYNER_DN_026": "Masz tu [num]100[/] monet:$:.",
             "M_BARMAN_ABSINTHRAYNER_DO_026to027_1": "Masz coś konkretnego na myśli?",
@@ -4160,7 +4174,10 @@
             "M_HAMMER_HOAXHEART_DO_004to011_1": "A wiesz może, gdzie jest [loc]Secret Library[/loc]?",
             "M_HAMMER_HOAXHEART_DO_004to009_4": "And what would those [italic]French poodles[/italic] need good [item]weapons[/] for? Hunting the [char]tavern keeper's[/] chickens with [item]crossbows[/]?",
             "M_HAMMER_HOAXHEART_DN_011": "Bardo możliwe, że tak nazywa się biblioteka w miejscowości [loc]Quirkshire[/loc]. Pytaj [char]Barmana Absyntnenta[/char] - on gada ze wszystkimi przybyszami.",
-            "M_HAMMER_HOAXHEART_DO_011to001_9": "Dzięki, to mi wystarczy"
+            "M_HAMMER_HOAXHEART_DO_011to001_9": "Dzięki, to mi wystarczy",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to030_3": "[shadow]TODO[/shadow] Q04_S03",
+            "M_BARMAN_ABSINTHRAYNER_DN_030": "[shadow]TODO[/shadow] Q04_S03",
+            "M_BARMAN_ABSINTHRAYNER_DO_030to001_1": "Cieszę się, że mogłem pomóc."
         },
         "PL": {
             "M_BARMAN_ABSINTHRAYNER_DN_000": "Hej :red_exclamation: Witaj w naszej [loc]Tawernie[/loc]! Jestem [char]Barman Absyntnent[/char]. A kogo tu do mnie los sprowadził?",
@@ -4500,7 +4517,6 @@
             "M_BARMAN_ABSINTHRAYNER_DO_001to006_6": "Gdzie mógłbym zdobyć wiedzę o [quest]zaklęciach[/]:question:",
             "M_BARMAN_ABSINTHRAYNER_DN_021": "A już Ci, coś by się znalazło...",
             "M_BARMAN_ABSINTHRAYNER_DO_021to022_1": "Ponoć [char]kot[/] zżarł wszystkie [item]ryby[/item]?",
-            "M_BARMAN_ABSINTHRAYNER_DO_021to001_3": "[shadow]TODO[/shadow] Q04_S03",
             "M_BARMAN_ABSINTHRAYNER_DO_021to024_4": "Mam dla [shadow]Ciebie[/shadow] te [item]ryby[/item]",
             "M_BARMAN_ABSINTHRAYNER_DO_021to001_9": "Ech, nieważne",
             "M_BARMAN_ABSINTHRAYNER_DN_022": "Sprawa jest poważna. [char]Kot[/] zjadł zapas [item]ryb[/item]. Bez [item]ryb[/item] nie ma zakąski. Bez zakąski [char]chłopi[/] piją na czczo. A [char]chłopi[/] pijący na czczo, młodzieńcze, to początek każdej [shadow]wojny domowej[/shadow] w tej okolicy!",
@@ -4562,7 +4578,10 @@
             "M_HAMMER_HOAXHEART_DO_004to011_1": "A wiesz może, gdzie jest [loc]Tajna biblioteka[/loc]?",
             "M_HAMMER_HOAXHEART_DO_004to009_4": "A po co tym [italic]francuskim pieskom[/italic] dobra [item]broń[/]? Polują [item]kuszami[/] na kury [char]karczmarza[/]?",
             "M_HAMMER_HOAXHEART_DN_011": "Bardo możliwe, że tak nazywa się biblioteka w miejscowości [loc]Porażkowo[/loc]. Pytaj [char]Barmana Absyntnenta[/char] - on gada ze wszystkimi przybyszami.",
-            "M_HAMMER_HOAXHEART_DO_011to001_9": "Dzięki, to mi wystarczy"
+            "M_HAMMER_HOAXHEART_DO_011to001_9": "Dzięki, to mi wystarczy",
+            "M_BARMAN_ABSINTHRAYNER_DO_021to030_3": "[shadow]TODO[/shadow] Q04_S03",
+            "M_BARMAN_ABSINTHRAYNER_DN_030": "[shadow]TODO[/shadow] Q04_S03",
+            "M_BARMAN_ABSINTHRAYNER_DO_030to001_1": "Cieszę się, że mogłem pomóc."
         }
     },
     "quests": {
@@ -4775,6 +4794,28 @@
         }
     },
     "barks": {
+        "BARMAN_ABSINTHRAYNER": [
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.001",
+                "condition": "True"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.002",
+                "condition": "time_of_day(\"morning\")"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.003",
+                "condition": "time_of_day(\"evening\")"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.004",
+                "condition": "sentiment > 60"
+            },
+            {
+                "msg": "bark.BARMAN_ABSINTHRAYNER.005",
+                "condition": "quest_done(\"Q01_S01_LEARN_ABOUT_CURSE\")"
+            }
+        ],
         "VILLAGERS": [
             {
                 "msg": "bark.VILLAGERS.001",
@@ -4853,28 +4894,6 @@
             {
                 "msg": "bark.FARM_ANIMALS.006",
                 "condition": "True"
-            }
-        ],
-        "BARMAN_ABSINTHRAYNER": [
-            {
-                "msg": "bark.BARMAN_ABSINTHRAYNER.001",
-                "condition": "True"
-            },
-            {
-                "msg": "bark.BARMAN_ABSINTHRAYNER.002",
-                "condition": "time_of_day(\"morning\")"
-            },
-            {
-                "msg": "bark.BARMAN_ABSINTHRAYNER.003",
-                "condition": "time_of_day(\"evening\")"
-            },
-            {
-                "msg": "bark.BARMAN_ABSINTHRAYNER.004",
-                "condition": "sentiment > 60"
-            },
-            {
-                "msg": "bark.BARMAN_ABSINTHRAYNER.005",
-                "condition": "quest_done(\"Q01_S01_LEARN_ABOUT_CURSE\")"
             }
         ]
     }

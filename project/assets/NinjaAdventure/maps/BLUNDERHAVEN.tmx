@@ -488,6 +488,9 @@
    </properties>
   </object>
   <object id="126" name="BLUNDERHAVEN_CATS_CHEST" gid="2759" x="688" y="688" width="16" height="16">
+   <properties>
+    <property name="obj_type" value="chest"/>
+   </properties>
   </object>
  </objectgroup>
  <objectgroup id="5" name="entry_points">

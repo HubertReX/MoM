@@ -186,23 +186,30 @@ class MapObject:
     points: list[tuple[float, float]] = field(default_factory=list)
     props: Props = field(default_factory=Props)
 
+    # Kotwiczenie obiektów - pułapka, na którą łatwo wejść dwa razy:
+    # w PLIKU .tmx obiekt Z GIDEM ma `y` na DOLNEJ krawędzi, a bez gidu na górnej.
+    # pytmx normalizuje to przy wczytaniu (odejmuje wysokość), więc gra liczy
+    # `Rect(x, y, w, h).midbottom` i wraca dokładnie do wartości z pliku.
+    # Model trzyma liczby TAK JAK W PLIKU, więc przelicza sam.
+
+    @property
+    def top(self) -> float:
+        """Górna krawędź - to, co pytmx pokazuje grze jako `obj.y`."""
+        return self.y - self.height if self.gid else self.y
+
     @property
     def center(self) -> tuple[float, float]:
-        return (self.x + self.width / 2, self.y + self.height / 2)
+        return (self.x + self.width / 2, self.top + self.height / 2)
 
     @property
     def midbottom(self) -> tuple[float, float]:
-        """Punkt, którym gra czyta `places` i `entry_points` (`rect.midbottom`)."""
-        return (self.x + self.width / 2, self.y + self.height)
+        """Punkt, którym gra czyta `places`, `entry_points` i spawny (`rect.midbottom`)."""
+        return (self.x + self.width / 2, self.top + self.height)
 
     @property
     def anchor(self) -> tuple[float, float]:
-        """Punkt, po którym decydujemy, czy obiekt należy do przesuwanego prostokąta.
-
-        Dla obiektu z gidem Tiled kotwiczy w lewym DOLNYM rogu, dla reszty w lewym
-        górnym - stąd osobna własność zamiast czytania `x`/`y` wprost.
-        """
-        return (self.x, self.y - self.height) if self.gid else (self.x, self.y)
+        """Lewy górny róg - po nim decydujemy, czy obiekt należy do przesuwanego prostokąta."""
+        return (self.x, self.top)
 
     def translate(self, dx: float, dy: float) -> None:
         self.x += dx

@@ -249,10 +249,8 @@ def _draw_one_object(draw: ImageDraw.ImageDraw, obj: MapObject,
         return
 
     if obj.width and obj.height:
-        # obiekt z gidem kotwiczy w lewym DOLNYM rogu (tak jak w Tiled)
-        top = obj.y - obj.height if obj.gid else obj.y
-        x0, y0 = to_px(obj.x, top)
-        x1, y1 = to_px(obj.x + obj.width, top + obj.height)
+        x0, y0 = to_px(obj.x, obj.top)
+        x1, y1 = to_px(obj.x + obj.width, obj.top + obj.height)
         draw.rectangle([x0, y0, x1, y1], fill=fill, outline=line, width=max(1, int(scale)))
         return
 
