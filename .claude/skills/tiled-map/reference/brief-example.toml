@@ -1,0 +1,102 @@
+# Wzór briefu mapy. Brief wyraża ZAMIAR, a nie współrzędne każdego domu -
+# geometrię robi generator, bo on widzi teren, drogę i to, co już stoi.
+#
+#     just map-new .claude/skills/tiled-map/reference/brief-example.toml
+#
+# Wynik ląduje w `maps/_wip/`. Przeniesienie do `maps/` to decyzja autora.
+
+name = "TEST_WIES"          # klucz mapy (SCREAMING_SNAKE, jak każda encja)
+size = [128, 128]           # w kaflach
+seed = 20260821             # wpisz jawnie - inaczej mapa nie odtworzy się drugi raz
+base = "grass"              # teren wypełnienia; nazwy z wangsetu Floor.tsx
+particles = "leafs,rain"    # systemy cząstek aktywne na tej mapie
+
+# --- drogi -------------------------------------------------------------------
+# Punkty kontrolne krzywej Catmull-Roma. Trzy-cztery punkty dają "szerokie łuki";
+# dwa dają linię prostą, czyli dokładnie to, czego nie chcemy.
+[[road]]
+name = "main"
+width = 3
+terrain = "dirt"
+points = [[0, 64], [26, 52], [52, 74], [78, 56], [104, 70], [127, 62]]
+
+# --- plac --------------------------------------------------------------------
+[plaza]
+at = [64, 64]
+radius = [9, 7]             # owalny, nie okrągły
+
+# --- zabudowa ----------------------------------------------------------------
+# Generator idzie wzdłuż drogi i stawia klocki z listy, z jitterem pozycji
+# i odstępu. `spacing` i `setback` są w KAFLACH.
+[[district]]
+name = "wies_polnoc"
+along = "main"
+side = "north"              # north | south | both
+stamps = ["house_cottage", "house_red", "house_ornate", "farmhouse_big_2", "barn_wood"]
+spacing = [7, 11]           # losowy odstęp między budynkami
+setback = [2, 5]            # odstęp od krawędzi traktu do ściany budynku
+
+[[district]]
+name = "wies_poludnie"
+along = "main"
+side = "south"
+stamps = ["house_cottage", "hut_brown", "house_cream", "barn_wood"]
+spacing = [8, 13]
+setback = [3, 6]
+
+# --- biomy -------------------------------------------------------------------
+# `shape = "border"` to las obrzeżny: pas o głębokości `coverage` * połowa mapy,
+# gęsty przy krawędzi, przerzedzony ku środkowi. `margin` domyka skraj mapy
+# szczelnie, żeby jedynymi wyjściami były końce drogi.
+[[biome]]
+kind = "forest"
+shape = "border"
+stamps = ["tree_round", "tree_bushy", "tree_fir", "tree_fir_big", "tree_oak_big"]
+coverage = 0.22
+scale = 14
+density = 0.75
+margin = 3
+
+# --- rekwizyty ---------------------------------------------------------------
+# Trzy tryby: `at` (dokładnie tu), `count` (tyle sztuk gdziekolwiek),
+# `density` + `rect` (dywan detali; przy drodze rzadziej, bo pobocze jest wydeptane).
+[[prop]]
+stamp = "well"
+at = [64, 63]
+
+[[prop]]
+stamp = "haystack"
+count = 6
+
+[[prop]]
+stamps = ["tree_round", "tree_bushy", "haystack"]
+rect = [16, 16, 96, 96]
+density = 0.010
+
+# --- obiekty -----------------------------------------------------------------
+# Stawiaj TYLKO klucze obecne w characters.csv; brakujące zgłoś w raporcie.
+[[entry]]
+name = "start"
+at = [64, 68]
+
+[[entry]]
+name = "DrogaZachod"
+at = [1, 64]
+
+[[entry]]
+name = "DrogaWschod"
+at = [126, 62]
+
+[[place]]
+name = "well"
+at = [64, 65]
+
+[[zone]]
+name = "plains"
+rect = [40, 56, 48, 24]
+
+# [[exit]]
+# name = "LOST_CORK_TAVERN"
+# at = [66, 58]
+# to_map = "LOST_CORK_TAVERN"
+# destination_entry_point = "Door"

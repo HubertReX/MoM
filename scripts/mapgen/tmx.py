@@ -404,13 +404,32 @@ class TiledMap:
         return tmap
 
     def save(self, path: str | Path | None = None) -> Path:
+        """Zapisz mapę; przy zapisie do INNEGO katalogu przelicz ścieżki tilesetów.
+
+        Bez tego zwykłe skopiowanie mapy z `maps/` do `maps/_wip/` daje plik,
+        który nie otwiera się ani w Tiled, ani w grze: `tilesets/Water.tsx`
+        rozwiązuje się wtedy na `_wip/tilesets/Water.tsx`. Błąd jest cichy do
+        momentu pierwszego wczytania, więc lepiej go w ogóle nie dopuścić.
+        """
         target = Path(path) if path is not None else self.path
         if target is None:
             raise ValueError("brak ścieżki zapisu")
+        target = target.resolve()
+        if self.path is not None and self.path.resolve().parent != target.parent:
+            self.rebase_tilesets(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(self.to_xml(), encoding="utf-8")
         self.path = target
         return target
+
+    def rebase_tilesets(self, target: Path) -> None:
+        """Przepisz `source` każdego tilesetu tak, by wskazywał ten sam plik z `target`."""
+        if self.path is None:
+            return
+        base = self.path.resolve().parent
+        for ref in self.tilesets:
+            absolute = (base / ref.source).resolve()
+            ref.source = os.path.relpath(absolute, target.parent).replace(os.sep, "/")
 
     def to_xml(self) -> str:
         out: list[str] = ['<?xml version="1.0" encoding="UTF-8"?>']

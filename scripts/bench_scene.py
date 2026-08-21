@@ -48,14 +48,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--hour", type=int, default=None,
                         help="wymuś godzinę świata (0-23) przed pomiarem, np. 22 = noc")
+    parser.add_argument("--map", default=None,
+                        help="zmierz inną mapę niż startowa (musi leżeć w `assets/.../maps/`)")
+    parser.add_argument("--entry", default=None, help="punkt wejścia na tej mapie")
     args = parser.parse_args()
 
     import settings
     from game import Game
     from scene import Scene
 
+    map_name = args.map or settings.START_MAP
+    entry = args.entry or settings.START_ENTRY_POINT
     game = Game("run")
-    scene = Scene(game, settings.START_MAP, settings.START_ENTRY_POINT)
+    scene = Scene(game, map_name, entry)
     scene.enter_state()
 
     if args.hour is not None:
@@ -63,7 +68,8 @@ def main() -> None:
         scene.minute = 0
         scene.minute_f = 0.0
 
-    print(f"[bench] {settings.START_MAP}, NPCs: {len(scene.NPCs)}, world_seed: {scene.world_seed}, "
+    print(f"[bench] {map_name} ({scene.map_view.data.tmx.width}x{scene.map_view.data.tmx.height} "
+          f"kafli), NPCs: {len(scene.NPCs)}, world_seed: {scene.world_seed}, "
           f"hour: {scene.hour}:00")
 
     for _ in range(WARMUP_FRAMES):

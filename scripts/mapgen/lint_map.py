@@ -664,7 +664,14 @@ def _blobs(ctx: Ctx) -> list[tuple[int, int, int, int]]:
 
 def check_alignment(ctx: Ctx) -> list[Row]:
     """Budynki ustawione w idealnej linii czytają się jako krata, nie jako wieś."""
-    blobs = [b for b in _blobs(ctx) if 2 <= b[2] <= 8 and 2 <= b[3] <= 8]
+    # Bryły dotykające krawędzi mapy to ściana lasu domykająca świat - jej prostota
+    # jest z definicji, a nie z lenistwa generatora, więc nie liczymy jej do szablonu.
+    blobs = [
+        b for b in _blobs(ctx)
+        if 2 <= b[2] <= 8 and 2 <= b[3] <= 8
+        and b[0] > 0 and b[1] > 0
+        and b[0] + b[2] < ctx.w and b[1] + b[3] < ctx.h
+    ]
     rows: list[Row] = []
     for axis, index in (("kolumnie x", 0), ("wierszu y", 1)):
         tally = Counter(b[index] for b in blobs)
@@ -694,11 +701,44 @@ def check_empty_patches(ctx: Ctx) -> list[Row]:
     return rows
 
 
+# Zmierzony próg (krok 6 planu): na siatce 256x256 A* kosztuje 0,7 ms przy trasie
+# 30 kafli, 7,9 ms przy 90 i 20 ms przy 134 - czyli budżet klatki (16,7 ms przy
+# 60 FPS) pęka w okolicach 110 kafli TRASY, niezależnie od rozmiaru mapy. Rutyna
+# łącząca dwa miejsca dalej od siebie zawiesza grę na kilka klatek za każdym
+# przekroczeniem slotu, a te lecą co kilka sekund realnego czasu.
+ROUTE_BUDGET_TILES = 110
+
+
+def check_routine_routes(ctx: Ctx) -> list[Row]:
+    """Czy rutyny nie każą NPC-om chodzić dalej, niż A* zdąży policzyć w klatce."""
+    map_key = ctx.path.stem
+    wanted = ctx.world.places_used.get(map_key, set())
+    places = {obj.name: ctx.anchor_tile(obj)
+              for obj in ctx.objects("places") if obj.name in wanted}
+    if len(places) < 2:
+        return []
+    rows: list[Row] = []
+    names = sorted(places)
+    for i, first in enumerate(names):
+        for second in names[i + 1:]:
+            (ax, ay), (bx, by) = places[first], places[second]
+            manhattan = abs(ax - bx) + abs(ay - by)
+            if manhattan <= ROUTE_BUDGET_TILES:
+                continue          # trasa nie ma prawa być dłuższa niż odległość w linii
+            rows.append(Row(
+                WARN, "rutyny", f"{first} - {second}",
+                f"miejsca dzieli {manhattan} kafli, a A* liczy trasę dłuższą niż "
+                f"{ROUTE_BUDGET_TILES} kafli ponad budżet klatki (zmierzone: 134 kafle "
+                f"= 20 ms przy 16,7 ms na klatkę). Postaw po drodze miejsce pośrednie "
+                f"albo zbliż te dwa"))
+    return rows
+
+
 CHECKS = (
     check_layers, check_tilesets, check_sprites_layer, check_over_opacity, check_items_layer,
     check_start, check_reachability, check_exit_on_door, check_exit_targets, check_chests,
     check_spawn_points, check_zones, check_places, check_waypoints, check_object_names,
-    check_border, check_step_cost,
+    check_border, check_step_cost, check_routine_routes,
     check_monotony, check_runs, check_alignment, check_empty_patches,
 )
 

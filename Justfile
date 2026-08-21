@@ -398,6 +398,32 @@ map-render *ARGS:
     #!powershell
     .venv\Scripts\python.exe scripts\mapgen\render_map.py {{ARGS}}
 
+# Generate a new outdoor map from a TOML brief. e.g: `just map-new brief.toml`
+[unix]
+map-new *ARGS:
+    @# Brief wyraża zamiar (drogi, dzielnice, biomy), a nie współrzędne każdego domu.
+    @# Mapa ląduje w `maps/_wip/`; promocja do `maps/` to osobna, ręczna decyzja.
+    @.venv/bin/python scripts/mapgen/generate.py {{ARGS}}
+
+# Generate a new outdoor map from a TOML brief. e.g: `just map-new brief.toml`
+[windows]
+map-new *ARGS:
+    #!powershell
+    .venv\\Scripts\\python.exe scripts\\mapgen\\generate.py {{ARGS}}
+
+# Edit an existing map: move/stamp/erase/revar, all layers at once. e.g: `just map-edit MAPA move --rect 20,30,12,10 --by 4,0`
+[unix]
+map-edit *ARGS:
+    @# Elementy nieinteraktywne w miejscu docelowym są nadpisywane, interaktywne
+    @# przestawiane i raportowane. Po każdej operacji leci lint.
+    @.venv/bin/python scripts/mapgen/map_edit.py {{ARGS}}
+
+# Edit an existing map: move/stamp/erase/revar, all layers at once
+[windows]
+map-edit *ARGS:
+    #!powershell
+    .venv\\Scripts\\python.exe scripts\\mapgen\\map_edit.py {{ARGS}}
+
 # Lint a .tmx map: contract, reachability, objects, monotony metrics. e.g: `just map-lint BLUNDERHAVEN`
 [unix]
 map-lint *ARGS:
