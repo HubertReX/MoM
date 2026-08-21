@@ -164,7 +164,8 @@ def draw_fence(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: FenceKit
                gates: int = 1, rng: random.Random | None = None,
                skip: Iterable[tuple[int, int]] = (),
                gate_toward: tuple[int, int] | None = None,
-               gate_width: int = 2, min_run: int = 4) -> set[tuple[int, int]]:
+               gate_width: int = 2, min_run: int = 4,
+               openings: Iterable[tuple[int, int]] = ()) -> set[tuple[int, int]]:
     """Postaw ogrodzenie na obwodzie obszaru. Zwraca kafle, na których stanął płot.
 
     `gates` to liczba przerw na wejście - bez nich zagroda jest pułapką, do której
@@ -173,6 +174,10 @@ def draw_fence(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: FenceKit
     podanego punktu (zwykle drogi) - brama od tyłu, przez las, wygląda jak błąd,
     nawet gdy A* sobie z nią radzi.
     `skip` wyłącza kafle, na których już coś stoi (np. ściana domu).
+    `openings` to furtki wymuszone z zewnątrz - kafle, przez które biegnie już
+    wydeptana ścieżka. Wycinamy je PO sprawdzeniu spójności obwodu, bo inaczej
+    ścieżka przecinająca zagrodę rozbijałaby obwód na kawałki i ogrodzenie nie
+    powstawałoby wcale, zamiast dostać w tym miejscu furtkę.
     `min_run` wyrzuca odcinki krótsze niż tyle kafli: gdy zagroda zostanie
     przycięta drogą, w obwodzie zostają pojedyncze ogryzki płotu, które czytają
     się jak śmieć, a nie jak ogrodzenie.
@@ -188,6 +193,7 @@ def draw_fence(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: FenceKit
     # i każda z osobna przechodziła próg `min_run`.
     if _components(ring) > 1:
         return set()
+    ring -= set(openings)
 
     # Bramy wycinamy PRZED policzeniem masek, żeby po obu stronach przerwy
     # wyszły zaślepki, a nie urwana krawędź.

@@ -105,6 +105,22 @@ Najczęstsze pomyłki, które widać na arkuszu:
   bo maska sąsiedztwa liczy się już na pomieszanych kaflach.
 - **Duży klocek ustępuje drodze.** `farmyard_big` postawiona na trakcie przecina wieś
   na pół. Wyjątek trzeba wpisać jawnie (`on_road = true` w briefie).
-- **Kolejność prób w lesie jest losowa.** Branie zawsze największego klocka, który się
-  mieści, dawało to samo drzewo wzdłuż całego boku mapy - a taki rytm czyta się jak sad
-  posadzony przez ludzi, nie jak dziki las.
+- **Kolejność prób w lesie jest losowa**, a pas przy krawędzi mapy używa TYCH SAMYCH
+  gatunków, co biom obrzeżny z briefu. Branie zawsze największego klocka dawało to samo
+  drzewo wzdłuż całego boku, a branie wszystkiego, co `nature`, wstawiało na skraj drzewa
+  z sadu, których w lesie obok nie było.
+- **Drzewa wolno nachodzić na siebie o kafel**, o ile nie kolidują na tej samej warstwie.
+  Pień siedzi na `walls`, korona na `over`, więc dwa drzewa jedno nad drugim dzielą kafel:
+  korona górnego przykrywa pień dolnego i las robi się zwarty zamiast rosnąć w kratkę.
+- **Wnętrze ścieżki bierze kafle o masce pełnej.** Kafle o masce częściowej są kaflami
+  PRZEJŚCIA trawa/ziemia - mają ziemię przewężoną przy krawędzi, więc ułożone w rzędzie
+  stykają się tylko wąskim przesmykiem i ścieżka rozpada się na koraliki.
+- **Ścieżka przecinająca zagrodę robi w płocie furtkę**, a nie kasuje ogrodzenia.
+  Sprawdzenie spójności obwodu leci PRZED wycięciem furtek, inaczej wydeptana droga
+  dyskwalifikowałaby cały płot.
+- **Zwierzę nigdy nie stanie na kaflu `walls`** (płot to też ściana) ani na trakcie.
+  Gra nie ma dla NPC-ów siatki bezpieczeństwa, więc krowa postawiona w sztachetach
+  zostaje w nich na zawsze.
+- **Szerokość pomalowanej drogi = szerokość maski.** Próg rogów wangsetu to 3: przy 2
+  dochodził kafel przejścia z każdej strony i `width = 2` z briefu dawało cztery kafle
+  na mapie.

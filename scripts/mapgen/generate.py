@@ -414,14 +414,15 @@ class Generator:
                     continue
                 stamp = self.rng.choice(stamps)
                 if self._place(stamp, x - stamp.w // 2, y - stamp.h // 2,
-                               avoid_roads=avoid_roads):
+                               avoid_roads=avoid_roads, layer_overlap=True):
                     placed += 1
                     continue
                 # Nie udało się w tym miejscu - spróbuj mniejszym. Bez tego w
                 # gęstym lesie wypadają tylko duże drzewa tam, gdzie akurat było
                 # miejsce, a reszta zostaje pusta.
                 for other in self.rng.sample(stamps, len(stamps)):
-                    if self._place(other, x, y, avoid_roads=avoid_roads):
+                    if self._place(other, x, y, avoid_roads=avoid_roads,
+                                   layer_overlap=True):
                         placed += 1
                         break
         return placed
@@ -443,7 +444,13 @@ class Generator:
         margin = self._seal_margin()
         if margin <= 0:
             return
-        stamps = self.palette.of_kind("nature")
+        # Te same gatunki, co w biomie obrzeżnym. Branie wszystkiego, co `nature`,
+        # wstawiało na skraj mapy drzewa z sadu (kwitnące na różowo i biało),
+        # których w samym lesie obok nie było - linia brzegowa i las to ten sam
+        # biom, więc taka niespójność od razu czyta się jako błąd.
+        border = next((b for b in self.brief.biomes if b.shape == "border"), None)
+        names = border.stamps if border else []
+        stamps = [self.palette.get(n) for n in names] or self.palette.of_kind("nature")
         if not stamps:
             return
         stamped = 0
@@ -456,7 +463,7 @@ class Generator:
                 # czyta się jak sad posadzony przez ludzi, nie jak dziki las.
                 for stamp in self.rng.sample(stamps, len(stamps)):
                     # klocek wolno wpuścić w głąb mapy, byle zaczynał się w pasie
-                    if self._place(stamp, x, y, avoid_roads=True):
+                    if self._place(stamp, x, y, avoid_roads=True, layer_overlap=True):
                         stamped += 1
                         break
         self.notes.append(f"brzeg: {stamped} całych klocków natury (pas {margin} kafli)")
@@ -626,10 +633,14 @@ class Generator:
         if not animals:
             return
         walls = self.tmap.tile_layer("walls")
+        # Kafel wolny to taki, na którym NIC nie stoi na `walls` - płot też jest
+        # ścianą, więc krowa postawiona na sztachetach zostaje w nich na zawsze
+        # (gra nie ma dla NPC-ów siatki bezpieczeństwa).
         free = [(x, y)
                 for y in range(at[1] + 1, at[1] + stamp.h - 1)
                 for x in range(at[0] + 1, at[0] + stamp.w - 1)
-                if self.tmap.in_bounds(x, y) and not walls.get(x, y)]
+                if self.tmap.in_bounds(x, y) and not walls.get(x, y)
+                and not self.road_mask[y][x]]
         if not free:
             self.notes.append(f"zagroda '{owner or stamp.name}': nie ma gdzie postawić zwierząt")
             return
@@ -838,8 +849,13 @@ class Generator:
         if approach is not None:
             ax, ay = at[0] + approach[0], at[1] + approach[1]
             occupied |= {(ax, ay), (ax, ay + 1), (ax - 1, ay), (ax + 1, ay)}
+        # Ścieżka, która już tędy biegnie, robi w płocie furtkę - tak jak zrobiłby
+        # to człowiek. Idzie osobno jako `openings`, a nie jako `skip`, żeby
+        # sprawdzenie spójności obwodu widziało płot w całości: inaczej ścieżka
+        # przecinająca zagrodę kasowałaby ogrodzenie zamiast je otworzyć.
+        crossings = {cell for cell in cells if cell in self.trail_mask}
         placed = draw_fence(walls, cells, self.rng.choice(kits), gates=1, rng=self.rng,
-                            skip=occupied,
+                            skip=occupied, openings=crossings,
                             gate_toward=(int(toward[0]), int(toward[1])), gate_width=2)
         for x, y in cells:
             if 0 <= y < self.tmap.height and 0 <= x < self.tmap.width:
@@ -1039,16 +1055,31 @@ class Generator:
                 for y in range(self.tmap.height) for x in range(self.tmap.width)
                 if self.road_mask[y][x]} | self.trail_mask
 
-    def _place(self, stamp: Stamp, x: int, y: int, avoid_roads: bool = True) -> bool:
-        """Postaw klocek, jeśli miejsce jest wolne. Zwraca, czy się udało."""
+    def _place(self, stamp: Stamp, x: int, y: int, avoid_roads: bool = True,
+               layer_overlap: bool = False) -> bool:
+        """Postaw klocek, jeśli miejsce jest wolne. Zwraca, czy się udało.
+
+        `layer_overlap` pozwala klockom nachodzić na siebie o kafel, o ile nie
+        kolidują NA TEJ SAMEJ WARSTWIE. Drzewo ma pień na `walls` i koronę na
+        `over`, więc dwa drzewa jedno nad drugim mogą dzielić kafel: korona
+        górnego przykrywa pień dolnego i las robi się zwarty, zamiast rosnąć
+        w kratkę z kafelkiem odstępu.
+        """
         if x < 0 or y < 0 or x + stamp.w > self.tmap.width or y + stamp.h > self.tmap.height:
             return False
         for dy in range(stamp.h):
             for dx in range(stamp.w):
-                if self.taken[y + dy][x + dx]:
-                    return False
                 if avoid_roads and self.road_mask[y + dy][x + dx]:
                     return False
+                if not self.taken[y + dy][x + dx]:
+                    continue
+                if not layer_overlap:
+                    return False
+                # zajęte: wolno tylko wtedy, gdy żadna warstwa się nie nakłada
+                for name in ("foliage", "items", "walls", "over"):
+                    if stamp.gids(name)[dy][dx] and self.tmap.tile_layer(name).get(
+                            x + dx, y + dy):
+                        return False
         self.palette.paste(self.tmap, stamp.name, (x, y),
                            layers=["foliage", "items", "walls", "over"], clear=False)
         for dy in range(stamp.h):

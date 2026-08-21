@@ -118,14 +118,18 @@ class TerrainLib:
         return painted
 
     def corners_from_mask(self, mask: list[list[bool]], inner: str, outer: str,
-                          width: int, height: int, threshold: int = 2) -> list[list[str]]:
+                          width: int, height: int, threshold: int = 3) -> list[list[str]]:
         """Siatka rogów z maski kafli.
 
         Róg należy do `inner`, gdy dotyka go co najmniej `threshold` z czterech
-        sąsiadujących kafli maski. Próg 1 (czyli "którykolwiek") wydaje się
-        naturalny, ale ROZDYMA obszar o kafel z każdej strony - droga szeroka na
-        cztery kafle wychodziła wtedy na sześć-siedem i zlewała się w kleks.
-        Próg 2 zostawia proste krawędzie tam, gdzie były, i tylko zaokrągla rogi.
+        sąsiadujących kafli maski.
+
+        Próg dobiera SZEROKOŚĆ pomalowanego pasa względem maski:
+        1 rozdyma o kafel z każdej strony (droga na cztery kafle wychodziła na
+        sześć-siedem), 2 dodaje po jednym kaflu przejścia z każdej strony, a
+        **3 daje pas dokładnie tak szeroki jak maska** - bo kafle przejścia
+        wypadają wtedy na skrajnych kaflach maski, a nie obok niej. Domyślne 3,
+        żeby `width = 2` w briefie znaczyło dwa kafle na mapie.
         """
         corners = [[outer] * (width + 1) for _ in range(height + 1)]
         for cy in range(height + 1):
@@ -286,13 +290,25 @@ class PathKit:
         return kit if kit.pieces else None
 
     def piece(self, mask: int, rng: random.Random) -> int:
-        """Kafel dla danego układu sąsiadów, z wariantami.
+        """Kafel dla danego układu sąsiadów.
 
-        Gdy próbka nie zna dokładnie tego układu (np. skrzyżowanie, którego autor
-        nie narysował), schodzimy do najbliższego podzbioru - lepiej położyć
-        prostą ścieżkę niż zostawić dziurę w trakcie.
+        Kluczowe: WNĘTRZE ścieżki (dwóch i więcej sąsiadów) bierze kafle o masce
+        pełnej - czyli te, które w próbce miały ziemię ze wszystkich czterech
+        stron. Kafle o masce częściowej mają ziemię "przewężoną" przy jednej
+        krawędzi, bo są kaflami PRZEJŚCIA trawa/ziemia; ułożone w rzędzie stykają
+        się tylko wąskim przesmykiem i ścieżka rozpada się na koraliki. Widać to
+        było wprost na pionowych odcinkach.
+
+        Końcówki (jeden sąsiad) dostają kafel dokładnie pod swój układ - tam
+        przewężenie jest tym, czego chcemy, bo ścieżka ma się wygaszać.
         """
-        for candidate in (mask, mask & (N | S), mask & (E | W), N | S, E | W):
+        neighbours = bin(mask).count("1")
+        if neighbours >= 2:
+            full = self.pieces.get(N | E | S | W)
+            if full:
+                return rng.choice(full)
+        for candidate in (mask, mask & (N | S), mask & (E | W), N | S, E | W,
+                          N | E | S | W):
             options = self.pieces.get(candidate)
             if options:
                 return rng.choice(options)
