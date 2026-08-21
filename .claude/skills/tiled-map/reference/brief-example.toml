@@ -35,6 +35,8 @@ side = "north"              # north | south | both
 stamps = ["house_cottage", "house_red", "house_ornate", "farmhouse_big_2", "barn_wood"]
 spacing = [7, 11]           # losowy odstęp między budynkami
 setback = [2, 5]            # odstęp od krawędzi traktu do ściany budynku
+fences = ["fence_wood", "fence_rail_dark"]   # zestawy płotów do losowania
+yard = [2, 3]               # margines zagrody wokół budynku; brama celuje w drogę
 
 [[district]]
 name = "wies_poludnie"
@@ -43,6 +45,8 @@ side = "south"
 stamps = ["house_cottage", "hut_brown", "house_cream", "barn_wood"]
 spacing = [8, 13]
 setback = [3, 6]
+fences = ["wall_stone", "fence_wood"]
+yard = [2, 4]
 
 # --- biomy -------------------------------------------------------------------
 # `shape = "border"` to las obrzeżny: pas o głębokości `coverage` * połowa mapy,

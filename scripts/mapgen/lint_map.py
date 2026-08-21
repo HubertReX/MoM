@@ -59,6 +59,7 @@ MONOTONY_SHARE = 0.92       # udział dominującego wariantu, powyżej którego 
 MONOTONY_DISTINCT = 3       # ...o ile wariantów w oknie jest mniej niż tyle
 MAX_RUN = 24                # najdłuższy ciąg jednego gidu w wierszu/kolumnie
 ALIGNED_BUILDINGS = 4       # tyle budynków w jednej linii to już szablon
+ALIGN_WINDOW = 40           # ...o ile stoją w tym oknie kafli (wyrównanie jest lokalne)
 EMPTY_PATCH = 16            # bok kwadratu bez detalu, od którego zgłaszamy pustkę
 
 
@@ -400,6 +401,34 @@ def check_exit_on_door(ctx: Ctx) -> list[Row]:
     return rows
 
 
+def check_doors_reachable(ctx: Ctx) -> list[Row]:
+    """Do każdych drzwi na mapie musi dać się podejść.
+
+    Sprawdzenie `check_reachability` patrzy tylko na obiekty, więc dom, który nie
+    ma jeszcze `exit`-u do wnętrza, mógłby zostać otoczony płotem bez bramy i nikt
+    by tego nie zauważył. Drzwi rozpoznajemy po kaflach z katalogu klocków, a
+    "podejść" znaczy: kafel pod progiem jest osiągalny z punktu wejścia.
+    """
+    if not ctx.door_gids:
+        return []
+    walls = ctx.tmap.tile_layer("walls")
+    rows: list[Row] = []
+    for y in range(ctx.h):
+        for x in range(ctx.w):
+            if walls.data[y][x] not in ctx.door_gids:
+                continue
+            below = y + 1
+            if below >= ctx.h:
+                continue
+            if ctx.reach_hard[below][x]:
+                continue
+            level = WARN if ctx.reach_soft[below][x] else ERROR
+            rows.append(Row(level, "drzwi", f"kafel {walls.data[y][x]}",
+                            "próg nieosiągalny z żadnego punktu wejścia - gracz i NPC-e "
+                            "nie wejdą do tego budynku", (x, below)))
+    return rows
+
+
 def check_exit_targets(ctx: Ctx) -> list[Row]:
     """Do każdego `exit` musi istnieć `entry_point` po drugiej stronie."""
     rows: list[Row] = []
@@ -673,13 +702,20 @@ def check_alignment(ctx: Ctx) -> list[Row]:
         and b[0] + b[2] < ctx.w and b[1] + b[3] < ctx.h
     ]
     rows: list[Row] = []
-    for axis, index in (("kolumnie x", 0), ("wierszu y", 1)):
-        tally = Counter(b[index] for b in blobs)
-        for value, times in tally.items():
+    # Wyrównanie liczy się LOKALNIE. Na mapie 256x256 cztery bryły dzielące
+    # współrzędną x trafiają się przypadkiem kilkanaście razy (drzewa w pasie
+    # lasu), a to nie jest szablon - szablonem jest rząd domów stojących obok
+    # siebie. Stąd grupowanie po oknie: liczą się tylko bryły blisko siebie.
+    for axis, index, other in (("kolumnie x", 0, 1), ("wierszu y", 1, 0)):
+        tally: Counter[tuple[int, int]] = Counter(
+            (b[index], b[other] // ALIGN_WINDOW) for b in blobs)
+        for (value, bucket), times in tally.items():
             if times >= ALIGNED_BUILDINGS:
                 rows.append(Row(WARN, "szablonowość", f"{axis}={value}",
-                                f"{times} bryły wyrównane do jednej linii - "
-                                f"rozrzuć je o kafel-dwa"))
+                                f"{times} bryły wyrównane do jednej linii w oknie "
+                                f"{ALIGN_WINDOW} kafli - rozrzuć je o kafel-dwa",
+                                (value, bucket * ALIGN_WINDOW) if index == 0
+                                else (bucket * ALIGN_WINDOW, value)))
     return rows
 
 
@@ -736,7 +772,8 @@ def check_routine_routes(ctx: Ctx) -> list[Row]:
 
 CHECKS = (
     check_layers, check_tilesets, check_sprites_layer, check_over_opacity, check_items_layer,
-    check_start, check_reachability, check_exit_on_door, check_exit_targets, check_chests,
+    check_start, check_reachability, check_doors_reachable, check_exit_on_door,
+    check_exit_targets, check_chests,
     check_spawn_points, check_zones, check_places, check_waypoints, check_object_names,
     check_border, check_step_cost, check_routine_routes,
     check_monotony, check_runs, check_alignment, check_empty_patches,

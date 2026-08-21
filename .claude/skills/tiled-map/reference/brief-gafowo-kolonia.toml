@@ -1,0 +1,279 @@
+# Gafowo Kolonia 256x256 - brief odwzorowujący prompt autora:
+#
+#   "wioska 256x256, ze wschodu na zachód wije się szerokimi łukami droga.
+#    Po obu stronach drogi wiejskie domy z zagrodami. W centralnym miejscu
+#    owalny plac. Na północnym krańcu placu Tawerna, obok mała stajnia.
+#    Na środku placu studnia (miejsce spotkań) ze ścieżkami w 4 strony świata.
+#    Na północ od zabudowań połacie symetrycznych pól przecinanych drogami.
+#    Mapę dookoła ogranicza gęsty las. Jedynymi wejściami są oba końce drogi."
+#
+# Do tego wymagania fabuły (reference/lore.md): gracz budzi się w stajni (Q00),
+# chałupa Zielarki na końcu wioski przy lesie (Q01_S02).
+
+name = "BLUNDERHAVEN_V2"
+size = [256, 256]
+seed = 20260821
+base = "grass"
+particles = "leafs,rain"
+
+# === DROGI ===================================================================
+# Trakt główny: szerokie łuki ze wschodu na zachód, w południowej połowie mapy,
+# żeby na północy zmieściły się pola.
+[[road]]
+name = "main"
+width = 4
+terrain = "dirt"
+points = [[0, 166], [38, 152], [76, 182], [114, 158], [152, 186], [192, 158], [230, 174], [255, 164]]
+
+# Cztery ścieżki od studni w strony świata. Północna dobija do siatki pól,
+# więc pola są połączone z wioską, a nie odcięte.
+[[road]]
+name = "well_n"
+width = 2
+points = [[128, 168], [128, 148], [128, 128]]
+
+[[road]]
+name = "well_s"
+width = 2
+points = [[128, 168], [128, 190], [128, 208]]
+
+[[road]]
+name = "well_e"
+width = 2
+points = [[128, 168], [152, 168], [176, 170]]
+
+[[road]]
+name = "well_w"
+width = 2
+points = [[128, 168], [104, 168], [80, 166]]
+
+[plaza]
+at = [128, 168]
+radius = [12, 9]
+
+# === POLA ====================================================================
+# Regularna kratka JEST tu zamierzona: pole uprawne to jedyne miejsce, gdzie
+# symetria czyta się jako praca ludzi, a nie jako lenistwo generatora.
+[[fields]]
+rect = [42, 38, 176, 92]
+stamp = "field_crop"
+plot = [4, 3]     # zagon = 4x3 klocki, czyli 24x24 kafle
+gap = 3           # szerokość miedzy między zagonami
+
+# === LAS =====================================================================
+[[biome]]
+kind = "forest"
+shape = "border"
+stamps = ["tree_round", "tree_bushy", "tree_fir", "tree_fir_big", "tree_oak_big", "tree_dead"]
+coverage = 0.15
+scale = 11
+density = 0.92
+margin = 3
+
+# === BUDYNKI STAWIANE WPROST =================================================
+[[building]]
+stamp = "tavern_tall"       # Tawerna Brakująca klepka, północny kraniec placu
+at = [118, 149]
+
+[[building]]
+stamp = "barn_wood"         # mała stajnia obok - tu budzi się gracz (Q00_S00)
+at = [131, 151]
+
+[[building]]
+stamp = "hut_kiln"          # kuźnia, na wschód od placu
+at = [152, 152]
+yard = [2, 3]
+fences = ["fence_rail_dark"]
+
+[[building]]
+stamp = "house_red"         # dom kowala, na uboczu (gardzi wsią)
+at = [170, 186]
+yard = [2, 4]
+fences = ["wall_stone"]
+
+[[building]]
+stamp = "hut_brown"         # chałupa Zielarki: koniec wioski, przy lesie (Q01_S02)
+at = [36, 178]
+yard = [2, 3]
+fences = ["fence_wood"]
+
+[[building]]
+stamp = "house_cottage"     # dom Bartusia
+at = [96, 184]
+yard = [2, 3]
+fences = ["fence_wood"]
+
+[[building]]
+stamp = "house_cream"       # dom Johnego
+at = [150, 190]
+yard = [2, 3]
+fences = ["fence_rail_dark"]
+
+# === ZABUDOWA WZDŁUŻ TRAKTU ==================================================
+[[district]]
+name = "wies_polnoc"
+along = "main"
+side = "north"
+stamps = ["house_cottage", "house_red", "house_ornate", "farmhouse_big_1", "farmhouse_big_2", "barn_wood"]
+spacing = [8, 13]
+setback = [3, 6]
+fences = ["fence_wood", "fence_rail_dark", "wall_stone"]
+yard = [2, 4]
+
+[[district]]
+name = "wies_poludnie"
+along = "main"
+side = "south"
+stamps = ["house_cottage", "hut_brown", "house_cream", "barn_wood", "house_ornate"]
+spacing = [9, 15]
+setback = [3, 7]
+fences = ["wall_stone", "fence_wood"]
+yard = [2, 4]
+
+# === REKWIZYTY ===============================================================
+[[prop]]
+stamp = "well"              # studnia na środku placu - miejsce spotkań
+at = [128, 167]
+
+[[prop]]
+stamp = "sunflowers"
+count = 8
+
+[[prop]]
+stamps = ["haystack", "haystack_small"]
+count = 24
+
+[[prop]]
+stamps = ["tree_round", "tree_bushy", "haystack"]
+rect = [26, 26, 204, 204]
+density = 0.014
+
+# === OBIEKTY =================================================================
+[[entry]]
+name = "start"              # przy drzwiach stajni (Q00: "obudziłeś się w stajni")
+at = [132, 154]
+
+[[entry]]
+name = "DrogaZachod"
+at = [2, 166]
+
+[[entry]]
+name = "DrogaWschod"
+at = [253, 164]
+
+[[entry]]
+name = "LOST_CORK_TAVERN_DOOR"
+at = [119, 154]
+
+[[exit]]
+name = "LOST_CORK_TAVERN"
+at = [119, 153]
+to_map = "LOST_CORK_TAVERN"
+destination_entry_point = "Door"
+
+[[place]]
+name = "well"
+at = [128, 170]
+
+[[place]]
+name = "smithy"
+at = [153, 156]
+
+[[place]]
+name = "house_smith"
+at = [171, 189]
+
+[[place]]
+name = "house_bart"
+at = [97, 187]
+
+[[place]]
+name = "house_johny"
+at = [151, 193]
+
+[[place]]
+name = "house_barman"
+at = [119, 155]
+
+[[zone]]
+name = "plains"
+rect = [84, 150, 92, 44]
+
+[[zone]]
+name = "backyard"
+rect = [148, 148, 32, 24]
+
+[[spawn]]
+name = "BARMAN_ABSINTHRAYNER"
+model = "BARMAN_ABSINTHRAYNER"
+at = [121, 156]
+
+[[spawn]]
+name = "HAMMER_HOAXHEART"
+model = "HAMMER_HOAXHEART"
+at = [154, 157]
+
+[[spawn]]
+name = "POTIONEER_PUZZLEMINT"
+model = "POTIONEER_PUZZLEMINT"
+at = [38, 182]
+
+[[spawn]]
+name = "MARRY"
+model = "MARRY"
+at = [124, 172]
+
+[[spawn]]
+name = "BART"
+model = "BART"
+at = [98, 188]
+
+[[spawn]]
+name = "JOHNY"
+model = "JOHNY"
+at = [152, 194]
+
+[[spawn]]
+name = "ROB"
+model = "ROB"
+at = [133, 174]
+
+[[spawn]]
+name = "CLAPBACK_SWORD"
+model = "CLAPBACK_SWORD"
+at = [133, 155]
+
+[[spawn]]
+name = "CAT_01"
+model = "CAT"
+at = [126, 176]
+
+[[spawn]]
+name = "DOG_ORANGE"
+model = "DOG_ORANGE"
+at = [99, 190]
+
+[[spawn]]
+name = "CHICKEN_WHITE"
+model = "CHICKEN_WHITE"
+at = [155, 160]
+
+[[spawn]]
+name = "CHICKEN_BROWN"
+model = "CHICKEN_BROWN"
+at = [157, 162]
+
+[[spawn]]
+name = "CHICKEN_BLACK"
+model = "CHICKEN_BLACK"
+at = [153, 163]
+
+[[spawn]]
+name = "COW"
+model = "COW"
+at = [160, 166]
+
+[[spawn]]
+name = "PIG"
+model = "PIG"
+at = [163, 164]
