@@ -82,8 +82,9 @@ def handle(scene: "Scene") -> None:
         INPUTS["debug"] = False
 
     if INPUTS["alpha"]:
-        from scene import scene as scene_module
-        scene_module.USE_ALPHA_FILTER = not scene_module.USE_ALPHA_FILTER
+        if debug_overlay.SHOW_DEBUG_INFO:
+            from scene import scene as scene_module
+            scene_module.USE_ALPHA_FILTER = not scene_module.USE_ALPHA_FILTER
         INPUTS["alpha"] = False
 
     if INPUTS["next_day"]:
@@ -104,14 +105,16 @@ def handle(scene: "Scene") -> None:
         INPUTS["next_day"] = False
 
     if INPUTS["intro"]:
-        scene.start_intro()
+        if debug_overlay.SHOW_DEBUG_INFO:
+            scene.start_intro()
         INPUTS["intro"] = False
 
     # help (H / F1) is handled in GameUI.update: it is a modal panel now, so it
     # must be toggled before the scene freezes, not here.
 
     if INPUTS["show_ui"]:
-        scene.display_ui_flag = not scene.display_ui_flag
+        if debug_overlay.SHOW_DEBUG_INFO:
+            scene.display_ui_flag = not scene.display_ui_flag
         INPUTS["show_ui"] = False
 
     if INPUTS["use_item"]:
@@ -230,8 +233,8 @@ def handle(scene: "Scene") -> None:
 
     if INPUTS["fly"]:
         # toggle flying mode
-        if not player.is_jumping and not player.is_attacking and not player.is_stunned and \
-                not player.is_talking:
+        if debug_overlay.SHOW_DEBUG_INFO and not player.is_jumping and not player.is_attacking \
+                and not player.is_stunned and not player.is_talking:
             player.is_flying = not player.is_flying
             if player.is_flying:
                 # when airborn move one layer above so it's not colliding with obstacles on the ground
@@ -250,15 +253,17 @@ def handle(scene: "Scene") -> None:
         # scene.game.reset_inputs()
         INPUTS["menu"] = False
 
-    # live reload map (R) - irreversible reset of the current map, so confirm first
+    # live reload map (R) - debug-only, and irreversible reset of the current
+    # map, so confirm first
     if INPUTS["reload"]:
-        from ui.panels.main_menu import ConfirmMenuScreen
-        ConfirmMenuScreen(
-            scene.game,
-            _("scene.reload_confirm"),
-            scene._confirm_reload_map,
-        ).enter_state()
-        scene.game.reset_inputs()
+        if debug_overlay.SHOW_DEBUG_INFO:
+            from ui.panels.main_menu import ConfirmMenuScreen
+            ConfirmMenuScreen(
+                scene.game,
+                _("scene.reload_confirm"),
+                scene._confirm_reload_map,
+            ).enter_state()
+            scene.game.reset_inputs()
         INPUTS["reload"] = False
 
     # camera zoom in/out

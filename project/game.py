@@ -1114,12 +1114,15 @@ class Game:
             INPUTS["quick_load"] = False
 
         # F7: open the TextInput demo screen (dev tool for exercising the widget's
-        # configurations) from anywhere - menu or scene
+        # configurations) from anywhere - menu or scene. Debug-only.
         if INPUTS.get("text_demo"):
-            from ui.panels.text_input_demo import TextInputDemoState
+            from scene import debug_overlay
 
-            if not self.states or not isinstance(self.states[-1], TextInputDemoState):
-                TextInputDemoState(self).enter_state()
+            if debug_overlay.SHOW_DEBUG_INFO:
+                from ui.panels.text_input_demo import TextInputDemoState
+
+                if not self.states or not isinstance(self.states[-1], TextInputDemoState):
+                    TextInputDemoState(self).enter_state()
             INPUTS["text_demo"] = False
 
         # Stash screenshot intent *before* the scene update may clear it
