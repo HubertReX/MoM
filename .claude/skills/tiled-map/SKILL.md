@@ -19,6 +19,48 @@ Odwrotnie jest z obrysami klocków: to decyzja graficzna i podejmuje ją **autor
 Twoją rolą jest zgłosić brak ("katalog nie ma klocków `kind=undergrowth`"), a nie dorysowywać.
 Instrukcja dla autora: [`reference/stamps-tiled.md`](reference/stamps-tiled.md).
 
+## Kiedy kafle nie chcą się złożyć - szukaj wangsetu, nie heurystyki
+
+Jeśli coś ułożonego z kafli wygląda na porwane (ścieżka w koralikach, płot z uskokami),
+**nie dokładaj reguły do kodu** - najpierw sprawdź, czy tileset ma na to wangset i czy jest
+właściwego TYPU. `corner` opisuje obszary, `edge` opisuje pasma szerokie na jeden kafel;
+użycie narożnikowego do pasma nie da się poprawić żadnym doborem wariantów, bo brakującej
+informacji po prostu w nim nie ma. Tabela obu zestawów z `Floor.tsx` jest w
+[`reference/map-contract.md`](reference/map-contract.md).
+
+Uczenie się z próbki narysowanej w warstwie `stamps` jest tylko poszlaką: na zakręcie Tiled
+dokłada do próbki kafle OBSZAROWE i dekoder nie ma jak odróżnić ich od kafli pasma. Wangset
+jest umową autora i wygrywa z próbką.
+
+Gdy brakuje kafla na jakiś układ - **zapytaj autora, nie zgaduj**. Autor odczyta id z Tiled
+w kilkanaście sekund, a najtańszy sposób zapytania to zrzut: wyrenderuj wszystkie układy,
+które są, i zaznacz puste miejsca (tak powstała tabela `path Set`).
+
+## Nazwy nadawaj od razu w wymaganym formacie
+
+Nazwa obiektu to **klucz encji**, nie etykieta - pełna tabela formatów jest w
+[`reference/map-contract.md`](reference/map-contract.md). Nazwa "jakaś sensowna" kosztuje
+tyle, że `just validate-world` sypie kilkunastoma błędami naraz, i to dopiero po tym, jak
+autor nada mapie docelową nazwę: `COW_FARMSTEAD_BIG_01` ma brzmieć `COW_01` (D1/D2), a
+`SMITHY_DOOR` - `JACOBS_CHAMBER`, czyli tak jak mapa, do której prowadzi (D6).
+
+Generator robi to sam (`pass_names`), a `just map-lint` sprawdza to tymi samymi regułami,
+co `validate-world`. **Jeśli sam dopisujesz obiekt do briefu albo do `.tmx`, trzymaj się
+tej samej konwencji** - inaczej wracasz do niej po dwóch krokach.
+
+## Strefy po zmianie rozmiaru mapy albo przesunięciu
+
+`rect` strefy jest w **bezwzględnych kaflach**, więc jako jedyny element briefu nie
+przelicza się razem z mapą, a `map-edit move` zabiera strefę tylko wtedy, gdy jej lewy
+górny róg wpadł do przenoszonego prostokąta. Po każdej zmianie `size` w briefie i po
+każdym `move` **sprawdź strefy**: `just map-lint MAPA --only zone`.
+
+Objaw z pierwszej mapy: po zejściu z 256x256 na 256x128 strefa `plains` została na
+tych samych kaflach, a tymi kaflami był już pas lasu obrzeżnego - 49% kafli chodliwych
+zamiast 91%. Gra wczytuje taką strefę bez słowa, a NPC z `allowed_zones` po prostu nie
+ma się w niej gdzie ruszyć. Linter i generator mierzą to teraz same, ale **nowe położenie
+`rect` wybierasz ty** - z rendera, a nie z głowy.
+
 ## Narzędzia
 
 ```bash
@@ -61,6 +103,8 @@ just map-edit MAPA move --rect X,Y,W,H --by DX,DY
    interaktywne obiekty stojące w miejscu docelowym i wypisuje, co przestawiło.
 4. **Przeczytaj raport.** Ostrzeżenie o osieroconym `entry_point` znaczy, że rozerwałeś parę
    drzwi-punkt powrotu - rozszerz prostokąt i powtórz, zamiast zostawić to graczowi.
+   Ostrzeżenie o strefie znaczy, że pod nią zmienił się teren, a ona została - przesuń ją
+   osobno (`map-edit` nie zgaduje, gdzie ma być).
 5. **Pętla weryfikacji.**
 
 ## Pętla weryfikacji (rdzeń skilla)
@@ -69,6 +113,8 @@ Powtarzaj **najwyżej trzy razy** na daną kategorię problemu:
 
 1. **`just map-lint MAPA`** - to on mówi, GDZIE patrzeć. Bez tego oglądanie mapy 256x256
    jest nieopłacalne: to obraz 4096x4096 px, który przy odczycie schodzi do ~6 px na kafel.
+   Linter zna reguły nazw (D1/D2/D6) i mierzy strefy, więc **`map-lint` bez błędów znaczy,
+   że `validate-world` też przejdzie** - nie zostawiaj tego na koniec.
 2. **`--overview`** - oceń KOMPOZYCJĘ: czy droga się wije, czy plac jest owalny, czy pola
    nie stoją w idealnej kratce, czy las domyka mapę.
 3. **`--crop` w skali 1:1** - tylko tam, gdzie linter coś zgłosił albo overview budzi

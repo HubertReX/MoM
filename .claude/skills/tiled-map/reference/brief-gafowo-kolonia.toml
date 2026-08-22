@@ -234,9 +234,13 @@ at = [155, 107]
 name = "house_barman"
 at = [121, 77]
 
+# UWAGA: `rect` strefy jest w BEZWZGLĘDNYCH kaflach, więc jako jedyny w tym pliku
+# nie przelicza się po zmianie `size`. Ten prostokąt był pisany pod mapę 256x256
+# i po zejściu do 256x128 wylądował w pasie lasu obrzeżnego (49% kafli chodliwych).
+# Nowe położenie: łąka między polami a wsią, 91%. Generator mierzy to sam.
 [[zone]]
 name = "plains"
-rect = [40, 106, 176, 16]
+rect = [40, 54, 176, 16]
 
 [[spawn]]
 name = "BARMAN_ABSINTHRAYNER"
