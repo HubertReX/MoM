@@ -216,10 +216,18 @@ def _label(draw: ImageDraw.ImageDraw, xy: tuple[float, float], text: str,
 
 def draw_objects(image: Image.Image, tmap: TiledMap, region: tuple[int, int, int, int],
                  scale: float, labels: bool) -> None:
-    """Markery obiektów: prostokąt strefy, kropka punktu, łamana trasy."""
+    """Markery obiektów: prostokąt strefy, kropka punktu, łamana trasy.
+
+    Rysujemy na OSOBNEJ przezroczystej warstwie i dokładamy ją przez
+    `alpha_composite`, bo `ImageDraw.Draw(rgba_image, "RGBA")` NIE miesza kolorów -
+    wpisuje alfę wprost do kanału. Wypełnienie o alfie 45 wychodziło wtedy pełną
+    plamą: strefa `plains` (176x16 kafli) zamalowywała pół wsi na jednolity turkus,
+    czyli dokładnie tę część mapy, którą miała pomóc obejrzeć.
+    """
     rx, ry, _, _ = region
     tw, th = tmap.tilewidth, tmap.tileheight
-    draw = ImageDraw.Draw(image, "RGBA")
+    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay, "RGBA")
     font = _font(max(9, int(12 * min(scale * 2, 1.4))))
 
     def to_px(wx: float, wy: float) -> tuple[float, float]:
@@ -232,6 +240,7 @@ def draw_objects(image: Image.Image, tmap: TiledMap, region: tuple[int, int, int
             if labels and obj.name:
                 lx, ly = to_px(obj.x, obj.y)
                 _label(draw, (lx + 3, ly - 13), obj.name, font, color)
+    image.alpha_composite(overlay)
 
 
 def _draw_one_object(draw: ImageDraw.ImageDraw, obj: MapObject,
