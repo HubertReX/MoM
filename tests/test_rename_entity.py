@@ -38,6 +38,7 @@ import rename_entity                                            # noqa: E402
 from rename_entity import (                                     # noqa: E402
     CHARACTER, CHEST, ENTRY_POINT, INSTANCE, ITEM, KINDS, MAP,
     MAP_SCOPED_KINDS, MAZE_ORIGIN, PLACE, SOURCES, UNTOUCHED_SOURCES,
+    xml_object_names,
 )
 
 
@@ -56,7 +57,7 @@ def assert_true(cond: bool, msg: str = "") -> None:
 def test_every_data_file_is_either_covered_or_explicitly_excluded() -> None:
     """Bramka z D17: nowy plik danych musi być świadomie zaklasyfikowany."""
     covered = rename_entity.covered_files()
-    excluded = {ROOT / path for path in UNTOUCHED_SOURCES}
+    excluded = rename_entity.untouched_paths()
     orphans = [str(path.relative_to(ROOT)) for path in rename_entity.data_files()
                if path not in covered and path not in excluded]
     assert_eq(orphans, [],
@@ -65,15 +66,20 @@ def test_every_data_file_is_either_covered_or_explicitly_excluded() -> None:
 
 
 def test_the_exclusion_list_has_no_stale_entries() -> None:
-    """Wpis o pliku, którego już nie ma, usypia czujność następnego czytelnika."""
-    missing = [path for path in UNTOUCHED_SOURCES if not (ROOT / path).exists()]
-    assert_eq(missing, [], "te pliki już nie istnieją - skasuj wpisy")
+    """Wpis o pliku, którego już nie ma, usypia czujność następnego czytelnika.
+
+    Klucz bywa globem (`**/*_base.tmx`), więc pytamy o TRAFIENIA, a nie o `exists()`:
+    wzorzec, który dziś nie łapie niczego, jest tak samo martwy jak nieistniejąca ścieżka.
+    """
+    missing = [path for path in UNTOUCHED_SOURCES if not list(ROOT.glob(path))]
+    assert_eq(missing, [], "te wpisy nie łapią żadnego pliku - skasuj je")
 
 
 def test_no_file_is_both_covered_and_excluded() -> None:
     """Sprzeczny manifest kłamie w obie strony naraz."""
     covered = rename_entity.covered_files()
-    both = [path for path in UNTOUCHED_SOURCES if (ROOT / path) in covered]
+    both = sorted(str(hit.relative_to(ROOT))
+                  for path in UNTOUCHED_SOURCES for hit in ROOT.glob(path) if hit in covered)
     assert_eq(both, [], "plik jest jednocześnie w SOURCES i w UNTOUCHED_SOURCES")
 
 
@@ -162,11 +168,20 @@ def test_renaming_a_character_leaves_display_names_alone() -> None:
         cells = row.split(";")
         assert_eq(cells[1], "Horse", "name_EN (napis dla gracza) został ruszony")
         assert_eq(cells[3], "Horse", "sprite (nazwa katalogu) został ruszony")
-        # spawn na mapie nazywa się dziś `HORSE` (instancja) - to inny rodzaj klucza
-        # i rename modelu świadomie go nie rusza
-        assert_eq(_occurrences(root, "HORSE"),
-                  ["project/assets/NinjaAdventure/maps/BLUNDERHAVEN.tmx"],
-                  "stary klucz modelu został poza mapą")
+        # Spawn na mapie nazywa się dziś `HORSE` (instancja) - to inny rodzaj klucza
+        # i rename modelu świadomie go nie rusza. Nie wymieniamy map z imienia: koni
+        # na mapach przybywa (każda mapa z zagrodą ma swojego), a testem jest REGUŁA
+        # "zostało wyłącznie w `spawn_points`", nie spis plików z konkretnego dnia.
+        left = _occurrences(root, "HORSE")
+        maps_dir = "project/assets/NinjaAdventure/maps/"
+        assert_true("project/assets/NinjaAdventure/maps/BLUNDERHAVEN.tmx" in left,
+                    f"instancja `HORSE` powinna przeżyć rename modelu: {left}")
+        for path in left:
+            assert_true(path.startswith(maps_dir) and path.endswith(".tmx"),
+                        f"stary klucz modelu został poza mapami: {path}")
+            names = xml_object_names((root / path).read_text(encoding="utf-8"), "spawn_points")
+            assert_true("HORSE" in names,
+                        f"`HORSE` w {path} nie jest nazwą instancji - rename go pominął")
         tileset = (root / "project/assets/NinjaAdventure/maps/tilesets/CharacterTileset.tsx"
                    ).read_text(encoding="utf-8")
         assert_true('value="PONY"' in tileset, "kafel tilesetu nie poszedł za kluczem")
@@ -312,8 +327,13 @@ def test_map_scoped_keys_report_the_map_that_defines_them() -> None:
     known = rename_entity.existing_keys_with_origin()
     assert_true("LOST_CORK_TAVERN" in known[ENTRY_POINT]["Door"],
                 f"{known[ENTRY_POINT]['Door']}")
-    assert_true(known[PLACE]["well"] == {"BLUNDERHAVEN"},
-                f"miejsce ma pochodzić z jednej mapy: {known[PLACE]['well']}")
+    # Studnia stoi w niejednej wsi, więc pytamy o ZASIĘG, a nie o liczbę map: klucz
+    # miejsca ma nieść etykietę mapy (odróżnia `well` z dwóch wiosek), a nie być
+    # globalny. Przypięcie do jednej mapy failowało w dniu, w którym powstała druga.
+    assert_true("BLUNDERHAVEN" in known[PLACE]["well"],
+                f"miejsce ma nieść mapę, z której pochodzi: {known[PLACE]['well']}")
+    assert_true(all(origin for origin in known[PLACE]["well"]),
+                "pusta etykieta znaczy 'klucz globalny' - miejsce nim nie jest")
 
 
 def test_an_origin_is_where_a_key_is_defined_not_where_it_is_referenced() -> None:

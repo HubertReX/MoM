@@ -125,9 +125,10 @@ def test_markup_conversion() -> None:
     assert_true("[shadow]Twoim[/shadow]" in text_pl, "** -> [shadow]")
     # sentiment emoji in text -> emote sprite tag
     messages, cfg, _ = import_character_dialog(VAULT, "Hammer Hoaxheart")
-    text_pl = messages["PL"]["M_HAMMER_HOAXHEART_DO_004to009_2"]
+    # Szukamy po TREŚCI, nie po numerze wiersza: dopisanie jednej kwestii w wątku
+    # przesuwa cały sufiks `_N` i test failuje na zmianie, której nie pilnuje.
     assert_true(
-        "[italic]wielcy panicze[/italic]" in text_pl,
+        any("[italic]wielcy panicze[/italic]" in text for text in messages["PL"].values()),
         "_ -> [italic]",
     )
 
@@ -153,7 +154,7 @@ def test_condition_conversion() -> None:
     messages, cfg, _ = import_character_dialog(
         VAULT, "Potioneer Puzzlemint", valid_items=items
     )
-    option = cfg["POTIONEER_PUZZLEMINT"]["DIALOG_OPTIONS"]["012to014_2"]
+    option = cfg["POTIONEER_PUZZLEMINT"]["DIALOG_OPTIONS"]["011to014_1"]
     assert_eq(option["condition"], "sentiment >= 42", "sentiment comparison")
 
     messages, cfg, _ = import_character_dialog(VAULT, "Clapback Sword", valid_items=items)
