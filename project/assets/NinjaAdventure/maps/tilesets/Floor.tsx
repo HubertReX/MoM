@@ -2865,5 +2865,26 @@
    <wangtile tileid="267" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="268" wangid="0,2,0,2,0,2,0,2"/>
   </wangset>
+  <wangset name="path Set" type="edge" tile="179">
+   <wangcolor name="path" color="#ff7f00" tile="179" probability="1"/>
+   <wangcolor name="grass" color="#00ff00" tile="244" probability="1"/>
+   <wangtile tileid="223" wangid="2,0,2,0,2,0,2,0"/>
+   <wangtile tileid="201" wangid="1,0,2,0,2,0,2,0"/>
+   <wangtile tileid="220" wangid="2,0,1,0,2,0,2,0"/>
+   <wangtile tileid="157" wangid="2,0,2,0,1,0,2,0"/>
+   <wangtile tileid="222" wangid="2,0,2,0,2,0,1,0"/>
+   <wangtile tileid="179" wangid="1,0,2,0,1,0,2,0"/>
+   <wangtile tileid="221" wangid="2,0,1,0,2,0,1,0"/>
+   <wangtile tileid="224" wangid="1,0,1,0,2,0,2,0"/>
+   <wangtile tileid="227" wangid="1,0,2,0,2,0,1,0"/>
+   <wangtile tileid="158" wangid="2,0,1,0,1,0,2,0"/>
+   <wangtile tileid="161" wangid="2,0,2,0,1,0,1,0"/>
+   <wangtile tileid="246" wangid="1,0,1,0,1,0,2,0"/>
+   <wangtile tileid="249" wangid="1,0,2,0,1,0,1,0"/>
+   <wangtile tileid="162" wangid="2,0,1,0,1,0,1,0"/>
+   <wangtile tileid="159" wangid="2,0,1,0,1,0,1,0"/>
+   <wangtile tileid="228" wangid="1,0,1,0,2,0,1,0"/>
+   <wangtile tileid="250" wangid="1,0,1,0,1,0,1,0"/>
+  </wangset>
  </wangsets>
 </tileset>

@@ -26,8 +26,11 @@ from pathlib import Path
 from tileset import Tileset, WangSet
 from tmx import TileLayer
 
-# Wangset, którym maluje się styk trawy z ziemią. Nazwa pochodzi z Floor.tsx.
+# Wangsety z Floor.tsx. `grass-dirt Set` (typ corner) maluje styk trawy z ziemią,
+# `path Set` (typ edge) - ścieżkę szeroką na JEDEN kafel. To dwa różne zadania i
+# dwa różne typy zestawu; mieszanie ich rozsypuje ścieżkę na koraliki.
 GRASS_DIRT = "grass-dirt Set"
+PATH_SET = "path Set"
 
 
 @dataclass
@@ -238,17 +241,49 @@ N, E, S, W = 1, 2, 4, 8
 
 @dataclass
 class PathKit:
-    """Kafle ścieżki szerokiej na jeden kafel, wyuczone z próbki narysowanej w Tiled.
+    """Kafle ścieżki szerokiej na jeden kafel.
 
-    W odróżnieniu od płotu nie ma tu żadnego ustalonego układu: autor rysuje
-    dowolny spójny kształt ścieżki, a my dla KAŻDEGO kafla próbki liczymy maskę
-    sąsiedztwa (które z czterech sąsiadów też należą do ścieżki) i zapamiętujemy
-    "przy takim układzie wygląda tak". Kilka kafli o tej samej masce zostaje
-    wariantami - i dobrze, bo dzięki temu trakt nie powtarza się co kafel.
+    Właściwym źródłem jest **wangset krawędziowy** `path Set` z `Floor.tsx`
+    (`from_wangset`). Uczenie się z próbki (`from_grid`, niżej) zostaje jako
+    zapasowa droga dla tilesetów, które takiego zestawu nie mają.
+
+    Dlaczego krawędziowy, a nie narożnikowy: `grass-dirt Set` obok w tym samym
+    pliku jest typu `corner` i opisuje OBSZARY. Pas ziemi szeroki na jeden kafel
+    da się w nim wyrazić tylko dwoma kaflami przejściowymi, których ziemia styka
+    się rogiem - stąd ścieżka rozsypana na koraliki, którą widać było na zrzucie.
+    Zestaw krawędziowy mówi wprost, którym BOKIEM kafla ścieżka biegnie dalej,
+    a to jest dokładnie informacja, której potrzebuje ścieżka 1-kaflowa.
     """
 
     name: str = ""
     pieces: dict[int, list[int]] = field(default_factory=dict)
+
+    @classmethod
+    def from_wangset(cls, wang: WangSet, firstgid: int, name: str = PATH_SET
+                     ) -> "PathKit | None":
+        """Zestaw krawędziowy Tiled -> maska sąsiedztwa -> kafle.
+
+        `wangid` ma osiem pól (góra, prawy-górny, prawo, ...); w zestawie
+        krawędziowym liczą się cztery parzyste, narożniki są zerami. Kolor
+        `path` na boku znaczy "tędy ścieżka biegnie dalej", `grass` - "tu się
+        kończy". Kilka kafli z tym samym `wangid` to warianty i bierzemy je
+        wszystkie, żeby długi odcinek się nie powtarzał.
+        """
+        path = wang.color_index("path")
+        if not path:
+            return None
+        kit = cls(name=name)
+        for tid, wangid in wang.tiles.items():
+            if len(wangid) < 8:
+                continue
+            mask = 0
+            for bit, index in ((N, 0), (E, 2), (S, 4), (W, 6)):
+                if wangid[index] == path:
+                    mask |= bit
+            kit.pieces.setdefault(mask, []).append(firstgid + tid)
+        for options in kit.pieces.values():
+            options.sort()
+        return kit if kit.pieces else None
 
     @classmethod
     def from_grid(cls, name: str, rows: list[list[int]],
@@ -290,25 +325,23 @@ class PathKit:
         return kit if kit.pieces else None
 
     def piece(self, mask: int, rng: random.Random) -> int:
-        """Kafel dla danego układu sąsiadów.
+        """Kafel dla danego układu sąsiadów - najpierw TRAFIENIE CO DO BITU.
 
-        Kluczowe: WNĘTRZE ścieżki (dwóch i więcej sąsiadów) bierze kafle o masce
-        pełnej - czyli te, które w próbce miały ziemię ze wszystkich czterech
-        stron. Kafle o masce częściowej mają ziemię "przewężoną" przy jednej
-        krawędzi, bo są kaflami PRZEJŚCIA trawa/ziemia; ułożone w rzędzie stykają
-        się tylko wąskim przesmykiem i ścieżka rozpada się na koraliki. Widać to
-        było wprost na pionowych odcinkach.
+        Przy zestawie krawędziowym żadne zgadywanie nie jest potrzebne: maska
+        sąsiedztwa jest tym samym, co `wangid`, więc kafel albo jest, albo go w
+        tilesecie nie ma. Poprzednia wersja dobierała kafel heurystyką ("dwóch
+        sąsiadów -> weź kafel pełny") i to ona sypała koraliki, bo próbka
+        zawierała kafle OBSZARU obok kafli ścieżki.
 
-        Końcówki (jeden sąsiad) dostają kafel dokładnie pod swój układ - tam
-        przewężenie jest tym, czego chcemy, bo ścieżka ma się wygaszać.
+        Zjazd awaryjny zostaje tylko na wypadek NIEPEŁNEGO zestawu w tilesecie -
+        `path Set` w `Floor.tsx` ma dziś komplet 16 układów, więc w praktyce nie
+        biegnie. Gdyby kiedyś zabrakło kafla, lepszy jest kafel ścieżki o innym
+        układzie niż kafel obszarowy, bo ten drugi rozrywa pasmo na oczach gracza.
         """
-        neighbours = bin(mask).count("1")
-        if neighbours >= 2:
-            full = self.pieces.get(N | E | S | W)
-            if full:
-                return rng.choice(full)
-        for candidate in (mask, mask & (N | S), mask & (E | W), N | S, E | W,
-                          N | E | S | W):
+        options = self.pieces.get(mask)
+        if options:
+            return rng.choice(options)
+        for candidate in (N | E | S | W, mask & (N | S), mask & (E | W), 0):
             options = self.pieces.get(candidate)
             if options:
                 return rng.choice(options)
@@ -338,12 +371,26 @@ def draw_path(layer: TileLayer, cells: Iterable[tuple[int, int]], kit: PathKit,
     return laid
 
 
-def pathkits_from_palette(palette: "object",
-                          background: set[int] | None = None) -> dict[str, PathKit]:
-    """Wszystkie zestawy ścieżek z katalogu (`kind=pathkit`)."""
+def pathkits_from_palette(palette: "object", background: set[int] | None = None,
+                          floor: Tileset | None = None,
+                          firstgid: int = 0) -> dict[str, PathKit]:
+    """Zestawy ścieżek: najpierw wangset z tilesetu, potem próbki z katalogu.
+
+    Kolejność jest istotna. Wangset `path Set` jest UMOWĄ - autor przypisał w
+    Tiled każdemu kaflowi boki, którymi ścieżka biegnie dalej. Próbka narysowana
+    w warstwie `stamps` jest tylko poszlaką: na zakręcie Tiled dokłada do niej
+    kafle OBSZARU z `grass-dirt Set`, a dekoder nie ma jak ich odróżnić od kafli
+    ścieżki. Dlatego wangset, jeśli jest, wygrywa z próbką o tej samej nazwie.
+    """
     found: dict[str, PathKit] = {}
     for stamp in palette.of_kind("pathkit"):          # type: ignore[attr-defined]
         kit = PathKit.from_grid(stamp.name, stamp.gids("ground"), background)
         if kit is not None:
             found[stamp.name] = kit
+    if floor is not None:
+        wang = floor.wangset(PATH_SET)
+        if wang is not None:
+            kit = PathKit.from_wangset(wang, firstgid)
+            if kit is not None:
+                found[PATH_SET] = kit
     return found
