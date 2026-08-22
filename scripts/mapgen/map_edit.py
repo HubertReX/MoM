@@ -45,6 +45,9 @@ from tmx import EMPTY, TILE_LAYERS, MapObject, TiledMap, maps_dir
 # Warstwy, których obiekty niosą logikę gry - tych nie wolno po cichu nadpisać.
 INTERACTIVE_LAYERS = ("interactions", "entry_points", "places", "spawn_points")
 GEOMETRY_LAYERS = ("waypoints", "zones")
+# Ten sam próg, co w `lint_map.ZONE_WALKABLE_MIN` - strefa złożona głównie ze ścian
+# jest w grze bezużyteczna, a `load_zones` nie ma jak o tym powiedzieć.
+ZONE_WALKABLE_MIN = 0.60
 
 
 def resolve_map(name: str) -> Path:
@@ -88,9 +91,47 @@ class Editor:
         self._move_objects(rect, by)
         self._backfill(rect, dest)
         self._warn_orphaned_entries(rect, by)
+        self._warn_stale_zones()
         self.rows.append(Row(OK, "move", "",
                              f"przeniesiono {rw}x{rh} kafli z ({rx},{ry}) o ({dx},{dy}) "
                              f"na wszystkich 12 warstwach"))
+
+    def _warn_stale_zones(self) -> None:
+        """Strefy zostają na swoich kaflach, nawet gdy teren spod nich odjechał.
+
+        Prostokąt strefy jedzie razem z resztą tylko wtedy, gdy jego LEWY GÓRNY RÓG
+        wpadł do przenoszonego prostokąta - strefa większa od niego zostaje w miejscu,
+        a to, co ją wypełniało, już nie. Ta sama klasa błędu wychodzi po zmianie
+        `size` w briefie: `plains` z mapy 256x256 wylądował na 256x128 w pasie lasu.
+        Gra nie mrugnie okiem, bo `load_zones` bierze cztery liczby i tyle.
+
+        Mierzymy więc to, co z tego wynika: udział kafli, po których w ogóle da się
+        chodzić. Ten sam próg co w `lint_map.check_zone_placement`.
+        """
+        try:
+            zones = self.tmap.object_group("zones").objects
+        except KeyError:
+            return
+        walls = self.tmap.tile_layer("walls")
+        tw, th = self.tmap.tilewidth, self.tmap.tileheight
+        for obj in zones:
+            if not (obj.width and obj.height):
+                continue                 # wielokąt - to już błąd sam w sobie, mówi o nim linter
+            x0, y0 = self.tmap.tile_of(obj.x, obj.y)
+            x1, y1 = x0 + max(1, int(obj.width) // tw), y0 + max(1, int(obj.height) // th)
+            inside = [(x, y) for y in range(y0, y1) for x in range(x0, x1)
+                      if self.tmap.in_bounds(x, y)]
+            if not inside:
+                self.rows.append(Row(WARN, "zones", obj.name,
+                                     "strefa leży poza mapą - w grze ma zerową powierzchnię",
+                                     (x0, y0)))
+                continue
+            share = sum(1 for x, y in inside if not walls.get(x, y)) / len(inside)
+            if share < ZONE_WALKABLE_MIN:
+                self.rows.append(Row(
+                    WARN, "zones", obj.name,
+                    f"po tej operacji tylko {share:.0%} kafli strefy jest chodliwych - "
+                    f"strefy nie jadą razem z terenem, przesuń ją osobno", (x0, y0)))
 
     def _warn_orphaned_entries(self, rect: tuple[int, int, int, int],
                                by: tuple[int, int]) -> None:
@@ -230,6 +271,7 @@ class Editor:
     def stamp(self, palette: Palette, name: str, at: tuple[int, int]) -> None:
         stamp = palette.get(name)
         palette.paste(self.tmap, name, at)
+        self._warn_stale_zones()
         self.rows.append(Row(OK, "stamp", name,
                              f"{stamp.w}x{stamp.h} postawiony w {at}"
                              f"{f', drzwi na {stamp.door}' if stamp.door else ''}", at))
@@ -242,6 +284,7 @@ class Editor:
                 for x in range(rx, rx + rw):
                     layer.set(x, y, EMPTY)
         self._backfill(rect, (0, 0, 0, 0))
+        self._warn_stale_zones()
         self.rows.append(Row(OK, "erase", "", f"wyczyszczono {rw}x{rh} kafli w ({rx},{ry})"))
 
     def revar(self, rect: tuple[int, int, int, int], terrain_name: str) -> None:

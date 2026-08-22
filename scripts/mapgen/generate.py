@@ -7,7 +7,7 @@ stronach zagrody, na północy pola, dookoła las"), a nie współrzędne każde
 domu - bo modelowi trudno rozstawić dwadzieścia budynków, nie widząc terenu,
 a kodowi trudno wymyślić, że wieś ma mieć owalny plac ze studnią.
 
-Osiem przebiegów (2-7 są czystymi funkcjami ziarna i briefu, więc to samo
+Dziewięć przebiegów (2-8 są czystymi funkcjami ziarna i briefu, więc to samo
 ziarno daje ten sam plik):
 
     1. brief     wczytanie i walidacja zamiaru
@@ -17,7 +17,8 @@ ziarno daje ten sam plik):
     5. zabudowa  stemplowanie wzdłuż dróg z jitterem + odnoga A* do drzwi
     6. detale    rekwizyty i roślinność, gęściej przy drodze
     7. obiekty   wszystkie sześć warstw obiektowych
-    8. zapis     .tmx z ziarnem i briefem we właściwościach
+    8. nazwy     instancje NPC wg D1/D2 (numer dopiero od drugiej kopii)
+    9. zapis     .tmx z ziarnem i briefem we właściwościach
 
 Użycie:
 
@@ -39,7 +40,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fence import FenceKit, draw_fence, kits_from_palette, rect_cells
 from palette import Palette, Stamp
-from terrain import PathKit, TerrainLib, blob_mask, draw_path, pathkits_from_palette
+from terrain import (PATH_SET, PathKit, TerrainLib, blob_mask, draw_path,
+                     pathkits_from_palette)
 from tileset import Tileset
 from tmx import (
     EMPTY,
@@ -56,6 +58,10 @@ from tmx import (
 WIP_DIR = maps_dir() / "_wip"
 # nazwa tilesetu -> jego firstgid, z kanonicznej tablicy map zewnętrznych
 OUTDOOR_TILESETS_BY_KEY = tuple((key, firstgid) for firstgid, key in OUTDOOR_TILESETS)
+# Udział kafli chodliwych w strefie, poniżej którego strefa jest nie do użycia:
+# NPC z `allowed_zones` błąka się po niej A*, a las to głównie ściany. Zmierzone
+# na pierwszej mapie: podwórka 71-100%, `plains` wpuszczony w las - 49%.
+ZONE_WALKABLE_MIN = 0.60
 
 
 # --------------------------------------------------------------------------
@@ -288,13 +294,14 @@ class Generator:
         self.road_paths: dict[str, list[tuple[float, float]]] = {}
         self.fence_kits: dict[str, FenceKit] = kits_from_palette(palette)
         self.path_kits: dict[str, PathKit] = pathkits_from_palette(
-            palette, set(self.terrain.get(brief.base).variants))
+            palette, set(self.terrain.get(brief.base).variants), floor, 477)
         self.trail_mask: set[tuple[int, int]] = set()
         self._char_gids: dict[str, int] | None = None
         self._undergrowth: list[int] | None = None
         self._warned: set[str] = set()
         self.yards: list[tuple[int, int, int, int]] = []
         self._door_seq = 0
+        self._interiors: dict[str, int] = {}
         self.notes: list[str] = []
 
     def _load_terrain_samples(self) -> None:
@@ -318,6 +325,7 @@ class Generator:
         self.pass_props()
         self.pass_open_doors()
         self.pass_objects()
+        self.pass_names()
         self.pass_stamp_meta()
         return self.tmap
 
@@ -365,10 +373,24 @@ class Generator:
         self.terrain.paint(ground, corners, self.rng)
         self._redraw_trails()
 
+    @property
+    def path_kit(self) -> "PathKit | None":
+        """Zestaw kafli ścieżki 1-kaflowej - wangset przed próbką z katalogu.
+
+        `path Set` z `Floor.tsx` jest umową autora (który bok = ścieżka biegnie
+        dalej), a próbka `kind=pathkit` tylko poszlaką, do której Tiled dokłada
+        kafle obszarowe na zakrętach. Wybieramy po nazwie, a nie po kolejności
+        alfabetycznej, żeby dopisanie klocka do katalogu nie przestawiło tego
+        po cichu.
+        """
+        if PATH_SET in self.path_kits:
+            return self.path_kits[PATH_SET]
+        return self.path_kits[sorted(self.path_kits)[0]] if self.path_kits else None
+
     def _redraw_trails(self) -> None:
-        if not self.trail_mask or not self.path_kits:
+        kit = self.path_kit
+        if not self.trail_mask or kit is None:
             return
-        kit = self.path_kits[sorted(self.path_kits)[0]]
         draw_path(self.tmap.tile_layer("ground"), self.trail_mask, kit, self.rng)
 
     # 4. natura
@@ -645,7 +667,6 @@ class Generator:
             self.notes.append(f"zagroda '{owner or stamp.name}': nie ma gdzie postawić zwierząt")
             return
         self.rng.shuffle(free)
-        tile = self.tmap.tilewidth
         placed = 0
         for index, model in enumerate(str(m) for m in animals):
             gid = self._character_gid(model)
@@ -654,14 +675,30 @@ class Generator:
                 continue
             if index >= len(free):
                 break
-            spot = free[index]
-            self.tmap.add_object("spawn_points", MapObject(
-                name=f"{model}_{owner or stamp.name}_{index + 1:02}".upper(), gid=gid,
-                x=float(spot[0]) * tile, y=float(spot[1]) * tile,
-                width=float(tile), height=float(tile)))
+            # Nazwa jest tymczasowa - ostateczną (`MODEL` albo `MODEL_NN`) nadaje
+            # `pass_names`, bo dopiero po wszystkich zagrodach wiadomo, ile krów
+            # stoi na CAŁEJ mapie, a to tej liczby dotyczy D2.
+            self._spawn_at(model, gid, free[index], f"{model}_{owner or stamp.name}")
             placed += 1
         if placed:
             self.notes.append(f"zagroda '{owner or stamp.name}': {placed} zwierząt")
+
+    def _spawn_at(self, model: str, gid: int, spot: tuple[int, int], name: str) -> None:
+        """Postaw spawn tak, żeby STOPY postaci wylądowały na kaflu `spot`.
+
+        Jedyne miejsce w generatorze, które liczy `y` obiektu z gidem - i dlatego
+        jedyne, które może się w tym pomylić. Obiekt Z GIDEM ma w pliku `.tmx`
+        `y` na DOLNEJ krawędzi, gra bierze z niego `rect.midbottom` i sadza tam
+        stopy (`npc.feet.midbottom`, wysokość pół kafla). Dolna krawędź kafla
+        `spot` to `(spot_y + 1) * tile`; użycie `spot_y * tile` przesuwa zwierzę
+        o kafel W GÓRĘ - dokładnie tak krowy z pierwszej mapy wylądowały na
+        płocie zagrody, bo wolny kafel był tuż pod sztachetami.
+        """
+        tile = self.tmap.tilewidth
+        self.tmap.add_object("spawn_points", MapObject(
+            name=name, gid=gid,
+            x=float(spot[0]) * tile, y=float(spot[1] + 1) * tile,
+            width=float(tile), height=float(tile)))
 
     def _open_gate(self, stamp: Stamp, at: tuple[int, int]) -> None:
         """Brama zagrody ma być przechodnia, a nie tylko wyglądać na bramę.
@@ -702,7 +739,10 @@ class Generator:
         dx, dy = stamp.door
         door_x, door_y = at[0] + dx, at[1] + dy
 
-        exit_obj = MapObject(name=f"{label}_DOOR",
+        # D6: nazwą wyjścia jest KLUCZ MAPY DOCELOWEJ, nie nazwa budynku. Nazwa
+        # w rodzaju `SMITHY_DOOR` przeżywa rename mapy docelowej i wtedy kłamie,
+        # a `validate-world` zgłasza to jako WARN dla każdych drzwi z osobna.
+        exit_obj = MapObject(name=to_map,
                              x=float(door_x) * tile, y=float(door_y) * tile,
                              width=float(tile), height=float(tile))
         exit_obj.props.set("obj_type", "exit")
@@ -719,6 +759,15 @@ class Generator:
         self.tmap.add_object("entry_points", MapObject(
             name=name, shape="point",
             x=(float(door_x) + 0.5) * tile, y=(float(door_y) + 1.5) * tile))
+
+        # Wszystkie drzwi pod jedno wnętrze to stan tymczasowy na testy, ale
+        # przez D6 wszystkie noszą teraz tę samą nazwę - powiedzmy o tym raz,
+        # zamiast pozwolić autorowi odkryć to przy dwudziestym `SMITHY`.
+        self._interiors[to_map] = self._interiors.get(to_map, 0) + 1
+        if self._interiors[to_map] == 2:
+            self.notes.append(f"kilka domów prowadzi do jednej mapy wnętrza "
+                              f"'{to_map}' - to zaślepka na testy; docelowo każdy "
+                              f"dom dostaje własne wnętrze i własny `exit_to`")
 
     # 5. zabudowa
     def pass_districts(self) -> None:
@@ -1210,13 +1259,61 @@ class Generator:
         return cleared
 
     # 7. obiekty
+    def _fit_zone(self, name: str, rect: tuple[int, int, int, int]
+                  ) -> tuple[int, int, int, int] | None:
+        """Sprawdź strefę WZGLĘDEM TERENU, który już stoi, i przytnij ją do mapy.
+
+        Strefy to jedyne prostokąty w briefie podane w bezwzględnych kaflach, więc
+        jako jedyne NIE przesuwają się razem z resztą, gdy zmieni się `size` albo
+        droga. Po zmniejszeniu mapy z 256x256 na 256x128 `plains` z pasa łąk trafił
+        w pas lasu obrzeżnego i nikt tego nie zauważył: gra wczytuje taką strefę bez
+        mrugnięcia, a NPC po prostu nie ma się gdzie w niej ruszyć.
+
+        Dlatego mierzymy to, co widać na `walls` PO całej zabudowie: strefa złożona
+        w większości ze ścian jest błędem briefu, a nie stylem. Przycięcie do mapy
+        robimy sami (inaczej `pygame.Rect` wystaje poza świat), reszta idzie do
+        raportu - bo przesunięcie strefy to decyzja autora, nie generatora.
+        """
+        x0, y0, w, h = rect
+        cx0, cy0 = max(0, x0), max(0, y0)
+        cx1, cy1 = min(self.tmap.width, x0 + w), min(self.tmap.height, y0 + h)
+        if cx1 - cx0 < 2 or cy1 - cy0 < 2:
+            self.notes.append(f"strefa '{name}' {rect}: leży poza mapą "
+                              f"{self.tmap.width}x{self.tmap.height} - pomijam")
+            return None
+        if (cx0, cy0, cx1 - cx0, cy1 - cy0) != rect:
+            self.notes.append(f"strefa '{name}' {rect}: wystawała poza mapę, "
+                              f"przycięta do ({cx0},{cy0},{cx1 - cx0},{cy1 - cy0})")
+        walls = self.tmap.tile_layer("walls")
+        total = (cx1 - cx0) * (cy1 - cy0)
+        free = sum(1 for y in range(cy0, cy1) for x in range(cx0, cx1) if not walls.get(x, y))
+        if free < total * ZONE_WALKABLE_MIN:
+            self.notes.append(
+                f"strefa '{name}' {rect}: tylko {free * 100 // total}% kafli jest "
+                f"chodliwych - stoi w lesie albo w zabudowie. Przesuń `rect` "
+                f"w briefie (strefy nie skalują się razem z `size`)")
+        return (cx0, cy0, cx1 - cx0, cy1 - cy0)
+
     def pass_objects(self) -> None:
         tile = self.tmap.tilewidth
         for spec in self.brief.entries:
             at = spec["at"]
+            name = str(spec["name"])
+            # Punkt wejścia dosuwamy do wolnego kafla tak samo jak spawn: brief
+            # podaje miejsce Z GRUBSZA, a co tam ostatecznie stanie, wie dopiero
+            # kod. `start` w ścianie stajni to nie hipoteza - wyszedł tu, gdy
+            # zmiana doboru kafli ścieżki przestawiła zabudowę o kilka kafli.
+            spot = self._free_tile_near(int(at[0]), int(at[1]))
+            if spot is None:
+                self.notes.append(f"punkt wejścia '{name}': brak wolnego kafla przy "
+                                  f"({at[0]},{at[1]}) - zostawiam jak w briefie")
+                spot = (int(at[0]), int(at[1]))
+            elif spot != (int(at[0]), int(at[1])):
+                self.notes.append(f"punkt wejścia '{name}': ({at[0]},{at[1]}) zajęte, "
+                                  f"dosunięty na ({spot[0]},{spot[1]})")
             self.tmap.add_object("entry_points", MapObject(
-                name=str(spec["name"]), shape="point",
-                x=float(at[0]) * tile + tile / 2, y=float(at[1]) * tile + tile / 2))
+                name=name, shape="point",
+                x=float(spot[0]) * tile + tile / 2, y=float(spot[1]) * tile + tile / 2))
         for spec in self.brief.places:
             at = spec["at"]
             self.tmap.add_object("places", MapObject(
@@ -1224,10 +1321,14 @@ class Generator:
                 x=float(at[0]) * tile + tile / 2, y=float(at[1]) * tile + tile))
         for spec in self.brief.zones:
             rect = spec["rect"]
+            box = self._fit_zone(str(spec["name"]),
+                                 (int(rect[0]), int(rect[1]), int(rect[2]), int(rect[3])))
+            if box is None:
+                continue
             self.tmap.add_object("zones", MapObject(
                 name=str(spec["name"]),
-                x=float(rect[0]) * tile, y=float(rect[1]) * tile,
-                width=float(rect[2]) * tile, height=float(rect[3]) * tile))
+                x=float(box[0]) * tile, y=float(box[1]) * tile,
+                width=float(box[2]) * tile, height=float(box[3]) * tile))
         for spec in self.brief.spawns:
             at = spec["at"]
             model = str(spec["model"])
@@ -1248,11 +1349,7 @@ class Generator:
             if spot != (int(at[0]), int(at[1])):
                 self.notes.append(f"spawn '{model}': {at[0]},{at[1]} zajęte, "
                                   f"dosunięty na {spot[0]},{spot[1]}")
-            # obiekt z gidem kotwiczy się DOLNĄ krawędzią (patrz tmx.MapObject.top)
-            self.tmap.add_object("spawn_points", MapObject(
-                name=str(spec.get("name", model)), gid=gid,
-                x=float(spot[0]) * tile, y=float(spot[1]) * tile,
-                width=float(tile), height=float(tile)))
+            self._spawn_at(model, gid, spot, str(spec.get("name", model)))
 
         for spec in self.brief.exits:
             at = spec["at"]
@@ -1278,6 +1375,42 @@ class Generator:
                     if self.tmap.in_bounds(nx, ny) and not walls.get(nx, ny):
                         return (nx, ny)
         return None
+
+    def pass_names(self) -> None:
+        """Nazwy instancji NPC wg D1/D2: `MODEL`, a numer dopiero od drugiej kopii.
+
+        Numerujemy DOPIERO TU, a nie przy stawianiu, bo D2 liczy kopie na CAŁEJ
+        mapie: `_stock_yard` stawiając krowę w pierwszej zagrodzie nie wie, czy
+        druga też ją dostanie. Nazwa typu `COW_FARMSTEAD_BIG_01` przechodziła
+        przez generator i lintera, a wywalała się dopiero na `just validate-world`
+        - piętnaście błędów naraz, po tym jak autor zdążył nazwać mapę.
+
+        Nazwa nie jest etykietą: zapis gry kluczuje po niej stan NPC-a
+        (`npc_states[npc.name]`), a warstwa `waypoints` wiąże po niej trasę.
+        Generator waypointów nie robi, więc przemianowanie niczego tu nie zrywa.
+        """
+        group = self.tmap.object_group("spawn_points")
+        by_model: dict[str, list[MapObject]] = {}
+        for obj in group.objects:
+            model = self._model_of(obj.gid)
+            if model:
+                by_model.setdefault(model, []).append(obj)
+        for model, objects in sorted(by_model.items()):
+            for index, obj in enumerate(objects, start=1):
+                want = model if len(objects) == 1 else f"{model}_{index:02}"
+                if obj.name and obj.name != want:
+                    self.notes.append(f"spawn '{obj.name}' -> '{want}' (D1/D2)")
+                obj.name = want
+
+    def _model_of(self, gid: int) -> str:
+        """`model_name` kafla postaci - odwrotność `_character_gid`."""
+        if not gid:
+            return ""
+        self._character_gid("")                 # dociągnij mapowanie, jeśli trzeba
+        for model, model_gid in (self._char_gids or {}).items():
+            if model_gid == gid:
+                return model
+        return ""
 
     def _character_gid(self, model: str) -> int:
         """gid kafla postaci z CharacterTileset.tsx - to on niesie `model_name`,

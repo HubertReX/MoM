@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 from collections import Counter, deque
 from dataclasses import dataclass, field
@@ -63,6 +64,14 @@ MAX_RUN = 24                # najdłuższy ciąg jednego gidu w wierszu/kolumnie
 ALIGNED_BUILDINGS = 4       # tyle budynków w jednej linii to już szablon
 ALIGN_WINDOW = 40           # ...o ile stoją w tym oknie kafli (wyrównanie jest lokalne)
 EMPTY_PATCH = 16            # bok kwadratu bez detalu, od którego zgłaszamy pustkę
+# Udział kafli chodliwych w strefie: poniżej `MIN` strefa nie nadaje się do niczego,
+# poniżej `WARN` jest ciasna. Zmierzone na pierwszej mapie z generatora: podwórka
+# mieszczą się w 71-100%, a `plains`, który po zmniejszeniu mapy trafił w las - 49%.
+ZONE_WALKABLE_MIN = 0.60
+ZONE_WALKABLE_WARN = 0.70
+
+# `<KLUCZ_MODELU>` albo `<KLUCZ_MODELU>_<NN>` - konwencja nazwy instancji z D1/D2
+_INSTANCE_SUFFIX = re.compile(r"_\d+")
 
 
 # --------------------------------------------------------------------------
@@ -142,6 +151,17 @@ class Ctx:
         i spawny (`MapObject.midbottom` uwzględnia kotwiczenie obiektów z gidem)."""
         px, py = obj.midbottom if (obj.width or obj.height) else (obj.x, obj.y)
         return self.tmap.tile_of(px, py)
+
+    def stand_tile(self, obj: MapObject) -> tuple[int, int]:
+        """Kafel, na którym stoją STOPY postaci - a to o kafel wyżej niż `anchor_tile`.
+
+        `npc.feet` ma wysokość pół kafla i `midbottom` w pozycji spawnu, więc przy
+        `midbottom` dokładnie na granicy kafli stopy leżą w kaflu NAD nią. Różnica
+        jednego kafla brzmi jak pedanteria, dopóki tym kaflem nie jest sztacheta
+        płotu: NPC nie ma siatki bezpieczeństwa i zostaje w niej na zawsze.
+        """
+        px, py = obj.midbottom if (obj.width or obj.height) else (obj.x, obj.y)
+        return self.tmap.tile_of(px, py - 1)
 
 
 def build_ctx(path: Path, world: World, palette_path: Path | None = None) -> Ctx:
@@ -336,7 +356,9 @@ def _reach_row(ctx: Ctx, layer: str, name: str, x: int, y: int,
             return Row(WARN, layer, name,
                        "stoi na kaflu nieprzechodnim (drzwi?) - NPC dojdzie najwyżej "
                        "do sąsiedniego kafla", (x, y))
-        return Row(ERROR, layer, name, "stoi na kaflu nieprzechodnim", (x, y))
+        return Row(ERROR, layer, name,
+                   "stoi na kaflu nieprzechodnim (płot, mur, drzewo) - gra nie dosuwa "
+                   "NPC-ów do wolnego kafla, więc zostanie tam na zawsze", (x, y))
     if ctx.reach_hard[y][x]:
         return None
     if ctx.reach_soft[y][x]:
@@ -351,7 +373,11 @@ def check_reachability(ctx: Ctx) -> list[Row]:
     rows: list[Row] = []
     for layer in ("places", "entry_points", "spawn_points"):
         for obj in ctx.objects(layer):
-            x, y = ctx.anchor_tile(obj)
+            # Spawn liczymy po STOPACH, reszta po kotwicy: `places` i `entry_points`
+            # gra czyta jako punkt (`rect.midbottom`), ale postać ma pod tym punktem
+            # prostokąt `feet` i to ON zderza się ze ścianą - a leży kafel wyżej.
+            # Ta jedna linijka różnicy przepuszczała krowy stojące w płocie.
+            x, y = ctx.stand_tile(obj) if layer == "spawn_points" else ctx.anchor_tile(obj)
             row = _reach_row(ctx, layer, obj.name or f"<bez nazwy id={obj.id}>", x, y,
                              wall_is_fatal=layer == "spawn_points")
             if row:
@@ -526,6 +552,55 @@ def check_spawn_points(ctx: Ctx) -> list[Row]:
     return rows
 
 
+def check_spawn_naming(ctx: Ctx) -> list[Row]:
+    """D1/D2 tak samo, jak liczy je `validate-world` - tylko o krok wcześniej.
+
+    Ta sama reguła stoi w `scripts/validate_world.py` (`check_spawn_naming`), ale
+    tam widać ją dopiero po przeniesieniu mapy do gry i nazwaniu jej na stałe.
+    Piętnaście błędów naraz po zmianie nazwy mapy to nie przypadek: nazwy nadał
+    generator i nikt ich po drodze nie sprawdził.
+    """
+    rows: list[Row] = []
+    models = Counter(
+        ctx.table.props_for(obj.gid).get("model_name", "")
+        for obj in ctx.objects("spawn_points") if obj.gid
+    )
+    for obj in ctx.objects("spawn_points"):
+        model = ctx.table.props_for(obj.gid).get("model_name", "") if obj.gid else ""
+        if not model or not obj.name or obj.name == model:
+            continue
+        suffix = obj.name[len(model):]
+        if not (obj.name.startswith(model) and _INSTANCE_SUFFIX.fullmatch(suffix)):
+            rows.append(Row(ERROR, "spawn_points", obj.name,
+                            f"stawia model `{model}` - nazwa instancji ma brzmieć "
+                            f"`{model}` albo `{model}_NN` (D1)",
+                            ctx.stand_tile(obj)))
+        elif models[model] == 1:
+            rows.append(Row(WARN, "spawn_points", obj.name,
+                            f"jedyna kopia `{model}` na mapie - numer instancji "
+                            f"jest zbędny (D2)", ctx.stand_tile(obj)))
+    return rows
+
+
+def check_exit_naming(ctx: Ctx) -> list[Row]:
+    """D6: nazwą obiektu `exit` jest KLUCZ MAPY DOCELOWEJ, nie nazwa budynku.
+
+    Gra działa i bez tego (cel siedzi w `to_map`), więc to WARN - ale nazwa typu
+    `SMITHY_DOOR` przeżywa rename mapy docelowej i od tego momentu kłamie, a
+    znajduje się to dopiero przy ręcznym czytaniu warstwy `interactions`.
+    """
+    rows: list[Row] = []
+    for obj in ctx.objects("interactions"):
+        if obj.props.get("obj_type", "") != "exit":
+            continue
+        to_map = obj.props.get("to_map", "")
+        if to_map and obj.name != to_map:
+            rows.append(Row(WARN, "interactions", obj.name,
+                            f"wyjście prowadzi do `{to_map}` - nazwa obiektu ma być "
+                            f"kluczem mapy docelowej (D6)", ctx.tile_of(obj)))
+    return rows
+
+
 def check_zones(ctx: Ctx) -> list[Row]:
     rows: list[Row] = []
     present: set[str] = set()
@@ -544,6 +619,63 @@ def check_zones(ctx: Ctx) -> list[Row]:
         rows.append(Row(WARN, "zones", ", ".join(sorted(missing)),
                         "strefa wymieniana w `allowed_zones` w characters.csv, "
                         "ale nieobecna na tej mapie"))
+    return rows
+
+
+def check_zone_placement(ctx: Ctx) -> list[Row]:
+    """Czy strefa nadal leży TAM, GDZIE MIAŁA - po zmianie rozmiaru mapy albo `map-edit move`.
+
+    Strefy są jedynymi prostokątami podawanymi w bezwzględnych kaflach, więc jako
+    jedyne nie jadą razem z resztą: zmniejszenie mapy z 256x256 na 256x128 zostawiło
+    `plains` w tym samym miejscu, tyle że tym miejscem był już pas lasu obrzeżnego.
+    Gra nie mówi o tym ani słowa - `load_zones` buduje `pygame.Rect` z dowolnych
+    liczb, a NPC z `allowed_zones` po prostu nie ma się gdzie ruszyć.
+
+    Nie ma jak sprawdzić, czy strefa nazwana `plains` leży NA ŁĄCE (linter nie zna
+    briefu), ale da się sprawdzić to, co z tego wynika: ile w niej kafli, po których
+    da się chodzić. Las to głównie ściany i ten jeden pomiar łapie każdy taki
+    przypadek, niezależnie od nazwy.
+    """
+    rows: list[Row] = []
+    tw, th = ctx.tmap.tilewidth, ctx.tmap.tileheight
+    for obj in ctx.objects("zones"):
+        if not (obj.width and obj.height):
+            continue                      # brak prostokąta zgłasza już `check_zones`
+        x0, y0 = ctx.tmap.tile_of(obj.x, obj.y)
+        x1 = x0 + max(1, int(obj.width) // tw)
+        y1 = y0 + max(1, int(obj.height) // th)
+
+        outside = sum(1 for y in range(y0, y1) for x in range(x0, x1)
+                      if not (0 <= x < ctx.w and 0 <= y < ctx.h))
+        total = (x1 - x0) * (y1 - y0)
+        if outside == total:
+            rows.append(Row(ERROR, "zones", obj.name,
+                            f"strefa leży w całości poza mapą {ctx.w}x{ctx.h} - "
+                            f"w grze ma zerową powierzchnię", (x0, y0)))
+            continue
+        if outside:
+            rows.append(Row(ERROR, "zones", obj.name,
+                            f"{outside * 100 // total}% strefy wystaje poza mapę "
+                            f"{ctx.w}x{ctx.h} - przytnij prostokąt", (x0, y0)))
+
+        inside = [(x, y) for y in range(y0, y1) for x in range(x0, x1)
+                  if 0 <= x < ctx.w and 0 <= y < ctx.h]
+        walkable = sum(1 for x, y in inside if ctx.hard[y][x])
+        share = walkable / len(inside)
+        if share < ZONE_WALKABLE_MIN:
+            rows.append(Row(ERROR, "zones", obj.name,
+                            f"tylko {share:.0%} kafli strefy jest chodliwych - stoi "
+                            f"w lesie albo w zabudowie. Po zmianie rozmiaru mapy albo "
+                            f"`map-edit move` strefy zostają na starych kaflach",
+                            (x0, y0)))
+        elif share < ZONE_WALKABLE_WARN:
+            rows.append(Row(WARN, "zones", obj.name,
+                            f"{share:.0%} kafli strefy jest chodliwych - ciasno jak "
+                            f"na obszar wędrowania NPC-a", (x0, y0)))
+        elif not any(ctx.reach_hard[y][x] for x, y in inside):
+            rows.append(Row(ERROR, "zones", obj.name,
+                            "cała strefa jest odcięta od reszty mapy - NPC nie ma "
+                            "jak do niej dojść", (x0, y0)))
     return rows
 
 
@@ -830,7 +962,8 @@ CHECKS = (
     check_start, check_reachability, check_doors_reachable, check_doors_wired,
     check_exit_on_door,
     check_exit_targets, check_chests,
-    check_spawn_points, check_zones, check_places, check_waypoints, check_object_names,
+    check_spawn_points, check_spawn_naming, check_exit_naming,
+    check_zones, check_zone_placement, check_places, check_waypoints, check_object_names,
     check_border, check_step_cost, check_routine_routes, check_world_wiring,
     check_monotony, check_runs, check_alignment, check_empty_patches,
 )
