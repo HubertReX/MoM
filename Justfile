@@ -301,6 +301,20 @@ gen-quest-graph:
     #!powershell
     .venv\Scripts\python.exe scripts\quest_graph.py
 
+# Regenerate the dialog authoring cheat sheet at `doc/dialog-cheatsheet.md`.
+[unix]
+gen-dialog-cheatsheet:
+    # Everything in it is derived from the code (sentiment tables, condition and effect
+    # whitelists, RichText tags), so run it after changing any of them - a hand-kept
+    # cheat sheet lies with authority.
+    .venv/bin/python scripts/gen_dialog_cheatsheet.py
+
+# Regenerate the dialog authoring cheat sheet at `doc/dialog-cheatsheet.md`.
+[windows]
+gen-dialog-cheatsheet:
+    #!powershell
+    .venv\Scripts\python.exe scripts\gen_dialog_cheatsheet.py
+
 # Regenerate the quest authoring cheat sheet at `doc/quest-cheatsheet.md`.
 [unix]
 gen-quest-cheatsheet:

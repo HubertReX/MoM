@@ -10,7 +10,8 @@ są pliki PL: `doc/PL/Postacie/*.md`. Wszystkie komendy odpalaj z katalogu głó
 ## 1. Edytuj dialog
 
 Zmień treść w `doc/PL/Postacie/<Nazwa>.md` (węzły `## <numer>`, opcje `* [[#00x]] ...`,
-warunki, `-end`, resume). Format i pułapki: `project/dialog/AGENTS.md`.
+warunki, `-end`, resume). Cała składnia w jednym miejscu: [[dialog-cheatsheet|Dialogi - ściągawka]]
+(generowana z kodu). Przepływ danych i pułapki implementacyjne: `project/dialog/AGENTS.md`.
 
 ## 2. (Opcjonalnie) zsynchronizuj EN
 

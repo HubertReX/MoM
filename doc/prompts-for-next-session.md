@@ -23,7 +23,7 @@ Co jest potrzebne:
 - [x] misja jako `requires` powinny przyjmować również odwiedzenie danej opcji dialogowej
 - [ ] ekran handlu trzeba poprawić bo imię zachodzi na postać i tekst po prawej, trzeba obniżyć pasek inventory handlarza
 - [ ] decyzja projektowa: czy nagroda za misję ma być w dialogu postaci czy w definicji misji? Gracz musi wiedzieć co dostanie za wykonanie misji, inaczej spada motywacja to jej zrobienia, ergo - nagroda musi być w definicji misji.
-- [ ] brak _ściągawki_ (cheatsheet) dla pisania dialogów, takiej jaka jest dla [[quest-cheatsheet]]. Może być generowana automatycznie, choć to utrudnia jej ręczną aktua
+- [x] brak _ściągawki_ (cheatsheet) dla pisania dialogów, takiej jaka jest dla [[quest-cheatsheet]]. Może być generowana automatycznie, choć to utrudnia jej ręczną aktualizację -> [[dialog-cheatsheet]], `just gen-dialog-cheatsheet`
 - [ ] jeżeli w trakcie dialogu dajemy postaci kilka przedmiotów tego samego typu, to dostajemy kilka osobnych powiadomień (toast), zamiast jednego z liczbą przedmiotów.
 - [ ] Dodać opcje w którejś misji, gdzie gracz celowo i świadomie podejmuje decyzję aby zrobić coś przeciwnego niż, chce postać. To ma obniżyć znacznie sentyment i zamknąć misję w dzienniku.
 - [ ] Pomysł z researchu: Misja powinna żyć razem ze światem gry. Przykład: wieśniak w czapce zleca zabicie wilka, następnego dnia mówi, że chyba sam to zrobi, trzeciego w miejscu wilka jest tylko jego czapka i ślady krwi. 

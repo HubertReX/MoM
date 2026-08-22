@@ -111,6 +111,8 @@ który występuje w `config.json` jako klucz sekcji `character_dialogs`.
 
 ### Uwaga dotycząca formatu MD
 
+**Ściągawka autorska formatu:** [`doc/dialog-cheatsheet.md`](../../doc/dialog-cheatsheet.md) - generowana z kodu przez `just gen-dialog-cheatsheet`, więc nie może rozjechać się z tabelami niżej. Ten plik opisuje przepływ danych i pułapki implementacyjne; ściągawka opisuje, co autor ma wpisać w notatkę.
+
 Nagłówek węzła dialogowego to `## <numer>` (np. `## 000`, `## 015-end`);
 legacy `### <numer>` jest nadal akceptowane. Wszystko przed pierwszym
 numerycznym nagłówkiem (frontmatter, sekcja `# Info` z podsekcjami) jest

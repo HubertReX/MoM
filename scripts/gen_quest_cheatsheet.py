@@ -34,6 +34,7 @@ from dialog.conditions import (  # noqa: E402
     _VALUE_NAMES_BY_SCOPE,
     ConditionScope,
 )
+from cheatsheet_common import operators_line, tags_table  # noqa: E402
 from dialog.vault_links import KIND_BY_SUBDIR  # noqa: E402
 from md_tables import table  # noqa: E402
 from quest.entities import CompletionMode, QuestRewardCategory  # noqa: E402
@@ -112,22 +113,6 @@ _COMPLETION_DOC: dict[CompletionMode, str] = {
     CompletionMode.manual: "zamyka ją **wyłącznie kod gry** (`mark_done`)",
 }
 
-_OP_DOC: dict[str, str] = {
-    "Eq": "==", "NotEq": "!=", "Lt": "<", "LtE": "<=",
-    "Gt": ">", "GtE": ">=", "In": "in", "NotIn": "not in",
-}
-
-
-def _code(text: str) -> str:
-    """Tekst w backquote'ach, bezpieczny dla Dataview.
-
-    Dataview czyta `` `= cokolwiek` `` jako **inline query** i na `` `==` ``
-    wywala się błędem parsera zamiast pokazać operator. Spacja po otwierającym
-    backquote nic nie zmienia wizualnie, a wyłącza to rozpoznanie.
-    """
-    return f"` {text}`" if text.startswith("=") else f"`{text}`"
-
-
 def _fields_table() -> str:
     """Pola, ich pisownie PL/EN, obowiązkowość i skąd są czytane (D2)."""
     by_canonical: dict[str, list[str]] = {}
@@ -194,38 +179,6 @@ def _rewards_table() -> str:
     return table(["Zapis", "Znaczenie", "Przykład"], rows)
 
 
-def _tags_table() -> str:
-    """Znaczniki RichText pogrupowane po tym, co faktycznie robią ze stylem.
-
-    Kolejność sprawdzania nie jest dowolna: `[h1]` zmienia i rozmiar, i wyrównanie,
-    więc gdyby `align` szło pierwsze, nagłówki wylądowałyby wśród `[center]`.
-    """
-    groups: dict[str, list[str]] = {
-        "kolor": [], "rozmiar / nagłówek": [], "wyróżnienie": [], "cień": [], "wyrównanie": []
-    }
-    for name, mutation in sorted(TAG_STYLES.items()):
-        if name == "link":
-            continue
-        if "color" in mutation:
-            groups["kolor"].append(name)
-        elif "size" in mutation:
-            groups["rozmiar / nagłówek"].append(name)
-        elif {"bold", "italic", "underline"} & set(mutation):
-            groups["wyróżnienie"].append(name)
-        elif {"shadow", "shadow_color"} & set(mutation):
-            groups["cień"].append(name)
-        elif "align" in mutation:
-            groups["wyrównanie"].append(name)
-
-    rows = [
-        [label, ", ".join(f"`[{n}]`" for n in names)]
-        for label, names in groups.items()
-        if names
-    ]
-    rows.append(["link", "`[link https://...]tekst[/link]`"])
-    return table(["Rodzaj", "Znaczniki"], rows)
-
-
 def _arity_note() -> str:
     low, _high = _QUEST_PREDICATES["visited"]
     return (
@@ -248,7 +201,7 @@ def render(out_path: Path) -> str:
         else "Gołych nazw-wartości nie ma - `sentiment` działa tylko w dialogu, "
         "bo quest nie ma kontekstu bieżącej postaci."
     )
-    operators = " ".join(_code(_OP_DOC[op.__name__]) for op in _COMPARE_OPS if op.__name__ in _OP_DOC)
+    operators = operators_line(_COMPARE_OPS)
     # Znacznik encji bierze się z katalogu notatki - ta tabela czyta go stamtąd,
     # zamiast powtarzać mapowanie, które mogłoby się rozjechać.
     _KIND_EXAMPLE = {
@@ -484,7 +437,7 @@ Markdownowe wyróżnienia pisze się **po markdownowemu**: `**pogrubienie**` i `
 
 `**` idzie na `[shadow]`, a nie na `[bold]`, bo font pikselowy nie ma prawdziwego pogrubienia: `[bold]` to jeden dodatkowy piksel grubości kreski i w akapicie go po prostu nie widać. Wyróżnia cień.
 
-{_tags_table()}
+{tags_table()}
 
 `[/]` zamyka **ostatni otwarty** znacznik, więc `[char]Kowal[/]` znaczy to samo co `[char]Kowal[/char]`, a `[h3][char]X[/][/]` domyka najpierw `char`, potem `h3`.
 
