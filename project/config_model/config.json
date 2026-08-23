@@ -102,7 +102,17 @@
             "name_PL": "Kuba",
             "has_dialog": false,
             "routine": "townsfolk",
-            "barks": "VILLAGERS"
+            "barks": "VILLAGERS",
+            "friendly": 0.5,
+            "disposition": {
+                "kind": 1,
+                "funny": 1,
+                "smart": 1,
+                "neutral": 0,
+                "technical": 0,
+                "weak": 1,
+                "angry": 1
+            }
         },
         "ROBIN": {
             "sprite": "Villager4",
@@ -125,7 +135,17 @@
             "name_EN": "Marry",
             "name_PL": "Marysia",
             "has_dialog": false,
-            "routine": "townsfolk"
+            "routine": "townsfolk",
+            "friendly": 0.5,
+            "disposition": {
+                "kind": 1,
+                "funny": 1,
+                "smart": 1,
+                "neutral": 0,
+                "technical": 0,
+                "weak": 1,
+                "angry": 1
+            }
         },
         "FISH_RED": {
             "sprite": "FishRed",

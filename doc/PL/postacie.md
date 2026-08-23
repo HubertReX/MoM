@@ -1,8 +1,51 @@
-# Characters
+# Info
 
-[**translation**](../EN/characters.md)
+## Base
 
-## PL
+```base
+filters:
+  and:
+    - file.inFolder("PL/Postacie")
+formulas:
+  Ikona: link(note.aliases[0] + ".png", 100)
+  Klucz: "aliases[0] "
+properties:
+  file.name:
+    displayName: Imię
+  note.location:
+    displayName: Pocz. lokal.
+  note.friendly:
+    displayName: Sent. pocz.
+views:
+  - type: cards
+    name: Ikony
+    order:
+      - file.name
+      - location
+    image: formula.Ikona
+  - type: table
+    name: Tabela
+    order:
+      - file.name
+      - formula.Klucz
+      - location
+      - friendly
+      - kind
+      - weak
+      - angry
+      - smart
+      - funny
+    sort:
+      - property: file.name
+        direction: ASC
+      - property: friendly
+        direction: ASC
+    columnSize:
+      note.location: 147
+
+```
+
+## Sentyment
 
 | emoji | opis EN   | opis PL    | ikona         |
 | ----- | --------- | ---------- | ------------- |
@@ -15,7 +58,7 @@
 | 🤖    | technical | techniczny | `:human:`     |
 
 
----------------------------------------------------------------------------------------------------
+## Linki
 
 [[Miecz Ciętej-riposty]]
 
@@ -25,7 +68,15 @@
 
 [[Zielarka Zmora]]
 
----------------------------------------------------------------------------------------------------
+[[Bibliofilistka des Informacja]]
+
+[[Kuba]]
+
+[[Madame Sarkażmijka]]
+
+[[Marysia]]
+
+## Pomysły na później
 
 ### **Melancholijna Syrenka** => **Melancholic Mermaid**
 
@@ -74,8 +125,6 @@ TODO
 * **Backstory**:
 TODO [char]Mopey Phoenix[/] frequents the [location]Cliffside Clamor[/], because of course, it does.
 
-
-[[Bibliofilistka des Informacja]]
 
 ---------------------------------------------------------------------------------------------------
 
@@ -143,8 +192,6 @@ TODO
 
 * **Backstory**:
 Pomimo swojego rycerskiego wyglądu, Sir Blunderbuss jest znany w całym królestwie ze swojej niezwykłej zdolności do potykania się o własne nogi i przypadkowego rozbrojenia się w środku bitwy.  Jego zamachy mieczem często chybiają celu, powodując niezamierzony chaos na polu bitwy.  Jednak dziwnym zrządzeniem losu jego niezdarna natura czasami prowadzi do niezamierzonych zwycięstw, co czyni go osobliwym, ale dość skutecznym bohaterem.
-
-[[Madame Sarkażmijka]]
 
 ---------------------------------------------------------------------------------------------------
 

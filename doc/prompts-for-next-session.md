@@ -19,34 +19,36 @@ Co jest potrzebne:
 - ukrywamy [[Madame Sarkażmijka]] i [[Bibliofilistka des Informacja]]
 
 ### Inne:
+
 - [ ] nauczyć gracza, że obniżanie sentymentu może mieć korzyści - szacunek postaci, "najlepszą obroną jest atak" w przypadku silnych charakterów
-- [x] misja jako `requires` powinny przyjmować również odwiedzenie danej opcji dialogowej
-- [ ] ekran handlu trzeba poprawić bo imię zachodzi na postać i tekst po prawej, trzeba obniżyć pasek inventory handlarza
+- [ ] trzeba zablokować wyjście z nowej mapy [[Gafowo Kolonia]]. Przynajmniej póki nie ma innych map. [[Miecz Ciętej-riposty|Miecz]] musi się pojawić i powiedzieć, że najpierw trzeba dowiedzieć się co dalej robić (skończyć questy).
 - [ ] decyzja projektowa: czy nagroda za misję ma być w dialogu postaci czy w definicji misji? Gracz musi wiedzieć co dostanie za wykonanie misji, inaczej spada motywacja to jej zrobienia, ergo - nagroda musi być w definicji misji.
-- [x] brak _ściągawki_ (cheatsheet) dla pisania dialogów, takiej jaka jest dla [[quest-cheatsheet]]. Może być generowana automatycznie, choć to utrudnia jej ręczną aktualizację -> [[dialog-cheatsheet]], `just gen-dialog-cheatsheet`
 - [ ] jeżeli w trakcie dialogu dajemy postaci kilka przedmiotów tego samego typu, to dostajemy kilka osobnych powiadomień (toast), zamiast jednego z liczbą przedmiotów.
 - [ ] Dodać opcje w którejś misji, gdzie gracz celowo i świadomie podejmuje decyzję aby zrobić coś przeciwnego niż, chce postać. To ma obniżyć znacznie sentyment i zamknąć misję w dzienniku.
 - [ ] Pomysł z researchu: Misja powinna żyć razem ze światem gry. Przykład: wieśniak w czapce zleca zabicie wilka, następnego dnia mówi, że chyba sam to zrobi, trzeciego w miejscu wilka jest tylko jego czapka i ślady krwi. 
-- [ ] opcje widoczne w menu pomocy tylko w trybie debug, powinny również być możliwe do użycia w trybie debug - obecnie można je wywołać zawsze. Przykłady: `F3` - przełącz UI, `F4` - uruchom intro, `F7` - demo textinput, `R` - przeładuj mapę, `Alt` - tryb latania
 - [ ] niech okno gry pokazuje się na tym samym monitorze co terminal z którego została uruchomiona. Gra powinna pamiętać ostatnio używany monitor. Kombinajca klawiszy przesuwająca okno na inny monitor nie działa na MacOS.
+- [ ] po zmianie rozdzielczości ekran wraca na monitor na którym był uruchomiony
 - [ ] klawisze `+` i `-` źle powiększają ekrany gry, bo czasami doprowadzają do nierównomiernego skalowania (niektóre pixele sprite'ów są kopiowane 3 x a niektóre 2 x) 
 - [ ] skała ma za mały collider i reaguje na trafienie jedynie u samej podstaw. W Tiled collision box został dodany, ale nie jest respektowany.
 - [ ] czasami po wyjściu z Tawerny gracz pojawia się w lesie blisko lewego krańca mapy zamiast w miejscu obiektu VillageHouseDoor  (pozycja od góry mapy jest ok). Zdarza się to rzadziej niż raz na 3 próby.
-- [x] toast'y chowają się pod etykietą nazwy mapy (lokalizacji) - niech pokazują się ponad etykietą mapy
 - [ ] dodać do rutyn szczególne zachowanie w wybrane dni (niedziela tylko hobby), handel tylko poniedziałek, środa i piątek
-- [x] usunąć autozapis przy wchodzeniu i wychodzeniu ze zwykłych pomieszczeń
 - [ ] `wander_radius` jest większy niż wynika z wpisu w `routines.toml`
-- [x] `scrollbar.png` nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
-- [x] przydało by się włączyć fog-of-war (FoW) w labiryncie w trybie web, ale to się wiąże z shaderami
 - [ ] w polach input, jak się wciśnie i przytrzyma przycisk to działa on tylko raz - kolejne litery powinny pojawiać się z małym opóźnieniem, a strzałki powinny przesuwać kursor, aż do zwolnienia klawisza
 - [ ] co się stanie jak zwiększę `max_inventory`?
-- [ ] po zmianie rozdzielczości ekran wraca na monitor na którym był uruchomiony
 - [ ] zwięrzęta hodowlane na noc idą do stajni
 - [ ] zwierzęta mają być tylko w określonych strefach (np.: łąka), bo przeszkadzają
 - [ ] zwierzęta czasami się klinują i dygocą w miejscu
 - [ ] sprawdzić zachowanie strategii `afraid`
-- [x] ryby i żaby jak są w wodzie to nie powinny rzucać cienia
 - [ ] brakowało elementu w EN.toml, ale nic nie rzucało błędem - sprawdzić czy jest jakiś test podczas importu
+- [x] misja jako `requires` powinny przyjmować również odwiedzenie danej opcji dialogowej
+- [x] ekran handlu trzeba poprawić bo imię zachodzi na postać i tekst po prawej, trzeba obniżyć pasek inventory handlarza
+- [x] brak _ściągawki_ (cheatsheet) dla pisania dialogów, takiej jaka jest dla [[quest-cheatsheet]]. Może być generowana automatycznie, choć to utrudnia jej ręczną aktualizację -> [[dialog-cheatsheet]], `just gen-dialog-cheatsheet`
+- [x] opcje widoczne w menu pomocy tylko w trybie debug, powinny również być możliwe do użycia w trybie debug - obecnie można je wywołać zawsze. Przykłady: `F3` - przełącz UI, `F4` - uruchom intro, `F7` - demo textinput, `R` - przeładuj mapę, `Alt` - tryb latania
+- [x] toast'y chowają się pod etykietą nazwy mapy (lokalizacji) - niech pokazują się ponad etykietą mapy
+- [x] usunąć autozapis przy wchodzeniu i wychodzeniu ze zwykłych pomieszczeń
+- [x] `scrollbar.png` nie jest używany - kod sam rysuje scrollbary zamiast użyć nine-patch.
+- [x] przydało by się włączyć fog-of-war (FoW) w labiryncie w trybie web, ale to się wiąże z shaderami
+- [x] ryby i żaby jak są w wodzie to nie powinny rzucać cienia
 - [x] mypy 24 błędy
 - [x] dodać nazwę lokalizacji na górze ekranu (przy lochach dodać poziom zagnieżdżenia)
 - [x] gra nie zapisuje lub źle odczytuje stań skrzyni (otwarta/zamknięta) oraz stan obiektów, które da się zniszczyć (krzaki, kamienie) - po wczytaniu gry, stan tych obiektów jest jak przy wczytaniu nowej mapy

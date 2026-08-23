@@ -1,7 +1,24 @@
 ---
 aliases:
   - MARRY
+  - 
+sprite: Woman
+alternative:
+EN:
+inspirations:
+  - 
+location: "[[Gafowo Kolonia]]"
+friendly: 0.5
+kind: 1
+weak: 1
+angry: 1
+smart: 1
+funny: 1
 ---
+# Info
+
+`= "![[" + this.aliases[0] + ".png|300]]"`
+
 Ach, tak, tak, :smile: proszę, wejdź chłopcze to domu najlepszej zielarki w okolicy.
 Wołają mnie [[Marysia|Zielarka Marry]].
 

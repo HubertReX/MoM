@@ -6,7 +6,7 @@ alternative:
 EN: "[[Malachi]]"
 inspirations:
   - 
-location:
+location: "[[Gafowo Kolonia]]"
 sprite: GreenNinja
 friendly: 0.5
 kind: 1

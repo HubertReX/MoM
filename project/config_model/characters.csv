@@ -22,13 +22,13 @@ HORSE;Horse;Konik;Horse;animal;friendly;;;;;false;;;;plains;;;;;;;;;;;;;;;;;FARM
 JOHNY;Johny;Jaś;Villager1;humanoid;friendly;;;gem_small_green,gem_small_purple,gem_small_blue,gem_small_orange;3000;false;true;gem;100.0;;18;;;;;;BLUNDERHAVEN:house_johny;BLUNDERHAVEN:market_stall_1;LOST_CORK_TAVERN:tables;BLUNDERHAVEN:pier;;;;;;townsfolk;VILLAGERS
 LION_YELLOW;LionYellow;Żółty lew;LionYellow;monster;enemy;60;60;;;false;;;;;;20;;;;;;;;;;;;;;;
 MADAME_SARCASMIA;Madame Sarcasmia;Madame Sarkażmijka;SorcererBlack;humanoid;friendly;;;POTION_CURSE_NO_MORE;100;true;;;;;;;;0.5;;;;;;;1;-2;-1;1;2;;
-MARRY;Marry;Marysia;Woman;humanoid;friendly;120;120;;25;false;;;;;;;;;;;;;;;;;;;;townsfolk;
+MARRY;Marry;Marysia;Woman;humanoid;friendly;120;120;;25;false;;;;;;;;0.5;;;;;;;1;1;1;1;1;townsfolk;
 MISS_INFORMATION;Miss Information;Bibliofilistka des Informacja;SorcererOrange;humanoid;friendly;;;;;true;;;;;;;;0.5;;;;;;;1;1;1;1;1;;
 PIG;Pig;Świnka;Pig;animal;friendly;;;;;false;;;;plains;20;;;;;;;;;;;;;;;;FARM_ANIMALS
 POTIONEER_PUZZLEMINT;Potioneer Puzzlemint;Zielarka Zmora;EggGirl;humanoid;friendly;;;;100;true;;;;;;;;0.4;;;;;;;1;2;-2;-1;-1;;
 MALACHI;Malachi;Malachiasz;GreenNinja;humanoid;friendly;80;80;lance,stick,gem_small_green,shashlik,shashlik,gem_crystal_blue,gem_big_orange;20;true;;;;;;;;0.5;;;;;;;1;1;1;1;1;;
 RACOON;Racoon;Szop;Racoon;animal;afraid;;;;;false;;;;;10;;;;;;;;;;;;;;;;
-ROB;Rob;Kuba;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;townsfolk;VILLAGERS
+ROB;Rob;Kuba;Villager4;humanoid;friendly;;;;20;false;;;;;;;;0.5;;;;;;;1;1;1;1;1;townsfolk;VILLAGERS
 ROBIN;Robin;Robin;Villager4;humanoid;friendly;;;;20;false;;;;;;;;;;;;;;;;;;;;townsfolk;VILLAGERS
 SLIME;Slime;Śluzak;Slime;monster;enemy;40;40;;;false;;;;;;;;;;;;;;;;;;;;;
 SNAKE;Snake;Wąż;Snake;monster;enemy;50;50;life_pot;;false;;;;;;20;75;;;;;;;;;;;;;;

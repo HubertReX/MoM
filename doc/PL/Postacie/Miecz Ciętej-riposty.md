@@ -5,8 +5,8 @@ aliases:
 alternative:
 EN: "[[EN/Characters/Clapback Sword]]"
 inspirations:
-  -
-location:
+  - 
+location: "[[Gafowo Kolonia]]"
 sprite: Knight
 friendly: 0.7
 kind: 1

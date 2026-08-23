@@ -5,8 +5,8 @@
   "source": "PL/Postacie/Barman Absyntnent.md",
   "start_node": "000",
   "counts": {
-   "nodes": 32,
-   "options": 66
+   "nodes": 33,
+   "options": 67
   },
   "global_problems": [],
   "palette": {
@@ -372,6 +372,17 @@
    "resume": null,
    "problems": [],
    "link": "Barman Absyntnent#029"
+  },
+  {
+   "id": "030",
+   "level": 3,
+   "text": "TODO Q04_S03",
+   "is_start": false,
+   "is_final": false,
+   "result": null,
+   "resume": null,
+   "problems": [],
+   "link": "Barman Absyntnent#030"
   },
   {
    "id": "990",
@@ -895,17 +906,17 @@
    "order": 2,
    "sentiment": "neutral",
    "text": "Chciałbym sobie powiesić trofeum[/] nad barem",
-   "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"026\")"
+   "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"026\") and quest_done(\"Q04_S01_FISH_EATEN_BY_CAT\")"
   },
   {
    "from": "021",
-   "to": "001",
+   "to": "030",
    "kind": "option",
-   "key": "021to001_3",
+   "key": "021to030_3",
    "order": 3,
    "sentiment": "neutral",
    "text": "TODO Q04_S03",
-   "condition": null
+   "condition": "not visited(\"BARMAN_ABSINTHRAYNER\", \"030\") and quest_done(\"Q04_S02_TAVERN_TROPHY\")"
   },
   {
    "from": "021",
@@ -1052,6 +1063,16 @@
    "to": "001",
    "kind": "option",
    "key": "029to001_1",
+   "order": 1,
+   "sentiment": "neutral",
+   "text": "Cieszę się, że mogłem pomóc.",
+   "condition": null
+  },
+  {
+   "from": "030",
+   "to": "001",
+   "kind": "option",
+   "key": "030to001_1",
    "order": 1,
    "sentiment": "neutral",
    "text": "Cieszę się, że mogłem pomóc.",
