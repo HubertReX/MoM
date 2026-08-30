@@ -97,13 +97,28 @@ class Stamp:
 
 
 class Palette:
-    """Katalog klocków jednej mapy-prototypu."""
+    """Katalog klocków jednej mapy-prototypu.
 
-    def __init__(self, source: Path, stamps: dict[str, Stamp],
+    Kilka obrysów o TEJ SAMEJ nazwie to nie pomyłka, tylko WARIANTY jednego
+    klocka: autor rysuje w Tiled trzydzieści różnych ozdób, nazywa je wszystkie
+    `decorations` i generator losuje spośród nich przy każdym postawieniu. Bez
+    tego każda ozdoba wymagałaby własnej nazwy w briefie, a "rozsyp ozdoby"
+    zamieniałoby się w listę trzydziestu pozycji.
+
+    `get()` zwraca wariant PIERWSZY (kolejność z pliku), więc jest deterministyczne;
+    losowanie jest jawną decyzją wywołującego przez `variants()`.
+    """
+
+    def __init__(self, source: Path, groups: dict[str, list[Stamp]],
                  tileset_keys: list[str]) -> None:
         self.source = source
-        self.stamps = stamps
+        self.groups = groups
         self.tileset_keys = tileset_keys
+
+    @property
+    def stamps(self) -> dict[str, Stamp]:
+        """Nazwa -> pierwszy wariant. Widok dla tego, co pyta o klocek po nazwie."""
+        return {name: variants[0] for name, variants in self.groups.items()}
 
     # ---------------- wczytanie ----------------
 
@@ -116,13 +131,11 @@ class Palette:
                 f"{path.name} nie ma warstwy '{STAMPS_LAYER}'. "
                 f"Uruchom `just map-palette --bootstrap`, żeby ją założyć."
             )
-        stamps: dict[str, Stamp] = {}
+        groups: dict[str, list[Stamp]] = {}
         for obj in tmap.object_group(STAMPS_LAYER).objects:
             stamp = cls._cut(tmap, obj)
-            if stamp.name in stamps:
-                raise SystemExit(f"{path.name}: duplikat nazwy klocka '{stamp.name}'")
-            stamps[stamp.name] = stamp
-        return cls(path, stamps, [ref.key for ref in tmap.tilesets])
+            groups.setdefault(stamp.name, []).append(stamp)
+        return cls(path, groups, [ref.key for ref in tmap.tilesets])
 
     @staticmethod
     def _cut(tmap: TiledMap, obj: MapObject) -> Stamp:
@@ -157,40 +170,57 @@ class Palette:
     # ---------------- wyszukiwanie ----------------
 
     def get(self, name: str) -> Stamp:
-        if name not in self.stamps:
-            near = [n for n in self.stamps if name.lower() in n.lower()]
+        """Pierwszy wariant klocka o tej nazwie."""
+        return self.variants(name)[0]
+
+    def variants(self, name: str) -> list[Stamp]:
+        """WSZYSTKIE obrysy o tej nazwie - do losowania przy stawianiu."""
+        if name not in self.groups:
+            near = [n for n in self.groups if name.lower() in n.lower()]
             hint = f" Może chodziło o: {', '.join(sorted(near)[:5])}." if near else ""
             raise SystemExit(f"katalog nie ma klocka '{name}'.{hint}")
-        return self.stamps[name]
+        return self.groups[name]
+
+    def all_stamps(self) -> list[Stamp]:
+        return [s for variants in self.groups.values() for s in variants]
 
     def of_kind(self, kind: str) -> list[Stamp]:
-        return [s for s in self.stamps.values() if s.kind == kind]
+        return [s for s in self.all_stamps() if s.kind == kind]
 
     def tagged(self, tag: str) -> list[Stamp]:
-        return [s for s in self.stamps.values() if tag in s.tags]
+        return [s for s in self.all_stamps() if tag in s.tags]
 
     # ---------------- warianty terenu ----------------
 
     def terrain_variants(self, name: str, layer: str = "ground") -> dict[int, int]:
         """gid -> ile razy wystąpił w próbce terenu. Wagi biorą się z częstości,
         więc autor steruje nimi malując w Tiled, a nie edytując tabelę."""
-        stamp = self.get(name)
-        if stamp.kind != "terrain":
-            raise SystemExit(f"'{name}' to klocek rodzaju '{stamp.kind}', a nie 'terrain'")
+        stamps = self.variants(name)
+        if stamps[0].kind != "terrain":
+            raise SystemExit(
+                f"'{name}' to klocek rodzaju '{stamps[0].kind}', a nie 'terrain'")
+        # Warianty próbki SUMUJĄ się: dwa prostokąty `field_crop` to jedno pole
+        # o dwóch odmianach zboża, a nie dwa konkurujące tereny.
         counts: dict[int, int] = {}
-        for row in stamp.gids(layer):
-            for gid in row:
-                if gid:
-                    counts[gid] = counts.get(gid, 0) + 1
+        for stamp in stamps:
+            for row in stamp.gids(layer):
+                for gid in row:
+                    if gid:
+                        counts[gid] = counts.get(gid, 0) + 1
         return dict(sorted(counts.items(), key=lambda kv: -kv[1]))
 
     # ---------------- stemplowanie ----------------
 
-    def paste(self, tmap: TiledMap, name: str, at: tuple[int, int],
+    def paste(self, tmap: TiledMap, name: "str | Stamp", at: tuple[int, int],
               layers: list[str] | None = None, clear: bool = True) -> Stamp:
-        """Postaw klocek lewym górnym rogiem w (x, y). Zwraca użyty klocek."""
+        """Postaw klocek lewym górnym rogiem w (x, y). Zwraca użyty klocek.
+
+        Przyjmuje KONKRETNY wariant (obiekt `Stamp`), a nie tylko nazwę - przy
+        klocku o kilku wariantach sama nazwa nie wystarcza, żeby wskazać ten,
+        który wylosował wywołujący.
+        """
         self._assert_same_tilesets(tmap)
-        stamp = self.get(name)
+        stamp = name if isinstance(name, Stamp) else self.get(name)
         ax, ay = at
         for layer_name in (layers or TILE_LAYERS):
             if not tmap.has_layer(layer_name):
@@ -446,19 +476,24 @@ def cmd_list(palette: Palette, args: argparse.Namespace) -> int:
     from report import Row, report
 
     rows = []
-    for name in sorted(palette.stamps, key=lambda n: (palette.stamps[n].kind, n)):
-        stamp = palette.stamps[name]
+    for name in sorted(palette.groups, key=lambda n: (palette.groups[n][0].kind, n)):
+        variants = palette.groups[name]
+        stamp = variants[0]
         door = f"{stamp.door[0]},{stamp.door[1]}" if stamp.door else "-"
+        sizes = sorted({(s.w, s.h) for s in variants})
+        size = "/".join(f"{w}x{h}" for w, h in sizes)
         rows.append(Row(
             level="info",
             source=stamp.kind,
             key=name,
-            message=f"{stamp.w}x{stamp.h} kafli, drzwi {door}"
+            message=f"{size} kafli, drzwi {door}"
+                    f"{f', {len(variants)} wariantów' if len(variants) > 1 else ''}"
                     f"{', kafelkowalny' if stamp.tileable else ''}"
                     f"{'  [' + ','.join(stamp.tags) + ']' if stamp.tags else ''}",
         ))
+    total = sum(len(v) for v in palette.groups.values())
     report(rows, title=f"Katalog klocków - {palette.source.name}",
-           summary=f"{len(palette.stamps)} klocków")
+           summary=f"{len(palette.groups)} nazw, {total} obrysów")
     return 0
 
 

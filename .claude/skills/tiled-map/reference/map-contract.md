@@ -135,6 +135,16 @@ kilku** (`COW_01`, `COW_02`). Generator liczy kopie na całej mapie w osobnym pr
    `map-lint` (`check_zone_placement`), generator przy `map-new` i `map-edit` po każdej
    operacji zmieniającej `walls`.
 
+9. **Klocek przenosi WSZYSTKIE warstwy kafelkowe, `ground` włącznie.** Generator długo
+   wklejał tylko `foliage`, `items`, `walls` i `over`, bo podłoże i tak maluje wangset -
+   i przez to gubił ubite ścieżki narysowane w prototypie WEWNĄTRZ klocka: zagroda
+   przyjeżdżała bez podwórza, a pole bez miedzy między czterema zagonami. Drugą połową
+   tej pułapki jest kolejność: `pass_districts` na koniec przemalowuje CAŁĄ warstwę
+   `ground` po masce traktu, więc samo wklejenie nie wystarcza. Kafle, na których klocek
+   niesie coś innego niż czyste tło mapy, trafiają do `ground_locked` i `TerrainLib.paint`
+   je omija. Czystej trawy spod drzewa nie blokujemy - wangset odtworzyłby ją identycznie,
+   a blokada wybijałaby dziurę w odnodze poprowadzonej później pod tym samym drzewem.
+
 ## Co jeszcze powstaje poza plikiem .tmx
 
 | Plik | Co dopisać | Skutek braku |

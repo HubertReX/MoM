@@ -88,13 +88,18 @@ class TerrainLib:
     # MARK: autotiling po rogach
 
     def paint(self, layer: TileLayer, corners: list[list[str]], rng: random.Random,
-              region: tuple[int, int, int, int] | None = None) -> int:
+              region: tuple[int, int, int, int] | None = None,
+              skip: "set[tuple[int, int]] | None" = None) -> int:
         """Pomaluj warstwę wg siatki ROGÓW (o jeden większej w obu wymiarach).
 
         `corners[y][x]` to nazwa terenu w rogu (x, y). Kafel (x, y) czyta cztery
         rogi i szuka w wangsecie kafla o takim układzie; kiedy wszystkie cztery
         są tym samym terenem, bierze losowy wariant wypełnienia (bo tych jest
         7, a wangset trzyma tylko jeden reprezentatywny).
+
+        `skip` to kafle, których malowanie ma NIE dotykać - podłoże przyniesione
+        przez klocek (ubity trakt zagrody, miedza w polu). Bez tego ostatnie
+        przemalowanie po dzielnicach zasypuje je trawą, bo idzie po całej warstwie.
         """
         if self.wang is None:
             return 0
@@ -104,6 +109,8 @@ class TerrainLib:
         painted = 0
         for y in range(ry, min(ry + rh, layer.height)):
             for x in range(rx, min(rx + rw, layer.width)):
+                if skip and (x, y) in skip:
+                    continue
                 nw, ne = corners[y][x], corners[y][x + 1]
                 se, sw = corners[y + 1][x + 1], corners[y + 1][x]
                 if nw == ne == se == sw:

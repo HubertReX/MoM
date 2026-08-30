@@ -297,6 +297,10 @@ class Generator:
             palette, set(self.terrain.get(brief.base).variants), floor, 477)
         self.trail_mask: set[tuple[int, int]] = set()
         self._char_gids: dict[str, int] | None = None
+        # Kafle, na których podłoże przyszło z klocka i ma przetrwać ostatnie
+        # przemalowanie terenu (patrz `_place` i `_paint_mask`).
+        self.ground_locked: set[tuple[int, int]] = set()
+        self._plain: frozenset[int] | None = None
         self._undergrowth: list[int] | None = None
         self._warned: set[str] = set()
         self.yards: list[tuple[int, int, int, int]] = []
@@ -370,7 +374,7 @@ class Generator:
         ground = self.tmap.tile_layer("ground")
         corners = self.terrain.corners_from_mask(
             mask, inner, self.brief.base, self.tmap.width, self.tmap.height)
-        self.terrain.paint(ground, corners, self.rng)
+        self.terrain.paint(ground, corners, self.rng, skip=self.ground_locked)
         self._redraw_trails()
 
     @property
@@ -397,8 +401,7 @@ class Generator:
     def pass_nature(self) -> None:
         for biome in self.brief.biomes:
             mask = self._biome_mask(biome)
-            stamps = [self.palette.get(name) for name in biome.stamps] or \
-                     self.palette.of_kind("nature")
+            stamps = self._variants_of(biome.stamps) or self.palette.of_kind("nature")
             self._scatter(mask, stamps, biome.density, avoid_roads=True)
 
     def _biome_mask(self, biome: Biome) -> list[list[bool]]:
@@ -472,7 +475,7 @@ class Generator:
         # biom, więc taka niespójność od razu czyta się jako błąd.
         border = next((b for b in self.brief.biomes if b.shape == "border"), None)
         names = border.stamps if border else []
-        stamps = [self.palette.get(n) for n in names] or self.palette.of_kind("nature")
+        stamps = self._variants_of(names) or self.palette.of_kind("nature")
         if not stamps:
             return
         stamped = 0
@@ -562,7 +565,12 @@ class Generator:
         """
         for spec in self.brief.fields:
             rect = spec["rect"]
-            stamp = self.palette.get(str(spec.get("stamp", "field_crop")))
+            # Warianty pola (dwa gatunki zboża) losujemy ZAGONAMI, a nie kaflami:
+            # geometria kratki musi wyjść z jednego rozmiaru, więc do losowania
+            # dopuszczamy tylko warianty tej samej wielkości co pierwszy.
+            crops = self._variants_of([spec.get("stamp", "field_crop")])
+            stamp = crops[0]
+            crops = [c for c in crops if (c.w, c.h) == (stamp.w, stamp.h)]
             gap = int(spec.get("gap", 2))                      # type: ignore[arg-type]
             # Zagon składa się z `plot` klocków w poziomie i pionie. Bez tego
             # "duże połacie pól" wychodzą jako krata miedz z drobnymi łatkami:
@@ -579,9 +587,10 @@ class Generator:
                            if 0 <= y < self.tmap.height and 0 <= x < self.tmap.width):
                         continue
                     laid = 0
+                    crop = self.rng.choice(crops)
                     for ty in range(tiles_y):
                         for tx in range(tiles_x):
-                            if self._place(stamp, ox + tx * stamp.w, oy + ty * stamp.h,
+                            if self._place(crop, ox + tx * stamp.w, oy + ty * stamp.h,
                                            avoid_roads=True):
                                 laid += 1
                     plots += bool(laid)
@@ -663,6 +672,19 @@ class Generator:
                 for x in range(at[0] + 1, at[0] + stamp.w - 1)
                 if self.tmap.in_bounds(x, y) and not walls.get(x, y)
                 and not self.road_mask[y][x]]
+        # Wolny kafel to za mało: `farmyard_big` ma w środku zagrody i stodołę,
+        # więc bywa pasek trawy odcięty od bramy ścianą budynku. Zwierzę stoi tam
+        # do końca gry, a linter melduje NIEOSIĄGALNE - dlatego bierzemy tylko to,
+        # do czego da się dojść OD BRAMY, nie wychodząc poza obrys zagrody.
+        penned = self._reachable_in_yard(stamp, at)
+        if penned:
+            inside = [spot for spot in free if spot in penned]
+            if inside:
+                free = inside
+            else:
+                self.notes.append(
+                    f"zagroda '{owner or stamp.name}': od bramy nie ma dostępu do "
+                    f"żadnego wolnego kafla - zwierzęta idą gdzie popadnie")
         if not free:
             self.notes.append(f"zagroda '{owner or stamp.name}': nie ma gdzie postawić zwierząt")
             return
@@ -682,6 +704,31 @@ class Generator:
             placed += 1
         if placed:
             self.notes.append(f"zagroda '{owner or stamp.name}': {placed} zwierząt")
+
+    def _reachable_in_yard(self, stamp: Stamp, at: tuple[int, int]) -> set[tuple[int, int]]:
+        """Kafle zagrody osiągalne OD BRAMY, licząc tylko w obrysie klocka.
+
+        Zawężenie do obrysu jest celowe: interesuje nas, czy zwierzę wyjdzie na
+        podwórze, a nie czy obejdzie zagrodę dookoła po łące.
+        """
+        if stamp.door is None:
+            return set()
+        walls = self.tmap.tile_layer("walls")
+        start = (at[0] + stamp.door[0], at[1] + stamp.door[1])
+        if walls.get(*start):
+            return set()
+        seen = {start}
+        queue = [start]
+        while queue:
+            x, y = queue.pop()
+            for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if not (at[0] <= nx < at[0] + stamp.w and at[1] <= ny < at[1] + stamp.h):
+                    continue
+                if (nx, ny) in seen or walls.get(nx, ny):
+                    continue
+                seen.add((nx, ny))
+                queue.append((nx, ny))
+        return seen
 
     def _spawn_at(self, model: str, gid: int, spot: tuple[int, int], name: str) -> None:
         """Postaw spawn tak, żeby STOPY postaci wylądowały na kaflu `spot`.
@@ -798,7 +845,7 @@ class Generator:
         return out
 
     def _build_along(self, district: District, path: list[tuple[float, float]]) -> None:
-        stamps = [self.palette.get(name) for name in district.stamps]
+        stamps = self._variants_of(district.stamps)
         if not stamps:
             return
         sides = ["north", "south"] if district.side == "both" else [district.side]
@@ -1104,6 +1151,16 @@ class Generator:
                 for y in range(self.tmap.height) for x in range(self.tmap.width)
                 if self.road_mask[y][x]} | self.trail_mask
 
+    def _variants_of(self, names: "list[object]") -> list[Stamp]:
+        """Nazwy z briefu -> wszystkie warianty tych klocków.
+
+        Nazwa w briefie wskazuje KLOCEK, a klocek może mieć w katalogu kilka
+        obrysów (autor rysuje trzydzieści ozdób i nazywa je wszystkie
+        `decorations`). Rozwinięcie robimy tu, w jednym miejscu, żeby każdy
+        przebieg losował z pełnego zestawu, a brief pozostał listą nazw.
+        """
+        return [stamp for name in names for stamp in self.palette.variants(str(name))]
+
     def _place(self, stamp: Stamp, x: int, y: int, avoid_roads: bool = True,
                layer_overlap: bool = False) -> bool:
         """Postaw klocek, jeśli miejsce jest wolne. Zwraca, czy się udało.
@@ -1124,17 +1181,40 @@ class Generator:
                     continue
                 if not layer_overlap:
                     return False
-                # zajęte: wolno tylko wtedy, gdy żadna warstwa się nie nakłada
+                # zajęte: wolno tylko wtedy, gdy żadna warstwa się nie nakłada.
+                # `ground` z tego wyłączamy - klocek NIESIE swoje podłoże (trawę
+                # albo ubity trakt zagrody), więc nakładanie się den to norma,
+                # a nie kolizja.
                 for name in ("foliage", "items", "walls", "over"):
                     if stamp.gids(name)[dy][dx] and self.tmap.tile_layer(name).get(
                             x + dx, y + dy):
                         return False
-        self.palette.paste(self.tmap, stamp.name, (x, y),
-                           layers=["foliage", "items", "walls", "over"], clear=False)
+        # WSZYSTKIE warstwy kafelkowe, `ground` włącznie. Pominięcie `ground`
+        # gubiło ubite ścieżki narysowane w prototypie wewnątrz zagród i pól -
+        # zagroda przyjeżdżała bez podwórza, pole bez miedzy.
+        self.palette.paste(self.tmap, stamp, (x, y), clear=False)
+        # Podłoże klocka bronimy przed ostatnim przemalowaniem terenu tylko tam,
+        # gdzie klocek NIESIE COŚ WIĘCEJ niż czyste tło mapy. Czysta trawa spod
+        # drzewa i tak wyszłaby z wangsetu identycznie, a zablokowana wybijałaby
+        # dziurę w odnodze drogi poprowadzonej później pod tym samym drzewem.
+        plain = self._plain_base_gids()
+        rows = stamp.gids("ground")
         for dy in range(stamp.h):
             for dx in range(stamp.w):
                 self.taken[y + dy][x + dx] = True
+                gid = rows[dy][dx]
+                if gid and gid not in plain:
+                    self.ground_locked.add((x + dx, y + dy))
         return True
+
+    def _plain_base_gids(self) -> frozenset[int]:
+        """Warianty czystego tła mapy - kafle, które nic nie wnoszą do podłoża."""
+        if self._plain is None:
+            try:
+                self._plain = frozenset(self.terrain.get(self.brief.base).variants)
+            except Exception:
+                self._plain = frozenset()
+        return self._plain
 
     # 6. detale
     def pass_props(self) -> None:
@@ -1143,7 +1223,7 @@ class Generator:
         lekiem na "połać bez jednego detalu", którą zgłasza linter."""
         for spec in self.brief.props:
             names = spec.get("stamps") or [spec["stamp"]]
-            stamps = [self.palette.get(str(name)) for name in names]  # type: ignore[union-attr]
+            stamps = self._variants_of(names)                         # type: ignore[arg-type]
             at = spec.get("at")
             if at:
                 self._place(stamps[0], int(at[0]), int(at[1]),        # type: ignore[index]

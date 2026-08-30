@@ -28,12 +28,39 @@ w ogóle o niej nie wie, bo prototyp nigdy nie jest ładowany.
 
 | Właściwość | Typ | Kto tego używa | Znaczenie |
 |---|---|---|---|
-| **(Name)** | pole nazwy | wszyscy | Nazwa klocka, po niej odwołujesz się w briefie. `snake_case`, bez spacji. Musi być unikalna. |
+| **(Name)** | pole nazwy | wszyscy | Nazwa klocka, po niej odwołujesz się w briefie. `snake_case`, bez spacji. Powtórzenie nazwy jest **dozwolone i znaczące** - patrz „Warianty" niżej. |
 | `kind` | string | wszyscy | Rodzaj - decyduje, co generator z tym klockiem robi. Wartości w tabeli niżej. **Wymagane.** |
 | `door` | string `"dx,dy"` | `building`, `farmyard` | Kafel drzwi (albo bramy zagrody), liczony **od lewego górnego rogu klocka**, od zera. Generator kieruje tu ścieżkę i sadzi na tym kaflu obiekt `exit`. W zagrodzie kafel bramy jest dodatkowo przenoszony z `walls` na `foliage`, żeby dało się przez nią przejść. Brak = element bez wejścia (stóg, stodoła bez drzwi). |
 | `anchor` | string | `nature`, `prop` | `bottom` (domyślnie) sadzi klocek dolną krawędzią - tak stawia się budynki. `center` sadzi środkiem - tak rozsypuje się drzewa. |
 | `tags` | string | wyszukiwanie | Lista po przecinku, **po angielsku**: `house,village`, `tree,forest`. Służy do grupowania („weź wszystkie `tree`"). |
 | `tile` | **bool** | `fence`, `prop` | `true` = klocek wolno powtarzać obok siebie w obie strony (płot, grządka). Domyślnie `false`. |
+
+## Warianty - kilka obrysów o tej samej nazwie
+
+Ta sama nazwa na kilku obrysach to **jeden klocek o kilku wariantach**, a nie
+pomyłka. Generator losuje wariant przy każdym postawieniu, więc jedna pozycja
+w briefie:
+
+```toml
+[[prop]]
+stamps = ["decorations", "baskets"]
+rect = [70, 30, 46, 48]
+density = 0.010
+```
+
+rozsypuje po podwórzach wszystkie trzydzieści skrzynek, beczek i koszy, które
+narysujesz - bez wypisywania ich po kolei. Tak samo działa `field_crop`: dwa
+prostokąty o tej nazwie to dwa gatunki zboża i zagony wypadają na przemian.
+
+Zasady:
+
+- warianty muszą mieć **ten sam `kind`** - grupa jest jednym klockiem,
+- w `[[fields]]` liczy się tylko wariant PIERWSZY (z niego bierze się rozmiar
+  zagonu); warianty innej wielkości są pomijane, żeby kratka pola się nie rozjechała,
+- tam, gdzie brief wskazuje jedną konkretną rzecz (`[[building]] stamp = ...`),
+  generator bierze wariant pierwszy - kolejność z pliku `.tmx`,
+- `just map-palette list` pokazuje liczbę wariantów przy nazwie; arkusz kontaktowy
+  rysuje wariant pierwszy.
 
 ## Wartości `kind`
 

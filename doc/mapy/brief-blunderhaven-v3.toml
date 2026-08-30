@@ -1,0 +1,307 @@
+# Blunderhaven V3 - mapa o 50% węższa i o 25% niższa od V2 (256x128 -> 128x96).
+#
+# Trzy zmiany wobec V2:
+#   1. mniej domów, proporcjonalnie do powierzchni (12288 kafli to 37,5% z 32768),
+#   2. trakt faluje NIEREGULARNIE - amplitudy 4..18 kafli, okresy 9..16, zamiast
+#      równego zygzaka o stałym skoku,
+#   3. po wschodniej stronie trakt zawija prawie pełną pętlę wokół centrum wsi
+#      i dopiero ogonem skręca na wschód, do krańca mapy.
+#
+# Pętla przecina samą siebie raz - i musi. Droga wchodzi w pierścień od zachodu,
+# obiega go w ~340 stopniach i kończy tuż obok wjazdu; wyjście na wschód nie ma
+# wtedy innej drogi niż przez pierścień. Skrzyżowanie wypada prawie prostopadle
+# w okolicy (110, 62), więc czyta się jak rozstaje, a nie jak pomyłka.
+
+name = "BLUNDERHAVEN_V3"
+size = [128, 96]
+seed = 20260823
+base = "grass"
+particles = "leafs,rain"
+
+# === DROGI ===================================================================
+[[road]]
+name = "main"
+width = 4
+terrain = "dirt"
+points = [
+  # falowanie ze wschodu na zachód: amplituda i okres zmieniają się co odcinek
+  [0, 64], [10, 58], [22, 67], [38, 49], [49, 56], [59, 43], [68, 47],
+  # pętla, przeciwnie do wskazówek zegara: NW -> N -> NE -> E -> SE -> S -> SW -> W
+  [78, 40], [92, 34], [106, 40], [113, 54], [106, 68], [92, 74], [78, 68], [72, 56],
+  # ogon: skręt na wschód, przez wnętrze pętli i dalej do krańca mapy
+  [84, 58], [97, 62], [109, 64], [120, 60], [127, 57],
+]
+
+# Cztery ścieżki od studni w strony świata - dla ludzi, więc szerokość kafla.
+[[road]]
+name = "well_n"
+kind = "trail"
+points = [[93, 44], [93, 40], [92, 37]]
+
+[[road]]
+name = "well_s"
+kind = "trail"
+points = [[93, 50], [93, 53], [93, 56]]
+
+[[road]]
+name = "well_e"
+kind = "trail"
+points = [[97, 47], [101, 47], [104, 48]]
+
+[[road]]
+name = "well_w"
+kind = "trail"
+points = [[85, 47], [79, 48], [74, 51]]
+
+[plaza]
+at = [93, 46]
+radius = [8, 4]
+
+# === POLA ====================================================================
+# Dwa zagony zamiast czterech - tyle mieści się w północno-zachodniej ćwiartce,
+# jedynej połaci, której nie zajmuje ani trakt, ani pętla.
+[[fields]]
+rect = [18, 18, 14, 18]
+stamp = "field_crop"
+plot = [1, 1]
+gap = 2
+zone = "field_west"
+connect_to = [26, 60]
+
+[[fields]]
+rect = [38, 18, 14, 18]
+stamp = "field_crop"
+plot = [1, 1]
+gap = 2
+zone = "field_north"
+connect_to = [44, 46]
+
+# === LAS =====================================================================
+[[biome]]
+kind = "forest"
+shape = "border"
+stamps = ["tree_round", "tree_bushy", "tree_fir", "tree_fir_big", "tree_oak_big", "tree_dead"]
+coverage = 0.30
+scale = 12
+density = 0.85
+margin = 3
+
+# === BUDYNKI STAWIANE WPROST =================================================
+# Centrum wsi siedzi w PÓŁNOCNEJ kieszeni pętli (x 75..111, y 37..55): plac ze
+# studnią, tawerna, stajnia i kuźnia. Południowa kieszeń (y 61..71) to domy.
+
+[[building]]
+stamp = "tavern_tall"       # Tawerna, północna pierzeja placu
+at = [86, 37]
+owner = "LOST_CORK_TAVERN"
+exit_to = "LOST_CORK_TAVERN"
+
+[[building]]
+stamp = "barn_wood"         # mała stajnia obok - tu budzi się gracz (Q00_S00)
+at = [92, 38]
+owner = "STABLE"
+exit_to = "JACOBS_CHAMBER"
+
+[[building]]
+stamp = "hut_kiln"          # kuźnia, wschodni kraniec placu
+at = [103, 44]
+owner = "SMITHY"
+exit_to = "JACOBS_CHAMBER"
+yard = [2, 3]
+fences = ["fence_rail_dark"]
+
+[[building]]
+stamp = "house_red"         # dom kowala, poza pętlą i na uboczu (gardzi wsią)
+at = [62, 74]
+owner = "HAMMER_HOAXHEART"
+exit_to = "JACOBS_CHAMBER"
+yard = [2, 4]
+fences = ["wall_stone"]
+
+[[building]]
+stamp = "hut_brown"         # chałupa Zielarki: koniec wioski, przy lesie (Q01_S02)
+at = [22, 76]
+owner = "POTIONEER_PUZZLEMINT"
+exit_to = "JACOBS_CHAMBER"
+yard = [2, 3]
+fences = ["fence_wood"]
+
+[[building]]
+stamp = "house_cottage"     # dom Bartusia, południowa kieszeń pętli
+at = [84, 63]
+owner = "BART"
+exit_to = "JACOBS_CHAMBER"
+yard = [2, 3]
+fences = ["fence_wood"]
+
+[[building]]
+stamp = "house_cream"       # dom Johnego, południowa kieszeń pętli
+at = [95, 66]
+owner = "JOHNY"
+exit_to = "JACOBS_CHAMBER"
+yard = [2, 3]
+fences = ["fence_rail_dark"]
+
+# Gotowe zagrody z prototypu: przychodzą z własnym płotem, bramą i pomieszczeniami.
+# Zwierzęta to obiekty, więc nie ma ich w kaflach - wymieniamy je tutaj.
+[[building]]
+stamp = "farmyard_big"
+at = [84, 18]
+owner = "FARMSTEAD_BIG"
+animals = ["COW", "COW", "PIG", "CHICKEN_WHITE", "CHICKEN_BROWN", "CHICKEN_BLACK",
+           "CHICKEN_CUTE", "HORSE", "DOG_ORANGE"]
+
+[[building]]
+stamp = "farmyard_small"
+at = [18, 44]
+owner = "FARMSTEAD_SMALL"
+animals = ["CHICKEN_WHITE", "CHICKEN_BROWN", "CHICKEN_CUTE", "PIG", "COW", "DOG_PURPLE"]
+
+# === ZABUDOWA WZDŁUŻ TRAKTU ==================================================
+# Odstępy trzykrotnie większe niż w V2 (12-19 / 13-21): trakt z pętlą jest niemal
+# tak długi jak na mapie 256x128, więc same odstępy decydują o liczbie domów.
+[[district]]
+name = "wies_polnoc"
+along = "main"
+side = "north"
+stamps = ["house_cottage", "house_red", "house_ornate", "farmhouse_big_1", "farmhouse_big_2", "barn_wood"]
+spacing = [55, 80]
+setback = [3, 6]
+fences = ["fence_wood", "fence_rail_dark", "wall_stone"]
+yard = [2, 4]
+exit_to = "JACOBS_CHAMBER"
+
+[[district]]
+name = "wies_poludnie"
+along = "main"
+side = "south"
+stamps = ["house_cottage", "hut_brown", "house_cream", "barn_wood", "house_ornate"]
+spacing = [60, 90]
+setback = [3, 7]
+fences = ["wall_stone", "fence_wood"]
+yard = [2, 4]
+exit_to = "JACOBS_CHAMBER"
+
+# === REKWIZYTY ===============================================================
+[[prop]]
+stamp = "well"
+at = [92, 45]
+
+[[prop]]
+stamps = ["sunflowers"]
+count = 4
+
+[[prop]]
+stamps = ["haystack", "haystack_small"]
+count = 10
+
+# Ozdoby dorysowane przez autora w katalogu: skrzynki, beczki i kosze przy
+# zabudowie, zieleń i kłody na łąkach. Każda nazwa to GRUPA wariantów, więc
+# jedna pozycja w briefie wystarcza na trzydzieści różnych obrazków.
+[[prop]]
+stamps = ["decorations", "baskets"]
+rect = [72, 32, 42, 44]
+density = 0.035
+
+[[prop]]
+stamps = ["decorations", "baskets"]
+rect = [18, 40, 54, 40]
+density = 0.020
+
+[[prop]]
+stamps = ["greenery", "bush", "trunk"]
+rect = [16, 16, 96, 64]
+density = 0.012
+
+[[prop]]
+stamps = ["tree_blossom_pink", "tree_blossom_white", "tree_orchard_green"]
+count = 8
+
+# === OBIEKTY =================================================================
+[[entry]]
+name = "start"
+at = [94, 42]
+
+[[entry]]
+name = "DrogaZachod"
+at = [2, 64]
+
+[[entry]]
+name = "DrogaWschod"
+at = [125, 57]
+
+[[place]]
+name = "well"
+at = [93, 48]
+
+[[place]]
+name = "smithy"
+at = [104, 48]
+
+[[place]]
+name = "house_smith"
+at = [63, 77]
+
+[[place]]
+name = "house_bart"
+at = [85, 66]
+
+[[place]]
+name = "house_johny"
+at = [96, 69]
+
+[[place]]
+name = "house_barman"
+at = [87, 42]
+
+# `rect` strefy jest w BEZWZGLĘDNYCH kaflach, więc jako jedyny w tym pliku nie
+# przelicza się po zmianie `size`. Ten prostokąt jest pisany pod 128x96: łąka
+# między polami a zagrodą północną, poza pasem lasu i poza traktem.
+[[zone]]
+name = "plains"
+rect = [56, 20, 26, 13]
+
+[[spawn]]
+name = "BARMAN_ABSINTHRAYNER"
+model = "BARMAN_ABSINTHRAYNER"
+at = [87, 43]
+
+[[spawn]]
+name = "HAMMER_HOAXHEART"
+model = "HAMMER_HOAXHEART"
+at = [104, 49]
+
+[[spawn]]
+name = "POTIONEER_PUZZLEMINT"
+model = "POTIONEER_PUZZLEMINT"
+at = [23, 79]
+
+[[spawn]]
+name = "MARRY"
+model = "MARRY"
+at = [90, 49]
+
+[[spawn]]
+name = "BART"
+model = "BART"
+at = [85, 66]
+
+[[spawn]]
+name = "JOHNY"
+model = "JOHNY"
+at = [96, 69]
+
+[[spawn]]
+name = "ROB"
+model = "ROB"
+at = [95, 50]
+
+[[spawn]]
+name = "CLAPBACK_SWORD"
+model = "CLAPBACK_SWORD"
+at = [94, 42]
+
+[[spawn]]
+name = "CAT_01"
+model = "CAT"
+at = [88, 51]

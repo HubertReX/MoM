@@ -174,6 +174,32 @@ def test_stamp_palette_cuts_all_tile_layers() -> None:
                     f"kafel drzwi klocka {stamp.name} musi być na warstwie `walls`")
 
 
+def test_stamp_names_group_into_variants() -> None:
+    """Kilka obrysów o tej samej nazwie to warianty jednego klocka, nie błąd.
+
+    Reguła, a nie spis: sprawdzamy, że KAŻDA powtórzona nazwa daje grupę i że
+    `get()` wskazuje pierwszy wariant, a nie że w katalogu jest akurat trzydzieści
+    ozdób - autor dorysowuje je myszą i liczba zmienia się co sesję.
+    """
+    from palette import Palette
+
+    palette = Palette.load()
+    for name, variants in palette.groups.items():
+        assert_true(variants, f"grupa '{name}' nie może być pusta")
+        assert_eq(palette.get(name), variants[0],
+                  f"get('{name}') ma zwracać pierwszy wariant")
+        assert_eq(palette.variants(name), variants, f"variants('{name}')")
+        for variant in variants:
+            assert_eq(variant.name, name, f"wariant grupy '{name}' nosi jej nazwę")
+    every = palette.all_stamps()
+    assert_eq(len(every), sum(len(v) for v in palette.groups.values()),
+              "all_stamps() ma wymieniać wszystkie warianty")
+    for kind in {stamp.kind for stamp in every}:
+        assert_eq(len(palette.of_kind(kind)),
+                  sum(1 for stamp in every if stamp.kind == kind),
+                  f"of_kind('{kind}') gubi warianty")
+
+
 def test_terrain_comes_from_the_wangset() -> None:
     from tileset import Tileset
     from terrain import TerrainLib
@@ -230,6 +256,7 @@ def main() -> None:
         ("mapy dzielą tablicę tilesetów", test_game_maps_share_the_canonical_tileset_table),
         ("zapis gdzie indziej przelicza .tsx", test_saving_elsewhere_rebases_tilesets),
         ("katalog tnie wszystkie warstwy", test_stamp_palette_cuts_all_tile_layers),
+        ("nazwy klocków grupują warianty", test_stamp_names_group_into_variants),
         ("tereny z wangsetu", test_terrain_comes_from_the_wangset),
         ("plama trafia w zadane pokrycie", test_blob_mask_hits_requested_coverage),
         ("linter łapie strefy-wielokąty", test_linter_finds_polygon_zones),
