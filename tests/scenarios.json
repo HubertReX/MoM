@@ -534,7 +534,8 @@
             { "slug": "pick_intro", "commands": ["item_1"], "wait": 1.5 },
             { "slug": "hub_node", "commands": ["screenshot"], "wait": 2.0 },
             { "slug": "dump_state_in_dialog", "commands": ["debug_ui_state"], "wait": 0.5 },
-            { "slug": "pick_goodbye", "commands": ["item_6"], "wait": 1.5 },
+            { "slug": "pick_goodbye", "commands": ["up"], "wait": 1.5 },
+            { "slug": "confirm_goodbye", "commands": ["accept"], "wait": 1.5 },
             { "slug": "close_with_accept", "commands": ["accept"], "wait": 0.5 },
             { "slug": "dialog_closed", "commands": ["screenshot"], "wait": 2.0 }
         ],
