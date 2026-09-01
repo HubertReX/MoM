@@ -1,0 +1,11 @@
+# Konfiguracja worktrunk (wt) dla MoM.
+#
+# Nowy worktree ma tylko pliki śledzone przez gita - bez .venv gra się nie
+# uruchomi, a direnv (`layout uv` z .envrc) budowałby środowisko od zera przy
+# każdym `wt switch --create`. Hook pre-start podlinkowuje środowisko z
+# głównego worktree, zanim shell wejdzie do katalogu i odpali direnv.
+#
+# pre-start (nie post-start), bo direnv ładuje .envrc zaraz po `cd`, a
+# post-start leci w tle - venv musi już wtedy istnieć.
+
+pre-start = "scripts/wt_bootstrap_worktree.sh {{ primary_worktree_path }}"
