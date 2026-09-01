@@ -42,6 +42,23 @@ link_dir() {
     echo "[wt-bootstrap] symlink $rel -> $src"
 }
 
+# Podlinkuj pojedynczy plik z głównego worktree.
+link_file() {
+    local rel="$1"
+    local src="$PRIMARY/$rel"
+    local dst="$HERE/$rel"
+
+    if [[ ! -f "$src" ]]; then
+        return 0
+    fi
+    if [[ -e "$dst" || -L "$dst" ]]; then
+        return 0
+    fi
+    mkdir -p "$(dirname "$dst")"
+    ln -s "$src" "$dst"
+    echo "[wt-bootstrap] symlink $rel"
+}
+
 # Skopiuj plik z głównego worktree (kopia, nie link - to stan lokalny,
 # który każdy worktree może zmieniać niezależnie).
 copy_file() {
@@ -85,6 +102,22 @@ copy_file .opencode/package-lock.json
 
 # Lokalne zgody/ustawienia Claude Code (nieśledzone, per-maszyna).
 copy_file .claude/settings.local.json
+
+# Vault Obsidiana (doc/). Repo trzyma tylko manifesty i ustawienia wtyczek -
+# ich kod (main.js/styles.css) i motywy są ignorowane, bo Obsidian pobiera je
+# z community-plugins.json. Bez nich nowy worktree otwiera się jako vault z
+# martwymi wtyczkami (dataview, excalidraw, templater), więc linkujemy kod
+# z głównego worktree zamiast czekać na ponowne pobranie.
+for src in "$PRIMARY"/doc/.obsidian/plugins/*/main.js \
+           "$PRIMARY"/doc/.obsidian/plugins/*/styles.css \
+           "$PRIMARY"/doc/.obsidian/themes/*/theme.css; do
+    [[ -f "$src" ]] || continue          # glob bez trafienia zostaje dosłowny
+    link_file "${src#"$PRIMARY"/}"
+done
+
+# workspace.json to układ okien - stan per-vault, który Obsidian nadpisuje
+# przy każdej zmianie zakładki. Kopia, nie link, żeby dwa vaulty się nie biły.
+copy_file doc/.obsidian/workspace.json
 
 # Świeży worktree nie ma plików sterowania agentem; agent_ctrl czyta
 # agent_input.txt przy starcie, więc niech istnieje pusty.
