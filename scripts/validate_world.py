@@ -1001,6 +1001,89 @@ def check_spawn_naming(world: World) -> list[Violation]:
     return out
 
 
+def _dialog_nodes_of(world: World, npc_key: str) -> dict | None:
+    """Sekcja ``DIALOG_NODES`` postaci, albo ``None`` gdy postaci nie ma w configu."""
+    dialogs = world.config.get("dialogs") or {}
+    graph = dialogs.get(npc_key)
+    if not isinstance(graph, dict):
+        return None
+    nodes = graph.get("DIALOG_NODES")
+    return nodes if isinstance(nodes, dict) else {}
+
+
+def _dialog_spec_violations(
+    world: World,
+    game_map: GameMap,
+    source: str,
+    name: str,
+    spec: str,
+    *,
+    blocking: bool,
+) -> list[Violation]:
+    """Sprawdź wskaźnik ``KLUCZ_POSTACI:WĘZEŁ`` z obiektu warstwy `interactions`.
+
+    Wskaźnik żyje w Tiled, a węzeł i jego warunek w notatce postaci - to jedyne
+    miejsce w repo, które widzi naraz obie strony, więc tu (i tylko tu) da się
+    złapać rozjazd między mapą a dialogiem.
+    """
+    out: list[Violation] = []
+    npc_key, sep, node_key = spec.partition(":")
+    npc_key, node_key = npc_key.strip(), node_key.strip()
+    if not sep or not npc_key or not node_key:
+        out.append(Violation(
+            ERROR, source,
+            f"'{name}' ma dialog='{spec}' - zapis to KLUCZ_POSTACI:WĘZEŁ, "
+            f"np. 'HAMMER_HOAXHEART:002'",
+        ))
+        return out
+
+    nodes = _dialog_nodes_of(world, npc_key)
+    if nodes is None:
+        out.append(Violation(
+            ERROR, source,
+            f"'{name}' celuje w postać '{npc_key}', której nie ma w config.dialogs",
+        ))
+        return out
+
+    node = nodes.get(node_key)
+    if node is None:
+        out.append(Violation(
+            ERROR, source,
+            f"'{name}' celuje w węzeł '{node_key}', którego dialog '{npc_key}' nie ma "
+            f"(zna: {', '.join(sorted(nodes)) or 'nic'})",
+        ))
+        return out
+
+    if not node.get("is_entry"):
+        out.append(Violation(
+            ERROR, source,
+            f"'{name}' celuje w węzeł '{npc_key}#{node_key}', który nie jest "
+            f"oznaczony '-entry' - do węzła bez tego sufiksu wchodzi się wyłącznie "
+            f"krawędzią grafu, więc wyzwalacz nigdy go nie otworzy",
+        ))
+        return out
+
+    if blocking and str(node.get("entry_condition", "True")) == "True":
+        out.append(Violation(
+            WARN, source,
+            f"wyjście '{name}' celuje w węzeł '{npc_key}#{node_key}' bez warunku "
+            f"wejścia - bramka jest wtedy zawsze prawdziwa, czyli tego wyjścia "
+            f"nie da się przejść nigdy",
+        ))
+
+    # głos zza kadru jest dozwolony (postaci nie musi tu być), ale prawie zawsze
+    # jest niezamierzony - a gdy jej mapa nie była jeszcze wczytana, wyzwalacz
+    # milczy i blokada wyjścia po prostu przepuszcza gracza
+    if npc_key not in set(game_map.spawns.values()):
+        out.append(Violation(
+            WARN, source,
+            f"'{name}' celuje w postać '{npc_key}', która nie ma spawnu na tej "
+            f"mapie - odezwie się zza kadru i tylko wtedy, gdy jej własna mapa "
+            f"była już wczytana",
+        ))
+    return out
+
+
 def check_interaction_targets(world: World) -> list[Violation]:
     """Rule 14: żadne drzwi nie prowadzą donikąd (C02, D6).
 
@@ -1029,13 +1112,35 @@ def check_interaction_targets(world: World) -> list[Violation]:
                     ))
                 continue
 
+            if obj_type == "dialog":
+                # obszar odgrywający scenę: cały jego sens siedzi we wskaźniku,
+                # więc bez niego jest tylko niewidzialnym prostokątem
+                spec = props.get("dialog", "").strip()
+                if not spec:
+                    out.append(Violation(
+                        ERROR, source,
+                        f"wyzwalacz '{name}' nie ma własności 'dialog' - "
+                        f"nie wskazuje żadnego węzła, więc nigdy nic nie zrobi",
+                    ))
+                else:
+                    out.extend(_dialog_spec_violations(
+                        world, game_map, source, name, spec, blocking=False))
+                continue
+
             if obj_type != "exit":
                 out.append(Violation(
                     ERROR, source,
                     f"'{name}' ma obj_type='{obj_type}' - ładowarka zna tylko "
-                    f"'exit' i 'chest', więc ten obiekt jest niewidoczny w grze",
+                    f"'exit', 'dialog' i 'chest', więc ten obiekt jest "
+                    f"niewidoczny w grze",
                 ))
                 continue
+
+            # bramka fabularna na wyjściu - ten sam wskaźnik, inne skutki
+            gate = props.get("dialog", "").strip()
+            if gate:
+                out.extend(_dialog_spec_violations(
+                    world, game_map, source, name, gate, blocking=True))
 
             to_map = props.get("to_map", "").strip()
             if not to_map:
@@ -1488,6 +1593,39 @@ def check_trade_options(world: World) -> list[Violation]:
     return out
 
 
+def check_dialog_entry_nodes(world: World) -> list[Violation]:
+    """Reguła 24: każdy węzeł `-entry` ma swój wyzwalacz na jakiejś mapie.
+
+    Odwrotność reguły sieroty z importera. Importer zwalnia węzeł `-entry` z
+    obowiązku posiadania krawędzi wejściowej - bo ta krawędź prowadzi z mapy, a
+    nie z grafu - więc gdyby nikt nie sprawdzał drugiej strony, węzeł, do którego
+    nic nie prowadzi, przechodziłby cicho. Tu widać naraz mapy i config, więc to
+    jedyne miejsce, w którym da się to złapać.
+    """
+    out: list[Violation] = []
+    referenced: set[tuple[str, str]] = set()
+    for game_map in world.maps:
+        for _name, props in game_map.entries(INTERACTIONS_LAYER):
+            spec = props.get("dialog", "").strip()
+            npc_key, sep, node_key = spec.partition(":")
+            if sep:
+                referenced.add((npc_key.strip(), node_key.strip()))
+
+    for npc_key, graph in (world.config.get("dialogs") or {}).items():
+        nodes = graph.get("DIALOG_NODES") if isinstance(graph, dict) else None
+        if not isinstance(nodes, dict):
+            continue
+        for node_key, node in nodes.items():
+            if node.get("is_entry") and (npc_key, node_key) not in referenced:
+                out.append(Violation(
+                    WARN, f"config.json:dialogs.{npc_key}",
+                    f"węzeł '{node_key}' jest oznaczony '-entry', ale żaden obiekt "
+                    f"warstwy '{INTERACTIONS_LAYER}' na niego nie wskazuje - gracz "
+                    f"nigdy go nie zobaczy",
+                ))
+    return out
+
+
 CHECKS = (
     check_spawn_models,
     check_character_places,
@@ -1503,6 +1641,7 @@ CHECKS = (
     check_map_display_names,
     check_spawn_naming,
     check_interaction_targets,
+    check_dialog_entry_nodes,
     check_place_prefixes,
     check_tileset_model_names,
     check_map_references,

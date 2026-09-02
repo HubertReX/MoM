@@ -385,7 +385,9 @@ def check_reachability(ctx: Ctx) -> list[Row]:
     for obj in ctx.objects("interactions"):
         x, y = ctx.tile_of(obj)
         kind = obj.props.get("obj_type", "")
-        if kind == "chest":
+        if kind in ("chest", "dialog"):
+            # na skrzynię się patrzy, na wyzwalacz wchodzi - w obu wypadkach
+            # liczy się sam kafel obiektu
             row = _reach_row(ctx, "interactions", obj.name, x, y)
         else:
             # drzwi SAME stoją w ścianie - liczy się kafel, z którego się wchodzi
@@ -483,6 +485,28 @@ def check_doors_wired(ctx: Ctx) -> list[Row]:
     return rows
 
 
+def check_dialog_triggers(ctx: Ctx) -> list[Row]:
+    """Wyzwalacz dialogu musi wskazywać węzeł i mieć w co wejść.
+
+    Dokąd wskazuje - czy postać i węzeł `-entry` naprawdę istnieją - sprawdza
+    `just validate-world`, bo tylko on czyta config. Linter mapy pilnuje tego, co
+    widać w samym `.tmx`: że wskaźnik w ogóle jest i że obszar ma powierzchnię.
+    """
+    rows: list[Row] = []
+    for obj in ctx.objects("interactions"):
+        if obj.props.get("obj_type", "") != "dialog":
+            continue
+        if not obj.props.get("dialog", "").strip():
+            rows.append(Row(ERROR, "interactions", obj.name,
+                            "wyzwalacz bez własności `dialog` - nie wskazuje żadnego "
+                            "węzła, więc jest niewidzialnym prostokątem"))
+        if not obj.width or not obj.height:
+            rows.append(Row(ERROR, "interactions", obj.name,
+                            "wyzwalacz bez wymiarów - punkt nie ma pola, więc gracz "
+                            "nigdy w niego nie wejdzie"))
+    return rows
+
+
 def check_exit_targets(ctx: Ctx) -> list[Row]:
     """Do każdego `exit` musi istnieć `entry_point` po drugiej stronie."""
     rows: list[Row] = []
@@ -520,7 +544,7 @@ def check_chests(ctx: Ctx) -> list[Row]:
         rows.append(Row(
             ERROR, "interactions", obj.name or f"<bez nazwy id={obj.id}>",
             "obiekt bez własności `obj_type` - `load_interactions` bierze pod uwagę "
-            "wyłącznie `exit` i `chest`, więc ten jest po cichu pomijany",
+            "wyłącznie `exit`, `dialog` i `chest`, więc ten jest po cichu pomijany",
         ))
     return rows
 
@@ -961,7 +985,7 @@ CHECKS = (
     check_layers, check_tilesets, check_sprites_layer, check_over_opacity, check_items_layer,
     check_start, check_reachability, check_doors_reachable, check_doors_wired,
     check_exit_on_door,
-    check_exit_targets, check_chests,
+    check_exit_targets, check_chests, check_dialog_triggers,
     check_spawn_points, check_spawn_naming, check_exit_naming,
     check_zones, check_zone_placement, check_places, check_waypoints, check_object_names,
     check_border, check_step_cost, check_routine_routes, check_world_wiring,

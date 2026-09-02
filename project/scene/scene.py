@@ -13,7 +13,8 @@ from maze_generator.maze_utils import (
     get_gid_from_tmx_id,
     timeit
 )
-from objects import (ChestSprite, Collider, DestructibleSprite, ItemSprite, Notification, NotificationTypeEnum)
+from objects import (ChestSprite, Collider, DestructibleSprite, DialogTrigger, ItemSprite,
+                     Notification, NotificationTypeEnum)
 from particles import ParticleSystem, WeatherDirector
 from pyscroll.group import PyscrollGroup
 from pytmx import TiledMap
@@ -61,8 +62,9 @@ from settings import (
     vec3,
     vector_to_tuple
 )
-from scene import (agent_api, collisions, debug_overlay, fog_of_war, intro, map_loader,
-                   map_state, night_filter, player_actions, routines_director, world_clock)
+from scene import (agent_api, collisions, debug_overlay, dialog_triggers, fog_of_war, intro,
+                   map_loader, map_state, night_filter, player_actions, routines_director,
+                   world_clock)
 from state import State
 from transition import Transition, TransitionCircle
 from ui import icons as ui_icons
@@ -155,6 +157,13 @@ class Scene(State):
         self.items: list[ItemSprite] = []
         # self.items_defs: dict[str, pygame.Surface] = {}
         self.exits: list[Collider] = []
+        # obszary odgrywające scenę (`obj_type="dialog"` na warstwie `interactions`)
+        self.dialog_triggers: list[DialogTrigger] = []
+        # nazwy wyzwalaczy, na których gracz stoi TERAZ. Scena odgrywa się przy
+        # WEJŚCIU w obszar, a zejście z niego uzbraja go ponownie - dokładnie jak
+        # komunikat o zamkniętych drzwiach. Stan liczony z pozycji gracza, więc
+        # celowo poza `MAP_PROPERTIES` i poza save'em.
+        self.dialog_triggers_inside: set[str] = set()
         self.zones: dict[str, list[pygame.Rect]] = {}
         self.chests: list[ChestSprite] = []
         self.destructibles: list[DestructibleSprite] = []
@@ -177,6 +186,7 @@ class Scene(State):
         self.shadow_sprites: pygame.sprite.Group = pygame.sprite.Group()
         self.obstacles_sprites: pygame.sprite.Group = pygame.sprite.Group()
         self.exit_sprites: pygame.sprite.Group = pygame.sprite.Group()
+        self.dialog_trigger_sprites: pygame.sprite.Group = pygame.sprite.Group()
         self.item_sprites: pygame.sprite.Group = pygame.sprite.Group()
         self.animations: pygame.sprite.Group = pygame.sprite.Group()
 
@@ -649,6 +659,10 @@ class Scene(State):
         # mgła wojny (E03): po kolizjach, bo dopiero wtedy pozycje w tej klatce są
         # ostateczne. Poza labiryntem i przy wyłączonej mgle kosztuje jedno `if`.
         fog_of_war.update(self)
+
+        # wyzwalacze dialogu z mapy - OSTATNIE w klatce, żeby świeżo otwarty panel
+        # zamroził świat dopiero w następnej (i zjadł `INPUTS` razem z nią)
+        dialog_triggers.update(self)
 
     # TODO Rename this here and in `update`
     def _confirm_reload_map(self) -> None:

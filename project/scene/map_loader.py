@@ -30,7 +30,8 @@ from maze_generator.maze_utils import (
     find_dead_ends,
     find_tiles_with_cross_way,
 )
-from objects import ChestSprite, Collider, DestructibleSprite, ItemSprite, NotificationTypeEnum
+from objects import (ChestSprite, Collider, DestructibleSprite, DialogTrigger, ItemSprite,
+                     NotificationTypeEnum)
 from pyscroll.group import PyscrollGroup
 from pytmx import TiledMap, TiledObjectGroup, TiledTileLayer
 from pytmx.util_pygame import load_pygame
@@ -209,6 +210,10 @@ def populate_sprite_groups(scene: "Scene") -> None:
         if exit not in scene.exit_sprites:
             scene.exit_sprites.add(exit)
 
+    for trigger in scene.dialog_triggers:
+        if trigger not in scene.dialog_trigger_sprites:
+            scene.dialog_trigger_sprites.add(trigger)
+
     for chest in scene.chests:
         if chest not in scene.obstacles_sprites:
             scene.obstacles_sprites.add(chest)
@@ -268,6 +273,7 @@ def load_step_cost(scene: "Scene", tileset_map: TiledMap) -> None:
 def load_interactions(scene: "Scene", exits_layer: TiledTileLayer) -> None:
     scene.exits = []
     scene.chests = []
+    scene.dialog_triggers = []
     # how many chests of each config template we have built on this map so far.
     # A chest's save key is `<template>#<n>`, so the count is what makes the key
     # unique when one template is reused - which is the normal case in a maze,
@@ -295,8 +301,20 @@ def load_interactions(scene: "Scene", exits_layer: TiledTileLayer) -> None:
                     # te same dwie co kolumny skrzyni; brak = drzwi otwarte
                     getattr(obj, "requires_item", "") or "",
                     str(getattr(obj, "consumes_key", "")).lower() in ("true", "1"),
+                    # bramka fabularna - węzeł `-entry` u wskazanej postaci
+                    getattr(obj, "dialog", "") or "",
                 )
                 scene.exits.append(exit)
+            elif getattr(obj, "obj_type", "") == "dialog":
+                # obszar odgrywający scenę: wchodzi się NA niego, nic nie blokuje
+                trigger = DialogTrigger(
+                    scene.dialog_trigger_sprites,
+                    (obj.x, obj.y),
+                    (obj.width, obj.height),
+                    obj.name,
+                    getattr(obj, "dialog", "") or "",
+                )
+                scene.dialog_triggers.append(trigger)
             elif getattr(obj, "obj_type", "") == "chest":
                 if scene.is_maze and scene.maze is not None and obj.name == "SmallChest_Maze":
                     maze = scene.maze

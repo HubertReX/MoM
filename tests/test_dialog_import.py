@@ -624,6 +624,90 @@ def test_a_trade_option_self_loops_and_is_flagged() -> None:
     )
 
 
+def _entry_vault(root: Path, entry_heading: str, condition_line: str = "",
+                 *, en_entry_heading: str | None = None) -> None:
+    """Vault, w którym węzeł 001 jest wejściem z mapy, a nie celem żadnej opcji."""
+    def _body(heading: str) -> str:
+        return (
+            "---\naliases:\n  - POTIONEER_PUZZLEMINT\n---\n"
+            "# Zielarka Zmora\n\n## 000\n\n* Czego?\n\n"
+            "* [[#990-end]] 9\U0001F610: Nic, dzięki.\n\n"
+            f"{heading}\n"
+            f"{condition_line}"
+            "\n* Stój.\n\n"
+            "* [[#990-end]] 1\U0001F610: Dobrze.\n\n"
+            "## 990-end\n\n* Żegnam\n"
+        )
+
+    for sub in ("PL/Postacie", "EN/Characters"):
+        (root / sub).mkdir(parents=True)
+    (root / "PL/Postacie/Zielarka Zmora.md").write_text(_body(entry_heading), encoding="utf-8")
+    (root / "EN/Characters/Zielarka Zmora.md").write_text(
+        _body(en_entry_heading or entry_heading), encoding="utf-8")
+
+
+def _import_entry_vault(entry_heading: str, condition_line: str = "",
+                        *, en_entry_heading: str | None = None) -> dict:
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        _entry_vault(root, entry_heading, condition_line, en_entry_heading=en_entry_heading)
+        _, cfg, _ = import_character_dialog(root, "POTIONEER_PUZZLEMINT")
+    return cfg["POTIONEER_PUZZLEMINT"]
+
+
+def test_an_entry_node_survives_the_orphan_rule() -> None:
+    """Krawędź do węzła `-entry` prowadzi z MAPY, więc importer jej nie widzi.
+
+    Bez zwolnienia z reguły sieroty takiego węzła nie dałoby się w ogóle napisać:
+    import padłby na „orphan node", choć węzeł ma swój wyzwalacz w Tiled.
+    """
+    cfg = _import_entry_vault("## 001-entry")
+    node = cfg["DIALOG_NODES"]["001"]
+
+    assert_eq(node["is_entry"], True, "marker dociera do config.json")
+    assert_eq(node["entry_condition"], "True", "brak linii warunku = zawsze")
+    assert_true("001" not in cfg["START_NODE"], "wejście z mapy to nie start rozmowy")
+
+
+def test_the_entry_condition_is_converted_like_an_option_condition() -> None:
+    """Jedna gramatyka: wikilinki i backquote'y znikają tak samo jak w opcji."""
+    cfg = _import_entry_vault(
+        "## 001-entry",
+        "[`not visited(`[[Zielarka Zmora#000]]`)`]\n",
+    )
+
+    assert_eq(cfg["DIALOG_NODES"]["001"]["entry_condition"],
+              'not visited("POTIONEER_PUZZLEMINT", "000")')
+
+
+def test_a_broken_entry_condition_fails_the_import() -> None:
+    """Cichy `False` na wyzwalaczu byłby nie do zdiagnozowania w grze."""
+    try:
+        _import_entry_vault("## 001-entry", "[`__import__(\"os\")`]\n")
+    except DialogImportError as error:
+        assert_true("entry condition" in str(error), f"błąd nazywa miejsce: {error}")
+        return
+    raise AssertionError("expected a DialogImportError for a bogus entry condition")
+
+
+def test_an_entry_marker_must_match_between_pl_and_en() -> None:
+    """Sufiks jest zdejmowany z klucza, więc porównanie kluczy tego nie złapie."""
+    try:
+        _import_entry_vault("## 001-entry", en_entry_heading="## 001")
+    except DialogImportError as error:
+        assert_true("-entry" in str(error), f"błąd nazywa marker: {error}")
+        return
+    raise AssertionError("expected a DialogImportError for a PL/EN '-entry' mismatch")
+
+
+def test_node_heading_re_reads_the_entry_suffix() -> None:
+    match = _NODE_HEADING_RE.match("## 002-entry")
+    assert_true(match is not None, "nagłówek `-entry` musi się parsować")
+    assert_eq(match.group("key"), "002-entry")            # type: ignore[union-attr]
+
+
 def test_trade_without_the_end_suffix_is_refused() -> None:
     """One spelling, not two - the error says which one."""
     import tempfile
@@ -719,6 +803,13 @@ def main() -> None:
         ("test_option_re_new_format_with_condition", test_option_re_new_format_with_condition),
         ("test_option_re_new_format_end_node", test_option_re_new_format_end_node),
         ("test_resume_link_re_new_format", test_resume_link_re_new_format),
+        ("an_entry_node_survives_the_orphan_rule", test_an_entry_node_survives_the_orphan_rule),
+        ("the_entry_condition_is_converted_like_an_option_condition",
+         test_the_entry_condition_is_converted_like_an_option_condition),
+        ("a_broken_entry_condition_fails_the_import", test_a_broken_entry_condition_fails_the_import),
+        ("an_entry_marker_must_match_between_pl_and_en",
+         test_an_entry_marker_must_match_between_pl_and_en),
+        ("node_heading_re_reads_the_entry_suffix", test_node_heading_re_reads_the_entry_suffix),
     ]
     tests.extend(self_contained_tests)
     for name, func in tests:

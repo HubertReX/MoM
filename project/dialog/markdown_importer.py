@@ -185,12 +185,23 @@ _OPTION_RE = re.compile(
 _TRADE_TARGET = "trade"
 _TRADE_TARGET_ANCHOR = f"{_TRADE_TARGET}-end"
 
-# heading that starts a node: "## 000", "## 990-end" (preferred) or the
-# legacy "### 000" / "### 990-end [011](#011)".  Node keys are digits only,
+# heading that starts a node: "## 000", "## 990-end", "## 002-entry" (preferred)
+# or the legacy "### 000" / "### 990-end [011](#011)".  Node keys are digits only,
 # so prose headings inside the "# Info" section never collide.
+#
+# `-entry` czyta się jak `-end`: sufiks mówi, jak się z węzłem obchodzić, a nie
+# jaki ma klucz. Tu znaczy "do tego węzła wchodzi się wyzwalaczem z mapy", więc
+# żadna opcja nie musi na niego wskazywać.
 _NODE_HEADING_RE = re.compile(
-    r"^#{2,3}\s*(?P<key>\d+(?:-end)?)"
+    r"^#{2,3}\s*(?P<key>\d+(?:-end|-entry)?)"
     r"(?:\s*\[(?P<resume_anchor>[^\]]+)\]\(#(?P<resume_target>[^)]+)\))?\s*$"
+)
+
+# warunek wejścia węzła `-entry`, w osobnej linii pod nagłówkiem - tam, gdzie
+# węzeł `-end` trzyma link resume. Ten sam kształt co efekt węzła, tylko że
+# w środku siedzi całe wyrażenie warunku (z wikilinkami), a nie wywołanie.
+_ENTRY_CONDITION_RE = re.compile(
+    r"^\[(?P<condition>" + _CONDITION_BODY + r")\]\s*$"
 )
 
 # standalone resume link on its own line: "[011](#011)" or "[[#011]]"
@@ -260,6 +271,11 @@ class _ParsedNode:
     text_lines: list[str] = field(default_factory=list)
     is_final: bool = False
     resume_node: str | None = None
+    #: `## 002-entry` - węzeł, do którego wchodzi się wyzwalaczem z mapy
+    is_entry: bool = False
+    #: warunek wejścia w zapisie z notatki (backquote'y + wikilinki); `None`
+    #: znaczy "bez warunku", czyli `True`
+    entry_condition: str | None = None
     options: list[_ParsedOption] = field(default_factory=list)
     line_no: int = 0
     _prev_empty: bool = field(default=True, repr=False)
@@ -612,6 +628,17 @@ def import_character_dialog(
         }
         if pl_node.resume_node:
             node_config["resume_node"] = pl_node.resume_node
+        if pl_node.is_entry:
+            # wejście z mapy (`## 002-entry`): warunek jest logiką, więc - jak
+            # cała logika - bierze się z PL (D2). EN trzyma sam tekst.
+            node_config["is_entry"] = True
+            node_config["entry_condition"] = _convert_condition(
+                pl_node.entry_condition or "True",
+                f"entry condition for node {node_key!r}",
+                str(pl_path),
+                pl_node.line_no,
+                index,
+            )
         dialog_config[character_key]["DIALOG_NODES"][node_key] = node_config
 
         if result_key and result is not None:
@@ -632,7 +659,7 @@ def import_character_dialog(
 
             condition = _convert_condition(
                 pl_opt.condition or "True",
-                option_key,
+                f"condition for option {option_key!r}",
                 str(pl_path),
                 pl_opt.line_no,
                 index,
@@ -1356,8 +1383,10 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
         if node_match:
             node_key = node_match.group("key")
             is_final = node_key.endswith("-end")
-            node_key = node_key.replace("-end", "")
+            is_entry = node_key.endswith("-entry")
+            node_key = node_key.replace("-entry", "").replace("-end", "")
             resume_node = node_match.group("resume_target")
+            entry_condition: str | None = None
 
             # New format: resume link on separate line after -end heading
             if resume_node is None and is_final and idx < len(lines):
@@ -1370,10 +1399,21 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
                     resume_node = resume_target.replace("-end", "")
                     idx += 1  # consume the resume link line
 
+            # Warunek wejścia stoi pod nagłówkiem `-entry`, symetrycznie do
+            # linku resume pod `-end`. Rozpoznawany WYŁĄCZNIE tam - na zwykłym
+            # węźle nawias kwadratowy na początku to efekt węzła.
+            if is_entry and idx < len(lines):
+                peek_condition = _ENTRY_CONDITION_RE.match(lines[idx].strip())
+                if peek_condition:
+                    entry_condition = peek_condition.group("condition").strip()
+                    idx += 1  # consume the condition line
+
             current_node = _ParsedNode(
                 key=node_key,
                 is_final=is_final,
                 resume_node=resume_node,
+                is_entry=is_entry,
+                entry_condition=entry_condition,
                 line_no=line_no,
             )
             if node_key in nodes:
@@ -1433,7 +1473,7 @@ def _parse_file(path: Path) -> dict[str, _ParsedNode]:
             current_node.options.append(
                 _ParsedOption(
                     anchor=opt_anchor,
-                    target=opt_target.replace("-end", ""),
+                    target=opt_target.replace("-entry", "").replace("-end", ""),
                     order=option_match.group("order"),
                     condition=option_match.group("condition"),
                     sentiment=option_match.group("sentiment"),
@@ -1495,6 +1535,15 @@ def _validate_language_consistency(
             raise DialogImportError(
                 f"option count mismatch for node {key!r} "
                 f"(PL={len(pl_node.options)}, EN={len(en_node.options)})",
+                file=src_dir,
+            )
+        # Sufiks jest zdejmowany z klucza, więc porównanie kluczy wyżej NIE
+        # złapałoby rozjazdu markera: `## 002-entry` w PL i `## 002` w EN dałyby
+        # ten sam klucz `002`, a węzeł przestałby być sierotą tylko w jednym pliku.
+        if pl_node.is_entry != en_node.is_entry:
+            raise DialogImportError(
+                f"'-entry' marker mismatch for node {key!r} "
+                f"(PL={pl_node.is_entry}, EN={en_node.is_entry})",
                 file=src_dir,
             )
 
@@ -1605,7 +1654,7 @@ def _convert_text(
 
 def _convert_condition(
     condition: str,
-    option_key: str,
+    label: str,
     file: str,
     line: int,
     index: dict[str, str] | None = None,
@@ -1617,11 +1666,15 @@ def _convert_condition(
     an edge in the Obsidian graph (``vault_links``); the legacy dotted forms
     (``Barman_Absinthrayner.012.visited``, ``character.sentiment``) still convert,
     because a file nobody has touched yet must keep importing.
+
+    ``label`` nazywa miejsce, z którego warunek pochodzi (``option '002to007_1'``,
+    ``entry condition for node '002'``) - jedna gramatyka obsługuje oba, więc
+    różni je wyłącznie to, co powie komunikat błędu.
     """
     if condition == "True":
         return condition
 
-    out = _expand_condition_links(condition, index, f"option {option_key!r}", file, line)
+    out = _expand_condition_links(condition, index, label, file, line)
     out = _SENTIMENT_COND_RE.sub("sentiment", out)
     out = _VISITED_NPC_RE.sub(_replace_visited_npc, out)
     out = _VISITED_SELF_RE.sub(_replace_visited_self, out)
@@ -1630,7 +1683,7 @@ def _convert_condition(
         validate_condition(out)
     except ConditionError as exc:
         raise DialogImportError(
-            f"invalid condition for option {option_key!r}: {exc}",
+            f"invalid {label}: {exc}",
             file=file,
             line=line,
         ) from exc
@@ -1812,7 +1865,7 @@ def _validate_graph(
                     file=file,
                     line=option.line_no,
                 )
-            canonical_anchor = option.anchor.replace("-end", "")
+            canonical_anchor = option.anchor.replace("-entry", "").replace("-end", "")
             if canonical_anchor != option.target:
                 raise DialogImportError(
                     f"option anchor {option.anchor!r} does not match target "
@@ -1827,6 +1880,12 @@ def _validate_graph(
     for node in nodes.values():
         if node.resume_node:
             targets.add(node.resume_node)
+    # `## 002-entry`: krawędź prowadzi tu z MAPY, nie z grafu, więc importer nie
+    # ma jak jej zobaczyć. Że wyzwalacz naprawdę istnieje, sprawdza
+    # `just validate-world` - jedyne miejsce, które widzi naraz mapy i config.
+    for key, node in nodes.items():
+        if node.is_entry:
+            targets.add(key)
     orphans = [
         (key, node.line_no)
         for key, node in nodes.items()

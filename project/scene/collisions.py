@@ -143,12 +143,22 @@ def resolve(scene: "Scene") -> None:
             player.chest_in_range = chest
             break
 
-    player.npc_met = None
+    # Rozmówca jest przeliczany od zera co klatkę - z jednym wyjątkiem: gdy rozmowa
+    # WŁAŚNIE się zaczęła. Wyzwalacz z mapy (`characters/player.check_scene_exit`)
+    # odpala się w `group.update`, czyli PRZED tym miejscem, a rozmówcą bywa postać
+    # spoza zasięgu (bramka przy wyjściu, głos zza kadru) - wyzerowanie `npc_met`
+    # zabrałoby `GameUI` jedyny uchwyt do zdjęcia `is_talking` przy zamknięciu panelu
+    # i rozmówca zostałby „zajęty" na zawsze. Od następnej klatki panel jest modalny,
+    # więc `resolve` i tak tu nie dolatuje.
+    talking = player.is_talking
+    if not talking:
+        player.npc_met = None
     for npc in scene.NPCs:
         if npc.is_asleep:
             # a shop that is not there cannot be walked into or traded with
             continue
-        npc.npc_met = None
+        if not talking:
+            npc.npc_met = None
         if npc.feet.collidelist(colliders) > -1:
             # npc.move_back(dt)
             npc.slide(colliders)
@@ -160,8 +170,9 @@ def resolve(scene: "Scene") -> None:
                 npc.health_bar.show()
 
                 if (npc.has_dialog and npc.dialog is not None) or (npc.model.is_merchant):
-                    player.npc_met = npc
-                    npc.npc_met = player
+                    if not talking:
+                        player.npc_met = npc
+                        npc.npc_met = player
                     break
             else:
                 npc.health_bar.hide()

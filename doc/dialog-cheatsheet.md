@@ -105,6 +105,26 @@ Klucze węzłów są **wyłącznie cyframi**, dlatego nagłówki prozy (`## Cech
 - **`-end` w nagłówku** (`## 990-end`) znaczy „tu rozmowa się kończy": panel pokazuje kwestię i czeka na Accept, opcji nie wyświetla. Opcja na węźle `-end` jest błędem importu.
 - **Link pod nagłówkiem `-end`** (`[[#001]]` w osobnej linii) to **resume**: następna rozmowa z tą postacią zacznie się od tego węzła zamiast od startowego. Tak się pisze „przywitanie tylko raz".
 - Opcja wskazująca węzeł końcowy pisze się z sufiksem (`[[#990-end]]`) - importer sam go zdejmuje, a link zostaje klikalny w Obsidianie.
+- **`-entry` w nagłówku** (`## 002-entry`) znaczy „do tego węzła wchodzi się z mapy": wskazuje go wyzwalacz na warstwie `interactions` w Tiled. Sufiks, jak `-end`, mówi o obchodzeniu się z węzłem, a nie o jego kluczu - klucz to nadal `002`.
+
+## Wejście z mapy - `## numer-entry`
+
+Scena może zacząć się bez naciskania spacji: wejściem gracza na wskazany obszar mapy albo próbą wyjścia z okolicy. Obiekt w Tiled mówi **gdzie**, notatka postaci mówi **kiedy**.
+
+```markdown
+## 002-entry
+[`not quest_done(`[[Q01_S01 Kto wie więcej o klątwie]]`)`]
+
+* Nie ruszysz się stąd, póki nie pogadasz z [[Barman Absyntnent|Barmanem]].
+
+* [[#990-end]] 1😐: No dobrze.
+```
+
+- **Linia pod nagłówkiem** to **warunek wejścia** - ta sama gramatyka, co w warunku opcji (backquote'y, wikilinki, `sentiment`, `visited()`). Brak linii znaczy „zawsze".
+- Węzeł `-entry` jest **zwolniony z reguły węzła-sieroty**: krawędź do niego prowadzi z mapy, a importer widzi tylko graf. Że wyzwalacz naprawdę istnieje, sprawdza `just validate-world` - i on też zgłasza węzeł `-entry`, na który nic nie wskazuje.
+- W Tiled na warstwie `interactions`: `obj_type="dialog"` + własność `dialog` = `KLUCZ_POSTACI:WĘZEŁ` (np. `HAMMER_HOAXHEART:002`) to obszar odgrywający scenę. Ta sama własność na obiekcie `obj_type="exit"` **blokuje przejście** na inną mapę, dopóki warunek wejścia jest prawdziwy.
+- Scena odgrywa się **raz na wejście** w obszar; zejście z niego uzbraja wyzwalacz ponownie. „Raz na zawsze" pisze się warunkiem `not visited(`[[#002]]`)`, bo odwiedzone węzły i tak siedzą w save.
+- Postać z wyzwalacza **nie musi** stać na tej mapie - odezwie się zza kadru. Walidator o tym ostrzega, bo bywa to niezamierzone: dopóki jej własna mapa nie była ani razu wczytana, wyzwalacz milczy.
 
 ## Opcje - linia po linii
 
@@ -257,16 +277,16 @@ Pełna instrukcja (wspólna pula w `PL/Barki.md`, kolumna `barks` w `characters.
 
 Import działa na zasadzie **wszystko albo nic**: postać, która się nie zaimportuje, to postać, której nie ma w grze - `config.json` zostaje nietknięty, a błąd wskazuje plik i linię.
 
-| Co                             | Dlaczego to błąd                                                          |
-| ------------------------------ | ------------------------------------------------------------------------- |
-| węzeł-sierota                  | żadna opcja ani resume na niego nie wskazuje - gracz nigdy go nie zobaczy |
-| opcja w nieznany węzeł         | literówka w numerze; w grze byłby ślepy skok                              |
-| kotwica ≠ cel                  | `[[#002]]` prowadzące do `003` - link w Obsidianie kłamałby               |
-| duplikat numeru węzła          | dwa `## 007` w jednym pliku                                               |
-| nieznane emoji sentymentu      | sentyment musi być jedną z nazw kanonicznych                              |
-| opcja na węźle `-end`          | węzeł końcowy nigdy nie pokazuje opcji                                    |
-| rozjazd PL/EN                  | inne numery węzłów albo inna liczba opcji w węźle                         |
-| link do nieistniejącej notatki | w warunku i w efekcie - twardy błąd, nie ciche `False`                    |
+| Co                             | Dlaczego to błąd                                                                                                                       |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| węzeł-sierota                  | żadna opcja ani resume na niego nie wskazuje - gracz nigdy go nie zobaczy (węzeł `-entry` jest zwolniony: wchodzi się do niego z mapy) |
+| opcja w nieznany węzeł         | literówka w numerze; w grze byłby ślepy skok                                                                                           |
+| kotwica ≠ cel                  | `[[#002]]` prowadzące do `003` - link w Obsidianie kłamałby                                                                            |
+| duplikat numeru węzła          | dwa `## 007` w jednym pliku                                                                                                            |
+| nieznane emoji sentymentu      | sentyment musi być jedną z nazw kanonicznych                                                                                           |
+| opcja na węźle `-end`          | węzeł końcowy nigdy nie pokazuje opcji                                                                                                 |
+| rozjazd PL/EN                  | inne numery węzłów, inna liczba opcji w węźle albo `-entry` tylko po jednej stronie                                                    |
+| link do nieistniejącej notatki | w warunku i w efekcie - twardy błąd, nie ciche `False`                                                                                 |
 
 ## Co zrobić po edycji
 
@@ -282,7 +302,7 @@ Szczegółowa lista kroków: [[Aktualizacja dialogów - checklist]].
 
 Graf rysuje `scripts/dialog_graph.py` i to na nim widać rzeczy, których w tekście nie widać wcale - większość historycznych bugów dialogów była **własnością grafu**, nie treści.
 
-- **Węzły**: zielony START, czerwony `-end`, żółty z efektem, niebieski zwykły; różowa przerywana obwódka = problem.
+- **Węzły**: zielony START, pomarańczowy `-entry` (wejście z mapy), czerwony `-end`, żółty z efektem, niebieski zwykły; różowa przerywana obwódka = problem.
 - **Krawędzie**: etykieta w kolorze sentymentu (`3 smart`, `2 angry`), przerywana = warunkowa, kropkowana cyjanowa = `resume`.
 - **Panel PROBLEMY** nad grafem wypisuje sieroty, ślepe zaułki i węzły z samymi warunkowymi opcjami; kliknięcie centruje kamerę na węźle.
 - Klik = podświetl sąsiadów, podwójny klik = otwórz węzeł w źródłowym `.md`, hover = treść, warunek i efekt.

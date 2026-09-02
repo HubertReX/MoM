@@ -111,22 +111,14 @@ def open_dialog(scene: "Scene", key: str) -> bool:
     repeatable dialog screenshot this snaps the player next to the NPC and opens
     the panel through the game's own talk path (``npc_met`` + ``ui.open``).
     Returns ``True`` if a dialog panel was opened.
+
+    The actual opening lives in ``scene/dialog_triggers.fire`` — the same call the
+    map triggers use, so there is one way to start a conversation outside the
+    SPACE path, not two that can drift apart.
     """
-    from settings import get_msg
-    from ui.panels.dialog import DialogPanel
+    from scene import dialog_triggers
 
     npc = find_entity(scene, key)
-    if npc is None or not getattr(npc, "has_dialog", False) or getattr(npc, "dialog", None) is None:
+    if npc is None or getattr(npc, "dialog", None) is None:
         return False
-    # freeze the NPC where it stands so it can't wander off; do NOT move the
-    # player (snapping onto item piles triggers auto-pickup churn).
-    npc.target = vec(0, 0)
-    npc.waypoints = ()
-    npc.waypoints_cnt = 0
-    scene.player.npc_met = npc
-    npc.npc_met = scene.player
-    text = get_msg(scene.game.conf.messages, npc.dialog.text)
-    scene.ui.open(DialogPanel, npc=npc, text=text)
-    scene.player.is_talking = True
-    npc.is_talking = True
-    return True
+    return dialog_triggers.fire(scene, npc)

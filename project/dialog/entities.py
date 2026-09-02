@@ -51,6 +51,12 @@ class DialogNode:
     visited: bool = field(default=False, repr=False)
     result: NodeVisitResult | None = field(default=None, repr=False)
     resume_node: str | None = field(default=None, repr=False)
+    # Wejście z mapy (`## 002-entry` w notatce): do tego węzła wchodzi się
+    # wyzwalaczem z warstwy `interactions`, nie krawędzią grafu. Dlatego jest
+    # zwolniony z reguły sieroty przy imporcie, a `entry_condition` decyduje,
+    # czy wyzwalacz w ogóle odpali (pusty warunek to `True`, czyli zawsze).
+    is_entry: bool = field(default=False, repr=False)
+    entry_condition: str = field(default="True", repr=False)
 
 
 @dataclass(slots=True)

@@ -52,6 +52,7 @@ class Collider(pygame.sprite.Sprite):
         return_entry_point: str = "",
         requires_item: str = "",
         consumes_key: bool = False,
+        dialog: str = "",
     ) -> None:
 
         super().__init__(groups)
@@ -68,6 +69,36 @@ class Collider(pygame.sprite.Sprite):
         #: dzisiejsze.
         self.requires_item = requires_item
         self.consumes_key = consumes_key
+        #: Bramka fabularna: `KLUCZ_POSTACI:WĘZEŁ` wskazujący węzeł `-entry`.
+        #: Gdy jego warunek wejścia jest prawdziwy, dialog odgrywa się ZAMIAST
+        #: przejścia. Pusty napis = drzwi bez bramki, czyli wszystkie dzisiejsze.
+        self.dialog = dialog
+
+
+class DialogTrigger(pygame.sprite.Sprite):
+    """Obszar na mapie, który wie tylko, w jaki węzeł dialogu celuje.
+
+    Bliźniak `Collider`: ten sam kształt danych (prostokąt + nazwa + wskaźnik),
+    tyle że wejście na niego niczego nie blokuje - odgrywa scenę i oddaje
+    sterowanie. Warunek, czy scena ma się w ogóle odegrać, siedzi w notatce
+    postaci przy węźle `-entry`, nie tutaj: obiekt na mapie mówi GDZIE, notatka
+    mówi KIEDY.
+    """
+
+    def __init__(
+        self,
+        groups: pygame.sprite.Group,
+        pos: tuple[int, int],
+        size: tuple[int, int],
+        name: str,
+        dialog: str,
+    ) -> None:
+
+        super().__init__(groups)
+        self.image: pygame.Surface = pygame.Surface((size))
+        self.rect: pygame.FRect = self.image.get_frect(topleft = pos)
+        self.name = name
+        self.dialog = dialog
 
 #################################################################################################################
 

@@ -43,6 +43,9 @@ MAP_PROPERTIES: list[str] = [
     "items",
     "zones",
     "exits",
+    # wyzwalacze dialogu z warstwy `interactions` - per mapa, jak `exits`.
+    # Bez stanu własnego (odtwarzają się z TMX), więc format save'a się nie zmienia
+    "dialog_triggers",
     "chests",
     "walls",
     # both are per-map: `destructibles` used to leak across maps (walls were
@@ -58,6 +61,7 @@ MAP_PROPERTIES: list[str] = [
     "shadow_sprites",
     "obstacles_sprites",
     "exit_sprites",
+    "dialog_trigger_sprites",
     "item_sprites",
     "animations",
     "NPCs",
@@ -252,6 +256,10 @@ def reload_map(scene: "Scene") -> None:
 def reset_sprite_groups(scene: "Scene") -> None:
     scene.label_sprites.empty()
     scene.exit_sprites.empty()
+    scene.dialog_trigger_sprites.empty()
+    # uzbrojenie wyzwalaczy liczy się od pozycji gracza, więc po zmianie mapy
+    # zaczyna od zera - nazwy obiektów z poprzedniej mapy nic tu nie znaczą
+    scene.dialog_triggers_inside.clear()
     scene.item_sprites.empty()
     scene.obstacles_sprites.empty()
     scene.shadow_sprites.empty()

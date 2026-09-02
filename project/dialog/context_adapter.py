@@ -24,30 +24,48 @@ def node_visited(npc: Any, node_key: str) -> bool:
     return False
 
 
+def find_npc(scene: Any, npc_key: str) -> Any | None:
+    """The live NPC object for ``npc_key``, wherever in the world it stands.
+
+    Two places hold a real object, in order of freshness: NPCs on the current map
+    (``scene.loaded_NPCs``), then NPCs on maps entered earlier this session, whose
+    objects are still cached in ``scene.loaded_maps``. A map restored from a save
+    but not re-entered since has no NPC objects at all — only the state in
+    ``scene.pending_map_states``, which is a fact, not a character, so it is not
+    something this can return.
+
+    Both the cross-NPC ``visited()`` lookup below and the map dialog triggers
+    (``scene/dialog_triggers.py``) need exactly this reach: a conversation, or a
+    fact about one, does not stop mattering when the player walks off the map.
+    """
+    for other in getattr(scene, "loaded_NPCs", {}).values():
+        if getattr(other, "config_key", None) == npc_key:
+            return other
+
+    for cached in (getattr(scene, "loaded_maps", None) or {}).values():
+        for other in cached.get("NPCs", None) or []:
+            if getattr(other, "config_key", None) == npc_key:
+                return other
+
+    return None
+
+
 def find_visited_node(scene: Any, npc_key: str, node_key: str) -> bool:
     """Was ``node_key`` visited in ``npc_key``'s dialog — wherever that NPC lives?
 
     A quest may ask about a conversation that happened on a map the player is no
     longer standing on, so this deliberately looks past the current map. There
-    are three places the answer can hide, in order of freshness:
-
-    1. NPCs on the current map (``scene.loaded_NPCs``);
-    2. NPCs on maps entered earlier this session, whose objects are still cached
-       in ``scene.loaded_maps``;
-    3. maps restored from a save but not re-entered since, which have no NPC
-       objects at all — only the state held in ``scene.pending_map_states``.
+    are three places the answer can hide, in order of freshness: the two that
+    :func:`find_npc` reaches, plus maps restored from a save but not re-entered
+    since, which have no NPC objects at all — only the state held in
+    ``scene.pending_map_states``.
 
     Falling through all three means the player has never been able to meet that
     NPC, so ``False`` is the truthful answer rather than a silent failure.
     """
-    for other in getattr(scene, "loaded_NPCs", {}).values():
-        if getattr(other, "config_key", None) == npc_key:
-            return node_visited(other, node_key)
-
-    for cached in (getattr(scene, "loaded_maps", None) or {}).values():
-        for other in cached.get("NPCs", None) or []:
-            if getattr(other, "config_key", None) == npc_key:
-                return node_visited(other, node_key)
+    npc = find_npc(scene, npc_key)
+    if npc is not None:
+        return node_visited(npc, node_key)
 
     for map_state in (getattr(scene, "pending_map_states", None) or {}).values():
         for npc_state in map_state.npc_states.values():

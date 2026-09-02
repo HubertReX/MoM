@@ -26,7 +26,7 @@ import game
 import scene
 from characters.npc import NPC
 from objects import HealthBarUI, NotificationTypeEnum
-from scene import player_actions
+from scene import dialog_triggers, player_actions
 from ui.panels.dialog import DialogPanel
 from ui.panels.trade import TradePanel
 
@@ -64,6 +64,11 @@ class Player(NPC):
         #: „brakuje klucza" leciałby co klatkę. Czyszczone, gdy gracz zejdzie
         #: z progu - następne podejście znów ma prawo do komunikatu.
         self._locked_door_told: str = ""
+        #: Nazwa wyjścia, którego bramkę fabularną gracz już zobaczył w tym
+        #: podejściu. Ta sama choroba i to samo lekarstwo co wyżej: kolizja
+        #: z progiem trzyma się wiele klatek, a dialog ma się odegrać RAZ.
+        #: Warunek liczy się dalej co klatkę - patrz `check_scene_exit`.
+        self._exit_dialog_told: str = ""
         # label_group.remove(self.health_bar)
     #############################################################################################################
 
@@ -289,6 +294,23 @@ class Player(NPC):
 
         for exit in self.scene.exit_sprites:
             if self.feet.colliderect(exit.rect):
+                # Bramka fabularna: wyjście wskazuje węzeł `-entry`, a jego warunek
+                # mówi, czy wolno już stąd wyjść. Warunek sprawdzamy CO KLATKĘ, ale
+                # dialog odgrywamy raz na podejście - dzięki temu rozmowa, która
+                # właśnie domknęła quest, przepuszcza gracza od razu, bez schodzenia
+                # z progu, a stanie na progu przy niespełnionym warunku niczego nie
+                # powtarza.
+                #
+                # Fabuła przed kluczem: „nie jesteś gotów" jest stwierdzeniem
+                # o świecie, a „nie masz klucza" o tych konkretnych drzwiach - ta
+                # druga odmowa ma sens dopiero wtedy, gdy wyjść już wolno.
+                if exit.dialog and dialog_triggers.should_fire(self.scene, exit.dialog):
+                    if self._exit_dialog_told != exit.name:
+                        self._exit_dialog_told = exit.name
+                        dialog_triggers.fire_spec(self.scene, exit.dialog)
+                    break
+                self._exit_dialog_told = ""
+
                 # Zamknięte drzwi (H01/D8): odmowa z nazwą brakującego klucza,
                 # ta sama funkcja co przy skrzyni. Komunikat RAZ na podejście,
                 # nie co klatkę - kolizja trzyma się tak długo, jak długo gracz
@@ -307,6 +329,7 @@ class Player(NPC):
         else:
             # gracz zszedł z progu - następne podejście znów ma prawo do komunikatu
             self._locked_door_told = ""
+            self._exit_dialog_told = ""
                 # self.scene.go_to_scene()
 
     #############################################################################################################

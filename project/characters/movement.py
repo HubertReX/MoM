@@ -554,6 +554,10 @@ def check_scene_exit(npc: "NPC") -> None:
     # presence reconciler materialises an arriving NPC *on* the doorway, so
     # without it the character would die() on the very next frame. Everyone else
     # keeps the legacy "walk into an exit and leave" behaviour (unused today).
+    #
+    # `exit.dialog` (bramka fabularna) jest tu CELOWO nieczytany: bramka mówi
+    # graczowi, że jeszcze nie wolno mu opuścić okolicy, i nie ma nic wspólnego
+    # z tym, gdzie chodzą NPC-e. To asymetria zamierzona, nie przeoczenie.
     if npc.runtime.routine_key:
         return
 

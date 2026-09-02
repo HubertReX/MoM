@@ -209,6 +209,36 @@ Importer automatycznie stripuje `-end` z targetu (`#005-end` → node key `005`)
 
 **Backward compat:** stary format z opcją `* [001](#001) 1😐: technical loop back` jest nadal wspierany — importer rozpoznaje tekst "technical loop back" i traktuje go jako dyrektywę resume (nie dodaje jako realnej opcji). Nowy format (link w nagłówku) ma pierwszeństwo.
 
+### Węzły wejściowe (`-entry`) — rozmowa zaczęta przez mapę
+
+Scena może zacząć się bez naciskania spacji: obiekt na warstwie `interactions` w Tiled
+wskazuje węzeł zapisem `KLUCZ_POSTACI:WĘZEŁ`, a węzeł niesie **warunek wejścia**.
+
+```md
+## 002-entry
+[`not quest_done(`[[Q01_S01 Kto wie więcej o klątwie]]`)`]
+
+* Nie ruszysz się stąd, póki nie pogadasz z [[Barman Absyntnent|Barmanem]].
+
+* [[#990-end]] 1😐: No dobrze.
+```
+
+- Sufiks `-entry` → `is_entry=True`; linia pod nagłówkiem → `entry_condition` (ta sama
+  gramatyka i ten sam `_convert_condition`, co przy warunku opcji). Brak linii = `"True"`.
+- Podział ról: **obiekt na mapie mówi GDZIE, notatka mówi KIEDY.** Dzięki temu warunek
+  jest wikilinkiem w grafie Obsidiana, a Tiled trzyma sam wskaźnik.
+- Węzeł `-entry` jest **zwolniony z reguły węzła-sieroty** (`_validate_graph`): jego krawędź
+  wejściowa prowadzi z mapy, której importer nie widzi. Drugą stronę - czy wyzwalacz naprawdę
+  istnieje - sprawdza `just validate-world` (reguła 24).
+- Marker musi się zgadzać między PL i EN. Sufiks jest zdejmowany z klucza, więc samo
+  porównanie kluczy węzłów by tego nie złapało - jest osobna kontrola.
+- Runtime: `scene/dialog_triggers.py`. `should_fire()` liczy warunek przez ten sam
+  `check_condition` + `NPCConditionContext`, co filtr opcji; `fire()` ustawia kursor
+  (`npc.dialog = node`) i otwiera panel. Tej samej funkcji używa `agent_api.open_dialog`,
+  więc rozmowa spoza ścieżki SPACE ma jeden kształt, nie dwa.
+- Postać nie musi stać na tej mapie (`context_adapter.find_npc` sięga też do
+  `scene.loaded_maps`), ale gdy jej mapa nie była jeszcze ani razu wczytana, wyzwalacz milczy.
+
 ### `[[#trade-end]]` — opcja, która oddaje gracza do sklepu
 
 Postać może być **jednocześnie rozmówcą i handlarzem** (`has_dialog` i `is_merchant`

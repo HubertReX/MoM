@@ -1114,7 +1114,7 @@ Czego rename **nie** rusza i nie powinien:
 manifestem `SOURCES` - a nie przy pierwszym rename'ie po nim (D17). Nowy plik trzeba albo
 objąć globem, albo wpisać do `UNTOUCHED_SOURCES` z powodem.
 
-### Czego pilnuje `just validate-world` w sprawie kluczy (reguły 13-19)
+### Czego pilnuje `just validate-world` w sprawie kluczy (reguły 13-19, 24)
 
 - **13** - nazwa obiektu w `spawn_points` to klucz modelu, opcjonalnie z `_NN`
   (`FISH_RED_01`). Numer należy się instancji dopiero wtedy, gdy kopii na mapie jest
@@ -1122,7 +1122,14 @@ objąć globem, albo wpisać do `UNTOUCHED_SOURCES` z powodem.
 - **14** - wyjście w `interactions` musi mieć `to_map` i `destination_entry_point`
   wskazujący obiekt z warstwy `entry_points` **mapy docelowej** (dla labiryntu: z szablonu
   `assets/MazeTileset/MazeTileset_Ninja.tmx`), a `return_entry_point` - obiekt na mapie,
-  na której stoi. Obiekt `obj_type="chest"` musi nazywać klucz z `config.chests`.
+  na której stoi. Obiekt `obj_type="chest"` musi nazywać klucz z `config.chests`, a
+  `obj_type="dialog"` - własność `dialog` w postaci `KLUCZ_POSTACI:WĘZEŁ` celującą w węzeł
+  oznaczony `-entry`. Ta sama własność wolno postawić na obiekcie `exit` (bramka fabularna);
+  wyjście celujące w węzeł bez warunku wejścia to WARN, bo takiego wyjścia nie da się przejść
+  nigdy. Postać spoza `spawn_points` tej mapy też jest WARN - odezwie się zza kadru.
+- **24** (WARN) - węzeł `-entry`, na który nie wskazuje żaden obiekt warstwy `interactions`.
+  Odwrotność reguły węzła-sieroty z importera: importer zwalnia `-entry` z obowiązku
+  posiadania krawędzi wejściowej (ta prowadzi z mapy), więc drugą stronę widać tylko tutaj.
 - **15** - miejsce zawsze z prefiksem mapy: `BLUNDERHAVEN:well`, także wewnątrz jednej
   mapy. Dotyczy kolumn `home`/`work`/`social`/`hobby` i celów `location:` w `routines.toml`.
 - **16** - `model_name` na kaflu tilesetu musi być kluczem postaci. Kafel bez spawnu jest

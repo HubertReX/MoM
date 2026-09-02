@@ -17,7 +17,7 @@ Kolejność nie jest kosmetyką - zmienia zachowanie gry.
 | 3 | `walls` | kafle | **każdy niepusty kafel = kolizja**, koszt 100. `destructible=true` robi z niego niszczalny sprite. |
 | 4 | `sprites` | kafle | pusta - tu gra rysuje postacie. |
 | 5 | `over` | kafle | `opacity="0.99"` - dachy, korony drzew: chodzi się pod spodem. |
-| 6 | `interactions` | obiekty | `obj_type=exit` (+`to_map`, `destination_entry_point`, opcjonalnie `requires_item`, `consumes_key`, `return_entry_point`) oraz `obj_type=chest`. |
+| 6 | `interactions` | obiekty | `obj_type=exit` (+`to_map`, `destination_entry_point`, opcjonalnie `requires_item`, `consumes_key`, `return_entry_point`, `dialog`), `obj_type=dialog` (+`dialog`) oraz `obj_type=chest`. |
 | 7 | `entry_points` | obiekty | punkty pojawienia się; `start` to awaryjna pozycja gracza dla całej mapy. |
 | 8 | `waypoints` | obiekty | polilinie/wielokąty. Nazwa **musi** zgadzać się z nazwą spawnu, inaczej nikt po niej nie chodzi. `enabled=false` wyłącza bez kasowania. |
 | 9 | `places` | obiekty | nazwane cele rutyn; gra czyta `rect.midbottom`. |
@@ -120,8 +120,16 @@ kilku** (`COW_01`, `COW_02`). Generator liczy kopie na całej mapie w osobnym pr
    wolny kafel był tuż pod nim. **NPC nie ma siatki bezpieczeństwa** (`walkable_pos_near`
    używa tylko gracz), więc postać w ścianie zostaje tam na zawsze.
 4. **Obiekt bez `obj_type` jest po cichu pomijany.** `load_interactions` bierze pod uwagę
-   wyłącznie `exit` i `chest`. Skrzynia bez tej własności nie powstaje w grze i nikt o tym
-   nie mówi (tak przez długi czas nie działała `BLUNDERHAVEN_CATS_CHEST` z questa Q04_S01).
+   wyłącznie `exit`, `dialog` i `chest`. Skrzynia bez tej własności nie powstaje w grze i nikt
+   o tym nie mówi (tak przez długi czas nie działała `BLUNDERHAVEN_CATS_CHEST` z questa Q04_S01).
+9. **Wyzwalacz dialogu wskazuje węzeł, ale warunku nie zna.** Własność `dialog` ma postać
+   `KLUCZ_POSTACI:WĘZEŁ` (np. `HAMMER_HOAXHEART:002`) i wskazuje węzeł oznaczony w notatce
+   postaci sufiksem `-entry`. Kiedy scena się odgrywa, decyduje **warunek wejścia zapisany
+   w notatce**, nie mapa: obiekt mówi GDZIE, notatka mówi KIEDY. Ta sama własność na obiekcie
+   `exit` blokuje przejście, dopóki warunek jest prawdziwy - `exit` bez warunku (`True`)
+   zamurowuje wyjście na zawsze, dlatego `validate-world` o tym ostrzega. Obszar
+   `obj_type=dialog` musi mieć niezerowe `width`/`height`: punkt nie ma pola i nikt w niego
+   nie wejdzie.
 5. **Kafel `items` z pustym `item_name`** wywala `create_item` na KeyError.
 6. **Kopiowanie mapy między katalogami psuje ścieżki tilesetów.** `TiledMap.save()` przelicza
    je automatycznie przy zapisie do innego katalogu - używaj jego, nie `cp`.

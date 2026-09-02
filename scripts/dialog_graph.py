@@ -89,8 +89,10 @@ NODE_BG_PLAIN = "#a5d8ff"
 NODE_BG_START = "#b2f2bb"
 NODE_BG_FINAL = "#ffc9c9"
 NODE_BG_RESULT = "#fff3bf"
+NODE_BG_ENTRY = "#ffd8a8"
 STROKE_DEFAULT = "#1e1e1e"
 STROKE_START = "#2f9e44"
+STROKE_ENTRY = "#e8590c"
 STROKE_FINAL = "#e03131"
 STROKE_PROBLEM = "#f06595"
 STROKE_RESUME = "#7048e8"
@@ -118,6 +120,9 @@ class GNode:
     key: str
     text: str
     is_final: bool
+    #: `## 002-entry` - wchodzi się tu wyzwalaczem z mapy, nie krawędzią grafu
+    is_entry: bool
+    entry_condition: str
     resume_node: str | None
     result: dict[str, Any] | None
     options: list[GOption] = field(default_factory=list)
@@ -174,6 +179,8 @@ def read_graph(char_key: str, *, src_dir: Path = DOC_DIR) -> DialogGraph:
             key=nkey,
             text=plain(pl.get(ncfg["text"], "")),
             is_final=bool(ncfg.get("is_final")),
+            is_entry=bool(ncfg.get("is_entry")),
+            entry_condition=str(ncfg.get("entry_condition", "True")),
             resume_node=ncfg.get("resume_node"),
             result=data["NODE_RESULTS"].get(result_key) if result_key else None,
         )
@@ -227,6 +234,9 @@ def analyze(graph: DialogGraph, *, known_keys: set[str], known_items: set[str]) 
     # reachability: options + resume edges, exactly like importer's _validate_graph
     seen: set[str] = set()
     queue = deque([graph.start])
+    # węzeł `-entry` ma własną krawędź wejściową - prowadzi z MAPY, nie z grafu
+    queue.extend(key for key, node in nodes.items() if node.is_entry)
+
     while queue:
         cur = queue.popleft()
         if cur in seen or cur not in nodes:
@@ -336,6 +346,10 @@ def build_boxes(graph: DialogGraph, style: Style) -> tuple[dict[str, Box], list[
         header = f"#{key}"
         if key == graph.start:
             header += "  ▶ START"
+        if node.is_entry:
+            header += "  ⛳ ENTRY"
+            if node.entry_condition != "True":
+                header += f" [{node.entry_condition}]"
         if node.is_final:
             header += "  ■ END"
         if node.resume_node:
@@ -355,6 +369,8 @@ def build_boxes(graph: DialogGraph, style: Style) -> tuple[dict[str, Box], list[
             bg = NODE_BG_RESULT
         if node.is_final:
             bg, stroke, sw = NODE_BG_FINAL, STROKE_FINAL, 2
+        if node.is_entry:
+            bg, stroke, sw = NODE_BG_ENTRY, STROKE_ENTRY, 4
         if key == graph.start:
             bg, stroke, sw = NODE_BG_START, STROKE_START, 4
         problem = bool(graph.problems.get(key))
@@ -499,6 +515,9 @@ def layout_py(
     rank: dict[str, int] = {b: 0 for b in boxes}
     queue = deque([b for b in boxes if indeg[b] == 0])
     processed = 0
+    # węzeł `-entry` ma własną krawędź wejściową - prowadzi z MAPY, nie z grafu
+    queue.extend(key for key, node in nodes.items() if node.is_entry)
+
     while queue:
         cur = queue.popleft()
         processed += 1
@@ -859,7 +878,8 @@ def render_excalidraw(
 
 
 LEGEND_TEXT = (
-    "LEGENDA:  zielony = START   czerwony = -end (final)   żółty = węzeł z efektem\n"
+    "LEGENDA:  zielony = START   pomarańczowy = -entry (wejście z mapy)   "
+    "czerwony = -end (final)   żółty = węzeł z efektem\n"
     "różowa przerywana ramka = PROBLEM   fioletowa kropkowana = resume   "
     "pomarańczowa = pętla wsteczna\n"
     "sentyment (kolor opcji): kind / weak / neutral / angry / smart / funny / technical"
@@ -944,6 +964,13 @@ def _levels(graph: DialogGraph) -> dict[str, int]:
     """
     level = {graph.start: 0}
     queue = deque([graph.start])
+    # węzeł `-entry` to własny korzeń rangi - wchodzi się do niego z MAPY, więc
+    # bez tego wylądowałby razem z niedosiężnymi na samym dole
+    for key, node in graph.nodes.items():
+        if node.is_entry and key not in level:
+            level[key] = 0
+            queue.append(key)
+
     while queue:
         cur = queue.popleft()
         for opt in graph.nodes[cur].options:

@@ -34,6 +34,7 @@ from validate_world import (                                     # noqa: E402
     check_trade_options,
     check_unresolved_wikilinks,
     check_condition_entities,
+    check_dialog_entry_nodes,
     check_interaction_targets,
     check_map_coverage,
     check_map_references,
@@ -186,10 +187,110 @@ def test_a_chest_object_must_name_a_chest_in_the_config() -> None:
 
 
 def test_an_unknown_obj_type_is_an_error() -> None:
-    """Ładowarka zna `exit` i `chest`; wszystko inne jest w grze niewidoczne."""
+    """Ładowarka zna `exit`, `dialog` i `chest`; wszystko inne jest w grze niewidoczne."""
     village = _map("Village", interactions=[("Cos", {"obj_type": "portal"})])
     assert_eq(len(_errors(check_interaction_targets(_world(maps=[village])))), 1,
               "obcy obj_type zgłoszony")
+
+
+###############################################################################################################
+# MARK: rule 14/24 - wyzwalacze dialogu z mapy
+
+_TRIGGER_DIALOGS = {
+    "KOWAL": {
+        "START_NODE": "000",
+        "DIALOG_NODES": {
+            "000": {"text": "M_KOWAL_DN_000"},
+            "002": {"text": "M_KOWAL_DN_002", "is_entry": True,
+                    "entry_condition": 'not visited("000")'},
+            "003": {"text": "M_KOWAL_DN_003", "is_entry": True},
+        },
+    },
+}
+
+
+def _trigger_world(*objects: tuple[str, dict[str, str]], spawns: dict[str, str] | None = None) -> World:
+    village = _map("Village", interactions=list(objects),
+                   entry_points=[("Door", {})])
+    village.spawns = spawns if spawns is not None else {"KOWAL": "KOWAL"}
+    return _world(maps=[village], config={**WORLD.config, "dialogs": _TRIGGER_DIALOGS})
+
+
+def test_an_area_trigger_pointing_at_an_entry_node_passes() -> None:
+    world = _trigger_world(("SHRINE", {"obj_type": "dialog", "dialog": "KOWAL:002"}))
+    assert_eq(check_interaction_targets(world), [], "poprawny wyzwalacz nie zgłasza nic")
+
+
+def test_an_area_trigger_without_the_dialog_property_is_an_error() -> None:
+    """Bez wskaźnika obszar jest tylko niewidzialnym prostokątem."""
+    world = _trigger_world(("SHRINE", {"obj_type": "dialog"}))
+    messages = _errors(check_interaction_targets(world))
+    assert_eq(len(messages), 1)
+    assert_true("'dialog'" in messages[0], messages[0])
+
+
+def test_a_half_written_spec_is_an_error() -> None:
+    world = _trigger_world(("SHRINE", {"obj_type": "dialog", "dialog": "KOWAL"}))
+    messages = _errors(check_interaction_targets(world))
+    assert_eq(len(messages), 1)
+    assert_true("KLUCZ_POSTACI:WĘZEŁ" in messages[0], messages[0])
+
+
+def test_a_trigger_pointing_at_a_node_without_the_entry_marker_is_an_error() -> None:
+    """Do zwykłego węzła wchodzi się krawędzią grafu, nie z mapy."""
+    world = _trigger_world(("SHRINE", {"obj_type": "dialog", "dialog": "KOWAL:000"}))
+    messages = _errors(check_interaction_targets(world))
+    assert_eq(len(messages), 1)
+    assert_true("-entry" in messages[0], messages[0])
+
+
+def test_a_trigger_naming_an_unknown_character_or_node_is_an_error() -> None:
+    for spec in ("ZIELARKA:002", "KOWAL:404"):
+        world = _trigger_world(("SHRINE", {"obj_type": "dialog", "dialog": spec}))
+        assert_eq(len(_errors(check_interaction_targets(world))), 1, f"{spec} zgłoszony")
+
+
+def test_a_gate_on_an_exit_is_checked_the_same_way() -> None:
+    """Ten sam wskaźnik, inne skutki - więc i ta sama kontrola."""
+    world = _trigger_world(("LOST_CORK_TAVERN", {
+        "obj_type": "exit", "to_map": "LOST_CORK_TAVERN",
+        "destination_entry_point": "Door", "dialog": "KOWAL:000"}))
+    messages = _errors(check_interaction_targets(world))
+    assert_true(any("-entry" in m for m in messages), f"bramka też sprawdzana: {messages}")
+
+
+def test_a_gate_without_an_entry_condition_is_a_warning() -> None:
+    """Warunek zawsze prawdziwy to nie bramka, tylko mur."""
+    world = _trigger_world(("LOST_CORK_TAVERN", {
+        "obj_type": "exit", "to_map": "LOST_CORK_TAVERN",
+        "destination_entry_point": "Door", "dialog": "KOWAL:003"}))
+    violations = check_interaction_targets(world)
+    assert_eq(_errors(violations), [], "to nie jest błąd - gra działa")
+    assert_true(any("nie da się przejść nigdy" in v.message for v in violations),
+                f"ale jest ostrzeżenie: {[v.message for v in violations]}")
+
+
+def test_a_character_with_no_spawn_on_this_map_is_a_warning() -> None:
+    """Głos zza kadru jest dozwolony, ale prawie zawsze niezamierzony."""
+    world = _trigger_world(("SHRINE", {"obj_type": "dialog", "dialog": "KOWAL:002"}),
+                           spawns={})
+    violations = check_interaction_targets(world)
+    assert_eq(_errors(violations), [])
+    assert_true(any("zza kadru" in v.message for v in violations),
+                f"{[v.message for v in violations]}")
+
+
+def test_an_entry_node_nobody_points_at_is_a_warning() -> None:
+    """Odwrotność reguły sieroty - importer nie ma jak tego zobaczyć."""
+    world = _trigger_world(("SHRINE", {"obj_type": "dialog", "dialog": "KOWAL:002"}))
+    violations = check_dialog_entry_nodes(world)
+    assert_eq(_errors(violations), [])
+    assert_eq(len(violations), 1, "wskazany '002' cichnie, niewskazany '003' zostaje")
+    assert_true("'003'" in violations[0].message, violations[0].message)
+
+
+def test_the_real_world_dialog_triggers_are_consistent() -> None:
+    assert_eq(_errors(check_dialog_entry_nodes(WORLD)), [], "prawdziwy świat bez błędów")
 
 
 def test_a_door_named_differently_than_its_destination_is_a_warning() -> None:
@@ -666,6 +767,16 @@ def main() -> None:
         test_a_trade_option_on_a_non_merchant_is_an_error,
         test_a_dialog_without_trade_options_reports_nothing,
         test_the_real_world_trade_options_belong_to_merchants,
+        test_an_area_trigger_pointing_at_an_entry_node_passes,
+        test_an_area_trigger_without_the_dialog_property_is_an_error,
+        test_a_half_written_spec_is_an_error,
+        test_a_trigger_pointing_at_a_node_without_the_entry_marker_is_an_error,
+        test_a_trigger_naming_an_unknown_character_or_node_is_an_error,
+        test_a_gate_on_an_exit_is_checked_the_same_way,
+        test_a_gate_without_an_entry_condition_is_a_warning,
+        test_a_character_with_no_spawn_on_this_map_is_a_warning,
+        test_an_entry_node_nobody_points_at_is_a_warning,
+        test_the_real_world_dialog_triggers_are_consistent,
     ]
     for t in tests:
         t()

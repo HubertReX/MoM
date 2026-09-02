@@ -7,7 +7,7 @@ The input ``dialog`` dict has five sections (see RPG ``config.json``
 ``character_dialogs``):
 
 - ``NODE_RESULTS``  – ``{key: {category, money?, health?, value?, items?}}``
-- ``DIALOG_NODES``  – ``{key: {text, is_final?, result?}}``
+- ``DIALOG_NODES``  – ``{key: {text, is_final?, result?, resume_node?, is_entry?, entry_condition?}}``
 - ``DIALOG_OPTIONS``– ``{key: {next_node, text, order?, condition?, sentiment?}}``
 - ``NODES_OPTIONS`` – ``{node_key: [option_key, ...]}``
 - ``START_NODE``    – key of the entry node
@@ -93,12 +93,24 @@ def _build_nodes(
             raise ValueError(
                 f"node {key!r} references unknown NODE_RESULTS key {result_key!r}"
             )
+        entry_condition = data.get("entry_condition", "True")
+        # ten sam kontrakt co przy warunku opcji niżej: zły warunek ma wywalić
+        # ładowanie grafu, a nie zamilknąć na `False` w chwili, gdy gracz wchodzi
+        # na wyzwalacz
+        try:
+            validate_condition(entry_condition)
+        except ConditionError as error:
+            raise ValueError(
+                f"node {key!r} has an invalid entry_condition: {error}"
+            ) from error
         nodes[key] = DialogNode(
             key,
             data["text"],
             is_final=data.get("is_final", False),
             result=results.get(result_key),
             resume_node=data.get("resume_node"),
+            is_entry=data.get("is_entry", False),
+            entry_condition=entry_condition,
         )
     return nodes
 
